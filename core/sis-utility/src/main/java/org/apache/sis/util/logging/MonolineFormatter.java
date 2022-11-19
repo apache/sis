@@ -189,7 +189,7 @@ public class MonolineFormatter extends Formatter {
 
     /**
      * The string to write on the left side of the first line of every log records.
-     * The default value is an empty string. This field can not be null.
+     * The default value is an empty string. This field cannot be null.
      *
      * @see #getHeader()
      * @see #setHeader(String)
@@ -339,7 +339,7 @@ public class MonolineFormatter extends Formatter {
          * Note that we do not check for a non-null System.console() because we are writing
          * to System.err, which may be the console even when System.console() returns null.
          * Even in the case where System.err is redirected to a file, this is typically for
-         * printing in an other console (e.g. using the Unix "tail" command).
+         * printing in another console (e.g. using the Unix "tail" command).
          */
         if (handler instanceof ConsoleHandler && X364.isAnsiSupported()) {
             resetLevelColors();

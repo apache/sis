@@ -487,7 +487,7 @@ enum Type {
     }
 
     /**
-     * Formats an error message for a value that can not be converted.
+     * Formats an error message for a value that cannot be converted.
      */
     final String canNotConvert(final String value) {
         return Errors.format(Errors.Keys.CanNotConvertValue_2, value, name());
@@ -501,8 +501,8 @@ enum Type {
      * @param  count  the amount of values (normally exactly 1).
      * @return the value as a {@code short}.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
-     * @throws ArithmeticException if the value can not be represented in the Java signed {@code short} type.
+     * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
+     * @throws ArithmeticException if the value cannot be represented in the Java signed {@code short} type.
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
@@ -522,8 +522,8 @@ enum Type {
      * @param  count  the amount of values (normally exactly 1).
      * @return the value as an {@code int}.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
-     * @throws ArithmeticException if the value can not be represented in the Java signed {@code int} type.
+     * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
+     * @throws ArithmeticException if the value cannot be represented in the Java signed {@code int} type.
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
@@ -540,8 +540,8 @@ enum Type {
      * big TIFF file, or if it was really the intended value then something greater than what we can support.
      *
      * @throws IOException if an error occurred while reading the stream.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
-     * @throws ArithmeticException if the value can not be represented in the Java signed {@code long} type.
+     * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
+     * @throws ArithmeticException if the value cannot be represented in the Java signed {@code long} type.
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
@@ -565,8 +565,8 @@ enum Type {
      * @param  count  the amount of values (normally exactly 1).
      * @return the value as a {@code long}.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
-     * @throws ArithmeticException if the value can not be represented in the Java signed {@code long} type.
+     * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
+     * @throws ArithmeticException if the value cannot be represented in the Java signed {@code long} type.
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
@@ -592,7 +592,7 @@ enum Type {
      * @param  count  the amount of values (normally exactly 1).
      * @return the value as a {@code double}.
      * @throws IOException if an error occurred while reading the stream.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
      * @throws IllegalArgumentException if the value is not a singleton.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
@@ -637,7 +637,7 @@ enum Type {
     }
 
     /**
-     * Reads an arbitrary amount of values as a Java array.
+     * Reads an arbitrary number of values as a Java array.
      *
      * @param  input  the input from where to read the values.
      * @param  count  the amount of values.
@@ -650,7 +650,7 @@ enum Type {
     }
 
     /**
-     * Reads an arbitrary amount of values as a wrapper around a Java array of primitive type.
+     * Reads an arbitrary number of values as a wrapper around a Java array of primitive type.
      * This wrapper provide a more convenient way to access array elements than the object
      * returned by {@link #readArray(ChannelDataInput, int)}.
      *
@@ -659,7 +659,7 @@ enum Type {
      * @return the value as a wrapper around a Java array of primitive type.
      * @throws IOException if an error occurred while reading the stream.
      * @throws ArithmeticException if the given count is too large.
-     * @throws NumberFormatException if the value was stored in ASCII and can not be parsed.
+     * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
      */
     public final Vector readVector(final ChannelDataInput input, final long count) throws IOException {

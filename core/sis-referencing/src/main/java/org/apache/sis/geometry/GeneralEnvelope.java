@@ -67,7 +67,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * <ul>
  *   <li>{@linkplain #GeneralEnvelope(int) From a given number of dimension}, with all coordinates initialized to 0.</li>
  *   <li>{@linkplain #GeneralEnvelope(double[], double[]) From two coordinate tuples}.</li>
- *   <li>{@linkplain #GeneralEnvelope(Envelope) From a an other envelope} (copy constructor).</li>
+ *   <li>{@linkplain #GeneralEnvelope(Envelope) From a another envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
  *   <li>{@linkplain #GeneralEnvelope(CharSequence) From a character sequence}
  *       representing a {@code BBOX} or a <cite>Well Known Text</cite> (WKT) format.</li>
@@ -258,7 +258,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * </ul></div>
      *
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
-     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws IllegalArgumentException if the given string cannot be parsed.
      *
      * @see Envelopes#fromWKT(CharSequence)
      * @see Envelopes#toString(Envelope)
@@ -997,7 +997,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * {@linkplain CoordinateSystemAxis#getMaximumValue() maximum value}.
      *
      * <h4>Usage</h4>
-     * This method is sometime useful before to compute the {@linkplain #add(Envelope) union}
+     * This method is sometimes useful before to compute the {@linkplain #add(Envelope) union}
      * or {@linkplain #intersect(Envelope) intersection} of envelopes, in order to ensure that
      * both envelopes are defined in the same domain. This method may also be invoked before
      * to project an envelope, since some projections produce {@link Double#NaN} numbers when
@@ -1022,7 +1022,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * This is used for normalizing the result of a coordinate operation where a wrap around axis does not
      * necessarily means that the coordinates need to be normalized along that axis.
      *
-     * @param  cs          the coordinate system of this envelope CRS (as an argument because sometime already known).
+     * @param  cs          the coordinate system of this envelope CRS (as an argument because sometimes already known).
      * @param  beginIndex  index of the first coordinate value in {@link #coordinates} array. Non-zero for sub-envelopes.
      * @param  count       number of coordinates, i.e. this envelope dimensions.
      * @param  dimensions  the dimensions to check for normalization, or {@code null} for all dimensions.
@@ -1191,13 +1191,13 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Returns a view over the two horizontal dimensions of this envelope. The horizontal dimensions are
      * {@linkplain CRS#getHorizontalComponent(CoordinateReferenceSystem) inferred from the CRS}. If this
-     * method can not infer the horizontal dimensions, then an {@link IllegalStateException} is thrown.
+     * method cannot infer the horizontal dimensions, then an {@link IllegalStateException} is thrown.
      *
      * <p>The returned envelope is a <em>view</em>: changes in the returned envelope are reflected in this
      * envelope, and conversely. The returned envelope will have its CRS defined.</p>
      *
      * @return a view over the horizontal components of this envelope. May be {@code this}.
-     * @throws IllegalStateException if this method can not infer the horizontal components of this envelope.
+     * @throws IllegalStateException if this method cannot infer the horizontal components of this envelope.
      *
      * @see #subEnvelope(int, int)
      * @see CRS#getHorizontalComponent(CoordinateReferenceSystem)

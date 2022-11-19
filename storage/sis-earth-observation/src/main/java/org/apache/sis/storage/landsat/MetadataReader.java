@@ -184,7 +184,7 @@ final class MetadataReader extends MetadataBuilder {
     private static final int PROJECTED = 0, GEOGRAPHIC = NUM_COORDINATES;
 
     /**
-     * Image width and hight in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
+     * Image width and height in pixels, as unsigned integers. Values are (<var>width</var>,<var>height</var>) tuples.
      * Tuples in this array are for {@link #PANCHROMATIC}, {@link #REFLECTIVE} or {@link #THERMAL} bands, in that order.
      */
     private final EnumMap<BandGroupName,Dimension> gridSizes;
@@ -342,7 +342,7 @@ final class MetadataReader extends MetadataBuilder {
      *
      * @param   value  the string value to parse.
      * @return  the parsed value.
-     * @throws  NumberFormatException if the given value can not be parsed.
+     * @throws  NumberFormatException if the given value cannot be parsed.
      */
     private Double parseDouble(final String value) throws NumberFormatException {
         return shared(Double.valueOf(value));
@@ -869,7 +869,7 @@ final class MetadataReader extends MetadataBuilder {
         /*
          * Create the Coordinate Reference System. We normally have only one of UTM or Polar Stereographic,
          * but this block is nevertheless capable to take both (such metadata are likely to be invalid, but
-         * we can not guess which one of the two CRS is correct).
+         * we cannot guess which one of the two CRS is correct).
          */
         if (datum != null) {
             if (utmZone > 0) {

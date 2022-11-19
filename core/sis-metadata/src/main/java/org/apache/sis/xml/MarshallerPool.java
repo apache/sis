@@ -154,7 +154,7 @@ public class MarshallerPool {
      * or {@link #createUnmarshaller()} methods instead.</p>
      *
      * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
-     * @throws JAXBException if the JAXB context can not be created.
+     * @throws JAXBException if the JAXB context cannot be created.
      */
     public MarshallerPool(final Map<String,?> properties) throws JAXBException {
         /*
@@ -177,7 +177,7 @@ public class MarshallerPool {
      *
      * @param  context     the JAXB context.
      * @param  properties  the properties to be given to the (un)marshaller, or {@code null} if none.
-     * @throws JAXBException if the marshaller pool can not be created.
+     * @throws JAXBException if the marshaller pool cannot be created.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})          // Generic array creation
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {

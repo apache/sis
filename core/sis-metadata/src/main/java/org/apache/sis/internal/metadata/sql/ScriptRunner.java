@@ -352,7 +352,7 @@ public class ScriptRunner implements AutoCloseable {
      * Returns the connection to the database.
      *
      * @return the connection.
-     * @throws SQLException if the connection can not be obtained.
+     * @throws SQLException if the connection cannot be obtained.
      */
     protected final Connection getConnection() throws SQLException {
         return statement.getConnection();

@@ -83,7 +83,7 @@ public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParam
      *
      * @see CC_GeneralOperationParameter#getElement()
      */
-    @XmlElements({  // We can not use @XmlElementRef because we have no public AbstractParameterValue parent class.
+    @XmlElements({  // We cannot use @XmlElementRef because we have no public AbstractParameterValue parent class.
         @XmlElement(name = "ParameterValue",      type = DefaultParameterValue.class),
         @XmlElement(name = "ParameterValueGroup", type = DefaultParameterValueGroup.class)
     })

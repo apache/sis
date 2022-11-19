@@ -153,7 +153,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * A flag for <code>{@linkplain #addView(Class, Object, Class, byte) addView}(…, view, source, flags)</code>
-     * telling that {@code view} can not be reset, so it should be set to {@code null} instead. This implies
+     * telling that {@code view} cannot be reset, so it should be set to {@code null} instead. This implies
      * that a new view of the same type will be recreated next time it will be requested.
      *
      * <p>When this flag is set, the {@link #CASCADE_ON_RESET} should usually be set at the same time.</p>
@@ -163,7 +163,7 @@ public class StorageConnector implements Serializable {
     /**
      * Handler to {@code StorageConnector.createFoo()} methods associated to given storage types.
      * Each {@code createFoo()} method may be invoked once for opening an input stream, character
-     * reader, database connection, <i>etc</i> from user-supplied path, URI, <i>etc</i>.
+     * reader, database connection, <i>etc</i> from user supplied path, URI, <i>etc</i>.
      *
      * @param  <S>  the type of input (source) created by this {@code Opener} instance.
      */
@@ -268,7 +268,7 @@ public class StorageConnector implements Serializable {
     /**
      * Wraps an instance of @link InputStream}, {@link DataInput}, {@link Reader}, <i>etc.</i> together with additional
      * information about other objects that are coupled with the wrapped object. For example if a {@link Reader} is a
-     * wrapper around the user-supplied {@link InputStream}, then those two objects will be wrapped in {@code Coupled}
+     * wrapper around the user supplied {@link InputStream}, then those two objects will be wrapped in {@code Coupled}
      * instances together with information about how they are related
      *
      * One purpose of {@code Coupled} information is to keep trace of objects which will need to be closed by the
@@ -463,7 +463,7 @@ public class StorageConnector implements Serializable {
             }
             if ((cascade & CLEAR_ON_RESET) != 0) {
                 /*
-                 * If the view can not be reset, in some cases we can discard it and recreate a new view when
+                 * If the view cannot be reset, in some cases we can discard it and recreate a new view when
                  * first needed. The `isValid` flag is left to false for telling that a new value is requested.
                  */
                 view = null;
@@ -610,7 +610,7 @@ public class StorageConnector implements Serializable {
      * The object can be of any type, but the class javadoc lists the most typical ones.
      *
      * @return the input/output object as a URL, file, image input stream, <i>etc.</i>.
-     * @throws DataStoreException if the storage object has already been used and can not be reused.
+     * @throws DataStoreException if the storage object has already been used and cannot be reused.
      *
      * @see #getStorageAs(Class)
      */
@@ -929,7 +929,7 @@ public class StorageConnector implements Serializable {
     /**
      * Resets the root {@link #storage} object.
      *
-     * @throws DataStoreException if the storage can not be reset.
+     * @throws DataStoreException if the storage cannot be reset.
      */
     private void reset() throws DataStoreException {
         if (views != null && !views.isEmpty() && !reset(views.get(null))) {
@@ -1107,7 +1107,7 @@ public class StorageConnector implements Serializable {
         } else {
             /*
              * If no ChannelDataInput has been created by the above code, get the input as an ImageInputStream and
-             * read an arbitrary amount of bytes. Read only a small amount of bytes because, at the contrary of the
+             * read an arbitrary number of bytes. Read only a small amount of bytes because, at the contrary of the
              * buffer created in `createChannelDataInput(boolean)`, the buffer created here is unlikely to be used
              * for the reading process after the recognition of the file format.
              */
@@ -1118,7 +1118,7 @@ public class StorageConnector implements Serializable {
                 final int n = in.read(buffer);
                 in.reset();
                 if (n >= 1) {
-                    // Can not invoke asReadOnly() because `prefetch()` needs to be able to write in it.
+                    // Cannot invoke asReadOnly() because `prefetch()` needs to be able to write in it.
                     asByteBuffer = ByteBuffer.wrap(buffer).order(in.getByteOrder());
                     asByteBuffer.limit(n);
                 }

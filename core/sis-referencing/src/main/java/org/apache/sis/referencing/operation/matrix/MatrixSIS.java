@@ -468,7 +468,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 }
                 /*
                  * If a value is exactly 1, then all other values should be exactly zero.
-                 * We observe that the other values are sometime close to 0.5 ULP of 1.
+                 * We observe that the other values are sometimes close to 0.5 ULP of 1.
                  * Forcing those values to 0 can help the caller to apply optimizations.
                  */
                 if (rowOfOne >= 0) {

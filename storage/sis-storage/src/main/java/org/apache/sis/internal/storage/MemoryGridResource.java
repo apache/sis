@@ -54,7 +54,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
      * Creates a new coverage stored in memory.
      *
      * @param  parent    listeners of the parent resource, or {@code null} if none.
-     * @param  coverage  stored coverage retained as-is (not copied). Can not be null.
+     * @param  coverage  stored coverage retained as-is (not copied). Cannot be null.
      */
     public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage) {
         super(parent, false);

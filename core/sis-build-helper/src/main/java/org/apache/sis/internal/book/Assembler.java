@@ -139,7 +139,7 @@ public final class Assembler {
      * Creates a new assembler for the given input and output files.
      *
      * @param  input   the input file (e.g. {@code "sis-site/main/source/developer-guide/index.html"}).
-     * @throws ParserConfigurationException if this constructor can not build the XML document.
+     * @throws ParserConfigurationException if this constructor cannot build the XML document.
      * @throws IOException if an error occurred while reading the file.
      * @throws SAXException if an error occurred while parsing the XML.
      * @throws BookException if a logical error occurred while initializing the assembler.

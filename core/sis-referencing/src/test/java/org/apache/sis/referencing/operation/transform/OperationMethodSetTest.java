@@ -138,7 +138,7 @@ public final strictfp class OperationMethodSetTest extends TestCase {
         /*
          * Mercator case.
          *   - Intentionally start the iteration without checking 'hasNext()' - the iterator shall be robust to that.
-         *   - Intentionally start an other iteration (indirectly) in the middle of the first one.
+         *   - Intentionally start another iteration (indirectly) in the middle of the first one.
          */
         final Iterator<OperationMethod> iterator = mercators.iterator();
         assertSame(merA, iterator.next());

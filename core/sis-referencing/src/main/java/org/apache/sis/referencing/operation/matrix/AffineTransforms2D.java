@@ -59,7 +59,7 @@ public final class AffineTransforms2D extends Static {
      *
      * @param  transform  the transform to convert, or {@code null}.
      * @return the transform argument if it can be safely casted (including {@code null} argument) or converted.
-     * @throws IllegalArgumentException if the given transform can not be casted or converted.
+     * @throws IllegalArgumentException if the given transform cannot be casted or converted.
      *
      * @see #toMathTransform(AffineTransform)
      */
@@ -340,7 +340,7 @@ public final class AffineTransforms2D extends Static {
      * This method assumes that the specified affine transform is built from arbitrary translations, scales or
      * rotations, but no shear. It returns {@code +1} if the (<var>x</var>, <var>y</var>) axis order seems to be
      * preserved, {@code -1} if the transform seems to swap axis to the (<var>y</var>, <var>x</var>) axis order,
-     * or {@code 0} if this method can not make a decision.
+     * or {@code 0} if this method cannot make a decision.
      *
      * @param  transform  the affine transform to inspect.
      * @return {@code true} if the given transform seems to swap axis order.
@@ -368,7 +368,7 @@ public final class AffineTransforms2D extends Static {
      *
      * @param  transform  the affine transform to inspect.
      * @return an estimation of the rotation angle in radians,
-     *         or {@link Double#NaN NaN} if the angle can not be estimated.
+     *         or {@link Double#NaN NaN} if the angle cannot be estimated.
      */
     public static double getRotation(final AffineTransform transform) {
         ArgumentChecks.ensureNonNull("transform", transform);

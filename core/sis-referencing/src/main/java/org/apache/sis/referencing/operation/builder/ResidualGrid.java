@@ -149,7 +149,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * but may need to be revisited in the future.</p>
      *
      * <p>This array is {@code null} if no period has been specified, or if a period has been specified
-     * but we can not convert it from CRS units to a constant number of cells.</p>
+     * but we cannot convert it from CRS units to a constant number of cells.</p>
      *
      * @see LocalizationGridBuilder#periods
      * @see #replaceOutsideGridCoordinates(double[])
@@ -294,7 +294,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * Current implementation can be used only when the number of grid dimensions is {@value #INTERPOLATED_DIMENSIONS}.
      * If a grid has more dimensions, then tensors would need to be used instead of matrices.
      *
-     * <p>This implementation can not be moved to the {@link DatumShiftGrid} parent class because this class assumes
+     * <p>This implementation cannot be moved to the {@link DatumShiftGrid} parent class because this class assumes
      * that the translation vectors are added to the source coordinates. This is not always true; for example France
      * Geocentric interpolations add the translation to coordinates converted to geocentric coordinates.</p>
      *

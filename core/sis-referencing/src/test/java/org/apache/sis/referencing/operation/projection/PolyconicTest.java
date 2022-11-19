@@ -144,7 +144,7 @@ public final strictfp class PolyconicTest extends MapProjectionTestCase {
     /**
      * Runs the test defined in the GeoAPI-conformance module.
      *
-     * @throws FactoryException   if the transform can not be created.
+     * @throws FactoryException   if the transform cannot be created.
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test

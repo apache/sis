@@ -296,7 +296,7 @@ check:      if (data != null) {
         }
 
         /**
-         * Returns whether the node can not have children.
+         * Returns whether the node cannot have children.
          */
         @Override
         public boolean isLeaf() {

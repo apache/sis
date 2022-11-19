@@ -109,7 +109,7 @@ public final class DataStoreOpener extends Task<DataStore> {
 
     /**
      * Key to use in the {@link CACHE}, or {@code null} if the resource should not be cached.
-     * If possible, this is a {@link Path} containing the real path. If we can not perform
+     * If possible, this is a {@link Path} containing the real path. If we cannot perform
      * such conversion, then it is either {@code null} or the same object than {@link #source}.
      */
     private final Object key;
@@ -195,7 +195,7 @@ public final class DataStoreOpener extends Task<DataStore> {
     }
 
     /**
-     * Returns the input filename, or "unknown" if we can not infer the filename.
+     * Returns the input filename, or "unknown" if we cannot infer the filename.
      * This is used for reporting errors.
      *
      * @return the input file name for message purpose.
@@ -323,7 +323,7 @@ public final class DataStoreOpener extends Task<DataStore> {
      */
     public static boolean removeAndClose(final DataStore toClose, final Node owner) {
         /*
-         * A simpler code would be as below, but can not be used at this time because our
+         * A simpler code would be as below, but cannot be used at this time because our
          * Cache.entrySet() implementation does not support the Iterator.remove() operation.
          *
          * CACHE.values().removeIf((v) -> v == toClose);

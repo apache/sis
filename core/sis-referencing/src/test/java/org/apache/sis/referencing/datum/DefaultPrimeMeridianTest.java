@@ -79,7 +79,7 @@ public final strictfp class DefaultPrimeMeridianTest extends TestCase {
 
     /**
      * Tests WKT formatting of a prime meridian with sexagesimal units.
-     * Since those units can not be formatted in a {@code UNIT["name", scale]} element,
+     * Since those units cannot be formatted in a {@code UNIT["name", scale]} element,
      * the formatter should convert them to a formattable unit like degrees.
      *
      * @since 0.6

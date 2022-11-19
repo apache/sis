@@ -62,7 +62,7 @@ public enum DataType {
 
     /**
      * Signed 32-bits data. Also used for storing unsigned data; the Java2D API such as
-     * {@link java.awt.image.Raster#getSample(int, int, int)} can not distinguish the two cases.
+     * {@link java.awt.image.Raster#getSample(int, int, int)} cannot distinguish the two cases.
      */
     INT,
 
@@ -298,7 +298,7 @@ public enum DataType {
      *   <li>{@link #FLOAT} for all other types.</li>
      * </ul>
      *
-     * The promotion of integer values to floating point values is sometime necessary
+     * The promotion of integer values to floating point values is sometimes necessary
      * when the image may contain {@link Float#NaN} values.
      *
      * @return the smallest of {@link #FLOAT} or {@link #DOUBLE} types

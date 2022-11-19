@@ -133,7 +133,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
 
     /**
      * Transform from grid coordinates to the CRS where wraparound axes may exist.
-     * It is sometime the same transform than {@code gridToCRS} but not always.
+     * It is sometimes the same transform than {@code gridToCRS} but not always.
      * It may differ for example if a projected CRS has been replaced by a geographic CRS.
      */
     private MathTransform gridToWraparound;
@@ -359,8 +359,8 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      *         Callers should not assume that the array content stay valid for a long time.
      * @throws PointOutsideCoverageException if the evaluation failed because the input point
      *         has invalid coordinates and the {@link #isNullIfOutside()} flag is {@code false}.
-     * @throws CannotEvaluateException if the values can not be computed at the specified coordinates
-     *         for another reason. This exception may be thrown if the coverage data type can not be
+     * @throws CannotEvaluateException if the values cannot be computed at the specified coordinates
+     *         for another reason. This exception may be thrown if the coverage data type cannot be
      *         converted to {@code double} by an identity or widening conversion.
      *         Subclasses may relax this constraint if appropriate.
      */
@@ -429,7 +429,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @throws IncompleteGridGeometryException if the {@linkplain GridCoverage#getGridGeometry() grid geometry}
      *         does not define a "grid to CRS" transform, or if the given point has a non-null CRS but the
      *         coverage does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
-     * @throws TransformException if the given coordinates can not be transformed.
+     * @throws TransformException if the given coordinates cannot be transformed.
      *
      * @see FractionalGridCoordinates#toPosition(MathTransform)
      */
@@ -451,7 +451,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @param  point  the geospatial position.
      * @return the given position converted to grid coordinates (possibly out of grid bounds).
      * @throws FactoryException if no operation is found form given point CRS to coverage CRS.
-     * @throws TransformException if the given position can not be converted.
+     * @throws TransformException if the given position cannot be converted.
      */
     final FractionalGridCoordinates.Position toGridPosition(final DirectPosition point)
             throws FactoryException, TransformException

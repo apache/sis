@@ -35,7 +35,7 @@ import javax.xml.namespace.QName;
 
 /**
  * Base class of events that are wrappers over the events emitted during the reading or writing of an XML document.
- * Those wrappers are used for changing the namespace and sometime the name of XML elements or attributes.
+ * Those wrappers are used for changing the namespace and sometimes the name of XML elements or attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -205,7 +205,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
 
     /**
      * Wrapper over an element emitted during the reading or writing of an XML document.
-     * This wrapper is used for changing the namespace and sometime the name of the element.
+     * This wrapper is used for changing the namespace and sometimes the name of the element.
      */
     static final class End extends TransformedEvent<EndElement> implements EndElement {
         /** The namespaces, may or may not be the same than the wrapped event. */
@@ -228,7 +228,7 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
 
     /**
      * Wrapper over an element emitted during the reading or writing of an XML document.
-     * This wrapper is used for changing the namespace and sometime the name of the element.
+     * This wrapper is used for changing the namespace and sometimes the name of the element.
      * The attributes may also be modified.
      */
     static class Start extends TransformedEvent<StartElement> implements StartElement {

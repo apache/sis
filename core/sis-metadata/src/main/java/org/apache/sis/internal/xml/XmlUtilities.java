@@ -73,7 +73,7 @@ public final class XmlUtilities extends SystemListener {
      * Returns the factory for creating {@link javax.xml.datatype} objects.
      *
      * @return the factory (never {@code null}).
-     * @throws DatatypeConfigurationException if the factory can not be created.
+     * @throws DatatypeConfigurationException if the factory cannot be created.
      */
     public static DatatypeFactory getDatatypeFactory() throws DatatypeConfigurationException {
         DatatypeFactory f = factory;
@@ -138,7 +138,7 @@ public final class XmlUtilities extends SystemListener {
      * @param  context  the current (un)marshalling context, or {@code null} if none.
      * @param  date     the date to convert to a XML calendar, or {@code null}.
      * @return the XML calendar, or {@code null} if {@code date} was null.
-     * @throws DatatypeConfigurationException if the factory can not be created.
+     * @throws DatatypeConfigurationException if the factory cannot be created.
      */
     public static XMLGregorianCalendar toXML(final Context context, final Date date) throws DatatypeConfigurationException {
         if (date != null) {

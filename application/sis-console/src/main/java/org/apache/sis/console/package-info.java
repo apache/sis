@@ -40,7 +40,7 @@
  *   java org.apache.sis.console.Command about localhost:1099
  * }
  *
- * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is an other
+ * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is another
  * JVM instance running on the local machine. Otherwise this property can be omitted for debugging purpose.
  * For production environment, see the security settings documented on the
  * <a href="https://docs.oracle.com/en/java/javase/18/management/monitoring-and-management-using-jmx-technology.html">Monitoring

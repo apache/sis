@@ -133,7 +133,7 @@ abstract class DaemonThread extends Thread {
      * @param  thread         the first thread in the chain of threads to kill.
      * @param  stopWaitingAt  a {@link System#nanoTime()} value telling when to stop waiting.
      *         This is used for preventing shutdown process to block an indefinite amount of time.
-     * @throws InterruptedException if an other thread invoked {@link #interrupt()} while
+     * @throws InterruptedException if another thread invoked {@link #interrupt()} while
      *         we were waiting for the daemon threads to die.
      *
      * @see Threads#shutdown(long)

@@ -151,7 +151,7 @@ public final class Doclet extends StandardDoclet {
                 break;
             }
         }
-        throw new FileNotFoundException("Can not locate \"src/main/javadoc\" from the root of this Maven project.");
+        throw new FileNotFoundException("Cannot locate \"src/main/javadoc\" from the root of this Maven project.");
     }
 
     /**

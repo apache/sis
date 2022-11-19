@@ -57,7 +57,7 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Can not change a relative path to an absolute path.
+         * Cannot change a relative path to an absolute path.
          */
         public static final short CanNotChangeToAbsolutePath = 1;
 
@@ -82,7 +82,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MustBeAbsolutePath = 6;
 
         /**
-         * Specified path can not be the root.
+         * Specified path cannot be the root.
          */
         public static final short MustHaveKeyComponent = 7;
 
@@ -117,7 +117,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);

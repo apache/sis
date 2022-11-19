@@ -193,7 +193,7 @@ public final strictfp class UnitsTest extends TestCase {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-413">SIS-413</a>
      *
-     * @throws IncommensurableException if the conversion can not be applied.
+     * @throws IncommensurableException if the conversion cannot be applied.
      */
     @Test
     public void testSalinityConversionFactor() throws IncommensurableException {
@@ -204,7 +204,7 @@ public final strictfp class UnitsTest extends TestCase {
     /**
      * Tests the conversion factor of {@link Units#DECIBEL}.
      *
-     * @throws IncommensurableException if the conversion can not be applied.
+     * @throws IncommensurableException if the conversion cannot be applied.
      *
      * @see <a href="https://en.wikipedia.org/wiki/Decibel#Conversions">Decibel on Wikipedia</a>
      */

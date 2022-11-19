@@ -88,7 +88,7 @@ public final class LocaleAndCharset implements Node {
     }
 
     /**
-     * Considers this node as non-editable since it represents the key in a map, and keys can not be modified
+     * Considers this node as non-editable since it represents the key in a map, and keys cannot be modified
      * through the {@link Map.Entry} interface. However {@link Child} will be editable for the value column.
      */
     @Override
@@ -154,7 +154,7 @@ public final class LocaleAndCharset implements Node {
     }
 
     /**
-     * Always throws an exception since we can not edit the key of a map entry. Attempts to edit other columns
+     * Always throws an exception since we cannot edit the key of a map entry. Attempts to edit other columns
      * than the value column will also cause an exception to be thrown, but the error message provided by the
      * wrapped node is more detailed.
      */

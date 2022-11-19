@@ -298,7 +298,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @return tiles decoded from the TIFF file.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if a logical error occurred.
-     * @throws RuntimeException if the Java2D image can not be created for another reason
+     * @throws RuntimeException if the Java2D image cannot be created for another reason
      *         (too many exception types to list them all).
      */
     @Override
@@ -439,7 +439,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @return a single tile decoded from the GeoTIFF file.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if a logical error occurred.
-     * @throws RuntimeException if the Java2D image can not be created for another reason
+     * @throws RuntimeException if the Java2D image cannot be created for another reason
      *         (too many exception types to list them all).
      *
      * @see DataCube#canReadDirect(TiledGridResource.Subset)
@@ -461,7 +461,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final long[] size = new long[] {multiplyFull(sourcePixelStride, getTileSize(X_DIMENSION)), getTileSize(Y_DIMENSION)};
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
-         * group of `sourcePixelStride` values. Note that in such case, we can not handle subsampling on the first axis.
+         * group of `sourcePixelStride` values. Note that in such case, we cannot handle subsampling on the first axis.
          * Such case should be handled by the `CompressedSubset` subclass instead, even if there is no compression.
          */
         assert sourcePixelStride == 1 || subsampling[X_DIMENSION] == 1;

@@ -23,11 +23,11 @@ import org.apache.sis.feature.FeatureOperations;
 
 /**
  * Roles that can be associated to some attributes for instructing {@code FeatureTypeBuilder}
- * how to generate pre-defined operations. Those pre-defined operations are:
+ * how to generate predefined operations. Those predefined operations are:
  *
  * <ul>
  *   <li>A {@linkplain FeatureOperations#compound compound operation} for generating a unique identifier
- *       from an arbitrary amount of attribute values.</li>
+ *       from an arbitrary number of attribute values.</li>
  *   <li>A {@linkplain FeatureOperations#link link operation} for referencing a geometry to be used as the
  *       <em>default</em> geometry.</li>
  *   <li>An {@linkplain FeatureOperations#envelope operation} for computing the bounding box of all geometries
@@ -48,7 +48,7 @@ import org.apache.sis.feature.FeatureOperations;
 public enum AttributeRole {
     /**
      * Attribute value will be part of a unique identifier for the feature instance.
-     * An arbitrary amount of attributes can be flagged as identifier components:
+     * An arbitrary number of attributes can be flagged as identifier components:
      *
      * <ul>
      *   <li>If no attribute has this role, then no attribute is marked as feature identifier.</li>
@@ -66,7 +66,7 @@ public enum AttributeRole {
 
     /**
      * Attribute value will be flagged as the <em>default</em> geometry.
-     * Feature can have an arbitrary amount of geometry attributes,
+     * Feature can have an arbitrary number of geometry attributes,
      * but only one can be flagged as the default geometry.
      */
     DEFAULT_GEOMETRY;

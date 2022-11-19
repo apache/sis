@@ -187,7 +187,7 @@ public abstract class PlanarImage implements RenderedImage {
      * invalid in at least one band.</p>
      *
      * <p>Note that it is usually not necessary to use masks explicitly in Apache SIS because missing values
-     * are represented by {@link Float#NaN}. This property is provided for algorithms that can not work with
+     * are represented by {@link Float#NaN}. This property is provided for algorithms that cannot work with
      * NaN values.</p>
      */
     public static final String MASK_KEY = "org.apache.sis.Mask";

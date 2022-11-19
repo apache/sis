@@ -50,7 +50,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests a very simple case where an exact answer is expected.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     public void testMinimalist1D() throws FactoryException {
@@ -76,7 +76,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * in which case we expect an exact solution without rounding errors at the scale of the {@code double}
      * type. This is possible because SIS implementation uses double-double arithmetic.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     public void testMinimalist2D() throws FactoryException {
@@ -110,7 +110,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests a two-dimensional case where sources coordinates are explicitly given.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      *
      * @since 0.8
      */
@@ -124,7 +124,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * Same test than {@link #testExplicitSource2D()}, but using the
      * {@link LinearTransformBuilder#LinearTransformBuilder(int...)} constructor.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      *
      * @since 0.8
      */
@@ -193,7 +193,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests with a random number of points with an exact solution expected.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     @DependsOnMethod("testMinimalist1D")
@@ -211,7 +211,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * because there is always a small probability that truly random points are all colinear, in which case
      * the test would fail. Even if the probability is low, we do not take the risk of random build failures.</p>
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     @DependsOnMethod("testMinimalist2D")
@@ -225,7 +225,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests with a random number of points and a random errors in target points.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     @DependsOnMethod("testExact1D")
@@ -245,7 +245,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * the test would fail. Even if the probability is low, we do not take the risk of such random build
      * failures.</p>
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     @DependsOnMethod("testExact2D")
@@ -418,7 +418,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
      * and verify that we can get a linear approximation from it for a small region.
      *
      * @throws TransformException if an error occurred during map projection.
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     public void testSetPointsFromTransform() throws TransformException, FactoryException {
@@ -450,7 +450,7 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests the effect of {@link LinearTransformBuilder#addLinearizers(Map, int...)}.
      *
-     * @throws FactoryException if the transform can not be created.
+     * @throws FactoryException if the transform cannot be created.
      */
     @Test
     public void testLinearizers() throws FactoryException {

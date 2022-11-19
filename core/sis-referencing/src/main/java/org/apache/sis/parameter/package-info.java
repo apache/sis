@@ -50,7 +50,7 @@
  *       {@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getDefaultValue() default value} and a
  *       {@linkplain org.apache.sis.parameter.DefaultParameterValue#getUnit() unit of measurement}.</li>
  *   <li>Some parameters are mandatory ({@linkplain org.apache.sis.parameter.DefaultParameterDescriptor#getMinimumOccurs()
- *       minimum occurrence} = 1), meaning that they can not be removed from the group.
+ *       minimum occurrence} = 1), meaning that they cannot be removed from the group.
  *       They can be left to their default value however.</li>
  *   <li>Group may contain other groups.</li>
  * </ul>

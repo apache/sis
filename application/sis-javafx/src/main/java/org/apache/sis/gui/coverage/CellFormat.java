@@ -81,7 +81,7 @@ final class CellFormat extends SimpleStringProperty {
      * that the same value is repeated for many cells, especially in area containing fill or missing values.
      * If the value is the same, we will reuse the {@link #lastValueAsText}.
      *
-     * <p>Note: the use of {@code double} is sufficient since rendered images can not store {@code long} values,
+     * <p>Note: the use of {@code double} is sufficient since rendered images cannot store {@code long} values,
      * so there is no precision lost that we could have with conversions from {@code long} to {@code double}.</p>
      */
     private double lastValue;
@@ -198,7 +198,7 @@ final class CellFormat extends SimpleStringProperty {
             return null;
         }
         /*
-         * Create a few pre-defined choices of patterns with various number of fraction digits.
+         * Create a few predefined choices of patterns with various number of fraction digits.
          */
         final int min = cellFormat.getMinimumFractionDigits();
         final int max = cellFormat.getMaximumFractionDigits();

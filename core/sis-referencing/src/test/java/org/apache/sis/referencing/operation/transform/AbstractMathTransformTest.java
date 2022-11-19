@@ -208,14 +208,14 @@ public final strictfp class AbstractMathTransformTest extends TestCase {
                                  100/denominator + "% of failures:", expected, completed);
                     /*
                      * TIP: if the above assertion fails, make sure that the frequencies declared
-                     *      in the 'denominators' array are not to close to the cutoff frequency.
+                     *      in the 'denominators' array are not too close to the cutoff frequency.
                      */
                     if (completed) {
                         completedCount++;
                     } else {
                         /*
                          * If the transform has given up, then there is no guarantee about the state
-                         * of the destination array so we can not continue the tests in this run.
+                         * of the destination array so we cannot continue the tests in this run.
                          */
                         tr.failures.clear();
                         abandonCount++;

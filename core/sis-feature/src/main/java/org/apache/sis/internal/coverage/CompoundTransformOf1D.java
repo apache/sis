@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.transform.IterationStrategy;
 
 
 /**
- * A transform composed of an arbitrary amount of juxtaposed one-dimensional transforms.
+ * A transform composed of an arbitrary number of juxtaposed one-dimensional transforms.
  * This is an optimization for a common case when using transforms as transfer functions
  * in grid coverages.
  *

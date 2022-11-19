@@ -109,7 +109,7 @@ class DatumShiftGridLoader {
      *
      * @param  n  the minimal number of bytes needed in the {@linkplain #buffer}.
      * @throws EOFException if the channel has reached the end of stream.
-     * @throws IOException if an other kind of error occurred while reading.
+     * @throws IOException if another kind of error occurred while reading.
      */
     final void ensureBufferContains(int n) throws IOException {
         assert n >= 0 && n <= buffer.capacity() : n;

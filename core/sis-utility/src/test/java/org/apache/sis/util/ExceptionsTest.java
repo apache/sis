@@ -42,18 +42,18 @@ public final strictfp class ExceptionsTest extends TestCase {
         final String lineSeparator = System.lineSeparator();
         final FileNotFoundException cause = new FileNotFoundException("MisingFile.txt");
         cause.initCause(new IOException("Disk is not mounted."));
-        final Exception e = new Exception("Can not find “MisingFile.txt”.", cause);
+        final Exception e = new Exception("Cannot find “MisingFile.txt”.", cause);
         /*
          * The actual sequence of messages (with their cause is):
          *
-         *    Can not find “MisingFile.txt”
+         *    Cannot find “MisingFile.txt”
          *    MisingFile.txt
          *    Disk is not mounted.
          *
          * But the second line shall be omitted because it duplicates the first line.
          */
         String message = Exceptions.formatChainedMessages(Locale.ENGLISH, null, e);
-        assertEquals("Can not find “MisingFile.txt”." + lineSeparator +
+        assertEquals("Cannot find “MisingFile.txt”." + lineSeparator +
                      "Caused by IOException: Disk is not mounted.",
                      message);
         /*
@@ -61,7 +61,7 @@ public final strictfp class ExceptionsTest extends TestCase {
          */
         message = Exceptions.formatChainedMessages(Locale.ENGLISH, "Error while creating the data store.", e);
         assertEquals("Error while creating the data store." + lineSeparator +
-                     "Caused by Exception: Can not find “MisingFile.txt”." + lineSeparator +
+                     "Caused by Exception: Cannot find “MisingFile.txt”." + lineSeparator +
                      "Caused by IOException: Disk is not mounted.",
                      message);
     }

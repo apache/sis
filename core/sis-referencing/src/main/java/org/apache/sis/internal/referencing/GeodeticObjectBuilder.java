@@ -199,7 +199,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @param  inverseFlattening  eccentricity of ellipsoid. An infinite value creates a sphere.
      * @param  units              linear units of major axis.
      * @return {@code this}, for method call chaining.
-     * @throws FactoryException if the datum can not be created.
+     * @throws FactoryException if the datum cannot be created.
      */
     public GeodeticObjectBuilder setFlattenedSphere(final String name, final double semiMajorAxis,
             final double inverseFlattening, final Unit<Length> units) throws FactoryException
@@ -228,7 +228,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *
      * @param  name  name of the conversion method.
      * @return {@code this}, for method call chaining.
-     * @throws FactoryException if the operation method of the given name can not be obtained.
+     * @throws FactoryException if the operation method of the given name cannot be obtained.
      */
     public GeodeticObjectBuilder setConversionMethod(final String name) throws FactoryException {
         if (method != null) {
@@ -257,7 +257,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      *
      * @param  parameters  the map projection parameter values.
      * @return {@code this}, for method calls chaining.
-     * @throws FactoryException if the operation method can not be obtained.
+     * @throws FactoryException if the operation method cannot be obtained.
      */
     public GeodeticObjectBuilder setConversion(final ParameterValueGroup parameters) throws FactoryException {
         ArgumentChecks.ensureNonNull("parameters", parameters);
@@ -312,7 +312,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @param  mapper     mapper from old parameters to new parameters, or {@code null} for verbatim copy.
      * @return {@code this}, for method calls chaining.
      * @throws IllegalStateException if {@link #setConversionMethod(String)} has not been invoked before this method.
-     * @throws FactoryException if the operation method of the given name can not be obtained.
+     * @throws FactoryException if the operation method of the given name cannot be obtained.
      * @throws ClassCastException if a parameter value of the old projection is not an instance of {@link ParameterValue}
      *         (this restriction may change in a future version).
      */
@@ -394,7 +394,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @param  latitude   the latitude in the center of the desired projection.
      * @param  longitude  the longitude in the center of the desired projection.
      * @return {@code this}, for method calls chaining.
-     * @throws FactoryException if the operation method for the Transverse Mercator projection can not be obtained.
+     * @throws FactoryException if the operation method for the Transverse Mercator projection cannot be obtained.
      *
      * @see CommonCRS#universal(double, double)
      */
@@ -432,7 +432,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @param  north  {@code true} for North pole, or {@code false} for South pole.
      * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method for the Polar Stereographic (variant A)
-     *         projection can not be obtained.
+     *         projection cannot be obtained.
      */
     public GeodeticObjectBuilder applyPolarStereographic(final boolean north) throws FactoryException {
         setConversionMethod(PolarStereographicA.NAME);
@@ -545,7 +545,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public TemporalCRS createTemporalCRS(final Date origin, final Unit<Time> unit) throws FactoryException {
         /*
-         * Try to use one of the pre-defined datum and coordinate system if possible.
+         * Try to use one of the predefined datum and coordinate system if possible.
          * This not only saves a little bit of memory, but also provides better names.
          */
         TimeCS cs = null;
@@ -569,7 +569,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             }
         }
         /*
-         * Create the datum and coordinate system before the CRS if we were not able to use a pre-defined object.
+         * Create the datum and coordinate system before the CRS if we were not able to use a predefined object.
          * In the datum case, we will use the same metadata than the CRS (domain of validity, scope, etc.) except
          * the identifier and the remark.
          */

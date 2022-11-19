@@ -20,7 +20,7 @@ import java.io.IOException;
 
 
 /**
- * Thrown when an input stream or a channel can not modify its position to the given value.
+ * Thrown when an input stream or a channel cannot modify its position to the given value.
  * If may be because the given position is after the end of file, but not necessarily.
  * This exception may also be thrown by implementations that cache a portion of a file
  * and can only seek inside that portion.

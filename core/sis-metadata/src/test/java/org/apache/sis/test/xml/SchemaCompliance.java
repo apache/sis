@@ -113,7 +113,7 @@ public final strictfp class SchemaCompliance extends SchemaInformation {
      * @param  directory  the directory to scan for classes, relative to class root directory.
      * @throws IOException if an error occurred while reading files or schemas.
      * @throws ClassNotFoundException if an error occurred while loading a {@code "*.class"} file.
-     * @throws ParserConfigurationException if {@link javax.xml.parsers.DocumentBuilder} can not be created.
+     * @throws ParserConfigurationException if {@link javax.xml.parsers.DocumentBuilder} cannot be created.
      * @throws SAXException if an error occurred while parsing the XSD file.
      * @throws SchemaException if a XSD file does not comply with our assumptions,
      *         or a JAXB annotation failed a compliance check.

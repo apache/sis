@@ -216,7 +216,7 @@ public class MetadataWriter extends MetadataSource {
                     Errors.Keys.IllegalArgumentClass_2, "metadata", metadata.getClass()));
         } catch (SQLException e) {
             /*
-             * Derby sometime wraps SQLException into another SQLException.  For making the stack strace a
+             * Derby sometimes wraps SQLException into another SQLException.  For making the stack strace a
              * little bit simpler, keep only the root cause provided that the exception type is compatible.
              */
             throw new MetadataStoreException(e.getLocalizedMessage(), Exceptions.unwrap(e));
@@ -282,7 +282,7 @@ public class MetadataWriter extends MetadataSource {
         /*
          * Process to the table creation if it does not already exists. If the table has parents, they will be
          * created first. The latter will work only for database supporting table inheritance, like PostgreSQL.
-         * For other kind of database engine, we can not store metadata having parent interfaces.
+         * For other kind of database engine, we cannot store metadata having parent interfaces.
          */
         Boolean isChildTable = createTable(stmt, interfaceType, table, columns);
         if (isChildTable == null) {
@@ -323,7 +323,7 @@ public class MetadataWriter extends MetadataSource {
                 final boolean isCodeList = ControlledVocabulary.class.isAssignableFrom(rt);     // Accept also some enums.
                 if (isCodeList || standard.isMetadata(rt)) {
                     /*
-                     * Found a reference to an other metadata. Remind that column for creating a foreign key
+                     * Found a reference to another metadata. Remind that column for creating a foreign key
                      * constraint later, except if the return type is an abstract CodeList or Enum (in which
                      * case the reference could be to any CodeList or Enum table). Abstract CodeList or Enum
                      * may happen when the concrete class is not yet available in the GeoAPI version that we

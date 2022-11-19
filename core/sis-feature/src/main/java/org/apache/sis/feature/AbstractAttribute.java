@@ -491,7 +491,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *
      * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this attribute, the {@linkplain #getValue() value}
-     *         or one of its {@linkplain #characteristics() characteristics} can not be cloned.
+     *         or one of its {@linkplain #characteristics() characteristics} cannot be cloned.
      */
     @Override
     @SuppressWarnings({"CloneInNonCloneableClass", "unchecked"})

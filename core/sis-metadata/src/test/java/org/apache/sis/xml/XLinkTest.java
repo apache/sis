@@ -37,7 +37,7 @@ public final strictfp class XLinkTest extends TestCase {
     /**
      * Tests the automatic {@link XLink#getType()} detection.
      *
-     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
+     * @throws URISyntaxException if a test URI cannot be parsed (should not happen).
      */
     @Test
     public void testGetType() throws URISyntaxException {
@@ -50,49 +50,49 @@ public final strictfp class XLinkTest extends TestCase {
         assertEquals(XLink.Type.TITLE, link.getType());
         assertEquals("XLink[type=\"title\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setRole(new URI("org:apache:sis:role"));
         assertEquals(XLink.Type.EXTENDED, link.getType());
         assertEquals("XLink[type=\"extended\", role=\"org:apache:sis:role\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setTitle(new SimpleInternationalString("Some title"));
         assertEquals(XLink.Type.EXTENDED, link.getType());
         assertEquals("XLink[type=\"extended\", role=\"org:apache:sis:role\", title=\"Some title\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setLabel("SomeLabel");
         assertEquals(XLink.Type.RESOURCE, link.getType());
         assertEquals("XLink[type=\"resource\", role=\"org:apache:sis:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setHRef(new URI("org:apache:sis:href"));
         assertEquals(XLink.Type.LOCATOR, link.getType());
         assertEquals("XLink[type=\"locator\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setShow(XLink.Show.NEW);
         assertNull("Can't be Type.SIMPLE if a label is defined.", link.getType());
         assertEquals("XLink[href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setLabel(null);
         assertEquals(XLink.Type.SIMPLE, link.getType());
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setActuate(XLink.Actuate.ON_LOAD);
         assertEquals(XLink.Type.SIMPLE, link.getType());
         assertEquals("XLink[type=\"simple\", href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", actuate=\"onLoad\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
-        assertFalse("Hash code can not be zero.", hashCode == 0);
+        assertFalse("Hash code cannot be zero.", hashCode == 0);
         /*
          * Now freezes the XLink and ensures that it is really immutable.
          */
@@ -110,7 +110,7 @@ public final strictfp class XLinkTest extends TestCase {
     /**
      * Tests write operation, which should not be allowed for some type of link.
      *
-     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
+     * @throws URISyntaxException if a test URI cannot be parsed (should not happen).
      */
     @Test
     public void testWrite() throws URISyntaxException {
@@ -157,7 +157,7 @@ public final strictfp class XLinkTest extends TestCase {
     /**
      * Tests equality.
      *
-     * @throws URISyntaxException if a test URI can not be parsed (should not happen).
+     * @throws URISyntaxException if a test URI cannot be parsed (should not happen).
      */
     @Test
     public void testEquals() throws URISyntaxException {

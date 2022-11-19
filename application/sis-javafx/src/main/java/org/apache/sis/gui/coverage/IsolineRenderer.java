@@ -297,7 +297,7 @@ final class IsolineRenderer {
      * @param  gridToCRS  transform from pixel coordinates to geometry coordinates, or {@code null} if none.
      *                    Integer source coordinates are located at pixel centers.
      * @return result of isolines generation, or {@code null} if there are no isolines to compute.
-     * @throws TransformException if an interpolated point can not be transformed using the given transform.
+     * @throws TransformException if an interpolated point cannot be transformed using the given transform.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")      // Used only for debugging.
     static Future<Isolines[]> generate(final Snapshot[] snapshots, final RenderedImage data, final MathTransform gridToCRS)

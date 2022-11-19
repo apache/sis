@@ -43,7 +43,7 @@ import static java.util.logging.Logger.getLogger;
  * <ul>
  *   <li><b>Base units</b> are the 6 or 7 SI units used as building blocks for all other units.
  *       The base units are metre, second, kilogram, Kelvin degrees, Ampere and Candela,
- *       sometime with the addition of mole.</li>
+ *       sometimes with the addition of mole.</li>
  *   <li><b>Derived units</b> are products of base units raised to some power.
  *       For example "m/s" is a derived units.</li>
  *   <li><b>Alternate units</b> are dimensionless units handled as if they had a dimension.
@@ -109,7 +109,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * A code that identifies whether this unit is part of SI system, or outside SI but accepted for use with SI.
      * Value can be {@link UnitRegistry#SI}, {@link UnitRegistry#ACCEPTED}, other constants or 0 if unknown.
      *
-     * <p>This information may be approximate since we can not always guess correctly whether the result of
+     * <p>This information may be approximate since we cannot always guess correctly whether the result of
      * an operation is part of SI or not. Values given to the field may be adjusted in any future version.</p>
      *
      * <p>This information is not serialized because {@link #readResolve()} will replace the deserialized instance

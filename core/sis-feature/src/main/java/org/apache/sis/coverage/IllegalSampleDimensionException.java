@@ -18,7 +18,7 @@ package org.apache.sis.coverage;
 
 
 /**
- * Thrown when {@link SampleDimension} can not be created.
+ * Thrown when {@link SampleDimension} cannot be created.
  * The most common cause is overlapping {@linkplain Category#getSampleRange() ranges of sample values}.
  * This exception is caused by an illegal argument, but may happen at a later stage
  * (for example when {@link SampleDimension.Builder#build()} is invoked).

@@ -52,11 +52,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *       {@link #addName(CharSequence) addName(…)} methods defined in this class.</li>
  *
  *   <li><b>{@linkplain AbstractIdentifiedObject#getAlias() Aliases}:</b><br>
- *       {@code IdentifiedObject}s can optionally have an arbitrary amount of aliases, which are also specified
+ *       {@code IdentifiedObject}s can optionally have an arbitrary number of aliases, which are also specified
  *       by the {@code addName(…)} methods. Each call after the first one adds an alias.</li>
  *
  *   <li><b>{@linkplain AbstractIdentifiedObject#getIdentifiers() Identifiers}:</b><br>
- *       {@code IdentifiedObject}s can also have an arbitrary amount of identifiers, which are specified by any
+ *       {@code IdentifiedObject}s can also have an arbitrary number of identifiers, which are specified by any
  *       of the {@link #addIdentifier(String) addIdentifier(…)} methods. Like names, more than one identifier
  *       can be added by invoking the method many time.</li>
  *
@@ -318,7 +318,7 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Creates an identifier for the given authority. If and only if the given authority is the default one,
-     * then the new identifier will also contain the user-supplied code space and version (if any).
+     * then the new identifier will also contain the user supplied code space and version (if any).
      * The new identifier will be marked as deprecated if {@link #isDeprecated()} returns {@code true}.
      */
     private Identifier createIdentifier(final Citation authority, final String identifier) {
@@ -363,7 +363,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @param  key    the key of the property to set.
      * @param  value  the value to set.
      * @return {@code true} if the property changed as a result of this method call.
-     * @throws IllegalStateException if a new value is specified in a phase where the value can not be changed.
+     * @throws IllegalStateException if a new value is specified in a phase where the value cannot be changed.
      */
     private boolean setProperty(final String key, final Object value) throws IllegalStateException {
         final Object previous = properties.putIfAbsent(key, value);
@@ -416,7 +416,7 @@ public abstract class Builder<B extends Builder<B>> {
      * for all individual components.
      *
      * <p><b>Condition:</b>
-     * this method can not be invoked after one or more names or identifiers have been added (by calls to the
+     * this method cannot be invoked after one or more names or identifiers have been added (by calls to the
      * {@code addName(…)} or {@code addIdentifier(…)} methods) for the next object to create. This method can be
      * invoked again after the name, aliases and identifiers have been cleared by a call to {@code createXXX(…)}.</p>
      *
@@ -457,7 +457,7 @@ public abstract class Builder<B extends Builder<B>> {
      * since a compound object often uses the same version for all individual components.
      *
      * <p><b>Condition:</b>
-     * this method can not be invoked after one or more names or identifiers have been added (by calls to the
+     * this method cannot be invoked after one or more names or identifiers have been added (by calls to the
      * {@code addName(…)} or {@code addIdentifier(…)} methods) for the next object to create. This method can be
      * invoked again after the name, aliases and identifiers have been cleared by a call to {@code createXXX(…)}.</p>
      *
@@ -1027,7 +1027,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * If {@code cleanup} is {@code true}, then this method clears the identification information
      * (name, aliases, identifiers, description, remarks and deprecation status) for preparing the
-     * builder to the construction of an other object.
+     * builder to the construction of another object.
      * The authority, codespace and version properties are not cleared by this method.
      *
      * @param cleanup {@code false} when this method is invoked before object creation, and

@@ -96,7 +96,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * }
      *
      * @param  wkt  the {@code POINT} or other kind of element to parse.
-     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws IllegalArgumentException if the given string cannot be parsed.
      * @throws MismatchedDimensionException if the given point is not one-dimensional.
      *
      * @see #toString()

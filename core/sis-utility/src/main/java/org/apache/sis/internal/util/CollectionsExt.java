@@ -46,7 +46,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * This class is not in public API because some functionality provided there are not really the
  * purpose of a geospatial library and may change at any time. Some method contracts are a little
- * bit tedious to explain, which is an other indication that they should not be in public API.
+ * bit tedious to explain, which is another indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
@@ -275,7 +275,7 @@ public final class CollectionsExt extends Static {
      * @param  <E>         the type of elements in the array to be returned.
      * @param  name        the parameter name, used only for formatting an error message in case of failure.
      * @param  value       the value to return as an array, or {@code null}.
-     * @param  emptyArray  an instance of {@code new E[0]}. This argument can not be null.
+     * @param  emptyArray  an instance of {@code new E[0]}. This argument cannot be null.
      * @return the given value as an array of {@code <E>}. Never null.
      * throws  IllegalArgumentException if the given value is not null, an instance of {@code <E>}
      *         or an array of {@code <E>}.
@@ -937,7 +937,7 @@ public final class CollectionsExt extends Static {
                     /*
                      * Two entries having non-lower case names got the same name after conversion to
                      * lower cases. Retains none of them, since doing so would introduce an ambiguity.
-                     * Remember that we can not use that lower cases name for any other entries.
+                     * Remember that we cannot use that lower cases name for any other entries.
                      */
                     map.remove(lower);
                 }

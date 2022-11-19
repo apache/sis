@@ -56,7 +56,7 @@ final class CachedByteChannel implements SeekableByteChannel {
 
     /**
      * A temporary buffer for transferring data when we
-     * can not write directly in the destination buffer.
+     * cannot write directly in the destination buffer.
      */
     private ByteBuffer transfer;
 

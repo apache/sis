@@ -129,7 +129,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
 
     /**
      * Returns a map that can be used for creating the {@link #getResult()} type.
-     * This method can be invoked for subclass constructor with the user-supplied map in argument.
+     * This method can be invoked for subclass constructor with the user supplied map in argument.
      * If the given map contains at least one key prefixed by {@value #RESULT_PREFIX}, then the values
      * associated to those keys will be used.
      *
@@ -194,7 +194,7 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
      * @param  parameters  the parameters to use for executing the operation.
      *                     Can be {@code null} if the operation does not take any parameters.
      * @return the operation result, or {@code null} if this operation does not produce any result.
-     * @throws FeatureOperationException if the operation execution can not complete.
+     * @throws FeatureOperationException if the operation execution cannot complete.
      */
     @Override
     public abstract Property apply(Feature feature, ParameterValueGroup parameters) throws FeatureOperationException;

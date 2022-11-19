@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * {@link ChannelImageInputStream} with the JDK implementation, where the JDK's one is used as the
  * reference implementation.
  *
- * <p><b>This class is provided for debugging purpose only.</b> This class can not be used in test
+ * <p><b>This class is provided for debugging purpose only.</b> This class cannot be used in test
  * suite because it checks for identical behavior between the two input streams, which is usually
  * a too strong requirement. For example two streams may read a different amount of bytes in a call
  * to {@link #read(byte[])} and still be compliant with their contract.</p>

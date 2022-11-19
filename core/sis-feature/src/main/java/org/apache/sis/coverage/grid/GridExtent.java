@@ -228,7 +228,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * Creates an initially empty grid extent with the given number of dimensions.
      * All grid coordinate values are initialized to zero. This constructor is private
-     * because {@code GridExtent} coordinate values can not be modified by public API.
+     * because {@code GridExtent} coordinate values cannot be modified by public API.
      *
      * @param dimension  number of dimensions.
      * @param axisTypes  the axis types, or {@code null} if unspecified.
@@ -971,7 +971,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Returns the type (vertical, temporal, …) of grid axis at given dimension.
-     * This information is provided because the grid axis type can not always be inferred from the context.
+     * This information is provided because the grid axis type cannot always be inferred from the context.
      * Some examples are:
      *
      * <ul>
@@ -1059,7 +1059,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  cornerToCRS  a transform from <em>cell corners</em> to real world coordinates.
      * @return this grid extent in real world coordinates.
-     * @throws TransformException if the envelope can not be computed with the given transform.
+     * @throws TransformException if the envelope cannot be computed with the given transform.
      *
      * @see GridGeometry#getEnvelope()
      * @see org.opengis.referencing.datum.PixelInCell#CELL_CORNER
@@ -1088,7 +1088,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *                      If different, then this is assumed to map cell centers instead of cell corners.
      * @param  fallback     bounds to use if some values are still NaN after conversion, or {@code null} if none.
      * @return this grid extent in real world coordinates.
-     * @throws TransformException if the envelope can not be computed with the given transform.
+     * @throws TransformException if the envelope cannot be computed with the given transform.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      *
@@ -1127,7 +1127,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *                      If different, then this is assumed to map cell centers instead of cell corners.
      * @param  fallback     bounds to use if some values are still NaN after conversion, or {@code null} if none.
      * @return this grid extent in real world coordinates.
-     * @throws TransformException if the envelope can not be computed with the given transform.
+     * @throws TransformException if the envelope cannot be computed with the given transform.
      *
      * @see #GridExtent(AbstractEnvelope, GridRoundingMode, int[], GridExtent, int[])
      *
@@ -1281,7 +1281,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
      * converse of {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
-     * This method can not be used for changing dimension order.</p>
+     * This method cannot be used for changing dimension order.</p>
      *
      * @param  dimensions  the dimensions to select, in strictly increasing order.
      * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
@@ -1315,7 +1315,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     /**
      * Verifies the validity of a given {@code dimensions} argument.
      *
-     * @param  dimensions  the user-supplied argument to validate.
+     * @param  dimensions  the user supplied argument to validate.
      * @param  limit       maximal number of dimensions, exclusive.
      * @return a clone of the given array, or {@code null} if the caller can return {@code this}.
      */

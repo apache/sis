@@ -113,7 +113,7 @@ public interface LinearTransform extends MathTransform {
      * @param  dstPts  the array into which the transformed vectors are returned. Can be the same than {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed vector that is stored in the destination array.
      * @param  numPts  the number of vector objects to be transformed.
-     * @throws TransformException if a vector can not be transformed.
+     * @throws TransformException if a vector cannot be transformed.
      *
      * @see java.awt.geom.AffineTransform#deltaTransform(double[], int, double[], int, int)
      *
@@ -127,7 +127,7 @@ public interface LinearTransform extends MathTransform {
      * The source of the inverse transform is the target of the original.
      *
      * @return the inverse transform.
-     * @throws NoninvertibleTransformException if the transform can not be inverted.
+     * @throws NoninvertibleTransformException if the transform cannot be inverted.
      *
      * @see java.awt.geom.AffineTransform#createInverse()
      *

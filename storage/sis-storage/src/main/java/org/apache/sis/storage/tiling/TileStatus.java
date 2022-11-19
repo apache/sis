@@ -38,7 +38,7 @@ import java.io.IOException;
  */
 public enum TileStatus {
     /**
-     * The tile status can not be known unless the tile is read. This value is returned
+     * The tile status cannot be known unless the tile is read. This value is returned
      * by some {@link TileMatrix} implementations when determining the availability of
      * a tile would require relatively costly I/O operations.
      */

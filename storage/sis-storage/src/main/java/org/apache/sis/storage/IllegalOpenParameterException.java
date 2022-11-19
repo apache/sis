@@ -20,7 +20,7 @@ import java.util.Locale;
 
 
 /**
- * Thrown when a {@code DataStore} can not be opened because of invalid parameters.
+ * Thrown when a {@code DataStore} cannot be opened because of invalid parameters.
  * This may be a missing {@value org.apache.sis.storage.DataStoreProvider#LOCATION} parameter value,
  * or an unsupported object given to {@link StorageConnector} constructor.
  *

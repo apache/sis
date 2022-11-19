@@ -147,14 +147,14 @@ final class RecoloredImage extends ImageAdapter {
      * transform applied on sample values before they are mapped to their colors.
      *
      * <p>Current implementation can stretch gray scale and {@linkplain IndexColorModel index color models}).
-     * If this method can not stretch the color ramp, for example because the given image is an RGB image,
+     * If this method cannot stretch the color ramp, for example because the given image is an RGB image,
      * then the image is returned unchanged.</p>
      *
      * @param  processor  the processor to use for computing statistics if needed.
      * @param  source     the image to recolor (can be {@code null}).
      * @param  modifiers  modifiers for narrowing the range of values, or {@code null} if none.
      * @return the image with color ramp stretched between the automatic bounds,
-     *         or {@code image} unchanged if the operation can not be applied on the given image.
+     *         or {@code image} unchanged if the operation cannot be applied on the given image.
      *
      * @see ImageProcessor#stretchColorRamp(RenderedImage, Map)
      */

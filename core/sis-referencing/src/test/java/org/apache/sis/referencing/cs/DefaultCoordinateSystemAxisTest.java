@@ -82,7 +82,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
      * Tests WKT formatting of predefined constants.
      *
-     * Note that this method can not test the replacement of Greek letters by Latin letters in abbreviations,
+     * Note that this method cannot test the replacement of Greek letters by Latin letters in abbreviations,
      * because those replacements depend on the {@code CoordinateSystem} context, which is not provided by
      * this test method.
      */

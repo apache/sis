@@ -70,87 +70,87 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AuxiliaryFileTooLarge_1 = 71;
 
         /**
-         * Can not create resources based on the content of “{0}” directory.
+         * Cannot create resources based on the content of “{0}” directory.
          */
         public static final short CanNotCreateFolderStore_1 = 43;
 
         /**
-         * Can not infer the feature type resulting from “{0}” filtering.
+         * Cannot infer the feature type resulting from “{0}” filtering.
          */
         public static final short CanNotDeriveTypeFromFeature_1 = 55;
 
         /**
-         * Can not get metadata common to “{0}” files. The reason is: {1}
+         * Cannot get metadata common to “{0}” files. The reason is: {1}
          */
         public static final short CanNotGetCommonMetadata_2 = 39;
 
         /**
-         * Can not intersect “{0}” data with specified query.
+         * Cannot intersect “{0}” data with specified query.
          */
         public static final short CanNotIntersectDataWithQuery_1 = 57;
 
         /**
-         * Can not read “{0}” auxiliary file.
+         * Cannot read “{0}” auxiliary file.
          */
         public static final short CanNotReadAuxiliaryFile_1 = 66;
 
         /**
-         * Can not read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
+         * Cannot read the Coordinate Reference System (CRS) Well Known Text (WKT) in “{0}”.
          */
         public static final short CanNotReadCRS_WKT_1 = 37;
 
         /**
-         * Can not read “{0}” directory.
+         * Cannot read “{0}” directory.
          */
         public static final short CanNotReadDirectory_1 = 34;
 
         /**
-         * Can not read “{1}” as a file in the {0} format.
+         * Cannot read “{1}” as a file in the {0} format.
          */
         public static final short CanNotReadFile_2 = 1;
 
         /**
-         * Can not read line {2} of “{1}” as part of a file in the {0} format.
+         * Cannot read line {2} of “{1}” as part of a file in the {0} format.
          */
         public static final short CanNotReadFile_3 = 2;
 
         /**
-         * Can not read after column {3} of line {2} of “{1}” as part of a file in the {0} format.
+         * Cannot read after column {3} of line {2} of “{1}” as part of a file in the {0} format.
          */
         public static final short CanNotReadFile_4 = 3;
 
         /**
-         * Can not read pixel at ({0}, {1}) indices in the “{2}” file.
+         * Cannot read pixel at ({0}, {1}) indices in the “{2}” file.
          */
         public static final short CanNotReadPixel_3 = 68;
 
         /**
-         * Can not read slice at index {0}.
+         * Cannot read slice at index {0}.
          */
         public static final short CanNotReadSlice_1 = 78;
 
         /**
-         * Can not remove resource “{1}” from aggregate “{0}”.
+         * Cannot remove resource “{1}” from aggregate “{0}”.
          */
         public static final short CanNotRemoveResource_2 = 49;
 
         /**
-         * Can not render an image for the “{0}” coverage.
+         * Cannot render an image for the “{0}” coverage.
          */
         public static final short CanNotRenderImage_1 = 61;
 
         /**
-         * Can not select a slice.
+         * Cannot select a slice.
          */
         public static final short CanNotSelectSlice = 81;
 
         /**
-         * Can not save resources of type ‘{1}’ in a “{0}” store.
+         * Cannot save resources of type ‘{1}’ in a “{0}” store.
          */
         public static final short CanNotStoreResourceType_2 = 41;
 
         /**
-         * Can not write the “{0}” resource.
+         * Cannot write the “{0}” resource.
          */
         public static final short CanNotWriteResource_1 = 69;
 
@@ -413,7 +413,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamHasNoMark = 63;
 
         /**
-         * Can not move backward in the “{0}” stream.
+         * Cannot move backward in the “{0}” stream.
          */
         public static final short StreamIsForwardOnly_1 = 13;
 
@@ -433,7 +433,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short StreamIsReadOnce_1 = 18;
 
         /**
-         * Can not modify previously written data in “{0}”.
+         * Cannot modify previously written data in “{0}”.
          */
         public static final short StreamIsWriteOnce_1 = 21;
 
@@ -443,7 +443,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short SubsetQuery_1 = 77;
 
         /**
-         * Can not open {0} data store without “{1}” parameter.
+         * Cannot open {0} data store without “{1}” parameter.
          */
         public static final short UndefinedParameter_2 = 27;
 
@@ -493,7 +493,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);

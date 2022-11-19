@@ -490,7 +490,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      *
      * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can not be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -511,7 +511,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * and optionally returns the derivative at that location.
      *
      * @return {@inheritDoc}
-     * @throws TransformException if the point can not be transformed or
+     * @throws TransformException if the point cannot be transformed or
      *         if a problem occurred while calculating the derivative.
      */
     @Override
@@ -583,7 +583,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * This method performs the same conversion than {@link #transform(double[], int, double[], int, boolean)},
      * but the formulas are repeated here for performance reasons.
      *
-     * @throws TransformException if a point can not be transformed.
+     * @throws TransformException if a point cannot be transformed.
      */
     @Override
     public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)

@@ -57,7 +57,7 @@ import java.lang.annotation.Documented;
  *
  * The property referenced by this annotation should be the main property if possible, but not necessarily
  * since it may be only a label. However the property shall be a singleton ([0…1] or [1…1] multiplicity)
- * and can not be another metadata object.
+ * and cannot be another metadata object.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

@@ -244,7 +244,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                 if (name != null) {
                     final int i = it.previousIndex();
                     if (name.isEmpty()) {
-                        it.remove();                        // Remove code that we can not resolve.
+                        it.remove();                        // Remove code that we cannot resolve.
                         nextRemove(i, (Code) value);        // ClassCastException should never happen here.
                     } else {
                         ((Code) value).name().set(name);    // ClassCastException should never happen here.
@@ -322,7 +322,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
 
         /**
          * Wether this task has been scheduled for execution or is already executing.
-         * This flag shall be read and updated in JavaFX thread only. We can not rely
+         * This flag shall be read and updated in JavaFX thread only. We cannot rely
          * on {@link #isRunning()} because that method does not return {@code true}
          * immediately after {@link BackgroundThreads#execute(Runnable)} invocation.
          *

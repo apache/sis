@@ -353,7 +353,7 @@ public abstract class DataStoreProvider {
                 return result;
             }
             /*
-             * If the storage connector can not provide the type of source required by the specified prober,
+             * If the storage connector cannot provide the type of source required by the specified prober,
              * verify if there is any other probers specified by `Prober.orElse(…)`.
              */
             Prober<?> next = prober;
@@ -516,11 +516,11 @@ public abstract class DataStoreProvider {
 
         /**
          * Returns a composed probe that attempts, in sequence, this probe followed by the alternative probe
-         * if the first probe can not be executed. The alternative probe is tried if and only if one of the
+         * if the first probe cannot be executed. The alternative probe is tried if and only if one of the
          * following conditions is true:
          *
          * <ul>
-         *   <li>The storage connector can not provide an input of the type requested by this probe.</li>
+         *   <li>The storage connector cannot provide an input of the type requested by this probe.</li>
          *   <li>This probe {@link #test(S)} method returned {@link ProbeResult#UNDETERMINED}.</li>
          * </ul>
          *
@@ -530,7 +530,7 @@ public abstract class DataStoreProvider {
          * @param  <A>          the compile-time type of the {@code type} argument (the source or storage type).
          * @param  type         the desired type as one of {@code ByteBuffer}, {@code DataInput}, <i>etc</i>.
          * @param  alternative  the test to apply on the source of the given type.
-         * @return a composed probe that attempts the given probe if this probe can not be executed.
+         * @return a composed probe that attempts the given probe if this probe cannot be executed.
          */
         default <A> Prober<S> orElse(final Class<A> type, final Prober<? super A> alternative) {
             return new ProberList<>(this, type, alternative);
@@ -548,7 +548,7 @@ public abstract class DataStoreProvider {
         /** The main probe to try first. */
         private final Prober<S> first;
 
-        /** The probe to try next if the {@linkplain #first} probe can not be executed. */
+        /** The probe to try next if the {@linkplain #first} probe cannot be executed. */
         Prober<? super N> next;
 
         /** Type of input expected by the {@linkplain #next} probe. */

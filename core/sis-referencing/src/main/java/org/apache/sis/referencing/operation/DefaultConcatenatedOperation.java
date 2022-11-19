@@ -105,7 +105,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  properties  the properties to be given to the identified object.
      * @param  operations  the sequence of operations. Shall contain at least two operations.
      * @param  mtFactory   the math transform factory to use for math transforms concatenation.
-     * @throws FactoryException if the factory can not concatenate the math transforms.
+     * @throws FactoryException if the factory cannot concatenate the math transforms.
      */
     public DefaultConcatenatedOperation(final Map<String,?> properties, final CoordinateOperation[] operations,
             final MathTransformFactory mtFactory) throws FactoryException
@@ -128,7 +128,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  properties   the properties specified at construction time, or {@code null} if unknown.
      * @param  operations   the operations to concatenate.
      * @param  mtFactory    the math transform factory to use, or {@code null} for not performing concatenation.
-     * @throws FactoryException if the factory can not concatenate the math transforms.
+     * @throws FactoryException if the factory cannot concatenate the math transforms.
      */
     private void initialize(final Map<String,?>         properties,
                             final CoordinateOperation[] operations,
@@ -168,7 +168,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * some {@link Conversion} instances declare an accuracy, which is typically close to zero. If a concatenated
      * operation contains such conversion together with a transformation with unknown accuracy, then we do not want
      * to declare "0 meter" as the concatenated operation accuracy; it would be a false information.
-     * An other reason is that a concatenated operation typically contains an arbitrary amount of conversions,
+     * Another reason is that a concatenated operation typically contains an arbitrary number of conversions,
      * but only one transformation. So considering only transformations usually means to pickup only one operation
      * in the given {@code operations} list, which make things clearer.
      *
@@ -187,7 +187,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * @param  setAccuracy  {@code true} for setting the {@link #coordinateOperationAccuracy} field.
      * @param  setDomain    {@code true} for setting the {@link #domainOfValidity} field.
      * @return the last target CRS, regardless if null or not.
-     * @throws FactoryException if the factory can not concatenate the math transforms.
+     * @throws FactoryException if the factory cannot concatenate the math transforms.
      */
     private CoordinateReferenceSystem initialize(
             final Map<String,?>             properties,
@@ -410,7 +410,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultConcatenatedOperation() {
         operations = Collections.emptyList();

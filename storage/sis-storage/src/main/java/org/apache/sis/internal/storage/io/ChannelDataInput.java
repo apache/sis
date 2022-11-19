@@ -136,7 +136,7 @@ public class ChannelDataInput extends ChannelData {
     /**
      * Tries to read more bytes from the channel without changing the buffer position.
      * This method returns a negative number if the buffer is already full or if the channel reached the
-     * <cite>end of stream</cite>. Otherwise this method reads an arbitrary amount of bytes not greater
+     * <cite>end of stream</cite>. Otherwise this method reads an arbitrary number of bytes not greater
      * than the space available in the buffer, and returns the amount bytes actually read.
      *
      * @return the number of bytes read, or -2 if the buffer is full, or -1 on <cite>end of stream</cite>.
@@ -192,7 +192,7 @@ public class ChannelDataInput extends ChannelData {
      *
      * @param  n  the minimal number of bytes needed in the {@linkplain #buffer buffer}.
      * @throws EOFException if the channel has reached the end of stream.
-     * @throws IOException if an other kind of error occurred while reading.
+     * @throws IOException if another kind of error occurred while reading.
      */
     public final void ensureBufferContains(int n) throws EOFException, IOException {
         assert n >= 0 && n <= buffer.capacity() : n;
@@ -218,7 +218,7 @@ public class ChannelDataInput extends ChannelData {
      * Makes sure that the buffer contains at least one remaining byte.
      *
      * @throws EOFException if the channel has reached the end of stream.
-     * @throws IOException if an other kind of error occurred while reading.
+     * @throws IOException if another kind of error occurred while reading.
      */
     private void ensureNonEmpty() throws IOException {
         if (!hasRemaining()) {
@@ -577,7 +577,7 @@ public class ChannelDataInput extends ChannelData {
         /**
          * Transfers the data from the buffer created by {@link #createView()} to array
          * of primitive Java type known by the subclass. This method may be invoked an
-         * arbitrary amount of time.
+         * arbitrary number of time.
          */
         abstract void transfer(int offset, int n);
 
@@ -890,7 +890,7 @@ public class ChannelDataInput extends ChannelData {
      * Moves to the given position in the stream, relative to the stream position at construction time.
      *
      * @param  position  the position where to move.
-     * @throws IOException if the stream can not be moved to the given position.
+     * @throws IOException if the stream cannot be moved to the given position.
      */
     @Override
     public final void seek(final long position) throws IOException {
@@ -913,7 +913,7 @@ public class ChannelDataInput extends ChannelData {
         } else if (p >= 0) {
             /*
              * Requested position is after the current buffer limit and
-             * we can not seek, so we have to read everything before.
+             * we cannot seek, so we have to read everything before.
              */
             do {
                 bufferOffset += buffer.limit();
@@ -931,7 +931,7 @@ public class ChannelDataInput extends ChannelData {
             buffer.position((int) p);
         } else {
             /*
-             * Requested position is before the current buffer limits and we can not seek.
+             * Requested position is before the current buffer limits and we cannot seek.
              */
             throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
@@ -943,7 +943,7 @@ public class ChannelDataInput extends ChannelData {
      * This method is similar to {@code seek(0)} except that the buffer content is discarded.
      *
      * @return {@code true} on success, or {@code false} if it is not possible to reset the position.
-     * @throws IOException if the stream can not be moved to the original position.
+     * @throws IOException if the stream cannot be moved to the original position.
      */
     public final boolean rewind() throws IOException {
         if (channel instanceof SeekableByteChannel) {

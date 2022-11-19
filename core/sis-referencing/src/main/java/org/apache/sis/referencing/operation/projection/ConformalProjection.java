@@ -30,7 +30,7 @@ import static java.lang.Math.*;
  * <p>Note that no projection can be both conformal and equal-area. So the formulas in this class are usually
  * mutually exclusive with formulas in {@link AuthalicConversion} class (used for equal-area projections).</p>
  *
- * <p>This base class can been seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
+ * <p>This base class can be seen as a generalization of <cite>Lambert Conic Conformal</cite> projection,
  * which includes some other projections like Mercator and Polar Stereographic as special cases.
  * For this base class, the Mercator projection is considered as <cite>"a special limiting case of the
  * Lambert Conic Conformal map projection with the equator as the single standard parallel."</cite>

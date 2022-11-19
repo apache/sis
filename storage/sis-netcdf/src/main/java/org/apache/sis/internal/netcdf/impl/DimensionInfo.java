@@ -20,7 +20,7 @@ import org.apache.sis.internal.netcdf.Dimension;
 
 
 /**
- * A dimension in a netCDF file. A dimension can been seen as an axis in the grid space
+ * A dimension in a netCDF file. A dimension can be seen as an axis in the grid space
  * (not the geodetic space). Dimension are referenced by their index in other parts of
  * the netCDF file header. {@code Dimension} instances are unique, i.e. {@code a == b}
  * is a sufficient test for determining that {@code a} and {@code b} represent the same

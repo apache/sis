@@ -402,7 +402,7 @@ public abstract class GridCoverage extends BandedCoverage {
          * @throws IncompleteGridGeometryException if the {@linkplain GridCoverage#getGridGeometry() grid geometry}
          *         does not define a "grid to CRS" transform, or if the given point has a non-null CRS but the
          *         coverage does not {@linkplain GridCoverage#getCoordinateReferenceSystem() have a CRS}.
-         * @throws TransformException if the given coordinates can not be transformed.
+         * @throws TransformException if the given coordinates cannot be transformed.
          *
          * @see FractionalGridCoordinates#toPosition(MathTransform)
          */
@@ -481,7 +481,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
      * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
-     * @throws CannotEvaluateException if this method can not produce the rendered image for another reason.
+     * @throws CannotEvaluateException if this method cannot produce the rendered image for another reason.
      */
     public abstract RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException;
 

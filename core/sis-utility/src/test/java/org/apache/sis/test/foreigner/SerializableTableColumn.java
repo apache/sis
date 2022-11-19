@@ -67,7 +67,7 @@ public final strictfp class SerializableTableColumn<V> extends TableColumn<V> im
      * Invoked on deserialization for resolving this instance to one of the predefined constants.
      *
      * @return one of the predefined constants.
-     * @throws InvalidObjectException if this instance can not be resolved.
+     * @throws InvalidObjectException if this instance cannot be resolved.
      */
     private Object readResolve() throws ObjectStreamException {
         try {

@@ -70,7 +70,7 @@ enum AxesMapper {
      * @param  cs     the coordinate system which contains all axes, or {@code null}.
      * @param  subCS  the coordinate system to search into {@code cs}.
      * @return indices in {@code cs} of axes covariant with {@code subCS} axes in the order they appear in {@code subCS},
-     *         or {@code null} if at least one {@code subCS} axis can not be mapped to a {@code cs} axis.
+     *         or {@code null} if at least one {@code subCS} axis cannot be mapped to a {@code cs} axis.
      */
     public static int[] indices(final CoordinateSystem cs, final CoordinateSystem subCS) {
         final int[] indices = new int[subCS.getDimension()];

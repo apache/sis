@@ -676,7 +676,7 @@ public final class Extents extends Static {
      * if it already represents the intersection result.</p>
      *
      * <h4>Advantage and inconvenient of this method</h4>
-     * This method can not intersect extents defined with different datums because height transformations
+     * This method cannot intersect extents defined with different datums because height transformations
      * generally require the geodetic positions (latitudes and longitudes) of the heights to transform.
      * For more general transformations, it is better to convert all extent components into a single envelope,
      * then {@linkplain org.apache.sis.geometry.Envelopes#transform(CoordinateOperation, Envelope) transform

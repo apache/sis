@@ -144,7 +144,7 @@ public enum DataType {
     /**
      * Wrapper of {@link DataBuffer} constant which most closely represents the "raw" internal data of the variable.
      * This wraps the value to be returned by {@link java.awt.image.SampleModel#getDataType()} for Java2D rasters
-     * created from a variable data. If the variable data type can not be mapped to a Java2D data type, then the
+     * created from a variable data. If the variable data type cannot be mapped to a Java2D data type, then the
      * raster data type is {@code null}.
      */
     public final org.apache.sis.image.DataType rasterDataType;

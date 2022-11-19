@@ -173,7 +173,7 @@ public class TransformSeparator {
      * Values must be given in strictly increasing order (this will be verified by this method).
      *
      * @param  sequence    the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
-     * @param  dimensions  the user-supplied dimensions to add to the given sequence.
+     * @param  dimensions  the user supplied dimensions to add to the given sequence.
      * @param  max         the maximal value allowed, exclusive.
      * @throws IllegalArgumentException if a {@code dimensions} value does not met the conditions.
      */
@@ -380,7 +380,7 @@ public class TransformSeparator {
     /**
      * Sets whether {@code separate()} is allowed to expand the list of source dimensions.
      * The default value is {@code false}, which means that {@code separate()} will throw a {@link FactoryException}
-     * if some {@linkplain #getTargetDimensions() target dimensions} can not be computed without inputs that are not
+     * if some {@linkplain #getTargetDimensions() target dimensions} cannot be computed without inputs that are not
      * in the list of {@linkplain #getSourceDimensions() source dimensions}. If this flag is set to {@code true},
      * then {@link #separate()} will be allowed to augment the list of source dimensions with any inputs that are
      * essential for producing all requested outputs.
@@ -416,7 +416,7 @@ public class TransformSeparator {
      * or {@link #getTargetDimensions()} after this {@code separate()} method.
      *
      * @return the separated math transform.
-     * @throws FactoryException if the transform can not be separated.
+     * @throws FactoryException if the transform cannot be separated.
      */
     public MathTransform separate() throws FactoryException {
         MathTransform tr = transform;
@@ -451,7 +451,7 @@ public class TransformSeparator {
                     final int j = Arrays.binarySearch(inferred, r);
                     if (j < 0) {
                         /*
-                         * The user asked for some target dimensions that we can not keep, probably
+                         * The user asked for some target dimensions that we cannot keep, probably
                          * because at least one of the requested target dimensions has a dependency to a
                          * source dimension that does not appear in the list of source dimensions to keep.
                          */

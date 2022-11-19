@@ -54,7 +54,7 @@ public abstract class Bag<E> extends AbstractCollection<E> {
      *
      * <p><b>Rational:</b> {@link java.util.Collection#equals(Object)} contract explicitly forbids comparisons
      * with {@code List} and {@code Set}. The rational explained in {@code Collection} javadoc applies also to
-     * other kind of {@code Collection} implementations: we can not enforce {@code Collection.equals(Object)}
+     * other kind of {@code Collection} implementations: we cannot enforce {@code Collection.equals(Object)}
      * to be symmetric in such cases.</p>
      *
      * @param  other  the other object to compare with this bag.

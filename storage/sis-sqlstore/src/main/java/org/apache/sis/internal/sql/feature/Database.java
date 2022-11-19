@@ -103,7 +103,7 @@ import org.apache.sis.util.Debug;
 public class Database<G> extends Syntax  {
     /**
      * The SQL wildcard for any characters. A string containing only this wildcard
-     * means "any value" and can sometime be replaced by {@code null}.
+     * means "any value" and can sometimes be replaced by {@code null}.
      */
     public static final String WILDCARD = "%";
 
@@ -254,7 +254,7 @@ public class Database<G> extends Syntax  {
      *
      * @param  store        the data store for which we are creating a model. Used only in case of error.
      * @param  source       provider of (pooled) connections to the database.
-     * @param  connection   connection to the database. Sometime the caller already has a connection at hand.
+     * @param  connection   connection to the database. Sometimes the caller already has a connection at hand.
      * @param  geomLibrary  the factory to use for creating geometric objects.
      * @param  tableNames   qualified name of the tables. Specified by users at construction time.
      * @param  queries      additional resources associated to SQL queries. Specified by users at construction time.
@@ -301,7 +301,7 @@ public class Database<G> extends Syntax  {
      * </ul>
      *
      * @param  store       the data store for which we are creating a model. Used only in case of error.
-     * @param  connection  connection to the database. Sometime the caller already has a connection at hand.
+     * @param  connection  connection to the database. Sometimes the caller already has a connection at hand.
      * @param  tableNames  qualified name of the tables. Specified by users at construction time.
      * @param  queries     additional resources associated to SQL queries. Specified by users at construction time.
      * @param  customizer  user-specified modification to the features, or {@code null} if none.
@@ -544,7 +544,7 @@ public class Database<G> extends Syntax  {
      * for a particular database product.</p>
      *
      * @param  columnDefinition  information about the column to extract values from and expose through Java API.
-     * @return converter to the corresponding java type, or {@code null} if this class can not find a mapping.
+     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping.
      */
     @SuppressWarnings("fallthrough")
     protected ValueGetter<?> getMapping(final Column columnDefinition) {
@@ -657,13 +657,13 @@ public class Database<G> extends Syntax  {
      * This is a helper method for {@link #getMapping(Column)} implementations.
      *
      * @param  columnDefinition  information about the column to extract values from and expose through Java API.
-     * @return converter to the corresponding java type, or {@code null} if this class can not find a mapping,
+     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
      */
     protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
         /*
          * The geometry type should not be empty. But it may still happen if the "GEOMETRY_COLUMNS"
          * table does not contain a line for the specified column. It is a server issue, but seems
-         * to happen sometime.
+         * to happen sometimes.
          */
         final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
         final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);

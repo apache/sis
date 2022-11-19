@@ -283,13 +283,13 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
      *
      * @param  name   the attribute name, used only in case of error.
      * @param  value  the attribute value to parse.
-     * @return the parsed attribute value, or {@code null} if the given value can not be parsed.
+     * @return the parsed attribute value, or {@code null} if the given value cannot be parsed.
      */
     protected final Number parseNumber(final String name, String value) {
         final int s = value.indexOf(' ');
         if (s >= 0) {
             /*
-             * Sometime, numeric values as string are followed by
+             * Sometimes, numeric values as string are followed by
              * a unit of measurement. We ignore that unit for now.
              */
             value = value.substring(0, s);
@@ -351,7 +351,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * Returns the value of the {@code "_Id"} global attribute. The UCAR library defines a
      * {@link ucar.nc2.NetcdfFile#getId()} method for that purpose, which we will use when
-     * possible in case that {@code getId()} method is defined in an other way.
+     * possible in case that {@code getId()} method is defined in another way.
      *
      * <p>This method is used by {@link org.apache.sis.storage.netcdf.NetcdfStore#getMetadata()} in last resort
      * when no value were found for the attributes defined by the CF standard or by THREDDS.</p>
@@ -365,7 +365,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     /**
      * Returns the value of the {@code "_Title"} global attribute. The UCAR library defines a
      * {@link ucar.nc2.NetcdfFile#getTitle()} method for that purpose, which we will use when
-     * possible in case that {@code getTitle()} method is defined in an other way.
+     * possible in case that {@code getTitle()} method is defined in another way.
      *
      * <p>This method is used by {@link org.apache.sis.storage.netcdf.NetcdfStore#getMetadata()} in last resort
      * when no value were found for the attributes defined by the CF standard or by THREDDS.</p>

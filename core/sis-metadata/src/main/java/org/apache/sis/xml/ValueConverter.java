@@ -257,7 +257,7 @@ public class ValueConverter {
      * @param  value    the string to convert to a locale, or {@code null}.
      * @return the converted locale, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllformedLocaleException if the given string can not be converted to a locale.
+     * @throws IllformedLocaleException if the given string cannot be converted to a locale.
      *
      * @see Locales#parse(String)
      */
@@ -282,7 +282,7 @@ public class ValueConverter {
      * @param  value    the string to convert to a character set, or {@code null}.
      * @return the converted character set, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalCharsetNameException if the given string can not be converted to a character set.
+     * @throws IllegalCharsetNameException if the given string cannot be converted to a character set.
      *
      * @see Charset#forName(String)
      *
@@ -319,7 +319,7 @@ public class ValueConverter {
      * @param  value    the string to convert to a unit, or {@code null}.
      * @return the converted unit, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException if the given string can not be converted to a unit.
+     * @throws IllegalArgumentException if the given string cannot be converted to a unit.
      *
      * @see Units#valueOf(String)
      */
@@ -378,7 +378,7 @@ public class ValueConverter {
      * @param  value    the string to convert to a UUID, or {@code null}.
      * @return the converted UUID, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws IllegalArgumentException if the given string can not be converted to a UUID.
+     * @throws IllegalArgumentException if the given string cannot be converted to a UUID.
      *
      * @see UUID#fromString(String)
      */
@@ -407,7 +407,7 @@ public class ValueConverter {
      * @param  value    the string to convert to a URI, or {@code null}.
      * @return the converted URI, or {@code null} if the given value was null or empty, or if
      *         an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws URISyntaxException if the given string can not be converted to a URI.
+     * @throws URISyntaxException if the given string cannot be converted to a URI.
      *
      * @see URI#URI(String)
      */
@@ -436,7 +436,7 @@ public class ValueConverter {
      * @param  value    the URL to convert to a URI, or {@code null}.
      * @return the converted URI, or {@code null} if the given value was null or if an
      *         exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws URISyntaxException if the given URL can not be converted to a URI.
+     * @throws URISyntaxException if the given URL cannot be converted to a URI.
      *
      * @see URL#toURI()
      */
@@ -464,7 +464,7 @@ public class ValueConverter {
      * @param  value    the URI to convert to a URL, or {@code null}.
      * @return the converted URL, or {@code null} if the given value was null or if an
      *         exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws MalformedURLException if the given URI can not be converted to a URL.
+     * @throws MalformedURLException if the given URI cannot be converted to a URL.
      *
      * @see URI#toURL()
      */
@@ -492,7 +492,7 @@ public class ValueConverter {
      * @param  value    the string to convert to a nil reason, or {@code null}.
      * @return the converted nil reason, or {@code null} if the given value was null or empty, or
      *         if an exception was thrown and {@code exceptionOccured(…)} returned {@code true}.
-     * @throws URISyntaxException if the given string can not be converted to a nil reason.
+     * @throws URISyntaxException if the given string cannot be converted to a nil reason.
      *
      * @see NilReason#valueOf(String)
      */

@@ -90,7 +90,7 @@ public abstract class DiscreteSampling extends AbstractFeatureSet implements Sto
     }
 
     /**
-     * Returns the error message for a file that can not be read.
+     * Returns the error message for a file that cannot be read.
      *
      * @return default error message to use in exceptions.
      */

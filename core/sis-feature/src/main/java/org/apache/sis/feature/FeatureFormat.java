@@ -72,7 +72,7 @@ import org.opengis.feature.Operation;
  *
  * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
  * “twin town”) may be formatted like below. The two first properties are {@linkplain AbstractAttribute attributes}
- * while the last property is an {@linkplain AbstractAssociation association} to an other feature.
+ * while the last property is an {@linkplain AbstractAssociation association} to another feature.
  *
  * {@preformat text
  *   City

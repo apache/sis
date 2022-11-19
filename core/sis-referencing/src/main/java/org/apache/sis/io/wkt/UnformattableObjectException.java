@@ -20,12 +20,12 @@ import org.opengis.referencing.IdentifiedObject;
 
 
 /**
- * Thrown by {@link FormattableObject#toWKT()} when an object can not be formatted as WKT.
- * A formatting may fail because an object contains properties which can not be represented
+ * Thrown by {@link FormattableObject#toWKT()} when an object cannot be formatted as WKT.
+ * A formatting may fail because an object contains properties which cannot be represented
  * by the standard WKT elements.
  *
  * <div class="note"><b>Example:</b>
- * An engineering CRS can not be represented in the WKT 1 format if all axes do not use the same
+ * An engineering CRS cannot be represented in the WKT 1 format if all axes do not use the same
  * unit of measurement. However such CRS can be represented in the WKT 2 format.</div>
  *
  * This exception may also be thrown by {@link Formatter} if the object given to an

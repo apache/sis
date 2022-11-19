@@ -319,7 +319,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * After this method invocation, the current event will be {@link #END_ELEMENT}.</p>
      *
      * @return the current text element, or {@code null} if empty.
-     * @throws XMLStreamException if a text element can not be returned.
+     * @throws XMLStreamException if a text element cannot be returned.
      */
     protected final String getElementText() throws XMLStreamException {
         return Strings.trimOrNull(reader.getElementText());
@@ -330,8 +330,8 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * or {@code null} if that value is null or empty.
      *
      * @return the current text element as a URI, or {@code null} if empty.
-     * @throws XMLStreamException if a text element can not be returned.
-     * @throws URISyntaxException if the text can not be parsed as a URI.
+     * @throws XMLStreamException if a text element cannot be returned.
+     * @throws URISyntaxException if the text cannot be parsed as a URI.
      */
     protected final URI getElementAsURI() throws XMLStreamException, URISyntaxException {
         final Context context = Context.current();
@@ -343,8 +343,8 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * or {@code null} if that value is null or empty.
      *
      * @return the current text element as an integer, or {@code null} if empty.
-     * @throws XMLStreamException if a text element can not be returned.
-     * @throws NumberFormatException if the text can not be parsed as an integer.
+     * @throws XMLStreamException if a text element cannot be returned.
+     * @throws NumberFormatException if the text cannot be parsed as an integer.
      */
     protected final Integer getElementAsInteger() throws XMLStreamException {
         final String text = getElementText();
@@ -356,8 +356,8 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * or {@code null} if that value is null or empty.
      *
      * @return the current text element as a floating point number, or {@code null} if empty.
-     * @throws XMLStreamException if a text element can not be returned.
-     * @throws NumberFormatException if the text can not be parsed as a floating point number.
+     * @throws XMLStreamException if a text element cannot be returned.
+     * @throws NumberFormatException if the text cannot be parsed as a floating point number.
      *
      * @see #parseDouble(String)
      */
@@ -371,8 +371,8 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * or {@code null} if that value is null or empty.
      *
      * @return the current text element as a date, or {@code null} if empty.
-     * @throws XMLStreamException if a text element can not be returned.
-     * @throws DateTimeParseException if the text can not be parsed as a date.
+     * @throws XMLStreamException if a text element cannot be returned.
+     * @throws DateTimeParseException if the text cannot be parsed as a date.
      */
     protected final Date getElementAsDate() throws XMLStreamException {
         final String text = getElementText();
@@ -384,8 +384,8 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * or {@code null} if that value is null or empty.
      *
      * @return the current text element as a temporal object, or {@code null} if empty.
-     * @throws XMLStreamException if a text element can not be returned.
-     * @throws DateTimeParseException if the text can not be parsed as a date.
+     * @throws XMLStreamException if a text element cannot be returned.
+     * @throws DateTimeParseException if the text cannot be parsed as a date.
      */
     protected final Temporal getElementAsTemporal() throws XMLStreamException {
         return StandardDateFormat.parseBest(getElementText());
@@ -396,7 +396,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * or {@code null} if that value is null or empty.
      *
      * @return the current text element as a list.
-     * @throws XMLStreamException if a text element can not be returned.
+     * @throws XMLStreamException if a text element cannot be returned.
      */
     protected final List<String> getElementAsList() throws XMLStreamException {
         final String text = getElementText();
@@ -500,7 +500,7 @@ parse:  switch (value.length()) {
 
     /**
      * Closes the input stream and releases any resources used by this XML reader.
-     * This reader can not be used anymore after this method has been invoked.
+     * This reader cannot be used anymore after this method has been invoked.
      *
      * @throws XMLStreamException if an error occurred while releasing XML reader resources.
      * @throws IOException if an error occurred while closing the input stream.
@@ -547,7 +547,7 @@ parse:  switch (value.length()) {
      * This a convenience method for {@link #tryAdvance(Consumer)} implementations.
      * The error message will contain the current line and column number if available.
      *
-     * @return a localized error message for a file that can not be parsed.
+     * @return a localized error message for a file that cannot be parsed.
      */
     protected final String canNotParseFile() {
         return IOUtilities.canNotReadFile(owner.getLocale(), owner.getFormatName(), owner.getDisplayName(), reader);

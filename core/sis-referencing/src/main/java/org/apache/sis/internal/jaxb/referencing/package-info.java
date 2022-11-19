@@ -18,7 +18,7 @@
 /**
  * JAXB adapters for referencing.
  * This package regroups all adapters mapping GeoAPI interfaces to their SIS implementation.
- * We must use adapters since JAXB can not annotate interfaces. Every time JAXB tries to
+ * We must use adapters since JAXB cannot annotate interfaces. Every time JAXB tries to
  * marshal or unmarshal an interface, the adapter will be substituted to that interface.
  *
  * @author  Guilhem Legal (Geomatys)

@@ -51,7 +51,7 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
 
     /**
      * Write options that may apply to any data store. The coverage {@linkplain #write write operation}
-     * is configured by instances of {@link Option}, sometime in a {@link DataStore}-specific basis.
+     * is configured by instances of {@link Option}, sometimes in a {@link DataStore}-specific basis.
      * This {@code CommonOption} enumeration provides options that do not depend on the data store.
      *
      * @author  Johann Sorel (Geomatys)
@@ -114,7 +114,7 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * @throws ReadOnlyStorageException if the resource is (possibly temporarily) read-only.
      * @throws ResourceAlreadyExistsException if a coverage already exists in this resource
      *         and no {@code REPLACE} or {@code UPDATE} option have been specified.
-     * @throws IncompatibleResourceException if the given resource can not be written,
+     * @throws IncompatibleResourceException if the given resource cannot be written,
      *         for example because its grid geometry is unsupported by this resource.
      * @throws DataStoreException if another error occurred while writing data in the underlying data store.
      */

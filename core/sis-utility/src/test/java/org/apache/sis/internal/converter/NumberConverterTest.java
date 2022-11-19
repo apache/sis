@@ -132,7 +132,7 @@ public final strictfp class NumberConverterTest extends TestCase {
         runInvertibleConversion(c, Float.valueOf(-8),    Integer.valueOf(-8));
         runConversion          (c, Float.valueOf(2.25f), Integer.valueOf(2), Float.valueOf(2f));
         runConversion          (c, Float.valueOf(2.75f), Integer.valueOf(3), Float.valueOf(3f));
-        // Can not easily tests the values around Integer.MIN/MAX_VALUE because of rounding errors in float.
+        // Cannot easily tests the values around Integer.MIN/MAX_VALUE because of rounding errors in float.
         assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
     }
 

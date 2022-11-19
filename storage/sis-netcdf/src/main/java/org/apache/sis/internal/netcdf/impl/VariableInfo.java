@@ -417,7 +417,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
      * This method is called by {@link #getUnit()}.
      *
-     * @throws ParserException if the given symbol can not be parsed.
+     * @throws ParserException if the given symbol cannot be parsed.
      */
     @Override
     protected Unit<?> parseUnit(String symbols) {
@@ -439,7 +439,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         /*
          * Parse the unit symbol after removing the "since 1970-01-01 00:00:00" part of the text,
          * even if we failed to parse the date. We need to be tolerant regarding the date because
-         * sometime the text looks like "hours since analysis".
+         * sometimes the text looks like "hours since analysis".
          */
         final Unit<?> unit;
         try {
@@ -759,7 +759,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         if (area == null && array instanceof double[]) {
             /*
              * If we can convert a double[] array to a float[] array, we should do that before
-             * to invoke `setValues(array)` - we can not rely on data.compress(tolerance). The
+             * to invoke `setValues(array)` - we cannot rely on data.compress(tolerance). The
              * reason is because we assume that float[] arrays are accurate in base 10 even if
              * the data were originally stored as doubles. The Vector class does not make such
              * assumption since it is specific to what we observe with netCDF files. To enable

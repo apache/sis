@@ -465,7 +465,7 @@ final class GridMapping {
     /**
      * Parses a comma-separated or space-separated array of numbers.
      *
-     * @throws NumberFormatException if at least one number can not be parsed.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     private static double[] parseDoubles(final String values) {
         return CharSequences.parseDoubles(values.replace(',', ' '), ' ');
@@ -528,7 +528,7 @@ final class GridMapping {
     }
 
     /**
-     * Logs a warning about a CRS or grid geometry that can not be created.
+     * Logs a warning about a CRS or grid geometry that cannot be created.
      * This method presumes that {@link GridMapping} are invoked (indirectly) from {@link Variable#getGridGeometry()}.
      *
      * @param  key  one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.
@@ -592,7 +592,7 @@ final class GridMapping {
                  * then potentially replaces `Grid` implicit CRS by `GridMapping` explicit CRS.
                  *
                  * This is where the potential difference between EPSG axis order and grid axis order is handled.
-                 * If we can not find which component to replace, assume that grid mapping describes the first dimensions.
+                 * If we cannot find which component to replace, assume that grid mapping describes the first dimensions.
                  * We have no guarantees that this latter assumption is right, but it seems to match common practice.
                  */
                 final CoordinateSystem cs = implicitCRS.getCoordinateSystem();

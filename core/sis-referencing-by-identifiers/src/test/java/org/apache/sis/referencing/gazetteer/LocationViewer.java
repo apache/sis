@@ -169,7 +169,7 @@ public final class LocationViewer extends JPanel {
      * @param  coder           the encoder to use for computing locations and their envelopes.
      * @param  areaOfInterest  the geographic or projected area where to get locations.
      * @param  displayCRS      the CRS to use for displaying the location shapes, or {@code null} for the envelope CRS.
-     * @throws FactoryException if a transformation to the display CRS can not be obtained.
+     * @throws FactoryException if a transformation to the display CRS cannot be obtained.
      * @throws TransformException if an error occurred while transforming an envelope.
      */
     public static void show(final String title, final MilitaryGridReferenceSystem.Coder coder, final Envelope areaOfInterest,
@@ -192,7 +192,7 @@ public final class LocationViewer extends JPanel {
      *
      * @param  coder           the encoder to use for computing locations and their envelopes.
      * @param  areaOfInterest  the geographic or projected area where to get locations.
-     * @throws FactoryException if a transformation to the display CRS can not be obtained.
+     * @throws FactoryException if a transformation to the display CRS cannot be obtained.
      * @throws TransformException if an error occurred while transforming an envelope.
      */
     public void addLocations(final MilitaryGridReferenceSystem.Coder coder, final Envelope areaOfInterest)
@@ -212,7 +212,7 @@ public final class LocationViewer extends JPanel {
      *
      * @param  label     a label that identify the location to add.
      * @param  location  the location to add to the list of locations shown by this widget.
-     * @throws FactoryException if a transformation to the display CRS can not be obtained.
+     * @throws FactoryException if a transformation to the display CRS cannot be obtained.
      * @throws TransformException if an error occurred while transforming an envelope.
      */
     public void addLocation(final String label, final Location location) throws FactoryException, TransformException {

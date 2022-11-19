@@ -76,7 +76,7 @@ public class GazetteerFactory extends AbstractFactory {
      *
      * @param  name  name of the reference system to obtain.
      * @return shared instance of the reference system for the given name.
-     * @throws GazetteerException if the reference system can not be obtained.
+     * @throws GazetteerException if the reference system cannot be obtained.
      */
     public ReferencingByIdentifiers forName(final String name) throws GazetteerException {
         return forNameIfKnown(name).orElseThrow(() ->
@@ -90,7 +90,7 @@ public class GazetteerFactory extends AbstractFactory {
      *
      * @param  name  name of the reference system to obtain.
      * @return shared instance of the reference system for the given name.
-     * @throws GazetteerException if the reference system can not be obtained.
+     * @throws GazetteerException if the reference system cannot be obtained.
      */
     public Optional<ReferencingByIdentifiers> forNameIfKnown(String name) throws GazetteerException {
         final int s = name.lastIndexOf(DefaultNameSpace.DEFAULT_SEPARATOR);

@@ -29,7 +29,7 @@ import java.lang.annotation.RetentionPolicy;
  * when new versions of external libraries become available.
  *
  * <div class="note"><b>Usage note:</b>
- * When only a portion of a method contains a workaround and the annotation can not be applied to that specific part,
+ * When only a portion of a method contains a workaround and the annotation cannot be applied to that specific part,
  * then it is applied to the whole method. Developers need to refer to code comments in order to locate the specific
  * part.</div>
  *

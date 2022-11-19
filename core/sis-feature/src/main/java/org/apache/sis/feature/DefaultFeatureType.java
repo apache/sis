@@ -268,7 +268,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
             this.superTypes = CollectionsExt.immutableSet(true, superTypes);
             for (final FeatureType type : this.superTypes) {
                 if (type instanceof NamedFeatureType) {
-                    // Hierarchy of feature types can not be cyclic.
+                    // Hierarchy of feature types cannot be cyclic.
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.UnresolvedFeatureName_1, type.getName()));
                 }
             }
@@ -608,7 +608,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
 
     /**
      * Returns {@code true} if the feature type acts as an abstract super-type.
-     * Abstract types can not be {@linkplain #newInstance() instantiated}.
+     * Abstract types cannot be {@linkplain #newInstance() instantiated}.
      *
      * @return {@code true} if the feature type acts as an abstract super-type.
      */

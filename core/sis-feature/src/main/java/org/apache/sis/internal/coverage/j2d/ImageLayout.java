@@ -71,8 +71,8 @@ public class ImageLayout {
     private final int preferredTileWidth, preferredTileHeight;
 
     /**
-     * Whether image size can be modified if needed. Changes are applied only if an image can not be tiled
-     * because {@link #suggestTileSize(int, int, boolean)} can not find a tile size close to the desired size.
+     * Whether image size can be modified if needed. Changes are applied only if an image cannot be tiled
+     * because {@link #suggestTileSize(int, int, boolean)} cannot find a tile size close to the desired size.
      * For example if the image width is a prime number, there is no way to divide the image horizontally with
      * an integer number of tiles. The only way to get an integer number of tiles is to change the image size.
      *

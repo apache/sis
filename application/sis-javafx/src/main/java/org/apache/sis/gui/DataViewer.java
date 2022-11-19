@@ -282,7 +282,7 @@ public class DataViewer extends Application {
 
     /**
      * Invoked when the user selects "File" ▶ "Open" menu.
-     * Users can select an arbitrary amount of files or directories.
+     * Users can select an arbitrary number of files or directories.
      * The effect is the same as dragging the files in the "resources tree" window.
      */
     private void showOpenFileDialog() {
@@ -356,7 +356,7 @@ public class DataViewer extends Application {
 
     /**
      * Invoked when the application should stop. No SIS application can be used after
-     * this method has been invoked (i.e. the application can not be restarted).
+     * this method has been invoked (i.e. the application cannot be restarted).
      *
      * @throws Exception if an error occurred, for example while closing a data store.
      */

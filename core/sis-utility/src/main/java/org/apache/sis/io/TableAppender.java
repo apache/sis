@@ -774,7 +774,7 @@ public class TableAppender extends Appender implements Flushable {
                              * we will not skip those spaces. We use Character.isWhitespace(…) instead
                              * of Character.isSpaceChar(…) in order to consider non-breaking spaces as
                              * non-white characters. This is similar to the use of &nbsp; in HTML tables,
-                             * which can be used for forcing the insertion of an otherwise ignored space.
+                             * which can be used for forcing the insertion of anotherwise ignored space.
                              */
                             for (int i=next; i<textLength; i += Character.charCount(c)) {
                                 c = cellText.codePointAt(i);

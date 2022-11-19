@@ -221,7 +221,7 @@ public class DefaultSpatialTemporalExtent extends DefaultTemporalExtent implemen
      *
      * @param  envelope  the envelope to use for setting this spatiotemporal extent.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can not be transformed to a temporal extent.
+     * @throws TransformException if the envelope cannot be transformed to a temporal extent.
      */
     @Override
     public void setBounds(final Envelope envelope) throws TransformException {

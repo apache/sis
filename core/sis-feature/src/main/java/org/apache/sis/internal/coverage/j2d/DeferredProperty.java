@@ -63,7 +63,7 @@ public final class DeferredProperty {
      * Returns the property value, which is computed when this method is first invoked.
      *
      * @param  image  the image for which to compute the property value.
-     * @return the property value, or {@code null} if it can not be computed.
+     * @return the property value, or {@code null} if it cannot be computed.
      */
     final synchronized Object compute(final RenderedImage image) {
         if (value == null) {

@@ -94,7 +94,7 @@ public class ResourcesDownloader extends OptionalInstallations {
 
     /**
      * Returns the name of the authority who provides data under non-Apache terms of use.
-     * If this {@code ResourcesDownloader} can not ask user's agreement because there is
+     * If this {@code ResourcesDownloader} cannot ask user's agreement because there is
      * no {@link Console} attached to the current Java virtual machine, then this method
      * returns an empty set.
      *

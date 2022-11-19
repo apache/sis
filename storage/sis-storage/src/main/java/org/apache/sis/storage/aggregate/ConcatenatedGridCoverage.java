@@ -266,7 +266,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
         if (count > 1) {
             if (strategy == null) {
                 /*
-                 * Can not infer a slice. If the user specified a single slice but that slice
+                 * Cannot infer a slice. If the user specified a single slice but that slice
                  * maps to more than one coverage, the error message tells that this problem
                  * can be avoided by specifying a merge strategy.
                  */

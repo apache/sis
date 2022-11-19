@@ -80,7 +80,7 @@ final class IdentifiedObjectFormat extends Format {
     }
 
     /**
-     * Can not parse object only from their name.
+     * Cannot parse object only from their name.
      */
     @Override
     public Object parseObject(final String source, final ParsePosition pos) {

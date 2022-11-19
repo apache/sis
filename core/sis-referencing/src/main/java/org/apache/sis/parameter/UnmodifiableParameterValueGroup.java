@@ -37,7 +37,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
- * A parameter value group which can not be modified. This is especially important for parameters of
+ * A parameter value group which cannot be modified. This is especially important for parameters of
  * <cite>defining conversions</cite> since the same instance can be used for various source and target CRS.
  * Since {@link org.apache.sis.referencing.factory.sql.EPSGFactory} caches the {@code Conversion} instances,
  * unexpected behavior results if the parameters of a cached conversion have been modified, for example with

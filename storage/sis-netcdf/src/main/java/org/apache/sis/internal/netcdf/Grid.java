@@ -148,7 +148,7 @@ public abstract class Grid extends NamedElement {
      * A {@code getTargetDimensions()} method would return the number of dimensions of the
      * <em>coordinate reference system</em>, which is the target of the <cite>"grid to CRS"</cite> conversion.
      * However we do not provide that method because, while it should be equal to {@code getAxes(decoder).length},
-     * it sometime differs because {@link #getAxes(Decoder)} may exclude axis with zero dimensions.
+     * it sometimes differs because {@link #getAxes(Decoder)} may exclude axis with zero dimensions.
      * The latter method should be used as the authoritative one.
      *
      * @return number of grid dimensions.
@@ -293,7 +293,7 @@ public abstract class Grid extends NamedElement {
      *         defined in {@code linearizations}. Ignored (can be null) if {@code linearizations} is null.
      * @return the CRS for this grid geometry, or {@code null}.
      * @throws IOException if an I/O operation was necessary but failed.
-     * @throws DataStoreException if the CRS can not be constructed.
+     * @throws DataStoreException if the CRS cannot be constructed.
      */
     final CoordinateReferenceSystem getCoordinateReferenceSystem(final Decoder decoder, final List<Exception> warnings,
             final List<GridCacheValue> linearizations, final Matrix reorderGridToCRS)
@@ -381,7 +381,7 @@ public abstract class Grid extends NamedElement {
      * @param   decoder   the decoder for which grid geometries are constructed.
      * @return  the public grid geometry (may be {@code null}).
      * @throws  IOException if an I/O operation was necessary but failed.
-     * @throws  DataStoreException if the CRS can not be constructed.
+     * @throws  DataStoreException if the CRS cannot be constructed.
      */
     final GridGeometry getGridGeometry(final Decoder decoder) throws IOException, DataStoreException {
         if (!isGeometryDetermined) try {
@@ -553,7 +553,7 @@ findFree:       for (int srcDim : axis.gridDimensionIndices) {                  
     }
 
     /**
-     * Logs a warning about a CRS or grid geometry that can not be created.
+     * Logs a warning about a CRS or grid geometry that cannot be created.
      *
      * @param  caller  one of {@code "getCoordinateReferenceSystem"} or {@code "getGridGeometry"}.
      * @param  key     one of {@link Resources.Keys#CanNotCreateCRS_3} or {@link Resources.Keys#CanNotCreateGridGeometry_3}.

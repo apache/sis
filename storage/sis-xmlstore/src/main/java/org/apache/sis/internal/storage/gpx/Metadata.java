@@ -91,7 +91,7 @@ public final class Metadata extends SimpleMetadata {
      * The data store that created this metadata, or {@code null} if none. This information is used for fetching
      * information that are constants for all GPX files, for example the feature types and the format description.
      *
-     * <p>This field needs to be set after construction. It can not be set at construction time because JAXB needs
+     * <p>This field needs to be set after construction. It cannot be set at construction time because JAXB needs
      * to invoke a no-argument constructor.</p>
      */
     Store store;

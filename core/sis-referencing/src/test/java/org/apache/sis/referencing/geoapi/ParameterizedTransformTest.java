@@ -62,8 +62,8 @@ public final strictfp class ParameterizedTransformTest extends org.opengis.test.
     /**
      * Disables the derivative (Jacobian) tests because not yet implemented.
      *
-     * @throws FactoryException if the math transform can not be created.
-     * @throws TransformException if the example point can not be transformed.
+     * @throws FactoryException if the math transform cannot be created.
+     * @throws TransformException if the example point cannot be transformed.
      */
     @Test
     @Override
@@ -75,8 +75,8 @@ public final strictfp class ParameterizedTransformTest extends org.opengis.test.
     /**
      * Disables the derivative (Jacobian) tests because not yet implemented.
      *
-     * @throws FactoryException if the math transform can not be created.
-     * @throws TransformException if the example point can not be transformed.
+     * @throws FactoryException if the math transform cannot be created.
+     * @throws TransformException if the example point cannot be transformed.
      */
     @Test
     @Override

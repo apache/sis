@@ -125,7 +125,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @param  <T>   dimension of the coordinate tuples and the translation unit.
      * @param  grid  the grid of datum shifts from source to target datum.
      * @throws NoninvertibleMatrixException if the conversion from geodetic coordinates
-     *         to grid indices can not be inverted.
+     *         to grid indices cannot be inverted.
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
@@ -268,7 +268,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * Applies the datum shift on a coordinate tuple and optionally returns the derivative at that location.
      *
      * @return {@inheritDoc}
-     * @throws TransformException if the point can not be transformed or
+     * @throws TransformException if the point cannot be transformed or
      *         if a problem occurred while calculating the derivative.
      */
     @Override
@@ -286,7 +286,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                                  dstPts, dstOff + GRID_DIMENSION,
                                       dimension - GRID_DIMENSION);
                 /*
-                 * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
+                 * We cannot use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                  * because the arrays may overlap. The contract said that this method
                  * must behave as if all input coordinate values have been read before
                  * we write outputs, which is the reason for System.arraycopy(…) call.
@@ -305,9 +305,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
     }
 
     /**
-     * Transforms an arbitrary amount of coordinate tuples.
+     * Transforms an arbitrary number of coordinate tuples.
      *
-     * @throws TransformException if a point can not be transformed.
+     * @throws TransformException if a point cannot be transformed.
      */
     @Override
     public void transform(double[] srcPts, int srcOff, final double[] dstPts, int dstOff, int numPts)
@@ -342,7 +342,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                                  dstPts, dstOff + GRID_DIMENSION,
                                       dimension - GRID_DIMENSION);
                 /*
-                 * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
+                 * We cannot use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                  * because the arrays may overlap. The contract said that this method
                  * must behave as if all input coordinate values have been read before
                  * we write outputs, which is the reason for System.arraycopy(…) call.
@@ -524,10 +524,10 @@ public class InterpolatedTransform extends DatumShiftTransform {
         }
 
         /**
-         * Transforms an arbitrary amount of coordinate tuples.
+         * Transforms an arbitrary number of coordinate tuples.
          * See class javadoc for some information about the algorithm.
          *
-         * @throws TransformException if a point can not be transformed.
+         * @throws TransformException if a point cannot be transformed.
          */
         @Override
         @SuppressWarnings("UseOfSystemOutOrSystemErr")                            // Used if DEBUG = true only.
@@ -585,7 +585,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                          * convert the translation vector from target units to source units.  The above simple
                          * case was assuming that this conversion is close to identity transform,  allowing us
                          * to write   xi = xi - ex   with the error   ex = (xi + tx) - x,  which simplified as
-                         * xi = x - tx.   But if the grid is more curved, we can not assume anymore that error
+                         * xi = x - tx.   But if the grid is more curved, we cannot assume anymore that error
                          * ex in target units is approximately equal to error dx in source units. A conversion
                          * needs to be applied,  by multiplying the translation error by the derivative of the
                          * "target to source" transform.  Since we do not know that derivative, we use inverse
@@ -632,9 +632,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
                      * threshold in last resort but nevertheless aim for an accuracy of 0.5 of cell size in order to keep some
                      * consistency with forward transform. We relax the threshold only if the result is apparently outside the
                      * grid (since there is no authoritative result outside the grid, it does not make sense to require a 1E-7
-                     * accuracy if we don't really know what the answer should be). If we can not find an answer, we throw an
+                     * accuracy if we don't really know what the answer should be). If we cannot find an answer, we throw an
                      * exception even if the points seem outside since experience shows that the point is not always outside;
-                     * sometime the algorithm wrongly think that the point is outside while it should actually have been inside.
+                     * sometimes the algorithm wrongly think that the point is outside while it should actually have been inside.
                      */
                     if (--it < 0) {
                         if (it == -1 && !forward.grid.isCellInGrid(xi, yi)) {
@@ -661,7 +661,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
                                      dstPts, dstOff + GRID_DIMENSION,
                                           dimension - GRID_DIMENSION);
                     /*
-                     * We can not use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
+                     * We cannot use srcPts[srcOff + i] = dstPts[dstOff + i] + offset[i]
                      * because the arrays may overlap. The contract said that this method
                      * must behave as if all input coordinate values have been read before
                      * we write outputs, which is the reason for System.arraycopy(…) call.

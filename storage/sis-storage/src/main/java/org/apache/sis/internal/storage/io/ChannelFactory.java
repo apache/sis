@@ -59,7 +59,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * Opens a readable or writable channel for a given input object (URL, input stream, <i>etc</i>).
  * The {@link #prepare prepare(…)} method analyzes the given input {@link Object} and tries to return a factory instance
  * capable to open at least a {@link ReadableByteChannel} for that input. For some kinds of input like {@link Path} or
- * {@link URL}, the {@link #readable readable(…)} method can be invoked an arbitrary amount of times for creating as many
+ * {@link URL}, the {@link #readable readable(…)} method can be invoked an arbitrary number of times for creating as many
  * channels as needed. But for other kinds of input like {@link InputStream}, only one channel can be returned.
  * In such case, only the first {@link #readable readable(…)} method invocation will succeed and all subsequent ones
  * will throw an exception.
@@ -293,7 +293,7 @@ public abstract class ChannelFactory {
          * at reading time. See https://bugs.openjdk.java.net/browse/JDK-8080629 for more information.
          *
          * If the file does not exist, we let NoSuchFileException to be thrown by the code below because non-existant
-         * file is probably an error. This is not the same situation than a directory, which can not be opened by this
+         * file is probably an error. This is not the same situation than a directory, which cannot be opened by this
          * class but may be opened by some specialized DataStore implementations.
          */
         if (storage instanceof Path) {
@@ -347,7 +347,7 @@ public abstract class ChannelFactory {
      * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the input stream.
      * @throws DataStoreException if the channel is read-once.
-     * @throws IOException if the input stream or its underlying byte channel can not be created.
+     * @throws IOException if the input stream or its underlying byte channel cannot be created.
      */
     public InputStream inputStream(String filename, StoreListeners listeners)
             throws DataStoreException, IOException
@@ -367,7 +367,7 @@ public abstract class ChannelFactory {
      * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
      * @return the output stream.
      * @throws DataStoreException if the channel is write-once.
-     * @throws IOException if the output stream or its underlying byte channel can not be created.
+     * @throws IOException if the output stream or its underlying byte channel cannot be created.
      */
     public OutputStream outputStream(String filename, StoreListeners listeners)
             throws DataStoreException, IOException
@@ -377,7 +377,7 @@ public abstract class ChannelFactory {
 
     /**
      * Returns a byte channel from the input given to the {@link #prepare prepare(…)} method.
-     * If the channel has already been created and this method can not create it twice, then
+     * If the channel has already been created and this method cannot create it twice, then
      * this method throws an exception.
      *
      * @param  filename  data store name to report in case of failure.
@@ -391,7 +391,7 @@ public abstract class ChannelFactory {
 
     /**
      * Returns a byte channel from the output given to the {@link #prepare prepare(…)} method.
-     * If the channel has already been created and this method can not create it twice, then
+     * If the channel has already been created and this method cannot create it twice, then
      * this method throws an exception.
      *
      * @param  filename  data store name to report in case of failure.
@@ -542,7 +542,7 @@ public abstract class ChannelFactory {
         private InvalidPathException cause;
 
         /**
-         * Creates a new fallback to use if the given file can not be converted to a {@link Path}.
+         * Creates a new fallback to use if the given file cannot be converted to a {@link Path}.
          */
         Fallback(final File file, final InvalidPathException cause) {
             super(true);

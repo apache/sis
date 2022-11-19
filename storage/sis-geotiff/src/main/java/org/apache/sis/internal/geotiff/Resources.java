@@ -59,7 +59,7 @@ public final class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Can not compute the grid geometry of “{0}” GeoTIFF file.
+         * Cannot compute the grid geometry of “{0}” GeoTIFF file.
          */
         public static final short CanNotComputeGridGeometry_1 = 26;
 
@@ -138,7 +138,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short MissingGeoValue_1 = 12;
 
         /**
-         * Can not read TIFF image from “{0}” because the “{1}” tag is missing.
+         * Cannot read TIFF image from “{0}” because the “{1}” tag is missing.
          */
         public static final short MissingValue_2 = 13;
 
@@ -244,7 +244,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);

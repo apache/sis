@@ -289,7 +289,7 @@ final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Exec
     }
 
     /**
-     * Creates a tile to use as a placeholder when a tile can not be computed.
+     * Creates a tile to use as a placeholder when a tile cannot be computed.
      *
      * @param  tileX  column index of the tile for which to create a placeholder.
      * @param  tileY  row index of the tile for which to create a placeholder.

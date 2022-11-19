@@ -222,7 +222,7 @@ public class AlbersEqualArea extends AuthalicConversion {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -254,7 +254,7 @@ public class AlbersEqualArea extends AuthalicConversion {
     /**
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates and stores the (θ,φ) result in {@code dstPts}.
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

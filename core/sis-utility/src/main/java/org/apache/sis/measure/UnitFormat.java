@@ -402,7 +402,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * <ul>
      *   <li>The following characters are reserved since they have special meaning in UCUM format, in URI
      *       or in Apache SIS parser: <blockquote>" # ( ) * + - . / : = ? [ ] { } ^ ⋅ ∕</blockquote></li>
-     *   <li>The symbol can not begin or end with digits, since such digits would be confused with unit power.</li>
+     *   <li>The symbol cannot begin or end with digits, since such digits would be confused with unit power.</li>
      * </ul>
      *
      * @param  unit   the unit being labeled.
@@ -525,7 +525,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                 if (!locale.equals(Locale.ROOT)) copy(Locale.ROOT, getBundle(Locale.ROOT), map);
                 /*
                  * The UnitAliases file contains names that are not unit symbols and are not included in the UnitNames
-                 * property files neither. It contains longer names sometime used (for example "decimal degree" instead
+                 * property files neither. It contains longer names sometimes used (for example "decimal degree" instead
                  * of "degree"), some plural forms (for example "feet" instead of "foot") and a few common misspellings
                  * (for exemple "Celcius" instead of "Celsius").
                  */
@@ -1433,7 +1433,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                      *
                      * In principle, spaces are not allowed in unit symbols (in particular, UCUM specifies that
                      * spaces should not be interpreted as multication operators).  However in practice we have
-                     * sometime units written in a form like "100 feet".
+                     * sometimes units written in a form like "100 feet".
                      *
                      * If the last character is a super-script, then we assume a notation like "10⁻⁴".
                      */
@@ -1584,7 +1584,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
      *
      * @param  source  the text, part of which should be parsed.
      * @return a unit parsed from the string.
-     * @throws ParseException if the given string can not be fully parsed.
+     * @throws ParseException if the given string cannot be fully parsed.
      */
     @Override
     public Object parseObject(final String source) throws ParseException {

@@ -798,7 +798,7 @@ public class TileOpExecutor {
     /**
      * Base class of workers which will read or write tiles. Exactly one {@code Worker} instance is
      * created for each thread which will perform the computation. The same {@code Worker} instance
-     * can process an arbitrary amount of tiles.
+     * can process an arbitrary number of tiles.
      *
      * <p>Subclasses must override {@link #executeOnCurrentTile()}.</p>
      *
@@ -878,7 +878,7 @@ public class TileOpExecutor {
          * (for allowing {@link #trimImagingWrapper(Throwable)} to recognize and unwrap it).
          *
          * @param  ex  the exception to propagate if possible.
-         * @return the exception to throw if the given exception can not be propagated.
+         * @return the exception to throw if the given exception cannot be propagated.
          */
         static ImagingOpException rethrowOrWrap(final Throwable ex) {
             Throwable cause = ex.getCause();
@@ -922,7 +922,7 @@ public class TileOpExecutor {
     /**
      * Worker which will read tiles. Exactly one {@code ReadWork} instance is created for each thread
      * which will perform the computation on {@link Raster} tiles. The same {@code ReadWork} instance
-     * can process an arbitrary amount of tiles.
+     * can process an arbitrary number of tiles.
      *
      * @param  <A>   type of the thread-local object (the accumulator) for holding intermediate results.
      */
@@ -972,7 +972,7 @@ public class TileOpExecutor {
     /**
      * Worker which will write tiles. Exactly one {@code WriteWork} instance is created for each thread
      * which will perform the operation on {@link WritableRaster} tiles. The same {@code WriteWork}
-     * instance can process an arbitrary amount of tiles.
+     * instance can process an arbitrary number of tiles.
      *
      * @param  <A>   type of the thread-local object (the accumulator) for holding intermediate results.
      */

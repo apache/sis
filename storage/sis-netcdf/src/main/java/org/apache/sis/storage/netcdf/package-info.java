@@ -21,7 +21,7 @@
  * {@link org.apache.sis.storage.netcdf.AttributeNames} class.
  *
  * <h2>Note on the definition of terms</h2>
- * The UCAR library sometime uses the same words than the ISO/OGC standards for different things.
+ * The UCAR library sometimes uses the same words than the ISO/OGC standards for different things.
  * In particular the words <cite>"domain"</cite> and <cite>"range"</cite> can be applied to arbitrary functions,
  * and the UCAR library chooses to apply it to the function that converts grid indices to geodetic coordinates.
  * This is a different usage than ISO 19123 which uses the <cite>domain</cite> and <cite>range</cite> words for

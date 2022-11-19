@@ -57,8 +57,8 @@ import static java.lang.Double.doubleToLongBits;
  * <ul>
  *   <li>{@link #setBounds(double, double, double, double)} for setting the extent from (λ,φ) values.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
- *   <li>{@link #setBounds(GeographicBoundingBox)} for setting the extent from an other bounding box.</li>
- *   <li>{@link #add(GeographicBoundingBox)} for expanding this extent to include an other bounding box.</li>
+ *   <li>{@link #setBounds(GeographicBoundingBox)} for setting the extent from another bounding box.</li>
+ *   <li>{@link #add(GeographicBoundingBox)} for expanding this extent to include another bounding box.</li>
  *   <li>{@link #intersect(GeographicBoundingBox)} for the intersection between the two bounding boxes.</li>
  * </ul>
  *
@@ -524,7 +524,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *
      * @param  envelope  the envelope to use for setting this geographic bounding box.
      * @throws UnsupportedOperationException if the referencing module is not on the classpath.
-     * @throws TransformException if the envelope can not be transformed to a geographic extent.
+     * @throws TransformException if the envelope cannot be transformed to a geographic extent.
      *
      * @see DefaultExtent#addElements(Envelope)
      * @see DefaultVerticalExtent#setBounds(Envelope)
@@ -789,7 +789,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
         }
         /*
          * Above code really requires DefaultGeographicBoundingBox.class, not getClass().
-         * This code is used only for performance raison. The super-class implementation
+         * This code is used only for performance reason. The super-class implementation
          * is generic enough for all other cases.
          */
         if (object != null && object.getClass() == DefaultGeographicBoundingBox.class) {

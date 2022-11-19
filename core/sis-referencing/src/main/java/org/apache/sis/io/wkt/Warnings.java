@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * <ul>
  *   <li>Recoverable exceptions.</li>
- *   <li>At formatting time, object that can not be formatted in a standard-compliant WKT.</li>
+ *   <li>At formatting time, object that cannot be formatted in a standard-compliant WKT.</li>
  *   <li>At parsing time, unknown keywords.</li>
  * </ul>
  *
@@ -150,7 +150,7 @@ public final class Warnings implements Localized, Serializable {
      *
      * @param locale           the locale for reporting warning messages.
      * @param isParsing        {@code false} if formatting, or {@code true} if parsing.
-     * @param ignoredElements  the {@link AbstractParser#ignoredElements} map, or an empty map (can not be null).
+     * @param ignoredElements  the {@link AbstractParser#ignoredElements} map, or an empty map (cannot be null).
      */
     Warnings(final Locale locale, final boolean isParsing, final Map<String, List<String>> ignoredElements) {
         this.errorLocale     = locale;

@@ -106,7 +106,7 @@ public class IntervalRectangle extends Rectangle2D {
      * This constructor unconditionally assigns {@code lower} coordinates to {@link #xmin}, {@link #ymin} and
      * {@code upper} coordinates to {@link #xmax}, {@link #ymax} regardless of their values; this constructor
      * does not verify if {@code lower} coordinates are smaller than {@code upper} coordinates.
-     * This is sometime useful for creating a rectangle crossing the anti-meridian,
+     * This is sometimes useful for creating a rectangle crossing the anti-meridian,
      * even if {@code IntervalRectangle} class does not support such rectangles by itself.
      *
      * @param lower  the limits in the direction of decreasing coordinate values for each dimension.

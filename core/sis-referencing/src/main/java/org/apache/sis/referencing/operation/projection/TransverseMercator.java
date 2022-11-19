@@ -50,7 +50,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * <h2>Description</h2>
  * This is a cylindrical projection, in which the cylinder has been rotated 90°.
- * Instead of being tangent to the equator (or to an other standard latitude), it is tangent to a central meridian.
+ * Instead of being tangent to the equator (or to another standard latitude), it is tangent to a central meridian.
  * Deformation are more important as we are going further from the central meridian.
  * The Transverse Mercator projection is appropriate for region which have a greater extent north-south than east-west.
  *
@@ -435,7 +435,7 @@ public class TransverseMercator extends NormalizedProjection {
      * (i.e. applying a projection followed by a reverse projection gives approximately the original values).
      *
      * <div class="note"><b>Rational:</b>
-     * those coordinates are accepted despite the low accuracy of projection results because they are sometime
+     * those coordinates are accepted despite the low accuracy of projection results because they are sometimes
      * needed for expressing bounding boxes. A bounding box may have corners located in invalid projection area
      * even if all features inside the box have valid coordinates. For "contains" and "intersects" tests between
      * envelopes, we do not need accurate coordinates; a monotonic behavior of x = f(λ) can be sufficient.</div>
@@ -448,7 +448,7 @@ public class TransverseMercator extends NormalizedProjection {
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -482,10 +482,10 @@ public class TransverseMercator extends NormalizedProjection {
              * Reminder: difference between returning NaN or throwing an exception is as below:
              *
              *    - NaN means "value does not exist or is not a real number".
-             *    - ProjectionException means "value should exist but can not be computed".
+             *    - ProjectionException means "value should exist but cannot be computed".
              *
              * So it is okay to return NaN for values located at Δλ > 90°, but we should throw an exception
-             * for values at Δλ ≤ 90° if we can not compute them. Previous version of this method was throwing
+             * for values at Δλ ≤ 90° if we cannot compute them. Previous version of this method was throwing
              * an exception for all Δλ > 70°. Now that we accept all longitudes up to 90°, we return NaN instead.
              */
             if (Math.abs(IEEEremainder(λ, 2*PI)) > 90 * (PI/180)) {         // More costly check.
@@ -495,7 +495,7 @@ public class TransverseMercator extends NormalizedProjection {
         final double sinλ  = sin(λ);
         final double ℯsinφ = sin(φ) * eccentricity;
         final double Q     = asinh(tan(φ)) - atanh(ℯsinφ) * eccentricity;
-        final double coshQ = cosh(Q);                                       // Can not be smaller than 1.
+        final double coshQ = cosh(Q);                                       // Cannot be smaller than 1.
         final double η0    = atanh(sinλ / coshQ);                           // Tends toward ±∞ if λ → ±90°.
         /*
          * Original formula: η0 = atanh(sin(λ) * cos(β)) where
@@ -647,7 +647,7 @@ public class TransverseMercator extends NormalizedProjection {
     /**
      * Transforms the specified (η, ξ) coordinates and stores the result in {@code dstPts} (angles in radians).
      *
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

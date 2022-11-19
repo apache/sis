@@ -125,7 +125,7 @@ public abstract class Inflater implements Closeable {
                 /*
                  * We want the smallest divisor n ≥ s/maxChunkSize. Note that `i` is guaranteed
                  * to be inside the array index range because the last array element is `s` and
-                 * the value that we search can not be greater.
+                 * the value that we search cannot be greater.
                  */
                 final int[] divisors = MathFunctions.divisors(samplesPerChunk);
                 int i = Arrays.binarySearch(divisors, Numerics.ceilDiv(samplesPerChunk, maxChunkSize));
@@ -133,7 +133,7 @@ public abstract class Inflater implements Closeable {
                 /*
                  * Following loop iterates exactly once unless `pixelsPerElement` > 1.
                  * The intent is to ensure that `samplesPerChunk` is also a divisor of `pixelsPerElement`.
-                 * If we can not find such value, current implementation will fail at `ensureDivisor` call.
+                 * If we cannot find such value, current implementation will fail at `ensureDivisor` call.
                  *
                  * TODO: to avoid this problem, one possible approach could be to force `maxChunkSize` to be
                  * wide enough for a full row when `samplesPerChunk` > 1.

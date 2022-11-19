@@ -230,7 +230,7 @@ public final class CRS extends Static {
      * @param  code  the authority code.
      * @return the Coordinate Reference System for the given authority code.
      * @throws NoSuchAuthorityCodeException if there is no known CRS associated to the given code.
-     * @throws FactoryException if the CRS creation failed for an other reason.
+     * @throws FactoryException if the CRS creation failed for another reason.
      *
      * @see #getAuthorityFactory(String)
      * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory
@@ -300,7 +300,7 @@ public final class CRS extends Static {
      *
      * @param  text  coordinate system encoded in Well-Known Text format (version 1 or 2).
      * @return the parsed Coordinate Reference System.
-     * @throws FactoryException if the given WKT can not be parsed.
+     * @throws FactoryException if the given WKT cannot be parsed.
      *
      * @see org.apache.sis.io.wkt.WKTFormat
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createFromWKT(String)
@@ -627,7 +627,7 @@ public final class CRS extends Static {
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
      * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
-     * @throws FactoryException if the operation can not be created for another reason.
+     * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @see Envelopes#findOperation(Envelope, Envelope)
      * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
@@ -675,7 +675,7 @@ public final class CRS extends Static {
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
      * @return mathematical operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
-     * @throws FactoryException if the operation can not be created for another reason.
+     * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @see DefaultCoordinateOperationFactory#createOperations(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
      *
@@ -859,7 +859,7 @@ public final class CRS extends Static {
                 /*
                  * We do not assign WGS84 unconditionally to the geographic bounding box, because
                  * it is not defined to be on a particular datum; it is only approximated bounds.
-                 * We try to get the GeographicCRS from the user-supplied CRS in order to reduce
+                 * We try to get the GeographicCRS from the user supplied CRS in order to reduce
                  * the amount of transformation needed.
                  */
                 final SingleCRS targetCRS = getHorizontalComponent(crs);
@@ -1207,7 +1207,7 @@ public final class CRS extends Static {
      * If the caller feels confident that ellipsoidal heights are safe for his task, he can set the
      * {@code allowCreateEllipsoidal} argument to {@code true}. In such case, this {@code getVerticalComponent(…)}
      * method will create a temporary {@code VerticalCRS} from the first three-dimensional {@code GeographicCRS}
-     * <em>in last resort</em>, only if it can not find an existing {@code VerticalCRS} instance.
+     * <em>in last resort</em>, only if it cannot find an existing {@code VerticalCRS} instance.
      * <strong>Note that this is not a valid CRS according ISO 19111</strong> — use with care.</p>
      *
      * @param  crs  the coordinate reference system, or {@code null}.
@@ -1371,7 +1371,7 @@ public final class CRS extends Static {
      * @param  lower  the first dimension to keep, inclusive.
      * @param  upper  the last  dimension to keep, exclusive.
      * @return the sub-coordinate system, or {@code null} if the given {@code crs} was {@code null}
-     *         or can not be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
+     *         or cannot be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
      * @throws IndexOutOfBoundsException if the given index are out of bounds.
      *
      * @see #selectDimensions(CoordinateReferenceSystem, int[])
@@ -1411,7 +1411,7 @@ check:  while (lower != 0 || upper != dimension) {
 
     /**
      * Returns the Greenwich longitude of the prime meridian of the given CRS in degrees.
-     * If the prime meridian uses an other unit than degrees, then the value will be converted.
+     * If the prime meridian uses another unit than degrees, then the value will be converted.
      *
      * @param  crs  the coordinate reference system from which to get the prime meridian.
      * @return the Greenwich longitude (in degrees) of the prime meridian of the given CRS.

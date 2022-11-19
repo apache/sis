@@ -76,7 +76,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Returns the database or specification that defines the codes recognized by this factory.
-     * This method may return {@code null} if it can not obtain this information, for example because
+     * This method may return {@code null} if it cannot obtain this information, for example because
      * the connection to a database is not available.
      *
      * <div class="note"><b>Example:</b>
@@ -216,7 +216,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -261,7 +261,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -296,7 +296,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -332,7 +332,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -364,7 +364,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -383,7 +383,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -402,7 +402,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -432,7 +432,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -447,11 +447,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a CRS that is defined by its coordinate conversion from another CRS (not by a datum).
-     * {@code DerivedCRS} can not be {@code ProjectedCRS} themselves, but may be derived from a projected CRS.
+     * {@code DerivedCRS} cannot be {@code ProjectedCRS} themselves, but may be derived from a projected CRS.
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -480,7 +480,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -500,7 +500,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate reference system for the given code.
@@ -535,7 +535,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -569,7 +569,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -604,7 +604,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -623,7 +623,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -642,7 +642,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -674,7 +674,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -694,7 +694,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the datum for the given code.
@@ -726,7 +726,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the ellipsoid for the given code.
@@ -760,7 +760,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the prime meridian for the given code.
@@ -791,7 +791,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the extent for the given code.
@@ -827,7 +827,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -843,7 +843,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a 2- or 3-dimensional coordinate system for geodetic latitude and longitude,
-     * sometime with ellipsoidal height.
+     * sometimes with ellipsoidal height.
      *
      * <div class="note"><b>Example:</b>
      * the {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining
@@ -861,7 +861,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -891,7 +891,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -910,7 +910,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -928,7 +928,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -961,7 +961,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -991,7 +991,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -1010,7 +1010,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -1029,7 +1029,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateSystem(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the coordinate system for the given code.
@@ -1061,7 +1061,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the axis for the given code.
@@ -1098,7 +1098,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the unit of measurement for the given code.
@@ -1131,7 +1131,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the parameter descriptor for the given code.
@@ -1159,7 +1159,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the operation method for the given code.
@@ -1194,7 +1194,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createObject(String)} and casts the result.
-     * If the result can not be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
+     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
      *
      * @param  code  value allocated by authority.
      * @return the operation for the given code.
@@ -1236,7 +1236,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
      *
      * @return a finder to use for looking up unidentified objects.
-     * @throws FactoryException if the finder can not be created.
+     * @throws FactoryException if the finder cannot be created.
      *
      * @see org.apache.sis.referencing.IdentifiedObjects#newFinder(String)
      */
@@ -1279,7 +1279,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                     final int n = code.indexOf(Constants.DEFAULT_SEPARATOR, s + 1);
                     if (n >= 0 && code.indexOf(Constants.DEFAULT_SEPARATOR, n + 1) < 0) {
                         /*
-                         * The separator sometime appears twice, as in "EPSG::4326" or "EPSG:8.9:4326".
+                         * The separator sometimes appears twice, as in "EPSG::4326" or "EPSG:8.9:4326".
                          * The part between the two separators is the verion number, which we ignore in
                          * this simple version provided that it is the last semi-colon.
                          */
@@ -1294,7 +1294,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Casts the given object to the given type, or throws an exception if the object can not be casted.
+     * Casts the given object to the given type, or throws an exception if the object cannot be casted.
      * This convenience method is provided for implementation of {@code createXXX} methods.
      *
      * @param  type    the type to return (e.g. {@code CoordinateReferenceSystem.class}).

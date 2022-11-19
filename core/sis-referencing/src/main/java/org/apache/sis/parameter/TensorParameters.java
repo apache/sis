@@ -98,7 +98,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  *
  * <div class="note"><b>Note:</b>
- * the EPSG database contains also A3, A4, A5, A6, A7, A8 and B3 parameters,
+ * the EPSG database also contains A3, A4, A5, A6, A7, A8 and B3 parameters,
  * but they are for polynomial transformations, not for affine transformations.</div>
  *
  * </td><td class="sep">
@@ -197,7 +197,7 @@ public class TensorParameters<E> implements Serializable {
      *       and {@code "C2"} in a 3×3 matrices).</li>
      * </ul>
      *
-     * Because of the above-cited extensions, this {@code TensorParameters} constant can not be named {@code EPSG}.
+     * Because of the above-cited extensions, this {@code TensorParameters} constant cannot be named {@code EPSG}.
      *
      * @since 0.6
      */
@@ -434,7 +434,7 @@ public class TensorParameters<E> implements Serializable {
         }
         /*
          * Parameter not found in the cache. Create a new one and cache it for future reuse.
-         * Note that an other thread could have created the same descriptor in the meantime,
+         * Note that another thread could have created the same descriptor in the meantime,
          * so we will need to check again.
          */
         final ParameterDescriptor<E> param = createElementDescriptor(indices);

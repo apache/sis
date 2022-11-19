@@ -47,7 +47,7 @@ public interface Markable {
      * Returns the current byte position of the stream.
      *
      * @return the position of the stream.
-     * @throws IOException if the position can not be obtained.
+     * @throws IOException if the position cannot be obtained.
      */
     long getStreamPosition() throws IOException;
 
@@ -57,7 +57,7 @@ public interface Markable {
      * at the last marked position so that subsequent reads re-read the same bytes.
      * Calls to {@code mark()} and {@code reset()} can be nested arbitrarily.
      *
-     * @throws IOException if this stream can not mark the current position.
+     * @throws IOException if this stream cannot mark the current position.
      *
      * @see javax.imageio.stream.ImageInputStream#mark()
      */
@@ -75,7 +75,7 @@ public interface Markable {
      * {@link javax.imageio.stream.ImageInputStream#reset()} specifies that we shall do nothing.
      * For this {@code Markable} interface we recommend to throw an {@link IOException}.
      *
-     * @throws IOException if this stream can not move to the last mark position.
+     * @throws IOException if this stream cannot move to the last mark position.
      *
      * @see java.io.InputStream#reset()
      * @see javax.imageio.stream.ImageInputStream#reset()
@@ -89,7 +89,7 @@ public interface Markable {
      * on that position.
      *
      * @param  mark  position where to seek. Should be a position where a mark has been created.
-     * @throws IOException if this stream can not move to the specified mark position.
+     * @throws IOException if this stream cannot move to the specified mark position.
      */
     void reset(long mark) throws IOException;
 }

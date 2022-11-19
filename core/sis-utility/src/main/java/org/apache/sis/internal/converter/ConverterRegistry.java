@@ -40,7 +40,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <h2>Note about conversions from interfaces</h2>
  * {@code ConverterRegistry} is primarily designed for handling converters from classes to other classes.
- * Handling of interfaces are not prohibited (and actually sometime supported), but their behavior may be
+ * Handling of interfaces are not prohibited (and actually sometimes supported), but their behavior may be
  * more ambiguous than in the case of classes because of multi-inheritance in interface hierarchy.
  *
  * <h2>Thread safety</h2>
@@ -235,7 +235,7 @@ public class ConverterRegistry {
      *
      * <h4>Which sub-classes of the source class are registered</h4>
      * Sub-classes of the source class will be registered on a case-by-case basis when the
-     * {@link #find(Class, Class)} is invoked, because we can not know the set of all
+     * {@link #find(Class, Class)} is invoked, because we cannot know the set of all
      * sub-classes in advance (and would not necessarily want to register all of them anyway).
      *
      * @param  <S>        the class of source value.
@@ -245,7 +245,7 @@ public class ConverterRegistry {
     public <S,T> void register(final ObjectConverter<S,T> converter) {
         ArgumentChecks.ensureNonNull("converter", converter);
         /*
-         * If the given converter is a FallbackConverter (maybe obtained from an other
+         * If the given converter is a FallbackConverter (maybe obtained from another
          * ConverterRegistry), unwraps it and registers its component individually.
          */
         if (converter instanceof FallbackConverter<?,?>) {
@@ -348,7 +348,7 @@ public class ConverterRegistry {
         final ObjectConverter<? super S, ? extends T> existing = get(key);
         if (existing != null) {
             /*
-             * An other converter already exists for the given key. If the converters are
+             * Another converter already exists for the given key. If the converters are
              * equal (i.e. the user registered the same converter twice), do nothing.
              */
             if (existing.equals(converter)) {
@@ -367,7 +367,7 @@ public class ConverterRegistry {
                 if (oldIsExact & !newIsExact) {
                     /*
                      * The existing converter was defined exactly for the <S,T> classes, while the
-                     * new one was defined for an other target. Do not touch the old converter and
+                     * new one was defined for another target. Do not touch the old converter and
                      * discard the new one. The new converter is not really lost since it should
                      * have been registered in a previous iteration for its own <S,T> classes.
                      */
@@ -583,7 +583,7 @@ public class ConverterRegistry {
                     /*
                      * If we enter this block, then the converter is not really for this
                      * (source, target) classes pair. Instead, we are leveraging a converter
-                     * which was defined for an other ClassPair.  We show this fact be first
+                     * which was defined for another ClassPair.  We show this fact be first
                      * showing this ClassPair, then the actual converter (source, target) as
                      * below:
                      *

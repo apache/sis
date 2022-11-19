@@ -93,7 +93,7 @@ CREATE TABLE metadata."Responsibility" (
 --
 -- All parties referenced in this SQL file. We currently have only organisations, no individuals.
 -- This SQL file has a one-to-one relationship between "Party" (organisation) and "Responsibility"
--- but sometime with different identifiers for emphasising on the product rather than the company.
+-- but sometimes with different identifiers for emphasising on the product rather than the company.
 --
 INSERT INTO metadata."Organisation" ("ID", "name") VALUES
   ('{org}Apache', 'The Apache Software Foundation'),

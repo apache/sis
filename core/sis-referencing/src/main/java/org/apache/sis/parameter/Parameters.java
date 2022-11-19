@@ -538,7 +538,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * @return the requested parameter value if it exists, or the {@linkplain DefaultParameterDescriptor#getDefaultValue()
      *         default value} otherwise (which may be {@code null}).
      * @throws ParameterNotFoundException if the given {@code parameter} name or alias is not legal for this group.
-     * @throws UnconvertibleObjectException if the parameter value can not be converted to the expected type.
+     * @throws UnconvertibleObjectException if the parameter value cannot be converted to the expected type.
      *
      * @see #getMandatoryValue(ParameterDescriptor)
      * @see #getOrCreate(ParameterDescriptor)

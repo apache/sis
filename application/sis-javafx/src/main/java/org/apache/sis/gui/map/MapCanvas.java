@@ -158,7 +158,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * It does not apply to the immediate feedback that the user gets from JavaFX affine transforms
      * (an image with lower quality used until the higher quality image become ready).
      *
-     * <p>This value should not be too small for reducing flickering effects that are sometime visible
+     * <p>This value should not be too small for reducing flickering effects that are sometimes visible
      * at the moment when image data are replaced.</p>
      *
      * @see #requestRepaint()
@@ -802,7 +802,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Invoked when the user changed the CRS from a JavaFX control. If the CRS can not be set to the specified
+     * Invoked when the user changed the CRS from a JavaFX control. If the CRS cannot be set to the specified
      * value, then an error message is shown in the status bar and the property is reset to its previous value.
      *
      * @param  crs       the new Coordinate Reference System in which to transform all data before displaying.
@@ -816,7 +816,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         if (crs != previous) try {
             /*
              * If no anchor is specified, the first default is the center of the region currently visible
-             * in the canvas. If that center can not be determined neither, null anchor defaults to the
+             * in the canvas. If that center cannot be determined neither, null anchor defaults to the
              * point of interest (POI) managed by the Canvas parent class.
              */
             if (anchor == null) {
@@ -882,7 +882,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @param  newValue  the new <cite>objective to display</cite> conversion.
      * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
-     * @throws RenderException if the <cite>objective to display</cite> transform can not be set to the given value for another reason.
+     * @throws RenderException if the <cite>objective to display</cite> transform cannot be set to the given value for another reason.
      */
     @Override
     public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
@@ -1499,7 +1499,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * as a {@linkplain Throwable#addSuppressed(Throwable) suppressed exception}. The error property
      * is cleared when a rendering operation completed successfully.</p>
      *
-     * @param  ex  the exception that occurred (can not be null).
+     * @param  ex  the exception that occurred (cannot be null).
      */
     protected void errorOccurred(final Throwable ex) {
         if (hasError) {

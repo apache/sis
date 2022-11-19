@@ -76,7 +76,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
 
     /**
      * Transforms an envelope using the given math transform.
-     * This transformation can not handle poles.
+     * This transformation cannot handle poles.
      *
      * <p>This method wraps the math transform into an opaque object for hiding the fact that the given
      * transform implements the {@link MathTransform2D} interface. The intent is to disable optimization

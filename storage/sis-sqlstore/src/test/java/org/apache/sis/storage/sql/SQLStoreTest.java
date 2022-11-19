@@ -508,7 +508,7 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     /**
-     * Tests fetching the content of the Cities table, but using a user-supplied SQL query.
+     * Tests fetching the content of the Cities table, but using a user supplied SQL query.
      */
     private void verifyFetchCityTableAsQuery(final StorageConnector connector) throws Exception {
         try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("LargeCities",
@@ -528,7 +528,7 @@ public final strictfp class SQLStoreTest extends TestCase {
     }
 
     /**
-     * Tests a user-supplied query followed by another query built from filters.
+     * Tests a user supplied query followed by another query built from filters.
      */
     private void verifyNestedSQLQuery(final StorageConnector connector) throws Exception {
         try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("MyParks",

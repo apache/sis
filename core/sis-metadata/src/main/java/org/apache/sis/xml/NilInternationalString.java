@@ -67,7 +67,7 @@ final class NilInternationalString implements InternationalString, NilObject, Se
 
     /**
      * Unconditionally throws {@link IndexOutOfBoundsException},
-     * since we can not get any character from an empty string.
+     * since we cannot get any character from an empty string.
      */
     @Override
     public char charAt(final int index) {

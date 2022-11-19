@@ -256,9 +256,9 @@ public abstract class Geometries<G> implements Serializable {
     /**
      * Parses the given Well Known Text (WKT).
      *
-     * @param  wkt  the WKT to parse. Can not be null.
+     * @param  wkt  the WKT to parse. Cannot be null.
      * @return the geometry object for the given WKT (never {@code null}).
-     * @throws Exception if the WKT can not be parsed. The exception sub-class depends on the implementation.
+     * @throws Exception if the WKT cannot be parsed. The exception sub-class depends on the implementation.
      *
      * @see GeometryWrapper#formatWKT(double)
      */
@@ -268,9 +268,9 @@ public abstract class Geometries<G> implements Serializable {
      * Reads the given bytes as a Well Known Binary (WKB) encoded geometry.
      * Whether this method changes the buffer position or not is implementation-dependent.
      *
-     * @param  data  the binary data in WKB format. Can not be null.
+     * @param  data  the binary data in WKB format. Cannot be null.
      * @return decoded geometry (never {@code null}).
-     * @throws Exception if the WKB can not be parsed. The exception sub-class depends on the implementation.
+     * @throws Exception if the WKB cannot be parsed. The exception sub-class depends on the implementation.
      */
     public abstract GeometryWrapper<G> parseWKB(ByteBuffer data) throws Exception;
 
@@ -364,7 +364,7 @@ public abstract class Geometries<G> implements Serializable {
      * @param  dimension    the number of dimensions ({@value #BIDIMENSIONAL} or {@value #TRIDIMENSIONAL}).
      * @param  coordinates  sequence of (x,y) or (x,y,z) tuples.
      * @return the geometric object for the given points.
-     * @throws UnsupportedOperationException if the geometry library can not create the requested path.
+     * @throws UnsupportedOperationException if the geometry library cannot create the requested path.
      * @throws IllegalArgumentException if a polygon was requested but the given coordinates do not make
      *         a closed shape (linear ring).
      */

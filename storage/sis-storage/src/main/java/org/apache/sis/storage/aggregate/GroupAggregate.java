@@ -41,7 +41,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
  * An aggregate created when, after grouping resources by CRS and other attributes,
  * more than one group still exist. Those groups become components of an aggregate.
  * This is used as temporary object during analysis, then kept alive in last resort
- * when we can not build a single time series from a sequence of coverages at different times.
+ * when we cannot build a single time series from a sequence of coverages at different times.
  *
  * <p>This class intentionally does not override {@link #getIdentifier()} because
  * it would not be a persistent identifier.</p>
@@ -79,7 +79,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
 
     /**
      * The envelope of this aggregate, or {@code null} if not yet computed.
-     * May also be {@code null} if no component declare an envelope, or if the union can not be computed.
+     * May also be {@code null} if no component declare an envelope, or if the union cannot be computed.
      *
      * @see #getEnvelope()
      */

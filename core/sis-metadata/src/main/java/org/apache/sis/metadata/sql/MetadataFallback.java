@@ -34,7 +34,7 @@ import static java.util.Collections.singleton;
 
 /**
  * A fallback providing hard-coded values of metadata entities.
- * Used when connection to the spatial metadata can not be established.
+ * Used when connection to the spatial metadata cannot be established.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

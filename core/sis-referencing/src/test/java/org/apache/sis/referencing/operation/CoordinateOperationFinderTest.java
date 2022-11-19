@@ -176,7 +176,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Makes sure that {@code createOperation(sourceCRS, targetCRS)} returns an identity transform
      * when {@code sourceCRS} and {@code targetCRS} are identical.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      */
     @Test
     public void testIdentityTransform() throws FactoryException {
@@ -206,8 +206,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests a transformation with a two-dimensional geographic source CRS.
      * This method verifies with both a two-dimensional and a three-dimensional target CRS.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -238,8 +238,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests a transformation with a three-dimensional geographic source CRS.
      * This method verifies with both a three-dimensional and a two-dimensional target CRS.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -317,8 +317,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * together with a longitude rotation and unit conversion. The CRS and sample point are taken from
      * the GR3DF97A – <cite>Grille de paramètres de transformation de coordonnées</cite> document.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -363,8 +363,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * together with a longitude rotation and unit conversion. The CRS and sample point are derived from
      * the GR3DF97A – <cite>Grille de paramètres de transformation de coordonnées</cite> document.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -414,7 +414,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests conversion from geographic to geocentric coordinate reference system and conversely.
      * Both two-dimensional and three-dimensional cases are tested.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-376">SIS-376</a>
      */
@@ -443,8 +443,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     /**
      * Tests conversion from a geographic to a projected CRS without datum of axis changes.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -495,8 +495,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests a datum shift applied as a position vector transformation in geocentric domain.
      * This test does not use the the EPSG geodetic dataset.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      *
      * @see DefaultCoordinateOperationFactoryTest#testPositionVectorTransformation()
@@ -561,8 +561,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests a transformation between two CRS for which no direct bursa-wolf parameters are defined.
      * However a transformation should still be possible indirectly, through WGS 84.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -647,10 +647,10 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
 
     /**
      * Tests a conversion of the temporal axis. We convert 1899-12-31 from a CRS having its epoch at 1970-1-1
-     * to an other CRS having its epoch at 1858-11-17, so the new value shall be approximately 41 years
+     * to another CRS having its epoch at 1858-11-17, so the new value shall be approximately 41 years
      * after the new epoch. This conversion also implies a change of units from seconds to days.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -688,7 +688,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests the conversion from a four-dimensional geographic CRS to a two-dimensional geographic CRS.
      * The vertical and temporal dimensions are simply dropped.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -726,7 +726,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests the conversion from a three-dimensional geographic CRS to a two-dimensional geographic CRS.
      * The vertical dimension is simply dropped.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -769,7 +769,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests the conversion from a two-dimensional geographic CRS to a three-dimensional geographic CRS.
      * Coordinate values of the vertical dimension should be set to zero.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -813,7 +813,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Such vertical CRS are illegal according ISO 19111, but they are the easiest test
      * that we can perform for geographic → vertical transformation.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -852,7 +852,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     /**
      * Tests extracting the vertical part of a spatiotemporal CRS.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -907,8 +907,8 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     /**
      * Tests conversion from four-dimensional compound CRS to two-dimensional projected CRS.
      *
-     * @throws ParseException if a CRS used in this test can not be parsed.
-     * @throws FactoryException if the operation can not be created.
+     * @throws ParseException if a CRS used in this test cannot be parsed.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -965,7 +965,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * Tests conversion from three-dimensional geographic CRS to four-dimensional compound CRS
      * where the last dimension is time.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -1004,7 +1004,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     /**
      * Tests conversion from spatiotemporal CRS to a derived CRS.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
@@ -1043,7 +1043,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
     /**
      * Tests conversion between two engineering CRS.
      *
-     * @throws FactoryException if the operation can not be created.
+     * @throws FactoryException if the operation cannot be created.
      */
     @Test
     public void testEngineeringCRS() throws FactoryException {

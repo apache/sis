@@ -472,7 +472,7 @@ public final strictfp class HardCodedAxes {
 
     /**
      * Undefined or unknown axis. Axis direction is {@link AxisDirection#OTHER OTHER}
-     * and the unit is dimensionless. This constant is sometime used as a placeholder
+     * and the unit is dimensionless. This constant is sometimes used as a placeholder
      * for axes that were not properly defined.
      */
     public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "z",

@@ -33,7 +33,7 @@ import static org.apache.sis.storage.ProbeResult.*;
  */
 public final strictfp class ProbeResultTest extends TestCase {
     /**
-     * Tests serialization of pre-defined constants.
+     * Tests serialization of predefined constants.
      */
     @Test
     public void testConstantSerialization() {

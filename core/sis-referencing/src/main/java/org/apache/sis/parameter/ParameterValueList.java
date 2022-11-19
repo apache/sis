@@ -105,7 +105,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     }
 
     /**
-     * Adds all mandatory parameters to this list. This method can been invoked only after
+     * Adds all mandatory parameters to this list. This method can be invoked only after
      * construction or after a call to {@link #clear()}.
      */
     private void initialize(final List<GeneralParameterDescriptor> elements) {
@@ -177,7 +177,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
     }
 
     /**
-     * Adds a {@link ParameterValue} or an other {@link ParameterValueGroup} to this list.
+     * Adds a {@link ParameterValue} or another {@link ParameterValueGroup} to this list.
      * If an existing parameter is already included for the same name and adding the new
      * parameter would increase the number past what is allowable by {@code maximumOccurs},
      * then an {@link InvalidParameterCardinalityException} will be thrown.

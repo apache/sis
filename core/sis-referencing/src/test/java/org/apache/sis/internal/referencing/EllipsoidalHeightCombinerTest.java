@@ -69,7 +69,7 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
      * Tests {@link EllipsoidalHeightCombiner#createCompoundCRS EllipsoidalHeightCombiner.createCompoundCRS(…)}
      * with a geographic CRS.
      *
-     * @throws FactoryException if a CRS can not be created.
+     * @throws FactoryException if a CRS cannot be created.
      */
     @Test
     public void testGeographicCRS() throws FactoryException {
@@ -113,7 +113,7 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
      * Tests {@link EllipsoidalHeightCombiner#createCompoundCRS EllipsoidalHeightCombiner.createCompoundCRS(…)}
      * with a projected CRS.
      *
-     * @throws FactoryException if a CRS can not be created.
+     * @throws FactoryException if a CRS cannot be created.
      */
     @Test
     @DependsOnMethod("testGeographicCRS")

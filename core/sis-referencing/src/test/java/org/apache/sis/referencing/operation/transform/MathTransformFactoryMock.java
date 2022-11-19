@@ -98,7 +98,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
      *
      * @param  parameters  the parameters to give to the math transform provider.
      * @return the transform created by the provider.
-     * @throws FactoryException if the provider can not create the transform.
+     * @throws FactoryException if the provider cannot create the transform.
      */
     @Override
     public MathTransform createParameterizedTransform(ParameterValueGroup parameters) throws FactoryException {

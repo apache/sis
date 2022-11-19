@@ -47,7 +47,7 @@ public final class SelectionClause extends SQLBuilder {
     private final Table table;
 
     /**
-     * Flag sets to {@code true} if a filter or expression can not be converted to SQL.
+     * Flag sets to {@code true} if a filter or expression cannot be converted to SQL.
      * When a SQL string become flagged as invalid, it is truncated to the length that
      * it had the last time that it was valid.
      *
@@ -80,7 +80,7 @@ public final class SelectionClause extends SQLBuilder {
     }
 
     /**
-     * Writes a literal value, or marks this SQL as invalid if the value can not be formatted.
+     * Writes a literal value, or marks this SQL as invalid if the value cannot be formatted.
      */
     final void appendLiteral(final Object value) {
         if (value instanceof GeographicBoundingBox) {

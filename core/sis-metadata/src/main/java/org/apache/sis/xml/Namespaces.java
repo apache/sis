@@ -532,7 +532,7 @@ public final class Namespaces extends Static {
 
     /**
      * A map of (<var>URLs</var>, <var>prefix</var>). Stores URLs for which
-     * the prefix to use can not be easily inferred from the URL itself.
+     * the prefix to use cannot be easily inferred from the URL itself.
      */
     private static final Map<String,String> SPECIFIC_URLS;
     static {
@@ -574,7 +574,7 @@ public final class Namespaces extends Static {
     /**
      * Returns the preferred prefix for the given namespace URI.
      *
-     * @param  namespace     the namespace URI for which the prefix needs to be found. Can not be {@code null}.
+     * @param  namespace     the namespace URI for which the prefix needs to be found. Cannot be {@code null}.
      * @param  defaultValue  the default prefix to return if the given {@code namespace} is not recognized,
      *                       or {@code null}.
      * @return the prefix inferred from the namespace URI, or {@code null} if the given namespace is unrecognized
@@ -612,7 +612,7 @@ public final class Namespaces extends Static {
      * A namespace is returned on a <em>best effort</em> basis only; this method may or may not check the full name, and
      * values returned by this method may change in future SIS versions (e.g. when new standards become supported by SIS
      * or when existing standards are upgraded). This method should be used in last resort only, when this information
-     * can not be obtained easily in a more reliable way.</p>
+     * cannot be obtained easily in a more reliable way.</p>
      *
      * @param  type  a class name defined by ISO 19115 or related standards (e.g. {@code "CI_Citation"}.
      * @return a <em>possible</em> namespace for the given type, or {@code null} if unknown.

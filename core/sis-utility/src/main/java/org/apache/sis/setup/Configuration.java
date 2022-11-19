@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.MetadataServices;
  * Apache SIS does not modify those properties but read them:
  *
  * <ul>
- *   <li>{@link Locale#getDefault()} (sometime using {@link Locale.Category})</li>
+ *   <li>{@link Locale#getDefault()} (sometimes using {@link Locale.Category})</li>
  *   <li>{@link java.nio.charset.Charset#defaultCharset()}</li>
  *   <li>{@link java.util.TimeZone#getDefault()}</li>
  *   <li>{@link System#lineSeparator()}</li>

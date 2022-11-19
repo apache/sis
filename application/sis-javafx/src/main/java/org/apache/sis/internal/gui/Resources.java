@@ -88,42 +88,42 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AzimuthalEquidistant = 42;
 
         /**
-         * Can not create an aggregated view of “{0}”.
+         * Cannot create an aggregated view of “{0}”.
          */
         public static final short CanNotAggregate_1 = 76;
 
         /**
-         * Can not close “{0}”. Data may be lost.
+         * Cannot close “{0}”. Data may be lost.
          */
         public static final short CanNotClose_1 = 2;
 
         /**
-         * Can not create reference system “{0}”.
+         * Cannot create reference system “{0}”.
          */
         public static final short CanNotCreateCRS_1 = 3;
 
         /**
-         * Can not create XML document.
+         * Cannot create XML document.
          */
         public static final short CanNotCreateXML = 4;
 
         /**
-         * Can not fetch tile ({0}, {1}).
+         * Cannot fetch tile ({0}, {1}).
          */
         public static final short CanNotFetchTile_2 = 5;
 
         /**
-         * Can not install the resource.
+         * Cannot install the resource.
          */
         public static final short CanNotInstallResource = 62;
 
         /**
-         * Can not open “{0}”.
+         * Cannot open “{0}”.
          */
         public static final short CanNotReadFile_1 = 6;
 
         /**
-         * A resource contained in the file can not be read. The cause is given below.
+         * A resource contained in the file cannot be read. The cause is given below.
          */
         public static final short CanNotReadResource = 7;
 
@@ -133,7 +133,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short CanNotRender = 8;
 
         /**
-         * Can not use the “{0}” reference system.
+         * Cannot use the “{0}” reference system.
          */
         public static final short CanNotUseRefSys_1 = 9;
 
@@ -465,7 +465,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);
@@ -475,7 +475,7 @@ public final class Resources extends IndexedResourceBundle {
      * Returns resources in the default locale.
      *
      * @return resources in the default locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources getInstance() throws MissingResourceException {
         return getBundle(Resources.class, null);

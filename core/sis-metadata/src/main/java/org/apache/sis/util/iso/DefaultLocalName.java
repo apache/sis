@@ -66,7 +66,7 @@ import org.apache.sis.xml.Namespaces;
  */
 
 /*
- * JAXB annotation would be @XmlType(name ="CodeType"), but this can not be used here
+ * JAXB annotation would be @XmlType(name ="CodeType"), but this cannot be used here
  * since "CodeType" is used for various classes (including GenericName and ScopedName).
  * (Un)marhalling of this class needs to be handled by a JAXB adapter.
  */
@@ -108,7 +108,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * {@preformat xml
      *   <gco:TypeName>
      *     <gco:aName>
-     *       <gco:CharacterString>An other local name</gco:CharacterString>
+     *       <gco:CharacterString>Another local name</gco:CharacterString>
      *     </gco:aName>
      *   </gco:TypeName>
      * }

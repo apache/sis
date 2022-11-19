@@ -24,7 +24,7 @@ import org.apache.sis.util.LocalizedException;
 
 
 /**
- * Thrown when a <cite>Well Known Text</cite> (WKT) can not be parsed.
+ * Thrown when a <cite>Well Known Text</cite> (WKT) cannot be parsed.
  *
  * <h2>Localization</h2>
  * This exception may contain the error message in two languages:
@@ -51,7 +51,7 @@ public class UnparsableObjectException extends ParseException implements Localiz
     /**
      * The resources key as one of the {@link Errors.Keys} constant, or 0 if none.
      *
-     * <p>This field is not serialized because key values sometime change between different SIS versions.
+     * <p>This field is not serialized because key values sometimes change between different SIS versions.
      * The deserialized value will be 0, which will cause this {@code UnparsableObjectException} to fallback
      * on {@code super.getMessage()}.</p>
      */
@@ -114,7 +114,7 @@ public class UnparsableObjectException extends ParseException implements Localiz
      * If this exception is capable to return the message in various locales, returns that message.
      * Otherwise returns {@code null}.
      *
-     * @return the exception message, or {@code null} if this exception can not produce international message.
+     * @return the exception message, or {@code null} if this exception cannot produce international message.
      */
     @Override
     public InternationalString getInternationalMessage() {

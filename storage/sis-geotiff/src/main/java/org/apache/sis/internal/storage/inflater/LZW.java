@@ -88,7 +88,7 @@ final class LZW extends CompressionChannel {
      *
      * <div class="note"><b>Rational:</b>
      * even in the worst case scenario where the same byte is always appended to the sequence,
-     * the maximal length can not exceeded the dictionary size because a {@link #CLEAR_CODE}
+     * the maximal length cannot exceeded the dictionary size because a {@link #CLEAR_CODE}
      * will be emitted when the dictionary is full.</div>
      */
     private static final int LOWEST_OFFSET_BIT = MAX_CODE_SIZE;
@@ -114,7 +114,7 @@ final class LZW extends CompressionChannel {
 
     /**
      * Mask for a bit in an {@link #entriesForCodes} element for telling whether the extra space allocated in the
-     * {@link #stringsFromCode} array has already been used by another entry. If yes (1), then that space can not
+     * {@link #stringsFromCode} array has already been used by another entry. If yes (1), then that space cannot
      * be used by new entry. Instead, the new entry will need to allocate a new space.
      *
      * <p>Note: {@link #newEntryNeedsAllocation(int)} implementation assumes that this bit is the sign bit.</p>
@@ -254,7 +254,7 @@ final class LZW extends CompressionChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     @Override
     public void setInputRegion(final long start, final long byteCount) throws IOException {
@@ -339,7 +339,7 @@ final class LZW extends CompressionChannel {
                 /*
                  * We should not have consecutive clear codes, but it is easy to check for safety.
                  * The first valid code after `CLEAR_CODE` shall be a byte. If we reached the end
-                 * of strip, the EOI code should be mandatory but appears to be sometime missing.
+                 * of strip, the EOI code should be mandatory but appears to be sometimes missing.
                  */
                 do code = readNextCode();                                   // GetNextCode()
                 while (code == CLEAR_CODE);
@@ -474,7 +474,7 @@ final class LZW extends CompressionChannel {
     }
 
     /**
-     * The exception to throw if the decompression process encounters data that it can not process.
+     * The exception to throw if the decompression process encounters data that it cannot process.
      */
     private IOException unexpectedData() {
         return new IOException(resources().getString(Resources.Keys.CorruptedCompression_2, input.filename, "LZW"));

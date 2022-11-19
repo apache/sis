@@ -56,7 +56,7 @@ import org.apache.sis.util.Version;
 /**
  * The provider of {@link NetcdfStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code NetcdfStore} using the embedded netCDF decoder.
- * If the embedded decoder can not decode the given input and the UCAR library is reachable
+ * If the embedded decoder cannot decode the given input and the UCAR library is reachable
  * on the classpath, then this class tries to instantiate a {@code NetcdfStore} backed by
  * the UCAR library.
  *
@@ -80,7 +80,7 @@ import org.apache.sis.util.Version;
 /*
  * Note: we set "low priority" to this provider because the UCAR library supports many file formats,
  * including GeoTIFF. We want the Apache SIS GeoTIFF data store to be tested before the UCAR library.
- * Even in the case of real netCDF files, the netCDF format is so generic that we sometime need to
+ * Even in the case of real netCDF files, the netCDF format is so generic that we sometimes need to
  * create specialized readers for specific data set, in which case we want the providers of those
  * specialized readers to be tested before this generic netCDF reader.
  */

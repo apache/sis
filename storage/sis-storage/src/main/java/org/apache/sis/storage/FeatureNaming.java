@@ -32,7 +32,7 @@ import org.apache.sis.internal.storage.Resources;
 /**
  * Helper class for mapping {@link GenericName} instances and their shortened names to features.
  * The features are typically represented by instances of {@link org.opengis.feature.FeatureType}
- * or {@link org.opengis.coverage.Coverage} (sometime seen as a kind of features), but this class
+ * or {@link org.opengis.coverage.Coverage} (sometimes seen as a kind of features), but this class
  * actually puts no restriction on the kind of object associated to {@code GenericName}s;
  * {@link DataStore} implementations are free to choose their internal object.
  * Those objects can be stored and fetched using the {@code String} representation of their name
@@ -60,7 +60,7 @@ import org.apache.sis.internal.storage.Resources;
  * Note that contrarily to the standard {@link java.util.Map#get(Object)} method contract, the {@link #get get(…)}
  * method defined in this class throws an exception instead of returning {@code null} if no unambiguous mapping
  * can be established for the given name. This behavior allows {@code FeatureNaming} to produce an error message
- * telling why the operation can not succeed.
+ * telling why the operation cannot succeed.
  *
  * <h2>Managing the list of generic names</h2>
  * This class does not memorize the list of {@linkplain #add added} {@code GenericName} instances. Instead this
@@ -181,7 +181,7 @@ public class FeatureNaming<E> {
      *
      * @param  store  the data store for which to add a value, or {@code null} if unknown.
      * @param  name   the name for which to add a value.
-     * @param  value  the value to add (can not be null).
+     * @param  value  the value to add (cannot be null).
      * @throws IllegalNameException if another element is already registered for the given name.
      */
     public void add(final DataStore store, GenericName name, final E value) throws IllegalNameException {

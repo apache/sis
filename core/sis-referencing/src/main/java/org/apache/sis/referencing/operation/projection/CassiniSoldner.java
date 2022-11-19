@@ -246,7 +246,7 @@ public class CassiniSoldner extends MeridianArcBased {
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws ProjectionException if the coordinates can not be converted.
+     * @throws ProjectionException if the coordinates cannot be converted.
      */
     @Override
     public Matrix transform(final double[] srcPts, final int srcOff,
@@ -323,7 +323,7 @@ public class CassiniSoldner extends MeridianArcBased {
      * @param  dstPts  the array into which the converted point coordinates is returned (may be the same than {@code srcPts}).
      *                 Coordinates will be (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  dstOff  the offset of the location of the converted point that is stored in the destination array.
-     * @throws ProjectionException if the point can not be converted.
+     * @throws ProjectionException if the point cannot be converted.
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

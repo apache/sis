@@ -1017,7 +1017,7 @@ public class MetadataBuilder {
      * }
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
-     * @throws MetadataStoreException  if this method can not connect to the {@code jdbc/SpatialMetadata} database.
+     * @throws MetadataStoreException  if this method cannot connect to the {@code jdbc/SpatialMetadata} database.
      *         Callers should generally handle this exception as a recoverable one (i.e. log a warning and continue).
      *
      * @see #addCompression(CharSequence)

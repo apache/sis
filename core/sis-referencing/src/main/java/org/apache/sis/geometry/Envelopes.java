@@ -189,7 +189,7 @@ public final class Envelopes extends Static {
      *
      * @param  envelopes  the envelopes for which to compute union. Null elements are ignored.
      * @return union of given envelopes, or {@code null} if the given array does not contain non-null elements.
-     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     * @throws TransformException if this method cannot determine a common CRS, or if a transformation failed.
      *
      * @see GeneralEnvelope#add(Envelope)
      *
@@ -209,7 +209,7 @@ public final class Envelopes extends Static {
      *
      * @param  envelopes  the envelopes for which to compute intersection. Null elements are ignored.
      * @return intersection of given envelopes, or {@code null} if the given array does not contain non-null elements.
-     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     * @throws TransformException if this method cannot determine a common CRS, or if a transformation failed.
      *
      * @see GeneralEnvelope#intersect(Envelope)
      *
@@ -235,7 +235,7 @@ public final class Envelopes extends Static {
      * @return the mathematical operation from {@code source} CRS to {@code target} CRS,
      *         or {@code null} if at least one argument is null or has no CRS.
      * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
-     * @throws FactoryException if the operation can not be created for another reason.
+     * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @see CRS#findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, GeographicBoundingBox)
      *
@@ -300,7 +300,7 @@ public final class Envelopes extends Static {
      * @param  derivate   {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the transform derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
-     * @throws TransformException if the point can not be transformed
+     * @throws TransformException if the point cannot be transformed
      *         or if a problem occurred while calculating the derivative.
      */
     @SuppressWarnings("null")
@@ -438,7 +438,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                  * Compute the derivative (optional operation). If this operation fails, we will
                  * set a flag to `false` so we don't try again for all remaining points. We try
                  * to compute the derivative and the transformed point in a single operation if
-                 * we can. If we can not, we will compute those two information separately.
+                 * we can. If we cannot, we will compute those two information separately.
                  *
                  * Note that the very last point to be projected must be the envelope center.
                  * There is usually no need to calculate the derivative for that last point,
@@ -771,14 +771,14 @@ poles:  for (int i=0; i<dimension; i++) {
                         inverse = mt.inverse();
                     } catch (NoninvertibleTransformException exception) {
                         /*
-                         * If the transform is non-invertible, this "poles" loop can not do anything.
+                         * If the transform is non-invertible, this "poles" loop cannot do anything.
                          * This is not a fatal error because the envelope has already be transformed
                          * by the code before this loop. We lost the check below for singularity points,
                          * but it makes no difference in the common case where all those points would
                          * have been outside the source envelope anyway.
                          *
                          * Note that this exception is normal if the number of target dimension is smaller
-                         * than the number of source dimension, because the math transform can not guess
+                         * than the number of source dimension, because the math transform cannot guess
                          * coordinates in the lost dimensions. So we do not log any warning in this case.
                          */
                         if (dimension >= mt.getSourceDimensions()) {
@@ -951,7 +951,7 @@ poles:  for (int i=0; i<dimension; i++) {
      * The coordinate reference system of the returned envelope will be null.
      *
      * <h4>Limitation</h4>
-     * This method can not handle the case where the envelope contains the North or South pole.
+     * This method cannot handle the case where the envelope contains the North or South pole.
      * Envelopes crossing the ±180° longitude are handled only if the given transform contains
      * {@link org.apache.sis.referencing.operation.transform.WraparoundTransform} steps;
      * this method does not add such steps itself.
@@ -1028,7 +1028,7 @@ poles:  for (int i=0; i<dimension; i++) {
      *
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @return the envelope of the given geometry.
-     * @throws FactoryException if the given WKT can not be parsed.
+     * @throws FactoryException if the given WKT cannot be parsed.
      *
      * @see #toString(Envelope)
      * @see CRS#fromWKT(String)
@@ -1079,7 +1079,7 @@ poles:  for (int i=0; i<dimension; i++) {
      *
      * @param  envelope  the envelope to format.
      * @return the envelope as a {@code POLYGON} in WKT format.
-     * @throws IllegalArgumentException if the given envelope can not be formatted.
+     * @throws IllegalArgumentException if the given envelope cannot be formatted.
      *
      * @see org.apache.sis.io.wkt
      */

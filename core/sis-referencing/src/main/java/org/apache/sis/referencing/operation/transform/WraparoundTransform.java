@@ -558,7 +558,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
         long canMove = moveAll;
         /*
          * If any matrix row (output coordinate) uses the wraparound dimension as input,
-         * then we can not move that row because the coordinate value may not be the same
+         * then we cannot move that row because the coordinate value may not be the same
          * after execution of `WraparoundTransform`.
          */
         final int lastColumn = matrix.getNumCol() - 1;
@@ -578,7 +578,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                 /*
                  * Create a matrix which will convert coordinates in all dimensions that we can process
                  * before or after this `WraparoundTransform`. We start with a copy and set to identity
-                 * the rows that we can not move. Typically only one row will be set to identity, which
+                 * the rows that we cannot move. Typically only one row will be set to identity, which
                  * makes the "start with a copy" strategy a good choice. Another reason is that we want
                  * to preserve the "double-double" storage.
                  */

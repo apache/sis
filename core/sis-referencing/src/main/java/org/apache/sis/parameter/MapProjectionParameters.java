@@ -191,7 +191,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         @Override
         protected void setValue(final Object value, final Unit<?> unit) {
             super.setValue(value, unit);        // Perform argument check.
-            final double r = (Double) value;    // At this point, can not be anything else than Double.
+            final double r = (Double) value;    // At this point, cannot be anything else than Double.
             semiMajor.setValue(r, unit);
             semiMinor.setValue(r, unit);
         }
@@ -316,7 +316,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         @Override
         protected void setValue(final Object value, final Unit<?> unit) {
             super.setValue(value, unit);                        // Perform argument check.
-            final double ivf = (Double) value;                  // At this point, can not be anything else than Double.
+            final double ivf = (Double) value;                  // At this point, cannot be anything else than Double.
             final Number ca = (Number) semiMajor.getValue();
             if (ca != null) {
                 a = ca.doubleValue();

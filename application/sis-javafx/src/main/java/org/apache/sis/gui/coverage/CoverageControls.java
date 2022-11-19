@@ -89,7 +89,7 @@ final class CoverageControls extends ViewAndControls {
     /**
      * Creates a new set of coverage controls.
      *
-     * @param  owner   the widget which creates this view. Can not be null.
+     * @param  owner   the widget which creates this view. Cannot be null.
      * @param  window  the handler of the window which will show the coverage explorer.
      */
     CoverageControls(final CoverageExplorer owner, final WindowHandler window) {

@@ -256,7 +256,7 @@ add:    for (;;) {
                     return geometry.getPathIterator(null).isDone();
                 }
             }
-            case ST_Overlaps:   // Our approximate algorithm can not distinguish with intersects.
+            case ST_Overlaps:   // Our approximate algorithm cannot distinguish with intersects.
             case ST_Intersects: return  intersect(other);
             case ST_Disjoint:   return !intersect(other);
             case ST_Contains:   return  contain  (other);
@@ -389,7 +389,7 @@ add:    for (;;) {
      * Estimates whether the wrapped geometry intersects the geometry of the given wrapper, testing only
      * the bounding box of the {@code wrapper} argument. This method may be more accurate than required
      * by OGC Filter Encoding specification in that this geometry is not simplified to a bounding box.
-     * But Java2D implementations sometime use bounding box approximation, so the result may be the same.
+     * But Java2D implementations sometimes use bounding box approximation, so the result may be the same.
      *
      * @param  wrapper  instance of {@link Wrapper} or {@link PointWrapper}.
      * @throws ClassCastException if the given object is not a recognized wrapper.

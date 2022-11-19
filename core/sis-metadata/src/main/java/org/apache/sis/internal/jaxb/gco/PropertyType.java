@@ -94,7 +94,7 @@ import org.apache.sis.util.resources.Errors;
  * for enforcing its definition in subclasses. But this has been removed for two reasons:
  * <ul>
  *   <li>While the return value is usually {@code BoundType}, in some situations it is
- *       rather an other type like {@code String}. For this raison the return type must
+ *       rather another type like {@code String}. For this reason the return type must
  *       be declared as {@code Object}, and subclasses have to restrict it to a more
  *       specific type.</li>
  *   <li>The parameterized return type forces the compiler to generate bridge methods under
@@ -320,7 +320,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * A URN to an external resources, or to an other part of a XML document, or an identifier.
+     * A URN to an external resources, or to another part of a XML document, or an identifier.
      * The {@code uuidref} attribute is used to refer to an XML element that has a corresponding
      * {@code uuid} attribute.
      *
@@ -337,7 +337,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Sets the {@code uuidref} attribute value.
      *
      * @param  uuid  the new attribute value.
-     * @throws IllegalArgumentException if the given UUID can not be parsed.
+     * @throws IllegalArgumentException if the given UUID cannot be parsed.
      * @category gco:ObjectReference
      */
     public final void setUUIDREF(final String uuid) throws IllegalArgumentException {
@@ -361,7 +361,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
     }
 
     /**
-     * A URN to an external resources, or to an other part of a XML document, or an identifier.
+     * A URN to an external resources, or to another part of a XML document, or an identifier.
      * The {@code xlink:href} attribute allows an XML element to refer to another XML element
      * that has a corresponding {@code id} attribute.
      *
@@ -379,7 +379,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Sets the {@code href} attribute value.
      *
      * @param  href  the new attribute value.
-     * @throws URISyntaxException if the given string can not be parsed as a URI.
+     * @throws URISyntaxException if the given string cannot be parsed as a URI.
      * @category xlink
      */
     public final void setHRef(final String href) throws URISyntaxException {
@@ -403,7 +403,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Sets the {@code role} attribute value.
      *
      * @param  role  the new attribute value.
-     * @throws URISyntaxException if the given string can not be parsed as a URI.
+     * @throws URISyntaxException if the given string cannot be parsed as a URI.
      * @category xlink
      */
     public final void setRole(final String role) throws URISyntaxException {
@@ -427,7 +427,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * Sets the {@code arcrole} attribute value.
      *
      * @param  arcrole  the new attribute value.
-     * @throws URISyntaxException if the given string can not be parsed as a URI.
+     * @throws URISyntaxException if the given string cannot be parsed as a URI.
      * @category xlink
      */
     public final void setArcRole(final String arcrole) throws URISyntaxException {
@@ -580,7 +580,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      *
      * @param  value  the adapter for a metadata value.
      * @return an instance of the GeoAPI interface which represents the metadata value.
-     * @throws URISyntaxException if a URI can not be parsed.
+     * @throws URISyntaxException if a URI cannot be parsed.
      */
     @Override
     public final BoundType unmarshal(final ValueType value) throws URISyntaxException {
@@ -591,7 +591,7 @@ public abstract class PropertyType<ValueType extends PropertyType<ValueType,Boun
      * If the {@linkplain #metadata} is still null, tries to resolve it using UUID, XLink
      * or NilReason information. This method is invoked at unmarshalling time.
      *
-     * @throws URISyntaxException if a nil reason is present and can not be parsed.
+     * @throws URISyntaxException if a nil reason is present and cannot be parsed.
      */
     final BoundType resolve(final Context context) throws URISyntaxException {
         final ObjectReference ref = reference(false);

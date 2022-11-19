@@ -88,7 +88,7 @@ public final class CodeColorizer {
     };
 
     /**
-     * Map of pre-defined identifiers and the authority who defined them.
+     * Map of predefined identifiers and the authority who defined them.
      */
     private final Map<String,Specifier> identifierSpecifiers;
 
@@ -101,7 +101,7 @@ public final class CodeColorizer {
      * Creates a new color colorizer.
      *
      * @param  document  the object to use for creating nodes.
-     * @throws IOException if an error occurred while reading the list of pre-defined identifiers.
+     * @throws IOException if an error occurred while reading the list of predefined identifiers.
      * @throws BookException if an identifier is defined twice.
      */
     public CodeColorizer(final Document document) throws IOException, BookException {
@@ -284,7 +284,7 @@ public final class CodeColorizer {
      * @param  parent  the root element where to put Java keywords in bold characters.
      *                 This is typically a {@code <samp>} or {@code <code>} element.
      * @param  type    {@code "xml"} if the element to process is XML rather than Java code.
-     * @throws BookException if an element can not be processed.
+     * @throws BookException if an element cannot be processed.
      */
     public void highlight(final Node parent, final String type) throws BookException {
         if ("wkt".equals(type)) return;

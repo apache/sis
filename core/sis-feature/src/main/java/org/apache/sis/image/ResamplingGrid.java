@@ -258,7 +258,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * @param  toSourceCenter  transform from target grid center to source grid center.
      * @param  bounds          pixel coordinates of target images for which to create a grid of source coordinates.
      * @return a precomputed grid for the given transform.
-     * @throws TransformException if a derivative can not be computed or a point can not be transformed.
+     * @throws TransformException if a derivative cannot be computed or a point cannot be transformed.
      * @throws ImagingOpException if the grid would be too big for being useful.
      */
     static MathTransform2D getOrCreate(final MathTransform2D toSourceCenter, final Rectangle bounds) throws TransformException {
@@ -417,7 +417,7 @@ affine: if (depth.width == 0 && depth.height == 0) {
      * @param  lowerLeft       the transform derivative at {@code (xmin,ymin)}.
      * @param  lowerRight      the transform derivative at {@code (xmax,ymin)}.
      * @return the number of subdivision along each axis.
-     * @throws TransformException if a derivative can not be computed.
+     * @throws TransformException if a derivative cannot be computed.
      * @throws ImagingOpException if the grid would be too big for being useful.
      */
     private static Dimension depth(final MathTransform2D toSourceCorner,
@@ -555,7 +555,7 @@ affine: if (depth.width == 0 && depth.height == 0) {
      * @param  toSourceCenter  the transform for which to compute the derivative.
      * @param  point           the location where to compute the derivative.
      * @return the derivative at the given location as a 2×2 matrix.
-     * @throws TransformException if the derivative can not be computed.
+     * @throws TransformException if the derivative cannot be computed.
      */
     private static Matrix2 derivative(final MathTransform2D toSourceCenter, final Point2D point) throws TransformException {
         return Matrix2.castOrCopy(toSourceCenter.derivative(point));

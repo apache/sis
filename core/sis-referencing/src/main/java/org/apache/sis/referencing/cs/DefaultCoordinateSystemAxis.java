@@ -65,7 +65,7 @@ import static org.apache.sis.util.collection.Containers.property;
 
 /*
  * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
- * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we can not always
+ * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we cannot always
  * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */
@@ -160,7 +160,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Aliases for the "x" and "y" abbreviations (special cases). "x" and "y" are sometime used (especially in WKT)
+     * Aliases for the "x" and "y" abbreviations (special cases). "x" and "y" are sometimes used (especially in WKT)
      * for meaning "Easting" and "Northing". However we shall not add "x" and "y" as aliases in the {@link #ALIASES}
      * map, because experience has shown that doing so cause a lot of undesirable side effects. The "x" abbreviation
      * is used for too many things ("Easting", "Westing", "Geocentric X", "Display right", "Display left") and likewise
@@ -403,7 +403,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * Returns the direction of this coordinate system axis.
      * This direction is often approximate and intended to provide a human interpretable meaning to the axis.
-     * A {@linkplain AbstractCS coordinate system} can not contain two axes having the same direction or
+     * A {@linkplain AbstractCS coordinate system} cannot contain two axes having the same direction or
      * opposite directions.
      *
      * <p>Examples:
@@ -875,7 +875,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultCoordinateSystemAxis() {
         super(org.apache.sis.internal.referencing.NilReferencingObject.INSTANCE);

@@ -164,7 +164,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
      * Then, it tests using the {@link GeneralEnvelope} implementation.
      *
      * @param inf {@code true} if the range after union is infinite. The handling of such case is different for
-     *        {@link GeneralEnvelope} than for {@link Envelope2D} because we can not store infinite values in a
+     *        {@link GeneralEnvelope} than for {@link Envelope2D} because we cannot store infinite values in a
      *        reliable way in a {@link java.awt.geom.Rectangle2D} object, so we use NaN instead.
      * @param exactlyOneAntiMeridianSpan {@code true} if one envelope spans the anti-meridian and the other does not.
      */
@@ -592,7 +592,7 @@ public strictfp class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope e = create(2, -4, 3, -3);
         e.setCoordinateReferenceSystem(null);
         /*
-         * Set an invalid latitude range, but the Envelope can not known that fact without CRS.
+         * Set an invalid latitude range, but the Envelope cannot known that fact without CRS.
          * Only when we will specify the CRS, the envelope will realize that it contains an
          * invalid range.
          */

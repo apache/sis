@@ -31,7 +31,7 @@ import java.util.zip.ZipFile;
 
 /**
  * Ask user to specify the path to JavaFX installation directory.
- * This is used when JavaFX can not be found on the classpath.
+ * This is used when JavaFX cannot be found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -98,7 +98,7 @@ public final class FXFinder {
     private static final int CANCEL_EXIT_CODE = 1;
 
     /**
-     * Exit code to return if the wizard can not start.
+     * Exit code to return if the wizard cannot start.
      */
     private static final int ERROR_EXIT_CODE = 2;
 
@@ -170,7 +170,7 @@ public final class FXFinder {
         if (Files.isReadable(setenv) && Files.isWritable(setenv)) {
             return null;
         }
-        return "Can not edit " + setenv;
+        return "Cannot edit " + setenv;
     }
 
     /**
@@ -325,7 +325,7 @@ public final class FXFinder {
                 if (destination.isDirectory() || destination.mkdir()) {
                     return destination;
                 }
-                throw new IOException("Can not create directory: " + destination);
+                throw new IOException("Cannot create directory: " + destination);
             }
         }
         throw new FileNotFoundException("No parent directory to " + setenv + '.');

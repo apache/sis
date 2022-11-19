@@ -259,7 +259,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultVerticalCRS() {
         /*

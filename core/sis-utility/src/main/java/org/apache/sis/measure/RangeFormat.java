@@ -206,7 +206,7 @@ public class RangeFormat extends Format implements Localized {
     /**
      * The character opening a range in which the minimal value is exclusive.
      * The default value is {@code '('}. Note that the {@code ']'} character
-     * is also sometime used.
+     * is also sometimes used.
      */
     private final int openExclusive;
 
@@ -232,7 +232,7 @@ public class RangeFormat extends Format implements Localized {
     /**
      * The character closing a range in which the maximal value is exclusive.
      * The default value is {@code ')'}. Note that the {@code '['} character
-     * is also sometime used.
+     * is also sometimes used.
      */
     private final int closeExclusive;
 
@@ -561,7 +561,7 @@ public class RangeFormat extends Format implements Localized {
      * @param  toAppendTo  where the text is to be appended.
      * @param  pos         identifies a field in the formatted text, or {@code null} if none.
      * @return the string buffer passed in as {@code toAppendTo}, with formatted text appended.
-     * @throws IllegalArgumentException if this formatter can not format the given object.
+     * @throws IllegalArgumentException if this formatter cannot format the given object.
      */
     @Override
     public StringBuffer format(final Object range, final StringBuffer toAppendTo, final FieldPosition pos) {
@@ -725,7 +725,7 @@ public class RangeFormat extends Format implements Localized {
      *
      * @param  source  the text, part of which should be parsed.
      * @return a range parsed from the string.
-     * @throws ParseException if the given string can not be fully parsed.
+     * @throws ParseException if the given string cannot be fully parsed.
      */
     @Override
     public Object parseObject(final String source) throws ParseException {
@@ -752,7 +752,7 @@ public class RangeFormat extends Format implements Localized {
      *
      * @param  source  the text to parse.
      * @return the parsed range (never {@code null}).
-     * @throws ParseException if the given string can not be fully parsed.
+     * @throws ParseException if the given string cannot be fully parsed.
      */
     public Range<?> parse(final String source) throws ParseException {
         final ParsePosition pos = new ParsePosition(0);
@@ -977,7 +977,7 @@ public class RangeFormat extends Format implements Localized {
             pos.setIndex(index);
         }
         /*
-         * Parses the unit, if any. The units are always optional: if we can not parse
+         * Parses the unit, if any. The units are always optional: if we cannot parse
          * them, then we will consider that the parsing stopped before the unit.
          */
         Unit<?> unit = null;

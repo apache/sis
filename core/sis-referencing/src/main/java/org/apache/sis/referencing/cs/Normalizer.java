@@ -44,7 +44,7 @@ import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
 /*
  * The identifier for axis of unknown name. We have to use this identifier when the axis direction changed,
- * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we can not always
+ * because such change often implies a name change too (e.g. "Westing" → "Easting"), and we cannot always
  * guess what the new name should be. This constant is used as a sentinel value set by Normalizer and checked
  * by DefaultCoordinateSystemAxis for skipping axis name comparisons when the axis name is unknown.
  */

@@ -20,14 +20,14 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Thrown when a particular object can not be created because a resource is missing.
+ * Thrown when a particular object cannot be created because a resource is missing.
  * The most common case is a NADCON or NTv2 datum shift operation requested while the
  * datum shift grids was not found in the {@code $SIS_DATA/DatumChanges} directory.
  *
  * <h2>Relationship with other exceptions</h2>
  * This exception means that the factory failed to create a particular object.
  * However the factory may succeed in creating other objects.
- * By contrast, {@link UnavailableFactoryException} means that the whole factory can not be used at all.
+ * By contrast, {@link UnavailableFactoryException} means that the whole factory cannot be used at all.
  *
  * <p>This exception is <strong>not</strong> for unimplemented operations (for example map projections not yet supported).
  * For unimplemented operation methods, use {@link org.opengis.util.NoSuchIdentifierException} instead.</p>

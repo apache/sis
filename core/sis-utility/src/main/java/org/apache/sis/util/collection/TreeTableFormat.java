@@ -88,7 +88,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * <h2>Safety against infinite recursivity</h2>
  * Some {@code TreeTable} implementations generate the nodes dynamically as wrappers around Java objects.
  * Such Java objects may contain cyclic associations (<var>A</var> contains <var>B</var> contains <var>C</var>
- * contains <var>A</var>), which result in a tree of infinite depth. Some examples can been found in ISO 19115
+ * contains <var>A</var>), which result in a tree of infinite depth. Some examples can be found in ISO 19115
  * metadata. This {@code TreeTableFormat} class contains a safety against such cycles. The algorithm is based
  * on the assumption that for each node, the values and children are fully determined by the
  * {@linkplain TreeTable.Node#getUserObject() user object}, if non-null. Consequently for each node <var>C</var>
@@ -175,7 +175,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * A clone of the number format to be used with different settings (number of fraction digits, scientific notation).
-     * We use a clone for avoiding to change the setting of potentially user-supplied number format. This is used only
+     * We use a clone for avoiding to change the setting of potentially user supplied number format. This is used only
      * for floating point numbers, not for integers.
      */
     private transient DecimalFormat adaptableFormat;
@@ -302,7 +302,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
 
     /**
      * Sets the position of the vertical line, relative to the position of the root label.
-     * The given value can not be greater than the {@linkplain #getIndentation() indentation}.
+     * The given value cannot be greater than the {@linkplain #getIndentation() indentation}.
      *
      * @param  verticalLinePosition  the new vertical line position.
      * @throws IllegalArgumentException if the given value is negative or greater than the indentation.
@@ -405,7 +405,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * @param  text  the character sequence for the tree to parse.
      * @param  pos   the position where to start the parsing.
-     * @return the parsed tree, or {@code null} if the given character sequence can not be parsed.
+     * @return the parsed tree, or {@code null} if the given character sequence cannot be parsed.
      * @throws ParseException if an error occurred while parsing a node value.
      */
     @Override

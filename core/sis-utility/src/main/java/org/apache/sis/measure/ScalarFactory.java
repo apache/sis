@@ -56,7 +56,7 @@ interface ScalarFactory<Q extends Quantity<Q>> {
      * @param  systemUnit  {@link Unit#getSystemUnit()}, opportunistically provided because already known by the caller.
      * @param  toSystem    {@code unit.getConverterTo(systemUnit)}, provided because already known by the caller.
      * @return a quantity with the given value and unit of measurement, or
-     *         {@code null} if no pre-defined implementation is available.
+     *         {@code null} if no predefined implementation is available.
      */
     default Q createDerived(double value, Unit<Q> unit, Unit<Q> systemUnit, UnitConverter toSystem) {
         return null;

@@ -171,7 +171,7 @@ public final class DefinitionVerifier {
         } else if (lookup) {
             /*
              * No authority code was given in the CRS description. Try to guess the code with IdentifiedObjectFinder,
-             * ignoring axis order. If we can not guess a code or if we guess wrongly, use the given CRS silently
+             * ignoring axis order. If we cannot guess a code or if we guess wrongly, use the given CRS silently
              * (without reporting any warning) since there is apparently nothing wrong in the given CRS.
              */
             final IdentifiedObjectFinder finder;

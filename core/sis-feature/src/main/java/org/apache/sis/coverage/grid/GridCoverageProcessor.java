@@ -230,10 +230,10 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the values to use for pixels that can not be computed.
+     * Returns the values to use for pixels that cannot be computed.
      * The default implementation delegates to the image processor.
      *
-     * @return fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     * @return fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
      *
      * @see ImageProcessor#getFillValues()
      *
@@ -244,10 +244,10 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Sets the values to use for pixels that can not be computed.
+     * Sets the values to use for pixels that cannot be computed.
      * The default implementation delegates to the image processor.
      *
-     * @param  values  fill values to use for pixels that can not be computed, or {@code null} for the defaults.
+     * @param  values  fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
      *
      * @see ImageProcessor#setFillValues(Number...)
      *
@@ -267,7 +267,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  mask        region (in arbitrary CRS) of the mask.
      * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
      * @return a coverage with mask applied.
-     * @throws TransformException if ROI coordinates can not be transformed to grid coordinates.
+     * @throws TransformException if ROI coordinates cannot be transformed to grid coordinates.
      *
      * @see ImageProcessor#mask(RenderedImage, Shape, boolean)
      *
@@ -428,7 +428,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @return a grid coverage with the characteristics specified in the given grid geometry.
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
      *         It may be the source CRS, the source extent, <i>etc.</i> depending on context.
-     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
      *
      * @see ImageProcessor#resample(RenderedImage, Rectangle, MathTransform)
      */
@@ -495,7 +495,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  target  the desired coordinate reference system.
      * @return a grid coverage with the given coordinate reference system.
      * @throws IncompleteGridGeometryException if the source grid geometry is missing an information.
-     * @throws TransformException if some coordinates can not be transformed to the specified target.
+     * @throws TransformException if some coordinates cannot be transformed to the specified target.
      *
      * @since 1.3
      */

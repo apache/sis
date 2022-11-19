@@ -88,9 +88,9 @@ import org.apache.sis.measure.Units;
  *
  *   <li><b>Localization grid of raster data</b><br>
  *   Some remote sensing raster data are provided with a <cite>localization grid</cite> giving pixel coordinates
- *   (e.g. latitude and longitude). This can been seen as a change from {@linkplain DefaultEngineeringDatum
+ *   (e.g. latitude and longitude). This can be seen as a change from {@linkplain DefaultEngineeringDatum
  *   image datum} to {@linkplain DefaultGeodeticDatum geodetic datum}. The coordinate transformation process
- *   can sometime be performed by a mathematical conversion (for example an affine transform) applied as a
+ *   can sometimes be performed by a mathematical conversion (for example an affine transform) applied as a
  *   {@linkplain org.apache.sis.referencing.operation.builder.LinearTransformBuilder first approximation},
  *   followed by small corrections for the residual part.
  *   {@code DatumShiftGrid} can describe the small corrections part.

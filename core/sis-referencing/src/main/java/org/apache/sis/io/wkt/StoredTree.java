@@ -34,7 +34,7 @@ import org.apache.sis.internal.referencing.WKTKeywords;
  *
  * <ul>
  *   <li>{@link WKTFormat#addFragment(String, String)} for defining shortcuts
- *       to be inserted into an arbitrary amount of other WKT strings.</li>
+ *       to be inserted into an arbitrary number of other WKT strings.</li>
  *   <li>{@link WKTDictionary#addDefinitions(Stream)} for preparing WKT definitions to be parsed
  *       only when first needed. While WKT trees are waiting, they may share references to same
  *       {@code Node} instances for reducing memory usage.</li>

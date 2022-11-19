@@ -140,7 +140,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
      *
      * @return the main file and auxiliary files as paths, or an empty array if unknown.
-     * @throws DataStoreException if the URI can not be converted to a {@link Path}.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
     public Path[] getComponentFiles() throws DataStoreException {
@@ -218,7 +218,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
-     * @throws NumberFormatException if a number can not be parsed.
+     * @throws NumberFormatException if a number cannot be parsed.
      */
     private ColorModel readColorMap(final int dataType, final int mapSize, final int numBands)
             throws DataStoreException, IOException
@@ -296,7 +296,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.
-     * @throws NumberFormatException if a number can not be parsed.
+     * @throws NumberFormatException if a number cannot be parsed.
      */
     private Statistics[] readStatistics(final String name, final SampleModel sm)
             throws DataStoreException, IOException

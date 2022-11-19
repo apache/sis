@@ -46,7 +46,7 @@ public final strictfp class ColorizerTest extends TestCase {
     /**
      * Tests the creation of an index color model using {@link Colorizer#Colorizer(Collection)}.
      *
-     * @throws TransformException if a sample value can not be converted.
+     * @throws TransformException if a sample value cannot be converted.
      */
     @Test
     public void testRangeAndColors() throws TransformException {
@@ -89,7 +89,7 @@ public final strictfp class ColorizerTest extends TestCase {
      * Tests the creation of an index color model using {@link Colorizer#Colorizer(Function)}
      * and an initialization with a {@link SampleDimension}.
      *
-     * @throws TransformException if a sample value can not be converted.
+     * @throws TransformException if a sample value cannot be converted.
      */
     @Test
     public void testSampleDimension() throws TransformException {

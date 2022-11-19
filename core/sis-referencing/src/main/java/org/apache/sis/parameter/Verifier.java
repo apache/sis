@@ -352,7 +352,7 @@ final class Verifier {
      * {@link #ensureValidValue(Class, Set, Range, Object)}.
      *
      * @param name   the parameter name.
-     * @param value  the user-supplied value (not necessarily equals to the converted value).
+     * @param value  the user supplied value (not necessarily equals to the converted value).
      */
     String message(final Map<?,?> properties, String name, Object value) {
         final Object index = arguments[0];

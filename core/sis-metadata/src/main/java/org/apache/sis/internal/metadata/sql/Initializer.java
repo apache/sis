@@ -219,7 +219,7 @@ public abstract class Initializer {
      * in order to let users control their data source. This method does nothing if the data source has
      * already been initialized.
      *
-     * <p>{@code Initializer} will not register any shutdown process for user-supplied data source.
+     * <p>{@code Initializer} will not register any shutdown process for user supplied data source.
      * We presume that database life cycle is managed by the caller.</p>
      *
      * @param  ds  supplier of data source to set, or {@code null} for removing previous supplier.
@@ -300,7 +300,7 @@ public abstract class Initializer {
             /*
              * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
              * Check for programmatically supplied data source. We verify only after JNDI in order to let users control
-             * their data source if desired. We do not provide shutdown hook for user-supplied data source; we presume
+             * their data source if desired. We do not provide shutdown hook for user supplied data source; we presume
              * that users manage themselves their database life cycle.
              */
             if (supplier != null) {

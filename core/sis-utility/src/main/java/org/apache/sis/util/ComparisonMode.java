@@ -130,7 +130,7 @@ public enum ComparisonMode {
      * then for any given identical source position, the two compared transforms shall compute at least approximately
      * the same target position.
      * A small difference is tolerated between the target coordinates calculated by the two math transforms.
-     * How small is “small” is implementation dependent — the threshold can not be specified in the current
+     * How small is “small” is implementation dependent — the threshold cannot be specified in the current
      * implementation, because of the non-linear nature of map projections.
      *
      * @since 1.0

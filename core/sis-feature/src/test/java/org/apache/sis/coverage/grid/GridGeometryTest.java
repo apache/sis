@@ -438,7 +438,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Tests {@link GridGeometry#getEnvelope(CoordinateReferenceSystem)}.
      *
-     * @throws TransformException if coordinates can not be transformed.
+     * @throws TransformException if coordinates cannot be transformed.
      */
     @Test
     public void testGetEnvelope() throws TransformException {
@@ -524,7 +524,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Tests {@link GridGeometry#relocate(GridExtent)}.
      *
-     * @throws TransformException if the relocated envelope can not be computed.
+     * @throws TransformException if the relocated envelope cannot be computed.
      */
     @Test
     public void testRelocate() throws TransformException {
@@ -663,7 +663,7 @@ public final strictfp class GridGeometryTest extends TestCase {
     /**
      * Tests {@link GridGeometry#createTransformTo(GridGeometry, PixelInCell)}.
      *
-     * @throws TransformException if the transform can not be computed.
+     * @throws TransformException if the transform cannot be computed.
      */
     @Test
     public void testCreateTransformTo() throws TransformException {

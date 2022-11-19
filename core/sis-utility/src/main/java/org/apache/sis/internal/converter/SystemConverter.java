@@ -106,7 +106,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
      * This is admittedly a little bit convolved. A cleaner approach would have been to not allow
      * the {@code ConverterRegister} hash map to contain anything else than {@code ClassPair} keys,
      * but the current strategy of using the same instance for keys and values reduces a little bit
-     * the number of objects to create in the JVM. An other cleaner approach would have been to
+     * the number of objects to create in the JVM. Another cleaner approach would have been to
      * compare {@code ObjectConverter}s in a separated method, but users invoking {@code equals}
      * on our system converters could be surprised.
      *
@@ -149,7 +149,7 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
          * On deserialization, some fields are not yet assigned a value at the moment of this call.
          * This happen when this unique() method is invoked by inverse().readResolve() — not by the
          * readResolve() method of this class — in which case the deserialization process is not yet
-         * fully completed. In such cases, we can not determine if an existing instance is available.
+         * fully completed. In such cases, we cannot determine if an existing instance is available.
          * We return the current instance as a fallback, leaving to inverse().readResolve() the task
          * of returning a unique instance after it finished its own deserialization process.
          */
@@ -172,9 +172,9 @@ abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConv
     }
 
     /**
-     * Formats an error message for a value that can not be converted.
+     * Formats an error message for a value that cannot be converted.
      *
-     * @param  value  the value that can not be converted.
+     * @param  value  the value that cannot be converted.
      * @return the error message.
      */
     final String formatErrorMessage(final S value) {

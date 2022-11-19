@@ -113,7 +113,7 @@ final class DimensionSelector implements Comparable<DimensionSelector> {
         isConstantPosition = (maxInc == 0);
         if (minInc <= maxInc) {
             relativeIncrement = sumOfInc.doubleValue() / sumOfSize.doubleValue();
-            incrementRange = maxInc - minInc;   // Can not overflow because minInc >= 0.
+            incrementRange = maxInc - minInc;   // Cannot overflow because minInc >= 0.
             /*
              * TODO: we may have a mosaic if `incrementRange == 0 && maxInc == size`.
              *       Or maybe we could accept `maxInc <= minSize`.

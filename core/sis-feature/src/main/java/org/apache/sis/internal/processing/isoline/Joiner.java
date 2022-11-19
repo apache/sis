@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 
 
 /**
- * Assembles arbitrary amount of {@link PolylineBuffer}s in a single Java2D {@link Shape} for an isoline level.
+ * Assembles arbitrary number of {@link PolylineBuffer}s in a single Java2D {@link Shape} for an isoline level.
  * This class extends {@link PathBuilder} with two additional features: remove spikes caused by ambiguities,
  * then apply a {@link MathTransform} on all coordinate values.
  *

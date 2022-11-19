@@ -318,8 +318,8 @@ final class RawRasterStore extends RasterStore {
      * <p>Note: we don't do this initialization in the constructor
      * for giving a chance for users to register listeners first.</p>
      *
-     * @throws IOException if the auxiliary file can not be found or read.
-     * @throws DataStoreException if the auxiliary file can not be parsed.
+     * @throws IOException if the auxiliary file cannot be found or read.
+     * @throws DataStoreException if the auxiliary file cannot be parsed.
      * @throws RasterFormatException if the number of bits or the signed/unsigned property is invalid.
      * @throws ArithmeticException if image size of pixel/line/band stride is too large.
      * @throws IllegalArgumentException if {@link SampleModel} constructor rejects some argument values.
@@ -517,7 +517,7 @@ final class RawRasterStore extends RasterStore {
     }
 
     /**
-     * Returns an error message saying that the file can not be read.
+     * Returns an error message saying that the file cannot be read.
      */
     private String canNotRead() {
         return Resources.forLocale(getLocale())

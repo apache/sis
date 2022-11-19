@@ -39,7 +39,7 @@ import org.apache.sis.storage.event.StoreListener;
  * <div class="note"><b>Relationship with ISO 19115:</b>
  * this type is closely related to the {@code DS_Resource} type defined by ISO 19115.
  * The Apache SIS type differs from the ISO type by being more closely related to data extraction,
- * as can been seen from the checked {@link DataStoreException} thrown by most methods.
+ * as can be seen from the checked {@link DataStoreException} thrown by most methods.
  * Convenience methods for frequently requested information – for example {@link DataSet#getEnvelope()} – were added.
  * The sub-types performing the actual data extraction – for example {@link FeatureSet} – are specific to Apache SIS.
  * </div>
@@ -164,7 +164,7 @@ public interface Resource {
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to notify about events.
-     * @param  eventType  type of {@link StoreEvent}s to listen (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent}s to listen (cannot be {@code null}).
      */
     <T extends StoreEvent> void addListener(Class<T> eventType, StoreListener<? super T> listener);
 
@@ -186,7 +186,7 @@ public interface Resource {
      *
      * @param  <T>        compile-time value of the {@code eventType} argument.
      * @param  listener   listener to stop notifying about events.
-     * @param  eventType  type of {@link StoreEvent}s which were listened (can not be {@code null}).
+     * @param  eventType  type of {@link StoreEvent}s which were listened (cannot be {@code null}).
      */
     <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener);
 }

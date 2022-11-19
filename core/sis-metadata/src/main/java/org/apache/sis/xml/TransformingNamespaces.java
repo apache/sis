@@ -172,7 +172,7 @@ class TransformingNamespaces implements NamespaceContext {
         String p = context.getPrefix(version.importNS(namespaceURI));
         if (p != null) return p;
         /*
-         * We can not use the `imports` map when the same namespace (e.g. "http://www.isotc211.org/2005/gmd" from
+         * We cannot use the `imports` map when the same namespace (e.g. "http://www.isotc211.org/2005/gmd" from
          * legacy ISO 19139:2007) is mapped to multiple namespaces in the new ISO 19115-3:2016 or other standard.
          * In such case, we have to iterate over `exports` entries until we find an inverse mapping.
          */

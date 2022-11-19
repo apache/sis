@@ -177,7 +177,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @param authority  the person or party responsible for maintenance of the namespace, or {@code null} if not available.
      * @param codeSpace  identifier or namespace in which the code is valid, or {@code null} if not available.
      *                   This is often an abbreviation of the authority name.
-     * @param code       alphanumeric value identifying an instance in the namespace. The code can not be null.
+     * @param code       alphanumeric value identifying an instance in the namespace. The code cannot be null.
      */
     public ImmutableIdentifier(final Citation authority, final String codeSpace, final String code) {
         this(authority, codeSpace, code, null, null);
@@ -190,7 +190,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @param authority    the person or party responsible for maintenance of the namespace, or {@code null} if not available.
      * @param codeSpace    identifier or namespace in which the code is valid, or {@code null} if not available.
      *                     This is often an abbreviation of the authority name.
-     * @param code         alphanumeric value identifying an instance in the namespace. The code can not be null.
+     * @param code         alphanumeric value identifying an instance in the namespace. The code cannot be null.
      * @param version      the version identifier for the namespace as specified by the code authority, or {@code null} if none.
      * @param description  natural language description of the meaning of the code value, or {@code null} if none.
      */
@@ -269,7 +269,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         version     = trimWhitespaces(  property (properties, VERSION_KEY, String.class));
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);
         /*
-         * Map String authority to one of the pre-defined constants (typically EPSG or OGC).
+         * Map String authority to one of the predefined constants (typically EPSG or OGC).
          */
         Object value = properties.get(AUTHORITY_KEY);
         if (value instanceof String) {

@@ -481,7 +481,7 @@ public final class Factory extends Geometries<Geometry> {
      *
      * @param  wkt  the Well Known Text to parse.
      * @return the geometry object for the given WKT.
-     * @throws ParseException if the WKT can not be parsed.
+     * @throws ParseException if the WKT cannot be parsed.
      */
     @Override
     public GeometryWrapper<Geometry> parseWKT(final String wkt) throws ParseException {
@@ -497,7 +497,7 @@ public final class Factory extends Geometries<Geometry> {
      *
      * @param  data  the sequence of bytes to parse.
      * @return the geometry object for the given WKB.
-     * @throws ParseException if the WKB can not be parsed.
+     * @throws ParseException if the WKB cannot be parsed.
      */
     @Override
     public GeometryWrapper<Geometry> parseWKB(final ByteBuffer data) throws ParseException {

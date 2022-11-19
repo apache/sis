@@ -53,8 +53,8 @@ final class DimensionReducer {
      * Creates an helper which will retain only the {@code targetCRS} dimensions that are found the the base grid.
      * This will be used by caller for creating a valid {@code sourceCRS} to {@code targetCRS} transform.
      *
-     * @param  base       the grid geometry which will be derived. Can not be null.
-     * @param  targetCRS  CRS of the area or point of interest. Can not be null.
+     * @param  base       the grid geometry which will be derived. Cannot be null.
+     * @param  targetCRS  CRS of the area or point of interest. Cannot be null.
      */
     DimensionReducer(final GridGeometry base, final CoordinateReferenceSystem targetCRS) throws FactoryException {
         if (base != null && base.envelope != null) {
@@ -75,7 +75,7 @@ final class DimensionReducer {
 
     /**
      * Applies reduction on the given position.
-     * If the position can not be reduced, then it is returned as-is.
+     * If the position cannot be reduced, then it is returned as-is.
      */
     final DirectPosition apply(final DirectPosition target) {
         if (dimensions == null) {
@@ -90,7 +90,7 @@ final class DimensionReducer {
 
     /**
      * Applies reduction on the given envelope.
-     * If the envelope can not be reduced, then it is returned as-is.
+     * If the envelope cannot be reduced, then it is returned as-is.
      */
     final Envelope apply(final Envelope target) {
         if (dimensions == null) {

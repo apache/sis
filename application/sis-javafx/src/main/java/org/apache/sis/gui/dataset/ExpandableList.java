@@ -178,7 +178,7 @@ final class ExpandableList extends TransformationList<Feature,Feature>
         /*
          * If a new row is selected, extract now all properties. We need at least the number
          * of properties anyway for determining the number of additional rows.  But we store
-         * also the property values in arrays for convenience because we can not use indices
+         * also the property values in arrays for convenience because we cannot use indices
          * on arbitrary collections (they may not be lists).  This is okay on the assumption
          * that the number of elements is not large.
          */

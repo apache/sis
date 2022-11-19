@@ -224,7 +224,7 @@ public final class Formulas extends Static {
      */
     public static double getInverseFlattening(final double semiMajorAxis, final double semiMinorAxis) {
         /*
-         * Note: double-double arithmetic here sometime change the last digit. We ignore for now.
+         * Note: double-double arithmetic here sometimes change the last digit. We ignore for now.
          * We may consider using double-double arithmetic in a future SIS version, not for more
          * accurate map projection but rather for being able to find back the original value after
          * we convert back and forward betwen inverse flattening and semi-minor axis length.

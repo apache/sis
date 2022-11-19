@@ -336,7 +336,7 @@ public class GridSliceSelector extends Widget {
         /**
          * Creates a new converter.
          *
-         * @param gg   the grid geometry for which to create a converter. Can not be null.
+         * @param gg   the grid geometry for which to create a converter. Cannot be null.
          * @param ts   a transform separator initialized to the coverage "grid to CRS" transform, or {@code null}.
          * @param dim  the source dimension (grid axis) to extract in the {@code ts} separator.
          * @param min  minimal grid coordinate (before conversion to CRS coordinate).

@@ -342,7 +342,7 @@ final class ComputedTiles extends WeakReference<ComputedImage> implements Dispos
      * allowing the garbage collector to release the sources in the event where this {@code ComputedTiles} would
      * live longer than expected.
      *
-     * @param  ws       a copy of {@link #sources}. Can not be null.
+     * @param  ws       a copy of {@link #sources}. Cannot be null.
      * @param  i        index after the last source to stop observing.
      * @param  failure  if this method is invoked because an exception occurred, that exception.
      */

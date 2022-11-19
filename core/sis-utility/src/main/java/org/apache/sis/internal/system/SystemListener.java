@@ -59,7 +59,7 @@ public abstract class SystemListener implements EventListener {
      * This method doesn't check if the given listener is already present in the array,
      * unless assertions are enabled.
      *
-     * @param  listener  the listener to add. Can not be {@code null}.
+     * @param  listener  the listener to add. Cannot be {@code null}.
      */
     public static synchronized void add(final SystemListener listener) {
         assert (listener != null) && !ArraysExt.contains(listeners, listener);

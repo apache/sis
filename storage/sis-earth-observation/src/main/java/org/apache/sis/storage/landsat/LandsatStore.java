@@ -171,7 +171,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      * Returns the parameters used to open this Landsat data store.
      * The parameters are described by {@link LandsatStoreProvider#getOpenParameters()} and contains at least
      * a parameter named {@value org.apache.sis.storage.DataStoreProvider#LOCATION} with a {@link URI} value.
-     * The return value may be empty if the storage input can not be described by a URI
+     * The return value may be empty if the storage input cannot be described by a URI
      * (for example a Landsat file reading directly from a {@link java.nio.channels.ReadableByteChannel}).
      *
      * @return parameters used for opening this data store.

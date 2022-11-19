@@ -186,8 +186,8 @@ public final class Column {
     }
 
     /**
-     * PostgreSQL JDBC drivers sometime gives the fully qualified type name.
-     * For example we sometime get {@code "public"."geometry"} (including the quotes)
+     * PostgreSQL JDBC drivers sometimes gives the fully qualified type name.
+     * For example we sometimes get {@code "public"."geometry"} (including the quotes)
      * instead of a plain {@code geometry}. If this is the case, keep only the local part.
      *
      * @param  type   value found in the {@value Reflection.TYPE_NAME} column.

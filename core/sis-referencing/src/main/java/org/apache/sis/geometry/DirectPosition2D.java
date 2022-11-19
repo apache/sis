@@ -166,7 +166,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * }
      *
      * @param  wkt  the {@code POINT} or other kind of element to parse.
-     * @throws IllegalArgumentException if the given string can not be parsed.
+     * @throws IllegalArgumentException if the given string cannot be parsed.
      * @throws MismatchedDimensionException if the given point is not two-dimensional.
      *
      * @see #toString()

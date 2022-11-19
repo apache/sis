@@ -194,14 +194,14 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * That default implementation is intended to make easier for developers to create their own
      * customized <code>AbstractFacture</code> implementations, but has drawbacks:
      * the given {@code Property} instance is not stored (only its {@linkplain AbstractAttribute#getValue() value}
-     * is stored), and it can not have custom {@linkplain AbstractAttribute#characteristics() characteristics}.
+     * is stored), and it cannot have custom {@linkplain AbstractAttribute#characteristics() characteristics}.
      * Implementers are encouraged to override this method if they can provide a better implementation.
      * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
      *
      * @param  property  the property to set.
      * @throws PropertyNotFoundException if the name of the given property is not a property name of this feature.
      * @throws InvalidPropertyValueException if the value of the given property is not valid.
-     * @throws IllegalArgumentException if the property can not be set for another reason.
+     * @throws IllegalArgumentException if the property cannot be set for another reason.
      *
      * @see #setPropertyValue(String, Object)
      */
@@ -323,9 +323,9 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *
      * <h4>Multi-valued properties and collections</h4>
      * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
-     * or may not be modifiable, at implementation choice. Generally the caller can not add new elements into the
+     * or may not be modifiable, at implementation choice. Generally the caller cannot add new elements into the
      * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
-     * casts (e.g. {@code Collection<String>} can not be checked at runtime (at least as of Java 8).
+     * casts (e.g. {@code Collection<String>} cannot be checked at runtime (at least as of Java 8).
      * If a type-safe modifiable collection is desired, the following approach can be used instead:
      *
      * {@preformat java
@@ -510,7 +510,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
                     } while ((element = it.next()) == null || base.isInstance(element));
                     // Found an illegal value. Exeption is thrown below.
                 }
-                throw new ClassCastException(illegalValueClass(pt, base, element));         // `element` can not be null here.
+                throw new ClassCastException(illegalValueClass(pt, base, element));         // `element` cannot be null here.
             }
         }
         ((Attribute) attribute).setValue(value);
@@ -718,8 +718,8 @@ public abstract class AbstractFeature implements Feature, Serializable {
 
     /**
      * Returns the exception message for a property type which is neither an attribute or an association.
-     * This method is invoked after a {@link PropertyType} has been found for the user-supplied name,
-     * but that property can not be stored in or extracted from a {@link Property} instance.
+     * This method is invoked after a {@link PropertyType} has been found for the user supplied name,
+     * but that property cannot be stored in or extracted from a {@link Property} instance.
      */
     static String unsupportedPropertyType(final GenericName name) {
         return Resources.format(Resources.Keys.CanNotInstantiateProperty_1, name);

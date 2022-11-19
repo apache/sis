@@ -113,7 +113,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
      * @param  gg      the grid geometry from which to get the affine transform.
      * @param  h       set of helper methods.
      * @return the iteration order (e.g. from left to right, then top to bottom).
-     * @throws DataStoreException if the header can not be written.
+     * @throws DataStoreException if the header cannot be written.
      */
     private static SequenceType getAffineCoefficients(
             final Map<String,Object> header, final GridGeometry gg,
@@ -211,7 +211,7 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
             /*
              * Open the destination channel only after the coverage has been validated by above method calls.
              * After this point we should not have any validation errors. Write the nodata value even if it is
-             * "NaN" because the default is -9999, and we need to overwrite that default if it can not be used.
+             * "NaN" because the default is -9999, and we need to overwrite that default if it cannot be used.
              */
             final ChannelDataOutput out = (output != null) ? output : h.channel(input().input);
             final Number nodataValue = setCoverage(coverage, data, band);

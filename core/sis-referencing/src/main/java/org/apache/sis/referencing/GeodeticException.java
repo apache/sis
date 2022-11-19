@@ -19,7 +19,7 @@ package org.apache.sis.referencing;
 
 /**
  * Unchecked exception thrown when an error occurred while computing a geodetic value.
- * This exception may be used in contexts where a checked exception can not be thrown.
+ * This exception may be used in contexts where a checked exception cannot be thrown.
  * This exception typically has a {@link org.opengis.util.FactoryException} or
  * {@link org.opengis.referencing.operation.TransformException} as its cause.
  *

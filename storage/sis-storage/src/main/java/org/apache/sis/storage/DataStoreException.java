@@ -25,11 +25,11 @@ import org.apache.sis.util.Workaround;
 
 
 /**
- * Thrown when a {@link DataStore} can not complete a read or write operation.
+ * Thrown when a {@link DataStore} cannot complete a read or write operation.
  *
  * <h2>Localization</h2>
  * The {@link #getMessage()} and {@link #getLocalizedMessage()} methods return the same message,
- * but sometime in different languages. The general policy is that {@link #getMessage()} returns
+ * but sometimes in different languages. The general policy is that {@link #getMessage()} returns
  * the message in the JVM {@linkplain Locale#getDefault() default locale} while {@link #getLocalizedMessage()}
  * returns the message in the locale specified by the last call to {@link DataStore#setLocale(Locale)}.
  * In a client-server architecture, the former is typically the locale of the system administrator
@@ -51,7 +51,7 @@ public class DataStoreException extends Exception implements LocalizedException 
     /**
      * The resources key as one of the {@link Resources.Keys} constant, or 0 if none.
      *
-     * <p>This field is not serialized because key values sometime change between different SIS versions.
+     * <p>This field is not serialized because key values sometimes change between different SIS versions.
      * The deserialized value will be 0, which will cause this {@code DataStoreException} to fallback on
      * {@code super.getMessage()}.</p>
      */
@@ -97,7 +97,7 @@ public class DataStoreException extends Exception implements LocalizedException 
     }
 
     /**
-     * Creates a localized exception with a message saying that the given store can not be processed.
+     * Creates a localized exception with a message saying that the given store cannot be processed.
      * Location in the file where the error occurred while be fetched from the given {@code store}
      * argument if possible, for example by invoking the {@link java.io.LineNumberReader#getLineNumber()}
      * or {@link javax.xml.stream.XMLStreamReader#getLocation()} method.
@@ -105,8 +105,8 @@ public class DataStoreException extends Exception implements LocalizedException 
      *
      * <p>Examples of messages created by this constructor:</p>
      * <ul>
-     *   <li>Can not read <var>“Foo”</var> as a file in the <var>Bar</var> format.</li>
-     *   <li>Can not read after column 10 or line 100 of <var>“Foo”</var> as part of a file in the <var>Bar</var> format.</li>
+     *   <li>Cannot read <var>“Foo”</var> as a file in the <var>Bar</var> format.</li>
+     *   <li>Cannot read after column 10 or line 100 of <var>“Foo”</var> as part of a file in the <var>Bar</var> format.</li>
      * </ul>
      *
      * @param locale    the locale of the message to be returned by {@link #getLocalizedMessage()}, or {@code null}.
@@ -184,7 +184,7 @@ public class DataStoreException extends Exception implements LocalizedException 
      * If this exception is capable to return the message in various locales, returns that message.
      * Otherwise returns {@code null}.
      *
-     * @return the exception message, or {@code null} if this exception can not produce international message.
+     * @return the exception message, or {@code null} if this exception cannot produce international message.
      *
      * @since 0.8
      */

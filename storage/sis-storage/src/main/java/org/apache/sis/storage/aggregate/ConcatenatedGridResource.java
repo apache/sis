@@ -122,7 +122,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
 
     /**
      * The envelope of this aggregate, or {@code null} if not yet computed.
-     * May also be {@code null} if no slice declare an envelope, or if the union can not be computed.
+     * May also be {@code null} if no slice declare an envelope, or if the union cannot be computed.
      *
      * @see #getEnvelope()
      */

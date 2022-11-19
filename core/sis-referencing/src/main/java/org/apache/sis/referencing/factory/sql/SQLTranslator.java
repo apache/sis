@@ -185,7 +185,7 @@ public class SQLTranslator implements Function<String,String> {
     /**
      * Mapping from words used in the MS-Access database to words used in the ANSI versions of EPSG databases.
      * A word may be a table or a column name, or a part of it. A table name may consist in many words separated
-     * by spaces. This map does not list all tables used in EPSG schema, but only the ones that can not be mapped
+     * by spaces. This map does not list all tables used in EPSG schema, but only the ones that cannot be mapped
      * by more generic code (e.g. by replacing spaces by '_').
      *
      * <p>The keys are the names in the MS-Access database, and the values are the names in the SQL scripts.
@@ -384,7 +384,7 @@ public class SQLTranslator implements Function<String,String> {
     }
 
     /**
-     * Returns the error message for the exception to throw if the EPSG tables are not found and we can not create them.
+     * Returns the error message for the exception to throw if the EPSG tables are not found and we cannot create them.
      */
     static String tableNotFound(final Locale locale) {
         return Errors.getResources(locale).getString(Errors.Keys.TableNotFound_1, SENTINEL[MIXED_CASE]);

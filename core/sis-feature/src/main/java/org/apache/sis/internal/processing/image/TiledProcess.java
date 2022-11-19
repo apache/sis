@@ -272,7 +272,7 @@ public abstract class TiledProcess<R> {
          * merged} on {@code this}.
          *
          * @return the computation result.
-         * @throws Exception if final result can not be computed.
+         * @throws Exception if final result cannot be computed.
          */
         protected abstract R result() throws Exception;
 

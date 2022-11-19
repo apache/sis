@@ -135,7 +135,7 @@ import org.apache.sis.util.resources.Errors;
  * Current implementation loads and caches the full image no matter the subregion or subsampling
  * specified to the {@code read(…)} method. The image is loaded by {@link #getSampleDimensions()}
  * call too, because there is no other way to build a reliable sample dimension.
- * Even the data type can not be determined for sure without loading the full image.
+ * Even the data type cannot be determined for sure without loading the full image.
  * Loading the full image is reasonable if ASCII Grid files contain only small images,
  * which is usually the case given how inefficient this format is.
  *
@@ -187,7 +187,7 @@ class AsciiGridStore extends RasterStore {
 
     /**
      * The {@link #nodataValue} as a text. This is useful when the fill value
-     * can not be parsed as a {@code double} value, for example {@code "NULL"},
+     * cannot be parsed as a {@code double} value, for example {@code "NULL"},
      * {@code "N/A"}, {@code "NA"}, {@code "mv"}, {@code "!"} or {@code "-"}.
      */
     private String nodataText;
@@ -213,7 +213,7 @@ class AsciiGridStore extends RasterStore {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
-     * @param  readOnly   whether to fail if the channel can not be opened at least in read mode.
+     * @param  readOnly   whether to fail if the channel cannot be opened at least in read mode.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
     AsciiGridStore(final AsciiGridStoreProvider provider, final StorageConnector connector, final boolean readOnly)
@@ -235,7 +235,7 @@ class AsciiGridStore extends RasterStore {
     }
 
     /**
-     * Returns whether this store can read or write. If this store can not write,
+     * Returns whether this store can read or write. If this store cannot write,
      * then we can close the {@linkplain #input} channel as soon as the coverage
      * has been fully read. Otherwise we need to keep it open.
      *

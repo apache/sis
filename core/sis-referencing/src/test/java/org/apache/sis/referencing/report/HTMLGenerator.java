@@ -87,7 +87,7 @@ abstract strictfp class HTMLGenerator implements Closeable {
      * @param  filename  the name of the file where to write.
      * @param  title     the document title.
      * @param  css       path to the CSS file.
-     * @throws IOException if the file can not be created (e.g. because it already exists).
+     * @throws IOException if the file cannot be created (e.g. because it already exists).
      */
     HTMLGenerator(final String filename, final String title, final String css) throws IOException {
         final File file = new File(filename);

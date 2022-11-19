@@ -262,7 +262,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * @param  factory  the factory to use for creating concatenated transforms.
      * @param  values   the group of parameter values.
      * @return the created math transform.
-     * @throws FactoryException if a transform can not be created.
+     * @throws FactoryException if a transform cannot be created.
      */
     @Override
     @SuppressWarnings("fallthrough")
@@ -391,7 +391,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
          *     as they are designed for transformations between geographic CRS only. User preference is then ignored.
          *
          *   - Molodensky methods are approximations for datum shifts having only translation terms in their Bursa-Wolf
-         *     parameters. If there is also a scale or rotation terms, then we can not use Molodensky methods. The user
+         *     parameters. If there is also a scale or rotation terms, then we cannot use Molodensky methods. The user
          *     preference is then ignored.
          */
         if (!isEllipsoidal) {
@@ -460,7 +460,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
                         parameters.setPositionVectorTransformation(((LinearTransform) step).getMatrix(), BURSAWOLF_TOLERANCE);
                     } catch (IllegalArgumentException e) {
                         /*
-                         * Should not occur, except sometime on inverse transform of relatively complex datum shifts
+                         * Should not occur, except sometimes on inverse transform of relatively complex datum shifts
                          * (more than just translation terms). We can fallback on formatting the full matrix.
                          */
                         Logging.recoverableException(getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);

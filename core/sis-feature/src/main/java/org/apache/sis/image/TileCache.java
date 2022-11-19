@@ -130,7 +130,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
         }
 
         /**
-         * Returns the error message when this tile can not be computed.
+         * Returns the error message when this tile cannot be computed.
          *
          * @param  key  {@link Resources.Keys#CanNotComputeTile_2} or {@link Resources.Keys#TileErrorFlagSet_2}.
          */

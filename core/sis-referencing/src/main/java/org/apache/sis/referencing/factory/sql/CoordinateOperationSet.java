@@ -70,7 +70,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
      * <ul>
      *   <li>Keys a coordinate operation codes.</li>
      *   <li>Values are coordinate reference system codes. They are usually {@code ProjectedCRS},
-     *       but the EPSG database sometime use this mechanisms for other kind of CRS.</li>
+     *       but the EPSG database sometimes use this mechanisms for other kind of CRS.</li>
      * </ul>
      *
      * This map does <strong>not</strong> contain all operations to be returned by this {@code CoordinateOperationSet},

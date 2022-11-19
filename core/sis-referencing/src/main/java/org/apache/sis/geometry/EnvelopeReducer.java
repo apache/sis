@@ -101,7 +101,7 @@ class EnvelopeReducer {
      *
      * @param  envelopes  the envelopes for which to perform the reduce operation. Null elements are ignored.
      * @return result of reduce operation, or {@code null} if the given array does not contain non-null elements.
-     * @throws TransformException if this method can not determine a common CRS, or if a transformation failed.
+     * @throws TransformException if this method cannot determine a common CRS, or if a transformation failed.
      */
     final GeneralEnvelope reduce(final Envelope[] envelopes) throws TransformException {
         /*

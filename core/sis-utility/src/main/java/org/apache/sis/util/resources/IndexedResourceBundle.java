@@ -300,7 +300,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                      * into an error record. Note that the message must be logged outside
                      * the synchronized block, otherwise there is dead locks!
                      */
-                    final Locale    locale     = getLocale();                         // Sometime null with IBM's JDK.
+                    final Locale    locale     = getLocale();                         // Sometimes null with IBM's JDK.
                     final String    baseName   = getClass().getCanonicalName();
                     final String    methodName = (key != null) ? "getObject" : "getKeys";
                     final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
@@ -454,7 +454,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
 
     /**
      * If the given class is not public, returns the first public interface or the first public super-class.
-     * This is for avoiding confusing the user with private class in message like "Value can not be instance
+     * This is for avoiding confusing the user with private class in message like "Value cannot be instance
      * of XYZ".
      */
     private static Class<?> getPublicType(Class<?> c) {

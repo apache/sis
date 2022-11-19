@@ -95,7 +95,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
      * property value for the given image.
      *
      * @param  image  the image for which to compute the image geometry.
-     * @throws ImagingOpException if the property can not be computed.
+     * @throws ImagingOpException if the property cannot be computed.
      */
     @Override
     public GridGeometry apply(final RenderedImage image) {
@@ -284,7 +284,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
      * @param  resolution      value of {@link GridGeometry#resolution} (may be {@code null}).
      * @param  gridDimensions  the grid (source) dimensions to keep.
      * @param  dimCRS          desired number of CRS dimensions, or -1 for automatic.
-     * @return the CRS (target) dimensions to keep, or {@code null} if this method can not compute them.
+     * @return the CRS (target) dimensions to keep, or {@code null} if this method cannot compute them.
      */
     private static int[] findTargetDimensions(final MathTransform gridToCRS, final GridExtent extent,
                                               final double[] resolution, int[] gridDimensions, int dimCRS)
@@ -339,7 +339,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
                 }
             }
             if ((kmax | jmax) < 0) {
-                return null;                            // Can not provide the requested number of dimensions.
+                return null;                            // Cannot provide the requested number of dimensions.
             }
             if (max > 0) {                              // Dimensions are independent if scale factor is zero.
                 if (jmax >= Long.SIZE) {

@@ -139,7 +139,7 @@ public class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName> {
      *   <gml:alias>
      *     <gco:TypeName>
      *       <gco:aName>
-     *         <gco:CharacterString>An other local name</gco:CharacterString>
+     *         <gco:CharacterString>Another local name</gco:CharacterString>
      *       </gco:aName>
      *     </gco:TypeName>
      *   </gml:alias>

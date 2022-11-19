@@ -184,7 +184,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * and producing normalized output coordinates. See {@link org.apache.sis.referencing.cs.AxesConvention}
      * for more information about what Apache SIS means by "normalized".
      *
-     * <p>If the caller can not yet supply a {@code MathTransform}, then (s)he shall supply the parameter values needed
+     * <p>If the caller cannot yet supply a {@code MathTransform}, then (s)he shall supply the parameter values needed
      * for creating that transform, with the possible omission of {@code "semi_major"} and {@code "semi_minor"} values.
      * The semi-major and semi-minor parameter values will be set automatically when the
      * {@link #specialize specialize(…)} method will be invoked.</p>
@@ -284,7 +284,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                 transform = ((DefaultMathTransformFactory) factory).swapAndScaleAxes(transform, context);
             } else {
                 /*
-                 * If we can not use our SIS factory implementation, or if this conversion is not a defining
+                 * If we cannot use our SIS factory implementation, or if this conversion is not a defining
                  * conversion (i.e. if this is the conversion of an existing ProjectedCRS, in which case the
                  * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
                  * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
@@ -413,7 +413,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             ensureCompatibleDatum("targetCRS", super.getTargetCRS(), targetCRS);
         } else {
             /*
-             * Special case for derived and projected CRS: we can not check directly the datum of the target CRS
+             * Special case for derived and projected CRS: we cannot check directly the datum of the target CRS
              * of a derived CRS, because this method is invoked indirectly by SIS AbstractDerivedCRS constructor
              * before its `conversionFromBase` field is set. Since the Apache SIS implementations of derived CRS
              * map the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking targetCRS.getDatum()
@@ -505,7 +505,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultConversion() {
     }

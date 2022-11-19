@@ -63,7 +63,7 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Verifies that components in a folder are correctly detected.
      *
-     * @throws URISyntaxException if the URL to test data can not be converted to a path of the file system.
+     * @throws URISyntaxException if the URL to test data cannot be converted to a path of the file system.
      * @throws DataStoreException if an error occurred while reading the resources.
      * @throws IOException if an I/O error occurs.
      */
@@ -83,7 +83,7 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Verifies that specifying a format effectively restricts the number of resources to be found.
      *
-     * @throws URISyntaxException if the URL to test data can not be converted to a path of the file system.
+     * @throws URISyntaxException if the URL to test data cannot be converted to a path of the file system.
      * @throws DataStoreException if an error occurred while reading the resources.
      * @throws IOException if an I/O error occurs.
      */

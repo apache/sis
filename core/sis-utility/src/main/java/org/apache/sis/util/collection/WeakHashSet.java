@@ -117,7 +117,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     private final Class<E> elementType;
 
     /**
-     * {@code true} if the elements in this set may be arrays. If the elements can not
+     * {@code true} if the elements in this set may be arrays. If the elements cannot
      * be arrays, then we can avoid the calls to the costly {@link Utilities} methods.
      */
     private final boolean mayContainArrays;

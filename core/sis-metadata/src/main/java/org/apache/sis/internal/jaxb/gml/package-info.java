@@ -18,7 +18,7 @@
 /**
  * Miscellaneous objects and adapters defined in the {@code "gml"} namespace.
  * This package contains adapters mapping GeoAPI interfaces to their SIS implementation.
- * We must use adapters since JAXB can not handle interfaces. Consequently the purpose of
+ * We must use adapters since JAXB cannot handle interfaces. Consequently the purpose of
  * these adapters is to replace arbitrary instances of interfaces by SIS implementations.
  *
  * <p>Every time JAXB try to marshal or unmarshal an instance of an interface,

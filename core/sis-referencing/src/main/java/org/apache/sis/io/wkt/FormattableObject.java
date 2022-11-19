@@ -50,7 +50,7 @@ import org.apache.sis.internal.util.Constants;
  * if the terminal seems to support the ANSI escape codes.
  *
  * <h2>Non-standard WKT</h2>
- * If this object can not be formatted without violating some WKT constraints,
+ * If this object cannot be formatted without violating some WKT constraints,
  * then the behavior depends on the method invoked:
  *
  * <ul>
@@ -95,13 +95,13 @@ public abstract class FormattableObject {
 
     /**
      * Returns a strictly compliant <cite>Well Known Text</cite> (WKT) using the default convention,
-     * symbols and indentation. If this object can not be represented in a standard way, then this
+     * symbols and indentation. If this object cannot be represented in a standard way, then this
      * method throws an {@link UnformattableObjectException}.
      *
      * <p>By default this method formats this object according the {@link Convention#WKT2} rules.</p>
      *
      * @return the default Well Know Text representation of this object.
-     * @throws UnformattableObjectException if this object can not be formatted as a standard WKT.
+     * @throws UnformattableObjectException if this object cannot be formatted as a standard WKT.
      *
      * @see org.opengis.referencing.IdentifiedObject#toWKT()
      */
@@ -111,7 +111,7 @@ public abstract class FormattableObject {
 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) or an alternative text representation for this object.
-     * If this object can not be represented in a standard way, then this method may fallback on non-standard
+     * If this object cannot be represented in a standard way, then this method may fallback on non-standard
      * representation, or leave unformattable elements empty and append warnings after the WKT.
      *
      * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules,
@@ -130,7 +130,7 @@ public abstract class FormattableObject {
      * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
      * Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
      * The returned string may contain non-standard elements or warnings
-     * if this object can not be formatted according the given convention.
+     * if this object cannot be formatted according the given convention.
      *
      * <p>For stricter conformance to ISO 19162 standard, use {@link #toWKT()} or {@link WKTFormat} instead.</p>
      *
@@ -173,7 +173,7 @@ public abstract class FormattableObject {
      * @param  strict      {@code true} if an exception shall be thrown for unformattable objects,
      *                     or {@code false} for providing a non-standard formatting instead.
      * @return the Well Known Text (WKT) or a pseudo-WKT representation of this object.
-     * @throws UnformattableObjectException if {@code strict} is {@code true} and this object can not be formatted.
+     * @throws UnformattableObjectException if {@code strict} is {@code true} and this object cannot be formatted.
      */
     private String formatWKT(final Convention convention, final boolean colorize, final boolean strict)
              throws UnformattableObjectException
@@ -235,7 +235,7 @@ public abstract class FormattableObject {
      * }
      *
      * <h4>Formatting non-standard WKT</h4>
-     * If the implementation can not represent this object without violating some WKT constraints,
+     * If the implementation cannot represent this object without violating some WKT constraints,
      * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
      * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}
      * methods.

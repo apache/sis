@@ -138,7 +138,7 @@ public class GridView extends Control {
 
     /**
      * Width of header cells to be shown in the first column.
-     * The first (header) column contains the row indices, or sometime the coordinate values.
+     * The first (header) column contains the row indices, or sometimes the coordinate values.
      * This size includes the {@linkplain #cellSpacing cell spacing}.
      * It shall be a number strictly greater than zero.
      *

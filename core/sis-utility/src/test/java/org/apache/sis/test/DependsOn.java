@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 
 /**
- * Declares that a test class depends on an other test class. If any test method in any
+ * Declares that a test class depends on another test class. If any test method in any
  * dependency failed, then all tests in the annotated class will be skipped.
  *
  * @author  Martin Desruisseaux

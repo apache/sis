@@ -30,7 +30,7 @@ import org.apache.sis.internal.util.Strings;
  * <div class="note"><b>Design note:</b>
  * we do not put more field than {@link #title} in this {@code SimpleCitation} in order to keep it simple,
  * because the title is the only "universal" property (the need for all other fields will be determined in
- * subclasses on a case-by-case basis) and because {@code SimpleCitation} are sometime only proxy identified
+ * subclasses on a case-by-case basis) and because {@code SimpleCitation} are sometimes only proxy identified
  * by the {@link #title}.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)

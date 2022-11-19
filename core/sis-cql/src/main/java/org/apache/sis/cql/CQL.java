@@ -758,7 +758,7 @@ public final class CQL {
                     String crs = convertExpression(exp.TEXT(), ff).apply(null).toString();
                     env = new GeneralEnvelope(CRS.forCode(crs));
                 } catch (FactoryException e) {
-                    throw new CQLException("Can not parse CRS code.", e);
+                    throw new CQLException("Cannot parse CRS code.", e);
                 } else {
                     env = new GeneralEnvelope(2);
                 }

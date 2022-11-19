@@ -262,7 +262,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests application of an identity transform computed from an explicitly given "grid to CRS" transform.
      * We expect the source coverage to be returned unchanged.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testExplicitIdentity() throws TransformException {
@@ -279,7 +279,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * This test is identical to {@link #testExplicitIdentity()} except that the "grid to CRS" transform
      * specified to the {@code resample(…)} operation is null.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     @DependsOnMethod("testExplicitIdentity")
@@ -296,7 +296,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests resampling with a transform which is only a translation by integer values.
      * This test verifies that an optimized path (much cheaper than real resampling) is taken.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testIntegerTranslation() throws TransformException {
@@ -321,7 +321,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests application of axis swapping in a two-dimensional coverage.
      * This test verifies the envelope of resampled coverage.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testAxisSwap() throws TransformException {
@@ -359,7 +359,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests application of axis swapping in a three-dimensional coverage, together with an axis flip.
      * This test verifies that the pixel values of resampled coverage are found in expected quadrant.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     @DependsOnMethod("testAxisSwap")
@@ -387,7 +387,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Tests an operation moving the dimension of temporal axis in a four-dimensional coverage.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testTemporalAxisMoved() throws TransformException {
@@ -405,7 +405,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests resampling in a sub-region specified by a grid extent. This method uses a three-dimensional coverage,
      * which implies that this method also tests the capability to identify which slice needs to be resampled.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testSubGridExtent() throws TransformException {
@@ -444,7 +444,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * are reduced to 1D. However, it is a problem for image case which requires 2D coordinates.
      * So we must ensure that resample conversion keeps at least two dimensions.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testSubGridExtentColumnar() throws TransformException {
@@ -467,7 +467,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Tests resampling in a sub-region specified by an envelope.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testSubGeographicArea() throws TransformException {
@@ -484,7 +484,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Tests application of a non-linear transform.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testReprojection() throws TransformException {
@@ -502,12 +502,12 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     }
 
     /**
-     * Tests application of a three-dimensional transform which can not be reduced to a two-dimensional transform.
+     * Tests application of a three-dimensional transform which cannot be reduced to a two-dimensional transform.
      * It happens for example when transformation of <var>x</var> or <var>y</var> coordinate depends on <var>z</var>
-     * coordinate value. In such case we can not separate the 3D transform into (2D + 1D) transforms. This method
+     * coordinate value. In such case we cannot separate the 3D transform into (2D + 1D) transforms. This method
      * verifies that {@link ResampledGridCoverage} nevertheless manages to do its work even in that situation.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testNonSeparableGridToCRS() throws TransformException {
@@ -550,7 +550,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * from the four-dimensional "grid to CRS" transform given in argument to the {@code resample(…)} method,
      * combined with the source grid extent.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testDimensionalityIncrease() throws TransformException {
@@ -564,7 +564,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Tests the removal of temporal axis.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testDimensionalityReduction() throws TransformException {
@@ -579,7 +579,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests resampling with a target domain larger than the source domain.
      * Pixel outside the source domain shall be set to fill value, which is 0.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-495">SIS-495</a>
      */
@@ -606,7 +606,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
      * Tests resampling of an image associated to a coordinate system using the 0 to 360° range of longitude.
      * The image crosses the 180° longitude. The resampling does not involve map projection.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testLongitude360() throws TransformException {
@@ -640,7 +640,7 @@ public final strictfp class ResampledGridCoverageTest extends TestCase {
     /**
      * Tests map reprojection of an image associated to a coordinate system using the 0 to 360° range of longitude.
      *
-     * @throws TransformException if some coordinates can not be transformed to the target grid geometry.
+     * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
     public void testReprojectionFromLongitude360() throws TransformException {

@@ -227,7 +227,7 @@ public final class WKTKeywords extends Static {
 
     /**
      * Mapping between types of object and WKT keywords. Each GeoAPI interfaces is associated to one
-     * or many WKT keywords: new keywords defined by version 2 (sometime with synonymous) and legacy
+     * or many WKT keywords: new keywords defined by version 2 (sometimes with synonymous) and legacy
      * keywords defined by WKT 1.
      *
      * @see #forType(Class)

@@ -45,7 +45,7 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  *     PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]]
  * }
  *
- * Each {@code Element} object can contain an arbitrary amount of other elements.
+ * Each {@code Element} object can contain an arbitrary number of other elements.
  * The result is a tree, which can be seen with {@link #toString()} for debugging purpose.
  * Elements can be pulled by their name and other children (numbers, dates, strings)
  * can be pulled in a <cite>first in, first out</cite> order.
@@ -197,7 +197,7 @@ final class Element {
      * @param  position  on input, the position where to start parsing from.
      *                   On output, the first character after the separator.
      * @throws ParseException if quotes, brackets or parenthesis are not balanced, or a date/number
-     *         can not be parsed, or a referenced WKT fragment (e.g. {@code "$FOO"}) can not be found.
+     *         cannot be parsed, or a referenced WKT fragment (e.g. {@code "$FOO"}) cannot be found.
      */
     Element(final AbstractParser parser, final String text, final ParsePosition position) throws ParseException {
         isFragment  = false;
@@ -396,7 +396,7 @@ final class Element {
 
     ////////////////////////////////////////////////////////////////////////////////////////
     ////////                                                                        ////////
-    ////////    Construction of a ParseException when a string can not be parsed    ////////
+    ////////    Construction of a ParseException when a string cannot be parsed     ////////
     ////////                                                                        ////////
     ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -496,7 +496,7 @@ final class Element {
      * Returns a {@link ParseException} for an illegal coordinate system.
      *
      * <p>The given {@code cs} argument should never be null with Apache SIS implementation of
-     * {@link org.opengis.referencing.cs.CSFactory}, but could be null with user-supplied implementation.
+     * {@link org.opengis.referencing.cs.CSFactory}, but could be null with user supplied implementation.
      * But it would be a {@code CSFactory} contract violation, so the user would get a {@link NullPointerException}
      * later. For making easier to trace the cause, we throw here an exception with a similar error message.</p>
      *

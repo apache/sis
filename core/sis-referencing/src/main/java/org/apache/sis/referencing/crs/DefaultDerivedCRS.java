@@ -66,7 +66,7 @@ import org.opengis.referencing.datum.ParametricDatum;
 /**
  * A coordinate reference system that is defined by its coordinate {@linkplain DefaultConversion conversion}
  * from another CRS (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}). {@code DerivedCRS}
- * can not be {@linkplain DefaultProjectedCRS projected CRS} themselves, but may be derived from a projected CRS
+ * cannot be {@linkplain DefaultProjectedCRS projected CRS} themselves, but may be derived from a projected CRS
  * (for example in order to use a {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS polar coordinate system}).
  *
  * <p>A {@code DerivedCRS} instance may also implement one of the interfaces listed below,
@@ -595,7 +595,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Returns the WKT 2 keyword for a {@code DerivedCRS} having the given base CRS and derived coordinate system.
-     * If the type can not be identifier, then this method returns {@code null}.
+     * If the type cannot be identifier, then this method returns {@code null}.
      */
     static String getType(final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
         final Class<?> type;
@@ -903,7 +903,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     /**
      * Constructs a new object in which every attributes are set to a default value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultDerivedCRS() {
     }

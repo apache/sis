@@ -64,7 +64,7 @@ public final strictfp class CodeListSetTest extends TestCase {
     }
 
     /**
-     * Creates a code list of an other kind. The returned set contains a code list having
+     * Creates a code list of another kind. The returned set contains a code list having
      * the same ordinal value than {@link AxisDirection#NORTH}, so we can detect if the
      * {@code SortedSet} confuses the code list types.
      */
@@ -279,7 +279,7 @@ public final strictfp class CodeListSetTest extends TestCase {
          * Test containsAll(Collection) and removeAll(Collection).
          */
         assertTrue ("The original set shall contain the decimated set.",   clone.containsAll(c));
-        assertFalse("The decimated set can not contain the original set.", c.containsAll(clone));
+        assertFalse("The decimated set cannot contain the original set.", c.containsAll(clone));
         assertTrue ("Original set minus one element.",                     clone.remove(lastRemoved));
         assertTrue ("Add an element to be ignored by removeAll(…).",       c.add(lastRemoved));
         assertTrue ("Remove all elements found in the decimated set.",     clone.removeAll(c));

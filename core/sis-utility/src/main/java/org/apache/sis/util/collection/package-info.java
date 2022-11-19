@@ -31,12 +31,12 @@
  *     {@link org.apache.sis.util.collection.WeakValueHashMap} are {@link java.util.Map java.util.Map}
  *     implementations that may be used for some caching or pseudo-caching functionalities. The
  *     {@link org.apache.sis.util.collection.Cache} implementation is the most full-featured one
- *     and supports concurrency, while the other implementations are more lightweight, sometime
+ *     and supports concurrency, while the other implementations are more lightweight, sometimes
  *     thread-safe but without concurrency support.
  *   </li><li>
  *     {@linkplain org.apache.sis.util.collection.Containers#derivedMap Derived Map} and
  *     {@linkplain org.apache.sis.util.collection.Containers#derivedSet derived Set} are wrapper collections
- *     in which the keys or the values are derived on-the-fly from the content of an other collection.
+ *     in which the keys or the values are derived on-the-fly from the content of another collection.
  *     The can also be used for creating filtered views.
  *   </li><li>
  *     {@link org.apache.sis.util.collection.IntegerList},

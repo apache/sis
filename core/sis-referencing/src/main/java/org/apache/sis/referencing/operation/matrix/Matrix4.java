@@ -168,7 +168,7 @@ public class Matrix4 extends MatrixSIS {
      * if this class was modified to a non-final class. Some methods should stay final because:
      *
      *  - returning a different value would make no-sense for this class (e.g. 'getNumRow()');
-     *  - they are invoked by a constructor or by an other method expecting this exact semantic.
+     *  - they are invoked by a constructor or by another method expecting this exact semantic.
      */
 
     /**

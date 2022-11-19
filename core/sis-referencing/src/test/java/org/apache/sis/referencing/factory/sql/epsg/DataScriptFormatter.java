@@ -369,7 +369,7 @@ public final class DataScriptFormatter extends ScriptRunner {
      *                    index 1 is the column before the last, <i>etc</i>.
      * @param  line       the line to modify.
      * @param  converter  the transformation to apply columns identified by the given indices.
-     *                    A {@code null} return value means that the conversion can not be performed.
+     *                    A {@code null} return value means that the conversion cannot be performed.
      * @return the modified line.
      */
     private static String editColumns(final int[] indices, final String line, final UnaryOperator<String> converter)

@@ -354,7 +354,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     }
 
     /**
-     * Invoked when a SQL statement can not be executed, or the result retrieved.
+     * Invoked when a SQL statement cannot be executed, or the result retrieved.
      */
     private BackingStoreException factoryFailure(final SQLException exception) {
         return new BackingStoreException(exception.getLocalizedMessage(), exception);

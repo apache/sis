@@ -41,7 +41,7 @@ import org.apache.sis.internal.storage.DocumentedStoreProvider;
  */
 public abstract class AbstractProvider extends DocumentedStoreProvider {
     /**
-     * The {@value} MIME type, used only if {@link #probeContent(StorageConnector)} can not determine
+     * The {@value} MIME type, used only if {@link #probeContent(StorageConnector)} cannot determine
      * a more accurate type.
      */
     public static final String MIME_TYPE = "application/xml";

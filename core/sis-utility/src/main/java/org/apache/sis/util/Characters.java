@@ -54,7 +54,7 @@ public final class Characters extends Static {
     /**
      * The <cite>no-break space</cite> (Unicode {@code 00A0}, HTML {@code &nbsp;}).
      * Apache SIS uses Unicode symbols directly in the source code for easier reading,
-     * except for no-break spaces since they can not be visually distinguished from the
+     * except for no-break spaces since they cannot be visually distinguished from the
      * ordinary space (Unicode {@code 0020}).
      */
     public static final char NO_BREAK_SPACE = '\u00A0';
@@ -193,7 +193,7 @@ public final class Characters extends Static {
      * }
      *
      * @param  c  the character to convert.
-     * @return the given character as a superscript, or {@code c} if the given character can not be converted.
+     * @return the given character as a superscript, or {@code c} if the given character cannot be converted.
      */
     public static char toSuperScript(char c) {
         switch (c) {
@@ -225,7 +225,7 @@ public final class Characters extends Static {
      * }
      *
      * @param  c  the character to convert.
-     * @return the given character as a subscript, or {@code c} if the given character can not be converted.
+     * @return the given character as a subscript, or {@code c} if the given character cannot be converted.
      */
     public static char toSubScript(char c) {
         switch (c) {
@@ -333,7 +333,7 @@ public final class Characters extends Static {
      */
     public static class Filter extends Character.Subset {
         /*
-         * This class can not easily be Serializable, because the parent class is not Serializable
+         * This class cannot easily be Serializable, because the parent class is not Serializable
          * and does not define a no-argument constructor.  We could workaround with a writeReplace
          * method - waiting to see if there is a real need for that.
          */

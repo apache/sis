@@ -76,7 +76,7 @@ public enum Capability {
      * <p>This method is for internal usage by {@link org.apache.sis.setup.About}
      * only and may change without notice in any future Apache SIS version.</p>
      *
-     * @param  locale     the locale of the strings to return. Can not be null.
+     * @param  locale     the locale of the strings to return. Cannot be null.
      * @param  resources  the {@code Vocabulary.getResources(locale)} value.
      * @return localized string representations of the capabilities of all data store providers.
      */

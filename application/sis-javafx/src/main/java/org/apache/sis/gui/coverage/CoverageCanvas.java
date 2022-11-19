@@ -451,7 +451,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  anchor    the point to keep at fixed display coordinates, expressed in any compatible CRS.
      *                   If {@code null}, defaults to {@linkplain #getPointOfInterest(boolean) point of interest}.
      *                   If non-null, the anchor must be associated to a CRS.
-     * @throws RenderException if the objective CRS can not be set to the given value.
+     * @throws RenderException if the objective CRS cannot be set to the given value.
      *
      * @hidden
      */
@@ -471,7 +471,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Sets canvas properties from the given grid geometry.
      *
      * @param  newValue  the grid geometry from which to get new canvas properties.
-     * @throws RenderException if the given grid geometry can not be converted to canvas properties.
+     * @throws RenderException if the given grid geometry cannot be converted to canvas properties.
      *
      * @hidden
      */
@@ -956,7 +956,7 @@ public class CoverageCanvas extends MapCanvasAWT {
                 /*
                  * Launch isolines creation if requested. We do this operation before `prefetch(…)`
                  * because it will be executed in background threads while we process the coverage.
-                 * We can not invoke it sooner because it needs some `resampleAndConvert(…)` results.
+                 * We cannot invoke it sooner because it needs some `resampleAndConvert(…)` results.
                  */
                 final Future<Isolines[]> newIsolines = data.generate(isolines);
                 prefetchedImage = data.prefetch(resampledImage, resampledToDisplay, displayBounds);

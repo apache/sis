@@ -75,7 +75,7 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
 
     /**
      * Returns the color associated to given row as an observable value. The default implementation creates
-     * an unmodifiable value derived from {@link #getARGB(S)}. It is okay if the color(s) can not be changed
+     * an unmodifiable value derived from {@link #getARGB(S)}. It is okay if the color(s) cannot be changed
      * in other way than by calls to {@link #applyColors(Object, ColorRamp)}. If this assumption does not hold,
      * then subclasses should override this method and return the observable which is mutated when the value change.
      *

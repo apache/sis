@@ -204,7 +204,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransform)
      * coordinate operation constructor}.</p>
      *
-     * @param  properties  the user-supplied properties.
+     * @param  properties  the user supplied properties.
      * @return the union of the given properties with the default properties.
      */
     protected Map<String,?> complete(final Map<String,?> properties) {
@@ -276,7 +276,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * @param  name  the name of the operation method to fetch.
      * @return the operation method of the given name.
-     * @throws FactoryException if the requested operation method can not be fetched.
+     * @throws FactoryException if the requested operation method cannot be fetched.
      *
      * @see DefaultMathTransformFactory#getOperationMethod(String)
      */
@@ -576,7 +576,7 @@ next:   for (int i=components.size(); --i >= 0;) {
             }
         }
         /*
-         * Now create the coordinate operation of the requested type. If we can not find a concrete class for the
+         * Now create the coordinate operation of the requested type. If we cannot find a concrete class for the
          * requested type, we will instantiate a SingleOperation in last resort. The latter action is a departure
          * from ISO 19111 since `SingleOperation` is conceptually abstract.  But we do that as a way to said that
          * we are missing this important piece of information but still go ahead.

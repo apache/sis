@@ -275,7 +275,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
      * <h4>Note on type safety</h4>
      * This method signature uses {@code <? super R>} for caller's convenience because this is the type that
      * we get from {@link LogicalOperator#getOperands()}. But the {@link BiConsumer} uses exactly {@code <R>}
-     * type because doing otherwise causes complications with types that can not be expressed in Java (kinds
+     * type because doing otherwise causes complications with types that cannot be expressed in Java (kinds
      * of {@code <? super ? super R>}). The cast in this method is okay if we do not invoke any {@code filter}
      * method with a return value (directly or indirectly as list elements) of exactly {@code <R>} type.
      * Such methods do not exist in the GeoAPI interfaces, so we are safe if the {@link BiConsumer}
@@ -297,7 +297,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
      * <h4>Note on type safety</h4>
      * This method signature uses {@code <? super R>} for caller's convenience because this is the type that
      * we get from {@link Expression#getParameters()}. But the {@link BiConsumer} expects exactly {@code <R>}
-     * type because doing otherwise causes complications with types that can not be expressed in Java (kinds
+     * type because doing otherwise causes complications with types that cannot be expressed in Java (kinds
      * of {@code <? super ? super R>}). The cast in this method is okay if we do not invoke any {@code exp}
      * method with a return value (directly or indirectly as list elements) of exactly {@code <R>} type.
      * Such methods do not exist in the GeoAPI interfaces, so we are safe if the {@link BiConsumer}

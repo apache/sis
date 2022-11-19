@@ -48,7 +48,7 @@ import org.apache.sis.util.ArgumentChecks;
  * <ul>
  *   <li>In the ISO 19111 model, objects have a single name of type {@code RS_Identifier} and an arbitrary amount
  *       of aliases of type {@code GenericName}.</li>
- *   <li>In the GML model, objects have an arbitrary amount of names of type {@code gml:CodeType},
+ *   <li>In the GML model, objects have an arbitrary number of names of type {@code gml:CodeType},
  *       but do not have any alias.</li>
  * </ul>
  *
@@ -225,7 +225,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *          or {@code null} if not available.
      * @param code
      *          identifier code or name, optionally from a controlled list or pattern defined by the authority.
-     *          The code can not be null.
+     *          The code cannot be null.
      */
     public NamedIdentifier(final Citation authority, final CharSequence code) {
         super(authority, Citations.toCodeSpace(authority), toString(code));
@@ -251,7 +251,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *          if not available. This is often an abbreviation of the authority name.
      * @param code
      *          identifier code or name, optionally from a controlled list or pattern defined by a code space.
-     *          The code can not be null.
+     *          The code cannot be null.
      * @param version
      *          the version of the associated code space or code as specified by the code authority,
      *          or {@code null} if none.

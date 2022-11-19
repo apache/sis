@@ -41,7 +41,7 @@ import org.apache.sis.util.Debug;
 /**
  * Transforms between two CRS (usually geographic) based on different datum. A datum shift may be needed when two CRS
  * use different {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoids} as approximation of the
- * shape of the Earth. Sometime two CRS use the same ellipsoid but with different anchor point (i.e. their coordinate
+ * shape of the Earth. Sometimes two CRS use the same ellipsoid but with different anchor point (i.e. their coordinate
  * systems have their origin in different locations).
  *
  * <p>There is many different datum shift methods, ranging from transformations as simple as adding a constant offset

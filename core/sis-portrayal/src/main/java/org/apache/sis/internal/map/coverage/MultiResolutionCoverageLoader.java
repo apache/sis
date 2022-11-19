@@ -73,7 +73,7 @@ public class MultiResolutionCoverageLoader {
     private static final int DEFAULT_SCALE_LOG = 3;         // Scale factor of 2³ = 8.
 
     /**
-     * Arbitrary number of levels if we can not compute it from {@link #DEFAULT_SIZE} and {@link #DEFAULT_SCALE_LOG}.
+     * Arbitrary number of levels if we cannot compute it from {@link #DEFAULT_SIZE} and {@link #DEFAULT_SCALE_LOG}.
      * Reminder: the multiplication factor between two levels is 2^{@value #DEFAULT_SCALE_LOG}, so the resolution
      * goes down very fast.
      */
@@ -171,7 +171,7 @@ public class MultiResolutionCoverageLoader {
                 }
             }
         } else {
-            numLevels = DEFAULT_NUM_LEVELS;     // Arbitrary number of levels if we can not compute it.
+            numLevels = DEFAULT_NUM_LEVELS;     // Arbitrary number of levels if we cannot compute it.
         }
         /*
          * Build the arrays of resolutions from finest to coarsest.
@@ -244,7 +244,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                     sum += e * e;
                 }
                 /*
-                 * Can not use `Arrays.binarySearch(…)` because elements are not guaranteed to be sorted.
+                 * Cannot use `Arrays.binarySearch(…)` because elements are not guaranteed to be sorted.
                  * Even if `GridCoverageResource.getResolutions()` contract said "finest to coarsest",
                  * it may not be possible to respect this condition on all dimensions in same time.
                  * The main goal is to have a `level` value as high as possible while having a resolution

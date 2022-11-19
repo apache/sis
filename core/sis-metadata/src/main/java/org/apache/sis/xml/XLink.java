@@ -97,7 +97,7 @@ public class XLink implements Serializable {
     private Type type;
 
     /**
-     * A URN to an external resources, or to an other part of a XML document, or an identifier.
+     * A URN to an external resources, or to another part of a XML document, or an identifier.
      *
      * @see #getHRef()
      * @category locator
@@ -395,7 +395,7 @@ public class XLink implements Serializable {
      *
      * @param  field  the attribute code, as documented in {@link XLink.Type#fieldMask}.
      * @throws UnsupportedOperationException if this {@code xlink} is unmodifiable.
-     * @throws IllegalStateException if the given field can not be set for this kind of {@code xlink}.
+     * @throws IllegalStateException if the given field cannot be set for this kind of {@code xlink}.
      */
     private void canWrite(final int field, final String name, final Object value) throws IllegalStateException {
         if (hashCode != 0) {
@@ -418,7 +418,7 @@ public class XLink implements Serializable {
     }
 
     /**
-     * Returns a URN to an external resources, or to an other part of a XML document, or an identifier.
+     * Returns a URN to an external resources, or to another part of a XML document, or an identifier.
      *
      * @return a URN to a resources, or {@code null} if none.
      *

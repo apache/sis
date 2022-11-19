@@ -84,7 +84,7 @@ public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     /**
      * Builds a wrapper for the given {@link Date}.
      *
-     * @param date  the date to marshal. Can not be {@code null}.
+     * @param date  the date to marshal. Cannot be {@code null}.
      */
     private GO_DateTime(final Date date) {
         final Context context = Context.current();

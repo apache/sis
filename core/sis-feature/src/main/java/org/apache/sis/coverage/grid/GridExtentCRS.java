@@ -242,7 +242,7 @@ final class GridExtentCRS {
      *         A {@code null} means to handle as an identity transform.
      * @param  types   the value of {@link GridExtent#types} or a default value (shall not be {@code null}).
      * @param  locale  locale to use for axis names, or {@code null} for default.
-     * @return coordinate system for the grid extent, or {@code null} if it can not be inferred.
+     * @return coordinate system for the grid extent, or {@code null} if it cannot be inferred.
      * @throws FactoryException if an error occurred during the use of {@link CSFactory}.
      */
     private static CoordinateSystem createCS(final int tgtDim, final Matrix gridToCRS,
@@ -391,7 +391,7 @@ final class GridExtentCRS {
      * It is the converse of {@link GridExtent#typeFromAxes(CoordinateReferenceSystem, int)}.
      *
      * <p>The CRS type is always engineering.
-     * We can not create temporal CRS because we do not know the temporal datum origin.</p>
+     * We cannot create temporal CRS because we do not know the temporal datum origin.</p>
      *
      * @param  gridToCRS  matrix of the transform used for converting grid cell indices to envelope coordinates.
      *         It does not matter whether it maps pixel center or corner (translation coefficients are ignored).

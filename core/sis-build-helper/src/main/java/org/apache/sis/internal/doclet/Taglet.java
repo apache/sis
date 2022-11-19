@@ -112,7 +112,7 @@ abstract class Taglet implements jdk.javadoc.doclet.Taglet {
 
     /**
      * Returns the file that contains the current tag, or {@code null} if the method
-     * can not determine the file.
+     * cannot determine the file.
      *
      * @return file containing the current tag, or {@code null}.
      */

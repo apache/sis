@@ -64,7 +64,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#getAuthorityCodes(Class)}.
      *
-     * @throws FactoryException if the set of authority codes can not be fetched.
+     * @throws FactoryException if the set of authority codes cannot be fetched.
      */
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
@@ -97,7 +97,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#createPrimeMeridian(String)}.
      *
-     * @throws FactoryException if a prime meridian can not be constructed.
+     * @throws FactoryException if a prime meridian cannot be constructed.
      */
     @Test
     public void testCreatePrimeMeridian() throws FactoryException {
@@ -107,7 +107,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#createEllipsoid(String)}.
      *
-     * @throws FactoryException if an ellipsoid can not be constructed.
+     * @throws FactoryException if an ellipsoid cannot be constructed.
      */
     @Test
     public void testCreateEllipsoid() throws FactoryException {
@@ -122,7 +122,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#createEllipsoid(String)}.
      *
-     * @throws FactoryException if an ellipsoid can not be constructed.
+     * @throws FactoryException if an ellipsoid cannot be constructed.
      */
     @Test
     public void testCreateDatum() throws FactoryException {
@@ -137,7 +137,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#createCoordinateSystem(String)}.
      *
-     * @throws FactoryException if a CS can not be constructed.
+     * @throws FactoryException if a CS cannot be constructed.
      */
     @Test
     public void testCreateCS() throws FactoryException {
@@ -149,7 +149,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#createCoordinateReferenceSystem(String)}.
      *
-     * @throws FactoryException if a CRS can not be constructed.
+     * @throws FactoryException if a CRS cannot be constructed.
      *
      * @see CRSTest#testForEpsgCode()
      * @see CRSTest#testForCrsCode()
@@ -212,7 +212,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is CS of the given CRS.
      * Contrarily to other kinds of objects, coordinate systems are currently not cached. Consequently we
-     * can not assert that instances are the same.
+     * cannot assert that instances are the same.
      */
     private static void verifyCreateCS(final CoordinateReferenceSystem crs, final String code) throws FactoryException {
         final CoordinateSystem expected = crs.getCoordinateSystem();
@@ -234,7 +234,7 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Compares all CRS created by {@link EPSGFactoryFallback} with CRS created by the real EPSG database.
      *
-     * @throws FactoryException if a CRS can not be constructed.
+     * @throws FactoryException if a CRS cannot be constructed.
      */
     @Test
     @DependsOnMethod({"testGetAuthorityCodes", "testCreateCRS"})

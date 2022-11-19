@@ -123,7 +123,7 @@ public final class DecimalFunctions extends Static {
      * <div class="note"><b>Note:</b>
      * This method is <strong>not</strong> more accurate than the standard Java cast – it should be used only when
      * the base 10 representation of the given value may be of special interest. If the value come from a call to
-     * {@link Float#parseFloat(String)} (directly or indirectly), and if that call can not be replaced by a call to
+     * {@link Float#parseFloat(String)} (directly or indirectly), and if that call cannot be replaced by a call to
      * {@link Double#parseDouble(String)} (for example because the original {@code String} is not available anymore),
      * then this method may be useful if one consider the {@code String} representation in base 10 as definitive.
      * But if the value come from an instrument measurement or a calculation, then there is probably no reason to use
@@ -199,7 +199,7 @@ public final class DecimalFunctions extends Static {
      * <div class="note"><b>Use case:</b>
      * Many international standards define values in base 10. For example the conversion factor from inches
      * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
-     * since 1959, not an approximation. But the 2.54 value can not be represented exactly in the IEEE 754
+     * since 1959, not an approximation. But the 2.54 value cannot be represented exactly in the IEEE 754
      * format – the error is approximately 3.6E-17 cm/inch. In the vast majority of cases such tiny error
      * can be ignored. But in situations where it is desirable to have an error estimation
      * (e.g. in non-linear equations where errors can grow exponentially), this method can be useful.
@@ -208,14 +208,14 @@ public final class DecimalFunctions extends Static {
      * </div>
      *
      * <h4>Domain of validity</h4>
-     * The current implementation can not compute delta for {@code abs(value) < 3E-8} approximately,
+     * The current implementation cannot compute delta for {@code abs(value) < 3E-8} approximately,
      * except for the 0 value which is supported. For any non-zero value closer to zero than the 3E-8
      * threshold, this method returns {@code NaN} because of insufficient algorithm accuracy.
      * This limitation may change in any future SIS version if we find a better algorithm.
      *
      * @param  value  the value for which to get the delta compared to its base 10 representation.
      * @return the delta that would need to be added to the given {@code double} value for getting a result
-     *         closer to its base 10 representation, or {@link Double#NaN NaN} if it can not be computed.
+     *         closer to its base 10 representation, or {@link Double#NaN NaN} if it cannot be computed.
      */
     public static double deltaForDoubleToDecimal(final double value) {
         /*
@@ -247,7 +247,7 @@ public final class DecimalFunctions extends Static {
          * For reasons explained later we will actually use c/10 instead of c, so the range will be
          * (0.1 … 1) instead of (1 … 10). The exponent of 0.1 in base 2 is -4. Consequently for any
          * value between 0.1 and 1, scaling the value by 56 binary places guarantee that the result
-         * will be equal or greater than 2^52. At that threshold, 'double' values can not have
+         * will be equal or greater than 2^52. At that threshold, 'double' values cannot have
          * fraction digits.
          */
         final int PRECISION = SIGNIFICAND_SIZE + 4;               // Number of bits to use for scaling to integers.
@@ -326,7 +326,7 @@ public final class DecimalFunctions extends Static {
      *       smaller than the minimal strictly positive {@code double} value ({@value java.lang.Double#MIN_VALUE}).
      *
      *       <div class="note"><b>Note:</b>
-     *       The above value can be understood in an other way: if the first 324 fraction digits are zero,
+     *       The above value can be understood in another way: if the first 324 fraction digits are zero,
      *       then the IEEE {@code double} value is guaranteed to be rounded to exactly 0 no matter what the
      *       next fraction digits are.</div></li>
      *
@@ -510,9 +510,9 @@ public final class DecimalFunctions extends Static {
      *   <caption>Examples</caption>
      *   <tr><th>Accurate</th> <th>Approximate</th> <th>Result</th> <th>Comment</th></tr>
      *   <tr><td>0.123456</td> <td>0.123</td>       <td>true</td>   <td>Differ in digits not specified by {@code approximate}.</td></tr>
-     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method can not distinguish missing digits from trailing zeros.</td></tr>
+     *   <tr><td>0.123456</td> <td>0.123000</td>    <td>true</td>   <td>This method cannot distinguish missing digits from trailing zeros.</td></tr>
      *   <tr><td>0.123456</td> <td>0.123001</td>    <td>false</td>  <td>No missing digits, and some of them differ.</td></tr>
-     *   <tr><td>0.123</td>    <td>0.123456</td>    <td>false</td>  <td>{@code approximate} and {@code accurate} can not be interchanged.</td></tr>
+     *   <tr><td>0.123</td>    <td>0.123456</td>    <td>false</td>  <td>{@code approximate} and {@code accurate} cannot be interchanged.</td></tr>
      * </table>
      *
      * <div class="note"><b>Use case:</b>
@@ -520,7 +520,7 @@ public final class DecimalFunctions extends Static {
      * and the data producer may have rounded too many fraction digits when formatting the numbers.
      * In some cases we can suspect what the real value may be and want to ensure that a replacement
      * would not contradict the provided value. This happen for example in Well Known Text format,
-     * where the following element is sometime written with the conversion factor rounded:
+     * where the following element is sometimes written with the conversion factor rounded:
      *
      * {@preformat wkt
      *   AngleUnit["degree", 0.017453292519943295]      // Expected

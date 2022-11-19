@@ -161,7 +161,7 @@ final class FeatureSet extends DiscreteSampling {
     /**
      * The temporal component of the coordinate reference system (CRS), or {@code null} if none.
      * Note that this field may be {@code null} even if {@link #hasTime} is {@code true},
-     * if the CRS can not be expressed as a {@link TemporalCRS}.
+     * if the CRS cannot be expressed as a {@link TemporalCRS}.
      */
     private final DefaultTemporalCRS timeCRS;
 
@@ -613,7 +613,7 @@ skip:           for (final Variable v : properties) {
 
     /**
      * Prepares indices of a sub-region to read in a vector of the given number of dimensions.
-     * This is a helper method for {@link Iter}, defined here because we can not put static methods
+     * This is a helper method for {@link Iter}, defined here because we cannot put static methods
      * in a non-static inner class.
      *
      * @param  dimensions  dimensions of the vector to read. Can be {@code null} if {@code numDim} is 1.
@@ -822,7 +822,7 @@ makeGeom:   if (!isEmpty) {
                 final Object geometry;
                 if (isTrajectory) {
                     /*
-                     * Case when the geometry can have an arbitrary amount of points.
+                     * Case when the geometry can have an arbitrary number of points.
                      * Coordinates are taken from `dynamicProperties` variable, which
                      * are read every time that a feature instance is created.
                      */
@@ -923,7 +923,7 @@ makeGeom:   if (!isEmpty) {
         }
 
         /**
-         * Current implementation can not split this iterator.
+         * Current implementation cannot split this iterator.
          */
         @Override
         public Spliterator<Feature> trySplit() {

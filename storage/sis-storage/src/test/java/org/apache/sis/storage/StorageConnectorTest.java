@@ -232,7 +232,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
          * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),
          * otherwise the call to connector.getStorageAs(…) throws a DataStoreException.
          */
-        assumeTrue("Can not use a JAR file entry for this test.", in.markSupported());
+        assumeTrue("Cannot use a JAR file entry for this test.", in.markSupported());
         assertSame(in, connector.getStorageAs(InputStream.class));
         final byte[] actual = new byte[sample.length];
         assertEquals("Should read all requested bytes.", actual.length, in.read(actual));

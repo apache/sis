@@ -57,7 +57,7 @@ final class GridError extends VBox {
     private final String header;
 
     /**
-     * The area where to write the error message. The text said "can not fetch tile (x, y)"
+     * The area where to write the error message. The text said "cannot fetch tile (x, y)"
      * with tile indices, followed by the exception message (if any) on next line.
      */
     private final Label message;

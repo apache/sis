@@ -59,7 +59,7 @@ final class GridWrapper extends Grid {
      * Dimensions of the grid in netCDF order (reverse of "natural" order).
      * This is the same content than {@code netcdfCS.getDomain()} but potentially in a different order.
      * Reordering is needed when the order of dimensions in a variable does not match the order of dimensions in the grid.
-     * There is no such mismatch with Apache SIS implementation of netCDF reader, but those mismatches sometime happen with
+     * There is no such mismatch with Apache SIS implementation of netCDF reader, but those mismatches sometimes happen with
      * the wrappers around UCAR library where the following methods may return lists with elements in different order:
      *
      * <ul>
@@ -88,7 +88,7 @@ final class GridWrapper extends Grid {
         reordered = new HashMap<>(4);               // Will typically contain 0 or 1 entry.
         domain    = new ArrayList<>(cs.getDomain());
         /*
-         * We need dimensions in netCDF order as declared in variables. But the netCDF UCAR library sometime provides
+         * We need dimensions in netCDF order as declared in variables. But the netCDF UCAR library sometimes provides
          * axes in a different order, I'm not sure why. Maybe it uses the order in which dimensions are declared in
          * the global header (not the order declared on variables). We apply a standard order below. It is okay
          * if that order is not appropriate for a particular variable because the order will be reajusted by
@@ -306,7 +306,7 @@ next:       for (final String name : axisNames) {
                  * package, we can proceed as if the dimension does not exist (`i` not incremented).
                  */
             }
-            if (i != 0) {   // Variables with 0 dimensions sometime happen.
+            if (i != 0) {   // Variables with 0 dimensions sometimes happen.
                 axes[axisCount++] = new Axis(abbreviation, axis.getPositive(),
                         ArraysExt.resize(indices, i), ArraysExt.resize(sizes, i), wrapper);
             }

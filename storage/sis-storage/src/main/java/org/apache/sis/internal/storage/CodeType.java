@@ -64,8 +64,8 @@ public enum CodeType {
     IDENTIFIER(true),
 
     /**
-     * Can not resolve whether the code is a local file like {@code "myfile.wkt"} or an identifier without
-     * authority like {@code "4326"}. Such code without can not be decoded by {@code CRS.forCode(String)},
+     * Cannot resolve whether the code is a local file like {@code "myfile.wkt"} or an identifier without
+     * authority like {@code "4326"}. Such code without cannot be decoded by {@code CRS.forCode(String)},
      * but may be understood by a more specific authority factory.
      */
     UNKNOWN(false);
@@ -169,7 +169,7 @@ public enum CodeType {
         }
         /*
          * If the ':' is followed by '\', then the part before ':' is presumed to be a Windows drive letter.
-         * Example "C:\file" or "C:..\file". Note that it does NOT include "C:file" since the latter can not
+         * Example "C:\file" or "C:..\file". Note that it does NOT include "C:file" since the latter cannot
          * be distinguished from an authority code. If a relative filename is desired, use "C:.\file".
          */
         if (c == '\\' || c == File.separatorChar || end == start+1) {

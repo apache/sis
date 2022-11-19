@@ -177,8 +177,8 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * Otherwise the following restrictions apply:
      *
      * <ul>
-     *   <li>{@code minimum} and {@code maximum} arguments are mandatory and can not be {@link Double#NaN NaN}.</li>
-     *   <li>{@code mean} argument is mandatory (can not be NaN) if {@code standardDeviation} is not NaN.</li>
+     *   <li>{@code minimum} and {@code maximum} arguments are mandatory and cannot be {@link Double#NaN NaN}.</li>
+     *   <li>{@code mean} argument is mandatory (cannot be NaN) if {@code standardDeviation} is not NaN.</li>
      *   <li>{@code mean} and {@code standardDeviation} arguments can be both {@link Double#NaN NaN} if unknown,
      *       but statistics initialized that way will always return NaN from {@link #sum()}, {@link #mean()},
      *       {@link #rms()} and {@link #standardDeviation(boolean)} methods.</li>
@@ -261,7 +261,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *               if none. If non-null, then this name will be shown as column header in the table
      *               formatted by {@link StatisticsFormat}.
      * @param  differenceNames  the names of the statistics on differences.
-     *         The given array can not be null, but can contain null elements.
+     *         The given array cannot be null, but can contain null elements.
      * @return the newly constructed, initially empty, set of statistics.
      *
      * @see #differences()

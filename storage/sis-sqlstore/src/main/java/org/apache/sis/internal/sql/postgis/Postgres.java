@@ -99,7 +99,7 @@ public final class Postgres<G> extends Database<G> {
      * In the future, we could also parse other information in the version text.
      *
      * @param  version  the text starting with a semantic version, or {@code null}.
-     * @return major version number, or {@code null} if can not be parsed.
+     * @return major version number, or {@code null} if cannot be parsed.
      */
     static Version parseVersion(String version) {
         if (version != null) {

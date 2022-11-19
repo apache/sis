@@ -81,7 +81,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point. The point used for
      * this test is given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file can not be converted to a path.
+     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.

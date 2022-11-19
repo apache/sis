@@ -113,7 +113,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         /**
          * Returns an expression that provides values as instances of the specified class.
          *
-         * @throws ClassCastException if values can not be provided as instances of the specified class.
+         * @throws ClassCastException if values cannot be provided as instances of the specified class.
          */
         @Override
         @SuppressWarnings("unchecked")
@@ -199,7 +199,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         /**
          * Converts the transformed value if possible, or the original value as a fallback.
          *
-         * @throws ClassCastException if values can not be provided as instances of the specified class.
+         * @throws ClassCastException if values cannot be provided as instances of the specified class.
          */
         @Override
         @SuppressWarnings("unchecked")

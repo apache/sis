@@ -53,11 +53,11 @@ public class CanNotProbeException extends DataStoreException {
     }
 
     /**
-     * Creates a localized exception with a message saying that the given store can not be processed.
+     * Creates a localized exception with a message saying that the given store cannot be processed.
      *
      * @param provider   the data store provider that failed to probe a file.
      * @param connector  the stream, file or other kind of resource that the store provider tried to probe.
-     * @param cause      the reason why the data store can not be probed.
+     * @param cause      the reason why the data store cannot be probed.
      */
     public CanNotProbeException(final DataStoreProvider provider, final StorageConnector connector, final Throwable cause) {
         super(null, provider.getShortName(), connector.getStorageName(), connector.storage);

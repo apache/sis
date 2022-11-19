@@ -73,7 +73,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
 
     /**
      * The properties to ignore in the descriptor parsed from GML when this descriptor is merged with a
-     * pre-defined descriptor. Remarks:
+     * predefined descriptor. Remarks:
      *
      * <ul>
      *   <li>We ignore the name because the comparisons shall be performed by the caller with
@@ -168,7 +168,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
 
     /**
      * Returns {@code true} if the given descriptor is restricted to a constant value.
-     * This constraint exists in some pre-defined map projections.
+     * This constraint exists in some predefined map projections.
      *
      * <div class="note"><b>Example:</b>
      * the <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
@@ -202,7 +202,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      *   <li>The descriptor for a {@code <gml:ParameterValue>} element. Those descriptors are more complete than the
      *       ones provided by {@code <gml:OperationParameter>} elements alone because the parameter value allows SIS
      *       to infer the {@code valueClass}.</li>
-     *   <li>A pre-defined parameter descriptor from the {@link org.apache.sis.internal.referencing.provider} package.</li>
+     *   <li>A predefined parameter descriptor from the {@link org.apache.sis.internal.referencing.provider} package.</li>
      * </ul>
      *
      * @param  provided  the descriptor unmarshalled from the GML document.
@@ -225,7 +225,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         } else {
             /*
              * Mismatched or unknown type. It should not happen with descriptors parsed by JAXB and with
-             * pre-defined descriptors provided by SIS. But it could happen with a pre-defined descriptor
+             * predefined descriptors provided by SIS. But it could happen with a predefined descriptor
              * found in a user-provided OperationMethod with malformed parameters.
              * Return the descriptor found in the GML document as-is.
              */
@@ -242,7 +242,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                                     && containsAll(complete.getIdentifiers(), provided.getIdentifiers());
         if (canSubstitute && !isGroup) {
             /*
-             * The pre-defined or ParameterValue descriptor contains at least all the information found
+             * The predefined or ParameterValue descriptor contains at least all the information found
              * in the descriptor parsed from the GML document. We can use the existing instance directly,
              * assuming that the additional properties are acceptable.
              *
@@ -259,7 +259,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
          * be invoked recursively for each parameter in the group.
          */
         final Map<String,Object> merged = new HashMap<>(expected);
-        merged.putAll(actual);  // May overwrite pre-defined properties.
+        merged.putAll(actual);  // May overwrite predefined properties.
         mergeArrays(GeneralParameterDescriptor.ALIAS_KEY,       GenericName.class, provided.getAlias(),       merged, complete.getName());
         mergeArrays(GeneralParameterDescriptor.IDENTIFIERS_KEY, Identifier.class,  provided.getIdentifiers(), merged, null);
         if (isGroup) {
@@ -373,7 +373,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 provided.getMinimumOccurs(),
                 provided.getMaximumOccurs(),
                 // Values below this point are not provided in GML documents,
-                // so they must be inferred from the pre-defined descriptor.
+                // so they must be inferred from the predefined descriptor.
                 valueClass,
                 Parameters.getValueDomain(complete),
                 CollectionsExt.toArray(complete.getValidValues(), valueClass),
@@ -411,7 +411,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
 
     /**
      * Merges the property of type {@code Collection} identified by the given key.
-     * This is used when we can not just substitute one collection by the other.
+     * This is used when we cannot just substitute one collection by the other.
      *
      * @param <T>            the type of elements in the array or collection.
      * @param key            the key where to fetch or store the array in the {@code merged} map.
@@ -430,7 +430,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                  * Add the `provided` values before `complete` for two reasons:
                  *   1) Use the same insertion order than the declaration order in the GML file.
                  *   2) Replace `provided` instances by `complete` instances, since the latter
-                 *      are sometime pre-defined instances defined as static final constants.
+                 *      are sometimes predefined instances defined as static final constants.
                  */
                 final Map<NamedIdentifier,T> c = new LinkedHashMap<>();
                 for (final T e : provided) c.put(toNamedIdentifier(e), e);

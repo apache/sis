@@ -28,7 +28,7 @@ import org.apache.sis.math.FunctionProperty;
 
 
 /**
- * A map whose keys and values are derived <cite>on-the-fly</cite> from an other map.
+ * A map whose keys and values are derived <cite>on-the-fly</cite> from another map.
  * Conversions are performed when needed by the following methods:
  *
  * <ul>

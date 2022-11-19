@@ -49,7 +49,7 @@ public final strictfp class JTSTest extends TestCase {
     /**
      * Tests {@link JTS#getCoordinateReferenceSystem(Geometry)}.
      *
-     * @throws FactoryException if an EPSG code can not be resolved.
+     * @throws FactoryException if an EPSG code cannot be resolved.
      */
     @Test
     public void testGetCoordinateReferenceSystem() throws FactoryException {
@@ -170,7 +170,7 @@ public final strictfp class JTSTest extends TestCase {
     }
 
     /**
-     * Tests various {@code transform} methods. This includes (sometime indirectly):
+     * Tests various {@code transform} methods. This includes (sometimes indirectly):
      *
      * <ul>
      *   <li>{@link JTS#transform(Geometry, CoordinateReferenceSystem)}</li>
@@ -178,8 +178,8 @@ public final strictfp class JTSTest extends TestCase {
      *   <li>{@link JTS#transform(Geometry, MathTransform)}</li>
      * </ul>
      *
-     * @throws FactoryException if an EPSG code can not be resolved.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if an EPSG code cannot be resolved.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     public void testTransform() throws FactoryException, TransformException {
@@ -211,8 +211,8 @@ public final strictfp class JTSTest extends TestCase {
     /**
      * Tests various {@code transform} method with a three-dimensional geometry.
      *
-     * @throws FactoryException if an EPSG code can not be resolved.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if an EPSG code cannot be resolved.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     public void testTransform3D() throws FactoryException, TransformException {
@@ -232,8 +232,8 @@ public final strictfp class JTSTest extends TestCase {
     /**
      * Test {@code transform} method on an empty geometry.
      *
-     * @throws FactoryException if an EPSG code can not be resolved.
-     * @throws TransformException if a coordinate can not be transformed.
+     * @throws FactoryException if an EPSG code cannot be resolved.
+     * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
     public void testTransformEmpty() throws FactoryException, TransformException {

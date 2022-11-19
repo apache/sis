@@ -123,7 +123,7 @@ abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
                 } else {
                     table[removeAt] = e.next;
                 }
-                // We can not continue the loop pass that point, since `e` is no longer valid.
+                // We cannot continue the loop pass that point, since `e` is no longer valid.
                 return true;
             }
             prev = e;

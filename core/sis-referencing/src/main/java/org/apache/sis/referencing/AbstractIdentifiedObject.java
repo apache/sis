@@ -84,8 +84,8 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * <p>The main information stored in an {@code IdentifiedObject} are:</p>
  * <ul>
  *   <li>a primary {@linkplain #getName() name}, considered by the object creator as the preferred name,</li>
- *   <li>an arbitrary amount of {@linkplain #getAlias() aliases}, for example a list of names used by other providers,</li>
- *   <li>an arbitrary amount of {@linkplain #getIdentifiers() identifiers}, typically primary keys in the provider database,</li>
+ *   <li>an arbitrary number of {@linkplain #getAlias() aliases}, for example a list of names used by other providers,</li>
+ *   <li>an arbitrary number of {@linkplain #getIdentifiers() identifiers}, typically primary keys in the provider database,</li>
  *   <li>optional {@linkplain #getRemarks() remarks}.</li>
  * </ul>
  *
@@ -95,7 +95,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * However exceptions to this rule may occur when it is not possible to identify the exact type.
  *
  * <div class="note"><b>Example:</b>
- * It is sometime not possible to infer the exact coordinate system type from
+ * It is sometimes not possible to infer the exact coordinate system type from
  * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">version 1
  * of <cite>Well Known Text format</cite></a>, for example when parsing a {@code LOCAL_CS} element.
  * In such exceptional situation, a plain {@code AbstractCS} object may be instantiated.</div>
@@ -579,7 +579,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>Some Latin diacritical signs (e.g. {@code "Réunion"} and {@code "Reunion"} are considered equal).</li>
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
-     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of an other
+     *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another
      *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
      *       projection or parameter name.</li>
      * </ul>
@@ -811,7 +811,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Invoked by {@link #hashCode()} for computing the hash code when first needed.
-     * This method is invoked at most once in normal execution, or an arbitrary amount of times if Java
+     * This method is invoked at most once in normal execution, or an arbitrary number of times if Java
      * assertions are enabled. The hash code value shall never change during the whole lifetime of this
      * object in a JVM. The hash code value does not need to be the same in two different executions of
      * the JVM.
@@ -863,7 +863,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * </div></div>
      *
      * <h4>Formatting non-standard WKT</h4>
-     * If the implementation can not represent this object without violating some WKT constraints,
+     * If the implementation cannot represent this object without violating some WKT constraints,
      * it can uses its own (non-standard) keywords but shall declare that it did so by invoking one
      * of the {@link Formatter#setInvalidWKT(IdentifiedObject, Exception) Formatter.setInvalidWKT(…)}
      * methods.
@@ -930,7 +930,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     /**
      * Constructs a new object in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractIdentifiedObject() {
         deprecated = false;

@@ -89,7 +89,7 @@ abstract class StaxStreamIO implements AutoCloseable {
 
     /**
      * Closes the input or output stream and releases any resources used by this XML reader or writer.
-     * This reader or writer can not be used anymore after this method has been invoked.
+     * This reader or writer cannot be used anymore after this method has been invoked.
      *
      * @throws XMLStreamException if an error occurred while releasing XML reader/writer resources.
      * @throws IOException if an error occurred while closing the input or output stream.

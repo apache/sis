@@ -26,7 +26,7 @@ import org.apache.sis.math.FunctionProperty;
  * Handles conversions from arbitrary objects to {@link String}. This converter is
  * suitable to any object for which the {@link #toString()} method is sufficient.
  *
- * <p>Some pre-defined unique instances of {@code ObjectToString} are available
+ * <p>Some predefined unique instances of {@code ObjectToString} are available
  * by the following pattern:</p>
  *
  * {@preformat java

@@ -123,7 +123,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
      *         is invoked with a position without associated CRS. If {@code null}, default to {@code targetCRS}.
      * @param  targetCRS  the {@linkplain #getCoordinateReferenceSystem() CRS associated with this position}. Will be the target
      *         of {@linkplain #transform coordinate transformations} until the next call to {@link #setCoordinateReferenceSystem
-     *         setCoordinateReferenceSystem(…)} or {@link #setLocation(DirectPosition) setLocation}. Can not be null.
+     *         setCoordinateReferenceSystem(…)} or {@link #setLocation(DirectPosition) setLocation}. Cannot be null.
      * @param  factory  the factory to use for creating coordinate operations, or {@code null} for the default.
      */
     public PositionTransformer(final CoordinateReferenceSystem defaultCRS, final CoordinateReferenceSystem targetCRS,

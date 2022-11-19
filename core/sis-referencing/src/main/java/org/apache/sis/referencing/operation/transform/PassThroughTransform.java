@@ -157,7 +157,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             return newInstance(firstAffectedCoordinate, matrix, numTrailingCoordinates);
         }
         /*
-         * Above checks tried to avoid the creation of PassThroughTransform instance. At this point we can not
+         * Above checks tried to avoid the creation of PassThroughTransform instance. At this point we cannot
          * avoid it anymore. But maybe we can merge two PassThroughTransforms into a single one. It may happen
          * if 'subTransform' is a concatenation of a linear transform + pass through transform (in any order).
          * In such case, moving the linear transform outside 'subTransform' enable above-cited merge.
@@ -741,7 +741,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                          * already removed.
                          */
                         MatrixSIS reduced = MatrixSIS.castOrCopy(m);
-                        long columnsToRemove = ~retainedDimensions & fullTransformMask;       // Can not be 0 at this point.
+                        long columnsToRemove = ~retainedDimensions & fullTransformMask;       // Cannot be 0 at this point.
                         do {
                             final int lower = Long.numberOfTrailingZeros(columnsToRemove);
                             final int upper = Long.numberOfTrailingZeros(~(columnsToRemove | maskLowBits(lower)));
@@ -859,7 +859,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * {@code PassThrough_MT} is defined in the WKT 1 specification only.
      * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
      * then this method silently uses the WKT 1 convention without raising an error
-     * (unless this {@code PassThroughTransform} can not be formatted as valid WKT 1 neither).</div>
+     * (unless this {@code PassThroughTransform} cannot be formatted as valid WKT 1 neither).</div>
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "PassThrough_MT"}.

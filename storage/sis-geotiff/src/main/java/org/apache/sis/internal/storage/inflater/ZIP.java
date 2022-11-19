@@ -50,7 +50,7 @@ final class ZIP extends CompressionChannel {
      * @param  listeners  object where to report warnings.
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     public ZIP(final ChannelDataInput input, final StoreListeners listeners) {
         super(input, listeners);
@@ -62,7 +62,7 @@ final class ZIP extends CompressionChannel {
      *
      * @param  start      stream position where to start reading.
      * @param  byteCount  number of bytes to read from the input.
-     * @throws IOException if the stream can not be seek to the given start position.
+     * @throws IOException if the stream cannot be seek to the given start position.
      */
     @Override
     public void setInputRegion(final long start, final long byteCount) throws IOException {

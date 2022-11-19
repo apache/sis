@@ -145,9 +145,9 @@ public class ResampledImage extends ComputedImage {
     protected final Interpolation interpolation;
 
     /**
-     * The values to use if a pixel in this image can not be mapped to a pixel in the source image.
+     * The values to use if a pixel in this image cannot be mapped to a pixel in the source image.
      * Must be an {@code int[]} or {@code double[]} array (no other type allowed). The array length
-     * must be equal to the number of bands. Can not be null.
+     * must be equal to the number of bands. Cannot be null.
      */
     private final Object fillValues;
 
@@ -187,7 +187,7 @@ public class ResampledImage extends ComputedImage {
      * then subclass should override {@link #getColorModel()} for returning a color model which is
      * {@linkplain ColorModel#isCompatibleSampleModel(SampleModel) compatible with the sample model}.</p>
      *
-     * <p>If a pixel in this image can not be mapped to a pixel in the source image, then the sample values are set
+     * <p>If a pixel in this image cannot be mapped to a pixel in the source image, then the sample values are set
      * to {@code fillValues}. If the given array is {@code null}, or if any element in the given array is {@code null},
      * then the default fill value is NaN for floating point data types or zero for integer data types.
      * If the array is shorter than the number of bands, then above-cited default values are used for missing values.
@@ -199,7 +199,7 @@ public class ResampledImage extends ComputedImage {
      * @param  bounds         domain of pixel coordinates of this resampled image.
      * @param  toSource       conversion of pixel coordinates of this image to pixel coordinates of {@code source} image.
      * @param  interpolation  the object to use for performing interpolations.
-     * @param  fillValues     the values to use for pixels in this image that can not be mapped to pixels in source image.
+     * @param  fillValues     the values to use for pixels in this image that cannot be mapped to pixels in source image.
      *                        May be {@code null} or contain {@code null} elements, and may have any length
      *                        (see above for more details).
      * @param  accuracy       values of {@value #POSITIONAL_ACCURACY_KEY} property, or {@code null} if none.
@@ -266,7 +266,7 @@ public class ResampledImage extends ComputedImage {
         MathTransform toSourceSupport = MathTransforms.concatenate(toSource, MathTransforms.translation(offset));
         /*
          * If the desired accuracy is large enough, try using a grid of precomputed values for faster operations.
-         * This is optional; it is okay to abandon the grid if we can not compute it.
+         * This is optional; it is okay to abandon the grid if we cannot compute it.
          */
         Boolean          canUseGrid     = null;
         Quantity<Length> linearAccuracy = null;
@@ -424,7 +424,7 @@ public class ResampledImage extends ComputedImage {
     }
 
     /**
-     * Returns {@code true} if this image can not have mask.
+     * Returns {@code true} if this image cannot have mask.
      */
     boolean hasNoMask() {
         return fillValues instanceof int[];
@@ -719,7 +719,7 @@ public class ResampledImage extends ComputedImage {
         /*
          * The (sx,sy) values are iterator position, remembered for detecting if the window buffer
          * needs to be updated. The `Integer.MAX_VALUE` initial value is safe because the iterator
-         * can not have that position (its construction would have failed with ArithmeticException
+         * cannot have that position (its construction would have failed with ArithmeticException
          * if the image position was so high).
          */
         int sx = Integer.MAX_VALUE;

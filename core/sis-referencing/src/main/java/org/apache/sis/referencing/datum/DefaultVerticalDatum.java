@@ -216,7 +216,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * The latter case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      * It may also happen if the datum were created using reflection.
      *
-     * <p>This method uses heuristic rules and may be changed in any future SIS version. If the type can not be
+     * <p>This method uses heuristic rules and may be changed in any future SIS version. If the type cannot be
      * determined, default on the ellipsoidal type since it will usually implies no additional calculation.</p>
      *
      * <p>No synchronization needed; this is not a problem if this value is computed twice.
@@ -338,7 +338,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Constructs a new datum in which every attributes are set to a null value.
      * <strong>This is not a valid object.</strong> This constructor is strictly
-     * reserved to JAXB, which will assign values to the fields using reflexion.
+     * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultVerticalDatum() {
     }

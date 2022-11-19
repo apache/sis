@@ -119,7 +119,7 @@ public final strictfp class CategoryListTest extends TestCase {
             /*
              * Previous test didn't tested NaN values, which is the main difference between Arrays.binarySearch(…) and
              * CategoryList.binarySearch(…). Now test those NaNs. We fill the last half of the array with NaN values;
-             * the first half keep original real values. Then we search sometime real values, sometime NaN values.
+             * the first half keep original real values. Then we search sometimes real values, sometimes NaN values.
              */
             int nanOrdinalLimit = 0;
             realNumberLimit /= 2;

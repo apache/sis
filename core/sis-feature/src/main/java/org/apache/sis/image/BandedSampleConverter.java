@@ -332,7 +332,7 @@ class BandedSampleConverter extends ComputedImage {
      * @param  tileX   the column index of the tile to compute.
      * @param  tileY   the row index of the tile to compute.
      * @param  target  if the tile already exists but needs to be updated, the tile to update. Otherwise {@code null}.
-     * @return computed tile for the given indices (can not be null).
+     * @return computed tile for the given indices (cannot be null).
      * @throws TransformException if an error occurred while converting a sample value.
      */
     @Override

@@ -28,7 +28,7 @@
  *     a database of coordinate systems and other spatial referencing objects where each object has a code number ID.</li>
  *
  *   <li>{@link org.apache.sis.referencing.factory.GeodeticObjectFactory}
- *     creates complex objects that can not be created by the authority factories.
+ *     creates complex objects that cannot be created by the authority factories.
  *     Allows also <cite>inversion of control</cite> when used with the
  *     {@linkplain org.apache.sis.referencing.factory.sql.EPSGFactory EPSG authority factory}
  *     or with the {@linkplain org.apache.sis.io.wkt.WKTFormat WKT parser}.</li>

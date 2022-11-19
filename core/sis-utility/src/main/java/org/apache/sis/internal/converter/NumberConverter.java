@@ -77,7 +77,7 @@ final class NumberConverter<S extends Number, T extends Number> extends SystemCo
     /**
      * Returns the inverse converter, creating it when first needed.
      * This method delegates to {@link SystemRegistry#INSTANCE} and caches the result.
-     * We do not provide pre-defined constant for the various converter because there
+     * We do not provide predefined constant for the various converter because there
      * is too many possibly combinations.
      */
     @Override

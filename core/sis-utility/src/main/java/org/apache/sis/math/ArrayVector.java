@@ -93,7 +93,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
     /**
      * Returns a vector with the same data than the given vector but encoded in a more compact way,
-     * or {@code null} if this method can not do better than the given {@code Vector} instance.
+     * or {@code null} if this method cannot do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of integer values (this is not verified).
      */
     @SuppressWarnings("null")
@@ -137,7 +137,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
 
     /**
      * Returns a vector with the same data than the given vector but encoded in a more compact way,
-     * or {@code null} if this method can not do better than the given {@code Vector} instance.
+     * or {@code null} if this method cannot do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of floating point values (this is not verified).
      */
     static Vector compress(final Vector source, final double tolerance) {
@@ -841,7 +841,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /*
-         * Not worth to override 'increment(double)' because the array can not be long anyway
+         * Not worth to override 'increment(double)' because the array cannot be long anyway
          * (except if the increment is zero) and the implicit conversion of 'short' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */
@@ -950,7 +950,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /*
-         * Not worth to override 'increment(double)' because the array can not be long anyway
+         * Not worth to override 'increment(double)' because the array cannot be long anyway
          * (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
          * performed by Java would make the implementation a little bit more tricky.
          */

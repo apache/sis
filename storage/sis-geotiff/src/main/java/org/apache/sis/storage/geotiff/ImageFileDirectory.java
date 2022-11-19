@@ -354,7 +354,7 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * The compression method, or {@code null} if unspecified. If the compression method is unknown
-     * or unsupported we can not read the image, but we still can read the metadata.
+     * or unsupported we cannot read the image, but we still can read the metadata.
      *
      * @see #getCompression()
      */
@@ -517,7 +517,7 @@ final class ImageFileDirectory extends DataCube {
      * @throws IOException if an error occurred while reading the stream.
      * @throws ParseException if the value need to be parsed as date and the parsing failed.
      * @throws NumberFormatException if the value need to be parsed as number and the parsing failed.
-     * @throws ArithmeticException if the value can not be represented in the expected Java type.
+     * @throws ArithmeticException if the value cannot be represented in the expected Java type.
      * @throws IllegalArgumentException if a value which was expected to be a singleton is not.
      * @throws UnsupportedOperationException if the given type is {@link Type#UNDEFINED}.
      * @throws DataStoreException if a logical error is found or an unsupported TIFF feature is used.
@@ -1140,7 +1140,7 @@ final class ImageFileDirectory extends DataCube {
      * One of those two vector will be modified in-place.
      *
      * @param  a    the first vector, or {@code null} if none.
-     * @param  b    the new vector to combine with the existing one. Can not be null.
+     * @param  b    the new vector to combine with the existing one. Cannot be null.
      * @param  max  {@code true} for computing the maximal values, or {@code false} for the minimal value.
      */
     private static Vector extremum(Vector a, Vector b, final boolean max) {
@@ -1175,11 +1175,11 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Computes the tile width or height from the other size,
-     * or returns a negative number if the size can not be computed.
+     * or returns a negative number if the size cannot be computed.
      *
      * @param  knownSize  the tile width or height.
      * @return the tile width if the known size was height, or the tile height if the known size was width,
-     *         or a negative number if the width or height can not be computed.
+     *         or a negative number if the width or height cannot be computed.
      * @throws ArithmeticException if the result overflows.
      */
     private int computeTileSize(final int knownSize) {
@@ -1210,7 +1210,7 @@ final class ImageFileDirectory extends DataCube {
      * when those values can be computed from other (usually mandatory) fields.
      *
      * @return {@code true} if the method has been invoked for the first time.
-     * @throws DataStoreContentException if a mandatory tag is missing and can not be inferred.
+     * @throws DataStoreContentException if a mandatory tag is missing and cannot be inferred.
      */
     final boolean validateMandatoryTags() throws DataStoreContentException {
         if (isValidated) return false;
@@ -1263,7 +1263,7 @@ final class ImageFileDirectory extends DataCube {
             if (shift >= 0 && shift < Long.SIZE) {
                 minValue >>>= shift;
                 maxValue >>>= shift;
-                if (minValue < maxValue) {      // Exclude the unsigned long case since we can not represent it.
+                if (minValue < maxValue) {      // Exclude the unsigned long case since we cannot represent it.
                     minValues = extremum(minValues, Vector.createSequence(minValue, 0, samplesPerPixel), false);
                     maxValues = extremum(maxValues, Vector.createSequence(maxValue, 0, samplesPerPixel), true);
                 }

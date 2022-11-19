@@ -80,7 +80,7 @@
  *
  * <h2>Null values, nil objects and collections</h2>
  * All constructors and setter methods accept {@code null} arguments.
- * A null argument value means that the metadata element can not be provided, and the reason for that is unspecified.
+ * A null argument value means that the metadata element cannot be provided, and the reason for that is unspecified.
  * Alternatively, users can specify why a metadata element is missing by providing a value created by
  * {@link org.apache.sis.xml.NilReason#createNilObject NilReason.createNilObject(Class)}.
  *

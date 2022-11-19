@@ -60,7 +60,7 @@ public final strictfp class UnmodifiableParameterValueTest extends TestCase {
         modifiable.setValue(0.9996); // Scale factor of all UTM projections.
         /*
          * Create and validate an unmodifiable parameter,
-         * then verify that we can not modify its value.
+         * then verify that we cannot modify its value.
          */
         final DefaultParameterValue<Double> unmodifiable = assertEquivalent(modifiable);
         assertSame("Double instances do not need to be cloned.", modifiable.getValue(), unmodifiable.getValue());

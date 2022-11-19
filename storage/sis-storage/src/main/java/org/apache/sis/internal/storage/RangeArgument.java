@@ -72,7 +72,7 @@ public final class RangeArgument {
     private SampleDimension.Builder builder;
 
     /**
-     * Encapsulates the user-supplied {@code ranges} argument, packed in high bits of {@code packed}.
+     * Encapsulates the user supplied {@code ranges} argument, packed in high bits of {@code packed}.
      */
     private RangeArgument(final long[] packed, final boolean hasAllBands) {
         this.packed      = packed;
@@ -202,11 +202,11 @@ public final class RangeArgument {
     }
 
     /**
-     * Returns the i<sup>th</sup> band position. This is the index in the user-supplied {@code ranges} array
+     * Returns the i<sup>th</sup> band position. This is the index in the user supplied {@code ranges} array
      * where the {@code getSourceIndex(i)} value was specified.
      *
      * @param  i  index of the range index to get, from 0 inclusive to {@link #getNumBands()} exclusive.
-     * @return index in user-supplied {@code ranges} array where was specified the {@code getSourceIndex(i)} value.
+     * @return index in user supplied {@code ranges} array where was specified the {@code getSourceIndex(i)} value.
      */
     public int getTargetIndex(final int i) {
         return (int) packed[i];

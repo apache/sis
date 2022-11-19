@@ -43,7 +43,7 @@ import org.apache.sis.util.Deprecable;
 
 /**
  * Description of the inverse of another method. This class should be used only when no operation is defined
- * for the inverse, or when the inverse operation can not be represented by inverting the sign of parameters.
+ * for the inverse, or when the inverse operation cannot be represented by inverting the sign of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

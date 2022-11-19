@@ -150,7 +150,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * calls to {@code reset()} move to the same position until {@code mark(int)} is invoked again.
      *
      * @param  readlimit  ignored.
-     * @throws UncheckedIOException if the mark can not be set.
+     * @throws UncheckedIOException if the mark cannot be set.
      */
     @Override
     public synchronized void mark(final int readlimit) {
@@ -187,7 +187,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * neither if the mark done by a call to {@link #mark(int)} is the only mark remaining.
      * Some code depends on the ability to do many {@code reset()} for the same mark.</p>
      *
-     * @throws IOException if this stream can not move to the last mark position.
+     * @throws IOException if this stream cannot move to the last mark position.
      */
     @Override
     public synchronized void reset() throws IOException {
@@ -211,7 +211,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * because we need to keep track of the marks.
      *
      * @param  mark  position where to seek.
-     * @throws IOException if this stream can not move to the specified mark position.
+     * @throws IOException if this stream cannot move to the specified mark position.
      */
     @Override
     public synchronized void reset(final long mark) throws IOException {
@@ -231,7 +231,7 @@ public final class InputStreamAdapter extends InputStream implements Markable {
      * Returns the current byte position of the stream.
      *
      * @return the position of the stream.
-     * @throws IOException if the position can not be obtained.
+     * @throws IOException if the position cannot be obtained.
      */
     @Override
     public long getStreamPosition() throws IOException {

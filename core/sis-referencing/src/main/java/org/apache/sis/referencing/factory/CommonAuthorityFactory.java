@@ -424,7 +424,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
         if (parsed.isNumeric && parsed.parameters().length == 0) {
             /*
-             * For codes in the "AUTO(2)" namespace without parameters, we can not rely on the default implementation
+             * For codes in the "AUTO(2)" namespace without parameters, we cannot rely on the default implementation
              * because it would fail to create the ProjectedCRS instance. Instead we return a generic description.
              * Note that we do not execute this block if parametes were specified. If there is parameters,
              * then we instead rely on the default implementation for a more accurate description text.
@@ -489,9 +489,9 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     }
 
     /**
-     * Implementation of {@link #createCoordinateReferenceSystem(String)} after the user-supplied code has been parsed.
+     * Implementation of {@link #createCoordinateReferenceSystem(String)} after the user supplied code has been parsed.
      *
-     * @param  code    the user-supplied code of desired CRS.
+     * @param  code    the user supplied code of desired CRS.
      * @param  parsed  result of parsing the supplied {@code code}.
      * @throws FactoryException if the object creation failed.
      */

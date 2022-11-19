@@ -114,7 +114,7 @@ public strictfp final class GeometryGetterTest extends TestCase {
         /*
          * If the wrapper is an instance of `GeometryWithCRS`, then the CRS is stored
          * with the wrapper instead of the geometry implementation. In such case, the
-         * CRS is lost on `GeometryWrapper.implementation()` and can not be tested.
+         * CRS is lost on `GeometryWrapper.implementation()` and cannot be tested.
          */
         if (!(wrapper instanceof GeometryWithCRS)) {
             assertSame(HardCodedCRS.WGS84, wrapper.getCoordinateReferenceSystem());

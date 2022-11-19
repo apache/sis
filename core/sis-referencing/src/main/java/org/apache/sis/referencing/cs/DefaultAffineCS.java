@@ -248,7 +248,7 @@ public class DefaultAffineCS extends AbstractCS implements AffineCS {
     /**
      * Constructs a new coordinate system in which every attributes are set to a null or empty value.
      * <strong>This is not a valid object.</strong> This constructor is strictly reserved to JAXB,
-     * which will assign values to the fields using reflexion.
+     * which will assign values to the fields using reflection.
      */
     DefaultAffineCS() {
     }
