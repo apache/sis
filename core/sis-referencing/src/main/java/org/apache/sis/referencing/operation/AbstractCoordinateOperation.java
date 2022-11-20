@@ -473,7 +473,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *       {@code AbstractCoordinateOperation}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractCoordinateOperation} instance is created using the
      *       {@linkplain #AbstractCoordinateOperation(CoordinateOperation) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *

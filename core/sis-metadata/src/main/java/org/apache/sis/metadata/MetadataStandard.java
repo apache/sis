@@ -985,7 +985,7 @@ public class MetadataStandard implements Serializable {
      * arguments do not need to be the same implementation class.
      *
      * <h4>Shallow or deep comparisons</h4>
-     * This method implements a <cite>shallow</cite> comparison in that properties are compared by
+     * This method implements a <em>shallow</em> comparison in that properties are compared by
      * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
      * to this {@code standard.equals(…)} method for children metadata. However the comparison will
      * do <em>implicit</em> recursive calls if the {@code properties.equals(…)} implementations

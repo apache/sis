@@ -265,7 +265,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *       {@code AbstractCS}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractCS} instance is created using the
      *       {@linkplain #AbstractCS(CoordinateSystem) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *

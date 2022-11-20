@@ -444,7 +444,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       {@code AbstractIdentifiedObject}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractIdentifiedObject} instance is created using the
      *       {@linkplain #AbstractIdentifiedObject(IdentifiedObject) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *

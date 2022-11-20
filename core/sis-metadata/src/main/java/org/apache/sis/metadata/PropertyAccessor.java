@@ -1163,9 +1163,9 @@ class PropertyAccessor {
     }
 
     /**
-     * Compares the two specified metadata objects. This method implements a <cite>shallow</cite>
-     * comparison, i.e. all metadata properties are compared using their {@code properties.equals(…)}
-     * method without explicit calls to this {@code accessor.equals(…)} method for children.
+     * Compares the two specified metadata objects. This method implements a <em>shallow</em> comparison,
+     * i.e. all metadata properties are compared using their {@code properties.equals(…)} method
+     * without explicit calls to this {@code accessor.equals(…)} method for children.
      * However the final result may still be a deep comparison.
      *
      * @param  metadata1  the first metadata object to compare. This object determines the accessor.

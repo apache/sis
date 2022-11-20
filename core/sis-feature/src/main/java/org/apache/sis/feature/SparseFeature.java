@@ -344,11 +344,11 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     }
 
     /**
-     * Returns a copy of this feature
-     * This method clones also all {@linkplain Cloneable cloneable} property instances in this feature,
+     * Returns a copy of this feature.
+     * This method also clones all {@linkplain Cloneable cloneable} property instances in this feature,
      * but not necessarily property values. Whether the property values are cloned or not (i.e. whether
-     * the clone operation is <cite>deep</cite> or <cite>shallow</cite>) depends on the behavior or
-     * property {@code clone()} methods.
+     * the clone operation is <em>deep</em> or <em>shallow</em>) depends on the behavior of the
+     * {@code clone()} method of properties.
      *
      * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this feature cannot be cloned, typically because

@@ -89,8 +89,8 @@ public class DS_InitiativeTypeCode extends CodeListAdapter<DS_InitiativeTypeCode
     }
 
     /**
-     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
-     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     * Wraps the value only if marshalling an element from the ISO 19115:2014 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2003 model), omits the element.
      */
     public static final class Since2014 extends DS_InitiativeTypeCode {
         /** Empty constructor used only by JAXB. */
