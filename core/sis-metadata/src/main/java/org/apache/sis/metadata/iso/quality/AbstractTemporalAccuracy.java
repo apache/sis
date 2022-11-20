@@ -18,11 +18,11 @@ package org.apache.sis.metadata.iso.quality;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlRootElement;
-import org.apache.sis.xml.Namespaces;
 import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.metadata.quality.TemporalValidity;
 import org.opengis.metadata.quality.TemporalConsistency;
 import org.opengis.metadata.quality.AccuracyOfATimeMeasurement;
+import org.apache.sis.xml.Namespaces;
 
 
 /**

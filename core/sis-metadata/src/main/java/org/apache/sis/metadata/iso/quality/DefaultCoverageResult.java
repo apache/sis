@@ -27,6 +27,7 @@ import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 
@@ -244,7 +245,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
     @Deprecated
     @XmlElement(name = "resultContentDescription", namespace = LegacyNamespaces.GMI)
     public CoverageDescription getResultContentDescription() {
-        return resultContentDescription;
+        return FilterByVersion.LEGACY_METADATA.accept() ? resultContentDescription : null;
     }
 
     /**
