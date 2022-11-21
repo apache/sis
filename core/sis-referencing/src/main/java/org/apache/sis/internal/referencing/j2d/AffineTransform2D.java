@@ -165,8 +165,10 @@ public class AffineTransform2D extends ImmutableAffineTransform
      *
      * <p>The inconsistency is in the use of {@link Double#doubleToLongBits(double)} for hash code and
      * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the latter is not.</p>
+     *
+     * <a href="https://bugs.openjdk.org/browse/JDK-8290973">JDK-8290973</a>
      */
-    @Workaround(library="JDK", version="8")                         // Last verified in 1.8.0_05.
+    @Workaround(library="JDK", version="8", fixed="20")
     private static double pz(final double value) {
         return (value != 0) ? value : 0;
     }

@@ -56,6 +56,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * The (presumed immutable) parameters used for creating this transform.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final ParameterValueGroup parameters;
 
     /**

@@ -207,7 +207,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         this.attributeNames = attributeNames;
         final Object isUnsigned = getAttributeValue(CDM.UNSIGNED, "_unsigned");
         if (isUnsigned instanceof String) {
-            dataType = dataType.unsigned(Boolean.valueOf((String) isUnsigned));
+            dataType = dataType.unsigned(Boolean.parseBoolean((String) isUnsigned));
         }
         this.dataType = dataType;
         /*
