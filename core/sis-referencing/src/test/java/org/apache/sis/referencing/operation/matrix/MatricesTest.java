@@ -116,7 +116,7 @@ public final strictfp class MatricesTest extends TestCase {
     /**
      * Tests {@link Matrices#createTransform(AxisDirection[], AxisDirection[])} with different axes.
      * Axes are moved in different positions, and some axes will have opposite directions.
-     * However the number of axes stay the same.
+     * However, the number of axes stay the same.
      *
      * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,

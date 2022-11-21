@@ -38,7 +38,7 @@ import org.apache.sis.internal.util.Strings;
  * Delegates object creations to one of the {@code create} methods in a backing {@code AuthorityFactory}.
  * It is possible to use the generic {@link AuthorityFactory#createObject(String)} method instead of this class,
  * but some factories are more efficient when we use the most specific {@code create} method.
- * For example when using a {@linkplain org.apache.sis.referencing.factory.sql.EPSGDataAccess},
+ * For example, when using a {@linkplain org.apache.sis.referencing.factory.sql.EPSGDataAccess},
  * invoking {@link GeodeticAuthorityFactory#createProjectedCRS(String)} instead of
  * {@code AuthorityFactory.createObject(String)} method reduce the amount of tables to be queried.
  *

@@ -29,7 +29,7 @@ import org.apache.sis.metadata.MetadataStandard;
  * that the same maps will be used more than once before to move to another metadata object.
  *
  * <p>Each thread shall have its own {@code LastUsedInfo} instance.
- * Consequently there is no need for synchronization in this class.</p>
+ * Consequently, there is no need for synchronization in this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

@@ -60,7 +60,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
     /**
      * The image where pixels will be written, or {@code null} if the image is read-only.
      * The destination image may or may not be the same instance than the source {@link #image}.
-     * However the sample model, the minimal X and Y values and the tile grid must be the same.
+     * However, the sample model, the minimal X and Y values and the tile grid must be the same.
      */
     private final WritableRenderedImage destination;
 

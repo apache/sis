@@ -266,7 +266,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * Sets this vertical extent to the intersection of this extent with the specified one.
      * The {@linkplain org.apache.sis.referencing.crs.DefaultVerticalCRS#getDatum() vertical datum}
      * must be the same (ignoring metadata) for both extents; this method does not perform datum shift.
-     * However this method can perform unit conversions.
+     * However, this method can perform unit conversions.
      *
      * <p>If there is no intersection between the two extents, then this method sets both minimum and
      * maximum values to {@linkplain Double#NaN}. If either this extent or the specified extent has NaN

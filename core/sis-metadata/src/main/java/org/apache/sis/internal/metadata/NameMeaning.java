@@ -232,7 +232,7 @@ loop:   for (int p=0; ; p++) {
      * Returns the version of the namespace managed by the given authority.
      * Current Apache SIS implementation searches this information in the {@link Citation#getEdition()} property.
      * This approach is based on the assumption that the authority is some specification document or reference to
-     * a database, not an organization. However this policy may be revisited in any future SIS version.
+     * a database, not an organization. However, this policy may be revisited in any future SIS version.
      *
      * @param  authority  the authority from which to get a version, or {@code null}.
      * @return the version, or {@code null} if none.

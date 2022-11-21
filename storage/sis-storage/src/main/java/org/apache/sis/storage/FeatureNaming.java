@@ -63,7 +63,7 @@ import org.apache.sis.internal.storage.Resources;
  * telling why the operation cannot succeed.
  *
  * <h2>Managing the list of generic names</h2>
- * This class does not memorize the list of {@linkplain #add added} {@code GenericName} instances. Instead this
+ * This class does not memorize the list of {@linkplain #add added} {@code GenericName} instances. Instead, this
  * class memorizes only their string representations, thus protecting the binding from any change in the original
  * {@code GenericName} instances. The list of feature names should instead be included in the ISO 19115 metadata
  * returned by {@link DataStore#getMetadata()}. The path to feature names is:
@@ -80,7 +80,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * <h2>Thread safety</h2>
  * A {@code FeatureNaming} instance is thread-safe only if constructed once and never modified after publication.
- * For example it is safe to initialize a {@code FeatureNaming} in a {@link DataStore} or {@link DataStoreProvider}
+ * For example, it is safe to initialize a {@code FeatureNaming} in a {@link DataStore} or {@link DataStoreProvider}
  * constructor if the result is stored in a private final field with no public accessor
  * and no call to {@link #add add(…)} or {@link #remove remove(…)} methods after construction.
  * If this condition does not hold, then synchronization (if desired) is caller's responsibility.

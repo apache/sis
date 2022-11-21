@@ -220,7 +220,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
         if (c.isLinear()) {                                 // Despite method name, this is actually "is scale".
             /*
              * Conversion from this quantity to system unit was a scale factor (see assumption documented
-             * in this method javadoc) and given conversion is also a scale factor. Consequently conversion
+             * in this method javadoc) and given conversion is also a scale factor. Consequently, conversion
              * from the new quantity unit to system unit will still be a scale factor, in which case this
              * `Scalar` class is still appropriate.
              */

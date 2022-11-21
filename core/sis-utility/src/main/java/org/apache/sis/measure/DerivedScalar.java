@@ -27,7 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 
 /**
  * A quantity related to a scalar by an arbitrary (not necessarily linear) conversion.
- * For example a temperature in Celsius degrees is related to a temperature in Kelvin
+ * For example, a temperature in Celsius degrees is related to a temperature in Kelvin
  * by applying an offset.
  *
  * <p>The {@link Scalar} parent class is restricted to cases where the relationship with system unit
@@ -160,7 +160,7 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
         /*
          * Do not invoke `this.create(double, Unit)` because the contract in this subclass
          * restricts the above method to cases where the given unit is the system unit.
-         * Furthermore we need to let `Quantities.create(…)` re-evaluate whether we need
+         * Furthermore, we need to let `Quantities.create(…)` re-evaluate whether we need
          * a `DerivedScalar` instance or whether `Scalar` would be sufficient.
          */
         return Quantities.create(derivedUnit.getConverterTo(newUnit).convert(derivedValue), newUnit);

@@ -34,7 +34,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * See package documentation for more information about JAXB and interface.
  *
  * @deprecated This adapter is not used anymore for ISO 19115-3:2014 metadata.
- * However it is needed for branches that depend on GeoAPI 3.x, and is also needed
+ * However, it is needed for branches that depend on GeoAPI 3.x, and is also needed
  * for implementing web services that have not yet been upgraded to latest ISO standard.
  *
  * @author  Cédric Briançon (Geomatys)

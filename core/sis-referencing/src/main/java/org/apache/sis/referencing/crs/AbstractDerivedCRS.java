@@ -153,7 +153,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * <p><b>WARNING:</b> this method is invoked at construction time and will invoke indirectly
      * (through {@link DefaultConversion}) the {@link #getCoordinateSystem()} method on {@code this}.
-     * Consequently this method shall be invoked only after the construction of this {@code AbstractDerivedCRS}
+     * Consequently, this method shall be invoked only after the construction of this {@code AbstractDerivedCRS}
      * instance is advanced enough for allowing the {@code getCoordinateSystem()} method to execute.
      * Subclasses may consider to make the {@code getCoordinateSystem()} method final for better guarantees.</p>
      */
@@ -174,7 +174,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * Returns the type of conversion associated to this {@code AbstractDerivedCRS}.
      *
      * <p><b>WARNING:</b> this method is invoked (indirectly) at construction time.
-     * Consequently it shall return a constant value - this method is not allowed to
+     * Consequently, it shall return a constant value - this method is not allowed to
      * depend on the object state.</p>
      */
     abstract Class<C> getConversionType();

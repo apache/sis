@@ -147,7 +147,7 @@ public abstract class Grid extends NamedElement {
      * <h4>Note on target dimensions</h4>
      * A {@code getTargetDimensions()} method would return the number of dimensions of the
      * <em>coordinate reference system</em>, which is the target of the <cite>"grid to CRS"</cite> conversion.
-     * However we do not provide that method because, while it should be equal to {@code getAxes(decoder).length},
+     * However, we do not provide that method because, while it should be equal to {@code getAxes(decoder).length},
      * it sometimes differs because {@link #getAxes(Decoder)} may exclude axis with zero dimensions.
      * The latter method should be used as the authoritative one.
      *

@@ -451,7 +451,7 @@ public final class ColorModelFactory {
      * acceleration in Java2D rendering pipe.
      *
      * <p>This method does not clamp the given values to the maximum range supported by the given type.
-     * For example even if {@code TYPE_BYTE} cannot represent values outside the [0 … 255] range,
+     * For example, even if {@code TYPE_BYTE} cannot represent values outside the [0 … 255] range,
      * we do not clamp the minimum and maximum values to that range because it would change the visual
      * appearance (because of different color scale).</p>
      *
@@ -487,7 +487,7 @@ public final class ColorModelFactory {
         /*
          * Since sample values are integers, take a tolerance of 1. But for the upper bounds,
          * we take a slightly larger tolerance in case the caller confused "inclusive" versus
-         * "exclusive" values. For example 255.5 ± 1.5 accepts the |254.001 … 256.999] range.
+         * "exclusive" values. For example, 255.5 ± 1.5 accepts the |254.001 … 256.999] range.
          */
         return Math.abs(minimum) < 1 && Math.abs(maximum - (upper - 0.5)) < 1.5;
     }

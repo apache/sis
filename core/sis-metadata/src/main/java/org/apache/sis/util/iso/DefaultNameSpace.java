@@ -127,7 +127,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * </ul>
      *
      * No other type should be allowed. The main purpose of this map is to hold child namespaces.
-     * However we can (in an opportunist way) handles local names as well. In case of conflict,
+     * However, we can (in an opportunist way) handles local names as well. In case of conflict,
      * the namespace will have precedence.
      *
      * <p>This field is initialized by {@link #init()} soon after {@code DefaultNameSpace} creation
@@ -176,7 +176,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
 
     /**
      * Converts the given name to its {@link String} representation if that name is not an {@link InternationalString}
-     * instance from which this {@code DefaultNameSpace} implementation can extract useful information. For example if
+     * instance from which this {@code DefaultNameSpace} implementation can extract useful information. For example, if
      * the given name is a {@link SimpleInternationalString}, that international string does not give more information
      * than the {@code String} that it wraps. Using the {@code String} as the canonical value increase the chances that
      * {@link #equals(Object)} detect that two {@code GenericName} instances are equal.
@@ -382,7 +382,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *
      * <p>The {@link #headSeparator} is not inherited by the children on intent, because this
      * method is used only by {@link DefaultScopedName} constructors in order to create a
-     * sequence of parsed local names. For example in {@code "http://www.opengeospatial.org"}
+     * sequence of parsed local names. For example, in {@code "http://www.opengeospatial.org"}
      * the head separator is {@code "://"} for {@code "www"} (which is having this namespace),
      * but it is {@code "."} for all children ({@code "opengeospatial"} and {@code "org"}).</p>
      *
@@ -514,7 +514,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      *     println("Expanded form = " + name.scope() + name);
      * }
      *
-     * However the convention followed by this {@code DefaultNameSpace} implementation is not specified in the
+     * However, the convention followed by this {@code DefaultNameSpace} implementation is not specified in the
      * {@link NameSpace} contract. This implementation follows the JCR convention for debugging convenience,
      * but applications needing better guarantees should use {@link Names#toExpandedString(GenericName)} instead.
      *

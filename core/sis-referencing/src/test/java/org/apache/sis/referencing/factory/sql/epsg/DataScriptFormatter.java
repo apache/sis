@@ -202,7 +202,7 @@ public final class DataScriptFormatter extends ScriptRunner {
 
     /**
      * EPSG scripts version 8.9 seems to have 2 errors where the {@code OBJECT_TABLE_NAME} column contains
-     * {@code "AxisName"} instead of {@code "Coordinate Axis Name"}. Furthermore the version number noted
+     * {@code "AxisName"} instead of {@code "Coordinate Axis Name"}. Furthermore, the version number noted
      * in the history table is a copy-and-paste error.
      */
     @Override

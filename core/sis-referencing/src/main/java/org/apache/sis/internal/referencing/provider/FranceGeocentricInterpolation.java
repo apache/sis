@@ -82,7 +82,7 @@ import static org.apache.sis.internal.util.Constants.DIM;
  *   <li>Initial Z-axis translation: {@value #TZ} (sign reversed)</li>
  * </ul>
  *
- * However the Apache SIS implementation is designed in such a way that this operation method
+ * However, the Apache SIS implementation is designed in such a way that this operation method
  * could be used for other areas.
  *
  * @author  Simon Reynard (Geomatys)
@@ -104,7 +104,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * If the geocentric interpolation is used for other area, other parameter values will be needed.
      *
      * <p>The values used by SIS are from source (RGF93) to target (NTF). This is the opposite of the
-     * direction defined in NTG_88. Consequently the signs need to be the opposite of NTG_88 values.</p>
+     * direction defined in NTG_88. Consequently, the signs need to be the opposite of NTG_88 values.</p>
      */
     public static final double TX = 168, TY = 60, TZ = -320;
 
@@ -112,7 +112,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * Precision of offset values in the grid file. The "GR3DF97A.txt" file uses a precision of 0.001.
      * But we define here one more digit in case a user gives a more accurate grid.
      *
-     * Note that value of {@code ulp((float) max(|TX|, |TY|, |TZ|))} is about 3E-5. Consequently the
+     * Note that value of {@code ulp((float) max(|TX|, |TY|, |TZ|))} is about 3E-5. Consequently, the
      * value of {@code PRECISION} should not be lower than 1E-4 (assuming that we want a power of 10).
      */
     static final double PRECISION = 0.0001;

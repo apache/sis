@@ -18,7 +18,7 @@
 /**
  * Basic geometric objects (envelopes and direct positions). Every geometry objects are associated
  * with a {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System},
- * which may have an arbitrary number of dimensions. However a few specialized classes restrict
+ * which may have an arbitrary number of dimensions. However, a few specialized classes restrict
  * the CRS to a fixed number of dimensions only. The table below summarizes the most common
  * objects, and list the Java2D classes that are conceptually equivalent.
  *

@@ -332,7 +332,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     private final class Iterator implements Spliterator<Feature>, Consumer<Feature>, Runnable {
         /**
          * The main stream or a split iterator to close when the {@link #run()} method will be invoked.
-         * This is initially the stream from which {@link #mainIterator} has been created. However if
+         * This is initially the stream from which {@link #mainIterator} has been created. However, if
          * {@link #trySplit()} has been invoked, then this handler may be the other {@code Iterator}
          * instance which itself contains a reference to the stream to close, thus forming a chain.
          */
@@ -415,7 +415,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          *
          * <p><b>NOTE:</b> to be strict, we should check if the "filtered" stream is also ordered. But this
          * is more difficult to check. Current implementation assumes that if the "mean" stream is ordered,
-         * then the other stream is ordered too. Furthermore the {@link #trySplit()} method works only on
+         * then the other stream is ordered too. Furthermore, the {@link #trySplit()} method works only on
          * the main stream, so at least the {@code trySplit} requirement about prefix and suffix order is
          * still fulfill even if the other stream is unordered.</p>
          */

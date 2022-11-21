@@ -36,7 +36,7 @@ import org.opengis.feature.Feature;
  * The preparation of a {@link Presentation} tree before displaying may be done in a background thread.
  *
  * <p>Note that multiple presentations may be generated for the same feature.
- * Consequently many {@code Presentation} instances may encapsulate the same {@link Feature} instance.</p>
+ * Consequently, many {@code Presentation} instances may encapsulate the same {@link Feature} instance.</p>
  *
  * <p>
  * NOTE: this class is a first draft subject to modifications.

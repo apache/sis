@@ -307,8 +307,8 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         /*
          * At this point the transforms are considered equal. In theory we would not need to check
          * the inverse transforms since if A and B are equal, then A⁻¹ and B⁻¹ should be equal too.
-         * However in Apache SIS this is not exactly true because computation of inverse transforms
-         * avoid NaN values in some circumstances. For example the inverse of a 2×3 matrix normally
+         * However, in Apache SIS this is not exactly true because computation of inverse transforms
+         * avoid NaN values in some circumstances. For example, the inverse of a 2×3 matrix normally
          * sets the "new" dimensions to NaN, but in the particular case where the transform is used
          * for a "Geographic 2D to 3D" conversion it will rather set the new dimensions to zero. So
          * A⁻¹ and B⁻¹ may differ in their "NaN versus 0" values even if A and B are equal.

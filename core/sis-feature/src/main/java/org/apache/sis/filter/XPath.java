@@ -48,7 +48,7 @@ final class XPath extends Static {
     /**
      * Splits the given URL around the {@code '/'} separator, or returns {@code null} if there is no separator.
      * By convention if the URL is absolute, then the leading {@code '/'} character is kept in the first element.
-     * For example {@code "/∗/property"} is splitted as two elements: {@code "/∗"} and {@code "property"}.
+     * For example, {@code "/∗/property"} is splitted as two elements: {@code "/∗"} and {@code "property"}.
      *
      * <p>This method trims the whitespaces of components except the last one (the tip),
      * for consistency with the case where this method returns {@code null}.</p>

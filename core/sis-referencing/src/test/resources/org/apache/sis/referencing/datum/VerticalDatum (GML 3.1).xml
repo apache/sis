@@ -32,7 +32,7 @@
       │ anchorPoint       │ anchorDefinition  │
       │ validArea         │ domainOfValidity  │
       └───────────────────┴───────────────────┘
-    However the element of interest for this test is the <gml:verticalDatumType>,
+    However, the element of interest for this test is the <gml:verticalDatumType>,
     which does not exist in GML 3.2.1. Since this information is uneasy to infer
     from other properties, DefaultVerticalDatum has a special method for it.
     See http://issues.apache.org/jira/browse/SIS-160

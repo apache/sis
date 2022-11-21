@@ -44,7 +44,7 @@
  * {@linkplain org.apache.sis.referencing.CRS#findOperation find the coordinate operation}
  * (generally from a pair of <var>source</var> and <var>target</var> CRS), then invoke
  * {@link org.opengis.referencing.operation.CoordinateOperation#getMathTransform()}.
- * However sophisticated users can also create math transforms explicitly from a group of parameter values
+ * However, sophisticated users can also create math transforms explicitly from a group of parameter values
  * using the {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory math
  * transform factory}.
  *
@@ -54,7 +54,7 @@
  * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation#getSourceCRS()
  * source coordinate reference system} to coordinate values for the same points in the
  * {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation#getTargetCRS()
- * target coordinate reference system}. However the conversions are not necessarily between CRS;
+ * target coordinate reference system}. However, the conversions are not necessarily between CRS;
  * a {@code MathTransform} can also be used for converting the sample values in a raster for example.
  * Such kind of transforms are named {@linkplain org.apache.sis.referencing.operation.transform.TransferFunction
  * transfer functions}.

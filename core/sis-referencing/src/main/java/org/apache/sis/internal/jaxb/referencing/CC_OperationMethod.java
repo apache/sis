@@ -197,7 +197,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
 
     /**
      * Stores the given {@code parameters} into the given {@code addTo} collection.
-     * This method copies only the <em>references</em> if possible. However in some
+     * This method copies only the <em>references</em> if possible. However, in some
      * cases the values may need to be copied in new parameter instances.
      *
      * <div class="note"><b>Note:</b>

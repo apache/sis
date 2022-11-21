@@ -232,7 +232,7 @@ class NodeIterator<E> implements Spliterator<E>, Cloneable {
 
         /**
          * Masks for clearing the bits of all quadrants that do not intersect the search region on the left side.
-         * For example for <var>x</var> dimension, this is the mask to apply if the {@code xmin <= cx} condition
+         * For example, for <var>x</var> dimension, this is the mask to apply if the {@code xmin <= cx} condition
          * is false. In this example {@code CLEAR_MASKS[0]} clears the bits of all quadrants on the West side,
          * which are quadrants 1, 3, 5, <i>etc.</i>
          *

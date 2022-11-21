@@ -41,8 +41,8 @@ import org.apache.sis.internal.system.DefaultFactories;
  *
  * <p>The easiest way to create a name is to use the {@link Names#createLocalName(CharSequence, String, CharSequence)}
  * convenience static method. That method supports the common case where the name is made only of a
- * (<var>namespace</var>, <var>local part</var>) pair of strings. However generic names allows finer grain.
- * For example the above-cited strings can both be split into smaller name components.
+ * (<var>namespace</var>, <var>local part</var>) pair of strings. However, generic names allows finer grain.
+ * For example, the above-cited strings can both be split into smaller name components.
  * If such finer grain control is desired, {@link DefaultNameFactory} can be used instead of {@link Names}.</p>
  *
  * <h2>Natural ordering</h2>
@@ -255,7 +255,7 @@ public abstract class AbstractName implements GenericName, Serializable {
 
     /**
      * Returns this name expanded with the specified scope. One may represent this operation
-     * as a concatenation of the specified {@code scope} with {@code this}. For example if
+     * as a concatenation of the specified {@code scope} with {@code this}. For example, if
      * {@code this} name is {@code "util.Record"} and the given {@code scope} argument is
      * {@code "org.opengis"}, then {@code this.push(scope)} shall return
      * {@code "org.opengis.util.Record"}.

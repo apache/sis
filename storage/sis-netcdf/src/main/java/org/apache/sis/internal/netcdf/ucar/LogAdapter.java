@@ -60,7 +60,7 @@ final class LogAdapter implements Appendable {
             int count = sp.length;
             /*
              * If the last line does not ends with a EOL character, we will not send it to the listeners.
-             * Instead we will copy it to the buffer for concatenation with the next characters appended.
+             * Instead, we will copy it to the buffer for concatenation with the next characters appended.
              */
             final char c = message.charAt(message.length() - 1);
             if (c != '\r' && c != '\n') {

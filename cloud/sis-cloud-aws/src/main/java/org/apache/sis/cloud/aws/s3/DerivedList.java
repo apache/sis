@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 /**
  * A list in which values are derived from another list using a given function.
  * The conversion is done the fly every times an element is accessed.
- * Consequently this wrapper should be used only for elements that are cheap to wrap.
+ * Consequently, this wrapper should be used only for elements that are cheap to wrap.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

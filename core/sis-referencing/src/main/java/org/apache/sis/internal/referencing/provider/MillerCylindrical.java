@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *   <li>The northing is multiplied by 1.25 after the projection.</li>
  * </ol>
  *
- * Note that the Miller projection is typically used with spherical formulas. However the Apache SIS implementation
+ * Note that the Miller projection is typically used with spherical formulas. However, the Apache SIS implementation
  * supports also the ellipsoidal formulas. If spherical formulas are desired, then the parameters shall contain
  * semi-major and semi-minor axis lengths of equal length.
  *

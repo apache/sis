@@ -27,8 +27,8 @@ import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
  * Holds a version number as a sequence of strings separated by either a dot or a dash.
  * The first three strings, usually numbers, are called respectively {@linkplain #getMajor() major},
  * {@linkplain #getMinor() minor} and {@linkplain #getRevision() revision}.
- * For example a version code such as {@code "6.11.2"} will have major number 6, minor
- * number 11 and revision number 2. Alternatively a version code such as {@code "3.18-SNAPSHOT"}
+ * For example, a version code such as {@code "6.11.2"} will have major number 6, minor
+ * number 11 and revision number 2. Alternatively, a version code such as {@code "3.18-SNAPSHOT"}
  * will have major version number 3, minor version number 18 and revision string "SNAPSHOT".
  *
  * <p>This class provides methods for performing comparisons of {@code Version} objects where major,

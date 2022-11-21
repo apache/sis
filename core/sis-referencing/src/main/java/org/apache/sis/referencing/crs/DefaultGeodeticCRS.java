@@ -254,7 +254,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
         }
         /*
          * For WKT 1, the keyword depends on the subclass: "GeogCS" for GeographicCRS or "GeocCS" for GeocentricCRS.
-         * However we cannot rely on the subclass for choosing the keyword, because after XML unmarhaling we only
+         * However, we cannot rely on the subclass for choosing the keyword, because after XML unmarhaling we only
          * have a GeodeticCRS. We need to make the choice in this base class. The CS type is a sufficient criterion.
          */
         if (isWKT1) {
@@ -324,7 +324,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *     }
      * }
      *
-     * However our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
+     * However, our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
      * for an unknown reason, the unmarshalled CS object is empty.</div>
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>

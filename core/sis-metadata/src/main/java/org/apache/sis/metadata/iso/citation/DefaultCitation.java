@@ -54,8 +54,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  *
  * <h2>Unified identifiers view</h2>
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and
- * {@linkplain #getISSN() ISSN} codes. However the SIS library handles those codes like any
- * other identifiers. Consequently the ISBN and ISSN codes are included in the collection
+ * {@linkplain #getISSN() ISSN} codes. However, the SIS library handles those codes like any
+ * other identifiers. Consequently, the ISBN and ISSN codes are included in the collection
  * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19115-3 compliance).
  *
  * <h2>Limitations</h2>

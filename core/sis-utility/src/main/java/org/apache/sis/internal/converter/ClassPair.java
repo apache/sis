@@ -130,7 +130,7 @@ class ClassPair<S,T> implements Serializable {
      *
      * <p>This method is designed for use by {@link ConverterRegistry} as {@link java.util.HashMap}
      * keys. Its primary purpose is <strong>not</strong> to determine if two objects are converters
-     * doing the same conversions. However the {@link SystemConverter} subclass overrides this
+     * doing the same conversions. However, the {@link SystemConverter} subclass overrides this
      * method with an additional safety check.</p>
      *
      * @param  other  the object to compare with this {@code ClassPair}.

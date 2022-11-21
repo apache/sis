@@ -260,7 +260,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * </ul>
      *
      * This convenience method provides a way to get and set parameter values by name.
-     * For example the following idiom fetches a floating point value for the <cite>False easting</cite>
+     * For example, the following idiom fetches a floating point value for the <cite>False easting</cite>
      * and <cite>False northing</cite> parameters and set a new value for the <cite>False easting</cite> one:
      *
      * {@preformat java

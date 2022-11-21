@@ -85,7 +85,7 @@ import static java.util.logging.Logger.getLogger;
  * else in the Java virtual machine, but will be discarded (and recreated on the fly if needed) otherwise.
  *
  * <h2>Multi-threading</h2>
- * The cache managed by this class is concurrent. However the Data Access Objects (DAO) are assumed non-concurrent.
+ * The cache managed by this class is concurrent. However, the Data Access Objects (DAO) are assumed non-concurrent.
  * If two or more threads are accessing this factory at the same time, then two or more Data Access Object instances
  * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
  * construction time. If more Data Access Object instances are needed, some of the threads will block until an
@@ -247,7 +247,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     /**
      * {@code true} if the call to {@link #closeExpired()} is scheduled for future execution in the background
      * cleaner thread. A value of {@code true} implies that this factory contains at least one active data access.
-     * However the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
+     * However, the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
      * because this field is set to {@code true} only when a worker factory is {@linkplain #release released}.
      *
      * <p>Note that we cannot use {@code !availableDAOs.isEmpty()} as a replacement of {@code isCleanScheduled}
@@ -526,7 +526,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     /**
      * {@code true} if the call to {@link #closeExpired()} is scheduled for future execution in the background
      * cleaner thread. A value of {@code true} implies that this factory contains at least one active data access.
-     * However the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
+     * However, the reciprocal is not true: this field may be set to {@code false} while a DAO is currently in use
      * because this field is set to {@code true} only when a worker factory is {@linkplain #release released}.
      *
      * <p>This method is used only for testing purpose.</p>
@@ -1779,7 +1779,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * <h4>Synchronization note</h4>
      * Our public API claims that {@link IdentifiedObjectFinder}s are not thread-safe.
      * Nevertheless we synchronize this particular implementation for safety, because the consequence of misuse
-     * are more dangerous than other implementations. Furthermore this is also a way to assert that no code path
+     * are more dangerous than other implementations. Furthermore, this is also a way to assert that no code path
      * go to the {@link #create(AuthorityFactoryProxy, String)} method from a non-overridden public method.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)

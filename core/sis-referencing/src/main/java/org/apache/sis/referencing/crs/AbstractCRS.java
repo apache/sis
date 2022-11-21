@@ -66,7 +66,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *   int dimension = crs.getCoordinateSystem().getDimension();
  * }
  *
- * However most subclasses restrict the allowed number of dimensions.
+ * However, most subclasses restrict the allowed number of dimensions.
  *
  * <h2>Instantiation</h2>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
@@ -344,7 +344,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
                  * Copy properties (scope, domain of validity) except the identifier (e.g. "EPSG:4326")
                  * because the modified CRS is no longer conform to the authoritative definition.
                  * If name contains a namespace (e.g. "EPSG"), remove that namespace for the same reason.
-                 * For example "EPSG:WGS 84" will become simply "WGS 84".
+                 * For example, "EPSG:WGS 84" will become simply "WGS 84".
                  */
                 Map<String,?> properties = IdentifiedObjects.getProperties(this, IDENTIFIERS_KEY);
                 Identifier name = getName();

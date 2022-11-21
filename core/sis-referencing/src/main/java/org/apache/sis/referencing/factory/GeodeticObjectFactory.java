@@ -179,7 +179,7 @@ import org.apache.sis.xml.XML;
  *
  * <h2>Localization</h2>
  * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
- * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
+ * For example, the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
  * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
  * They are convenience properties for building the {@code InternationalString} value.
  *
@@ -1623,7 +1623,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * If the given text contains non-fatal anomalies
      * (unknown or unsupported WKT elements, inconsistent unit definitions, unparsable axis abbreviations, <i>etc.</i>),
      * warnings may be reported in a {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
-     * However this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition,
+     * However, this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition,
      * since this geodetic object factory is not an {@linkplain GeodeticAuthorityFactory authority factory}.
      * For such verification, see the {@link org.apache.sis.referencing.CRS#fromWKT(String)} convenience method.
      *
@@ -1631,7 +1631,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation uses a shared instance of {@link org.apache.sis.io.wkt.WKTFormat}
      * with the addition of thread-safety. This is okay for occasional use,
      * but is sub-optimal if this method is extensively used in a multi-thread environment.
-     * Furthermore this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
+     * Furthermore, this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
      * in use and on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.
      * Applications which need to parse a large amount of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.

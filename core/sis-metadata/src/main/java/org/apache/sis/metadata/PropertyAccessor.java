@@ -129,7 +129,7 @@ class PropertyAccessor {
      * <div class="note"><b>Design note:</b>
      * We could enforce the above-cited restriction with type parameter: if the {@link #type} field is declared
      * as {@code Class<T>}, then this {@code implementation} field would be declared as {@code Class<? extends T>}.
-     * However this is not useful for this internal class because the {@code <T>} type is never known; we have the
+     * However, this is not useful for this internal class because the {@code <T>} type is never known; we have the
      * {@code <?>} type everywhere except in tests, which result in compiler warnings at {@code PropertyAccessor}
      * construction.</div>
      */
@@ -201,7 +201,7 @@ class PropertyAccessor {
      * This map shall be considered as immutable after construction.
      *
      * <p>The keys in this map are both inferred from the method names and fetched from the UML
-     * annotations. Consequently the map may contain many entries for the same value if some
+     * annotations. Consequently, the map may contain many entries for the same value if some
      * method names are different than the UML identifiers.</p>
      *
      * @see #indexOf(String, boolean)
@@ -298,7 +298,7 @@ class PropertyAccessor {
                 name = buffer.toString();
             }
             /*
-             * Note: we want PUBLIC methods only.  For example the referencing module defines
+             * Note: we want PUBLIC methods only.  For example, the referencing module defines
              * setters as private methods for use by JAXB only. We don't want to allow access
              * to those setters.
              */
@@ -733,7 +733,7 @@ class PropertyAccessor {
                  * May happen if the getter method is defined only in the implementation class — not in the interface —
                  * but the given metadata object is an instance of another implementation class than the expected one.
                  * Example: CI_Citation.graphics didn't existed in ISO 19115:2003 and has been added in ISO 19115:2014.
-                 * Consequently there is no Citation.getGraphics() method in GeoAPI 3.0 interfaces (only in GeoAPI 3.1),
+                 * Consequently, there is no Citation.getGraphics() method in GeoAPI 3.0 interfaces (only in GeoAPI 3.1),
                  * but there is a DefaultCitation.getGraphics() method in Apache SIS implementation since some versions
                  * are ahead of GeoAPI. But if the given `metadata` instance is a different implementation of Citation
                  * interface, then attempt to invoke DefaultCitation.getGraphics() fail with IllegalArgumentException.
@@ -798,7 +798,7 @@ class PropertyAccessor {
      * <p>If the given index is out of bounds, then this method does nothing and return {@code null}.
      * We do that because the {@link ValueMap#remove(Object)} method may invoke this method with
      * an index of -1 if the {@link #indexOf(String, boolean)} method didn't found the property name.
-     * However the given value will be silently discarded, so index out-of-bounds shall be used only
+     * However, the given value will be silently discarded, so index out-of-bounds shall be used only
      * in the context of {@code remove} operations (this is not verified).</p>
      *
      * @param  index     the index of the property to set.
@@ -943,7 +943,7 @@ class PropertyAccessor {
      *
      * Adding new values to the previous collection may or may not change the original metadata
      * depending on whether those collections are live or not. In Apache SIS implementation,
-     * those collections are live. However this method can be though as if the collections were
+     * those collections are live. However, this method can be though as if the collections were
      * not live, since the caller will invoke the setter method with the collection anyway.
      *
      * @param  getter       the method to use for fetching the previous value.
@@ -1050,7 +1050,7 @@ class PropertyAccessor {
                 /*
                  * Unsafe addition into a collection. In SIS implementation, the collection is
                  * actually an instance of CheckedCollection, so the check will be performed at
-                 * runtime. However other implementations could use unchecked collection.
+                 * runtime. However, other implementations could use unchecked collection.
                  * There is not much we can do...
                  */
                 // No @SuppressWarnings because this is a real hole.
@@ -1166,7 +1166,7 @@ class PropertyAccessor {
      * Compares the two specified metadata objects. This method implements a <em>shallow</em> comparison,
      * i.e. all metadata properties are compared using their {@code properties.equals(…)} method
      * without explicit calls to this {@code accessor.equals(…)} method for children.
-     * However the final result may still be a deep comparison.
+     * However, the final result may still be a deep comparison.
      *
      * @param  metadata1  the first metadata object to compare. This object determines the accessor.
      * @param  metadata2  the second metadata object to compare.

@@ -37,7 +37,7 @@
  * and {@code releaseWritableTile(…)} methods of {@link java.awt.image.WritableRenderedImage} interface.
  * Do not cast directly a {@link java.awt.image.Raster} to {@link java.awt.image.WritableRaster}
  * even when the cast is safe, because some raster data may be shared by many tiles having identical content.
- * Furthermore changes in pixel values may be lost if {@code releaseWritableTile(…)} is not invoked.
+ * Furthermore, changes in pixel values may be lost if {@code releaseWritableTile(…)} is not invoked.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

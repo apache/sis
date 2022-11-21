@@ -28,7 +28,7 @@ import org.opengis.util.InternationalString;
 
 /**
  * Base class of map layer or group of map layers. This base class does not represent graphical elements.
- * Instead it contains information (data and style) for creating a tree of portrayal objects.
+ * Instead, it contains information (data and style) for creating a tree of portrayal objects.
  * A {@code MapItem} contains the following properties:
  *
  * <ul>
@@ -44,7 +44,7 @@ import org.opengis.util.InternationalString;
  * {@code MapItem} instances are not thread-safe. Synchronization, if desired, is caller responsibility.
  *
  * @todo Rename as {@code LayerNode}? "Item" suggests an element in a list, while {@link MapLayers} actually
- *       creates a tree. Furthermore having {@code Layer} in the name would add emphasis that this is a tree
+ *       creates a tree. Furthermore, having {@code Layer} in the name would add emphasis that this is a tree
  *       of layers and not a tree of arbitrary objects.
  *
  * @author  Johann Sorel (Geomatys)
@@ -250,7 +250,7 @@ public abstract class MapItem extends Observable {
      *
      * <p>If this item is a {@code MapLayers}, then hiding this group should hide all components in this group,
      * but without changing the individual {@value #VISIBLE_PROPERTY} property of those components.
-     * Consequently making the group visible again restore each component to the visibility state
+     * Consequently, making the group visible again restore each component to the visibility state
      * it has before the group was hidden (assuming those states have not been changed in other ways).</p>
      *
      * @param  newValue  {@code false} to hide this item and all it's components.

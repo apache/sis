@@ -46,7 +46,7 @@ public enum GridRoundingMode {
      * range after rounding will be [1…3] while the expected size is actually only 2 pixels. This {@code NEAREST} rounding
      * mode detects those rounding issues by comparing the <var>size</var> before and after rounding. In this example, the
      * size is 2.00002 pixels, which is closer to an integer value than the <var>low</var> and <var>high</var> values.
-     * Consequently this {@code NEAREST} mode will rather adjust <var>low</var> or <var>high</var> (depending which one is
+     * Consequently, this {@code NEAREST} mode will rather adjust <var>low</var> or <var>high</var> (depending which one is
      * farthest from integer values) in order to keep <var>size</var> at its closest integer value, which is 2.</div>
      */
     NEAREST,

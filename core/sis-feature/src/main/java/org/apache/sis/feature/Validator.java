@@ -78,9 +78,9 @@ final class Validator {
      * setting {@code measureIdentification} to the property name may look like a departure from ISO intent,
      * since the former should be an identification of the <em>quality measurement</em> rather than the measure itself.
      * (setting {@code measureDescription} to {@code type.getDescription()} would probably be wrong for that reason).
-     * However {@code measureIdentification} is only an identifier, not a full description of the quality measurement
+     * However, {@code measureIdentification} is only an identifier, not a full description of the quality measurement
      * We are not strictly forbidden to use the same identifier for both the quality measurement than the measurement
-     * itself. However strictly speaking, maybe we should use a different scope.</div>
+     * itself. However, strictly speaking, maybe we should use a different scope.</div>
      *
      * @param  report       where to add the result, or {@code null} if not yet created.
      * @param  type         description of the property for which a constraint violation has been found.
@@ -165,7 +165,7 @@ final class Validator {
         for (final Object value : values) {
             /*
              * In theory, the following check is unnecessary since the type was constrained by the Attribute.setValue(V)
-             * method signature. However in practice the call to Attribute.setValue(…) is sometimes done after type erasure,
+             * method signature. However, in practice the call to Attribute.setValue(…) is sometimes done after type erasure,
              * so we are better to check.
              */
             final Class<?> valueClass = type.getValueClass();

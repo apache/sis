@@ -45,11 +45,11 @@ import static java.util.logging.Logger.getLogger;
  *       The base units are metre, second, kilogram, Kelvin degrees, Ampere and Candela,
  *       sometimes with the addition of mole.</li>
  *   <li><b>Derived units</b> are products of base units raised to some power.
- *       For example "m/s" is a derived units.</li>
+ *       For example, "m/s" is a derived units.</li>
  *   <li><b>Alternate units</b> are dimensionless units handled as if they had a dimension.
  *       An example is angular degrees.</li>
  *   <li><b>Conventional units</b> are units multiplied or shifted by a constant value compared to a base,
- *       derived or alternate unit. For example "km" is a unit equals to 1000 metres, and"°C" is a unit
+ *       derived or alternate unit. For example, "km" is a unit equals to 1000 metres, and"°C" is a unit
  *       shifted by 237.15 degrees compared to the Kelvin unit.</li>
  * </ul>
  *
@@ -89,8 +89,8 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * then the {@link #toString()} method is responsible for creating a representation on the fly.
      * If non-null, this symbol should complies with the {@link UnitFormat.Style#SYMBOL} formatting
      * (<strong>not</strong> the UCUM format). In particular, this symbol uses Unicode characters
-     * for arithmetic operators and superscripts, as in “m/s²”. However this symbol should never
-     * contains the unit conversion terms. For example “km” is okay, but “1000⋅m” is not.
+     * for arithmetic operators and superscripts, as in “m/s²”. However, this symbol should never
+     * contains the unit conversion terms. For example, “km” is okay, but “1000⋅m” is not.
      * The intent of those rules is to make easier to analyze the symbol in methods like
      * {@link ConventionalUnit#power(String)}.
      *
@@ -190,7 +190,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * Otherwise if the given symbol is null or empty, returns -2. Otherwise (the symbol is valid) returns -1.
      *
      * <p>The check for valid symbols can be relaxed, for example when building a new symbol from existing units.
-     * For example we may want to accept "W" and "m²" as valid symbols for deriving "W∕m²" without being rejected
+     * For example, we may want to accept "W" and "m²" as valid symbols for deriving "W∕m²" without being rejected
      * because of the "²" in "m²". We do not want to relax too much however, because a long sequence of arithmetic
      * operations would result in a long and maybe meaningless unit symbol, while declaring "no symbol" would allow
      * {@link UnitFormat} to create a new one from the base units. The criterion for accepting a symbol or not (for
@@ -290,7 +290,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
     }
 
     /**
-     * Returns the name (if any) of this unit. For example {@link Units#METRE} has the "m" symbol and the "metre" name.
+     * Returns the name (if any) of this unit. For example, {@link Units#METRE} has the "m" symbol and the "metre" name.
      * If this unit exists in the EPSG database, then this method should return the name as specified in the database.
      *
      * @return the unit name, or {@code null} if this unit has no specific name.
@@ -361,7 +361,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the result of setting the origin of the scale of measurement to the given value.
-     * For example {@code CELSIUS = KELVIN.shift(273.15)} returns a unit where 0°C is equal to 273.15 K.
+     * For example, {@code CELSIUS = KELVIN.shift(273.15)} returns a unit where 0°C is equal to 273.15 K.
      *
      * @param  offset  the value to add when converting from the new unit to this unit.
      * @return this unit offset by the specified value, or {@code this} if the given offset is zero.
@@ -385,7 +385,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the result of multiplying this unit by the specified factor.
-     * For example {@code KILOMETRE = METRE.multiply(1000)} returns a unit where 1 km is equal to 1000 m.
+     * For example, {@code KILOMETRE = METRE.multiply(1000)} returns a unit where 1 km is equal to 1000 m.
      *
      * @param  multiplier  the scale factor when converting from the new unit to this unit.
      * @return this unit scaled by the specified multiplier.
@@ -413,7 +413,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
 
     /**
      * Returns the result of dividing this unit by an approximate divisor.
-     * For example {@code GRAM = KILOGRAM.divide(1000)} returns a unit where 1 g is equal to 0.001 kg.
+     * For example, {@code GRAM = KILOGRAM.divide(1000)} returns a unit where 1 g is equal to 0.001 kg.
      *
      * @param  divisor  the inverse of the scale factor when converting from the new unit to this unit.
      * @return this unit divided by the specified divisor.

@@ -39,7 +39,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  *
  * <h2>Thread safety</h2>
  * The same {@code LandsatStoreProvider} instance can be safely used by many threads without synchronization on
- * the part of the caller. However the {@link LandsatStore} instances created by this factory are not thread-safe.
+ * the part of the caller. However, the {@link LandsatStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

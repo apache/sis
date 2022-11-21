@@ -202,7 +202,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         if (tr1.isIdentity()) return tr2;
         if (tr2.isIdentity()) return tr1;
         /*
-         * Give a chance to AbstractMathTransform to return an optimized object. For example LogarithmicTransform
+         * Give a chance to AbstractMathTransform to return an optimized object. For example, LogarithmicTransform
          * concatenated with ExponentialTransform can produce a new formula, PassThrouthTransform may concatenate
          * its sub-transform, etc. We try both ways (concatenation and pre-concatenation) and see which way gives
          * the shortest concatenation chain. It is not that much expensive given that most implementations return
@@ -255,7 +255,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
              * By computing inverse transform now as the product of matrices provided by the two inverse transforms
              * (as opposed to inverting the product of forward transform matrices), we use information that would
              * otherwise be lost (e.g. the inverse of the transform dropping a dimension may be a transform setting
-             * that dimension to a constant value, often zero). Consequently the inverse transform here may have real
+             * that dimension to a constant value, often zero). Consequently, the inverse transform here may have real
              * values for coefficients that `AbstractLinearTransform.inverse()` would have set to NaN, or may succeed
              * where `AbstractLinearTransform.inverse()` would have throw an exception. Even with square matrices,
              * computing the inverse transform now may avoid some rounding errors.
@@ -431,7 +431,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         /*
          * Merge consecutive affine transforms. The transforms list should never contain consecutive instances
          * of LinearTransform because the ConcatenatedTransform.create(…) method already merged them  (this is
-         * verified by assertions in MathTransforms). However the above loop may have created synthetic affine
+         * verified by assertions in MathTransforms). However, the above loop may have created synthetic affine
          * transforms for WKT formatting purpose. Those synthetic affine transforms are actually represented by
          * Matrix objects (rather than full MathTransform objects), and two matrices may have been generated
          * consecutively.
@@ -494,7 +494,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * is more than one remaining step, even if all other transform steps are not parameterizable,
      * would be a contract violation.</p>
      *
-     * <p>However in the special case where we are getting the parameters of a {@code CoordinateOperation} instance
+     * <p>However, in the special case where we are getting the parameters of a {@code CoordinateOperation} instance
      * through {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getParameterValues()} method
      * (often indirectly trough WKT formatting of a {@code "ProjectedCRS"} element), then the above rule is slightly
      * relaxed: we ignore affine transforms in order to accept axis swapping or unit conversions. We do that in that
@@ -545,7 +545,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Returns the parameter values, or {@code null} if none. Concatenated transforms usually have
      * no parameters; instead the parameters of the individual components ({@link #transform1} and
-     * {@link #transform2}) need to be inspected. However map projections in SIS are implemented as
+     * {@link #transform2}) need to be inspected. However, map projections in SIS are implemented as
      * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) tuples.
      * This method detects such concatenation chains in order to return the parameter values that
      * describe the projection as a whole.

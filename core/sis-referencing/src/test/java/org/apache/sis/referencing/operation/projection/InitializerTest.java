@@ -52,7 +52,7 @@ public final strictfp class InitializerTest extends TestCase{
         final ParameterValueGroup p = op.getParameters().createValue();
         /*
          * Following parameters are not given explicitly by EPSG definitions since they are
-         * usually inferred from the datum.  However in the particular case of this test, we
+         * usually inferred from the datum. However, in the particular case of this test, we
          * need to provide them. The names used below are either OGC names or SIS extensions.
          */
         p.parameter("semi_major").setValue(6377397.155);

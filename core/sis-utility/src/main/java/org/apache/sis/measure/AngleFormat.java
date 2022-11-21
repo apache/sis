@@ -508,7 +508,7 @@ public class AngleFormat extends Format implements Localized {
             }
             /*
              * A reserved character has been found.  Ensure that it appears in a legal location.
-             * For example "MM.mm" is illegal because there is no 'D' before 'M', and "DD.mm" is
+             * For example, "MM.mm" is illegal because there is no 'D' before 'M', and "DD.mm" is
              * illegal because the integer part is not 'M'. The legal location is 'expectedField'.
              */
             final boolean isIntegerField = (c == upperCaseC) && (field != FRACTION_FIELD);
@@ -1098,7 +1098,7 @@ public class AngleFormat extends Format implements Localized {
             }
             /*
              * Note: a previous version was doing a unconditional addition to the 'degrees' variable,
-             * in the form 'degrees += correction'. However -0.0 + 0 == +0.0, while we really need to
+             * in the form 'degrees += correction'. However, -0.0 + 0 == +0.0, while we really need to
              * preserve the sign of negative zero. See [SIS-120].
              */
         }
@@ -1310,8 +1310,8 @@ public class AngleFormat extends Format implements Localized {
      * field. The same strategy works for other all fields too.
      *
      * <p>The returned character iterator contains all {@link java.text.NumberFormat.Field}
-     * attributes in addition to the {@link Field} ones. Consequently the same character may
-     * have more than one attribute. For example when formatting 45°30′15.0″N, then:</p>
+     * attributes in addition to the {@link Field} ones. Consequently, the same character may
+     * have more than one attribute. For example, when formatting 45°30′15.0″N, then:</p>
      *
      * <ul>
      *   <li>The {@code 45°}   part has the {@link Field#DEGREES} attribute.</li>
@@ -1358,7 +1358,7 @@ public class AngleFormat extends Format implements Localized {
      * @param source         the string being parsed.
      * @param pos            on input, index of the first {@code source} character to read.
      *                       On output, index after the last suffix character.
-     * @param expectedField  first field to verify. For example a value of {@link #MINUTES_FIELD} means that
+     * @param expectedField  first field to verify. For example, a value of {@link #MINUTES_FIELD} means that
      *                       the suffix for minute and seconds shall be verified before degrees.
      * @return the {@code *_FIELD} constant for the suffix which has been found,
      *         or a value outside those constants if no suffix matched.
@@ -1424,7 +1424,7 @@ public class AngleFormat extends Format implements Localized {
      * except that it tests for spaces using the {@link Character#isSpaceChar(int)} method
      * instead of {@link Character#isWhitespace(int)}. The reason is that we really want
      * to skip no-break spaces, since they are often used inside a single entity (e.g. the
-     * group separator in numbers formatted using the French locale).  Furthermore we do
+     * group separator in numbers formatted using the French locale). Furthermore, we do
      * not want to skip tabulations or line feeds, since they are unlikely to be part of
      * the angle to parse.
      *
@@ -1874,7 +1874,7 @@ BigBoss:    switch (skipSuffix(source, pos, DEGREES_FIELD)) {
      * </ul>
      *
      * The default value is {@code true}, because many end-users will not enter the Unicode
-     * {@code ′} and {@code ″} symbols. However developers may need to set this flag to
+     * {@code ′} and {@code ″} symbols. However, developers may need to set this flag to
      * {@code false} if those ASCII symbols are used in a wider context (for example the
      * {@code "} character for quoting strings).
      *

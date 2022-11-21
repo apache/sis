@@ -24,7 +24,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 
 /**
  * Thrown when an operation would require to move the cursor back, but the underlying storage does not allow that.
- * For example this exception is thrown if the user wants to read the same data a second time, but the underlying
+ * For example, this exception is thrown if the user wants to read the same data a second time, but the underlying
  * {@linkplain java.nio.channels.ReadableByteChannel} is not
  * {@linkplain java.nio.channels.SeekableByteChannel seekable}.
  *

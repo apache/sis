@@ -87,7 +87,7 @@ final class KeyPath implements Path {
     /**
      * The key for locating the S3 object (shall not be empty), or {@code null} if this path is the root.
      * If the key contains {@link ClientFileSystem#separator}, it will be interpreted as a list of path components.
-     * However the separator characters have no special meaning for S3; this is an interpretation added by this wrapper.
+     * However, the separator characters have no special meaning for S3; this is an interpretation added by this wrapper.
      */
     final String key;
 
@@ -374,7 +374,7 @@ final class KeyPath implements Path {
 
     /**
      * Creates a builder for a request to be sent to AWS S3 server. AWS limits the response to 1000 elements.
-     * Consequently this method may need to be invoked more than once in order to get the next elements.
+     * Consequently, this method may need to be invoked more than once in order to get the next elements.
      * For all continuation requests, {@code request.continuationToken(String)} needs to be invoked.
      */
     final ListObjectsV2Request.Builder request() {
@@ -577,7 +577,7 @@ search:     if (key != null) {
     /**
      * Returns {@code true} if the given path has the same file system than this path, the same root (possibly none),
      * and a key which is a prefix of this path key. The prefix must be complete component name.
-     * For example {@code "foo/b"} is <em>not</em> a prefix of {@code "foo/bar"}.
+     * For example, {@code "foo/b"} is <em>not</em> a prefix of {@code "foo/bar"}.
      */
     @Override
     public boolean startsWith(final Path other) {
@@ -594,7 +594,7 @@ search:     if (key != null) {
 
     /**
      * Returns {@code true} if the given path has the same file system than this path and a key which is
-     * a suffix of this path key. The suffix must be complete component name. For example {@code "oo/bar"}
+     * a suffix of this path key. The suffix must be complete component name. For example, {@code "oo/bar"}
      * is <em>not</em> a suffix of {@code "foo/bar"}.
      */
     @Override

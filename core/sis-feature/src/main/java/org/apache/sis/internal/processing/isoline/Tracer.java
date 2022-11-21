@@ -532,12 +532,12 @@ final class Tracer {
                 /*
                  * We have a loop: the polygon can be closed now, without copying coordinates to temporary buffers.
                  * Points in `PolylineBuffer` instances will be iterated in (reverse, forward) order respectively.
-                 * Consequently the points we just interpolated will be first point and last point before closing.
+                 * Consequently, the points we just interpolated will be first point and last point before closing.
                  */
                 polylines = new PolylineBuffer[] {polylineOnTop, polylineOnLeft};    // (reverse, forward) point order.
             } else {
                 /*
-                 * Joining left and top polylines do not yet create a closed shape. Consequently we may not write
+                 * Joining left and top polylines do not yet create a closed shape. Consequently, we may not write
                  * in the `path` now. But maybe we can close the polygon later after more polylines are attached.
                  */
                 final Fragments fragment = new Fragments(polylineOnLeft, polylineOnTop);

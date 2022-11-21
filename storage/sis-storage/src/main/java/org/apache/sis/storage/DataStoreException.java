@@ -34,7 +34,7 @@ import org.apache.sis.util.Workaround;
  * returns the message in the locale specified by the last call to {@link DataStore#setLocale(Locale)}.
  * In a client-server architecture, the former is typically the locale of the system administrator
  * while the latter is presumably the locale of the client connected to the server.
- * However this policy is applied on a <em>best-effort</em> basis only.
+ * However, this policy is applied on a <em>best-effort</em> basis only.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

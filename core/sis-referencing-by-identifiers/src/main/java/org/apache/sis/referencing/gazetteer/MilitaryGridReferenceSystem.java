@@ -141,7 +141,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe.
- * However the {@link Coder Coder} instances performing conversions between references and coordinates
+ * However, the {@link Coder Coder} instances performing conversions between references and coordinates
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -735,7 +735,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *
          * <div class="note"><b>Possible evolution:</b>
          * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
-         * with {@code areaOfInterest}. Consequently the iterator may return slightly more cells than expected.
+         * with {@code areaOfInterest}. Consequently, the iterator may return slightly more cells than expected.
          * A future version may filter the cells more accurately. If an application needs the same set of cells
          * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
          * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
@@ -761,7 +761,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *
          * <div class="note"><b>Possible evolution:</b>
          * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
-         * with {@code areaOfInterest}. Consequently the iterator may return slightly more cells than expected.
+         * with {@code areaOfInterest}. Consequently, the iterator may return slightly more cells than expected.
          * A future version may filter the cells more accurately. If an application needs the same set of cells
          * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
          * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
@@ -1119,7 +1119,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *
          * <p>For envelopes that cross the anti-meridian, it does not matter if {@code geographicArea} uses
          * the negative width convention or is expanded to the [-180 … 180]° of longitude range, because it
-         * will be clipped to the projection domain of validity anyway. However the {@code areaOfInterest}
+         * will be clipped to the projection domain of validity anyway. However, the {@code areaOfInterest}
          * should use the negative width convention.</p>
          *
          * @param areaOfInterest  the envelope for which to return MGRS codes. This envelope can be in any CRS.
@@ -1708,7 +1708,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     if (col < 1 || col > 8) {
                         /*
                          * UTM northing values at the equator range from 166021 to 833979 meters approximately
-                         * (WGS84 ellipsoid). Consequently `cx` ranges from approximately 1.66 to 8.34, so `col`
+                         * (WGS84 ellipsoid). Consequently, `cx` ranges from approximately 1.66 to 8.34, so `col`
                          * should range from 1 to 8 inclusive.
                          */
                         throw new GazetteerException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
@@ -2095,7 +2095,7 @@ parse:                  switch (part) {
              * If we have not yet reached the end of string, parse the numerical location.
              * That location is normally encoded as a single number with an even number of digits.
              * The first half is the easting and the second half is the northing, both relative to the
-             * 100 kilometer square. However some variants of MGRS use a separator, in which case we get
+             * 100 kilometer square. However, some variants of MGRS use a separator, in which case we get
              * two distinct numbers. In both cases, the resolution is determined by the amount of digits.
              */
             final double sx, sy;    // Scale factors for converting MGRS values in to easting and northing in metres.

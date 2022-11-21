@@ -67,7 +67,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     /**
      * Index of the dimension in the variable, or -1 if unknown. Used during comparisons of
      * dimensions that are private to a variable, because those dimensions may be unnamed.
-     * Consequently value -1 should be used only for shared dimensions.
+     * Consequently, value -1 should be used only for shared dimensions.
      *
      * @see <a href="https://github.com/Unidata/netcdf-java/issues/951">Issue #951 on netcdf-java</a>
      */
@@ -125,7 +125,7 @@ final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
      * can distinguish dimensions based on their name. But if the dimension is private to a variable,
      * then the dimension name can be null and the only remaining discriminant is the dimension length.
      * A problem is that the length may by coincidence be the same for different dimensions.
-     * Consequently for non-shared dimensions we need to add {@link #index} in the comparison.
+     * Consequently, for non-shared dimensions we need to add {@link #index} in the comparison.
      *
      * @param  obj  the other object to compare with this dimension.
      * @return whether the other object wraps the same netCDF dimension than this object.

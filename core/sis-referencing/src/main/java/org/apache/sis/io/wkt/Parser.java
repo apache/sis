@@ -40,7 +40,7 @@ import org.opengis.util.FactoryException;
  * Non-fatal anomalies found in Well Known Texts are reported in a {@linkplain java.util.logging.Logger logger}
  * named {@code "org.apache.sis.io.wkt"}. Warnings may be for unknown or unsupported WKT elements, inconsistent
  * unit definitions (unit symbol, scale factor or EPSG code), unparsable axis abbreviations, <i>etc.</i>
- * However this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition.
+ * However, this parser does not verify if the overall parsed object matches the EPSG (or other authority) definition.
  * For such verification, see {@link org.apache.sis.referencing.CRS#fromWKT(String)}.
  *
  * @author  Martin Desruisseaux (Geomatys)

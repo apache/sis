@@ -67,7 +67,7 @@ public final class CoordinateOperations extends SystemListener {
      * {@link org.apache.sis.referencing.operation.DefaultConversion#getParameterValues()}.
      * It is usually not necessary to specify those parameters because they are inferred either from the
      * {@link org.opengis.referencing.operation.MathTransform}, or specified explicitly in a {@code DefiningConversion}.
-     * However there is a few cases, for example the Molodenski transform, where none of the above can apply,
+     * However, there is a few cases, for example the Molodenski transform, where none of the above can apply,
      * because SIS implements those operations as a concatenation of math transforms,
      * and such concatenations do not have {@link org.opengis.parameter.ParameterValueGroup}.
      */
@@ -77,7 +77,7 @@ public final class CoordinateOperations extends SystemListener {
      * The key for specifying the base type of the coordinate operation to create. This optional entry
      * is used by {@code DefaultCoordinateOperationFactory.createSingleOperation(…)}. Apache SIS tries
      * to infer this value automatically, but this entry may help SIS to perform a better choice in
-     * some cases. For example an "Affine" operation can be both a conversion or a transformation
+     * some cases. For example, an "Affine" operation can be both a conversion or a transformation
      * (the latter is used in datum shift in geocentric coordinates).
      */
     public static final String OPERATION_TYPE_KEY = "operationType";
@@ -323,7 +323,7 @@ public final class CoordinateOperations extends SystemListener {
              * efficiency, with the bits of dimensions to consider set to 1.
              *
              * Note: a previous version was creating a list of "wraparound" axes only. We removed that filter
-             * because a target wraparound axis may match a source infinite axis. For example when converting
+             * because a target wraparound axis may match a source infinite axis. For example, when converting
              * dates on a temporal axis (with infinite span toward past and future) to months on a climatology
              * axis (January to December months without year), the same cycle is repeated after every 12 months
              * even if the source axis had no cycle.

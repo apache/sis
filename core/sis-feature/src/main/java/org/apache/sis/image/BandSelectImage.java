@@ -170,7 +170,7 @@ final class BandSelectImage extends SourceAlignedImage {
          * and all those sample models are identical to the one we created at `BandSelectImage` construction time.
          * But it does not seem possible to tell `Raster` to share the existing `SampleModel` instance.
          *
-         * Alternatively we could have tried to do the work of `Raster.createChild(…)` method ourselves.
+         * Alternatively, we could have tried to do the work of `Raster.createChild(…)` method ourselves.
          * But we don't because that method is overridden in various Java2D `SunWritableRaster` classes.
          */
         return parent.createChild(x, y, parent.getWidth(), parent.getHeight(), x, y, bands);

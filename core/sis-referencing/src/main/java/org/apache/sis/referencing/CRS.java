@@ -193,7 +193,7 @@ public final class CRS extends Static {
      *
      * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.
-     * For example the following codes are considered equivalent to {@code "EPSG:4326"}:
+     * For example, the following codes are considered equivalent to {@code "EPSG:4326"}:
      * <ul>
      *   <li>{@code "EPSG::4326"}</li>
      *   <li>{@code "urn:ogc:def:crs:EPSG::4326"}</li>
@@ -201,7 +201,7 @@ public final class CRS extends Static {
      *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
      * </ul>
      *
-     * URIs can be combined for creating larger objects. For example the following URIs combine a
+     * URIs can be combined for creating larger objects. For example, the following URIs combine a
      * two-dimensional WGS84 reference system (EPSG:4326) with a Mean Sea Level height (EPSG:5714).
      * The result is a three-dimensional {@linkplain org.apache.sis.referencing.crs.DefaultCompoundCRS
      * compound coordinate reference system}:
@@ -523,7 +523,7 @@ public final class CRS extends Static {
          *
          *   - If the projected CRS contains fully the region of interest, then it will be returned.
          *     The preference is given to the projected CRS because geometric operations are likely
-         *     to be more accurate in that space. Furthermore forward conversions from geographic to
+         *     to be more accurate in that space. Furthermore, forward conversions from geographic to
          *     projected CRS are usually faster than inverse conversions.
          *
          *   - Otherwise (i.e. if the region of interest is likely to be wider than the projected CRS
@@ -643,7 +643,7 @@ public final class CRS extends Static {
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         final CoordinateOperationContext context = CoordinateOperationContext.fromBoundingBox(areaOfInterest);
         /*
-         * In principle following code should just delegate to factory.createOperation(…). However that operation
+         * In principle following code should just delegate to factory.createOperation(…). However, that operation
          * may fail if a connection to the EPSG database has been found, but the EPSG tables do not yet exist in
          * that database and we do not have the SQL scripts for creating them.
          */
@@ -1060,7 +1060,7 @@ public final class CRS extends Static {
      *
      * In case of doubt, this method conservatively returns {@code false}.
      *
-     * @todo Future SIS implementation may extend the above conditions list. For example a radar station could
+     * @todo Future SIS implementation may extend the above conditions list. For example, a radar station could
      *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
      *       Conversely, a future SIS versions may impose more conditions on <code>EngineeringCRS</code>.
      *       See <a href="http://issues.apache.org/jira/browse/SIS-161">SIS-161</a>.
@@ -1200,8 +1200,8 @@ public final class CRS extends Static {
      * component of a geographic CRS. This is what {@code getVerticalComponent(…)} does when the
      * {@code allowCreateEllipsoidal} argument is {@code false}.
      *
-     * <p>However in some exceptional cases, handling ellipsoidal heights like any other kind of heights
-     * may simplify the task. For example when computing <em>difference</em> between heights above the
+     * <p>However, in some exceptional cases, handling ellipsoidal heights like any other kind of heights
+     * may simplify the task. For example, when computing <em>difference</em> between heights above the
      * same datum, the impact of ignoring locations may be smaller (but not necessarily canceled).
      * Orphan {@code VerticalCRS} may also be useful for information purpose like labeling a plot axis.
      * If the caller feels confident that ellipsoidal heights are safe for his task, he can set the
@@ -1364,7 +1364,7 @@ public final class CRS extends Static {
      *   <li>Otherwise (i.e. no component match), this method returns {@code null}.</li>
      * </ul>
      *
-     * This method does <strong>not</strong> build new CRS from the components. For example this method does not
+     * This method does <strong>not</strong> build new CRS from the components. For example, this method does not
      * create a {@link CompoundCRS} or a three-dimensional CRS if the given range spans more than one component.
      *
      * @param  crs    the coordinate reference system to decompose, or {@code null}.

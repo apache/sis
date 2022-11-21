@@ -455,7 +455,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
      * This is an indication that the parent class should not invoke {@link Vector#compress(double)}.
      * Compressing vectors is useful only if the original array is discarded.
      * But the UCAR library has its own cache mechanism which may keep references to the original arrays.
-     * Consequently compressing vectors may result in data being duplicated.
+     * Consequently, compressing vectors may result in data being duplicated.
      */
     @Override
     protected boolean isExternallyCached() {

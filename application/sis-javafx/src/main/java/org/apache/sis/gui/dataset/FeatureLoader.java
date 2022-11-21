@@ -308,7 +308,7 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      * the JavaFX thread. This will erase the previous content and prepare new columns.
      *
      * <p>This method is invoked, directly or indirectly, only from the {@link #call()}
-     * method with non-null {@link #initializer}. Consequently the new rows have not yet
+     * method with non-null {@link #initializer}. Consequently, the new rows have not yet
      * been added at this time.</p>
      *
      * @param  type  the feature type, or {@code null}.

@@ -499,7 +499,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                 default: {
                     /*
                      * Tests for name, since parameters with different name have completely different meaning.
-                     * For example there is no difference between "semi_major" and "semi_minor" parameters
+                     * For example, there is no difference between "semi_major" and "semi_minor" parameters
                      * except the name. We do not perform this comparison if the user asked for metadata
                      * comparison, because in such case the names have already been compared by the super-class.
                      */

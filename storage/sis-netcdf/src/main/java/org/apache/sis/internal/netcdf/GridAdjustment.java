@@ -79,7 +79,7 @@ public final class GridAdjustment {
      * Builds a map of "dimension labels" to the actual {@link Dimension} instances of the grid.
      * The dimension labels are not the dimension names, but some other convention-dependent identifiers.
      * The mechanism is documented in {@link Convention#nameOfDimension(Variable, int)}.
-     * For example given a file with the following netCDF variables:
+     * For example, given a file with the following netCDF variables:
      *
      * {@preformat text
      *     float Latitude(grid_y, grid_x)
@@ -138,7 +138,7 @@ public final class GridAdjustment {
                         if (previous != null && !previous.equals(dim)) {
                             /*
                              * The same name maps to two different dimensions. Given the ambiguity, we should give up.
-                             * However we make an exception if only one dimension is part of a variable that has been
+                             * However, we make an exception if only one dimension is part of a variable that has been
                              * explicitly requested. We identify this disambiguation in the following ways:
                              *
                              *   isRequested = true   →  ok if overwrite = true  →  keep the newly added dimension.

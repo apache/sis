@@ -149,7 +149,7 @@ class MatrixParameters extends TensorParameters<Double> {
      * </ul>
      *
      * This method does <strong>not</strong> assign the alpha-numeric names to the EPSG authority in order to avoid
-     * confusion when formatting the parameters as Well Known Text (WKT). However {@link MatrixParametersAlphaNum}
+     * confusion when formatting the parameters as Well Known Text (WKT). However, {@link MatrixParametersAlphaNum}
      * subclass will assign some names to the EPSG authority, as well as their identifier (e.g. EPSG:8641).
      */
     @Override

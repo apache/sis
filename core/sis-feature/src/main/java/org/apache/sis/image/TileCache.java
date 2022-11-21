@@ -54,7 +54,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
      * Creates a new tile cache. We put an arbitrary limit of 25% of available memory.
      * If more tiles are created, some strong references will become soft references.
      * Because strong references may be kept by the JVM, the amount of memory actually
-     * used may be greater than this limit. However those references are cleaned when the
+     * used may be greater than this limit. However, those references are cleaned when the
      * image owning those tiles is {@linkplain ComputedTiles#dispose() garbage collected}.
      */
     private TileCache() {
@@ -99,7 +99,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
     static final class Key {
         /**
          * The image which own the tile as a weak reference. All {@code TileCache.Key} instances
-         * for the same image will share the same reference.  Consequently it is okay to compare
+         * for the same image will share the same reference.  Consequently, it is okay to compare
          * {@code image} fields directly instead of {@code image.get()}.
          */
         private final ComputedTiles image;

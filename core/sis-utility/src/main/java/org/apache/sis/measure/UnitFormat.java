@@ -125,7 +125,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * Identify whether unit formatting uses ASCII symbols, Unicode symbols or full localized names.
-     * For example the {@link Units#CUBIC_METRE} units can be formatted in the following ways:
+     * For example, the {@link Units#CUBIC_METRE} units can be formatted in the following ways:
      *
      * <ul>
      *   <li>As a symbol using Unicode characters: <b>m³</b></li>
@@ -159,7 +159,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
          *
          * <h4>Modification to UCUM syntax rules</h4>
          * UCUM does not allow floating point numbers in unit terms, so the use of period as an operator
-         * should not be ambiguous. However Apache SIS relaxes this restriction in order to support the
+         * should not be ambiguous. However, Apache SIS relaxes this restriction in order to support the
          * scale factors commonly found in angular units (e.g. π/180). The meaning of a period in a string
          * is resolved with two SIS-specific rules:
          *
@@ -340,7 +340,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
 
     /**
      * Sets the locale that this {@code UnitFormat} will use for long names.
-     * For example a call to <code>setLocale({@linkplain Locale#US})</code>
+     * For example, a call to <code>setLocale({@linkplain Locale#US})</code>
      * instructs this formatter to use the “meter” spelling instead of “metre”.
      *
      * @param  locale  the new locale for this {@code UnitFormat}.
@@ -562,7 +562,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
                  DEGREES,  "degree").toString();
         /*
          * Returns the unit with application of the power if it is part of the name.
-         * For example this method interprets "meter2" as "meter" raised to power 2.
+         * For example, this method interprets "meter2" as "meter" raised to power 2.
          */
         Unit<?> unit = map.get(uom);
 appPow: if (unit == null) {
@@ -807,7 +807,7 @@ appPow: if (unit == null) {
         }
         /*
          * At this point, all numerators have been appended. Now append the denominators together.
-         * For example pressure dimension is formatted as M∕(L⋅T²) no matter if 'M' was the first
+         * For example, pressure dimension is formatted as M∕(L⋅T²) no matter if 'M' was the first
          * dimension in the given `components` map or not.
          */
         if (!deferred.isEmpty()) {
@@ -967,7 +967,7 @@ appPow: if (unit == null) {
      * Note that "digit" is taken here in a much more restrictive way than {@link Character#isDigit(int)}.
      *
      * <p>A return value of {@code true} guarantees that the given character is in the Basic Multilingual Plane (BMP).
-     * Consequently the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)};
+     * Consequently, the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)};
      * the result of {@link String#charAt(int)} is sufficient. We nevertheless use the {@code int} type for avoiding
      * the need to cast if caller uses code points for another reason.</p>
      *
@@ -980,7 +980,7 @@ appPow: if (unit == null) {
     /**
      * Returns {@code true} if the given character is the sign of a number according the {@code UnitFormat} parser.
      * A return value of {@code true} guarantees that the given character is in the Basic Multilingual Plane (BMP).
-     * Consequently the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)}.
+     * Consequently, the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)}.
      */
     private static boolean isSign(final int c) {
         return c == '+' || c == '-';
@@ -989,7 +989,7 @@ appPow: if (unit == null) {
     /**
      * Returns {@code true} if the given character is the sign of a division operator.
      * A return value of {@code true} guarantees that the given character is in the Basic Multilingual Plane (BMP).
-     * Consequently the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)}.
+     * Consequently, the {@code c} argument value does not need to be the result of {@link String#codePointAt(int)}.
      */
     private static boolean isDivisor(final int c) {
         return c == '/' || c == AbstractUnit.DIVIDE;
@@ -1239,7 +1239,7 @@ scan:   for (int n; i < end; i += n) {
             /*
              * We reach this point only if we found some operator (division or multiplication).
              * If the operator has been found between two digits, we consider it as part of the
-             * term. For example "m2/3" is considered as a single term where "2/3" is the exponent.
+             * term. For example, "m2/3" is considered as a single term where "2/3" is the exponent.
              */
             if (i > start && i+n < end
                     && Character.isDigit(Character.codePointBefore(symbols, i))
@@ -1432,7 +1432,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                      * Example: "10*6" is equal to one million. SIS also handles the "^" character as "*".
                      *
                      * In principle, spaces are not allowed in unit symbols (in particular, UCUM specifies that
-                     * spaces should not be interpreted as multication operators).  However in practice we have
+                     * spaces should not be interpreted as multication operators). However, in practice we have
                      * sometimes units written in a form like "100 feet".
                      *
                      * If the last character is a super-script, then we assume a notation like "10⁻⁴".
@@ -1551,7 +1551,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
 
     /**
      * Parses a multiplication factor, which may be a single number or a base raised to an exponent.
-     * For example all the following strings are equivalent: "1000", "1000.0", "1E3", "10*3", "10^3", "10³".
+     * For example, all the following strings are equivalent: "1000", "1000.0", "1E3", "10*3", "10^3", "10³".
      */
     private static double parseMultiplicationFactor(final String term) throws NumberFormatException {
         final String exponent;

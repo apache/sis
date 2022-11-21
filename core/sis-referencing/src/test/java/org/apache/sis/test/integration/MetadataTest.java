@@ -383,7 +383,7 @@ public final strictfp class MetadataTest extends TestCase {
         /*
          * Apache SIS can marshal CharSequence as Anchor only if the property type is InternationalString.
          * But the 'Metadata.hierarchyLevelName' and 'Identifier.code' properties are String, which we can
-         * not subclass. Consequently SIS currently marshals them as plain string. Replace those strings
+         * not subclass. Consequently, SIS currently marshals them as plain string. Replace those strings
          * by the anchor version so we can compare the XML with the "Metadata.xml" file content.
          */
         final StringBuffer xml = writer.getBuffer();

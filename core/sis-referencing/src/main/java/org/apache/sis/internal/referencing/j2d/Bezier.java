@@ -361,9 +361,9 @@ public abstract class Bezier {
             double y = 27./64*ay + 9./64*by + 1./64*Δy;
             if (abs(x - x1) > εx || abs(y - y1) > εy) {
                 /*
-                 * Above code tested (x,y) coordinates at t=¼ exactly (we will test t=¾ later). However this t value does not
+                 * Above code tested (x,y) coordinates at t=¼ exactly (we will test t=¾ later). However, this t value does not
                  * necessarily correspond to one quarter of the distance, because the speed at which t varies is not the same
-                 * than the speed at which Bézier curve length increases. Unfortunately computing the t values at a given arc
+                 * than the speed at which Bézier curve length increases. Unfortunately, computing the t values at a given arc
                  * length is complicated. We tested an approach based on computing the y value on the curve for a given x value
                  * by starting from the Bézier curve equation:
                  *
@@ -373,8 +373,8 @@ public abstract class Bezier {
                  *
                  *     (−x₀ + 3aₓ − 3bₓ + x₄)t³ + (3x₀ − 6aₓ + 3bₓ)t² + (−3x₀ + 3aₓ)t + x₀ − x = 0
                  *
-                 * and finding the roots with the CubicCurve2D.solveCubic(…) method. However the results were worst than using
-                 * fixed t values. Instead we perform another test using the tangent of the curve at point P₁ (and later P₃).
+                 * and finding the roots with the CubicCurve2D.solveCubic(…) method. However, the results were worst than using
+                 * fixed t values. Instead, we perform another test using the tangent of the curve at point P₁ (and later P₃).
                  *
                  *     x′(t) = 3(1−t)²(aₓ − x₀) + 6t(1−t)(bₓ − aₓ) + 3t²(x₄ − bₓ)           and same for y′(t).
                  *

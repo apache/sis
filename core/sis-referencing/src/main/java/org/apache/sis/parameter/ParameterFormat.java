@@ -782,7 +782,7 @@ public class ParameterFormat extends TabularFormat<Object> {
     /**
      * Configures the number pattern to use for the given value. The main intent of this method is to ensure that
      * the map projection scale factor (a value close to 1) is formatted with a sufficient number of fraction digits.
-     * A common default NumberFormat precision is 3 digits, which is not sufficient. For example the scale factor of
+     * A common default NumberFormat precision is 3 digits, which is not sufficient. For example, the scale factor of
      * Transverse Mercator projections is 0.9996 (4 digits), and the scale factor of "NTF (Paris) / Lambert zone II"
      * projection is 0.99987742 (8 digits).
      *

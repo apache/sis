@@ -42,9 +42,9 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * <blockquote>X₂ = m⋅X₁ + offset</blockquote>
  *
  * where <var>m</var> is +1 if source and target axes have the same direction, or -1 if they have opposite direction.
- * Consequently the <var>offset</var> value is always applied in the direction of the target axis. This is different
+ * Consequently, the <var>offset</var> value is always applied in the direction of the target axis. This is different
  * than the Apache SIS design, which always interpret the parameter in the direction of a normalized coordinate axis
- * (up in this case, regardless the source and target coordinate systems). Consequently the sign of the
+ * (up in this case, regardless the source and target coordinate systems). Consequently, the sign of the
  * <cite>"Vertical Offset"</cite> parameter value needs to be reversed if the target coordinate system axis is down.
  *
  * @author  Martin Desruisseaux (Geomatys)

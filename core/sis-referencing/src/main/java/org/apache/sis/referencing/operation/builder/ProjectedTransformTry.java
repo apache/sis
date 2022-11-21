@@ -350,7 +350,7 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
     final MatrixSIS replaceTransformed(MatrixSIS transform, final MatrixSIS newValues) {
         /*
          * The two matrices shall have the same number of columns because they were computed with
-         * LinearTransformBuilder instances having the same sources. However the two matrices may
+         * LinearTransformBuilder instances having the same sources. However, the two matrices may
          * have a different number of rows since the number of target dimensions may differ.
          */
         assert newValues.getNumCol() == transform.getNumCol();

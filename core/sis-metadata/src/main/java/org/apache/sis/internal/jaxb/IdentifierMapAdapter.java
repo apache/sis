@@ -58,7 +58,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * <h2>Handling of duplicated authorities</h2>
  * The collection shall not contain more than one identifier for the same
- * {@linkplain Identifier#getAuthority() authority}. However duplications may happen if the user
+ * {@linkplain Identifier#getAuthority() authority}. However, duplications may happen if the user
  * has direct access to the list, for example through {@link Citation#getIdentifiers()}. If such
  * duplication is found, then this map implementation applies the following rules:
  *
@@ -213,7 +213,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * Counts the number of entries, ignoring null elements and duplicated authorities.
      *
      * <p>Because {@code null} elements are ignored, this method may return 0 even if {@link #isEmpty()}
-     * returns {@code false}. However this inconsistency should not happen in practice because
+     * returns {@code false}. However, this inconsistency should not happen in practice because
      * {@link org.apache.sis.metadata.ModifiableMetadata} internal collection implementations
      * do not allow null values.</p>
      */

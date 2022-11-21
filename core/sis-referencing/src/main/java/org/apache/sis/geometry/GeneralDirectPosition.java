@@ -112,12 +112,12 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      *
      * <div class="note"><b>Implementation note:</b>
      * the array is not cloned because this is usually not needed, especially in the context of variable
-     * argument lengths since the array is often created implicitly. Furthermore the {@link #coordinates}
+     * argument lengths since the array is often created implicitly. Furthermore, the {@link #coordinates}
      * field is public, so cloning the array would not protect the state of this object anyway.</div>
      *
      * <p><b>Caution:</b> if only one number is specified, make sure that the number type is {@code double},
      * {@code float} or {@code long} otherwise the {@link #GeneralDirectPosition(int)} constructor would be
-     * invoked with a very different meaning. For example for creating a one-dimensional coordinate initialized
+     * invoked with a very different meaning. For example, for creating a one-dimensional coordinate initialized
      * to the coordinate value 100, use <code>new GeneralDirectPosition(100<u>.0</u>)</code>, <strong>not</strong>
      * {@code new GeneralDirectPosition(100)}, because the latter would actually create a position with 100 dimensions.</p>
      *
@@ -148,7 +148,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      *     POINT(6 10)
      * }
      *
-     * However this constructor is lenient to other types like {@code POINT ZM}.
+     * However, this constructor is lenient to other types like {@code POINT ZM}.
      *
      * @param  wkt  the {@code POINT} or other kind of element to parse.
      * @throws IllegalArgumentException if the given string cannot be parsed.

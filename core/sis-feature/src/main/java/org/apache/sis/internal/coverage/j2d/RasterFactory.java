@@ -137,7 +137,7 @@ public final class RasterFactory extends Static {
     {
         /*
          * We do not verify the argument validity. Since this class is internal, caller should have done verification
-         * itself. Furthermore those arguments are verified by WritableRaster constructors anyway.
+         * itself. Furthermore, those arguments are verified by WritableRaster constructors anyway.
          */
         final int dataType = buffer.getDataType();
         /*
@@ -164,7 +164,7 @@ public final class RasterFactory extends Static {
                     if (bandOffsets.length == 1 && pixelStride == 1) {
                         /*
                          * From JDK javadoc: "To create a 1-band Raster of type TYPE_INT, use createPackedRaster()".
-                         * However this would require the creation of a PackedColorModel subclass. For SIS purposes,
+                         * However, this would require the creation of a PackedColorModel subclass. For SIS purposes,
                          * it is easier to create a banded sample model.
                          */
                         return WritableRaster.createBandedRaster(buffer, width, height, scanlineStride, new int[1], bandOffsets, location);

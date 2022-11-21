@@ -446,7 +446,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              *     }
              *     properties.put(IdentifiedObject.NAME_KEY, name);
              *
-             * However experience shows that it is often wrong in practice, because peoples often
+             * However, experience shows that it is often wrong in practice, because peoples often
              * declare EPSG codes but still use WKT names much shorter than the EPSG names
              * (for example "WGS84" for the datum instead of "World Geodetic System 1984"),
              * so the name in WKT is often not compliant with the name actually defined by the authority.
@@ -675,7 +675,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * <h4>Variants of Cartesian type</h4>
      * The {@link WKTKeywords#Cartesian} type may be used for projected, geocentric or other kinds of CRS.
-     * However while all those variants are of the same CS type, their axis names and directions differ.
+     * However, while all those variants are of the same CS type, their axis names and directions differ.
      * Current implementation uses the following rules:
      *
      * <ul>
@@ -1284,7 +1284,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Identifier id      = toIdentifier(properties.remove(IdentifiedObject.IDENTIFIERS_KEY));  // See NOTE 2 in parseDerivingConversion.
         /*
          * The map projection method may be specified by an EPSG identifier (or any other authority),
-         * which is preferred to the method name since the latter is potentially ambiguous. However not
+         * which is preferred to the method name since the latter is potentially ambiguous. However, not
          * all CoordinateOperationFactory may accept identifier as an argument to `getOperationMethod(…)`.
          * So if an identifier is present, we will try to use it but fallback on the name if we can
          * not use the identifier.
@@ -1370,7 +1370,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              *     parameter values, it shall override any identifiers given within the map projection method and
              *     map projection parameter objects."
              *
-             * However this would require this GeodeticObjectParser to hold a CoordinateOperationAuthorityFactory,
+             * However, this would require this GeodeticObjectParser to hold a CoordinateOperationAuthorityFactory,
              * which we do not yet implement. See https://issues.apache.org/jira/browse/SIS-210
              */
         }
@@ -1750,7 +1750,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  *
                  * An apparent ambiguity exists for Geocentric CRS using a Spherical CS instead of the more
                  * usual Cartesian CS: despite using angular units, we should not use the result of parseUnit
-                 * for those CRS. However this ambiguity should not happen in practice because such Spherical
+                 * for those CRS. However, this ambiguity should not happen in practice because such Spherical
                  * CS have a third axis in metre.  Since the unit is not the same for all axes, csUnit should
                  * be null if the WKT is well-formed.
                  */
@@ -2147,7 +2147,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * or for the whole CRS with the above `csUnit` value. If `csUnit` is null, then an exception will be thrown
          * with a message like "A LengthUnit component is missing in ProjectedCRS".
          *
-         * However we make an exception if we are parsing a BaseProjCRS, since the coordinate system is unspecified
+         * However, we make an exception if we are parsing a BaseProjCRS, since the coordinate system is unspecified
          * in the WKT of base CRS. In this case only, we will default to metre.
          */
         if (csUnit == null && isBaseCRS) {

@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  * The intent is to ensure that we did not forgot an annotation or put the wrong one.
  *
  * <p>The content of the {@code api-changes.properties} files is typically empty on Apache SIS
- * branches that use a snapshot version of GeoAPI, thus making this test a no-op. However the
+ * branches that use a snapshot version of GeoAPI, thus making this test a no-op. However, the
  * {@code api-changes.properties} file content is non-empty on master if the GeoAPI release used
  * by the master branch is behind the snapshot developments.</p>
  *

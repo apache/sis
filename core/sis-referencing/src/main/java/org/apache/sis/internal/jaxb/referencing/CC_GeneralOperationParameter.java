@@ -205,7 +205,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * to non-zero value.
      *
      * <p>If the GML document declares explicitly a restricted parameter, maybe it intends to use it with
-     * a non-zero value. Consequently the {@code merge(…)} method will not propagate this restriction.</p>
+     * a non-zero value. Consequently, the {@code merge(…)} method will not propagate this restriction.</p>
      * </div>
      */
     private static boolean isRestricted(final ParameterDescriptor<?> descriptor) {
@@ -362,7 +362,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         if (isCompatible) {
             /*
              * At this point, we determined that all mandatory parameters in the GML document exist in the `complete`
-             * descriptor. However the converse is not necessarily true. Verify that all parameters missing in the GML
+             * descriptor. However, the converse is not necessarily true. Verify that all parameters missing in the GML
              * document were optional.
              */
             for (final GeneralParameterDescriptor descriptor : complete.descriptors()) {

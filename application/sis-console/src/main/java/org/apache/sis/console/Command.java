@@ -249,7 +249,7 @@ public final class Command {
          *
          *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
          *
-         * However this configuration is silently ignored by LogManager at JVM startup time, probably
+         * However, this configuration is silently ignored by LogManager at JVM startup time, probably
          * because the Apache SIS class is not on the system classpath. So we check again for this
          * configuration line here, and manually install our log formatter only if the above-cited
          * line is present.

@@ -204,7 +204,7 @@ public class StorageConnector implements Serializable {
         /*
          * ChannelFactory may have been created as a side effect of creating a ReadableByteChannel.
          * Caller should have asked for another type (e.g. InputStream) before to ask for that type.
-         * Consequently null value for ChannelFactory shall not be cached since the actual value may
+         * Consequently, null value for ChannelFactory shall not be cached since the actual value may
          * be computed later.
          *
          * Following classes will be converted using ObjectConverters, but without throwing an
@@ -817,7 +817,7 @@ public class StorageConnector implements Serializable {
          *    3) getStorageAs(Reader.class) wraps the InputStream. Caller rewinds the Reader after use,
          *       but invoking BufferedReader.reset() has no effect on the underlying InputStream.
          *    4) getStorageAs(InputStream.class) needs to rewind the InputStream itself since it was
-         *       not done at step 3. However doing so invalidate the Reader, so we need to discard it.
+         *       not done at step 3. However, doing so invalidate the Reader, so we need to discard it.
          */
         Coupled value = getView(type);
         if (reset(value)) {
@@ -1049,7 +1049,7 @@ public class StorageConnector implements Serializable {
              * Note: Java Image I/O wrappers for Input/OutputStream do NOT close the underlying streams.
              * This is a complication for us. We could mitigate the problem by subclassing the standard
              * FileCacheImageInputStream and related classes, but we don't do that for now because this
-             * code should never be executed for InputStream storage. Instead getChannelDataInput(true)
+             * code should never be executed for InputStream storage. Instead, getChannelDataInput(true)
              * should have created a ChannelImageInputStream or ChannelDataInput.
              *
              * In Apache SIS, ImageInputStream is used only by WorldFileStore. That store has its own
@@ -1408,7 +1408,7 @@ public class StorageConnector implements Serializable {
 
     /**
      * Adds the given view in the cache together with information about its dependency.
-     * For example {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
+     * For example, {@link InputStreamReader} is a wrapper for a {@link InputStream}: read operations
      * from the latter may change position of the former, and closing the latter also close the former.
      *
      * @param  <S>      the compile-time type of the {@code type} argument.
@@ -1566,13 +1566,13 @@ public class StorageConnector implements Serializable {
         /*
          * The "AutoCloseable.close() is not indempotent" problem
          * ------------------------------------------------------
-         * We will need a set of objects to close without duplicated values. For example the values associated to the
+         * We will need a set of objects to close without duplicated values. For example, the values associated to the
          * `ImageInputStream.class` and `DataInput.class` keys are often the same instance.  We must avoid duplicated
          * values because `ImageInputStream.close()` is not indempotent,  i.e.  invoking their `close()` method twice
          * will throw an IOException.
          *
          * Generally speaking, all AutoCloseable instances are not guaranteed to be indempotent because this is not
-         * required by the interface contract. Consequently we must be careful to not invoke the close() method on
+         * required by the interface contract. Consequently, we must be careful to not invoke the close() method on
          * the same instance twice (indirectly or indirectly). An exception to this rule is ImageInputStream, which
          * does not close its underlying stream. Those exceptions are identified by `cascadeOnClose` set to `true`.
          */

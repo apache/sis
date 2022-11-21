@@ -88,11 +88,11 @@ public final class Classes extends Static {
     /**
      * Changes the array dimension by the given amount. The given class can be a primitive type,
      * a Java object, or an array of the above. If the given {@code change} is positive, then the
-     * array dimension will be increased by that amount. For example a change of +1 dimension will
+     * array dimension will be increased by that amount. For example, a change of +1 dimension will
      * change an {@code int} class into {@code int[]}, and a {@code String[]} class into {@code String[][]}.
      * A change of +2 dimensions is like applying two times a change of +1 dimension.
      *
-     * <p>The change of dimension can also be negative. For example a change of -1 dimension will
+     * <p>The change of dimension can also be negative. For example, a change of -1 dimension will
      * change a {@code String[]} class into a {@code String}. More specifically:</p>
      *
      * <ul>
@@ -427,7 +427,7 @@ public final class Classes extends Static {
      *   <li>Consistency with other methods ({@link #getLeafInterfaces(Class, Class)},
      *       {@link Class#getInterfaces()}).</li>
      *   <li>Because arrays in Java are covariant, while the {@code Set} are not.
-     *       Consequently callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
+     *       Consequently, callers can cast {@code Class<? super T>[]} to {@code Class<?>[]}
      *       while they cannot cast {@code Set<Class<? super T>>} to {@code Set<Class<?>>}.</li>
      * </ul>
      *

@@ -77,7 +77,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <cite>"WGS 84 / World Mercator"</cite>) or
  * {@linkplain org.apache.sis.referencing.operation.DefaultConversion map projection}  (e.g. <cite>"Mercator (variant A)"</cite>).
  * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
- * However it is not sufficient to know the object name. We also need to know who define that name
+ * However, it is not sufficient to know the object name. We also need to know who define that name
  * (the {@linkplain NamedIdentifier#getAuthority() authority}) since the same objects are often named differently
  * depending on the providers, or conversely the same name is used for different objects depending on the provider.
  *
@@ -92,7 +92,7 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * <h2>Instantiation</h2>
  * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
- * However exceptions to this rule may occur when it is not possible to identify the exact type.
+ * However, exceptions to this rule may occur when it is not possible to identify the exact type.
  *
  * <div class="note"><b>Example:</b>
  * It is sometimes not possible to infer the exact coordinate system type from
@@ -194,7 +194,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * An identifier which references elsewhere the object's defining information.
-     * Alternatively an identifier by which this object can be referenced.
+     * Alternatively, an identifier by which this object can be referenced.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setIdentifier(Code)}</p>
@@ -307,7 +307,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <h4>Localization</h4>
      * All localizable attributes like {@code "remarks"} may have a language and country code suffix.
-     * For example the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
+     * For example, the {@code "remarks_fr"} property stands for remarks in {@linkplain Locale#FRENCH French} and
      * the {@code "remarks_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      * They are convenience properties for building the {@code InternationalString} value.
      *
@@ -505,7 +505,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
 
     /**
      * Returns identifiers which references elsewhere the object's defining information.
-     * Alternatively identifiers by which this object can be referenced.
+     * Alternatively, identifiers by which this object can be referenced.
      *
      * @return this object identifiers, or an empty set if there is none.
      *
@@ -594,7 +594,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * See {@link #equals(Object, ComparisonMode)} for more information.
      *
      * <p>This method is also invoked when searching a parameter or operation method for a given name.
-     * For example the same projection is known as {@code "Mercator (variant A)"} (the primary name according EPSG)
+     * For example, the same projection is known as {@code "Mercator (variant A)"} (the primary name according EPSG)
      * and {@code "Mercator (1SP)"} (the legacy name prior EPSG 7.6). Since the latter is still in frequent use, SIS
      * accepts it as an alias of the <cite>Mercator (variant A)</cite> projection.</p>
      *
@@ -671,7 +671,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * {@link org.apache.sis.parameter.DefaultParameterDescriptor}) will compare the
      * {@linkplain #getName() name} even in {@code IGNORE_METADATA} mode,
      * because objects of those types with different names have completely different meaning.
-     * For example nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
+     * For example, nothing differentiate the {@code "semi_major"} and {@code "semi_minor"} parameters except the name.
      * The name comparison may be lenient however, i.e. the rules may accept a name matching an alias.
      * See {@link #isHeuristicMatchForName(String)} for more information.
      *
@@ -1021,7 +1021,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * be used in other context.</p>
      *
      * <h4>Why there is no <code>setNames(…)</code> method</h4>
-     * Some JAXB implementations never invoke setter method for collections. Instead they invoke the getter and
+     * Some JAXB implementations never invoke setter method for collections. Instead, they invoke the getter and
      * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
      * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
      * It seems a more portable approach (at least for JAXB reference implementations) to design our class
@@ -1044,7 +1044,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * It would be easier to define a {@code getNames()} method returning all identifiers in an array, and let JAXB
      * invoke {@code setNames(Identifier[])} at unmarshalling time.  But methods expecting an array in argument are
      * invoked by JAXB only after the full element has been unmarshalled. For some {@code AbstractIdentifiedObject}
-     * subclasses, this is too late. For example {@code DefaultOperationMethod} may need to know the operation name
+     * subclasses, this is too late. For example, {@code DefaultOperationMethod} may need to know the operation name
      * before to parse the parameters.
      */
     private final class Names extends AbstractCollection<Identifier> {
@@ -1077,8 +1077,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
          * as the name and all other identifiers (if any) as aliases.
          *
          * <p>Some (but not all) JAXB implementations never invoke setter method for collections.
-         * Instead they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
-         * in the returned collection. Consequently this method must writes directly in the enclosing object.
+         * Instead, they invoke {@link AbstractIdentifiedObject#getNames()} and add directly the identifiers
+         * in the returned collection. Consequently, this method must writes directly in the enclosing object.
          * See <a href="https://java.net/jira/browse/JAXB-488">JAXB-488</a> for more information.</p>
          */
         @Override

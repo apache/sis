@@ -57,7 +57,7 @@ abstract class GeodeticOperation extends AbstractProvider {
      * <div class="note"><b>Historical note:</b>
      * in ISO 19111:2007, the {@code OperationMethod} type had two attributes for the number of source
      * and target dimensions. Those attributes have been removed in ISO 19111:2019 revision because not
-     * really needed in practice. However the EPSG database still distinguishes between 2D and 3D variants
+     * really needed in practice. However, the EPSG database still distinguishes between 2D and 3D variants
      * for some of those operations, so we still need the capability to switch operation methods according
      * to the number of dimensions.</div>
      */

@@ -48,7 +48,7 @@ import static java.lang.Math.abs;
  * All coordinates inside the same tile are interpolated using the same coefficients.</p>
  *
  * <p>{@link ResampledImage} implements {@link MathTransform2D} for allowing usage by {@link ResampledImage}
- * but is not a full featured transform. For example it does not support the {@link #inverse()} operation.
+ * but is not a full featured transform. For example, it does not support the {@link #inverse()} operation.
  * For this reason this class should not be public and instance of this class should not be accessible
  * outside {@link ResampledImage}.</p>
  *
@@ -550,7 +550,7 @@ affine: if (depth.width == 0 && depth.height == 0) {
      * {@link Matrix2} instance.
      *
      * <p>In Apache SIS implementations, matrices returned by {@code derivative(Point2D)} methods are already
-     * instances of {@link Matrix2}. Consequently in most cases this method will just cast the result.</p>
+     * instances of {@link Matrix2}. Consequently, in most cases this method will just cast the result.</p>
      *
      * @param  toSourceCenter  the transform for which to compute the derivative.
      * @param  point           the location where to compute the derivative.

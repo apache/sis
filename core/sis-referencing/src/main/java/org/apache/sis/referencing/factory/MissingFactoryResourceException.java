@@ -26,7 +26,7 @@ import org.opengis.util.FactoryException;
  *
  * <h2>Relationship with other exceptions</h2>
  * This exception means that the factory failed to create a particular object.
- * However the factory may succeed in creating other objects.
+ * However, the factory may succeed in creating other objects.
  * By contrast, {@link UnavailableFactoryException} means that the whole factory cannot be used at all.
  *
  * <p>This exception is <strong>not</strong> for unimplemented operations (for example map projections not yet supported).

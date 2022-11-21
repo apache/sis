@@ -79,7 +79,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     /**
      * The table containing CRS definitions, as specified by ISO 19125 / OGC Simple feature access part 2.
      * Note that the standard specifies table names in upper-case letters, which is also the default case
-     * specified by the SQL standard. However some databases use lower cases instead. This table name can
+     * specified by the SQL standard. However, some databases use lower cases instead. This table name can
      * be used unquoted for letting the database engine converts the case.
      */
     static final String SPATIAL_REF_SYS = "SPATIAL_REF_SYS";

@@ -659,7 +659,7 @@ pathTree:   for (int j=0; ; j++) {
     /**
      * If a file path in the given node or any children follow the Maven pattern, remove the
      * artifact name and version numbers redundancies in order to make the name more compact.
-     * For example this method replaces {@code "org/opengis/geoapi/3.0.0/geoapi-3.0.0.jar"}
+     * For example, this method replaces {@code "org/opengis/geoapi/3.0.0/geoapi-3.0.0.jar"}
      * by {@code "org/opengis/(…)/geoapi-3.0.0.jar"}.
      */
     private static void omitMavenRedundancy(final TreeTable.Node node) {

@@ -251,7 +251,7 @@ public class IdentifiedObjectFinder {
     /**
      * Sets whether the search should ignore coordinate system axes.
      * If this property is set to {@code true}, then the search will compare only the coordinate system type
-     * and dimension. The axis names, orientation and units will be ignored. For example the {@code find(…)}
+     * and dimension. The axis names, orientation and units will be ignored. For example, the {@code find(…)}
      * method may return a Coordinate Reference System object with (<var>latitude</var>, <var>longitude</var>)
      * axes even if the given object had (<var>longitude</var>, <var>latitude</var>) axes.
      *
@@ -565,7 +565,7 @@ public class IdentifiedObjectFinder {
      * Returns a set of authority codes that <strong>may</strong> identify the same object than the specified one.
      * The returned set must contains <em>at least</em> the code of every objects that are
      * {@link ComparisonMode#APPROXIMATE approximately equal} to the specified one.
-     * However the set may conservatively contains the code for more objects if an exact search is too expensive.
+     * However, the set may conservatively contains the code for more objects if an exact search is too expensive.
      *
      * <p>This method is invoked by the default {@link #find(IdentifiedObject)} method implementation.
      * The caller iterates through the returned codes, instantiate the objects and compare them with

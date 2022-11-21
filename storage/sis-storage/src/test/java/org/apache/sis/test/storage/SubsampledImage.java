@@ -164,7 +164,7 @@ final class SubsampledImage extends PlanarImage {
                  *         throw new IllegalArgumentException("Pixel stride times width must be less than or equal to the scanline stride");
                  *     }
                  *
-                 * However this check rejects some valid layouts. Consider an image of size 16 × 3 pixels
+                 * However, this check rejects some valid layouts. Consider an image of size 16 × 3 pixels
                  * with a single band and subsamplig factors (5,1). In the illustration below, "X" and "-"
                  * are pixels from the source images and "X" are pixels retained in the subsampled image.
                  * Note that the last column of the source image is included in the subsampled image.
@@ -243,7 +243,7 @@ final class SubsampledImage extends PlanarImage {
      * The subsampling offset is assumed 0 in current version.
      *
      * <div class="note"><b>Implementation note:</b>
-     * in principle we should subtract the <var>subsampling offset</var>. However that offset is
+     * in principle we should subtract the <var>subsampling offset</var>. However, that offset is
      * zero in the context of {@link CoverageReadConsistency} test, because coordinates (0,0) of
      * {@linkplain #source} image is the first pixel in the Area Of Interest specified by user,
      * so there are no more offsets at this stage. Note that we are talking about offset in image

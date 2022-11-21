@@ -775,7 +775,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *
      * <div class="note"><b>Inverse relationship:</b>
      * sometimes the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
-     * but this is not always the case. For example consider the following operation chain:
+     * but this is not always the case. For example, consider the following operation chain:
      *
      * <div style="text-align:center">source projected CRS ⟶ base CRS ⟶ target geographic CRS</div>
      *
@@ -862,7 +862,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                      * its "from base" conversion. The flag should never be set in any other circumstance,
                      * since this is an internal Apache SIS mechanism. If we know that we are comparing the
                      * AbstractDerivedCRS.fromBase conversion, then (in the way Apache SIS is implemented)
-                     * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently we can relax the check of
+                     * this.sourceCRS == AbstractDerivedCRS.baseCRS. Consequently, we can relax the check of
                      * sourceCRS axis order if the mode is ComparisonMode.IGNORE_METADATA.
                      */
                     boolean debug = false;

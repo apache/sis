@@ -782,7 +782,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
 
         /**
          * Defining conversion for "Not specified (presumed Plate Carrée)". This conversion uses spherical formulas.
-         * Consequently it should be used with {@link #sphericalDatum} instead of {@link #defaultCRS}.
+         * Consequently, it should be used with {@link #sphericalDatum} instead of {@link #defaultCRS}.
          */
         private static final Conversion UNKNOWN_PROJECTION;
         static {

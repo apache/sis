@@ -277,7 +277,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
             default: {
                 /*
                  * VerticalDatumType is considered as metadata because it is related to the anchor definition,
-                 * which is itself considered as metadata. Furthermore GeodeticObjectParser and EPSGDataAccess
+                 * which is itself considered as metadata. Furthermore, GeodeticObjectParser and EPSGDataAccess
                  * do not always set this property to the same value: the former uses the information provided
                  * by the coordinate system axis while the other does not.
                  */

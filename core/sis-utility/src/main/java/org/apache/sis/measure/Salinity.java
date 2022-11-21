@@ -23,7 +23,7 @@ import javax.measure.Quantity;
  * The Practical Salinity Scale (PSS-78).
  * This is a dimensionless quantity for the measurement of sea water salinity.
  * In principle, the unit of measurement associated to this quantity has no symbol.
- * However Apache SIS uses the "psu" symbol for avoiding confusion with other dimensionless units.
+ * However, Apache SIS uses the "psu" symbol for avoiding confusion with other dimensionless units.
  *
  * <p>{@code Salinity} quantities should not be converted to quantities of other types.
  * If nevertheless a conversion to {@link javax.measure.quantity.Dimensionless} is attempted,

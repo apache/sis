@@ -36,7 +36,7 @@ public interface Localized {
      *
      * <ul>
      *   <li>A synonymous of the {@linkplain Locale#getDefault() system default locale}.</li>
-     *   <li>A synonymous of {@link Locale#ROOT} for an "unlocalized" service. For example the
+     *   <li>A synonymous of {@link Locale#ROOT} for an "unlocalized" service. For example, the
      *       service may format numbers using {@link Double#toString(double)} instead of
      *       {@link java.text.NumberFormat}.</li>
      * </ul>

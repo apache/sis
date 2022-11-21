@@ -140,7 +140,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * }
      *
      * In the current implementation, the {@code primary} converter can be either an arbitrary
-     * {@code ObjectConverter}, or a previously created {@code FallbackConverter}. However the
+     * {@code ObjectConverter}, or a previously created {@code FallbackConverter}. However, the
      * {@code fallback} converter shall <strong>not</strong> be a {@code FallbackConverter}.
      * This restriction exists because the tree built in such case would probably not be the
      * desired one. It should be okay if only SIS code deal with {@code FallbackConverter}.
@@ -189,7 +189,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
         }
         /*
          * We perform an unchecked cast because in theory <T> is the common super class.
-         * However we cannot check at run time because generic types are implemented by
+         * However, we cannot check at run time because generic types are implemented by
          * erasure. If there is no logical error in our algorithm, the cast should be ok.
          * Nevertheless callers are encouraged to verify as documented in the Javadoc.
          */
@@ -206,7 +206,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * target class. Otherwise returns {@code null}.
      *
      * <p>The {@code branch} can be either an arbitrary {@code ObjectConverter}, or a previously
-     * created {@code FallbackConverter}. However the {@code converter} shall be a new instance,
+     * created {@code FallbackConverter}. However, the {@code converter} shall be a new instance,
      * <strong>not</strong> a {@code FallbackConverter} instance.
      * See {@link #merge(ObjectConverter, ObjectConverter)} javadoc for more information.</p>
      *

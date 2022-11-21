@@ -52,7 +52,7 @@ final class MetadataFormat extends TreeTableFormat {
 
     /**
      * Override the default behavior for <strong>not</strong> moving to next column before writing remarks.
-     * Doing so put too many spaces for large metadata tree. Instead we add spaces in the current column.
+     * Doing so put too many spaces for large metadata tree. Instead, we add spaces in the current column.
      */
     @Override
     protected void writeColumnSeparator(final int nextColumn, final TableAppender out) {

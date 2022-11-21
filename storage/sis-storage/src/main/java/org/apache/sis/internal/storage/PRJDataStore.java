@@ -153,7 +153,7 @@ public abstract class PRJDataStore extends URIDataStore {
             crs = (CoordinateReferenceSystem) format.parse(wkt, pos);
             if (crs != null) {
                 /*
-                 * Some characters may exist after the WKT definition. For example we sometimes see the CRS
+                 * Some characters may exist after the WKT definition. For example, we sometimes see the CRS
                  * defined twice: as a WKT on the first line, followed by key-value pairs on next lines.
                  * Current Apache SIS implementation ignores the characters after WKT.
                  */
@@ -187,7 +187,7 @@ public abstract class PRJDataStore extends URIDataStore {
         /*
          * Try to open the stream using the storage type (Path or URL) closest to the type
          * given at construction time. We do that because those two types cannot open the
-         * same streams. For example Path does not open HTTP or FTP connections by default,
+         * same streams. For example, Path does not open HTTP or FTP connections by default,
          * and URL does not open S3 files in current implementation.
          */
         final InputStream stream;

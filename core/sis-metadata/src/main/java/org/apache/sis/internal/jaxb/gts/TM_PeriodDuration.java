@@ -36,7 +36,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * Wraps a {@code gts:TM_PeriodDuration} element.
  *
  * @todo The work done in the {@link #getElement()} and {@link #setElement(Duration)} methods should move
- *       to {@link org.apache.sis.xml.ValueConverter}. However they rely on the {@link org.opengis.temporal}
+ *       to {@link org.apache.sis.xml.ValueConverter}. However, they rely on the {@link org.opengis.temporal}
  *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
  *
  * @author  Guilhem Legal (Geomatys)

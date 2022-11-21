@@ -415,7 +415,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
             }
         }
         /*
-         * If no existing AbstractParty were found, add a new one. However there is no way to know if
+         * If no existing AbstractParty were found, add a new one. However, there is no way to know if
          * it should be an individual or an organization. Arbitrarily choose an individual for now.
          */
         if (newValue != null) {

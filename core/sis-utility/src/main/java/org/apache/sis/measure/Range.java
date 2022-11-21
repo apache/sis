@@ -49,8 +49,8 @@ import org.apache.sis.util.Numbers;
  * To be a member of a {@code Range}, the {@code <E>} type defining the range must implement the
  * {@link Comparable} interface. All argument values given to the methods of this class shall be
  * or contain instances of that {@code <E>} type. The type is enforced by parameterized type,
- * but some subclasses may put additional constraints. For example {@link MeasurementRange} will
- * additionally checks the units of measurement. Consequently every methods defined in this class
+ * but some subclasses may put additional constraints. For example, {@link MeasurementRange} will
+ * additionally checks the units of measurement. Consequently, every methods defined in this class
  * may throw an {@link IllegalArgumentException} if a given argument does not met some constraint
  * beyond the type.
  *
@@ -64,7 +64,7 @@ import org.apache.sis.util.Numbers;
  * <p>The characteristics of the spatial domain are defined by the ISO 19123 standard whereas the
  * characteristics of the attribute range are not part of that standard. In Apache SIS, those
  * characteristics are described by the {@code SampleDimension} class,
- * which may contain one or many {@code Range} instances. Consequently this {@code Range} class
+ * which may contain one or many {@code Range} instances. Consequently, this {@code Range} class
  * is closely related, but not identical, to the ISO 19123 definition or range.</p>
  *
  * <p>Ranges are not necessarily numeric. Numeric and non-numeric ranges can be associated to
@@ -359,7 +359,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
          *
          *     return contains(range.minValue) && contains(range.maxValue);
          *
-         * However the above code performs more comparisons than necessary,
+         * However, the above code performs more comparisons than necessary,
          * since it implicitly performs the following redundant checks:
          *
          *     (range.minValue < maxValue) redundant with (range.maxValue < maxValue)
@@ -370,7 +370,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
          *     return minValue.compareTo(range.minValue) <= 0 &&
          *            maxValue.compareTo(range.maxValue) >= 0;
          *
-         * However we still have a little bit of additional checks to perform for the
+         * However, we still have a little bit of additional checks to perform for the
          * inclusion status of both ranges.  Since the same checks will be needed for
          * intersection methods,  we factor out the comparisons in 'compareMinTo' and
          * 'compareMaxTo' methods.

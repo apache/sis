@@ -54,7 +54,7 @@ import org.apache.sis.util.Static;
  * </ul>
  *
  * The factory static methods are provided as convenient alternatives to the GeoAPI {@link MathTransformFactory}
- * interface. However users seeking for more implementation neutrality are encouraged to limit themselves to the
+ * interface. However, users seeking for more implementation neutrality are encouraged to limit themselves to the
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -270,7 +270,7 @@ public final class MathTransforms extends Static {
      * All {@code preimage} elements shall be real numbers (not NaN) sorted in increasing or decreasing order.
      * Elements in the {@code values} array do not need to be ordered, but the returned transform will be invertible
      * only if all values are real numbers sorted in increasing or decreasing order.
-     * Furthermore the returned transform is affine (i.e. implement the {@link LinearTransform} interface)
+     * Furthermore, the returned transform is affine (i.e. implement the {@link LinearTransform} interface)
      * if the interval between each {@code preimage} and {@code values} element is constant.
      *
      * <p>The current implementation uses linear interpolation. This may be changed in a future SIS version.</p>

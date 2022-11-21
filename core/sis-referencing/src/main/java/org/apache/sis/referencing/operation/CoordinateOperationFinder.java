@@ -545,7 +545,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             /*
              * Above booleans should never be true at the same time. If it nevertheless happen (we are paranoiac;
              * maybe a lazy user implemented all interfaces in a single class), do not apply any geographic ↔
-             * geocentric conversion. Instead do as if the coordinate system types were the same.
+             * geocentric conversion. Instead, do as if the coordinate system types were the same.
              */
             if (isGeocentricToGeographic ^ isGeographicToGeocentric) {
                 identifier = GEOCENTRIC_CONVERSION;
@@ -565,7 +565,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Conceptually, all transformations below could done by first converting from the source coordinate
          * system to geocentric Cartesian coordinates (X,Y,Z), apply an affine transform represented by the
          * datum shift matrix, then convert from the (X′,Y′,Z′) coordinates to the target coordinate system.
-         * However there is two exceptions to this path:
+         * However, there is two exceptions to this path:
          *
          *   1) In the particular where both the source and target CS are ellipsoidal, we may use the
          *      Molodensky approximation as a shortcut (if the desired accuracy allows).
@@ -879,7 +879,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Check axis directions. The method `swapAndScaleAxes` should returns a matrix of size 2×2.
          * The element at index (0,0) may be +1 if source and target axes are in the same direction,
          * or -1 if there are in opposite direction ("PAST" vs "FUTURE"). The value may be something
-         * else than ±1 if a unit conversion is applied too.  For example the value is 60 if time in
+         * else than ±1 if a unit conversion is applied too.  For example, the value is 60 if time in
          * sourceCRS is in hours while time in targetCRS is in minutes.
          *
          * The "epoch shift" previously computed is a translation. Consequently, it is added to element (0,1).
@@ -934,7 +934,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         }
         /*
          * At this point, a coordinate operation has been found for all components of the target CRS.
-         * However the CoordinateOperation.getSourceCRS() values are not necessarily in the same order
+         * However, the CoordinateOperation.getSourceCRS() values are not necessarily in the same order
          * than in the `sourceComponents` list given to this method, and some dimensions may be dropped.
          * The matrix computed by sourceToSelected(…) gives us the rearrangement needed for the coordinate
          * operations that we just found.

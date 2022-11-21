@@ -131,7 +131,7 @@ final class CachedStatement implements AutoCloseable {
         }
         /*
          * As of Java 10, enumerations have no constants defined in java.sql.Types.
-         * Consequently databases returns an implementation-specific object, e.g.
+         * Consequently, databases returns an implementation-specific object, e.g.
          * org.postgresql.util.PGobject. To avoid implementation-specific code,
          * we are better to get those enumeration values as strings.
          */

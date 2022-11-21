@@ -60,7 +60,7 @@ public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundT
     protected static String name(final String value) {
         /*
          * Replace space ! " # $ % & ' ( ) * + , - . / punction characters by '_'.
-         * For example this replace "in/out" by "IN_OUT" in ParameterDirection.
+         * For example, this replace "in/out" by "IN_OUT" in ParameterDirection.
          *
          * Note: we do not use codepoint API because this method is mostly for
          * GeoAPI programmatic constant names, which are written in English.

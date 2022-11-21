@@ -75,7 +75,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
 
     /**
      * Creates a new instance wrapping the given array. A direct reference to the given array is
-     * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
+     * retained (i.e. the array is <strong>not</strong> cloned). Consequently, the given array
      * shall not be modified after construction if this list is intended to be immutable.
      *
      * <p>This constructor is for sub-classing only. Users should invoke the {@link #wrap(Object[])}
@@ -97,7 +97,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
 
     /**
      * Creates a new instance wrapping the given array. A direct reference to the given array is
-     * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
+     * retained (i.e. the array is <strong>not</strong> cloned). Consequently, the given array
      * shall not be modified after construction if the returned list is intended to be immutable.
      *
      * <h4>WARNING! Type safety hole</h4>
@@ -120,7 +120,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
 
     /**
      * Creates a new instance wrapping a subregion of the given array. A direct reference to the
-     * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently the
+     * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently, the
      * specified sub-region of the given array shall not be modified after construction if the
      * returned list is intended to be immutable.
      *

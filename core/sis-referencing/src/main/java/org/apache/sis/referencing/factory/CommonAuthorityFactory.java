@@ -181,7 +181,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * <h2>Note on codes in CRS namespace</h2>
  * The format is usually "{@code CRS:}<var>n</var>" where <var>n</var> is a number like 27, 83 or 84.
- * However this factory is lenient and allows the {@code CRS} part to be repeated as in {@code "CRS:CRS84"}.
+ * However, this factory is lenient and allows the {@code CRS} part to be repeated as in {@code "CRS:CRS84"}.
  * It also accepts {@code "OGC"} as a synonymous of the {@code "CRS"} namespace.
  *
  * <div class="note"><b>Examples:</b>
@@ -425,7 +425,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
         if (parsed.isNumeric && parsed.parameters().length == 0) {
             /*
              * For codes in the "AUTO(2)" namespace without parameters, we cannot rely on the default implementation
-             * because it would fail to create the ProjectedCRS instance. Instead we return a generic description.
+             * because it would fail to create the ProjectedCRS instance. Instead, we return a generic description.
              * Note that we do not execute this block if parametes were specified. If there is parameters,
              * then we instead rely on the default implementation for a more accurate description text.
              * Note also that we do not restrict to "AUTOx" namespaces because erroneous namespaces exist

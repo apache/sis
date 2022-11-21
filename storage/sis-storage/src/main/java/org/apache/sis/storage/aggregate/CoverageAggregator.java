@@ -84,7 +84,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * All {@code add(…)} methods can be invoked concurrently from arbitrary threads.
  * It is okay to load {@link GridCoverageResource} instances in parallel threads
  * and add those resources to {@code CoverageAggregator} without synchronization.
- * However the final {@link #build()} method is <em>not</em> thread-safe;
+ * However, the final {@link #build()} method is <em>not</em> thread-safe;
  * that method shall be invoked from a single thread after all sources have been added
  * and no more addition are in progress.
  *
@@ -254,7 +254,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Sets the algorithm to apply when more than one grid coverage can be found at the same grid index.
      * The new strategy applies to the <em>next</em> coverages to be added;
      * previously added coverage may or may not be impacted by this change (see below).
-     * Consequently this method should usually be invoked before to add the first coverage.
+     * Consequently, this method should usually be invoked before to add the first coverage.
      *
      * <h4>Effect on previously added coverages</h4>
      * The merge strategy of previously added coverages is not modified by this method call, except

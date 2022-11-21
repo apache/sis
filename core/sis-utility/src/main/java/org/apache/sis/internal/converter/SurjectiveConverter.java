@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * the {@code null} value. This is the case in particular when the converter is used as a
  * filter.
  *
- * <p>This base class is stateless. Consequently sub-classes that choose to implement
+ * <p>This base class is stateless. Consequently, sub-classes that choose to implement
  * {@link java.io.Serializable} do not need to care about this base class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

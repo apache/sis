@@ -743,7 +743,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * possibly modified as described in the <cite>axis order</cite> section below.
      *
      * <p>All control points returned by {@link #getControlPoint(int, int)} are projected by the selected transform.
-     * Consequently if the target coordinates of original control points are desired, then the transform computed by
+     * Consequently, if the target coordinates of original control points are desired, then the transform computed by
      * this builder needs to be concatenated with the {@linkplain MathTransform#inverse() inverse} of the transform
      * returned by this method. This is done automatically in the {@link #create(MathTransformFactory) create(…)}
      * method if the {@code compensate} flag given to {@code addLinearizers(…)} method was {@code true}.
@@ -752,7 +752,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * <h4>Axis order</h4>
      * The returned transform will contain an operation step performing axis filtering and swapping implied by the
      * {@code projToGrid} argument that was given to the <code>{@linkplain #addLinearizers(Map, boolean, int...)
-     * addLinearizers}(…, projToGrid)}</code> method. Consequently if the {@code projToGrid} argument was not an
+     * addLinearizers}(…, projToGrid)}</code> method. Consequently, if the {@code projToGrid} argument was not an
      * arithmetic progression, then the transform returned by this method will not be one of the instances given
      * to {@code addLinearizers(…)}.
      *

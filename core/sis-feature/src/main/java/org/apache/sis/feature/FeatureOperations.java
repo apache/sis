@@ -129,7 +129,7 @@ public final class FeatureOperations extends Static {
      * <div class="note"><b>Example:</b>
      * features often have a property that can be used as identifier or primary key.
      * But the name of that property may vary between features of different types.
-     * For example features of type <b>Country</b> may have identifiers named “ISO country code”
+     * For example, features of type <b>Country</b> may have identifiers named “ISO country code”
      * while features of type <b>Car</b> may have identifiers named “license plate number”.
      * In order to simplify identifier usages regardless of their name,
      * an application could choose to add in all features a virtual property named {@code "identifier"}

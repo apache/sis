@@ -382,7 +382,7 @@ final class Normalizer implements Comparable<Normalizer> {
      *
      * <p>This method shifts the axis {@linkplain CoordinateSystemAxis#getMinimumValue() minimum} and
      * {@linkplain CoordinateSystemAxis#getMaximumValue() maximum} values by a multiple of half the range
-     * (typically 180°). This method does not change the meaning of coordinate values. For example a longitude
+     * (typically 180°). This method does not change the meaning of coordinate values. For example, a longitude
      * of -60° still locate the same point in the old and the new coordinate system. But the preferred way to
      * locate that point become the 300° value if the longitude range has been shifted to positive values.</p>
      *

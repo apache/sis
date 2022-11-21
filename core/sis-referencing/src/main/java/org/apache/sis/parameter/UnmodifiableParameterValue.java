@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * basis.
  *
  * <div class="note"><b>Rational:</b>
- * the same parameter value is often used in many different coordinate operations. For example all <cite>Universal
+ * the same parameter value is often used in many different coordinate operations. For example, all <cite>Universal
  * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
  * </div>
  *

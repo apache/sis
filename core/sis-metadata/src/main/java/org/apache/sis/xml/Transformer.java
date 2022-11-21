@@ -59,7 +59,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *
  * <h2>Why using {@code Transformer}</h2>
  * When the XML schemas of an international standard is updated, the URL of the namespace is often modified.
- * For example when GML has been updated from version 3.1 to 3.2, the URL mandated by the international standard
+ * For example, when GML has been updated from version 3.1 to 3.2, the URL mandated by the international standard
  * changed from {@code "http://www.opengis.net/gml"} to {@code "http://www.opengis.net/gml/3.2"}
  * (XML namespaces usually have a version number or publication year - GML before 3.2 were an exception).
  * The problem is that namespaces in JAXB annotations are static. The straightforward solution is
@@ -101,7 +101,7 @@ abstract class Transformer {
     private static final char TARGET_PREFIX = '*';
 
     /**
-     * Character used for separating an old name from the new name. For example in {@code SV_OperationMetadata},
+     * Character used for separating an old name from the new name. For example, in {@code SV_OperationMetadata},
      * {@code "DCP"} in ISO 19139:2007 has been renamed {@code "distributedComputingPlatform"} in ISO 19115-3.
      * This is encoded in {@value TransformingReader#FILENAME} file as {@code "DCP/distributedComputingPlatform"}.
      */
@@ -142,7 +142,7 @@ abstract class Transformer {
     /**
      * List of encountered XML tags, used for backtracking. Elements are removed from this list when they are closed.
      * Names should be the ones we get after conversion from namespaces used in XML document to namespaces used in
-     * JAXB annotations. For example given the following XML, this list should contain {@code cit:CI_Citation},
+     * JAXB annotations. For example, given the following XML, this list should contain {@code cit:CI_Citation},
      * {@code cit:date} and {@code cit:CI_Date} (in that order) when the (un)marshalling reaches the "…" location.
      *
      * {@preformat xml
@@ -432,8 +432,8 @@ abstract class Transformer {
                             TransformedEvent.Type rt = new TransformedEvent.Type(
                                     attribute, originalName, prefix + ':' + localPart);
                             /*
-                             * At this point we got the new value. For example "gmd:PT_FreeText_PropertyType" may
-                             * have been replaced by "lan:PT_FreeText_PropertyType". However we need to verify if
+                             * At this point we got the new value. For example, "gmd:PT_FreeText_PropertyType" may
+                             * have been replaced by "lan:PT_FreeText_PropertyType". However, we need to verify if
                              * the "lan" prefix has been bound to a namespace, otherwise the parsing will fail.
                              */
                             if (!namespace.equals(namespaces.get(prefix))) {
@@ -455,7 +455,7 @@ abstract class Transformer {
 
     /**
      * Returns {@code true} if an element with the given name is an OGC/ISO type (as opposed to property).
-     * For example given the following XML, this method returns {@code true} for {@code cit:CI_Date} but
+     * For example, given the following XML, this method returns {@code true} for {@code cit:CI_Date} but
      * {@code false} for {@code cit:date}:
      *
      * {@preformat xml

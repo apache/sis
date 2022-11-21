@@ -32,7 +32,7 @@ import org.apache.sis.util.Numbers;
  *       except for {@link #UNKNOWN} which is not a valid CDL type.</li>
  * </ul>
  *
- * The unsigned data types are not defined in netCDF classical version. However those data types
+ * The unsigned data types are not defined in netCDF classical version. However, those data types
  * can be inferred from their signed counterpart if the latter have a {@code "_Unsigned = true"}
  * attribute associated to the variable.
  *
@@ -130,14 +130,14 @@ public enum DataType {
 
     /**
      * {@code false} for signed data type (the default), or {@code true} for unsigned data type.
-     * The OGC netCDF standard version 1.0 does not define unsigned data types. However some data
+     * The OGC netCDF standard version 1.0 does not define unsigned data types. However, some data
      * providers attach an {@code "_Unsigned = true"} attribute to the variable.
      */
     public final boolean isUnsigned;
 
     /**
      * The netCDF code of the data type of opposite sign convention.
-     * For example for the {@link #BYTE} data type, this is the netCDF code of {@link #UBYTE}.
+     * For example, for the {@link #BYTE} data type, this is the netCDF code of {@link #UBYTE}.
      */
     private final byte opposite;
 
@@ -151,7 +151,7 @@ public enum DataType {
 
     /**
      * The smallest Java wrapper class that can hold the values. Values are always signed. If {@link #isUnsigned}
-     * is {@code true}, then a wider type is used for holding the large unsigned values. For example the 16 bits
+     * is {@code true}, then a wider type is used for holding the large unsigned values. For example, the 16 bits
      * signed integer type is used for holding 8 bits unsigned integers.
      */
     private final Class<?> classe;

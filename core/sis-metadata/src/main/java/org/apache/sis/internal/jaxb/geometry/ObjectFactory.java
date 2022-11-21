@@ -65,7 +65,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@code JAXBElement<AbstractGMLType>}}.
      * The type declared in the method signature should be {@code AbstractGMLType}.
-     * However it is declared here as {@code Object} in order to avoid a dependency
+     * However, it is declared here as {@code Object} in order to avoid a dependency
      * toward the GML module.
      *
      * @param  value  the GML {@code AbstractGMLType} value to wrap.
@@ -83,7 +83,7 @@ public class ObjectFactory {
     /**
      * Create an instance of {@code JAXBElement<AbstractGeometryType>}}.
      * The type declared in the method signature should be {@code AbstractGeometryType}.
-     * However it is declared here as {@code Object} in order to avoid a dependency
+     * However, it is declared here as {@code Object} in order to avoid a dependency
      * toward the GML module.
      *
      * @param  value  the {@code AbstractGeometryType} value to wrap.

@@ -559,7 +559,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
 
     /**
      * Tests a transformation between two CRS for which no direct bursa-wolf parameters are defined.
-     * However a transformation should still be possible indirectly, through WGS 84.
+     * However, a transformation should still be possible indirectly, through WGS 84.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.
@@ -615,7 +615,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         validate();
         /*
          * The accuracy should tell that the datum shift is indirect (through WGS 84).
-         * However the value may differ depending on whether EPSG database has been
+         * However, the value may differ depending on whether EPSG database has been
          * used or not, because it depends on whether the datum have been completed
          * with domain of validity.
          */

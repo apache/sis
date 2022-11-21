@@ -94,7 +94,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * but this extra accuracy is not guaranteed because it is hard to achieve in all cases.
      *
      * <p><b>Note:</b> when the iteration loop detects that it reached this requested accuracy, the loop
-     * completes the iteration step which was in progress. Consequently the final accuracy is one iteration
+     * completes the iteration step which was in progress. Consequently, the final accuracy is one iteration
      * better than the accuracy computed from this value.</p>
      *
      * <h4>Maintenance</h4>
@@ -263,7 +263,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          * in registers. Maybe some compilers could even detect when the same multiplication is done two times.
          *
          * Note: for each line below, we could compute at construction time the parts at the right of ε.
-         * However since they are only a few additions and multiplications, it may not be worth to vastly
+         * However, since they are only a few additions and multiplications, it may not be worth to vastly
          * increase the number of fields in `GeodesicOnEllipsoid` for that purpose, especially if compiler
          * can optimize itself those duplicated multiplications.
          */
@@ -479,7 +479,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             α0(sinα1, cosα1, sinβ1, cosβ1);
             /*
              * Note:  Karney said that for equatorial geodesics (φ₁=0 and α₁=π/2), calculation of σ₁ is indeterminate
-             * and σ₁=0 should be taken. The indetermination appears as atan2(0,0). However this expression evaluates
+             * and σ₁=0 should be taken. The indetermination appears as atan2(0,0). However, this expression evaluates
              * to 0 in Java, as required by Math.atan2(y,x) specification, which is what we want. So there is no need
              * for a special case.
              */
@@ -666,7 +666,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
             /*
              * Usual case (non-antipodal). Estimation is based on variation of geodetic longitude λ
              * and spherical longitude ω on the auxiliary sphere. Karney makes a special case for
-             * Δλ = 0 and Δλ = π by defining α₁ = Δλ. However formulas below produce the same result.
+             * Δλ = 0 and Δλ = π by defining α₁ = Δλ. However, formulas below produce the same result.
              */
             double w = (cosβ1 + cosβ2) / 2;
             w = sqrt(1 - eccentricitySquared * (w*w));
@@ -952,7 +952,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
          *
          *     Ψ(φ) = log(tan(PI/4 + φ/2) * pow((1 - ℯsinφ) / (1 + ℯsinφ), ℯ/2));
          *
-         * (ℯ is the eccentricity, not squared). However we need only the isometric latitudes difference:
+         * (ℯ is the eccentricity, not squared). However, we need only the isometric latitudes difference:
          *
          *     ΔΨ = Ψ(φ₂) - Ψ(φ₁)
          *

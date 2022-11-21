@@ -117,7 +117,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * For planar images (banded sample model), this is equal to 1. For pixel interleaved image,
      * this is equal to the number of bands in the original image.
      *
-     * <p>Note: a sample may be a fraction of byte. For example in a bilevel image, a sample is a bit
+     * <p>Note: a sample may be a fraction of byte. For example, in a bilevel image, a sample is a bit
      * and 8 samples are packed in each byte. Conversely a sample may also be 1, 2, 4 or 8 bytes.</p>
      *
      * @see java.awt.image.ComponentSampleModel#getPixelStride()

@@ -56,7 +56,7 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * The parallels and the meridians are straight lines and cross at right angles.
  * The scale is true along standard parallels, but distortion increase greatly at other locations.
  * Distortions are so great that there is little use of this projection for world mapping purposes.
- * However this projection may be useful for computing areas.
+ * However, this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -183,13 +183,13 @@ public class CylindricalEqualArea extends AuthalicConversion {
         k0.multiplyGuessError(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
         /*
          * In most Apache SIS map projection implementations, the scale factor is handled by the super-class by
-         * specifying a ParameterRole.SCALE_FACTOR. However in the case of this CylindricalEqualArea we rather
+         * specifying a ParameterRole.SCALE_FACTOR. However, in the case of this CylindricalEqualArea we rather
          * handle the scale factor ourselves, because we do not perform the same multiplication on both axes:
          *
          *      x shall be multiplied by k₀
          *      y shall be divided by k₀
          *
-         * Furthermore we also multiply y by (1-ℯ²)/2 for avoiding the need to recompute this constant during
+         * Furthermore, we also multiply y by (1-ℯ²)/2 for avoiding the need to recompute this constant during
          * the projection of every point.
          */
         final DoubleDouble ik = new DoubleDouble(1d);

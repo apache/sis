@@ -252,7 +252,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * <h4>Localization</h4>
      * {@code "description"} is a localizable attributes which may have a language and country
-     * code suffix. For example the {@code "description_fr"} property stands for description in
+     * code suffix. For example, the {@code "description_fr"} property stands for description in
      * {@linkplain Locale#FRENCH French} and the {@code "description_fr_CA"} property stands
      * for description in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      *

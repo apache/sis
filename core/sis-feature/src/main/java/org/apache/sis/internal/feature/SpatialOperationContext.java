@@ -90,7 +90,7 @@ public final class SpatialOperationContext implements Serializable {
 
     /**
      * If the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
-     * For example is units need to be linear, then {@code systemUnit} shall be {@link Units#METRE}.
+     * For example, is units need to be linear, then {@code systemUnit} shall be {@link Units#METRE}.
      * Note that it does not mean that the units of measurement must be meters; only that they must
      * be compatible with meters.
      */

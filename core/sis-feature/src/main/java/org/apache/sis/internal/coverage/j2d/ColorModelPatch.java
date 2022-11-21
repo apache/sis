@@ -50,7 +50,7 @@ final class ColorModelPatch<T extends ColorModel> {
     /**
      * Returns {@code true} if the given color models are equal. The {@link ColorModel} class
      * defines an {@code equals} method, but as of Java 6 that method does not compare every
-     * attributes. For example it does not compare the color space and the transfer type, so
+     * attributes. For example, it does not compare the color space and the transfer type, so
      * we have to compare them here.
      *
      * @param cm1  the first color model.

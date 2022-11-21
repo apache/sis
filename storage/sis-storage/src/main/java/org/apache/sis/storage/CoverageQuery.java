@@ -238,7 +238,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
      * At reading time it may be necessary to add a margin to the coverage extent.
      * This margin is used when the user knows that an image processing operation
      * will need to iterate over a little bit more data than the area of interest.
-     * For example the bilinear interpolation uses a 2×2 pixels window.
+     * For example, the bilinear interpolation uses a 2×2 pixels window.
      *
      * @param  margin  read margin, which must be zero or positive.
      */

@@ -59,7 +59,7 @@ public interface ErrorHandler {
      *
      * <h4>Multi-threading</h4>
      * If the image processing was splitted between many worker threads, this method may be invoked
-     * from any of those threads. However the invocation should happen after all threads terminated,
+     * from any of those threads. However, the invocation should happen after all threads terminated,
      * either successfully or with an error reported in {@code details}.
      *
      * @param  details  information about the first error. If more than one error occurred, the other
@@ -73,7 +73,7 @@ public interface ErrorHandler {
      *
      * <h2>Multi-threading</h2>
      * This class is safe for use in multi-threading. The synchronization lock is {@code this}.
-     * However the {@link LogRecord} instance returned by {@link #getDescription()} is not thread-safe.
+     * However, the {@link LogRecord} instance returned by {@link #getDescription()} is not thread-safe.
      * Operations applied on the {@code LogRecord} should be inside a block synchronized on the
      * {@code Report.this} lock.
      */

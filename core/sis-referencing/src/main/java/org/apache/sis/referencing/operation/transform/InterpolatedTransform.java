@@ -62,7 +62,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  *
  * <p>The input and output coordinates can have any number of dimensions, provided that they are the same
  * than the number of {@linkplain DatumShiftGrid#getTranslationDimensions() translation dimensions}.
- * However current implementation uses only the two first dimensions for interpolations in the grid.</p>
+ * However, current implementation uses only the two first dimensions for interpolations in the grid.</p>
  *
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -104,7 +104,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     /**
      * Creates a transform for the given interpolation grid.
      * This {@code InterpolatedTransform} class works with coordinate values in <em>units of grid cell</em>
-     * For example input coordinates (4,5) is the position of the center of the cell at grid index (4,5).
+     * For example, input coordinates (4,5) is the position of the center of the cell at grid index (4,5).
      * The output units are the same than the input units.
      *
      * <p>For converting geodetic coordinates, {@code InterpolatedTransform} instances need to be concatenated
@@ -176,9 +176,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
         /*
          * Denormalization is the inverse of all above conversions in the usual case (NADCON and NTv2) where the
          * source coordinate system is the same than the target coordinate system, for example with axis unit in
-         * degrees. However we also use this InterpolatedTransform implementation for other operations, like the
+         * degrees. However, we also use this InterpolatedTransform implementation for other operations, like the
          * one created by LocalizationGridBuilder. Those later operations may require a different denormalization
-         * matrix. Consequently the call to `getParameterValues(…)` may overwrite the denormalization matrix as
+         * matrix. Consequently, the call to `getParameterValues(…)` may overwrite the denormalization matrix as
          * a non-documented side effect.
          */
         Matrix denormalize = normalize.inverse();                   // Normal NACDON and NTv2 case.
@@ -419,7 +419,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * <h2>Algorithm</h2>
      * The algorithm used in this class takes some inspiration from the
      * <a href="https://en.wikipedia.org/wiki/Gradient_descent">Gradient descent</a> method, except that we do not use
-     * <em>gradient</em> direction. Instead we use <em>positional error</em> direction computed with Jacobian matrix.
+     * <em>gradient</em> direction. Instead, we use <em>positional error</em> direction computed with Jacobian matrix.
      * Instead of moving in the opposite of gradient direction, we move in the opposite of positional error vector.
      * This algorithm works well when the errors are small, which is the case for datum shift grids such as NADCON.
      * It may work not so well with strongly curved <cite>localization grids</cite> as found in some netCDF files.

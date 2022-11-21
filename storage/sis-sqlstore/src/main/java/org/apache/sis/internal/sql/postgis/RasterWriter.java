@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <h2>Multi-threading</h2>
  * This class is <strong>not</strong> safe for multi-threading.
- * Furthermore if a non-null {@link InfoStatements} has been specified to the constructor,
+ * Furthermore, if a non-null {@link InfoStatements} has been specified to the constructor,
  * then this object is valid only as long as the caller holds a connection to the database.
  *
  * @author  Johann Sorel (Geomatys)

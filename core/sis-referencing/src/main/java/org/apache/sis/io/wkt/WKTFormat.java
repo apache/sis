@@ -942,7 +942,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     private AbstractParser parser(final boolean modifiable) {
         AbstractParser parser = this.parser;
         /*
-         * `parser` is always null on a fresh clone. However the `fragments`
+         * `parser` is always null on a fresh clone. However, the `fragments`
          * map may need to be cloned if the caller intents to modify it.
          */
         if (parser == null || (isCloned & modifiable)) {

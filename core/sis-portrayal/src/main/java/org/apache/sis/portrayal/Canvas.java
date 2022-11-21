@@ -114,7 +114,7 @@ import org.apache.sis.coverage.grid.GridExtent;
  *
  * <p>The point of interest can be expressed in any CRS;
  * it does not need to be the objective CRS or the CRS of any data.
- * However the CRS of that point must have enough dimensions for being convertible to the CRS of all data.
+ * However, the CRS of that point must have enough dimensions for being convertible to the CRS of all data.
  * This rule implies that the number of dimensions of the point of interest is equal or greater than
  * the highest number of dimensions found in data. The purpose is not only to specify which point to show in
  * (typically) the center of the display area, but also to specify which slice to select in all dimensions
@@ -246,7 +246,7 @@ public class Canvas extends Observable implements Localized {
     /**
      * The conversion from {@linkplain #getObjectiveCRS() objective CRS} to the display coordinate system.
      * Conceptually this conversion should never be null (its initial value is the identity conversion).
-     * However subclasses may use a more specialized type such as {@link java.awt.geom.AffineTransform}
+     * However, subclasses may use a more specialized type such as {@link java.awt.geom.AffineTransform}
      * and set this field to {@code null} for recomputing it from the specialized type when requested.
      *
      * @see #OBJECTIVE_TO_DISPLAY_PROPERTY
@@ -669,7 +669,7 @@ public class Canvas extends Observable implements Localized {
      * converted coordinates will be in the CRS given by {@link #getDisplayCRS()}.
      *
      * <p>The <cite>objective to display</cite> conversion changes every time that user zooms
-     * or scrolls on viewed data. However the transform returned by this method is a snapshot
+     * or scrolls on viewed data. However, the transform returned by this method is a snapshot
      * taken at the time this method is invoked; subsequent changes in the <cite>objective to
      * display</cite> conversion are not reflected in the returned transform.</p>
      *
@@ -878,7 +878,7 @@ public class Canvas extends Observable implements Localized {
              * Note 1: in the CoordinateOperationContext used for selecting a MathTransform, the geographic area is
              * still the same but the spatial resolution could be slightly different because computed at a new point
              * of interest. But we cannot use the new point of interest now, because we need the MathTransform for
-             * computing it. However in practice the resolution is often ignored, or does not vary a lot in regions
+             * computing it. However, in practice the resolution is often ignored, or does not vary a lot in regions
              * where it matter. So we assume it is okay to keep the CoordinateOperationContext with old resolution
              * in the following call to `findTransform(…)` or usage of `multidimToObjective`.
              *
@@ -1034,7 +1034,7 @@ public class Canvas extends Observable implements Localized {
      * none of above cited properties is changed. If one of those properties changes (for example
      * if the user zooms or pans the map), then a new grid geometry will be computed. There is no
      * guarantee that the recomputed grid geometry will be similar to the grid geometry specified
-     * to this method. For example the {@link GridExtent} in supplemental dimensions may be different.</p>
+     * to this method. For example, the {@link GridExtent} in supplemental dimensions may be different.</p>
      *
      * @param  newValue  the grid geometry from which to get new canvas properties.
      * @throws RenderException if the given grid geometry cannot be converted to canvas properties.

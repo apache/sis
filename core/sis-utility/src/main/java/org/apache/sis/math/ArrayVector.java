@@ -579,7 +579,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /**
          * Returns the increment between values if this increment is constant, or {@code null} otherwise.
          * Addition or subtraction of unsigned integers are bitwise identical to the same operations on
-         * signed integers. Consequently we do not need to distinguish the two cases during the loop.
+         * signed integers. Consequently, we do not need to distinguish the two cases during the loop.
          */
         @Override public final Number increment(final double tolerance) {
             if (!(tolerance >= 0 && tolerance < 1)) {                       // Use '!' for catching NaN.
@@ -709,7 +709,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /**
          * Returns the increment between values if this increment is constant, or {@code null} otherwise.
          * Addition or subtraction of unsigned integers are bitwise identical to the same operations on
-         * signed integers. Consequently we do not need to distinguish the two cases during the loop.
+         * signed integers. Consequently, we do not need to distinguish the two cases during the loop.
          */
         @Override public final Number increment(final double tolerance) {
             if (!(tolerance >= 0 && tolerance < 1)) {                       // Use '!' for catching NaN.

@@ -303,7 +303,7 @@ public final strictfp class StorageConnectorTest extends TestCase {
     /**
      * Tests the {@link StorageConnector#getStorageAs(Class)} method for the {@link ChannelDataInput} type.
      * The initial value should not be an instance of {@link ChannelImageInputStream} in order to avoid initializing
-     * the Image I/O classes. However after a call to {@code getStorageAs(ChannelImageInputStream.class)}, the type
+     * the Image I/O classes. However, after a call to {@code getStorageAs(ChannelImageInputStream.class)}, the type
      * should have been promoted.
      *
      * @throws DataStoreException if an error occurred while using the storage connector.

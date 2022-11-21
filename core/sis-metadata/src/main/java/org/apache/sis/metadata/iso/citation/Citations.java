@@ -812,7 +812,7 @@ public final class Citations extends Static {
      *
      * <div class="note"><b>Note:</b>
      * This method searches in alternate titles as a fallback because ISO specification said
-     * that those titles are often used for abbreviations. However titles are never searched
+     * that those titles are often used for abbreviations. However, titles are never searched
      * if the given citation contains at least one non-empty and non-deprecated identifier.</div>
      *
      * This method ignores leading and trailing {@linkplain Character#isWhitespace(int) whitespaces}
@@ -856,7 +856,7 @@ public final class Citations extends Static {
      * If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters.
      *
      * <div class="note"><b>Note:</b>
-     * the following characters are invalid in XML identifiers. However since they are valid in Unicode identifiers,
+     * the following characters are invalid in XML identifiers. However, since they are valid in Unicode identifiers,
      * they could be included in the string returned by this method:
      * <ul>
      *   <li>{@code µ}</li>
@@ -890,7 +890,7 @@ public final class Citations extends Static {
             /*
              * First perform a quick check to see if there is any ignorable characters.
              * We make this check because those characters are valid according Unicode
-             * but not according XML. However there is usually no such characters, so
+             * but not according XML. However, there is usually no such characters, so
              * we will avoid the StringBuilder creation in the vast majority of times.
              *
              * Note that 'µ' and its friends are not ignorable, so we do not remove them.
@@ -904,7 +904,7 @@ public final class Citations extends Static {
                     /*
                      * Found an ignorable character. Create the buffer and copy non-ignorable characters.
                      * Following algorithm is inefficient, since we fill the buffer character-by-character
-                     * (a more efficient approach would be to perform bulk appends). However we presume
+                     * (a more efficient approach would be to perform bulk appends). However, we presume
                      * that this block will be rarely executed, so it is not worth to optimize it.
                      */
                     final StringBuilder buffer = new StringBuilder(length - n).append(identifier, 0, i);

@@ -34,7 +34,7 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
  * The algorithm in this class takes advantage of the fact that alphabetical order is not the same than numerical
  * order for scanning a slightly smaller amount of records (however the gain is significant only in special cases.
  * Generally speaking this class is not for tables having thousands of identifier beginning with the given prefix).
- * However the selected numbers are not guaranteed to be in increasing order if there is "holes" in the sequence of
+ * However, the selected numbers are not guaranteed to be in increasing order if there is "holes" in the sequence of
  * numbers (i.e. if some old records have been deleted). Generating strictly increasing sequence is not a goal of this
  * class, since it would be too costly.</p>
  *

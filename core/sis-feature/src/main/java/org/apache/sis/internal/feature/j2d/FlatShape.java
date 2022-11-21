@@ -28,7 +28,7 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
 
 /**
  * A shape made of straight lines. This shape does not contain any Bézier curve.
- * Consequently the flatness factor of path iterator can be ignored.
+ * Consequently, the flatness factor of path iterator can be ignored.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

@@ -55,7 +55,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * <p>Unless otherwise specified, giving an instance of unknown type or a {@code null} value cause the methods to
  * return {@code null}. No exception is thrown for unknown type - callers must check that the return value is not
- * null. However exceptions may be thrown for malformed URI or URL.</p>
+ * null. However, exceptions may be thrown for malformed URI or URL.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)

@@ -39,7 +39,7 @@ public final strictfp class OptionKeyTest extends TestCase {
      * A custom subclass of {@link OptionKey} for testing the ability to create custom option.
      * This subclass implements {@link CheckedContainer} for ensuring that the {@code OptionKey}
      * API is compatible with {@code CheckedContainer}. The public class does not implement that
-     * interface because a key is not a container. However we keep this possibility open in case
+     * interface because a key is not a container. However, we keep this possibility open in case
      * some users find this approach convenient for their own keys.
      */
     @SuppressWarnings("serial")

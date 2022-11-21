@@ -189,7 +189,7 @@ public final class Code {
             }
             /*
              * If no "urn:" or "http:" form has been found, try to create a "urn:" form from the first identifier.
-             * For example "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
+             * For example, "EPSG:4326" may be converted to "urn:ogc:def:crs:EPSG:8.2:4326". If the first identifier
              * cannot be converted to a "urn:" form, then it will be returned as-is.
              */
             if (fallback != null) {
@@ -218,7 +218,7 @@ public final class Code {
                          *
                          * Apache SIS declares IOGP as the codespace of the EPSG codespace, i.e. the identifier of the
                          * EPSG authority is "IOGP:EPSG". So the code below searches for the "IOGP" part of the above.
-                         * However there is no indication at this time that objects from other sources than SIS would
+                         * However, there is no indication at this time that objects from other sources than SIS would
                          * follow such convention, so we also keep a hard-coded "IOGP" default value for now.
                          *
                          * A symmetrical special handling for EPSG is done in the 'getIdentifier()' method of this class.

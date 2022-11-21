@@ -34,7 +34,7 @@ import org.opengis.feature.AttributeType;
  * (CRS) of a geometry.
  *
  * <p>In many cases, all instances of the same {@code AttributeType} have the same characteristics.
- * For example all values of the "temperature" attribute typically have the same units of measurement.
+ * For example, all values of the "temperature" attribute typically have the same units of measurement.
  * Such common value can be specified as the characteristic {@linkplain #setDefaultValue(Object) default value}.</p>
  *
  * @author  Johann Sorel (Geomatys)

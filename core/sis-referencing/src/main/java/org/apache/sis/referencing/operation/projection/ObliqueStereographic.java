@@ -281,7 +281,7 @@ public class ObliqueStereographic extends NormalizedProjection {
          * The conformal longitude is  Λ = n⋅(λ - λ₀) + Λ₀  where λ is the geodetic longitude.
          * But in Apache SIS implementation, the multiplication by  n  has been merged in the
          * constructor with other linear operations performed by the "normalization" matrix.
-         * Consequently the value obtained at srcPts[srcOff] is already Λ - Λ₀, not λ - λ₀.
+         * Consequently, the value obtained at srcPts[srcOff] is already Λ - Λ₀, not λ - λ₀.
          */
         final double cosΛ = cos(Λ);
         final double sinΛ = sin(Λ);
@@ -349,7 +349,7 @@ public class ObliqueStereographic extends NormalizedProjection {
         final double j = atan2(x, g - y) - i;
         /*
          * The conformal longitude is  Λ = j + 2i + Λ₀.  In the particular case of stereographic projection,
-         * the geodetic longitude λ is equal to Λ. Furthermore in Apache SIS implementation, Λ₀ is added by
+         * the geodetic longitude λ is equal to Λ. Furthermore, in Apache SIS implementation, Λ₀ is added by
          * the denormalization matrix and shall not be handled here. The only remaining part is λ = j + 2i.
          */
         final double λ = j + 2*i;
@@ -416,7 +416,7 @@ public class ObliqueStereographic extends NormalizedProjection {
             /*
              * Formulas below are the same than the elliptical formulas after the geodetic coordinates
              * have been converted to conformal coordinates.  In this spherical case we do not need to
-             * perform such conversion. Instead we have directly   χ = φ  and  Λ = λ.   The simplified
+             * perform such conversion. Instead, we have directly   χ = φ  and  Λ = λ.  The simplified
              * EPSG formulas then become the same than Snyder formulas for the spherical case.
              */
             final double sinφ      = sin(φ);

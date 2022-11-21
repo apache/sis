@@ -44,7 +44,7 @@ import static org.apache.sis.internal.referencing.provider.Mollweide.*;
  * </ul>
  *
  * @todo This projection is not {@link org.apache.sis.math.FunctionProperty#SURJECTIVE surjective}.
- *       Consequently {@link org.apache.sis.referencing.CRS#suggestCommonTarget CRS.suggestCommonTarget(…)}
+ *       Consequently, {@link org.apache.sis.referencing.CRS#suggestCommonTarget CRS.suggestCommonTarget(…)}
  *       may not work correctly if a CRS uses this projection.
  *       See <a href="https://issues.apache.org/jira/browse/SIS-427">SIS-427</a>.
  *

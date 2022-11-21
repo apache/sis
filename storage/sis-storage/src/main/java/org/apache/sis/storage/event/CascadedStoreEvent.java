@@ -23,20 +23,20 @@ import org.apache.sis.storage.Resource;
 
 /**
  * An event which, when occurring on a parent resource, is also fired by all children resources.
- * For example when an {@link org.apache.sis.storage.Aggregate} (typically a data store) is closed,
+ * For example, when an {@link org.apache.sis.storage.Aggregate} (typically a data store) is closed,
  * a {@link CloseEvent} is automatically fired by all resources that are components of the aggregate.
  * This is similar to "cascade delete" in SQL databases.
  *
  * <h2>Difference between {@code StoreEvent} and {@code CascadedStoreEvent}</h2>
  * By default {@link StoreEvent}s are propagated from children to parents.
- * For example when a {@link WarningEvent} occurs in a child resource,
+ * For example, when a {@link WarningEvent} occurs in a child resource,
  * all listeners registered on that resource are notified,
  * then all listeners registered on the parent resource, and so forth until the root resource.
  * All those listeners receive the same {@link WarningEvent} instance,
  * i.e. the {@linkplain WarningEvent#getSource() event source} is always the resource where the warning occurred.
  *
  * <p>By contrast {@code CascadedStoreEvent} are fired in the opposite direction, from parent to children.
- * Furthermore each child creates its own {@code CascadedStoreEvent}. For example if a {@link CloseEvent} is
+ * Furthermore, each child creates its own {@code CascadedStoreEvent}. For example if a {@link CloseEvent} is
  * fired in a {@link org.apache.sis.storage.DataStore}, then it causes all resources of that data store to fire
  * their own {@link CloseEvent} declaring themselves as the {@linkplain CloseEvent#getSource() event source}.</p>
  *

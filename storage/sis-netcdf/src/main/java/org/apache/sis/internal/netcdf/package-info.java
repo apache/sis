@@ -23,12 +23,12 @@
  * <p>We do not use systematically the UCAR library because it is quite large (especially when including
  * all dependencies) while SIS uses only a fraction of it. This is because the UCAR library provides some
  * features like referencing services which overlap with SIS services. In addition, SIS often needs "raw"
- * data instead of "high level" data. For example we need the minimal and maximal values of a variable in
+ * data instead of "high level" data. For example, we need the minimal and maximal values of a variable in
  * its raw format, while the UCAR high level API provides the values converted by the offset and scale
  * factors.</p>
  *
  * <p>A side effect of this isolation layer is also to adapt netCDF vocabulary to Apache SIS one.
- * For example what netCDF calls <cite>"coordinate system"</cite> is actually a mix of what OGC/ISO
+ * For example, what netCDF calls <cite>"coordinate system"</cite> is actually a mix of what OGC/ISO
  * specifications call <cite>"coordinate system"</cite>, <cite>"coordinate reference system"</cite>
  * and <cite>"grid geometry"</cite>. The netCDF coordinate system <cite>"range"</cite> is closer to
  * ISO 19123 <cite>"domain"</cite>, the netCDF coordinate system <cite>"domain"</cite> is closer to

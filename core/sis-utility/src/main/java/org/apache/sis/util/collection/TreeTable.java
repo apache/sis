@@ -57,7 +57,7 @@ import java.util.List;
  * }
  *
  * In the above example, the type of value returned by the {@link Node#getValue(TableColumn)}
- * method is determined by the column constant. However this approach is possible only when
+ * method is determined by the column constant. However, this approach is possible only when
  * the table structure is known in advance. If a method needs to work with arbitrary tables,
  * then that method can get the list of columns by a call to {@link #getColumns()}. However
  * this column list does not provide the above type-safety.
@@ -71,7 +71,7 @@ public interface TreeTable {
     /**
      * Returns the table columns, in the order they shall be rendered by default.
      * This method returns the union of all table columns in every nodes of this
-     * tree. However any {@link Node} instance can return {@code null} for a
+     * tree. However, any {@link Node} instance can return {@code null} for a
      * particular column if the node doesn't have that column.
      *
      * @return the union of all table columns in every tree node.
@@ -267,7 +267,7 @@ public interface TreeTable {
          * </table>
          *
          * The {@link org.apache.sis.metadata.AbstractMetadata#asTreeTable()} method gives a view in which each node
-         * has its content fully generated from wrapped metadata object. Consequently a naive walk over the above tree
+         * has its content fully generated from wrapped metadata object. Consequently, a naive walk over the above tree
          * causes an infinite loop with {@code TreeTable} generating nodes with identical content as we bounce between
          * {@code Platform} and {@code Instrument} metadata objects. To break this loop, we need to know when the
          * <em>content</em> of a node (in this example, the wrapped metadata object) has already been visited.

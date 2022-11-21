@@ -154,7 +154,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      * <p>Note that the above strategy assumes that the matrix is used for an affine transform, which is not always
      * true (it could be the matrix of a map projection derivative for instance). If the matrix is not for an affine
      * transform, then the last column has no special meaning and the above strategy is somewhat asymmetric.
-     * However it will still produce NaN for the full row in matrix multiplications.</p>
+     * However, it will still produce NaN for the full row in matrix multiplications.</p>
      *
      * <p>Conversely, if the matrix has more rows than columns (in a system of linear equations, the system would
      * be <cite>overdetermined</cite>), then we omit the rows containing only zero or NaN values. After the matrix

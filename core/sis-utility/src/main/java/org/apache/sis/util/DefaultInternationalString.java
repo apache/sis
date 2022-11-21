@@ -240,7 +240,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
      *
      * <h4>Handling of {@code null} argument value</h4>
      * In the default implementation, the {@code null} locale is handled as a synonymous of
-     * {@code Locale.ROOT}. However subclasses are free to use a different fallback. Client
+     * {@code Locale.ROOT}. However, subclasses are free to use a different fallback. Client
      * code are encouraged to specify only non-null values for more determinist behavior.
      *
      * @param  locale  the desired locale for the string to be returned.

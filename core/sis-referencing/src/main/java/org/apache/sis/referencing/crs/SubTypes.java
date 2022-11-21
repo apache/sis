@@ -130,7 +130,7 @@ final class SubTypes implements Comparator<Object> {
                 /*
                  * Result of XML unmarshalling — keep as-is. We avoid creating a new object because it
                  * would break object identities specified in GML document by the xlink:href attribute.
-                 * However we may revisit this policy in the future. See SC_CRS.setElement(AbstractCRS).
+                 * However, we may revisit this policy in the future. See SC_CRS.setElement(AbstractCRS).
                  */
                 return (DefaultGeodeticCRS) object;
             }

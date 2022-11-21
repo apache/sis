@@ -54,7 +54,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * This class API is compatibly with the {@link java.io.DataOutput} interface, so subclasses can implement that
  * interface if they wish. This class does not implement {@code DataOutput} itself because it is not needed for
  * SIS purposes.
- * However the {@link ChannelImageOutputStream} class implements the {@code DataOutput} interface, together with
+ * However, the {@link ChannelImageOutputStream} class implements the {@code DataOutput} interface, together with
  * the {@link javax.imageio.stream.ImageOutputStream} one, mostly for situations when inter-operability with
  * {@link javax.imageio} is needed.
  *

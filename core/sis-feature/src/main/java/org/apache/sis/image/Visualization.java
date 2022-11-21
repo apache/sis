@@ -217,7 +217,7 @@ final class Visualization extends ResampledImage {
                 initialized = true;
             } else {
                 /*
-                 * Ranges of sample values were not specified explicitly. Instead we will try to infer them
+                 * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
                  * in various ways: sample dimensions, scaled color model, statistics in last resort.
                  */
                 colorizer = new Colorizer(categoryColors);

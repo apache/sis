@@ -105,7 +105,7 @@ import ucar.nc2.constants.CF;
  *   <li>The size of latitude and longitude variables is not the same than the size of image data.
  *       This particularity is handled by {@link #gridToDataIndices(Variable)}.</li>
  *   <li>The {@code dim0} and {@code dim1} attribute names in image data have a different case
- *       than the attributes in longitude and latitude variables. Furthermore a value contains a typo.
+ *       than the attributes in longitude and latitude variables. Furthermore, a value contains a typo.
  *       This particularity is handled by {@link #nameOfDimension(Variable, int)}.</li>
  *   <li>The {@code Slope} and {@code Offset} attribute names are different than the names defined in CF-Convention.
  *       This particularity is handled by {@link #transferFunction(Variable)}.</li>
@@ -143,7 +143,7 @@ public final class GCOM_C extends Convention {
      * "Lower_left_longitude", "Lower_right_latitude", <i>etc.</i> attributes are difficult to use.
      * They are corners in the grid with no clear relationship with "real world" West and East bounds.
      * We have no way to detect anti-meridian spanning (the {@code left > right} test is useless) and
-     * the minimal latitude may be in the middle of a border. Consequently a bounding box made from
+     * the minimal latitude may be in the middle of a border. Consequently, a bounding box made from
      * the corner minimal and maximal coordinates is not guaranteed to encompass the whole data,
      * and may even contain no data at all.
      */
@@ -315,7 +315,7 @@ public final class GCOM_C extends Convention {
             if (QA_FLAG.equals(dataOrAxis.getName())) {
                 /*
                  * The "QA_flag" variable is missing "Dim0" and "Dim1" attribute in GCOM-C version 1.00.
-                 * However not all GCOM-C files use a localization grid. We use the presence of spatial
+                 * However, not all GCOM-C files use a localization grid. We use the presence of spatial
                  * resolution attribute as a sentinel value for now.
                  */
                 if (dataOrAxis.getAttributeType("Spatial_resolution") != null) {

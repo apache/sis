@@ -57,7 +57,7 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
      *
      * <h4>Case of JPEG</h4>
      * The JPEG image reader implementation in standard JDK seems to count a number of images that can be anything.
-     * However documentation on the web often describes the JPEG format as a container for a single image.
+     * However, documentation on the web often describes the JPEG format as a container for a single image.
      * It is not clear if we should include JPEG in this list or not.
      */
     private static final String[] SINGLE_IMAGE_FORMATS = {"PNG", "BMP", "WBMP", "JPEG"};

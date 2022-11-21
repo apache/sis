@@ -275,7 +275,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
      * Tests the "WGS 72 / UTM zone 10N" projection and ensures
      * that it is not confused with "WGS 72BE / UTM zone 10N".
      * In the EPSG database, those two projected CRS use the same conversion.
-     * However in Apache SIS the conversions must differ because the datum are not the same.
+     * However, in Apache SIS the conversions must differ because the datum are not the same.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
@@ -724,7 +724,7 @@ public final strictfp class EPSGFactoryTest extends TestCase {
         }
 
         // We are cheating here since we are breaking generic type check.
-        // However in the particular case of our EPSG factory, it works.
+        // However, in the particular case of our EPSG factory, it works.
         @SuppressWarnings({"unchecked","rawtypes"})
         final Set<?> units = factory.getAuthorityCodes((Class) Unit.class);
         assertFalse(units.isEmpty());

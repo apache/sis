@@ -199,7 +199,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
         } else if (operation != null) {
             /*
              * Should not happen with objects created by public methods since the constructor created the transform itself.
-             * However may happen with operations parsed from GML. As a fallback, search in the components of CompoundCRS.
+             * However, may happen with operations parsed from GML. As a fallback, search in the components of CompoundCRS.
              * This is not a universal fallback, but works for the most straightforward cases.
              */
             final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();

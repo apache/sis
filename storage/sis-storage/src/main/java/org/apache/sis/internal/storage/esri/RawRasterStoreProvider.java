@@ -35,7 +35,7 @@ import org.apache.sis.storage.DataStore;
  *
  * <h2>Thread safety</h2>
  * The same {@code RawRasterStoreProvider} instance can be safely used by many threads without synchronization on
- * the part of the caller. However the {@link RawRasterStore} instances created by this factory are not thread-safe.
+ * the part of the caller. However, the {@link RawRasterStore} instances created by this factory are not thread-safe.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

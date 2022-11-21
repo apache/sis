@@ -107,7 +107,7 @@ public final strictfp class DefaultConversionTest extends TestCase {
      *
      * <p><b>This is not really a valid conversion</b> since, strictly speaking, <cite>Longitude rotations</cite>
      * are coordinate <em>transformations</em> rather than conversions (because they change the datum, since they
-     * change the prime meridian). However we handle them as conversions for testing purpose only, because the
+     * change the prime meridian). However, we handle them as conversions for testing purpose only, because the
      * longitude rotation is a very simple operation easy to test.</p>
      *
      * @param  useGreenwich  {@code true} for using Greenwich prime meridian in the {@code targetCRS},

@@ -38,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
 /**
  * Information about netCDF coordinate system, which include information about grid geometries.
  * In OGC/ISO specifications, the coordinate system and the grid geometries are distinct entities.
- * However the UCAR model takes a different point of view where the coordinate system holds some
+ * However, the UCAR model takes a different point of view where the coordinate system holds some
  * of the grid geometry information.
  *
  * <p>{@code GridWrapper} instances do not contain data; they are only about the geometry of grids.
@@ -288,7 +288,7 @@ next:       for (final String name : axisNames) {
             /*
              * Get the grid dimensions (part of the "domain" in UCAR terminology) used for computing
              * the coordinate values along the current axis. There is exactly 1 such grid dimension in
-             * straightforward netCDF files. However some more complex files may have 2 dimensions.
+             * straightforward netCDF files. However, some more complex files may have 2 dimensions.
              */
             int i = 0;
             final List<Dimension> axisDomain = axis.getDimensions();

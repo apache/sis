@@ -40,7 +40,7 @@ import org.apache.sis.util.collection.IntegerList;
  *
  * <h2>Garbage collection</h2>
  * This method does not implement {@link AutoCloseable} because the same instance may be shared by many users,
- * since {@link EPSGDataAccess#getAuthorityCodes(Class)} caches {@code AuthorityCodes} instances. Furthermore we can
+ * since {@link EPSGDataAccess#getAuthorityCodes(Class)} caches {@code AuthorityCodes} instances. Furthermore, we can
  * not rely on the users closing {@code AuthorityCodes} themselves because this is not part of the usual contract
  * for Java collection classes (we could document that recommendation in method Javadoc, but not every developers
  * read Javadoc). Relying on the garbage collector for disposing this resource is far from ideal, but alternatives

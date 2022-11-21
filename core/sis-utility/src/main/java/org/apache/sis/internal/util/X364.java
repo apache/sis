@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>This enumeration is restricted to a subset of the <cite>ANSI escape codes</cite> (a.k.a.
  * ECMA-48, ISO/IEC 6429 and X3.64 standards) because SIS uses them mostly for syntax coloring in
- * console outputs. However those attributes can also occasionally be used for HTML rendering.</p>
+ * console outputs. However, those attributes can also occasionally be used for HTML rendering.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7

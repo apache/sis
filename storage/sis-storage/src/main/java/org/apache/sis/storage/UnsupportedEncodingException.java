@@ -19,7 +19,7 @@ package org.apache.sis.storage;
 
 /**
  * Thrown when a storage uses some encoding options not supported by current implementation.
- * For example it may be a compression method not implemented by the reader.
+ * For example, it may be a compression method not implemented by the reader.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

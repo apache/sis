@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A channel with a {@code read(…)} method fetching all bytes with theirs bits in reverse order.
- * For example byte {@code 11010100} will become {@code 00101011}.
+ * For example, byte {@code 11010100} will become {@code 00101011}.
  * The use of this class should be very rare.
  *
  * @author  Rémi Maréchal (Geomatys)

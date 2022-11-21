@@ -117,7 +117,7 @@ public final class Axis extends NamedElement {
      * When {@code gridDimensionIndices.length} ≥ 2 we may have two {@code Axis} instances with the same indices
      * in their {@code gridDimensionIndices} arrays, but those indices should be in different order.</p>
      *
-     * <p>The array length should be equal to {@link Variable#getNumDimensions()}. However this {@code Axis} class
+     * <p>The array length should be equal to {@link Variable#getNumDimensions()}. However, this {@code Axis} class
      * is tolerant to situations where the array length is shorter, which may happen if some grid dimensions where
      * not recognized or cannot be handled for whatever reason that {@link Grid} decided.</p>
      *
@@ -561,7 +561,7 @@ public final class Axis extends NamedElement {
     {
         /*
          * The axis name is stored without namespace, because the variable name in a netCDF file can be anything;
-         * this is not controlled vocabulary. However the standard name, if any, is stored with "NetCDF" namespace
+         * this is not controlled vocabulary. However, the standard name, if any, is stored with "NetCDF" namespace
          * because this is controlled vocabulary.
          */
         final String name = getName();
@@ -673,7 +673,7 @@ public final class Axis extends NamedElement {
             /*
              * Variable is a scalar, which is represented by an array of length 1.
              * There is no source dimension, only a target dimension fixed to a constant value.
-             * Consequently the scale factor does not exist in the matrix, only the translation.
+             * Consequently, the scale factor does not exist in the matrix, only the translation.
              */
             case 0: {
                 final Vector data = read();
@@ -698,7 +698,7 @@ public final class Axis extends NamedElement {
             /*
              * In netCDF files, axes are sometimes associated to two-dimensional localization grids.
              * If this is the case, then the following block checks if we can reduce those grids to
-             * one-dimensional vector. For example the following localisation grids:
+             * one-dimensional vector. For example, the following localisation grids:
              *
              *    10 10 10 10                  10 12 15 20
              *    12 12 12 12        or        10 12 15 20
@@ -761,7 +761,7 @@ public final class Axis extends NamedElement {
      * could not set coefficients in the matrix of an affine transform.
      *
      * <p>The <em>source</em> dimensions (pixel indices) are insensitive to variables order: invoking {@code A.f(B)}
-     * or {@code B.f(A)} are equivalent. However the <em>target</em> dimensions ("real world" coordinates) depend on
+     * or {@code B.f(A)} are equivalent. However, the <em>target</em> dimensions ("real world" coordinates) depend on
      * the order: values of this variable will be stored in the first target dimension of the localization grid, and
      * values of the other variable will be in the second target dimension.</p>
      *
@@ -802,7 +802,7 @@ public final class Axis extends NamedElement {
         }
         /*
          * First, verify if the localization grid has already been created previously. It happens if the netCDF file
-         * contains data with different number of dimensions. For example a file may have a variable with (longitude,
+         * contains data with different number of dimensions. For example, a file may have a variable with (longitude,
          * latitude) and another variable with (longitude, latitude, depth) dimensions, with both variables using the
          * same localization grid for the (longitude, latitude) part.
          */
@@ -855,7 +855,7 @@ public final class Axis extends NamedElement {
                 }
                 /*
                  * There is usually a one-to-one relationship between localization grid cells and image pixels.
-                 * Consequently an accuracy set to a fraction of cell should be enough.
+                 * Consequently, an accuracy set to a fraction of cell should be enough.
                  *
                  * TODO: take in account the case where GridAdjustment.dataToGridIndices() returns a value
                  * smaller than 1. For now we set the desired precision to a value 10 times smaller in order

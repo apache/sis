@@ -22,7 +22,7 @@ import java.util.EnumSet;
 
 /**
  * The manners in which the inputs of a function are mapped to the outputs.
- * The function doesn't need to be mathematical. For example this enumeration
+ * The function doesn't need to be mathematical. For example, this enumeration
  * can be used with {@link org.apache.sis.util.ObjectConverter}.
  *
  * <p>Any given function can have zero, one or more properties from this enumeration.
@@ -47,7 +47,7 @@ import java.util.EnumSet;
  * <ul>
  *   <li><var>S</var> (as in <cite>source</cite>) is the set of all possible input values (the <cite>domain</cite>).
  *   <li><var>T</var> (as in <cite>target</cite>) is a set containing all possible output values,
- *       and potentially more elements (the <cite>codomain</cite>). For example the set of output
+ *       and potentially more elements (the <cite>codomain</cite>). For example, the set of output
  *       values of the {@link Integer#toString()} function is included in a larger set, which is
  *       the set of all possible {@link String} values. In this Javadoc, <var>T</var> stands for
  *       the latter set.</li>

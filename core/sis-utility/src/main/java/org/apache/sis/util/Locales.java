@@ -252,7 +252,7 @@ filter: for (final Locale locale : locales) {
      *
      * <div class="note"><b>Example:</b>
      * This method is useful when language codes are appended to a base property or resource name.
-     * For example a dictionary may define the {@code "remarks"} property by values associated to the
+     * For example, a dictionary may define the {@code "remarks"} property by values associated to the
      * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.</div>
      *
      * @param  code  the language code, which may be followed by country code.
@@ -272,7 +272,7 @@ filter: for (final Locale locale : locales) {
             /*
              * IETF BCP 47 language tag string. This syntax uses the '-' separator instead of '_'.
              * Note that the '_' character is illegal for the language code, but is legal for the
-             * variant. Consequently we require the '-' character to appear before the first '_'.
+             * variant. Consequently, we require the '-' character to appear before the first '_'.
              */
             return unique(new Locale.Builder().setLanguageTag(code).build());
         }

@@ -173,7 +173,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <div class="note"><b>Example:</b>
      * The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one defined by
      * {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted according the
-     * user's locale. Consequently {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
+     * user's locale. Consequently, {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
      * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.</div>
      *
      * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
@@ -246,7 +246,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@linkplain ParsePosition#getErrorIndex() error index} may be set to 5 (the beginning of the {@code "40.0"}
      * character sequence) or to 7 (the coma position), depending on the implementation.</div>
      *
-     * Most implementations never return {@code null}. However some implementations may choose to return {@code null}
+     * Most implementations never return {@code null}. However, some implementations may choose to return {@code null}
      * if they can determine that the given text is not a supported format and reserve {@code ParseException} for the
      * cases where the text seems to be the expected format but contains a malformed element.
      *
@@ -349,7 +349,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *
      * <div class="note"><b>Note:</b>
      * Strictly speaking, an {@link IOException} could still occur if a subclass overrides the above {@code format}
-     * method and performs some I/O operation outside the given {@link StringBuffer}. However this is not the intended
+     * method and performs some I/O operation outside the given {@link StringBuffer}. However, this is not the intended
      * usage of this class and implementers should avoid such unexpected I/O operation.</div>
      *
      * @param  object      the object to format.
@@ -467,7 +467,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * <code>expected.{@linkplain Class#isAssignableFrom(Class) isAssignableFrom}(type)</code>,
      * because the check for parent types is done by the {@link #getFormat(Class)} method.
      * This approach allows subclasses to create specialized formats for different value
-     * sub-types. For example a subclass may choose to format {@link Double} values differently
+     * sub-types. For example, a subclass may choose to format {@link Double} values differently
      * than other types of number.
      *
      * @param  valueType  the base type of values to parse or format.
@@ -539,7 +539,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     /*
      * Do not override equals(Object) and hashCode(). They are unlikely to be needed since we
      * do not expect CompoundFormats to be used as keys in HashMap, especially since they are
-     * mutable. Furthermore it is difficult to check for equality since the values in the
+     * mutable. Furthermore, it is difficult to check for equality since the values in the
      * 'formats' map are created only when needed and we don't know how subclasses will
      * configure them.
      */

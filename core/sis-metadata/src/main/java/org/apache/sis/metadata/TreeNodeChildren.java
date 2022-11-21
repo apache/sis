@@ -100,7 +100,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     /**
      * Index of the property to write in the parent node instead of as a child.
      * If a property has the same name than the parent property that contains it,
-     * we write its value in that parent property. For example instead of:
+     * we write its value in that parent property. For example, instead of:
      *
      * {@preformat text
      *   Citation
@@ -203,7 +203,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      *
      * <h4>Implementation note</h4>
      * This method sets the property to {@code null}. This is not strictly correct for collections,
-     * since we should rather set the property to an empty collection. However this approach would
+     * since we should rather set the property to an empty collection. However, this approach would
      * force us to check if the expected collection type is actually a list, a set or any other type.
      * Passing null avoid the type check and is safe at least with SIS implementation. We may revisit
      * later if this appears to be a problem with other implementations.

@@ -29,11 +29,11 @@ import org.apache.sis.util.resources.Vocabulary;
  * Those levels are used for events that would normally be logged at {@link Level#FINE},
  * but with the possibility to use a slightly higher level if execution time was long.
  * Different logging levels - {@link #SLOWNESS} and {@link #SLOWER} - are provided for logging
- * only the events taking more time than some thresholds. For example the console could log
+ * only the events taking more time than some thresholds. For example, the console could log
  * only the slowest events, while a file could log all events considered slow.
  *
  * <p>Every levels defined in this class have a {@linkplain #intValue() value} between the
- * {@link Level#FINE} and {@link Level#CONFIG} values. Consequently performance logging are
+ * {@link Level#FINE} and {@link Level#CONFIG} values. Consequently, performance logging are
  * disabled by default, and enabling them imply enabling configuration logging too. This is
  * done that way because the configuration typically have a significant impact on performance.</p>
  *
@@ -63,7 +63,7 @@ public final class PerformanceLevel extends Level {
 
     /**
      * The level for logging relatively slow events. By default, only events having an execution
-     * time equals or greater than 1 second are logged at this level. However this threshold can
+     * time equals or greater than 1 second are logged at this level. However, this threshold can
      * be changed by a call to <code>SLOWNESS.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      *
      * @since 1.3
@@ -73,7 +73,7 @@ public final class PerformanceLevel extends Level {
     /**
      * The level for logging only events slower than the ones logged at the {@link #SLOWNESS} level.
      * By default, only events having an execution time equals or greater than 10 seconds are
-     * logged at this level. However this threshold can be changed by a call to
+     * logged at this level. However, this threshold can be changed by a call to
      * <code>SLOWER.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
     public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", Vocabulary.Keys.Slower, 630, 10_000_000_000L);

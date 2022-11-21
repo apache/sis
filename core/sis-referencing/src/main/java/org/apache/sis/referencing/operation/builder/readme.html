@@ -25,7 +25,7 @@
       The assumption that all errors are in geospatial coordinates is reasonable if the linear regression is used directly.
       But in <code>LocalizationGridBuilder</code> context, having the smallest errors on geospatial coordinates
       may not be so important because those errors are corrected by the residual grids during <em>forward</em> transformations.
-      However during <em>inverse</em> transformations, it may be useful that grid indices estimated by the linear regression
+      However, during <em>inverse</em> transformations, it may be useful that grid indices estimated by the linear regression
       are as close as possible to the real grid indices in order to allow iterations to converge faster
       (such iterations exist only in inverse operations, not in forward operations).
       For that reason, <code>LocalizationGridBuilder</code> may want to minimize errors on grid indices instead of geospatial coordinates.

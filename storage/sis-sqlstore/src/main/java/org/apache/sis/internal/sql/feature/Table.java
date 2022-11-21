@@ -333,7 +333,7 @@ final class Table extends AbstractFeatureSet {
      *
      * <h2>Limitations</h2>
      * The exact behavior is database-dependent.
-     * For example PostGIS implementation assumes that all geometries in the same column are in the same CRS.
+     * For example, PostGIS implementation assumes that all geometries in the same column are in the same CRS.
      * If geometries in different <em>rows</em> use different CRS, coordinate transformations are <em>not</em>
      * applied and the result is likely to be invalid. However if different <em>column</em> use different CRS,
      * coordinate transformations between columns is applied and the result is in the CRS of the first column

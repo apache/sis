@@ -74,7 +74,7 @@ final strictfp class PackageVerifier {
      *
      * <p>Non-ALL values are rare. They happen in a few cases where a property is legacy despite its namespace.
      * Those "properties" are errors in the legacy ISO 19139:2007 schema; they were types without their property
-     * wrappers. For example in {@code SV_CoupledResource}, {@code <gco:ScopedName>} was marshalled without its
+     * wrappers. For example, in {@code SV_CoupledResource}, {@code <gco:ScopedName>} was marshalled without its
      * {@code <srv:scopedName>} wrapper — note the upper and lower-case "s". Because {@code ScopedName} is a type,
      * we had to keep the namespace declared in {@link org.apache.sis.util.iso.DefaultScopedName}
      * (the replacement is performed by {@code org.apache.sis.xml.TransformingWriter}).</p>
@@ -315,7 +315,7 @@ final strictfp class PackageVerifier {
         }
         /*
          * Properties in the legacy GMD or GMI namespaces may be deprecated, depending if a replacement
-         * is already available or not. However properties in other namespaces should not be deprecated.
+         * is already available or not. However, properties in other namespaces should not be deprecated.
          * Some validations of deprecated properties are skipped because we didn't loaded their schema.
          */
         isDeprecatedClass = (LEGACY_NAMESPACES.get(classNS) == ALL);
@@ -418,7 +418,7 @@ final strictfp class PackageVerifier {
         }
         /*
          * We do not verify fully the properties in legacy namespaces because we didn't loaded their schemas.
-         * However we verify at least that those properties are not declared as required.
+         * However, we verify at least that those properties are not declared as required.
          */
         if (LEGACY_NAMESPACES.getOrDefault(ns, Collections.emptySet()).contains(name)) {
             if (!isDeprecatedClass && element.required()) {

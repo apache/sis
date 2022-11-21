@@ -48,7 +48,7 @@ import org.apache.sis.io.TableAppender;
  *
  * <h2>Multi-threading</h2>
  * Instances of this class are immutable (except for the cache) and safe for use by multiple threads.
- * However it assumes that the {@link GridCoverageResource} given to the constructor is also thread-safe;
+ * However, it assumes that the {@link GridCoverageResource} given to the constructor is also thread-safe;
  * this class does not synchronize accesses to the resource (because it may be used outside this class anyway).
  *
  * @author  Martin Desruisseaux (Geomatys)

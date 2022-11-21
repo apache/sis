@@ -42,7 +42,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>{@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}</li>
  * </ul>
  *
- * This class does not attempt to decode URL characters. For example a URL for "m/s" may be encoded as below,
+ * This class does not attempt to decode URL characters. For example, a URL for "m/s" may be encoded as below,
  * in which case the value in the {@link #code} field will be {@code "m%2Fs"} instead of {@code "m/s"}.
  * <ul>
  *   <li>{@code http://www.opengis.net/def/uom/SI/0/m%2Fs}</li>
@@ -171,7 +171,7 @@ public final class DefinitionURI {
      * Server and path portions of HTTP URL for various types (currently {@code "crs"}).
      * For each URL, value starts after the protocol part and finishes before the authority filename.
      *
-     * <p>As of Apache SIS 0.4, this map has a single entry. However more entries may be added in future SIS versions.
+     * <p>As of Apache SIS 0.4, this map has a single entry. However, more entries may be added in future SIS versions.
      * If new entries are added, then see the TODO comment in the {@link #codeForGML(String, String, String, int,
      * DefinitionURI)} method.</p>
      */

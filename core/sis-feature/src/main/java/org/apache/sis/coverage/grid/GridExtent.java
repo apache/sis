@@ -80,7 +80,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * A range of grid coverage coordinates, also known as "grid envelope".
  * {@code GridExtent} are defined by {@linkplain #getLow() low} coordinates (often all zeros)
  * and {@linkplain #getHigh() high} coordinates, <strong>inclusive</strong>.
- * For example a grid with a width of 512 cells can have a low coordinate of 0 and high coordinate of 511.
+ * For example, a grid with a width of 512 cells can have a low coordinate of 0 and high coordinate of 511.
  *
  * <div class="note"><b>Note:</b>
  * The inclusiveness of {@linkplain #getHigh() high} coordinates come from ISO 19123.
@@ -186,7 +186,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Verifies that the given array (if non-null) contains no duplicated values, then returns a copy of that array.
-     * The returned copy may be shared by many {@code GridExtent} instances. Consequently it shall not be modified.
+     * The returned copy may be shared by many {@code GridExtent} instances. Consequently, it shall not be modified.
      *
      * @throws IllegalArgumentException if the given array contains duplicated elements.
      */
@@ -471,7 +471,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                         upper--;                                                // For making the coordinate inclusive.
                         /*
                          * The [lower … upper] range may be slightly larger than desired in some rounding error situations.
-                         * For example if `min` was 1.49999 and `max` was 2.50001,  the rounding will create a [1…3] range
+                         * For example if `min` was 1.49999 and `max` was 2.50001, the rounding will create a [1…3] range
                          * while there is actually only 2 pixels. We detect those rounding problems by comparing the spans
                          * before and after rounding.  We attempt an adjustment only if the span mismatch is ±1, otherwise
                          * the difference is assumed to be caused by overflow. On the three values that can be affected by
@@ -1488,7 +1488,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the "real world" envelope computed from grid extent needs to stay approximately the same, then the
      * {@linkplain GridGeometry#getGridToCRS grid to CRS} transform needs to compensate the subsampling with
      * a pre-multiplication of each grid coordinates by {@code periods}.
-     * However the envelope computed that way may become <em>larger</em> after subsampling, not smaller.
+     * However, the envelope computed that way may become <em>larger</em> after subsampling, not smaller.
      * This effect can be understood intuitively if we consider that cells become larger after subsampling,
      * which implies that accurate representation of the same envelope may require fractional cells on some
      * grid borders.</div>

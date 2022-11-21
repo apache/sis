@@ -81,7 +81,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      *
      * <div class="note"><b>Design note:</b>
      * this method does not return approximated values because it is difficult to choose which fraction is best.
-     * For example choosing an approximated fraction for π value is quite arbitrary, and searching the fraction
+     * For example, choosing an approximated fraction for π value is quite arbitrary, and searching the fraction
      * closer than any other fraction representable by this class is computationally expansive.
      * Even with common fractions, the algorithm currently implemented in this class can detect that 1.6666666666666667
      * {@linkplain Double#equals(Object) is equal to} 5⁄3 but cannot detect easily that 1.66666666666666 (same number
@@ -214,7 +214,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      *
      * <p>The arguments given to this method are the results of multiplications and additions of {@code int} values.
      * This method fails if any argument value is {@link Long#MIN_VALUE} because that value cannot be made positive.
-     * However it should never happen. Even in the worst scenario:</p>
+     * However, it should never happen. Even in the worst scenario:</p>
      *
      * {@prefomat java
      *     long n = Math.multiplyFull(Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -542,7 +542,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * The matrix of Unicode symbols available for some fractions. Each row contains all symbols for the same numerator.
-     * For example the first row contains the symbol of all fractions of the form 0/x, the second row all fractions of
+     * For example, the first row contains the symbol of all fractions of the form 0/x, the second row all fractions of
      * the form 1/x, <i>etc.</i>. In each row, the character at column <var>i</var> is for the fraction having the
      * denominator i + (row index) + 1.
      */

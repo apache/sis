@@ -231,7 +231,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *     BOX(-180 -90, 180 90)
      * }
      *
-     * However this constructor is lenient to other geometry types like {@code POLYGON}.
+     * However, this constructor is lenient to other geometry types like {@code POLYGON}.
      * Actually this constructor ignores the geometry type and just applies the following
      * simple rules:
      *
@@ -243,8 +243,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *   <li>The coordinate having the highest dimension determines the dimension of this envelope.</li>
      * </ul>
      *
-     * This constructor does not check the consistency of the provided text. For example it does not
-     * check that every points in a {@code LINESTRING} have the same dimension. However this
+     * This constructor does not check the consistency of the provided text. For example, it does not
+     * check that every points in a {@code LINESTRING} have the same dimension. However, this
      * constructor ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
      * <div class="note"><b>Example:</b>
@@ -1051,7 +1051,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
                         /*
                          * If the range exceed the CS span, then we have to replace it by the
                          * full span, otherwise the range computed by the "else" block is too
-                         * small. The full range will typically be [-180 … 180]°.  However we
+                         * small. The full range will typically be [-180 … 180]°. However, we
                          * make a special case if the two bounds are multiple of the CS span,
                          * typically [0 … 360]°. In this case the [0 … -0]° range matches the
                          * original values and is understood by GeneralEnvelope as a range
@@ -1231,7 +1231,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /*
      * We do not provide vertical() and temporal() methods at this time. The interest of one-dimensional envelopes
-     * is not obvious. Furthermore in the vertical case it is not clear when we should do about ellipsoidal height,
+     * is not obvious. Furthermore, in the vertical case it is not clear when we should do about ellipsoidal height,
      * and in the temporal case what we should do with envelopes having 2 temporal axes (as seen in meteorological
      * data). Should we return the two temporal axes in two-dimensional envelopes?
      */
@@ -1241,7 +1241,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * changes applied on the original envelope is reflected in the sub-envelope view, and conversely.
      *
      * <p>This method is useful for querying and updating only some dimensions.
-     * For example in order to expand only the horizontal component of a four dimensional
+     * For example, in order to expand only the horizontal component of a four dimensional
      * (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) envelope, one can use:</p>
      *
      * {@preformat java

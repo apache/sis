@@ -69,7 +69,7 @@ public final strictfp class TransverseMercatorTest extends MapProjectionTestCase
      * On the WGS84 ellipsoid at latitudes greater than 20°, we found errors less than 1 meter
      * for all ∆λ &lt; (1 − ℯ)⋅90° (82.63627282416406551 in WGS84 case). For larger ∆λ values
      * Karney (2009) uses an “extended” domain of transverse Mercator projection, but Apache SIS
-     * does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90° should
+     * does not support such extension. Consequently, ∆λ values between (1 − ℯ)⋅90° and 90° should
      * be considered invalid but are not rejected by Apache SIS. Note that even for those invalid
      * values, the reverse projection continue to gives back the original values.
      */

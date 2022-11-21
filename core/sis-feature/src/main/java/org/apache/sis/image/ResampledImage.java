@@ -126,7 +126,7 @@ public class ResampledImage extends ComputedImage {
      * for interpolation support.
      *
      * <p>This transform may be an instance of {@link ResamplingGrid} if the usage of such grid has been authorized.
-     * That transform may be non-invertible. Consequently this transform should not be used for inverse operations
+     * That transform may be non-invertible. Consequently, this transform should not be used for inverse operations
      * and should not be made accessible to the user.</p>
      *
      * <p>This transform maps pixel centers of both images, except in the case of nearest-neighbor interpolation.
@@ -345,7 +345,7 @@ public class ResampledImage extends ComputedImage {
      *
      * <p>Since interpolator will receive data at coordinates {@code max} to {@code max + span - 1} inclusive
      * and since those coordinates are pixel centers, the points to interpolate are on the surface of a valid
-     * pixel until {@code (max + span - 1) + 0.5}. Consequently this method computes {@code max + span - 0.5}.
+     * pixel until {@code (max + span - 1) + 0.5}. Consequently, this method computes {@code max + span - 0.5}.
      * An additional 0.5 offset is added in the special case of nearest-neighbor interpolation for consistency
      * with {@link #interpolationSupportOffset(int)}.</p>
      *
@@ -738,7 +738,7 @@ public class ResampledImage extends ComputedImage {
             /*
              * Pixel coordinate along X axis where to start writing the `values` or `intValues` array.
              * This is usually the first column of the tile, and the number of pixels to write is the
-             * tile width (i.e. we write a full tile row). However those values may be modified below
+             * tile width (i.e. we write a full tile row). However, those values may be modified below
              * if we avoid writing pixels that are outside the source image.
              */
             int posX = tileMinX;

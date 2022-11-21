@@ -483,7 +483,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * <p>In the case of those wrappers, this method may return more grid geometries than
      * what the actual number of rasters (or data cubes) in the file. This is because an
      * {@linkplain VariableWrapper#findGrid additional filtering is done by the variable}.
-     * Consequently this method is not completely reliable for determining if the file
+     * Consequently, this method is not completely reliable for determining if the file
      * contains grids.</p>
      *
      * @return all grid geometries, or an empty array if none.

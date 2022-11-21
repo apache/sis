@@ -115,7 +115,7 @@ public final strictfp class WeakHashSetTest extends TestCase {
                     if (weakModified) {
                         /*
                          * The element was not in the WeakHashSet, possibly GC collected it.
-                         * Consequently that element cannot be in the HashSet neither, otherwise
+                         * Consequently, that element cannot be in the HashSet neither, otherwise
                          * a strong reference would exist which should have prevented the element
                          * from being removed from the WeakHashSet.
                          */

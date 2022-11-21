@@ -48,7 +48,7 @@ import org.apache.sis.internal.util.Strings;
  * </ul>
  *
  * This class does <strong>not</strong> support by itself rectangles crossing the anti-meridian of a geographic CRS.
- * However the {@link #getX()}, {@link #getY()}, {@link #getWidth()} and {@link #getHeight()} methods are defined in
+ * However, the {@link #getX()}, {@link #getY()}, {@link #getWidth()} and {@link #getHeight()} methods are defined in
  * the straightforward way expected by {@link Envelope2D#intersects(Rectangle2D)} and similar methods for computing
  * correct result if the given {@code Rectangle2D} crosses the anti-meridian.
  *

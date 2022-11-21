@@ -53,7 +53,7 @@ import org.opengis.metadata.quality.ValueStructure;
  * <h2>Note about raw-type usage</h2>
  * We use raw type (i.e. we implement {@code ParameterDescriptor} instead of {@code ParameterDescriptor<T>})
  * because there is no way we can know {@code <T>} for sure at unmarshalling time. This is not a recommended
- * practice, so <strong>this class shall not be in public API</strong>.  However it should be okay to create
+ * practice, so <strong>this class shall not be in public API</strong>. However, it should be okay to create
  * {@code QualityParameter} instances in Apache SIS internal code if all methods creating such instances
  * declare {@code ParameterDescriptor<?>} as their return type.
  *

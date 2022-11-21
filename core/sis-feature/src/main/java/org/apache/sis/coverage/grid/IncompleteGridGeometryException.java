@@ -19,7 +19,7 @@ package org.apache.sis.coverage.grid;
 
 /**
  * Thrown by {@link GridGeometry} when a grid geometry cannot provide the requested information.
- * For example this exception is thrown when {@link GridGeometry#getEnvelope()} is invoked while
+ * For example, this exception is thrown when {@link GridGeometry#getEnvelope()} is invoked while
  * the grid geometry has been built with a null envelope.
  *
  * <p>The {@link GridGeometry#isDefined(int)} can be used for avoiding this exception.

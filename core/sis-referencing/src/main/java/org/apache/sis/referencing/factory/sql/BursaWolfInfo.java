@@ -58,7 +58,7 @@ final class BursaWolfInfo {
      * The target CRS for which to collect Bursa-Wolf parameters. Apache SIS accepts an arbitrary number of targets,
      * but the {@code TOWGS84} element only needs the parameters toward the EPSG:4326 coordinate reference system.
      * For now we fix the number of target CRS to only 1, but we can increase that amount in a future SIS version
-     * if needed. However it is better to restrict the target CRS to those that use a world-wide datum only.
+     * if needed. However, it is better to restrict the target CRS to those that use a world-wide datum only.
      */
     static final int TARGET_CRS = 4326;
 

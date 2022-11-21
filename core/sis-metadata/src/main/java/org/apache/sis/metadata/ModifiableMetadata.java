@@ -222,7 +222,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * but can be changed by a call to {@link #transitionTo(State)}.
      *
      * <p>{@link State#FINAL} implies that all properties are also final.
-     * This recursivity does not necessarily apply to other states. For example {@link State#EDITABLE}
+     * This recursivity does not necessarily apply to other states. For example, {@link State#EDITABLE}
      * does <strong>not</strong> imply that all {@code ModifiableMetadata} children are also editable.</p>
      *
      * <div class="note"><b>API note:</b>
@@ -269,7 +269,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *   </tr>
      * </table>
      *
-     * The effect of invoking this method may be recursive. For example transitioning to {@link State#FINAL}
+     * The effect of invoking this method may be recursive. For example, transitioning to {@link State#FINAL}
      * implies transitioning all children {@code ModifiableMetadata} instances to the final state too.
      *
      * @param  target  the desired new state (editable, completable or final).
@@ -710,7 +710,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
 
     /**
      * Returns {@code true} if empty collection should be returned as {@code null} value.
-     * This is usually not a behavior that we allow in public API. However this behavior
+     * This is usually not a behavior that we allow in public API. However, this behavior
      * is sometimes desired internally, for example when marshalling with JAXB or when
      * performing a {@code equals}, {@code isEmpty} or {@code prune} operation
      * (for avoiding creating unnecessary collections).

@@ -41,7 +41,7 @@ import org.apache.sis.measure.Units;
  * forward and the inverse converters.
  *
  * <p>Most converters are pretty close to bijective functions, but not exactly.
- * For example conversions from {@code String} to {@link java.io.File} is not
+ * For example, conversions from {@code String} to {@link java.io.File} is not
  * completely bijective because various path separators ({@code '/'} and {@code '\'})
  * produce the same {@code File} object.</p>
  *

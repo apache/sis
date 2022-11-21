@@ -86,7 +86,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      *
      * <h4>Memory consumption</h4>
      * The use of soft references instead of weak references is on the assumption that users typically use
-     * the same few Coordinate Reference Systems for their work. Consequently we presume that users will not
+     * the same few Coordinate Reference Systems for their work. Consequently, we presume that users will not
      * load a lot of grids and are likely to reuse the already loaded grids.
      */
     static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {

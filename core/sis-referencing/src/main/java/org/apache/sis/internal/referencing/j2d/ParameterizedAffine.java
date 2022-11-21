@@ -28,7 +28,7 @@ import org.apache.sis.internal.system.Semaphores;
  * An affine transform that remember the parameters used for its construction.
  * Those parameters may be very different than the usual affine transform parameters.
  *
- * For example an {@link org.apache.sis.internal.referencing.provider.Equirectangular} projection
+ * For example, an {@link org.apache.sis.internal.referencing.provider.Equirectangular} projection
  * can be expressed as an affine transform. In such case, the same affine transform can be described
  * by two equivalent set of parameters:
  *
@@ -112,7 +112,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * Returns the parameter values for this map projection.
      *
-     * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt. However if
+     * <p><b>Hack:</b> this method normally returns the matrix parameters in case of doubt. However, if
      * {@link Semaphores#ENCLOSED_IN_OPERATION} is set, then this method returns the map projection parameters
      * even if they are not a complete description of this math transform. This internal hack shall be used
      * only by {@link org.apache.sis.referencing.operation.AbstractCoordinateOperation}.</p>
@@ -121,7 +121,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
      * from a {@code GeographiCRS} base using (latitude, longitude) axis order. We need to concatenate an
      * affine transform performing the axis swapping before the actual map projection. The concatenated
      * transform is part of {@code SingleOperation}, which is itself part of {@code ProjecteCRS}.
-     * Consequently we have two conflicting needs:</p>
+     * Consequently, we have two conflicting needs:</p>
      *
      * <ul>
      *   <li>If this method is queried from a {@code SingleOperation} instance (usually indirectly as part of a

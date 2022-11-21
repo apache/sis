@@ -19,7 +19,7 @@ package org.apache.sis.storage.netcdf;
 /*
  * All imports below except "CF" and "ACDD" are for javadoc only.
  * The "CF" and "ACDD" imports are used only for its static final String constants,
- * which are inlined by javac. Consequently the compiled file of this class should
+ * which are inlined by javac. Consequently, the compiled file of this class should
  * have no dependency to the UCAR packages.
  */
 import java.io.Serializable;
@@ -191,7 +191,7 @@ public class AttributeNames {
      *
      * <div class="note"><b>Note:</b>
      * The member names in this class are upper-cases because they should be considered as constants.
-     * For example {@code AttributeNames.KEYWORD.TEXT} maps exactly to the {@code "keywords"} string
+     * For example, {@code AttributeNames.KEYWORD.TEXT} maps exactly to the {@code "keywords"} string
      * and nothing else. A lower-case {@code text} member name could be misleading since it would
      * suggest that the field contains the actual text value rather than the key by which the value
      * is identified in a netCDF file.</div>
@@ -586,7 +586,7 @@ public class AttributeNames {
      *
      * <div class="note"><b>Note:</b>
      * The member names in this class are upper-cases because they should be considered as constants.
-     * For example {@code AttributeNames.CREATOR.EMAIL} maps exactly to the {@code "creator_email"} string
+     * For example, {@code AttributeNames.CREATOR.EMAIL} maps exactly to the {@code "creator_email"} string
      * and nothing else. A lower-case {@code email} member name could be misleading since it would suggest
      * that the field contains the actual name value rather than the key by which the value is identified
      * in a netCDF file.</div>
@@ -917,7 +917,7 @@ public class AttributeNames {
      *
      * <div class="note"><b>Note:</b>
      * The member names in this class are upper-cases because they should be considered as constants.
-     * For example {@code AttributeNames.LATITUDE.MINIMUM} maps exactly to the {@code "geospatial_lat_min"}
+     * For example, {@code AttributeNames.LATITUDE.MINIMUM} maps exactly to the {@code "geospatial_lat_min"}
      * string and nothing else. A lower-case {@code minimum} member name could be misleading since it would
      * suggest that the field contains the actual latitude value rather than the key by which the value is
      * identified in a netCDF file.</div>
@@ -984,7 +984,7 @@ public class AttributeNames {
          *
          * <p>The default associations may not be always correct since the columns and rows can be anything.
          * Strictly speaking, the dimension name types shall be associated to the <em>grid axes</em> rather
-         * than the <em>coordinate system axes</em>. However the default association is correct in the common case
+         * than the <em>coordinate system axes</em>. However, the default association is correct in the common case
          * (for netCDF files) where there is no axis swapping in the <cite>grid to CRS</cite> conversion.</p>
          */
         public final DimensionNameType DEFAULT_NAME_TYPE;
@@ -1158,7 +1158,7 @@ public class AttributeNames {
 
     /**
      * The {@value} attribute name for a URL that gives the location of more complete metadata.
-     * For example it may be the URL to an ISO 19115 metadata in XML format.
+     * For example, it may be the URL to an ISO 19115 metadata in XML format.
      *
      * <p><b>Path in ISO 19115:</b></p> <ul><li>{@link Metadata} /
      * {@link Metadata#getMetadataLinkages() metadataLinkage} /

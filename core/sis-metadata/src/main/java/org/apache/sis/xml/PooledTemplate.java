@@ -71,7 +71,7 @@ final class PooledTemplate extends Pooled {
 
     /**
      * Indirectly invoked by the constructor as a side-effect of {@link #setProperty(String, Object)} implementation
-     * in the super-class This method is not of interest to {@code PooledTemplate}. However as a safety, the above
+     * in the super-class This method is not of interest to {@code PooledTemplate}. However, as a safety, the above
      * {@link #setStandardProperty(String, Object)} method will check that the map contains the value returned here.
      */
     @Override

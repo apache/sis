@@ -41,7 +41,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * <h2>Serialization</h2>
  * This base class is intentionally not serializable, and all private fields are marked as transient for making
  * this decision more visible. This is because the internal details of this class are quite arbitrary, so we do
- * not want to expose them in serialization for compatibility reasons. Furthermore some information are redundant,
+ * not want to expose them in serialization for compatibility reasons. Furthermore, some information are redundant,
  * so a serialization performed by subclasses may be more compact. Serialization of all necessary data shall be
  * performed by subclasses, and the transient fields shall be reconstructed by a call to
  * {@link #computeTransientFields(Map)}.

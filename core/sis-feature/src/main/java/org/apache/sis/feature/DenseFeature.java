@@ -61,7 +61,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
      * The properties (attributes or feature associations) in this feature.
      *
-     * Conceptually, values in this array are {@link Property} instances. However at first we will store only
+     * Conceptually, values in this array are {@link Property} instances. However, at first we will store only
      * the property <em>values</em>, and convert to an array of type {@code Property[]} only when at least one
      * property is requested. The intent is to reduce the amount of allocated objects as much as possible,
      * because typical SIS applications may create a very large amount of features.

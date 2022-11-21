@@ -75,7 +75,7 @@ public enum WraparoundMethod {
      * Envelope represented in a way where "lower" value may be greater than "upper" value.
      * This method can represent envelopes crossing the anti-meridian without the sacrifices imposed by
      * other methods (moving a corner outside the coordinate system domain or expanding the envelope).
-     * However this method can be used only with algorithms designed for handling this representation.
+     * However, this method can be used only with algorithms designed for handling this representation.
      * This is the case of Apache SIS {@link GeneralEnvelope} but often not the case of geometry libraries.
      *
      * <p>This method is said "normalized" because it is the only representation in Apache SIS which is guaranteed to

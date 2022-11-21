@@ -83,7 +83,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
      * The properties (attributes or feature associations) in this feature.
      *
-     * Conceptually, values in this map are {@link Property} instances. However at first we will store
+     * Conceptually, values in this map are {@link Property} instances. However, at first we will store
      * only the property <em>values</em>, and build the full {@code Property} objects only if they are
      * requested. The intent is to reduce the amount of allocated objects as much as possible, because
      * typical SIS applications may create a very large amount of features.

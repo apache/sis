@@ -95,7 +95,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * This is relevant only for the last column of tile matrix, because those tiles may be truncated
      * if the image size is not a multiple of tile size. It is usually necessary to read those tiles
      * fully anyway because otherwise, the pixels read from the storage would not be aligned with the
-     * pixels stored in the {@link Raster}. However there is a few exceptions where the read extent
+     * pixels stored in the {@link Raster}. However, there is a few exceptions where the read extent
      * should not be forced to the tile size:
      *
      * <ul>
@@ -711,7 +711,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Snapshot of a {@link AOI} iterator position. Those snapshots can be created during an iteration
-     * for processing a tile later. For example a {@link #readTiles(AOI)} method implementation may want
+     * for processing a tile later. For example, a {@link #readTiles(AOI)} method implementation may want
      * to create a list of all tiles to load before to start the actual reading process in order to read
      * the tiles in some optimal order, or for combining multiple read operations in a single operation.
      */
@@ -761,7 +761,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
         /**
          * Returns the coordinate of the pixel to read <em>inside</em> the tile, ignoring subsampling.
-         * The tile upper-left corner is assumed (0,0). Consequently the lower coordinates are usually
+         * The tile upper-left corner is assumed (0,0). Consequently, the lower coordinates are usually
          * (0,0) and the upper coordinates are usually the tile size, but those value may be different
          * if the enclosing {@link TiledGridCoverage} contains only one (potentially big) tile.
          * In that case, the reading process is more like untiled image reading.

@@ -66,7 +66,7 @@ import org.apache.sis.internal.feature.Resources;
  * Default implementation assumes that the pixel in upper-left left corner is located at coordinates (0,0).
  * This assumption is consistent with {@link org.apache.sis.coverage.grid.GridCoverage#render(GridExtent)}
  * contract, which produces an image located at (0,0) when the image region matches the {@code GridExtent}.
- * However subclasses can use a non-zero origin by overriding the methods documented in the
+ * However, subclasses can use a non-zero origin by overriding the methods documented in the
  * <cite>Sub-classing</cite> section below.
  *
  * <p>If this {@code ComputedImage} does not have any {@link WritableRenderedImage} source, then there is
@@ -185,7 +185,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * <div class="note"><b>Note on interaction with tile cache</b><br>
      * The use of a destination image may produce unexpected result if {@link #computeTile(int, int, WritableRaster)}
      * is invoked two times or more for the same destination tile. It may look like a problem because computed tiles
-     * can be discarded and recomputed at any time. However this problem should not happen because tiles computed by
+     * can be discarded and recomputed at any time. However, this problem should not happen because tiles computed by
      * this {@code ComputedImage} will not be discarded as long as {@code destination} has a reference to that tile.
      * If a {@code ComputedImage} tile has been discarded, then it implies that the corresponding {@code destination}
      * tile has been discarded as well, in which case the tile computation will restart from scratch; it will not be
@@ -270,7 +270,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
      * Sets an existing image where to write the computation result. The sample model of specified image shall
      * be equal to {@link #sampleModel} and the tile indices &amp; pixel coordinate systems shall be aligned.
-     * However the target image may be larger or smaller than this {@code ComputedImage}, by containing more
+     * However, the target image may be larger or smaller than this {@code ComputedImage}, by containing more
      * or less tiles (the presence or absence of a tile is a "all or nothing" decision). When this class needs
      * to compute a tile, one of the following choices is executed:
      *

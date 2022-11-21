@@ -45,7 +45,7 @@ import org.apache.sis.internal.referencing.Resources;
  *
  * <div class="note"><b>Implementation note:</b>
  * this class reproduces some {@link java.util.ArrayList} functionalities.
- * However we do <strong>not</strong> extend {@code ArrayList} because we really need the default method
+ * However, we do <strong>not</strong> extend {@code ArrayList} because we really need the default method
  * implementations provided by {@code AbstractList} — the optimizations performed by {@code ArrayList}
  * are not suitable here.</div>
  *

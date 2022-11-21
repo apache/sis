@@ -43,7 +43,7 @@ import org.apache.sis.util.resources.Vocabulary;
 public abstract class CalcAddins extends WeakBase implements XServiceName, XServiceInfo, XLocalizable {
     /**
      * Indirectly provides access to the service manager.
-     * For example {@code com.sun.star.sdb.DatabaseContext} holds databases registered with OpenOffice.
+     * For example, {@code com.sun.star.sdb.DatabaseContext} holds databases registered with OpenOffice.
      */
     protected final XComponentContext context;
 

@@ -349,7 +349,7 @@ public abstract class Initializer {
             /*
              * If the database does not exist, create it. We allow creation only if we are inside
              * the $SIS_DATA directory. The Java code creating the schemas is provided in other
-             * SIS modules. For example sis-referencing may create the EPSG dataset.
+             * SIS modules. For example, sis-referencing may create the EPSG dataset.
              */
             if (source instanceof LocalDataSource) {
                 ((LocalDataSource) source).createDatabase();

@@ -156,7 +156,7 @@ abstract class FeatureAnalyzer {
      * The table relations can be defined in both ways: the foreigner keys of the analyzed table
      * may be referencing the primary keys of other tables ({@link Relation.Direction#IMPORT}),
      * or the primary keys of the analyzed table may be referenced by the foreigner keys of other tables
-     * ({@link Relation.Direction#EXPORT}). However in both cases, we will translate that into associations
+     * ({@link Relation.Direction#EXPORT}). However, in both cases, we will translate that into associations
      * from the analyzed table to the other tables. We cannot rely on {@code IMPORT} versus {@code EXPORT}
      * direction for determining the association navigability because the database designer's choice may be
      * driven by the need to support multi-occurrences.

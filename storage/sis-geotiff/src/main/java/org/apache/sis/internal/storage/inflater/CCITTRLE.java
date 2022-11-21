@@ -38,8 +38,8 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  *   <tr><td>5</td> <td>0011</td></tr>
  * </table>
  *
- * Because the number of bits varies, leading zeros are significant. For example "11" is not equivalent to "011",
- * which is not equivalent to "0011" neither. Consequently we cannot parse directly the bits as integer values.
+ * Because the number of bits varies, leading zeros are significant. For example, "11" is not equivalent to "011",
+ * which is not equivalent to "0011" neither. Consequently, we cannot parse directly the bits as integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
