@@ -291,7 +291,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
         if (name instanceof LocalName) {
             /*
              * Note: a previous version was using String.compareToIgnoreCase(String).
-             * However it is slightly slower than String.compareTo(String), increase
+             * However, it is slightly slower than String.compareTo(String), increase
              * the inconsistency with equals(Object), may be more suprising to the
              * developer and result in unsatisfactory ordering for certain locales
              * anyway (we are supposed to use Collator instead).

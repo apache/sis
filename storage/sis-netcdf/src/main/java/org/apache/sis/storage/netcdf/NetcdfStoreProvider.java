@@ -62,7 +62,7 @@ import org.apache.sis.util.Version;
  *
  * <h2>Thread safety</h2>
  * The same {@code NetcdfStoreProvider} instance can be safely used by many threads without synchronization on
- * the part of the caller. However the {@link NetcdfStore} instances created by this factory are not thread-safe.
+ * the part of the caller. However, the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

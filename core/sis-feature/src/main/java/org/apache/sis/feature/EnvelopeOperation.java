@@ -110,7 +110,7 @@ final class EnvelopeOperation extends AbstractOperation {
      * <h4>Performance note</h4>
      * If this array is {@code null}, then {@link Feature#getProperty(String)} does not need to be invoked at all.
      * A null array is a signal that invoking only the cheaper {@link Feature#getPropertyValue(String)} method is
-     * sufficient. However this array become non-null as soon as there is at least one CRS characteristic to check.
+     * sufficient. However, this array become non-null as soon as there is at least one CRS characteristic to check.
      * We do not distinguish which particular property may have a CRS characteristic because as of Apache SIS 1.0,
      * implementations of {@link DenseFeature} and {@link SparseFeature} have a "all of nothing" behavior anyway.
      * So there is no performance gain to expect from a fine-grained knowledge of which properties declare a CRS.

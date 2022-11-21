@@ -189,7 +189,7 @@ parse:  while (reader.hasNext()) {
             switch (next()) {
                 case START_ELEMENT: {
                     /*
-                     * GPX 1.0 and 1.1 metadata should not be mixed. However the following code will work even
+                     * GPX 1.0 and 1.1 metadata should not be mixed. However, the following code will work even
                      * if GPX 1.0 metadata like <name> or <author> appear after the GPX 1.1 <metadata> element.
                      * If both kind of metadata are specified, the latest value overwrites the values before it.
                      */
@@ -233,7 +233,7 @@ parse:  while (reader.hasNext()) {
                 case END_ELEMENT: {
                     /*
                      * Reminder: calling next() after getElementText(), getElementAsFoo() and unmarshal(…) methods
-                     * moves the reader after the END_ELEMENT event. Consequently there is only the enclosing <gpx>
+                     * moves the reader after the END_ELEMENT event. Consequently, there is only the enclosing <gpx>
                      * tag to check here.
                      */
                     if (isEndGPX()) {

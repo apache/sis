@@ -173,7 +173,7 @@ public strictfp class ProjectiveTransformTest extends AffineTransformTest {
     /**
      * {@code true} if {@link #ensureImplementRightInterface()} should skip its check for a transform
      * of the given dimension. {@code ProjectiveTransformTest} needs to skip the case for dimension 1
-     * because there is no {@code ProjectiveTransform1D} class. However {@link LinearTransformTest}
+     * because there is no {@code ProjectiveTransform1D} class. However, {@link LinearTransformTest}
      * can check for all dimensions.
      */
     boolean skipInterfaceCheckForDimension(final int dimension) {

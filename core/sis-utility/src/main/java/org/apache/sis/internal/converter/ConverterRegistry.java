@@ -35,7 +35,7 @@ import org.apache.sis.util.resources.Errors;
  * parent class of the given source type, or returning a sub-class of the given target type.
  *
  * <p>New instances of {@code ConverterRegistry} are initially empty. Custom converters must be
- * explicitly {@linkplain #register(ObjectConverter) registered}. However a system-wide registry
+ * explicitly {@linkplain #register(ObjectConverter) registered}. However, a system-wide registry
  * initialized with default converters is provided by the {@link SystemRegistry#INSTANCE} constant.</p>
  *
  * <h2>Note about conversions from interfaces</h2>
@@ -68,7 +68,7 @@ public class ConverterRegistry {
      * Synchronization if performed by {@code synchronized(converters)} statements. We tried
      * {@code ReadWriteLock}, but this is not very convenient because read operations may be
      * followed by write operations at any time if the requested converter is not in the cache.
-     * Furthermore profiling has not identified this class as a noticeable contention point.
+     * Furthermore, profiling has not identified this class as a noticeable contention point.
      */
     private final Map<ClassPair<?,?>, ObjectConverter<?,?>> converters;
 
@@ -92,7 +92,7 @@ public class ConverterRegistry {
      * or {@link #find(Class, Class)} is invoked.
      *
      * <p>The default implementation does nothing. Subclasses can override this method
-     * in order to register a default set of converters. For example a subclass could
+     * in order to register a default set of converters. For example, a subclass could
      * fetch the {@code ObjectConverter} instances from the {@code META-INF/services}
      * directories as below:</p>
      *
@@ -140,7 +140,7 @@ public class ConverterRegistry {
         {
             /*
              * Opportunistically share the same instance for the keys and the values, in order
-             * to reduce a little bit the amount of objects in the JVM. However we must remove
+             * to reduce a little bit the amount of objects in the JVM. However, we must remove
              * any old value from the map using the old key, otherwise put operation may fail.
              * See SystemConverter.equals(Object) for more explanation.
              */
@@ -207,7 +207,7 @@ public class ConverterRegistry {
      * <p>This method registers the converter for the {@linkplain ObjectConverter#getTargetClass()
      * target class}, some parents of the target class (see below) and every interfaces except
      * {@link Cloneable} which are implemented by the target class and not by the source class.
-     * For example a converter producing {@link Double} can be used for clients that just ask
+     * For example, a converter producing {@link Double} can be used for clients that just ask
      * for a {@link Number}.</p>
      *
      * <h4>Which super-classes of the target class are registered</h4>
@@ -316,7 +316,7 @@ public class ConverterRegistry {
                 if (sourceClass == String.class && Iterable.class.isAssignableFrom(i)) {
                     /*
                      * Exclude the case of String to Iterables (including collections), because
-                     * there is too many ways to perform such conversion. For example we do not
+                     * there is too many ways to perform such conversion. For example, we do not
                      * want find(String, Iterable) to select a conversion to java.nio.file.Path
                      * (which implements Iterable).
                      */

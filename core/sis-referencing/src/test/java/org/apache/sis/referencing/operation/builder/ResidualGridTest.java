@@ -141,7 +141,7 @@ public final strictfp class ResidualGridTest extends TestCase {
      * }
      *
      * So this mean for example that when moving from 1 cell to the right, the residual change from (0,4) to (2,3).
-     * Consequently the <var>x</var> position is increased from (2-0) = 2 cells in addition to the move to the right
+     * Consequently, the <var>x</var> position is increased from (2-0) = 2 cells in addition to the move to the right
      * (so the total increase is 3), and the <var>y</var> position is increased from (3-4) = -1.
      */
     @Test

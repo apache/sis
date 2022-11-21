@@ -60,7 +60,7 @@ import org.apache.sis.internal.util.MetadataServices;
  * }
  *
  * Above registration is usually done automatically when extension modules are added on the classpath.
- * For example adding the {@code org.apache.sis.non-free:sis-epsg} Maven dependency as documented on
+ * For example, adding the {@code org.apache.sis.non-free:sis-epsg} Maven dependency as documented on
  * the <a href="https://sis.apache.org/epsg.html">Apache SIS web site</a> is the only step needed for
  * allowing Apache SIS to read the EPSG scripts (however SIS still needs an installation directory
  * for writing the database; see above-cited web page for more information).

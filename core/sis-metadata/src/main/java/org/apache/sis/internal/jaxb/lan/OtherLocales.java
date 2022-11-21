@@ -101,7 +101,7 @@ public final class OtherLocales extends AbstractSet<PT_Locale> {
      * only after the first element, so a first element needs to exist.
      *
      * <p>The above rule could be a risk of confusion for the users, since it could cause the apparition of a default
-     * locale which has never been specified. However this risk exists only when invoking the deprecated methods, or
+     * locale which has never been specified. However, this risk exists only when invoking the deprecated methods, or
      * when unmarshalling a XML document having a {@code otherLocale} property without {@code defaultLocale} property,
      * which is probably invalid.</p>
      *

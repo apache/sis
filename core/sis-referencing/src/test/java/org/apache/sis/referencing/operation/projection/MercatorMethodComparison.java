@@ -41,7 +41,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  * </ul>
  *
  * In our measurements, both the iterative process (USGS) and the series expansion (EPSG) have the same accuracy
- * when applied on the WGS84 ellipsoid. However the EPSG formula is 2 times faster on Java 8 (less on more recent
+ * when applied on the WGS84 ellipsoid. However, the EPSG formula is 2 times faster on Java 8 (less on more recent
  * Java versions). On the other hand, accuracy of the EPSG formula decreases when we increase the eccentricity,
  * while the iterative process keeps its accuracy (at the cost of more iterations).
  * For the Earth (eccentricity of about 0.082) the errors are less than 0.01 millimetres.

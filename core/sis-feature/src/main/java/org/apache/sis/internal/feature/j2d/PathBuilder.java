@@ -151,7 +151,7 @@ public class PathBuilder {
      * coordinate values.
      *
      * <p>This method is invoked at least once per {@link #append(double[], int, boolean)} call.
-     * Consequently it is not necessarily invoked with the coordinates of a complete polyline or polygon,
+     * Consequently, it is not necessarily invoked with the coordinates of a complete polyline or polygon,
      * because caller can build a polyline with multiple calls to {@code append(…)}.
      * If those {@code append(…)} calls correspond to some logical chunks (at users choice),
      * this {@code filterChunk(…)} method allows users to exploit this subdivision in their processing.</p>
@@ -170,7 +170,7 @@ public class PathBuilder {
     /**
      * Applies a custom filtering on the coordinates of a polyline or polygon.
      * The default implementation does nothing. Subclasses can override this method for changing or removing some
-     * coordinate values. For example a subclass could decimate points using Ramer–Douglas–Peucker algorithm.
+     * coordinate values. For example, a subclass could decimate points using Ramer–Douglas–Peucker algorithm.
      * Contrarily to {@link #filterChunk(double[], int, int)}, this method is invoked when the coordinates of
      * the full polyline or polygon are available. If polyline points need to be transformed before to build
      * the final geometry, this is the right place to do so.

@@ -195,7 +195,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
 
     /**
      * Returns the next element from the given iterator. Default implementation returns {@link Iterator#next()}.
-     * Subclasses may override if they need to apply additional processing. For example this method can be used
+     * Subclasses may override if they need to apply additional processing. For example, this method can be used
      * for skipping data, but this approach works only if we have the guarantee that another element exists after
      * the skipped one (because {@code LazySet} will not invoke {@link Iterator#hasNext()} again).
      *

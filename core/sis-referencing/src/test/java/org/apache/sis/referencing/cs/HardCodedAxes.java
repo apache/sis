@@ -29,7 +29,7 @@ import org.apache.sis.measure.Units;
 /**
  * Collection of axes for testing purpose.
  * Note that EPSG codes of coordinate system axes depend on axis order.
- * Consequently EPSG codes are not provided.
+ * Consequently, EPSG codes are not provided.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

@@ -219,7 +219,7 @@ class MathTransformParser extends AbstractParser {
      * this method is a slight departure of ISO 19162, which said <cite>"Should any attributes or values given
      * in the cited identifier be in conflict with attributes or values given explicitly in the WKT description,
      * the WKT values shall prevail."</cite> But some units can hardly be expressed by the {@code UNIT} element,
-     * because the latter can contain only a conversion factor. For example sexagesimal units (EPSG:9108, 9110
+     * because the latter can contain only a conversion factor. For example, sexagesimal units (EPSG:9108, 9110
      * and 9111) can hardly be expressed in another way than by their EPSG code. Thankfully, identifiers in
      * {@code UNIT} elements are rare, so risk of conflicts should be low.</div>
      *
@@ -273,7 +273,7 @@ class MathTransformParser extends AbstractParser {
         }
         /*
          * Conversion factor can be applied only if the base dimension (angle, linear, scale, etc.) is known.
-         * However before to apply that factor, we may need to fix rounding errors found in some WKT strings.
+         * However, before to apply that factor, we may need to fix rounding errors found in some WKT strings.
          * In particular, the conversion factor for degrees is sometimes written as 0.01745329252 instead of
          * 0.017453292519943295.
          */
@@ -359,7 +359,7 @@ class MathTransformParser extends AbstractParser {
                 param.pullElement(OPTIONAL, ID_KEYWORDS);
                 /*
                  * DEPARTURE FROM ISO 19162: the specification recommends that we use the identifier instead
-                 * than the parameter name. However we do not yet have a "get parameter by ID" in Apache SIS
+                 * than the parameter name. However, we do not yet have a "get parameter by ID" in Apache SIS
                  * or in GeoAPI interfaces. This was not considered necessary since SIS is lenient (hopefully
                  * without introducing ambiguity) regarding parameter names, but we may revisit in a future
                  * version if it become no longer the case. See https://issues.apache.org/jira/browse/SIS-210

@@ -443,7 +443,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     /**
      * A sentinel value in the {@link TransformingWriter#deferred} queue meaning that after reaching this point,
      * we need to reevaluate if the remaining elements should be written immediately of deferred again.
-     * This happen when some elements to move are interleaved. For example in {@code MD_DataIdentification}:
+     * This happen when some elements to move are interleaved. For example, in {@code MD_DataIdentification}:
      *
      * <ol>
      *   <li>{@code topicCategory} needs to move before {@code environmentDescription}</li>
@@ -518,7 +518,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
 
     /**
      * Sets the prefix the URI is bound to. This method replaces the given URI if needed, then forwards the call.
-     * Note that it may result in the same URI to be bound to many prefixes. For example ISO 19115-3:2016 has many
+     * Note that it may result in the same URI to be bound to many prefixes. For example, ISO 19115-3:2016 has many
      * URIs, each with a different prefix ({@code "mdb"}, {@code "cit"}, <i>etc.</i>). But all those URIs may be
      * replaced by the unique URI used in legacy ISO 19139:2007. Since this method does not replace the prefix
      * (it was {@code "gmd"} in ISO 19139:2007), the various ISO 19115-3:2016 prefixes are all bound to the same
@@ -557,8 +557,8 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     /**
      * Returns a naming context suitable for consumption by JAXB marshallers.
      * The {@link XMLEventWriter} wrapped by this {@code TransformingWriter} has been created for writing in a file.
-     * Consequently its naming context manages namespaces used in the XML document. But the JAXB marshaller using
-     * this {@code TransformingWriter} facade expects the namespaces declared in JAXB annotations. Consequently this
+     * Consequently, its naming context manages namespaces used in the XML document. But the JAXB marshaller using
+     * this {@code TransformingWriter} facade expects the namespaces declared in JAXB annotations. Consequently, this
      * method returns an adapter that converts namespaces on the fly.
      *
      * @see Event#getNamespaceContext()

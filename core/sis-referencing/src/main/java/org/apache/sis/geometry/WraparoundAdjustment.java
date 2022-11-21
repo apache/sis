@@ -369,7 +369,7 @@ public class WraparoundAdjustment {
                     /*
                      * Found an axis (typically the longitude axis) with wraparound range meaning.
                      * "Unroll" the range. For example if we have [+160 … -170]° of longitude, we can replace by [160 … 190]°.
-                     * We do not change the `lower` or `upper` value now in order to avoid rounding error. Instead we compute
+                     * We do not change the `lower` or `upper` value now in order to avoid rounding error. Instead, we compute
                      * how many periods we need to add to those values. We adjust the side which results in the value closest
                      * to zero, in order to reduce rounding error if no more adjustment is done in the next block.
                      */
@@ -427,7 +427,7 @@ public class WraparoundAdjustment {
                              *
                              *     (new upper) ≥ validStart
                              *
-                             * That second condition is met by  ⎡upperToValidStart⎤. However adding more may cause the
+                             * That second condition is met by  ⎡upperToValidStart⎤. However, adding more may cause the
                              * range to move the AOI completely on the right side of the domain of validity. We prevent
                              * that with a third condition:
                              *

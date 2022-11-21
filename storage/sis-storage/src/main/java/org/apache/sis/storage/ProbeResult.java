@@ -36,7 +36,7 @@ import org.apache.sis.internal.util.Strings;
  *
  * <p>Whether a storage appears to be supported or not is given by the {@link #isSupported()} property.
  * Other properties like {@link #getVersion()} are sometimes available for both supported and unsupported storages.
- * For example a file may be encoded in a known format, but may be using an unsupported version of that format.</p>
+ * For example, a file may be encoded in a known format, but may be using an unsupported version of that format.</p>
  *
  * <h2>Special values</h2>
  * In addition to the supported/unsupported information, {@code ProbeResult} defines two constants having
@@ -184,7 +184,7 @@ public class ProbeResult implements Serializable {
      *
      * <h4>XML types</h4>
      * A generic MIME type for XML documents is {@code "application/xml"}.
-     * However many other MIME types exist for XML documents compliant to some particular shema.
+     * However, many other MIME types exist for XML documents compliant to some particular shema.
      * Those types can be determined by inspecting the namespace of XML root element.
      * The following table gives some example:
      *

@@ -61,7 +61,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * <h2>Serialization</h2>
  * This tree is serializable if the {@code locator} function and all elements in the tree are also serializable.
- * However the serialization details is implementation specific and may change in any future Apache SIS version.
+ * However, the serialization details is implementation specific and may change in any future Apache SIS version.
  *
  * <h2>Limitations</h2>
  * Current implementation does not yet support removal of elements.
@@ -196,7 +196,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
      *
      * <p>The {@code bounds} argument specifies the expected region of points to be added in this {@code PointTree}.
      * Those bounds do not need to be exact; {@code PointTree} will work even if some points are located outside
-     * those bounds. However performances will be better if the {@linkplain Envelope#getMedian(int) envelope center}
+     * those bounds. However, performances will be better if the {@linkplain Envelope#getMedian(int) envelope center}
      * is close to the median of the points to be inserted in the {@code PointTree}, and if the majority of points
      * are inside those bounds.</p>
      *

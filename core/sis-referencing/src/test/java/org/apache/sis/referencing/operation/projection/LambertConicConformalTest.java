@@ -290,7 +290,7 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
          *
          * So the conversion for this test case should be:     W = 400 - E
          *
-         * However our map projection "kernel" implementation does not reverse the sign of 'x' values,
+         * However, our map projection "kernel" implementation does not reverse the sign of 'x' values,
          * because this reversal is the job of a separated method (CoordinateSystems.swapAndScaleAxes)
          * which does is work by examining the axis directions. So we the values that we expect are:
          *

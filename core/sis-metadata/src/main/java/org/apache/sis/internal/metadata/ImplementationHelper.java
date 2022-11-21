@@ -44,6 +44,11 @@ import org.apache.sis.internal.util.CollectionsExt;
  */
 public final class ImplementationHelper extends Static {
     /**
+     * The root directory of ISO namespaces. Value is {@value}.
+     */
+    public static final String ISO_NAMESPACE = "http://standards.iso.org/iso/";
+
+    /**
      * Do not allow instantiation of this class.
      */
     private ImplementationHelper() {

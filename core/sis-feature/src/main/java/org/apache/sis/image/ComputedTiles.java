@@ -35,8 +35,8 @@ import org.apache.sis.util.Disposable;
  * This class shall not contain any strong reference to the {@link ComputedImage}.
  *
  * <p>Despite the {@code ComputedTiles} class name, this class does not contain any reference
- * to the tiles. Instead it contains keys for getting the tiles from {@link TileCache#GLOBAL}.
- * Consequently this class "contains" the tiles only indirectly.</p>
+ * to the tiles. Instead, it contains keys for getting the tiles from {@link TileCache#GLOBAL}.
+ * Consequently, this class "contains" the tiles only indirectly.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

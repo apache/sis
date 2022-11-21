@@ -242,7 +242,7 @@ public final class Utilities extends Static {
                 return false;
             }
             /*
-             * We have found an element which is not equals. However in the particular
+             * We have found an element which is not equals. However, in the particular
              * case of Set, the element order is not significant. So we need to perform
              * a more costly check ensuring that the collections are still different if
              * ignoring order. Note that the test will ignore the elements successfuly

@@ -72,7 +72,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * Then the grid geometry is created by a call to {@link #build()}.
  * The {@link #getIntersection()} method can also be invoked for the {@link GridExtent} part without subsampling.
  *
- * <p>All methods in this class preserve the number of dimensions. For example the {@link #slice(DirectPosition)} method sets
+ * <p>All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method sets
  * the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <cite>slice point</cite>,
  * but does not remove those dimensions from the grid geometry.
  * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</p>
@@ -488,7 +488,7 @@ public class GridDerivation {
             scales = areaOfInterest.resolution;
             /*
              * In principle `resolution` is always null here because it is computed from `gridToCRS`,
-             * which is null (otherwise `isExtentOnly()` would have been false). However an exception
+             * which is null (otherwise `isExtentOnly()` would have been false). However, an exception
              * to this rule happens if `areaOfInterest` has been computed by another `GridDerivation`,
              * in which case the resolution requested by user is saved even when `gridToCRS` is null.
              * In that case the resolution is relative to the base grid of the other `GridDerivation`.
@@ -530,7 +530,7 @@ public class GridDerivation {
         }
         /*
          * The subsampling will determine the scale factors in the transform from the given desired grid geometry
-         * to the `base` grid geometry. For example a scale of 10 means that every time we advance by one pixel in
+         * to the `base` grid geometry. For example, a scale of 10 means that every time we advance by one pixel in
          * `areaOfInterest`, we will advance by 10 pixels in `base`.  We compute the scales (indirectly because of
          * the way transforms are concatenated) as the ratio between the resolutions of the `areaOfInterest` and
          * `base` grid geometries, computed in the center of the area of interest.
@@ -570,7 +570,7 @@ public class GridDerivation {
      *       then the {@linkplain Envelope#getCoordinateReferenceSystem() CRS of the envelope}
      *       can be left unspecified ({@code null}). It may give a slight performance improvement
      *       by avoiding the check for coordinate transformation.</li>
-     *   <li>Subsampling computed by this method may be fractional. Consequently calls to {@link #getSubsampling()} and
+     *   <li>Subsampling computed by this method may be fractional. Consequently, calls to {@link #getSubsampling()} and
      *       {@link #getSubsamplingOffsets()} after this method may cause an {@link IllegalStateException} to be thrown.</li>
      * </ul>
      *
@@ -1002,7 +1002,7 @@ public class GridDerivation {
             /*
              * We will try to find a path between grid coordinate reference system (CRS) and given point CRS. Note that we
              * allow unknown CRS on the slice point, in which case we consider it to be expressed in grid reference system.
-             * However, if the point CRS is specified while the base grid CRS is unknown, we are at risk of ambiguity,
+             * However if the point CRS is specified while the base grid CRS is unknown, we are at risk of ambiguity,
              * in which case we throw (indirectly) an IncompleteGridGeometryException.
              */
             final CoordinateReferenceSystem sliceCRS = slicePoint.getCoordinateReferenceSystem();
@@ -1089,7 +1089,7 @@ public class GridDerivation {
      * RATIONAL FOR NOT PROVIDING reduce(int... dimensions) METHOD HERE: that method would need to be the last method invoked,
      * otherwise it makes more complicated to implement other methods in this class.  Forcing users to invoke `build()` before
      * (s)he can invoke GridGeometry.reduce(…) makes that clear and avoid the need for more flags in this GridDerivation class.
-     * Furthermore declaring the `reduce(…)` method in GridGeometry is more consistent with `GridExtent.reduce(…)`.
+     * Furthermore, declaring the `reduce(…)` method in GridGeometry is more consistent with `GridExtent.reduce(…)`.
      */
 
     /**
@@ -1314,7 +1314,7 @@ public class GridDerivation {
                 final int i = ~Arrays.binarySearch(divisors, r);
                 /*
                  * `binarySearch(…)` should never find an exact match, otherwise (size % r) would have been zero.
-                 * Furthermore `i` should never be 0 because divisors[0] = 1, which cannot be selected if r > 1.
+                 * Furthermore, `i` should never be 0 because divisors[0] = 1, which cannot be selected if r > 1.
                  * We do not check `if (i > 0)` "as a safety" because client code such as `TiledGridCoverage`
                  * will behave erratically if this method does not fulfill its contract (i.e. find a divisor).
                  * It is better to know now if there is any problem here.

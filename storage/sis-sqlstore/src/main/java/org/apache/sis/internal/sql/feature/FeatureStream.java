@@ -142,7 +142,7 @@ final class FeatureStream extends DeferredStream<Feature> {
      * Returns {@code true} if either {@link #count} or {@link #offset} is set.
      * In such case, we cannot continue to build the SQL statement because the
      * {@code OFFSET ... FETCH NEXT} clauses in SQL are executed last.
-     * Consequently in order to have consistent results, the {@link #offset(long)} and
+     * Consequently, in order to have consistent results, the {@link #offset(long)} and
      * {@link #limit(long)} methods need to be the last methods invoked on this stream.
      */
     private boolean isPagined() {

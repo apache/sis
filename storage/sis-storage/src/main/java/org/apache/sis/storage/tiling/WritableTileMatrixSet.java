@@ -61,7 +61,7 @@ public interface WritableTileMatrixSet extends TileMatrixSet {
      * is thrown.</p>
      *
      * <p>This method returns a writable tile matrix with the same tiles than the given {@code TileMatrix}.
-     * However the identifier of the returned tile matrix may be different.</p>
+     * However, the identifier of the returned tile matrix may be different.</p>
      *
      * @param  tiles  the (potentially empty) tile matrix to create.
      * @return a writable tile matrix to use for adding more tiles.

@@ -136,7 +136,7 @@ public class BufferedGridCoverage extends GridCoverage {
      * (see class javadoc for more information).
      *
      * <p>Note that {@link DataBuffer} does not contain any information about image size.
-     * Consequently {@link #render(GridExtent)} depends on the domain {@link GridExtent},
+     * Consequently, {@link #render(GridExtent)} depends on the domain {@link GridExtent},
      * which must be accurate. If the extent size does not reflect accurately the image size,
      * then the image will not be rendered properly.</p>
      *

@@ -106,7 +106,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      * {@code <gml:OperationParameterGroup>} or {@code <gml:OperationMethod>} element. Those
      * descriptors are said "incomplete" (from SIS point of view) because they are missing the
      * {@link ParameterDescriptor#getValueClass()} property, which does not exist in GML but
-     * is mandatory for us. However an exception to this "incompleteness" happen when SIS has
+     * is mandatory for us. However, an exception to this "incompleteness" happen when SIS has
      * been able to match the {@code <gml:OperationMethod>} parent to one of the predefined
      * operations in the {@link org.apache.sis.internal.referencing.provider} package.</p>
      *

@@ -19,7 +19,7 @@
  * JAXB adapters for geometries.
  * This package regroups all adapters mapping GeoAPI interfaces to their SIS
  * implementation. We must use adapters since JAXB cannot annotate interfaces.
- * Consequently the purpose of these adapters is to replace interfaces.
+ * Consequently, the purpose of these adapters is to replace interfaces.
  *
  * <p>Every time JAXB tries to marshal or unmarshal an interface, the adapter
  * will be substituted to that interface.</p>

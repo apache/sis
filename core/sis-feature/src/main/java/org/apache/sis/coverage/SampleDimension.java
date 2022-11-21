@@ -233,7 +233,7 @@ public class SampleDimension implements Serializable {
      * Returns the background value. This is the value used for filling empty spaces (e.g. in image corners)
      * after a {@linkplain org.apache.sis.image.ImageProcessor#resample resampling operation}.
      * If this sample dimensions has quantitative categories, then the background value should be
-     * one of the value returned by {@link #getNoDataValues()}. However this is not mandatory.
+     * one of the value returned by {@link #getNoDataValues()}. However, this is not mandatory.
      *
      * @return the background value, typically (but not necessarily) one of {@link #getNoDataValues()}.
      */
@@ -512,14 +512,14 @@ public class SampleDimension implements Serializable {
      * </ul>
      *
      * <p>A <cite>qualitative category</cite> is a range of sample values associated to a label.
-     * For example 0 = no data, 1 = cloud, 2 = sea, 3 = land, <i>etc</i>.
+     * For example, 0 = no data, 1 = cloud, 2 = sea, 3 = land, <i>etc</i>.
      * Missing values are also considered as a qualitative category and should be declared.
      * If the missing value can be used as a background value for filling empty spaces in
      * {@linkplain org.apache.sis.image.ImageProcessor#resample image resampling operations},
      * then it should be declared using {@code setBackground(…)} method instead of {@code addQualitative(…)}.</p>
      *
      * <p>A <cite>quantitative category</cite> is a range of sample values associated to numbers with units of measurement.
-     * For example 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>. A quantitative category has a
+     * For example, 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>. A quantitative category has a
      * {@linkplain org.opengis.metadata.content.SampleDimension#getTransferFunctionType() transfer function}
      * (typically a scale factor and an offset) for converting sample values to values expressed
      * in the unit of measurement.</p>

@@ -176,7 +176,7 @@ public class SatelliteTracking extends NormalizedProjection {
              *     f = p2_on_p1 * cos_i - 1;
              *     n = sin_i / (f*f);                                       // Snyder equation 28-18.
              *
-             * However since equation 28-17 still work, we keep it for avoiding discontinuity.
+             * However, since equation 28-17 still work, we keep it for avoiding discontinuity.
              */
             if (abs(φ2 - φ1) < ANGULAR_TOLERANCE) {
                 n = sinφ1 * (p2_on_p1 * (2*cos2_i - cos2_φ1) - cos_i)

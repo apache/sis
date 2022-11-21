@@ -53,7 +53,7 @@ public final class Logging extends Static {
      *
      * <p>The default value is 600, which is the {@link PerformanceLevel#PERFORMANCE} value.
      * This value is between {@link Level#FINE} (500) and {@link Level#CONFIG} (700).
-     * Consequently we will ignore the stack traces of recoverable failures, but will report
+     * Consequently, we will ignore the stack traces of recoverable failures, but will report
      * stack traces that may impact performance, configuration, or correctness.</p>
      */
     private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;

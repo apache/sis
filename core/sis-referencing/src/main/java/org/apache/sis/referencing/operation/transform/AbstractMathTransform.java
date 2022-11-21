@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *   <li>{@link #transform(double[], int, double[], int, boolean)}</li>
  * </ul>
  *
- * However more performance may be gained by overriding the other {@code transform(…)} methods as well.
+ * However, more performance may be gained by overriding the other {@code transform(…)} methods as well.
  *
  * <h2>Immutability and thread safety</h2>
  * All Apache SIS implementations of {@code MathTransform} are immutable and thread-safe.
@@ -160,14 +160,14 @@ public abstract class AbstractMathTransform extends FormattableObject
      * because this method ignores "real world" considerations such as datum and country boundaries.
      *
      * <p>This method is for allowing callers to crop their data for removing areas that may cause numerical problems.
-     * For example results of Mercator projection tend to infinity when the latitude value approaches a pole.
+     * For example, results of Mercator projection tend to infinity when the latitude value approaches a pole.
      * For avoiding data structures with unreasonably large values or {@link Double#NaN},
      * we commonly crop data to some arbitrary maximal latitude value (typically 80 or 84°) before projection.
      * Those limits are arbitrary, the transform does not become suddenly invalid after a limit.
      * The {@link DomainDefinition} gives some controls on the criteria for choosing a limit.</p>
      *
      * <p>Many transforms, in particular all affine transforms, have no mathematical limits.
-     * Consequently the default implementation returns an empty value.
+     * Consequently, the default implementation returns an empty value.
      * Again it does not mean that the {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
      * coordinate operation} has no geospatial domain of validity, but the latter is not the purpose of this method.
      * This method is (for example) for preventing a viewer to crash when attempting to render a world-wide image.</p>
@@ -360,7 +360,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *     return derivative;
      * }
      *
-     * However this method provides two advantages:
+     * However, this method provides two advantages:
      *
      * <ul>
      *   <li>It is usually easier to implement for {@code AbstractMathTransform} subclasses.
@@ -555,7 +555,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
         /*
          * We need to check if writing the transformed coordinates in the same array than the source
-         * coordinates will cause an overlapping problem. However we can consider the whole buffer as
+         * coordinates will cause an overlapping problem. However, we can consider the whole buffer as
          * if it was a single coordinate tuple with a very large dimension. Doing so increase the chances
          * that IterationStrategy.suggest(...) doesn't require us another buffer  (hint: the -1 in
          * suggest(...) mathematic matter and reflect the contract saying that the input coordinates

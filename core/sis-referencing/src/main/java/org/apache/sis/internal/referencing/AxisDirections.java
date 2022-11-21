@@ -583,7 +583,7 @@ next:       for (int i=0; i <= limit; i++) {
     /**
      * Returns whether the second axis is colinear with the first axis. This method returns {@code true}
      * if the {@linkplain #absolute absolute} direction of the given directions are equal.
-     * For example "down" is considered colinear with "up".
+     * For example, "down" is considered colinear with "up".
      *
      * @param  d1  the first axis direction to compare.
      * @param  d2  the second axis direction to compare.
@@ -623,7 +623,7 @@ next:       for (int i=0; i <= limit; i++) {
      *
      * <ul>
      *   <li>Comparisons are case-insensitive.</li>
-     *   <li>Any character which is not a letter or a digit is ignored. For example {@code "NorthEast"},
+     *   <li>Any character which is not a letter or a digit is ignored. For example, {@code "NorthEast"},
      *       {@code "North-East"} and {@code "NORTH_EAST"} are considered equivalent.</li>
      *   <li>This method accepts abbreviations as well, for example if the given {@code name} is {@code "W"},
      *       then it will be considered equivalent to {@code "WEST"}.</li>

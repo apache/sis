@@ -58,7 +58,7 @@ import static org.junit.Assume.assumeTrue;
  *   <li><cite>"NTF (Paris) to WGS 84 (1)"</cite> operation (EPSG:8094), which implies a longitude rotation
  *       followed by a geocentric translation in the geographic domain.</li>
  *   <li><cite>"Martinique 1938 to RGAF09 (1)"</cite> operation (EPSG:5491), which implies a datum shift
- *       that does not go through WGS84. Furthermore since the EPSG database defines (λ,φ) axis order in
+ *       that does not go through WGS84. Furthermore, since the EPSG database defines (λ,φ) axis order in
  *       addition to the usual (φ,λ) order for the target CRS, this tests allows us to verify we can find
  *       this operation despite different axis order.</li>
  * </ul>

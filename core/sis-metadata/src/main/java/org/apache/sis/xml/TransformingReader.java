@@ -76,7 +76,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * </ul>
      *
      * More namespaces may appear depending on the optional module on the classpath.
-     * For example {@code sis-french-profile} adds {@code "http://www.cnig.gouv.fr/2005/fra"}.
+     * For example, {@code sis-french-profile} adds {@code "http://www.cnig.gouv.fr/2005/fra"}.
      */
     private static final Set<String> LEGACY_NAMESPACES = new HashSet<>(12);
 
@@ -304,7 +304,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * Returns the map loaded by {@link #load(boolean, String, Set, int)} if the given namespace is a known legacy namespace.
      * This method returns a non-empty map only for legacy namespaces for which the {@value #FILENAME} file has been designed.
      * This is necessary for avoiding confusion with classes of the same name defined in other standards.
-     * For example the {@code Record} class name is used by other standards like Catalog Service for the Web (OGC CSW),
+     * For example, the {@code Record} class name is used by other standards like Catalog Service for the Web (OGC CSW),
      * and we don't want to replace the namespace of CSW classes.
      *
      * @param  namespace  the namespace URI for which to get the substitution map.
@@ -349,9 +349,9 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * Converts a namespace read from the XML document to the namespace used by JAXB annotations.
      * This methods can convert the namespace for which there is a bijective mapping, for example
      * {@code "http://www.isotc211.org/2005/gco"} to {@code "http://standards.iso.org/iso/19115/-3/gco/1.0"}.
-     * However some namespaces like {@code "http://www.isotc211.org/2005/gmd"} may be left unchanged,
+     * However, some namespaces like {@code "http://www.isotc211.org/2005/gmd"} may be left unchanged,
      * because that namespace from legacy ISO 19139:2007 can be mapped to many different namespaces
-     * in newer ISO 19115-3:2016 standard. However in some cases the context allows us to determines
+     * in newer ISO 19115-3:2016 standard. However, in some cases the context allows us to determines
      * which newer namespace is used. In such case, that mapping is specified by the
      * ({@code oldURI}, {@code newURI}) pair.
      *

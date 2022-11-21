@@ -40,7 +40,7 @@ import org.apache.sis.util.ArraysExt;
 /**
  * Helper class for reading and writing WKT in the metadata of a data store.
  * This is provided as a separated class for allowing reuse by other data stores.
- * For example WKT may also appear in some global attributes of CF-netCDF files.
+ * For example, WKT may also appear in some global attributes of CF-netCDF files.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

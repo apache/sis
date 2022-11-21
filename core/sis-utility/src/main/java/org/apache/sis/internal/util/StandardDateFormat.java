@@ -88,7 +88,7 @@ public final class StandardDateFormat extends DateFormat {
     /**
      * The thread-safe instance to use for reading and formatting dates.
      * Only the year is mandatory, all other fields are optional at parsing time.
-     * However all fields are written, including milliseconds at formatting time.
+     * However, all fields are written, including milliseconds at formatting time.
      *
      * @see #parseInstantUTC(CharSequence, int, int)
      */

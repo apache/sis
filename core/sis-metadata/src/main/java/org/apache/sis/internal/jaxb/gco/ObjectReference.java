@@ -126,7 +126,7 @@ final class ObjectReference {
 
     /**
      * Adds a new identifier into the given map, if non null. No previous value should exist in normal situation.
-     * However a previous value may exit in unusual (probably not very valid) XML, as in the following example:
+     * However, a previous value may exit in unusual (probably not very valid) XML, as in the following example:
      *
      * {@preformat xml
      *   <cit:CI_Citation>

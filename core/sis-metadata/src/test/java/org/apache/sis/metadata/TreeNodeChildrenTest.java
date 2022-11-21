@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
  * <h2>Test dependency</h2>
  * This class uses the {@link TreeNode#getUserObject()} method for comparing the values.
  * We can hardly avoid to use some {@code TreeNode} methods because of the cross-dependencies.
- * However we try to use nothing else than {@code getUserObject()} because the purpose of this
+ * However, we try to use nothing else than {@code getUserObject()} because the purpose of this
  * class is not to test {@link TreeNode}.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -126,7 +126,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      *        └─Date type…… Creation
      * }
      *
-     * However the tree view should simplify as:
+     * However, the tree view should simplify as:
      *
      * {@preformat text
      *   DefaultCitation

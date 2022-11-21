@@ -96,7 +96,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * We could question if it is a good idea to put this field here, given that this field add a slight cost
      * to all attribute implementations while only a small fraction of them will want attribute characteristics.
      * Since attributes may exist in a very large amount, that question may be significant.
-     * However {@link AbstractFeature} tries hard to not create {@code Attribute} instances at all (it tries to
+     * However, {@link AbstractFeature} tries hard to not create {@code Attribute} instances at all (it tries to
      * store only their value instead), so we presume that peoples who ask for {@code Attribute} instances are
      * willing to accept their cost.</div>
      *
@@ -280,7 +280,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *
      * <div class="note"><b>Rational:</b>
      * Very often, all attributes of a given type in the same dataset have the same characteristics.
-     * For example it is very common that all temperature measurements in a dataset have the same accuracy,
+     * For example, it is very common that all temperature measurements in a dataset have the same accuracy,
      * and setting a different accuracy for a single measurement is relatively rare.
      * Consequently, {@code characteristics.isEmpty()} is a convenient way to check that an attribute have
      * all the "standard" characteristics and need no special processing.</div>
@@ -402,7 +402,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *         measure identification}.</p>
      *
      *         <div class="note"><b>Note:</b> strictly speaking, {@code measureIdentification} identifies the
-     *         <em>quality measurement</em>, not the “real” measurement itself. However this implementation
+     *         <em>quality measurement</em>, not the “real” measurement itself. However, this implementation
      *         uses the same set of identifiers for both for simplicity.</div>
      *       </li><li>
      *         <p>If the attribute {@linkplain #getValue() value} is not an {@linkplain Class#isInstance instance}
@@ -487,7 +487,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * Otherwise the default implementation returns a <em>shallow</em> copy of this {@code Attribute}:
      * the attribute {@linkplain #getValue() value} and {@linkplain #characteristics() characteristics}
      * are <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
+     * However, subclasses may choose to do otherwise.
      *
      * @return a clone of this attribute.
      * @throws CloneNotSupportedException if this attribute, the {@linkplain #getValue() value}

@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
 public final strictfp class CRSCommandTest extends TestCase {
     /**
      * The Well Known Text for EPSG:4326 as a regular expression.
-     * This string uses the native line separator. Consequently test cases comparing
+     * This string uses the native line separator. Consequently, test cases comparing
      * against this pattern are expected to use that line separator for every lines.
      */
     private String WGS84;

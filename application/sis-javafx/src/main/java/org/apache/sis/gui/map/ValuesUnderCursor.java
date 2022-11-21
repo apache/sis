@@ -35,7 +35,7 @@ import org.apache.sis.internal.gui.BackgroundThreads;
  * <h2>Multi-threading</h2>
  * Instances of {@code ValueUnderCursor} do not need to be thread-safe, because
  * all {@code ValuesUnderCursor} methods will be invoked from JavaFX thread.
- * However the actual fetching and formatting of values will be done in a background
+ * However, the actual fetching and formatting of values will be done in a background
  * thread using the {@link Formatter} inner class, which needs to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)

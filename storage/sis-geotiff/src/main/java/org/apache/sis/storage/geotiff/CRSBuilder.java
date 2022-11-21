@@ -128,7 +128,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
 
     /**
      * Minimal length that a key in a name must have before we compare them to the {@link #NAME_KEYS}.
-     * For example a value of 5 means that {@link #splitName(String)} will accept {@code "Ellip"},
+     * For example, a value of 5 means that {@link #splitName(String)} will accept {@code "Ellip"},
      * {@code "Ellips"}, {@code "Ellipso"} and {@code "Ellipsoi"} as if they were {@code "Ellipsoid"}.
      * This length shall not be greater than the length of the shortest string in {@link #NAME_KEYS}.
      */

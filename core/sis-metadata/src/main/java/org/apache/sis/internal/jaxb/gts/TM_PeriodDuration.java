@@ -36,7 +36,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * Wraps a {@code gts:TM_PeriodDuration} element.
  *
  * @todo The work done in the {@link #getElement()} and {@link #setElement(Duration)} methods should move
- *       to {@link org.apache.sis.xml.ValueConverter}. However they rely on the {@link org.opengis.temporal}
+ *       to {@link org.apache.sis.xml.ValueConverter}. However, they rely on the {@link org.opengis.temporal}
  *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
  *
  * @author  Guilhem Legal (Geomatys)
@@ -184,8 +184,8 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
     }
 
     /**
-     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
-     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     * Wraps the value only if marshalling an element from the ISO 19115:2014 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2003 model), omits the element.
      */
     public static final class Since2014 extends TM_PeriodDuration {
         /** Empty constructor used only by JAXB. */

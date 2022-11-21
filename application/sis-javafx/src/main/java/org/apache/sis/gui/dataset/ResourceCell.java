@@ -189,7 +189,7 @@ final class ResourceCell extends TreeCell<Resource> {
 
     /**
      * Sets the view of the resource to show in this node.
-     * For example instead of showing the components as given by the data store,
+     * For example, instead of showing the components as given by the data store,
      * we can create an aggregated view of all components.
      */
     private void setView(final TreeViewType type) {

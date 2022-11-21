@@ -33,7 +33,7 @@ import javax.measure.Unit;
  * </div>
  *
  * <p>Note that filtering one or more axes may result in a change of coordinate system type.
- * For example excluding the <var>z</var> axis of a {@linkplain DefaultCylindricalCS cylindrical} coordinate system
+ * For example, excluding the <var>z</var> axis of a {@linkplain DefaultCylindricalCS cylindrical} coordinate system
  * results in a {@linkplain DefaultPolarCS polar} coordinate system.</p>
  *
  * <h2>Default implementation</h2>

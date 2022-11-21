@@ -108,7 +108,7 @@ public final class Isolines {
      * <h4>How strict equalities are handled</h4>
      * Sample values exactly equal to the isoline value are handled as if they were greater. It does not matter
      * for interpolations: we could flip this convention randomly, the interpolated points would still the same.
-     * However it could change the way line segments are assembled in a single polyline, but the algorithm stay
+     * However, it could change the way line segments are assembled in a single polyline, but the algorithm stay
      * consistent if we always apply the same rule for all points.
      *
      * <h4>How NaN values are handled</h4>

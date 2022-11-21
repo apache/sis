@@ -73,7 +73,7 @@ public final class MetadataTypes extends TypeRegistration implements UnaryOperat
      * if the type of the given value is not handled by this method. Current implementation handles all types
      * that may need to be put in the ISO 19115-3 namespace; we have to do that ourself because those classes
      * are not public. Other types may be added if needed, but we do not want to handle too many of them (for
-     * performance reasons). However the list or recognized types shall contain at least {@link Metadata}.
+     * performance reasons). However, the list or recognized types shall contain at least {@link Metadata}.
      *
      * @param  value  the value to marshal.
      * @return the given value as a type that can be marshalled, or {@code null}.

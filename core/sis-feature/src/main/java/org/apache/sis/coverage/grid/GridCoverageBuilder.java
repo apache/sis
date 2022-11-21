@@ -57,7 +57,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * Each of those parts can be set by a {@code setDomain(…)}, {@code setRanges(…)} or {@code setValues(…)} method.
- * Those methods are overloaded with many variants accepting different kind of arguments. For example values can
+ * Those methods are overloaded with many variants accepting different kind of arguments. For example, values can
  * be specified as a {@link RenderedImage}, a {@link Raster} or some other types.
  *
  * <div class="note"><b>Example:</b>
@@ -193,7 +193,7 @@ public class GridCoverageBuilder {
 
     /**
      * Sets the domain as an enclosing envelope (including its CRS).
-     * The given envelope should contain all pixel area. For example the
+     * The given envelope should contain all pixel area. For example, the
      * {@linkplain Envelope#getLowerCorner() envelope lower corner} should locate the lower-left
      * (or upper-left, depending on <var>y</var> axis orientation) pixel corner, not pixel center.
      * If the given envelope contains a CRS, then that CRS will be the coverage CRS.
@@ -310,7 +310,7 @@ public class GridCoverageBuilder {
      * must be equal to the number of sample dimensions.
      *
      * <p><b>Note:</b> row indices in an image are usually increasing down, while geographic coordinates
-     * are usually increasing up. Consequently the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
+     * are usually increasing up. Consequently, the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
      * method may need to be invoked after this method.</p>
      *
      * @param  data  the rendered image to be wrapped in a {@code GridCoverage}. Cannot be {@code null}.
@@ -334,7 +334,7 @@ public class GridCoverageBuilder {
      * number of sample dimensions.
      *
      * <p><b>Note:</b> row indices in a raster are usually increasing down, while geographic coordinates
-     * are usually increasing up. Consequently the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
+     * are usually increasing up. Consequently, the <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>
      * method may need to be invoked after this method.</p>
      *
      * @param  data  the raster to be wrapped in a {@code GridCoverage}. Cannot be {@code null}.

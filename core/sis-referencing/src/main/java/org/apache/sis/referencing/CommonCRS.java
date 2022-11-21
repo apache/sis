@@ -1217,7 +1217,7 @@ public enum CommonCRS {
      *
      * <div class="note"><b>Note:</b>
      * We do not provide a {@code GEOIDAL} value because its definition depends on the realization epoch.
-     * For example EGM84, EGM96 and EGM2008 are applications of three different geoid models on the WGS 84 ellipsoid.
+     * For example, EGM84, EGM96 and EGM2008 are applications of three different geoid models on the WGS 84 ellipsoid.
      * The {@link #MEAN_SEA_LEVEL} value can be used instead as an approximation of geoidal heights.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)

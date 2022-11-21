@@ -237,9 +237,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   <li>Otherwise if the given object is already an instance of
      *       {@code AbstractDatum}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractDatum} instance is created using the
-     *       {@linkplain #AbstractDatum(Datum) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
-     *       properties contained in the given object are not recursively copied.</li>
+     *       {@linkplain #AbstractDatum(Datum) copy constructor} and returned.
+     *       Note that this is a <dfn>shallow</dfn> copy operation,
+     *       because the other properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.

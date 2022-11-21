@@ -95,7 +95,7 @@ import static java.util.logging.Logger.getLogger;
  *   <li>A {@link MathTransformProvider} instantiates a class from the
  *     {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
  *     Note that different providers may instantiate the same map projection class.
- *     For example both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> methods
+ *     For example, both <cite>"Mercator (variant A)"</cite> and <cite>"Mercator (variant B)"</cite> methods
  *     instantiate the same {@link org.apache.sis.referencing.operation.projection.Mercator} class,
  *     but with different ways to represent the parameters.</li>
  *
@@ -148,7 +148,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     public enum MatrixRole {
         /**
          * Matrix for converting angular degrees to radians, or any other linear operations needed
-         * before to apply a non-linear operation. For example in a map projection, this matrix is
+         * before to apply a non-linear operation. For example, in a map projection, this matrix is
          * typically (but not necessarily) as below:
          *
          * <div style="text-align:center">{@include formulas.html#NormalizeGeographic}</div>
@@ -157,7 +157,7 @@ public class ContextualParameters extends Parameters implements Serializable {
 
         /**
          * Inverse of the {@link #NORMALIZATION} matrix.
-         * For example in a map projection, this matrix is typically (but not necessarily) as below:
+         * For example, in a map projection, this matrix is typically (but not necessarily) as below:
          *
          * <div style="text-align:center">{@include formulas.html#DenormalizeGeographic}</div>
          */
@@ -165,7 +165,7 @@ public class ContextualParameters extends Parameters implements Serializable {
 
         /**
          * Matrix for scaling Cartesian coordinates to the size of the planet, or any other linear operations needed
-         * after execution of a non-linear operation. For example in a map projection, this matrix is typically
+         * after execution of a non-linear operation. For example, in a map projection, this matrix is typically
          * (but not necessarily) as below:
          *
          * <div style="text-align:center">{@include formulas.html#DenormalizeCartesian}</div>
@@ -473,7 +473,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     public synchronized MatrixSIS normalizeGeographicInputs(final double λ0) {
         ensureModifiable();
         /*
-         * In theory the check for (λ0 != 0) is useless. However Java has a notion of negative zero, and we want
+         * In theory the check for (λ0 != 0) is useless. However, Java has a notion of negative zero, and we want
          * to avoid negative zeros because we do not want them to appear in WKT formatting of matrix elements.
          */
         final DoubleDouble toRadians = DoubleDouble.createDegreesToRadians();
@@ -870,7 +870,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         final boolean hasAfter  = (after  != null);
         /*
          * We assume that the "before" affine contains the normalize operation to be applied
-         * before the projection. However it may contains more than just this normalization,
+         * before the projection. However, it may contains more than just this normalization,
          * because it may have been concatenated with any user-defined transform (for example
          * in order to apply a change of axis order). We need to separate the "user-defined"
          * step from the "normalize" step.
@@ -912,7 +912,7 @@ public class ContextualParameters extends Parameters implements Serializable {
          *     Molodensky transformations conceptually use always decimal degrees. There is not much
          *     other cases since this mechanism is internal to SIS (not in public API).
          *
-         * Consequently we set the tolerance threshold to ANGULAR_TOLERANCE. We do not bother (at least
+         * Consequently, we set the tolerance threshold to ANGULAR_TOLERANCE. We do not bother (at least
          * for now) to identify the cases where we could use LINEAR_TOLERANCE because just checking the
          * `inverse` flag is not sufficient (e.g. the Molodensky case). Since the angular tolerance is
          * smaller than the linear one, unconditional usage of ANGULAR_TOLERANCE is more conservative.

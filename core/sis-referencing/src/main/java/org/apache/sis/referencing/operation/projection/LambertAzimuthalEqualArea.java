@@ -113,7 +113,7 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
         /*
          * In the polar case we have cos(φ₀) ≈ 0 and cos(β₀) ≈ 0, which cause D = 0/0.
          * Trying to evaluate the indeterminate with L'Hôpital's rule produce infinity.
-         * Consequently a different set of formulas for the polar form must be used not
+         * Consequently, a different set of formulas for the polar form must be used not
          * only here but also in the `transform(…)` and `inverseTransform(…)` methods.
          */
         final MatrixSIS denormalize = getContextualParameters().getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);

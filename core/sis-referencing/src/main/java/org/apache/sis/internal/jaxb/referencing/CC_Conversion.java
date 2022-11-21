@@ -106,7 +106,7 @@ public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion>
     /**
      * Temporarily stores the {@code baseCRS} associated to the given {@code Conversion}.  This temporary storage is
      * needed because {@code org.apache.sis.referencing.crs.AbstractDerivedCRS} does not have any explicit field for
-     * {@code baseCRS}. Instead the base CRS is stored in {@link Conversion#getSourceCRS()}, but we can set this
+     * {@code baseCRS}. Instead, the base CRS is stored in {@link Conversion#getSourceCRS()}, but we can set this
      * property only after the {@code DerivedCRS} coordinate system has been unmarshalled.
      *
      * See {@code AbstractDerivedCRS.afterUnmarshal(Unmarshaller, Object parent)} for more information.

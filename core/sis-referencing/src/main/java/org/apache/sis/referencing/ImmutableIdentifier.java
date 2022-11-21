@@ -253,7 +253,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * <h4>Localization</h4>
      * {@code "description"} is a localizable attributes which may have a language and country
-     * code suffix. For example the {@code "description_fr"} property stands for description in
+     * code suffix. For example, the {@code "description_fr"} property stands for description in
      * {@linkplain Locale#FRENCH French} and the {@code "description_fr_CA"} property stands
      * for description in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      *
@@ -328,7 +328,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *       {@code ImmutableIdentifier}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code ImmutableIdentifier} instance is created using the
      *       {@linkplain #ImmutableIdentifier(Identifier) copy constructor} and returned.
-     *       Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *

@@ -18,6 +18,8 @@ package org.apache.sis.internal.xml;
 
 import org.apache.sis.util.Version;
 
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
+
 
 /**
  * Legacy XML namespaces, and {@link Version} constants for identifying when those namespaces were used.
@@ -75,7 +77,7 @@ public final class LegacyNamespaces {
      * The <code>{@value}</code> URL.
      * The usual prefix for this namespace is {@code "gmi"}.
      */
-    public static final String GMI = "http://standards.iso.org/iso/19115/-2/gmi/1.0";
+    public static final String GMI = ISO_NAMESPACE + "19115/-2/gmi/1.0";
 
     /**
      * The <code>{@value}</code> URL, used in ISO 19139:2007.

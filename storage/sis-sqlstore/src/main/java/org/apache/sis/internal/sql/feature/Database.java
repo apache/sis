@@ -114,7 +114,7 @@ public class Database<G> extends Syntax  {
 
     /**
      * The factory to use for creating geometric objects.
-     * For example the geometry implementations may be ESRI, JTS or Java2D objects.
+     * For example, the geometry implementations may be ESRI, JTS or Java2D objects.
      */
     final Geometries<G> geomLibrary;
 
@@ -316,7 +316,7 @@ public class Database<G> extends Syntax  {
         /*
          * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
          * Note that the standard specified those names in upper-case letters, which is also
-         * the default case specified by the SQL standard.  However some databases use lower
+         * the default case specified by the SQL standard. However, some databases use lower
          * cases instead.
          */
         String tableCRS  = InfoStatements.SPATIAL_REF_SYS;
@@ -703,7 +703,7 @@ public class Database<G> extends Syntax  {
      * <p>The returned instance is usually a singleton instance.
      * The caller of this method may create a copy of the returned instance for removing
      * some functions that are found to be unsupported by the database software.
-     * Consequently implementation of this method can assume that the database supports
+     * Consequently, implementation of this method can assume that the database supports
      * all the spatial operations managed by the returned writer.</p>
      *
      * @return the converter from filters/expressions to the {@code WHERE} part of SQL statement.

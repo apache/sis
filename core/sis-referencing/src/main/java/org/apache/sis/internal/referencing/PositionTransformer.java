@@ -54,7 +54,7 @@ import org.apache.sis.util.Utilities;
  * </ul>
  *
  * This class should not appear in a public API. It is used as a helper private field in more complex classes.
- * For example suppose that {@code MyClass} needs to perform its internal working in some particular CRS,
+ * For example, suppose that {@code MyClass} needs to perform its internal working in some particular CRS,
  * but we want robust API accepting whatever CRS the client uses. {@code MyClass} can be written as below:
  *
  * {@preformat java

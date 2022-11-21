@@ -86,9 +86,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * But if a name is listed in this map, then that alternative name will be used for grouping purpose.
      * Sometimes the change is only cosmetic (e.g. "Reseau Geodesique Francais" → "Réseau Géodésique Français").
      * But sometimes the changes have the effect of merging different datum under the same section.
-     * For example we merge the "Arc 1950" and "Arc 1960" sections into a single "Arc" section,
+     * For example, we merge the "Arc 1950" and "Arc 1960" sections into a single "Arc" section,
      * since those sections were small and we do not want to scatter the HTML page with too many sections.
-     * However we do not merge "NAD83" and "NAD83(HARN)" because those sections are already quite large,
+     * However, we do not merge "NAD83" and "NAD83(HARN)" because those sections are already quite large,
      * and merging them will result in a too large section.
      *
      * <p>The decision to merge or not is arbitrary. Generally, we try to avoid small sections (less that 5 CRS)

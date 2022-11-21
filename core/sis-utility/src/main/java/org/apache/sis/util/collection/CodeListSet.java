@@ -95,7 +95,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * <div class="note"><b>Implementation note:</b>
      * The standard {@link java.util.EnumSet} class uses different implementations depending on whether
      * the enumeration contains more or less than 64 elements. We cannot apply the same strategy for
-     * {@code CodeListSet}, because new code list elements can be created at runtime. Consequently this
+     * {@code CodeListSet}, because new code list elements can be created at runtime. Consequently, this
      * implementation needs to be able to growth its capacity.</div>
      */
     private BitSet supplementary;

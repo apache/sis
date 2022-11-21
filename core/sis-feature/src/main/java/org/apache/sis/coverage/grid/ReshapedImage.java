@@ -38,7 +38,7 @@ import static java.lang.Math.toIntExact;
 /**
  * A view over another image with the origin relocated to a new position.
  * Only the pixel coordinates are changed; the tile indices stay the same.
- * However the image view may expose less tiles than the wrapped image.
+ * However, the image view may expose less tiles than the wrapped image.
  * This wrapper does not change image size otherwise than by an integer amount of tiles.
  *
  * @author  Johann Sorel (Geomatys)

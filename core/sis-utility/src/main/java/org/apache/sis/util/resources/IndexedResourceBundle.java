@@ -113,7 +113,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
     private URL resources;
 
     /**
-     * The array of resources. Keys are an array index plus {@value #FIRST}. For example the value for key "14" is
+     * The array of resources. Keys are an array index plus {@value #FIRST}. For example, the value for key "14" is
      * {@code values[13]}. This array will be loaded only when first needed. We should not load it at construction
      * time, because some {@code ResourceBundle} objects will never ask for values.  This is particularly the case
      * for parent resources of {@code Resources_fr_CA}, {@code Resources_en}, {@code Resources_de}, etc. which will

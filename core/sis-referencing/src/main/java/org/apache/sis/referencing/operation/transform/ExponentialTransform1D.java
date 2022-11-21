@@ -75,8 +75,8 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * The scale value to be multiplied.
      *
      * <div class="note">The scale could be handled by a concatenation with {@link LinearTransform1D} instead of
-     * an explicit field in this class. However the <var>scale</var>⋅<var>base</var><sup><var>x</var></sup> formula
-     * is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently we keep this explicit
+     * an explicit field in this class. However, the <var>scale</var>⋅<var>base</var><sup><var>x</var></sup> formula
+     * is extensively used as a <cite>transfer function</cite> in grid coverages. Consequently, we keep this explicit
      * field for performance reasons.</div>
      */
     final double scale;

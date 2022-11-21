@@ -69,7 +69,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * <h2>Envelope transformations</h2>
  * All {@code transform(…)} methods in this class take in account the curvature of the transformed shape.
- * For example the shape of a geographic envelope (figure below on the left side) is not rectangular in a
+ * For example, the shape of a geographic envelope (figure below on the left side) is not rectangular in a
  * conic projection (figure below on the right side). In order to get the envelope represented by the red
  * rectangle, projecting the four corners of the geographic envelope is not sufficient since we would miss
  * the southerner part.
@@ -112,7 +112,7 @@ public final class Envelopes extends Static {
     /**
      * Fraction of the axis span to accept as close enough to an envelope boundary. This is used for coordinates
      * that are suppose to be on a boundary, for checking if it is really on the boundary side where it should be.
-     * For example on the longitude axis, bounds are -180° and +180° with wraparound meaning and the span is 360°.
+     * For example, on the longitude axis, bounds are -180° and +180° with wraparound meaning and the span is 360°.
      * A {@code SPAN_FRACTION_AS_BOUND} value of 0.25 means that we accept a margin of 0.25 × 360° = 90° on each
      * side: longitudes between -180 and -90 are clipped to the -180° bounds, and longitudes between +180 and +90
      * and clipped to the +180° bounds. We use a large fraction because we use it in contexts where the longitude
@@ -472,7 +472,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                 }
                 /*
                  * Get the next point coordinate. The `coordinateIndex` variable is an index in base 3
-                 * having a number of digits equals to the number of source dimensions.  For example a
+                 * having a number of digits equals to the number of source dimensions.  For example, a
                  * 4-D space have indexes ranging from "0000" to "2222" (numbers in base 3). The digits
                  * are then mapped to minimal (0), maximal (1) or central (2) coordinates. The outer loop
                  * stops when the counter roll back to "0000". Note that `targetPt` will be set to value
@@ -534,7 +534,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                                             {
                                                 /*
                                                  * At this point, we have determined that adding the extremum point
-                                                 * would expand the envelope. However we will not add that point
+                                                 * would expand the envelope. However, we will not add that point
                                                  * directly because its position may not be quite right (since we
                                                  * used a cubic curve approximation). Instead, we project the point
                                                  * on the envelope border which is located vis-à-vis the extremum.
@@ -623,7 +623,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
             if (crs != null && !Utilities.equalsIgnoreMetadata(crs, sourceCRS)) {
                 /*
                  * Argument-check: the envelope CRS seems inconsistent with the given operation.
-                 * However we need to push the check a little bit further, since 3D-GeographicCRS
+                 * However, we need to push the check a little bit further, since 3D-GeographicCRS
                  * are considered not equal to CompoundCRS[2D-GeographicCRS + ellipsoidal height].
                  * Checking for identity MathTransform is a more powerfull (but more costly) check.
                  * Since we have the MathTransform, perform an opportunist envelope transform if it
@@ -704,7 +704,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
             return transformed;
         }
         /*
-         * Checks for singularity points. For example the south pole is a singularity point in
+         * Checks for singularity points. For example, the south pole is a singularity point in
          * geographic CRS because it is located at the maximal value allowed by one particular
          * axis, namely latitude. This point is not a singularity in the stereographic projection,
          * because axes extends toward infinity in all directions (mathematically) and because the
@@ -795,7 +795,7 @@ poles:  for (int i=0; i<dimension; i++) {
                     if (sourceBox.contains(sourcePt)) {
                         /*
                          * The point is inside the source envelope and consequently should be added in the
-                         * transformed envelope. However there is a possible confusion: if the axis that we
+                         * transformed envelope. However, there is a possible confusion: if the axis that we
                          * tested is a wraparound axis, then (for example) +180° and -180° of longitude may
                          * be the same point in source CRS, despite being 2 very different points in target
                          * CRS. We do yet another projection in opposite direction for checking if we really
@@ -1011,8 +1011,8 @@ poles:  for (int i=0; i<dimension; i++) {
 
     /**
      * Returns the bounding box of a geometry defined in <cite>Well Known Text</cite> (WKT) format.
-     * This method does not check the consistency of the provided WKT. For example it does not check
-     * that every points in a {@code LINESTRING} have the same dimension. However this method
+     * This method does not check the consistency of the provided WKT. For example, it does not check
+     * that every points in a {@code LINESTRING} have the same dimension. However, this method
      * ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
      * <div class="note"><b>Examples:</b>
@@ -1054,7 +1054,7 @@ poles:  for (int i=0; i<dimension; i++) {
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
+     * However, it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.

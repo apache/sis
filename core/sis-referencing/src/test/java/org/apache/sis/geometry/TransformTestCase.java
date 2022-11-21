@@ -214,7 +214,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     /**
      * Tests transform of an envelope over the ±180° limit. The Mercator projection used in this test
      * is not expected to wrap the longitude around Earth when using only the {@code MathTransform}.
-     * However when the target CRS is known, then "wrap around" should be applied.
+     * However, when the target CRS is known, then "wrap around" should be applied.
      *
      * @throws TransformException if an error occurred while transforming the envelope.
      *
@@ -266,7 +266,7 @@ public abstract strictfp class TransformTestCase<G> extends TestCase {
     /**
      * Returns the inverse of the given conversion. This method is not strictly correct
      * since we reuse the properties (name, aliases, etc.) from the given conversion.
-     * However those properties are not significant for the purpose of this test.
+     * However, those properties are not significant for the purpose of this test.
      *
      * @see org.apache.sis.referencing.operation.CoordinateOperationRegistry#inverse(SingleOperation)
      */

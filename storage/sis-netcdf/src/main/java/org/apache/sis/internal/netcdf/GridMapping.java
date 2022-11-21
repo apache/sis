@@ -564,7 +564,7 @@ final class GridMapping {
     /**
      * Creates the grid geometry from the {@link #crs} and {@link #gridToCRS} fields,
      * completing missing information with the implicit grid geometry derived from coordinate variables.
-     * For example {@code GridMapping} may contain information only about the horizontal dimensions, so
+     * For example, {@code GridMapping} may contain information only about the horizontal dimensions, so
      * the given {@code implicit} geometry is used for completing with vertical and temporal dimensions.
      *
      * @param  variable  the variable for which to create a grid geometry.

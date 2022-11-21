@@ -33,7 +33,7 @@
  *
  * <div class="note"><b>Note:</b>
  * {@link java.util.Formatter java.util.Formatter} is an alternative to {@link java.text.MessageFormat} providing
- * similar functionalities with a C/C++ like syntax. However {@code MessageFormat} has two advantages: it provides
+ * similar functionalities with a C/C++ like syntax. However, {@code MessageFormat} has two advantages: it provides
  * a {@code choice} format type (useful for handling plural forms), and localizes properly objects of unspecified type
  * (by contrast, the {@code Formatter} {@code "%s"} type always invoke {@code toString()}). The latter advantage is
  * important for messages in which the same argument could receive {@link java.lang.Number} or {@link java.util.Date}

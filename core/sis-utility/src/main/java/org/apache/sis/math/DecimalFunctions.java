@@ -118,7 +118,7 @@ public final class DecimalFunctions extends Static {
      * Converts the given {@code float} value to a {@code double} with the extra <em>decimal</em> fraction digits
      * set to zero. This is different than the standard cast in the Java language, which set the extra <em>binary</em>
      * fraction digits to zero.
-     * For example {@code (double) 0.1f} gives 0.10000000149011612 while {@code floatToDouble(0.1f)} returns 0.1.
+     * For example, {@code (double) 0.1f} gives 0.10000000149011612 while {@code floatToDouble(0.1f)} returns 0.1.
      *
      * <div class="note"><b>Note:</b>
      * This method is <strong>not</strong> more accurate than the standard Java cast – it should be used only when
@@ -158,7 +158,7 @@ public final class DecimalFunctions extends Static {
          *
          * where e₁₀ is the smallest exponent which allow to represent the value without precision lost when (m × c)
          * is rounded to an integer. Because the number of significant digits in base 2 does not correspond to an
-         * integer number of significand digits in base 10, we have slightly more precision than what the 'float'
+         * integer number of significand digits in base 10, we have slightly more precision than what the `float`
          * value had: we have something between 0 and 1 extraneous digits.
          *
          * Note: the conversation factor c is also equals to 1 ULP converted to the units of (m × c).
@@ -197,7 +197,7 @@ public final class DecimalFunctions extends Static {
      * To see an effect, a type with more precision than the {@code double} type is necessary.
      *
      * <div class="note"><b>Use case:</b>
-     * Many international standards define values in base 10. For example the conversion factor from inches
+     * Many international standards define values in base 10. For example, the conversion factor from inches
      * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
      * since 1959, not an approximation. But the 2.54 value cannot be represented exactly in the IEEE 754
      * format – the error is approximately 3.6E-17 cm/inch. In the vast majority of cases such tiny error
@@ -239,15 +239,15 @@ public final class DecimalFunctions extends Static {
          *
          *    c = Math.scalb(pow10(e10), e);            // Range: (1 … 10) exclusive.
          *
-         * Unfortunately this would require a floating point type with twice the accuracy of 'double',
+         * Unfortunately this would require a floating point type with twice the accuracy of `double`,
          * which we don't have. Instead, we will apply a trick with integer arithmetic. But before to
-         * use integers, we will need to multiply 'c' by a scale factor high enough for promoting all
+         * use integers, we will need to multiply `c` by a scale factor high enough for promoting all
          * significant fraction digits to the integer part. This factor is 2^56, explanation follows:
          *
          * For reasons explained later we will actually use c/10 instead of c, so the range will be
-         * (0.1 … 1) instead of (1 … 10). The exponent of 0.1 in base 2 is -4. Consequently for any
+         * (0.1 … 1) instead of (1 … 10). The exponent of 0.1 in base 2 is -4. Consequently, for any
          * value between 0.1 and 1, scaling the value by 56 binary places guarantee that the result
-         * will be equal or greater than 2^52. At that threshold, 'double' values cannot have
+         * will be equal or greater than 2^52. At that threshold, `double` values cannot have
          * fraction digits.
          */
         final int PRECISION = SIGNIFICAND_SIZE + 4;               // Number of bits to use for scaling to integers.
@@ -262,25 +262,25 @@ public final class DecimalFunctions extends Static {
         long mc = (m * ci) & ((1L << PRECISION) - 1);
         /*
          * Because we used c/10 instead of c,  the first (leftmost) decimal digit is potentially the last
-         * (rightmost) decimal digit of 'value'. Whether it is really the last 'value' digit or not depends
+         * (rightmost) decimal digit of `value`. Whether it is really the last `value` digit or not depends
          * on the magnitude of last decimal digit compared to 1 ULP. The last digit is:
          *
          *    lastDigit = (mc * 10) >>> PRECISION;
          *
          * The above digit is guaranteed to be in the [0 … 9] range. We will wraparound in the [-5 … 4] range
-         * because the delta must be no more than ±0.5 ULP of the 'value' argument.
+         * because the delta must be no more than ±0.5 ULP of the `value` argument.
          */
         if (mc >= (5L << PRECISION) / 10) {                 // The  0.5 × 2^56  threshold.
             mc -= (1L << PRECISION);                        // Shift [5 … 9] digits to [-5 … -1].
         }
         /*
-         * At this point, 'mc' is less than 0.5 ULP if the last decimal digits were zero.
-         * But if the 'value' argument uses the full precision range of the 'double' type,
-         * then we still have 'mc' greater than 0.5 ULP is some cases. This difficulty happens
+         * At this point, `mc` is less than 0.5 ULP if the last decimal digits were zero.
+         * But if the `value` argument uses the full precision range of the `double` type,
+         * then we still have `mc` greater than 0.5 ULP is some cases. This difficulty happens
          * because 52 binary digits do not correspond to an integer number of decimal digits.
          *
          * For now, I didn't found a better strategy than choosing the last decimal digit in such
-         * a way that 'mc' is as small as possible. We don't really care what this last digit is;
+         * a way that `mc` is as small as possible. We don't really care what this last digit is;
          * we care only about the remainder after we removed the effet of that last digit.
          */
         if (Math.abs(mc) >= ci/2) {
@@ -386,7 +386,7 @@ public final class DecimalFunctions extends Static {
     /**
      * Returns the number of significant fraction digits when formatting the given number in base 10.
      * This method does <strong>not</strong> ignore trailing zeros.
-     * For example {@code fractionDigitsForValue(1.0)} returns 16,
+     * For example, {@code fractionDigitsForValue(1.0)} returns 16,
      * because the {@code double} format can store <i>almost</i> 16 decimal digits after 1.
      *
      * <div class="note"><b>Note:</b>
@@ -540,7 +540,7 @@ public final class DecimalFunctions extends Static {
             /*
              * Compute the position of the first digit that differ, expressed as a power of 10.
              * For example if the numbers are 0.123 and 0.12378, then the first digit to differ
-             * is 7 at position 10⁻⁴. Consequently the position of the last same digit is 10⁻³.
+             * is 7 at position 10⁻⁴. Consequently, the position of the last same digit is 10⁻³.
              * Dividing numbers by that last position result in numbers where all the different
              * digits are fraction digits (123 and 123.78 in above example).
              */
@@ -553,10 +553,10 @@ public final class DecimalFunctions extends Static {
                 assert delta*scale >= 0.1 : delta;
                 final double diffInFractions = approximate * scale;
                 /*
-                 * The difference should not be in any digit provided by 'approximate'.
+                 * The difference should not be in any digit provided by `approximate`.
                  * This means that after we moved the difference in fraction digits,
                  * the approximate number should have no such fractions. We use 1 ULP
-                 * tolerance because the string representation of 'double' type has a
+                 * tolerance because the string representation of `double` type has a
                  * 0.5 ULP accuracy and the multiplication adds a 0.5 ULP rounding error.
                  */
                 approximate = Math.rint(diffInFractions);

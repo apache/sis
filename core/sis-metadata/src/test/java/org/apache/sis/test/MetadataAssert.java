@@ -143,7 +143,7 @@ public strictfp class MetadataAssert extends Assert {
      *
      * <h4>Ignored attributes substitution</h4>
      * For convenience, this method replaces some well known prefixes in the {@code ignoredAttributes}
-     * array by their full namespace URLs. For example this method replaces{@code "xsi:schemaLocation"}
+     * array by their full namespace URLs. For example, this method replaces{@code "xsi:schemaLocation"}
      * by {@code "http://www.w3.org/2001/XMLSchema-instance:schemaLocation"}.
      * If such substitution is not desired, consider using {@link DocumentComparator} directly instead.
      *
@@ -162,7 +162,7 @@ public strictfp class MetadataAssert extends Assert {
      *   <tr><td>gmi</td>    <td>{@value LegacyNamespaces#GMI}</td></tr>
      * </table>
      *
-     * <p>For example in order to ignore the namespace, type and schema location declaration,
+     * <p>For example, in order to ignore the namespace, type and schema location declaration,
      * the following strings can be given to the {@code ignoredAttributes} argument:</p>
      *
      * {@preformat text

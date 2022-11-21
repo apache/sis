@@ -38,7 +38,7 @@
  *   <dt>Element</dt>
  *   <dd>The element in an array of primitive type for storing one or more sample value.
  *       There is usually one element per sample value, but some images pack many sample values in a single element.
- *       For example a bilevel image stores each sample value in a single bit and packs 8 sample values per byte.</dd>
+ *       For example, a bilevel image stores each sample value in a single bit and packs 8 sample values per byte.</dd>
  * </dl>
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -25,7 +25,7 @@ package org.apache.sis.util;
  *
  * <div class="note"><b>API note:</b>
  * We could argue that this exception should extend {@link IllegalArgumentException}.
- * However {@link NullPointerException} has become a more widely adopted practice and
+ * However, {@link NullPointerException} has become a more widely adopted practice and
  * is now the recommended one in the <cite>Effective Java</cite> book.</div>
  *
  * @author Martin Desruisseaux (Geomatys)

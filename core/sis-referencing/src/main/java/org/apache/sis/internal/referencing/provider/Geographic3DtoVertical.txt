@@ -1,5 +1,5 @@
 There is no "Geographic 3D to ellipsoidal height" operation because
-such separation is illegal according ISO 19111.  However Apache SIS
+such separation is illegal according ISO 19111. However, Apache SIS
 may need to perform such separation anyway in some circumstances,
 but it should be only in contexts where SIS can keep trace of other
 dimensions in an "interpolation CRS".  This happen in the following

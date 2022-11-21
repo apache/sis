@@ -151,7 +151,7 @@ public final class Features extends Static {
                 }
                 /*
                  * Operation returns another operation. This case should be rare and should never
-                 * contain a cycle. However given that the consequence of an infinite cycle here
+                 * contain a cycle. However, given that the consequence of an infinite cycle here
                  * would be thread freeze, we check as a safety.
                  */
                 final Map<IdentifiedType,Boolean> done = new IdentityHashMap<>(4);

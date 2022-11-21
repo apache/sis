@@ -136,7 +136,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * this approach have an offset of 180°, which can be compensated with the axis angle (see the
      * {@link #inverseParameter(Parameters, ParameterValue)} method for more details).
      *
-     * However we can get a mathematically equivalent effect without the 180° longitude offset by
+     * However, we can get a mathematically equivalent effect without the 180° longitude offset by
      * setting the new pole latitude to unrealistic φ<sub>p</sub> = (180° − φ<sub>forward</sub>) value.
      * We get this effect be inverting the sign of {@link #cosφp} while keeping {@link #sinφp} unchanged.
      * Note that this is compatible with {@link #isIdentity()} implementation.

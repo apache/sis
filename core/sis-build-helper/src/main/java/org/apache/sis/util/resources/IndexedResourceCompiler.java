@@ -404,8 +404,8 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
                         continue;
                     }
                     /*
-                     * If we find ourselves between braces, we don't normally need to double
-                     * our quotes.  However, the format {0,choice,...} is an exception.
+                     * If we find ourselves between braces, we don't normally need to double our quotes.
+                     * However, the format {0,choice,...} is an exception.
                      */
                     if (last >= 0  &&  buffer.charAt(last) == '{') {
                         int scan = last;
@@ -537,7 +537,7 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
             }
             /*
              * At this point, all key values have been written in the buffer. Skip the corresponding
-             * lines from the files without adding them to the buffer.  However we will compare them
+             * lines from the files without adding them to the buffer. However, we will compare them
              * to the buffer content in order to detect if we really need to write the file.
              *
              * This operation will stop when we reach the closing bracket. Note that opening brackets

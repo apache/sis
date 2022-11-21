@@ -201,7 +201,7 @@ public final class SampleModelFactory {
      *
      * <h4>Comparison with standard method</h4>
      * The standard {@link SampleModel#createSubsetSampleModel(int[])} method also selects a subset of the bands.
-     * However that standard method creates a sample model accepting the same {@link java.awt.image.DataBuffer}
+     * However, that standard method creates a sample model accepting the same {@link java.awt.image.DataBuffer}
      * than the original {@link SampleModel}, which is useful for creating a <em>view</em> of image data that are
      * already in memory. By contrast, this {@code BandSelector} <em>compresses</em> bank indices or pixel masks
      * for leaving no empty space between them. This is useful when done <em>before</em> loading data from a file

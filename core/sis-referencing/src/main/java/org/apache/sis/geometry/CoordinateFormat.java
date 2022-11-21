@@ -165,7 +165,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**
      * The declared accuracy on ground, or {@code null} if unspecified. The accuracy applies to the same axes
      * than {@link #groundPrecision}. But contrarily to {@code groundPrecision}, the accuracy does not change
-     * the number of fraction digits used by {@link NumberFormat}. Instead it causes a text such as "± 30 m"
+     * the number of fraction digits used by {@link NumberFormat}. Instead, it causes a text such as "± 30 m"
      * to be appended after the coordinates.
      *
      * @see #accuracyText
@@ -322,7 +322,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * <p>In addition to conversions required by formatters expecting values in fixed units of measurement,
      * {@code toFormatUnit[i]} may also be non-null for some coordinates formatted as numbers if a different
-     * unit of measurement is desired. For example the converter may be non-null if some coordinates in metres
+     * unit of measurement is desired. For example, the converter may be non-null if some coordinates in metres
      * should be shown in kilometres. In those cases, {@code units[i] != null}.</p>
      *
      * <p>This array is used in slightly different ways at parsing time and formatting time. At formatting time,
@@ -762,7 +762,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * pattern when formatted as angles.
      *
      * <p>This precision does not have a direct relationship to the precision on the ground.
-     * For example a precision of 0.01 could be one centimeter or 10 meters, depending if
+     * For example, a precision of 0.01 could be one centimeter or 10 meters, depending if
      * the units of measurement in that dimension is meter or kilometer.
      * For a precision related to the ground, use {@link #setGroundPrecision(Quantity)} instead.</p>
      *

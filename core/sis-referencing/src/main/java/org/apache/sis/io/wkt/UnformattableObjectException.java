@@ -26,7 +26,7 @@ import org.opengis.referencing.IdentifiedObject;
  *
  * <div class="note"><b>Example:</b>
  * An engineering CRS cannot be represented in the WKT 1 format if all axes do not use the same
- * unit of measurement. However such CRS can be represented in the WKT 2 format.</div>
+ * unit of measurement. However, such CRS can be represented in the WKT 2 format.</div>
  *
  * This exception may also be thrown by {@link Formatter} if the object given to an
  * {@code append(…)} method is an instance of an unsupported class.

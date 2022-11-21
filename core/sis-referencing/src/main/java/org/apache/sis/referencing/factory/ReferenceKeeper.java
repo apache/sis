@@ -33,7 +33,7 @@ import org.apache.sis.internal.util.StandardDateFormat;
  *       We have to maintain them in a separated collection.</li>
  *   <li>We have to be careful about the references kept in this object. The purpose is to prevent garbage collection,
  *       so {@link Object#equals(Object)} is not the appropriate contract for deciding which elements to put.
- *       For example a call to {@code Map.put(key, value)} may update the value without replacing the key if an
+ *       For example, a call to {@code Map.put(key, value)} may update the value without replacing the key if an
  *       entry already exists in the map, in which case the instance that is protected against garbage collection
  *       is not the intended one.</li>
  *   <li>We tried to use {@link java.util.LinkedHashMap} as a LRU map in a previous version.

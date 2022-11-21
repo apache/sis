@@ -32,7 +32,7 @@ import org.opengis.feature.Feature;
 /**
  * An extension of the feature iterator that merge the line segments in a single trajectory.
  * Line segments can be specified on a single line in the CSV file. All lines for the same
- * feature are combined together in a single trajectory. For example iteration over the following
+ * feature are combined together in a single trajectory. For example, iteration over the following
  * file will produce 3 {@code Feature} instances instead of 4, because the two lines of features "a"
  * will be merged in a single feature instance:
  *

@@ -65,7 +65,7 @@ public class AlbersEqualArea extends AuthalicConversion {
      * This is defined as {@literal n = (m₁² – m₂²) / (α₂ – α₁)} in §1.3.13 of IOGP Publication 373-7-2 (april 2015).
      *
      * <p>In Apache SIS implementation, we use modified formulas in which the (1 - ℯ²) factor is omitted in
-     * {@link #qm(double)} calculation. Consequently what we get is a modified value <var>nm</var> which is
+     * {@link #qm(double)} calculation. Consequently, what we get is a modified value <var>nm</var> which is
      * related to Snyder's <var>n</var> value by {@literal n = nm / (1 - ℯ²)}.  The omitted (1 - ℯ²) factor
      * is either taken in account by the (de)normalization matrix, or cancels with other (1 - ℯ²) factors
      * when we develop the formulas.</p>
@@ -273,7 +273,7 @@ public class AlbersEqualArea extends AuthalicConversion {
         /*
          * Note: Snyder 14-19 gives  q = (C - ρ²n²/a²)/n  where  ρ = √(x² + (ρ₀ - y)²).
          * But in Apache SIS implementation, ρ₀ has already been subtracted by the matrix before we reach this point.
-         * So we can simplify by ρ² = x² + y². Furthermore the matrix also divided x and y by a (the semi-major axis
+         * So we can simplify by ρ² = x² + y². Furthermore, the matrix also divided x and y by a (the semi-major axis
          * length) before this method, and multiplied by n. so what we have is actually (ρ⋅n/a)² = x² + y².
          * So the formula become:
          *

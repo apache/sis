@@ -49,7 +49,7 @@ import org.apache.sis.io.TableAppender;
  *   An {@linkplain ImageReader image reader} can be instantiated before a tile is read.</li>
  *
  *   <li><b>An image input</b> (optional), typically a {@link java.nio.file.Path} or {@link java.net.URL}.
- *   The input is often different for every tile to be read, but this is not mandatory. For example tiles
+ *   The input is often different for every tile to be read, but this is not mandatory. For example, tiles
  *   could be stored at different {@linkplain #getImageIndex() image index} in the same file.</li>
  *
  *   <li><b>An image index</b> to be given to {@link ImageReader#read(int)} for reading the tile.
@@ -96,7 +96,7 @@ import org.apache.sis.io.TableAppender;
  *
  * <h2>Multi-threading</h2>
  * This class is thread-safe. In addition {@code Tile} instances can be considered as immutable after construction.
- * However some properties may be available only after the tiles have been processed by a {@link TileOrganizer},
+ * However, some properties may be available only after the tiles have been processed by a {@link TileOrganizer},
  * or only after {@link #fetchSize()} has been invoked.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -112,7 +112,7 @@ public class Tile implements Serializable {
 
     /**
      * The upper-left corner in the mosaic (destination image). Should be considered as final,
-     * since this class is supposed to be mostly immutable. However the value can be changed
+     * since this class is supposed to be mostly immutable. However, the value can be changed
      * by {@link #translate(int, int)} before the {@code Tile} instance is made public.
      *
      * @see #getLocation()
@@ -515,7 +515,7 @@ public class Tile implements Serializable {
      * Intentionally no implementation for `equals()` and `hashCode()`. Tile is an "almost immutable" class
      * which can still be modified (only once) by MocaicCalculator, or by read operations during `getSize()`
      * or `getRegion()` execution. This causes confusing behavior when used in an HashMap. We are better to
-     * rely on system identity. For example `DatumShiftGridGroup` rely on the capability to locate Tiles in
+     * rely on system identity. For example, `DatumShiftGridGroup` rely on the capability to locate Tiles in
      * HashMap before and after they have been processed by `TileOrganizer`.
      */
 

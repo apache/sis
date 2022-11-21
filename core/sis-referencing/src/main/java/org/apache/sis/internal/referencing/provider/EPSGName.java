@@ -46,7 +46,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * Version of the operation method, or {@code null} if unknown.
      *
      * <p>This is unspecified in current Apache SIS implementation.
-     * However future SIS implementations may fetch this information from the EPSG database.
+     * However, future SIS implementations may fetch this information from the EPSG database.
      * In the meantime, we use this constant as a way to track the places in Apache SIS code
      * base where this information is desired.</p>
      */
@@ -57,7 +57,7 @@ public final class EPSGName {  // TODO: consider extending NamedIdentifier if we
      * capable to fetch the remarks from the database using the given identifier code.
      *
      * <p>This is unspecified in current Apache SIS implementation.
-     * However future SIS implementations may fetch this information from the EPSG database.
+     * However, future SIS implementations may fetch this information from the EPSG database.
      * In the meantime, we use this constant as a way to track the places in Apache SIS code
      * base where this information is desired.</p>
      */

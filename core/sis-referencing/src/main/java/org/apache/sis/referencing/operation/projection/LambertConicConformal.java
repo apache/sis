@@ -157,9 +157,9 @@ public class LambertConicConformal extends ConformalProjection {
      *       inverse transform methods become basically the same than the ones in {@link PolarStereographic},
      *       but (de)normalization matrices contain NaN values.</li>
      *   <li>Depending on how the formulas are written, <var>n</var> may be positive in the South hemisphere and
-     *       negative in the North hemisphere (or conversely). However Apache SIS adjusts the coefficients of the
+     *       negative in the North hemisphere (or conversely). However, Apache SIS adjusts the coefficients of the
      *       (de)normalization matrices in order to keep <var>n</var> positive, because the formulas are slightly
-     *       more accurate for positive <var>n</var> values. However this adjustment is optional and can be disabled
+     *       more accurate for positive <var>n</var> values. However, this adjustment is optional and can be disabled
      *       in the constructor.</li>
      * </ul>
      */
@@ -290,7 +290,7 @@ public class LambertConicConformal extends ConformalProjection {
         /*
          * Compute constants. We do not need to use special formulas for the spherical case below,
          * since   rν(sinφ) = 1   and   expΨ(φ) = tan(π/4 + φ/2)   when the eccentricity is zero.
-         * However we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
+         * However, we need special formulas for φ1 ≈ φ2 in the calculation of n, otherwise we got
          * a 0/0 indetermination.
          */
         final double sinφ1 = sin(φ1);

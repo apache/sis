@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.Constants;
  *
  * <h2>Thread safety</h2>
  * The same {@code GeoTiffStoreProvider} instance can be safely used by many threads without synchronization on
- * the part of the caller. However the {@link GeoTiffStore} instances created by this factory are not thread-safe.
+ * the part of the caller. However, the {@link GeoTiffStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

@@ -88,7 +88,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * That more accurate formula is implemented in MeridianArcTest for comparison purposes.
          * Then we transform that formula as below:
          *
-         *    1) Multiply by b²/a = (1 - ℯ²). This is done by combining some terms. For example (1 - ℯ²)⋅(1 + ¾ℯ²) =
+         *    1) Multiply by b²/a = (1 - ℯ²). This is done by combining some terms. For example, (1 - ℯ²)⋅(1 + ¾ℯ²) =
          *       (1 + ¾ℯ²) - (1ℯ² + ¾ℯ⁴) = 1 - ¼ℯ² - ¾ℯ⁴. Note that we get the first two terms of EPSG formula, which
          *       already include the multiplication by (1 - ℯ²).
          *
@@ -213,9 +213,9 @@ abstract class MeridianArcBased extends NormalizedProjection {
         φ += cos(φ)*sinφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                 // Snyder 3-26.
         /*
          * We could improve accuracy by continuing from here with Newton's iterative method
-         * (see MeridianArcTest.inverse(…) for implementation). However those iterations requires
+         * (see MeridianArcTest.inverse(…) for implementation). However, those iterations requires
          * calls to distance(double, …), which is itself an approximation based on series expansion.
-         * Consequently the accuracy of iterative method cannot be better than distance(…) accuracy.
+         * Consequently, the accuracy of iterative method cannot be better than distance(…) accuracy.
          */
         return φ;
     }

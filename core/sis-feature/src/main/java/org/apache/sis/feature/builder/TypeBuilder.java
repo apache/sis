@@ -222,7 +222,7 @@ public abstract class TypeBuilder implements Localized {
      *
      * <div class="note"><b>Note for subclasses:</b>
      * all {@code setName(…)} convenience methods in this builder delegate to this method.
-     * Consequently this method can be used as a central place where to control the creation of all names.</div>
+     * Consequently, this method can be used as a central place where to control the creation of all names.</div>
      *
      * @param  name  the generic name (cannot be {@code null}).
      * @return {@code this} for allowing method calls chaining.

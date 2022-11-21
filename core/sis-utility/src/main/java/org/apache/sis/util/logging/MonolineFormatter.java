@@ -48,7 +48,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 
 /**
  * A formatter writing log messages on a single line. Compared to the JDK {@link SimpleFormatter},
- * this formatter uses only one line per message instead of two. For example messages formatted by
+ * this formatter uses only one line per message instead of two. For example, messages formatted by
  * {@code MonolineFormatter} may look like:
  *
  * <blockquote><table style="color:white; background:black" class="compact">
@@ -1050,7 +1050,7 @@ loop:   for (int i=0; ; i++) {
         }
         /*
          * If we didn't found any ConsoleHandler, then we will need to create a new one. This usually happen if
-         * the logger given in argument to this method was not the root logger. For example the user may want to
+         * the logger given in argument to this method was not the root logger. For example, the user may want to
          * configure only the "org.apache.sis" logger. But before to create the new ConsoleHandler, we will need
          * to stop using the parent handlers because we don't want to inherit the original ConsoleHandler which
          * is likely to exist in the root package. In order to preserve functionalities of other loggers, we copy

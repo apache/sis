@@ -177,7 +177,7 @@ final class VerticalInfo {
          *
          *   - We generally can reuse the CRS name because those names tend to refer to the datum (which is
          *     unchanged) rather than the coordinate system. Examples: "Low Water depth", "NGF Lallemand height",
-         *     "JGD2011 (vertical) height". However we make an exception if the direction is down, because in such
+         *     "JGD2011 (vertical) height". However, we make an exception if the direction is down, because in such
          *     cases the previous name may contain terms like "depth", which are not appropriate for our new CRS.
          */
         final VerticalCS cs = csFactory.createVerticalCS (properties(axis.getName()), axis);

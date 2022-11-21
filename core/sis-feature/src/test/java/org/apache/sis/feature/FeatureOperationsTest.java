@@ -99,7 +99,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
     /**
      * Tests the constructor. The set of attributes on which the operation depends shall include
      * "classes", "climbing wall" and "gymnasium" but not "name" since the latter does not contain
-     * a geometry. Furthermore the default CRS shall be {@code HardCodedCRS.WGS84}, not
+     * a geometry. Furthermore, the default CRS shall be {@code HardCodedCRS.WGS84}, not
      * {@code HardCodedCRS.WGS84_LATITUDE_FIRST}, because this test uses "gymnasium" as the default geometry.
      *
      * @throws FactoryException if an error occurred while searching for the coordinate operations.

@@ -363,7 +363,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -409,14 +409,14 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *       {@code DefaultMetadata}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultMetadata} instance is created using the
      *       {@linkplain #DefaultMetadata(Metadata) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
      * <h4>Use case</h4>
      * This method is useful before {@linkplain org.apache.sis.xml.XML#marshal(Object) XML marshalling}
      * or serialization, which may not be supported by all implementations.
-     * However the returned metadata is not guaranteed to be {@linkplain State#EDITABLE editable}.
+     * However, the returned metadata is not guaranteed to be {@linkplain State#EDITABLE editable}.
      * For editable metadata, see {@link #deepCopy(Metadata)}.
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.
@@ -434,7 +434,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * Returns an editable copy of the given metadata. All children are also copied.
      * This method is more expensive than {@link #castOrCopy(Metadata)} because the
      * copy is unconditional and much deeper.
-     * However the result is guaranteed to be editable.
+     * However, the result is guaranteed to be editable.
      *
      * <h4>Use case</h4>
      * Metadata returned by {@link org.apache.sis.storage.Resource#getMetadata()} are typically unmodifiable.
@@ -547,7 +547,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * in ISO 19115-2 compliant XML documents.</p>
      *
      * <p>Each ({@link Locale}, {@link Charset}) entry is equivalent to an instance of ISO 19115 {@code PT_Locale}
-     * class. The language code and the character set are mandatory elements in ISO standard. Consequently this map
+     * class. The language code and the character set are mandatory elements in ISO standard. Consequently, this map
      * should not contain null key or null values, but Apache SIS implementations is tolerant for historical reasons.
      * The same character set may be associated to many languages.</p>
      *

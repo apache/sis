@@ -186,7 +186,7 @@ public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     }
 
     /**
-     * Tests the argument checks performed by various methods. For example this method
+     * Tests the argument checks performed by various methods. For example, this method
      * tests {@link ChannelDataOutput#seek(long)} with an invalid seek position.
      *
      * @throws IOException should never happen since we read and write in memory only.

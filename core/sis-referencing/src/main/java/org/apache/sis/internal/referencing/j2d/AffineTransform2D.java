@@ -165,8 +165,10 @@ public class AffineTransform2D extends ImmutableAffineTransform
      *
      * <p>The inconsistency is in the use of {@link Double#doubleToLongBits(double)} for hash code and
      * {@code ==} for testing equality. The former is sensitive to the sign of 0 while the latter is not.</p>
+     *
+     * <a href="https://bugs.openjdk.org/browse/JDK-8290973">JDK-8290973</a>
      */
-    @Workaround(library="JDK", version="8")                         // Last verified in 1.8.0_05.
+    @Workaround(library="JDK", version="8", fixed="20")
     private static double pz(final double value) {
         return (value != 0) ? value : 0;
     }
@@ -388,8 +390,8 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * of {@code AffineTransform2D}, then the two objects must be of the exact same class.
      *
      * <p>Most SIS implementations require that the objects being compared are unconditionally of the same class in
-     * order to be considered equal. However many JDK implementations, including {@link AffineTransform}, do not have
-     * this requirement. Consequently the above condition (i.e. require the same class only if the given object is an
+     * order to be considered equal. However, many JDK implementations, including {@link AffineTransform}, do not have
+     * this requirement. Consequently, the above condition (i.e. require the same class only if the given object is an
      * {@code AffineTransform2D} or a subclass) is necessary in order to preserve the <cite>symmetricity</cite> contract
      * of {@link Object#equals(Object)}.</p>
      *

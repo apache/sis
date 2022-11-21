@@ -221,7 +221,7 @@ public abstract strictfp class TestSuite {
 
     /**
      * Installs Apache SIS monoline formatter for easier identification of Apache SIS log messages among Maven outputs.
-     * We perform this installation only for {@code *TestSuite}, not for individual {@code *Test}. Consequently this is
+     * We perform this installation only for {@code *TestSuite}, not for individual {@code *Test}. Consequently, this is
      * typically enabled when building a whole module with Maven but not when debugging an individual class.
      *
      * @since 1.0

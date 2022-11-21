@@ -60,7 +60,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * }
  *
  * The {@code setRoot(…)} method accepts arbitrary {@link TreeTable.Node} implementations.
- * However it is likely to be safer and more memory efficient when used together with the
+ * However, it is likely to be safer and more memory efficient when used together with the
  * implementation provided in the {@link Node} inner class.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -522,7 +522,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          *
          * <p>Subclasses can override this method if they can determine which nodes are leaves.
          * In the current implementation, the return value shall be stable (i.e. a node cannot
-         * alternate between leaf and non-leaf state). However this restriction may be relaxed
+         * alternate between leaf and non-leaf state). However, this restriction may be relaxed
          * in a future SIS version.</p>
          */
         @Override

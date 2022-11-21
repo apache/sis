@@ -104,7 +104,7 @@ public final class Quantities extends Static {
                     } else {
                         /*
                          * This cast should be safe because `type` should be null only in contexts where the user
-                         * cannot expect a more specific type. For example it may be the result of an arithmetic
+                         * cannot expect a more specific type. For example, it may be the result of an arithmetic
                          * operation, in which case the return value in method signature is `Quantity<?>`.
                          */
                         @SuppressWarnings("unchecked")
@@ -139,7 +139,7 @@ public final class Quantities extends Static {
 
     /**
      * Returns the given quantity as an instance of the specific {@code Quantity} subtype.
-     * For example this method can be used for converting a {@code Quantity<Length>} to a {@link Length}.
+     * For example, this method can be used for converting a {@code Quantity<Length>} to a {@link Length}.
      * If the given quantity already implements the specific interface, then it is returned as-is.
      *
      * @param  <Q>      the quantity type (e.g. {@link Length}, {@link Angle}, {@link Time}, <i>etc.</i>), or {@code null}.

@@ -86,7 +86,7 @@ final class ExpandableList extends TransformationList<Feature,Feature>
     /**
      * The rows of the expanded feature, or {@code null} if none. If non-null, this array shall never be empty.
      * The reason why we do not allow empty arrays is because we will insert {@code expansion.length - 1} rows
-     * below the expanded feature. Consequently empty arrays cause negative indices that are more difficult to
+     * below the expanded feature. Consequently, empty arrays cause negative indices that are more difficult to
      * debug than {@link NullPointerException}, because they happen later.
      *
      * <p>If non-null, they array should have at least 2 elements. An array of only 1 element is not wrong,

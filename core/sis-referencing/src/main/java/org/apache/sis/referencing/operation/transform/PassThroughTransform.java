@@ -237,7 +237,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      *
      * <div class="note"><b>API note:</b> this method is final for now because most of Apache SIS code do
      * not use the {@code modifiedCoordinates} array. Instead, SIS uses the {@code firstAffectedCoordinate}
-     * and {@code numTrailingCoordinates} information provided to the constructor. Consequently overriding
+     * and {@code numTrailingCoordinates} information provided to the constructor. Consequently, overriding
      * this method may be misleading since it would be ignored by SIS. We do not want to make the "really
      * used" fields public in order to keep the flexibility to replace them by a {@code modifiedCoordinates}
      * array in a future SIS version.</div>
@@ -761,7 +761,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                          *       add or remove bits at that point for the dimensionality changes.
                          *
                          *    2) If we do not keep the sub-transform, then code inside 'if (dim == firstAffectedCoordinate)'
-                         *       should not have been executed. Instead we will adjust the indices after the loop.
+                         *       should not have been executed. Instead, we will adjust the indices after the loop.
                          */
                         final long leadPassThroughMask = maskLowBits(firstAffectedCoordinate);
                         final int numKeepAfter  = Long.bitCount(retainedDimensions & ~(leadPassThroughMask | subTransformMask));

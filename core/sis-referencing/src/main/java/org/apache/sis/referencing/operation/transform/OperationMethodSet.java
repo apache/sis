@@ -243,10 +243,10 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
          *       }
          *   }
          *
-         * However we don't do that because it would bring 2 issues:
+         * However, we don't do that because it would bring 2 issues:
          *
          *   1) There is no guarantee that implementation of the 'methods' collection uses the 'equals(Object)'
-         *      method. For example TreeSet rather uses 'compareTo(Object)'. Since the OperationMethodSet class
+         *      method. For example, TreeSet rather uses 'compareTo(Object)'. Since the OperationMethodSet class
          *      uses 'equals', there is a risk of inconsistency.
          *
          *   2) The 'synchronized (methods)' statement introduces a risk of deadlock if some implementations of
@@ -256,7 +256,7 @@ final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
          *
          * Since there is no evidence at this time that we need an efficient OperationMethodSet.contains(Object)
          * implementation, we keep for now the slowest but more conservative approach inherited from AbstractSet.
-         * However this choice may be revisited in any future SIS version if necessary.
+         * However, this choice may be revisited in any future SIS version if necessary.
          */
         return super.contains(object);
     }

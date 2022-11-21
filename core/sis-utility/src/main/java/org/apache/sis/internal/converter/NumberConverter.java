@@ -32,9 +32,9 @@ import org.apache.sis.util.resources.Errors;
  * <h2>Performance note</h2>
  * We provide a single class for all supported kinds of {@code Number} and delegate the actual
  * work to the {@code Numbers} static methods. This is not a very efficient way to do the work.
- * For example it may be more efficient to provide specialized subclasses for each target class,
+ * For example, it may be more efficient to provide specialized subclasses for each target class,
  * so we don't have to execute the {@code switch} inside the {@code Numbers} class every time a
- * value is converted. However performance is not the primary concern here, since those converters
+ * value is converted. However, performance is not the primary concern here, since those converters
  * will typically be used by code doing more costly work (e.g. the {@code sis-metadata} module
  * providing {@code Map} views using Java reflection). So we rather try to be more compact.
  * If nevertheless performance appears to be a problem, consider reverting to revision

@@ -49,7 +49,7 @@ final class ArrayConverter<S,T> extends SystemConverter<S,T> {
     /**
      * The function properties which can be preserved by this converter.
      * We do not preserve ordering because we don't have a universal criterion for array comparisons.
-     * For example we don't know how the user wants to handle arrays of different lengths, or null elements.
+     * For example, we don't know how the user wants to handle arrays of different lengths, or null elements.
      */
     private static final EnumSet<FunctionProperty> PROPERTIES = EnumSet.of(FunctionProperty.INVERTIBLE,
             FunctionProperty.INJECTIVE, FunctionProperty.SURJECTIVE);

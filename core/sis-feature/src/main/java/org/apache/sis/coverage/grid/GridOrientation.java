@@ -28,7 +28,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * High-level description about how a grid is orientated relative to the CRS axes. The orientation of a grid
  * is closely related to the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform.
- * For example the conversion from grid coordinates to CRS coordinates may flip the <var>y</var> axis
+ * For example, the conversion from grid coordinates to CRS coordinates may flip the <var>y</var> axis
  * (grid coordinates increasing toward down on screen), or may swap <var>x</var> and <var>y</var> axes, <i>etc.</i>
  * The constants enumerated in this class cover only a few common cases where the grid is
  * <a href="https://en.wikipedia.org/wiki/Axis-aligned_object">axis-aligned</a> with the CRS.
@@ -52,7 +52,7 @@ public final class GridOrientation implements Serializable {
      * Moving along the grid axis in dimension <var>i</var> causes a displacement along the CRS axis
      * in the same dimension <var>i</var>.
      * In matrix terms all non-zero coefficients are on the diagonal or in the translation column.
-     * For example in the three-dimensional case:
+     * For example, in the three-dimensional case:
      *
      * {@preformat math
      *   ┌                ┐
@@ -136,7 +136,7 @@ public final class GridOrientation implements Serializable {
      *
      * <h4>Alternative</h4>
      * {@code DISPLAY.canReorderGridAxis(true)} is an alternative where grid axes get the same reordering than CRS axes.
-     * Consequently the {@link GridExtent} may be different then the specified extent
+     * Consequently, the {@link GridExtent} may be different then the specified extent
      * but the {@code gridToCRS} transform always has the form shown in {@link #REFLECTION_Y}.
      * This alternative can be used for deriving a coordinate reference system with the
      * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order,
@@ -213,7 +213,7 @@ public final class GridOrientation implements Serializable {
      *   <li>CRS axis order change is mapped to the grid in one of the following ways:
      *     <ul>
      *       <li>If {@code canReorderGridAxis(true)} has been invoked, then the same change is applied
-     *           on grid axis order. Consequently grid axes and CRS axes stay in the same order,
+     *           on grid axis order. Consequently, grid axes and CRS axes stay in the same order,
      *           but the resulting {@link GridExtent} may be different than the specified one.</li>
      *       <li>Otherwise {@link GridExtent} stay unchanged and axis order change is handled in the
      *           {@code gridToCRS} transform instead.</li>
@@ -224,7 +224,7 @@ public final class GridOrientation implements Serializable {
      * <h4>Limitations</h4>
      * Current implementation accepts only axis order changes and direction changes.
      * The units of measurement changes are not yet supported.
-     * Consequently {@link AxesConvention#NORMALIZED} is not accepted.
+     * Consequently, {@link AxesConvention#NORMALIZED} is not accepted.
      *
      * @param  variant  the kind of substitution to apply on CRS, or {@code null} if none.
      * @return a grid orientation equals to this one except that it uses the specified CRS variant.

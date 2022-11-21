@@ -209,7 +209,7 @@ public class Mercator extends ConformalProjection {
             case SPHERICAL: {
                 /*
                  * According to EPSG guide, the latitude of conformal sphere radius should be the latitude of origin.
-                 * However that origin is fixed to 0° by EPSG guide, which makes radius calculation ineffective when
+                 * However, that origin is fixed to 0° by EPSG guide, which makes radius calculation ineffective when
                  * using the official parameters. We could fallback on the standard parallel (φ1) if φ0 is not set,
                  * but for now we wait to see for real cases. Some arguments that may be worth consideration:
                  *
@@ -265,7 +265,7 @@ public class Mercator extends ConformalProjection {
         /*
          * In theory, the "Latitude of 1st standard parallel" and the "Scale factor at natural origin" parameters
          * are mutually exclusive. The former is for projections of category "2SP" (namely variant B and C) while
-         * the latter is for projections "1SP" (namely variant A and spherical). However we let users specify both
+         * the latter is for projections "1SP" (namely variant A and spherical). However, we let users specify both
          * if they really want, since we sometimes see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
@@ -314,7 +314,7 @@ public class Mercator extends ConformalProjection {
          *     tan(π/4 + φ/2)        which implies        tan( 0 )   when   φ = -90°    (south pole)
          *                                                tan(π/2)   when   φ = +90°    (north pole)
          *
-         * The case for the North pole has no exact representation. Furthermore IEEE 754 arithmetic has
+         * The case for the North pole has no exact representation. Furthermore, IEEE 754 arithmetic has
          * better precision for values close to zero, which favors the South hemisphere in the above term.
          * The code below reverses the sign of latitudes before the map projection, then reverses the sign
          * of results after the projection. This has the effect of interchanging the favorized hemisphere.
@@ -408,7 +408,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
         final double sinφ = sin(φ);
         if (dstPts != null) {
             /*
-             * Projection of zero is zero. However the formulas below have a slight rounding error
+             * Projection of zero is zero. However, the formulas below have a slight rounding error
              * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
              * avoiding rounding error, this also preserve the sign (positive vs negative zero).
              */
@@ -548,7 +548,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
             final double φ = srcPts[srcOff+1];
             if (dstPts != null) {
                 /*
-                 * Projection of zero is zero. However the formulas below have a slight rounding error
+                 * Projection of zero is zero. However, the formulas below have a slight rounding error
                  * which produce values close to 1E-10, so we will avoid them when y=0. In addition of
                  * avoiding rounding error, this also preserve the sign (positive vs negative zero).
                  */

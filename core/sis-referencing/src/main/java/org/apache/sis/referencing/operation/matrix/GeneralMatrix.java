@@ -51,7 +51,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
 
     /**
      * Threshold value relative to 1 ULP of the greatest magnitude of elements added in a sum.
-     * For example in a sum like {@code A + B + C + D}, if the greatest term in absolute value
+     * For example, in a sum like {@code A + B + C + D}, if the greatest term in absolute value
      * is {@code C}, then the threshold is <code>Math.ulp(C) * {@value}</code>.  If the sum is
      * lower than that threshold, then the result is assumed to be zero.
      *

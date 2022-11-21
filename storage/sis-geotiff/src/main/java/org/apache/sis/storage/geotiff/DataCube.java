@@ -177,7 +177,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * even if there is no compression.
      *
      * @todo The second restriction could be relaxed if the image width (or the width of the subregion to read)
-     *       is a multiple of the number of sample values in a "bank element". For example for a bilevel image
+     *       is a multiple of the number of sample values in a "bank element". For example, for a bilevel image
      *       storing 8 pixels in each single {@code byte}, we could return {@code true} if the region width is
      *       a multiple of 8.
      */

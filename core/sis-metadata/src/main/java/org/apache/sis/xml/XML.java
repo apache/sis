@@ -97,7 +97,7 @@ public final class XML extends Static {
      * instances. The value for this property shall be an instance of {@link Locale} or a
      * {@link CharSequence} recognized by {@link org.apache.sis.util.Locales#parse(String)}.
      *
-     * <p>This property is mostly for marshallers. However this property can also be used at
+     * <p>This property is mostly for marshallers. However, this property can also be used at
      * unmarshalling time, for example if a {@code <lan:PT_FreeText>} element containing
      * many localized strings need to be represented in a Java {@link String} object. In
      * such case, the unmarshaller will try to pickup a string in the language specified
@@ -161,7 +161,7 @@ public final class XML extends Static {
      *
      * The currently recognized keys are listed below.
      * The entries to be used depend on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
-     * For example the {@code "cat"} entry is used when marshalling ISO 19115-3:2016 document, while the
+     * For example, the {@code "cat"} entry is used when marshalling ISO 19115-3:2016 document, while the
      * {@code "gmd"} and {@code "gmi"} entries are used when marshalling ISO 19139:2007 documents.
      * The following table gives some typical URLs, with the default URL in bold characters:
      *
@@ -193,7 +193,7 @@ public final class XML extends Static {
      * Note that GML 3.2 is identical to ISO 19136:2007.
      *
      * <div class="note"><b>Compatibility note:</b>
-     * Newer versions typically have more elements, but not always. For example in {@code <gml:VerticalDatum>},
+     * Newer versions typically have more elements, but not always. For example, in {@code <gml:VerticalDatum>},
      * the {@code <gml:verticalDatumType>} property presents in GML 3.0 and 3.1 has been removed in GML 3.2.</div>
      *
      * The value can be {@link String} or {@link Version} object.
@@ -215,7 +215,7 @@ public final class XML extends Static {
      * If no version is specified, then the most recent supported metadata version is assumed.
      *
      * <p>The metadata version may be ignored when the metadata to marshal is inside a GML element.
-     * For example the {@code <gml:domainOfValidity>} element inside a coordinate reference system
+     * For example, the {@code <gml:domainOfValidity>} element inside a coordinate reference system
      * is always marshalled using ISO 19139:2007 if the enclosing element uses GML 3.2 schema.</p>
      *
      * <h4>Supported metadata versions</h4>
@@ -377,7 +377,7 @@ public final class XML extends Static {
      * The pool of marshallers and unmarshallers used by this class.
      * The field name uses the uppercase convention because this field is almost constant:
      * this field is initially null, then created by {@link #getPool()} when first needed.
-     * Once created the field value usually doesn't change. However the field may be reset
+     * Once created the field value usually doesn't change. However, the field may be reset
      * to {@code null} in an OSGi context when modules are loaded or unloaded, because the
      * set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
      *

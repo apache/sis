@@ -89,7 +89,7 @@ public final class LocaleAndCharset implements Node {
 
     /**
      * Considers this node as non-editable since it represents the key in a map, and keys cannot be modified
-     * through the {@link Map.Entry} interface. However {@link Child} will be editable for the value column.
+     * through the {@link Map.Entry} interface. However, {@link Child} will be editable for the value column.
      */
     @Override
     public boolean isEditable(final TableColumn<?> column) {

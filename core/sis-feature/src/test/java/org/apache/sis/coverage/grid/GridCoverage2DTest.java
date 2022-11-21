@@ -173,7 +173,7 @@ public strictfp class GridCoverage2DTest extends TestCase {
         });
         /*
          * Test writing converted values and verify the result in the packed coverage.
-         * For example for the sample value at (0,0), we have (p is the packed value):
+         * For example, for the sample value at (0,0), we have (p is the packed value):
          *
          *   70 = p * 0.5 + 100   →   (70-100)/0.5 = p   →   p = -60
          */

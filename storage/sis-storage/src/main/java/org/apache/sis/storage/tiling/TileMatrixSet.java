@@ -27,7 +27,7 @@ import org.opengis.util.GenericName;
  * A collection of {@code TileMatrix} in the same CRS but at different scale levels.
  * Each {@code TileMatrix} is optimized for a particular scale and is identified by a tile matrix identifier.
  * Tile matrices usually have 2 dimensions (width and height), but this API allows any number of dimensions.
- * However the number of dimensions must be the same for all tile matrices.
+ * However, the number of dimensions must be the same for all tile matrices.
  *
  * <p>The {@code TileMatrixSet} concept is derived from OGC standards. The same concept is called
  * <cite>image pyramid</cite> or <cite>resolution levels</cite> in some other standards.
@@ -38,7 +38,7 @@ import org.opengis.util.GenericName;
  * Each {@link TileMatrix} in a {@code TileMatrixSet} is identified by a {@link GenericName}.
  * Identifiers can be any character strings.
  * A common practice is to use zoom levels as identifiers, but this is not mandatory.
- * However tile matrices must be sorted from coarser resolution (highest scale denominator)
+ * However, tile matrices must be sorted from coarser resolution (highest scale denominator)
  * to most detailed resolution (lowest scale denominator).
  *
  * <p>All methods in this interface return non-null values.</p>

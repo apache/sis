@@ -438,7 +438,7 @@ public abstract class Geometries<G> implements Serializable {
         final double[] coordinates;
         /*
          * Find if some intermediate points need to be added. We add points only at the edges of axis domain,
-         * for example at 180°E or 180°W. Furthermore we add points only on axes having increasing values,
+         * for example at 180°E or 180°W. Furthermore, we add points only on axes having increasing values,
          * i.e. we do not add points on axes using the "end point < start point" convention.
          */
         final CoordinateReferenceSystem crs;

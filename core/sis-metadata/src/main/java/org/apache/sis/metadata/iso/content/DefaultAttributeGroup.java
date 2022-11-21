@@ -92,7 +92,7 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -117,7 +117,7 @@ public class DefaultAttributeGroup extends ISOMetadata implements AttributeGroup
      *       {@code DefaultAttributeGroup}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultAttributeGroup} instance is created using the
      *       {@linkplain #DefaultAttributeGroup(AttributeGroup) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *

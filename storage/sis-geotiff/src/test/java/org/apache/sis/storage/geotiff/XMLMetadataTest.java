@@ -90,8 +90,8 @@ public final strictfp class XMLMetadataTest extends TestCase {
      * }
      *
      * The tree table output is expected to <em>not</em> contains the "Item" word,
-     * because this is redundancy repeated for all nodes. Instead "Item" should be
-     * replaced by the value of the "name" attribute.
+     * because this is redundancy repeated for all nodes. Instead, "Item" should
+     * be replaced by the value of the "name" attribute.
      */
     @Test
     public void testTreeGDAL() {

@@ -40,7 +40,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * <h2>Affine transform</h2>
  * In most cases the transform in affine. For such transforms, the last matrix row contains only zero values
- * except in the last column, which contains 1. For example a conversion from projected coordinates (metres)
+ * except in the last column, which contains 1. For example, a conversion from projected coordinates (metres)
  * to display coordinates (pixel) can be done as below:
  *
  * <div style="text-align:center">
@@ -52,7 +52,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * A <cite>projective</cite> transform can be used as a generalization of affine transforms.
  * In such case the computation performed by SIS is similar to {@code PerspectiveTransform}
  * in <cite>Java Advanced Imaging</cite>.
- * For example a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
+ * For example, a square matrix of size 4×4 is used for transforming three-dimensional coordinates.
  * The transformed points {@code (x',y',z')} are computed as below:
  *
  * <div style="text-align:center">{@include formulas.html#ProjectiveTransform}</div>

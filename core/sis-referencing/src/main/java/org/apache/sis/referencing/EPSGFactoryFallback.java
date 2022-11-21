@@ -303,7 +303,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
                 for (final CommonCRS crs : CommonCRS.values()) {
                     /*
                      * In a complete EPSG dataset we could have an ambiguity below because the same code can be used
-                     * for datum, ellipsoid and CRS objects. However in the particular case of this EPSG-subset, we
+                     * for datum, ellipsoid and CRS objects. However, in the particular case of this EPSG-subset, we
                      * ensured that there is no such collision - see CommonCRSTest.ensureNoCodeCollision().
                      */
                     if ((kind & ELLIPSOID) != 0  &&  n == crs.ellipsoid) return crs.ellipsoid();

@@ -83,7 +83,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <li>“<cite>False northing</cite>” in metres. Default value is 0 m.</li>
  * </ul></div>
  *
- * In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property. However it is
+ * In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property. However, it is
  * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
  * since names can sometimes be ambiguous or be spelled in different ways.
  *
@@ -456,7 +456,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * <ul class="verbose">
      *   <li>If the given method is an instance of {@code DefaultOperationMethod}, then delegate to
      *     {@link #redimension(int, int)} in order to allow subclasses to defines their own policy.
-     *     For example the <cite>Molodensky</cite> method needs to override.</li>
+     *     For example, the <cite>Molodensky</cite> method needs to override.</li>
      *   <li>Otherwise for each dimension (<var>source</var> and <var>target</var>):
      *     <ul>
      *       <li>If the corresponding dimension of the given method is {@code null}, then
@@ -506,7 +506,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * </ul>
      *
      * Subclasses should override this method if they can work with different number of dimensions.
-     * For example a <cite>Molodensky</cite> transform usually works in a three-dimensional space,
+     * For example, a <cite>Molodensky</cite> transform usually works in a three-dimensional space,
      * but can also work in a two-dimensional space by assuming that the ellipsoidal height is zero
      * everywhere.
      *
@@ -784,7 +784,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              * Unfortunately in many cases we do not know the operation type, because the method that we
              * invoked - getOperationType() - is not a standard OGC/ISO property, so this information is
              * usually not provided in XML documents for example.  The user could also have instantiated
-             * DirectOperationMethod directly without creating a subclass. Consequently we also accept to
+             * DirectOperationMethod directly without creating a subclass. Consequently, we also accept to
              * format the keyword as "PROJECTION" if the operation type *could* be a projection. This is
              * the second check in the following 'if' statement.
              *
@@ -853,7 +853,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Invoked by JAXB for marshalling a citation to the formula. In principle at most one of
      * {@code getFormulaCitation()} and {@link #getFormulaDescription()} methods can return a
-     * non-null value. However SIS accepts both coexist (but this is invalid GML).
+     * non-null value. However, SIS accepts both coexist (but this is invalid GML).
      */
     @XmlElement(name = "formulaCitation")
     private Citation getFormulaCitation() {
@@ -864,7 +864,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Invoked by JAXB for marshalling the formula literally. In principle at most one of
      * {@code getFormulaDescription()} and {@link #getFormulaCitation()} methods can return
-     * a non-null value. However SIS accepts both to coexist (but this is invalid GML).
+     * a non-null value. However, SIS accepts both to coexist (but this is invalid GML).
      */
     @XmlElement(name = "formula")
     private String getFormulaDescription() {
@@ -902,7 +902,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The {@code ParameterDescriptorGroup} wrapper is a GeoAPI addition done for allowing usage of its
      * methods as a convenience (e.g. {@link ParameterDescriptorGroup#descriptor(String)}).
      *
-     * <p>However it could happen that the user really wanted to specify a {@code ParameterDescriptorGroup} as
+     * <p>However, it could happen that the user really wanted to specify a {@code ParameterDescriptorGroup} as
      * the sole {@code <gml:parameter>} element. We currently have no easy way to distinguish those cases.</p>
      *
      * <div class="note"><b>Tip:</b>

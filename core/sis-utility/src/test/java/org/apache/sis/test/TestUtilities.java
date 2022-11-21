@@ -156,7 +156,7 @@ public final strictfp class TestUtilities extends Static {
      * <p>This method shall be invoked only in the body of a test method - the random number generator
      * is not valid anymore after the test finished.</p>
      *
-     * <p>This method doesn't need to be used in every cases. For example test cases using
+     * <p>This method doesn't need to be used in every cases. For example, test cases using
      * {@link Random#nextGaussian()} should create their own random numbers generator with
      * the {@link Random#Random(long)} constructor instead
      * (see {@link org.apache.sis.math.StatisticsTest} for more explanation).
@@ -165,7 +165,7 @@ public final strictfp class TestUtilities extends Static {
      *
      * <p>This method is rather for testing relatively complex code which are likely to behave
      * differently depending on the exact sequence of numbers. We want to use random sequence
-     * of numbers in order to test the code in a wider range of scenarios. However in case of
+     * of numbers in order to test the code in a wider range of scenarios. However, in case of
      * test failure, we need to know the <cite>seed</cite> which has been used in order to allow
      * the developer to reproduce the test with the exact same sequence of numbers.
      * Using this method, the seed can be retrieved in the messages sent to the output stream.</p>
@@ -289,7 +289,7 @@ public final strictfp class TestUtilities extends Static {
 
     /**
      * Returns the tree structure of the given string representation, without the localized text.
-     * For example given the following string:
+     * For example, given the following string:
      *
      * {@preformat text
      *   Citation

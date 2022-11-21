@@ -1125,7 +1125,7 @@ public final class Units extends Static {
 
     /**
      * Salinity measured using PSS-78. While this is a dimensionless measurement, the {@code "psu"} symbol
-     * is sometimes added to PSS-78 measurement. However this is officially discouraged.
+     * is sometimes added to PSS-78 measurement. However, this is officially discouraged.
      *
      * @since 0.8
      */
@@ -1377,7 +1377,7 @@ public final class Units extends Static {
      *
      * <p>If the {@code target} unit holds a list of {@linkplain SystemUnit#related() related units}
      * (i.e. conventional units that cannot be computed easily by appending a SI prefix), then the new
-     * conventional unit is added to that list of related units. For example "foot" is related to "metre"
+     * conventional unit is added to that list of related units. For example, "foot" is related to "metre"
      * and "degree Celsius" is related to "Kelvin", but "kilometre" is not recorded as related to "metre"
      * because this relationship can be inferred automatically without the need of a {@code related} table.
      * The unrecorded units are all SI units related to {@code target} by a scale factor without offset.</p>
@@ -1581,7 +1581,7 @@ public final class Units extends Static {
     }
 
     /**
-     * Multiplies the given unit by the given ratio. For example multiplying {@link #CENTIMETRE} by 254/100 gives
+     * Multiplies the given unit by the given ratio. For example, multiplying {@link #CENTIMETRE} by 254/100 gives
      * {@link #INCH}. Invoking this method is equivalent to invoking <code>{@linkplain Unit#multiply(double)
      * Unit.multiply}(numerator / denominator)</code> except that the use of a ration of integer values help
      * Apache SIS to improve accuracy when more than one arithmetic operation are chained.

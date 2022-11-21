@@ -104,8 +104,8 @@ public class MD_Identifier extends PropertyType<MD_Identifier, Identifier> {
     }
 
     /**
-     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
-     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     * Wraps the value only if marshalling an element from the ISO 19115:2014 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2003 model), omits the element.
      */
     public static final class Since2014 extends MD_Identifier {
         /** Empty constructor used only by JAXB. */

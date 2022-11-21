@@ -25,8 +25,8 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 /**
  * Some identifier namespaces that are handled in a special way. The identifier namespaces are
  * usually defined as authorities in the {@link org.apache.sis.metadata.iso.citation.Citations}
- * class. However a few identifiers defined in the {@code gco:ObjectIdentification} XML attribute
- * group are handled in a special way. For example identifiers associated to the {@link #HREF}
+ * class. However, a few identifiers defined in the {@code gco:ObjectIdentification} XML attribute
+ * group are handled in a special way. For example, identifiers associated to the {@link #HREF}
  * space are marshalled in the outer property element, as in the example below:
  *
  * {@preformat xml
@@ -61,7 +61,7 @@ public interface IdentifierSpace<T> extends Citation {
      * for internal cross-references. It is not useful by itself as a persistent unique identifier.
      *
      * <p>The XML {@linkplain #getName() attribute name} is {@code "gml:id"}, but is also used
-     * for {@code "gco:id"} in metadata documents. However the {@code "gco:"} prefix is omitted
+     * for {@code "gco:id"} in metadata documents. However, the {@code "gco:"} prefix is omitted
      * in XML documents (i.e. the {@code gco:id} attribute is <cite>unqualified</cite>).</p>
      *
      * <p>Elements with {@code gml:id} or {@code gco:id} attribute can be referenced from other XML elements
@@ -78,12 +78,12 @@ public interface IdentifierSpace<T> extends Citation {
      * that implement ISO 19115 in XML. May be used as a persistent unique identifier, but only
      * available within GMD context.
      *
-     * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}. However the
+     * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}. However, the
      * {@code "gco:"} prefix is omitted in XML documents (i.e. the {@code gco:uuid} attribute
      * is <cite>unqualified</cite>).</p>
      *
      * <p>Elements with {@code gco:uuid} attribute can be referenced from other XML elements using the
-     * {@code gco:uuidref} attribute. However this is not done automatically by Apache SIS. Users need
+     * {@code gco:uuidref} attribute. However, this is not done automatically by Apache SIS. Users need
      * to manage their set of UUIDs in their own {@link ReferenceResolver} subclass.</p>
      *
      * @see UUID

@@ -90,7 +90,7 @@ public interface FeatureSet extends DataSet {
      *
      * <p>The returned subset may be a <em>view</em> of this set, i.e. changes in this {@code FeatureSet}
      * may be reflected immediately on the returned subset (and conversely), but not necessarily.
-     * However the returned subset may not have the same capabilities as this {@link FeatureSet}.
+     * However, the returned subset may not have the same capabilities as this {@link FeatureSet}.
      * In particular, write operations may become unsupported after complex queries.</p>
      *
      * <h4>Default implementation</h4>

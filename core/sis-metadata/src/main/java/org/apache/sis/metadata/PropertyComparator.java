@@ -77,7 +77,7 @@ final class PropertyComparator implements Comparator<Method> {
      *   </li>
      *
      *   <li>Key is associated to an index that specify its position in descending order.
-     *       For example the property associated to integer 0 shall be sorted last.
+     *       For example, the property associated to integer 0 shall be sorted last.
      *       This descending order is only an implementation convenience.</li>
      * </ul>
      */
@@ -286,7 +286,7 @@ final class PropertyComparator implements Comparator<Method> {
 
     /**
      * Removes the {@code "get"} or {@code "is"} prefix and turn the first character after the
-     * prefix into lower case. For example the method name {@code "getTitle"} will be replaced
+     * prefix into lower case. For example, the method name {@code "getTitle"} will be replaced
      * by the property name {@code "title"}. We will perform this operation only if there is
      * at least 1 character after the prefix.
      *

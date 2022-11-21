@@ -166,7 +166,7 @@ public abstract class PlanarCanvas extends Canvas {
      * Otherwise an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event will be sent with the
      * {@link TransformChangeEvent.Reason#OBJECTIVE_NAVIGATION} reason after the change became effective.
      * Depending on the implementation, the change may not take effect immediately.
-     * For example subclasses may do the rendering in a background thread.</p>
+     * For example, subclasses may do the rendering in a background thread.</p>
      *
      * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
      *
@@ -193,7 +193,7 @@ public abstract class PlanarCanvas extends Canvas {
      * Otherwise an {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event will be sent with the
      * {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION} reason after the change became effective.
      * Depending on the implementation, the change may not take effect immediately.
-     * For example subclasses may do the rendering in a background thread.</p>
+     * For example, subclasses may do the rendering in a background thread.</p>
      *
      * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
      *

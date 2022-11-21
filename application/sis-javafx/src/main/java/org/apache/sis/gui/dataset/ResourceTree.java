@@ -110,7 +110,7 @@ public class ResourceTree extends TreeView<Resource> {
      * <h4>Design note</h4>
      * We use a list instead of creating a {@link Task} for each item because the latter can create a lot
      * of threads, which are likely to be blocked anyway because of {@link DataStore} synchronization.
-     * Furthermore those threads of overkill in the common case where labels are very quick to fetch.
+     * Furthermore, those threads of overkill in the common case where labels are very quick to fetch.
      *
      * @see #fetchLabel(ResourceItem.Completer)
      */

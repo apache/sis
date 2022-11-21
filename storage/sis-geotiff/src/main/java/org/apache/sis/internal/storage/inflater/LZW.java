@@ -382,7 +382,7 @@ final class LZW extends CompressionChannel {
                  * The last byte will be added later, after we determined its value.
                  *
                  * Conceptually, creating a new entry requires copying the old entry before to append a byte.
-                 * However we try to avoid some copies by pre-allocating extra spaces with each new entry.
+                 * However, we try to avoid some copies by pre-allocating extra spaces with each new entry.
                  * The `PREALLOCATED_SPACE_IS_USED_MASK` bit tells if we can append a byte in-place after
                  * `OldCode` (without copy).
                  */
@@ -421,7 +421,7 @@ final class LZW extends CompressionChannel {
                     entryForCode = newEntry;
                     /*
                      * In well-formed LZW stream, we should have `code == indexOfFreeEntry` here.
-                     * However some invalid values are found in practice. We need `code` to refer
+                     * However, some invalid values are found in practice. We need `code` to refer
                      * to the entry that we add to the dictionary, otherwise inconsistencies will
                      * happen during the next iteration (when using `previousCode`).
                      */

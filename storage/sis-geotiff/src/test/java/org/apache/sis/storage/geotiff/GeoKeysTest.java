@@ -66,7 +66,7 @@ public final strictfp class GeoKeysTest extends TestCase {
             final Set<String> names = IdentifiedObjects.getNames(method, Citations.GEOTIFF);
             /*
              * If there are no GeoTIFF identifiers, we should have no GeoTIFF name neither.
-             * However we may have more than one name, since GeoTIFF defines also aliases.
+             * However, we may have more than one name, since GeoTIFF defines also aliases.
              */
             assertEquals(method.getName().getCode(), identifier == null, names.isEmpty());
             if (identifier != null) {

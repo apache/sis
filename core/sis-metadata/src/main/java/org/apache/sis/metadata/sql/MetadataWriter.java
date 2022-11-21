@@ -65,7 +65,7 @@ import org.opengis.util.ControlledVocabulary;
  * invoked.
  *
  * <p>No more than one instance of {@code MetadataWriter} should be used for the same database.
- * However multiple instances of {@code MetadataSource} can be used concurrently with a single
+ * However, multiple instances of {@code MetadataSource} can be used concurrently with a single
  * {@code MetadataWriter} instance on the same database.</p>
  *
  * <h2>Properties</h2>
@@ -345,7 +345,7 @@ public class MetadataWriter extends MetadataSource {
         }
         /*
          * Get the identifier for the new metadata. If no identifier is proposed, we will try to recycle
-         * the identifier of the parent.  For example in ISO 19115, Contact (which contains phone number,
+         * the identifier of the parent.  For example, in ISO 19115, Contact (which contains phone number,
          * etc.) is associated only to Responsibility. So it make sense to use the Responsibility ID for
          * the contact info.
          */
@@ -425,7 +425,7 @@ public class MetadataWriter extends MetadataSource {
                             /*
                              * In a classical object-oriented model, the foreigner key constraints declared in the
                              * parent table would take in account the records in the child table and we would have
-                             * nothing special to do. However PostgreSQL 9.1 does not yet inherit index. So if we
+                             * nothing special to do. However, PostgreSQL 9.1 does not yet inherit index. So if we
                              * detect that a column references some records in two different tables, then we must
                              * suppress the foreigner key constraint.
                              */
@@ -504,7 +504,7 @@ public class MetadataWriter extends MetadataSource {
                         !isCodeList));                          // CASCADE if metadata, RESTRICT if CodeList or Enum.
                 /*
                  * In a classical object-oriented model, the constraint would be inherited by child tables.
-                 * However this is not yet supported as of PostgreSQL 9.6. If inheritance is not supported,
+                 * However, this is not yet supported as of PostgreSQL 9.6. If inheritance is not supported,
                  * then we have to repeat the constraint creation in child tables.
                  */
                 if (!helper.dialect.supportsIndexInheritance && !table.equals(fkey.tableName)) {
@@ -605,7 +605,7 @@ public class MetadataWriter extends MetadataSource {
                             if (!helper.dialect.supportsIndexInheritance) {
                                 /*
                                  * In a classical object-oriented model, the new child table would inherit the index from
-                                 * its parent table. However this is not yet the case as of PostgreSQL 9.6. If the index is
+                                 * its parent table. However, this is not yet the case as of PostgreSQL 9.6. If the index is
                                  * not inherited, then we have to repeat the primary key creation in every child tables.
                                  */
                                 helper.append("(CONSTRAINT ").appendIdentifier(table + "_pkey")
@@ -728,7 +728,7 @@ public class MetadataWriter extends MetadataSource {
         }
         /*
          * At this point we got a suggested identifier, but it may be quite long.
-         * For example it may be a citation title. Try to make an abbreviation.
+         * For example, it may be a citation title. Try to make an abbreviation.
          */
         if (identifier != null && identifier.length() >= 8) {                   // Arbitrary threshold.
             identifier = abbreviation(identifier);

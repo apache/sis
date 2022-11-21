@@ -269,7 +269,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
             }
             /*
              * The lower/upper values are given by Math.floor/ceil respectively (may be equal).
-             * However we do an exception to this rule if user asked explicitly for a size of 1.
+             * However, we do an exception to this rule if user asked explicitly for a size of 1.
              * In such case we can no longer enforce the `lower ≤ value ≤ upper` rule. The best
              * we can do is to take the nearest neighbor.
              */

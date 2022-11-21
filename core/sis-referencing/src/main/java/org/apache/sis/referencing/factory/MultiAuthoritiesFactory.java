@@ -88,7 +88,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * </ul>
  *
  * In such cases, the <var>type</var> specified in the URN may be used for invoking a more specific method.
- * However {@code MultiAuthoritiesFactory} uses the type information in the URN only for
+ * However, {@code MultiAuthoritiesFactory} uses the type information in the URN only for
  * delegating to a more specific method, never for delegating to a less specific method.
  * An exception will be thrown if the type in the URN is incompatible with the invoked method.
  *
@@ -142,7 +142,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *
  * <h2>Multi-threading</h2>
  * This class is thread-safe if all delegate factories are themselves thread-safe.
- * However the factory <em>providers</em>, which are given to the constructor as {@link Iterable} instances,
+ * However, the factory <em>providers</em>, which are given to the constructor as {@link Iterable} instances,
  * do not need to be thread-safe. See constructor Javadoc for more information.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -166,7 +166,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * <p>The array may contain {@code null} elements when there is no provider for a given type.
      * Content of this array shall be immutable after construction time in order to avoid the need
-     * for synchronization when reading the array. However usage of an {@code Iterable} element
+     * for synchronization when reading the array. However, usage of an {@code Iterable} element
      * shall be synchronized on that {@code Iterable}.</p>
      */
     private final Iterable<? extends AuthorityFactory>[] providers;
@@ -216,7 +216,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * <p>The {@code Iterable}s do not need to be thread-safe.
      * {@code MultiAuthoritiesFactory} will use them only in blocks synchronized on the {@code Iterable} instance.
-     * For example all usages of {@code crsFactory} will be done inside a {@code synchronized(crsFactory)} block.</p>
+     * For example, all usages of {@code crsFactory} will be done inside a {@code synchronized(crsFactory)} block.</p>
      *
      * <h4>Name collision</h4>
      * If an {@code Iterable} contains more than one factory for the same namespace and version,
@@ -304,7 +304,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * <p>The {@link Set#contains(Object)} method of the returned set is lenient:
      * it accepts various ways to format a code even if the iterator returns only one form.
-     * For example the {@code contains(Object)} method may return {@code true} for {@code "EPSG:4326"},
+     * For example, the {@code contains(Object)} method may return {@code true} for {@code "EPSG:4326"},
      * {@code "EPSG::4326"}, {@code "urn:ogc:def:crs:EPSG::4326"}, <i>etc.</i> even if
      * the iterator returns only {@code "EPSG:4326"}.</p>
      *
@@ -555,7 +555,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * <p>This iterator takes care of synchronization on the {@code Iterable<AuthorityFactory>} instances.
      * Note that despite the above-cited synchronization, the returned iterator is <strong>not</strong>
-     * thread-safe: each thread needs to use its own iterator instance. However provided that the above
+     * thread-safe: each thread needs to use its own iterator instance. However, provided that the above
      * condition is met, threads can safely use their iterators concurrently.</p>
      */
     final Iterator<AuthorityFactory> getAllFactories() {

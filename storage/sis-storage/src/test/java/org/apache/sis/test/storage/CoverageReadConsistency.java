@@ -495,7 +495,7 @@ nextSlice:  for (;;) {
         RenderedImage image = coverage.render(new GridExtent(null, sliceMin, sliceMax, true));
         /*
          * The subsampling offsets were included in the extent given to above `render` method call, so in principle
-         * they should not be given again to `SubsampledImage` constructor.  However the `render` method is free to
+         * they should not be given again to `SubsampledImage` constructor. However, the `render` method is free to
          * return an image with a larger extent, which may result in different offsets. The result can be "too much"
          * offset. We want to compensate by subtracting the surplus. But because we cannot have negative offsets,
          * we shift the whole `sliceAOI` (which is equivalent to subtracting `subX|Y` in full resolution coordinates)

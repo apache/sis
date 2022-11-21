@@ -319,7 +319,7 @@ public class TransverseMercator extends NormalizedProjection {
         denormalize.convertBefore(1, B, M0);
         /*
          * When rewriting equations using trigonometric identities, some constants appear.
-         * For example sin(2θ) = 2⋅sinθ⋅cosθ, so we can factor out the 2 constant into the
+         * For example, sin(2θ) = 2⋅sinθ⋅cosθ, so we can factor out the 2 constant into the
          * corresponding `c` field.  Note: this factorization can only be performed after
          * the constructor finished to compute other constants.
          */
@@ -429,7 +429,7 @@ public class TransverseMercator extends NormalizedProjection {
      *
      * <h5>Case of 82.6…° &lt; ∆λ ≤ 90°</h5>
      * Karney (2009) uses an “extended” domain of transverse Mercator projection for ∆λ ≥ (1 − ℯ)⋅90°,
-     * but Apache SIS does not support such extension. Consequently ∆λ values between (1 − ℯ)⋅90° and 90°
+     * but Apache SIS does not support such extension. Consequently, ∆λ values between (1 − ℯ)⋅90° and 90°
      * should be considered invalid but are not rejected by Apache SIS. Note that those invalid values are
      * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) reverse projection}
      * (i.e. applying a projection followed by a reverse projection gives approximately the original values).
@@ -444,7 +444,7 @@ public class TransverseMercator extends NormalizedProjection {
      * Longitude values at a distance greater than 90° from the central meridian are rejected.
      * A {@link ProjectionException} is thrown in that case. This limit exists because the
      * Transverse Mercator projection is conceptually a Mercator projection rotated by 90°.
-     * Consequently <var>x</var> values tend toward infinity for ∆λ close to ±90°
+     * Consequently, <var>x</var> values tend toward infinity for ∆λ close to ±90°
      *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
@@ -563,7 +563,7 @@ public class TransverseMercator extends NormalizedProjection {
         /*
          * The projection of (λ,φ) is given by (η⋅B, ξ⋅B+M₀) — ignoring scale factors and false easting/northing.
          * But the B and M₀ parameters have been merged by the constructor with other linear operations in the
-         * "denormalization" matrix. Consequently we only need to compute (η,ξ) below.
+         * "denormalization" matrix. Consequently, we only need to compute (η,ξ) below.
          */
         if (dstPts != null) {
             // η(λ,φ)

@@ -26,7 +26,7 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  * JAXB adapter mapping ISO 19111 Coordinate Reference Systems to {@code MD_ReferenceSystem} object used in ISO 19115.
  * Coordinate Reference Systems (CRS) are defined in details by {@link ReferenceSystem} implementation classes.
  * But the ISO 19115 metadata standards do not reference those CRS classes directly (except in one case).
- * Instead the metadata standards reference CRS by their identifier (for example an EPSG code),
+ * Instead, the metadata standards reference CRS by their identifier (for example an EPSG code),
  * optionally accompanied by a code telling whether the CRS type is geographic, projected, temporal,
  * a compound of the above, <i>etc.</i> Those two information are combined in a {@code MD_ReferenceSystem} class
  *
@@ -119,8 +119,8 @@ public class RS_ReferenceSystem extends PropertyType<RS_ReferenceSystem, Referen
     }
 
     /**
-     * Wraps the value only if marshalling an element from the ISO 19115:2003 metadata model.
-     * Otherwise (i.e. if marshalling according legacy ISO 19115:2014 model), omits the element.
+     * Wraps the value only if marshalling an element from the ISO 19115:2014 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2003 model), omits the element.
      */
     public static final class Since2014 extends RS_ReferenceSystem {
         /** Empty constructor used only by JAXB. */

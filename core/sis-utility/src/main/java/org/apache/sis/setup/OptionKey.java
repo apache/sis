@@ -37,12 +37,12 @@ import static java.util.logging.Logger.getLogger;
  * Keys in a map of options for configuring various services
  * ({@link org.apache.sis.storage.DataStore}, <i>etc</i>).
  * {@code OptionKey}s are used for aspects that usually do not need to be configured, except in a few specialized cases.
- * For example most data file formats read by SIS do not require the user to specify the character encoding, because
+ * For example, most data file formats read by SIS do not require the user to specify the character encoding, because
  * the encoding is often given in the file header or in the format specification. However if SIS needs to read plain
  * text files <em>and</em> the default platform encoding is not suitable, then the user can specify the desired encoding
  * explicitly using the {@link #ENCODING} option.
  *
- * <p>All options are <em>hints</em> and may be silently ignored. For example most {@code DataStore}s will ignore the
+ * <p>All options are <em>hints</em> and may be silently ignored. For example, most {@code DataStore}s will ignore the
  * {@code ENCODING} option if irrelevant to their format, or if the encoding is specified in the data file header.</p>
  *
  * <p>Options are <em>transitive</em>: if a service uses others services for its internal working, the given options
@@ -80,7 +80,7 @@ public class OptionKey<T> implements Serializable {
      * The locale to use for locale-sensitive data. This option determines the language to use for writing
      * {@link org.apache.sis.util.AbstractInternationalString international strings} when the target
      * storage support only one language. It may also control number and date patterns in some file formats
-     * like Comma Separated Values (CSV). However most data formats will ignore this locale.
+     * like Comma Separated Values (CSV). However, most data formats will ignore this locale.
      *
      * <p>This option is <strong>not</strong> for the locale of logging or warning messages. Messages
      * locale is rather controlled by {@link org.apache.sis.storage.DataStore#setLocale(Locale)}.</p>
@@ -110,7 +110,7 @@ public class OptionKey<T> implements Serializable {
     /**
      * The character encoding of document content.
      * This option can be used when the file to read does not describe itself its encoding.
-     * For example this option can be used when reading plain text files, but is ignored when
+     * For example, this option can be used when reading plain text files, but is ignored when
      * reading XML files having a {@code <?xml version="1.0" encoding="…"?>} declaration.
      *
      * <p>If this option is not provided, then the default value is format specific.
@@ -128,7 +128,7 @@ public class OptionKey<T> implements Serializable {
      * to a {@link java.net.URI} or a {@link java.io.File}. The following rules apply:
      *
      * <ul>
-     *   <li>URI are always encoded in UTF-8. Consequently this option is ignored for URI.</li>
+     *   <li>URI are always encoded in UTF-8. Consequently, this option is ignored for URI.</li>
      *   <li>URL are often encoded in UTF-8, but not necessarily. Other encodings are possible
      *       (while not recommended), or some URL may not be encoded at all.</li>
      * </ul>

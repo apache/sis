@@ -176,7 +176,7 @@ public abstract class WindowHandler {
     /**
      * Returns the canvas (if any) where the resource is shown.
      * Canvas exists for some kinds of view such as {@link CoverageExplorer}, but not for every kinds.
-     * For example tabular data such as {@link FeatureTable} have no canvas.
+     * For example, tabular data such as {@link FeatureTable} have no canvas.
      *
      * @return the canvas where the resource is shown.
      *

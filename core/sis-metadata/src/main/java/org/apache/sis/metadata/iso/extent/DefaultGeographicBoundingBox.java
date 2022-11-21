@@ -89,8 +89,8 @@ import static java.lang.Double.doubleToLongBits;
  * and may use any units of measurement. By contrast, geographic bounding box are restricted to two-dimensional
  * geographic CRS with latitude and longitude in decimal degrees, inside the [-90 … +90]° and [-180 … +180]° range
  * respectively, increasing toward north and east respectively, and longitude measured from the <cite>international
- * reference meridian</cite> (Greenwich on Earth). However {@code GeographicBoundingBox} said nothing about the
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}. Consequently this bounding
+ * reference meridian</cite> (Greenwich on Earth). However, {@code GeographicBoundingBox} said nothing about the
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}. Consequently, this bounding
  * box should be used only as a convenient way to give an <em>approximate</em> description of a location.
  * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.
  * If more precision is desired, an {@code Envelope} should be considered instead.
@@ -198,7 +198,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -233,7 +233,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      *       {@code DefaultGeographicBoundingBox}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultGeographicBoundingBox} instance is created using the
      *       {@linkplain #DefaultGeographicBoundingBox(GeographicBoundingBox) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -650,7 +650,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * this class is stricter about NaN values than other classes like {@link org.apache.sis.geometry.GeneralEnvelope}.
      * The reason is that computations on {@code GeographicBoundingBox} instances are rare ({@code Envelope} instances
      * are preferred for this purpose). Usually, {@code GeographicBoundingBox} values come directly from some metadata
-     * structure. Consequently NaN values in {@code GeographicBoundingBox} means <cite>"information is unknown"</cite>
+     * structure. Consequently, NaN values in {@code GeographicBoundingBox} means <cite>"information is unknown"</cite>
      * more often than <cite>"not yet calculated"</cite>.</div>
      *
      * @param  box  the geographic bounding box to add to this box.

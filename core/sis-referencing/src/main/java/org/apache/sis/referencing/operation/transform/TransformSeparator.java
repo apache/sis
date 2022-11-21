@@ -493,7 +493,7 @@ public class TransformSeparator {
      * concatenated or {@linkplain PassThroughTransform#getSubTransform() sub-transforms}.
      *
      * <p>Subclasses can override this method if they need to handle some {@code MathTransform} implementations
-     * in a special way. However all implementations of this method shall obey to the following contract:</p>
+     * in a special way. However, all implementations of this method shall obey to the following contract:</p>
      * <ul class="verbose">
      *   <li>{@link #sourceDimensions} and {@link #targetDimensions} should not be assumed accurate
      *       since they may be temporarily outdated or modified during recursive calls to this method.</li>
@@ -666,7 +666,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
      * {@link #transform} and {@link #targetDimensions} fields respectively, but not necessarily.
      *
      * <p>Subclasses can override this method if they need to handle some {@code MathTransform} implementations
-     * in a special way. However all implementations of this method shall obey to the following contract:</p>
+     * in a special way. However, all implementations of this method shall obey to the following contract:</p>
      * <ul>
      *   <li>{@link #sourceDimensions} and {@link #targetDimensions} should not be assumed accurate.</li>
      *   <li>{@link #sourceDimensions} should not be modified by this method.</li>

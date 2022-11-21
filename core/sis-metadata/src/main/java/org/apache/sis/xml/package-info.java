@@ -21,8 +21,8 @@
  * and compliant with GML for referencing objects.
  *
  * <p>The main class in this package is {@link org.apache.sis.xml.XML}, which provides
- * property keys that can be used for configuring (un)marshallers and convenience
- * static methods. For example the following code:</p>
+ * property keys that can be used for configuring (un)marshallers and convenience static methods.
+ * For example, the following code:</p>
  *
  * {@preformat java
  *     XML.marshal(Citations.OGC, System.out);
@@ -46,7 +46,7 @@
  * {@link javax.xml.bind.Marshaller} and {@link javax.xml.bind.Unmarshaller} instances
  * (which are actually wrappers around standard instances). Those instances are created
  * and cached by {@link org.apache.sis.xml.MarshallerPool}, which is used internally by
- * the above-cited {@code XML} class. However developers can instantiate their own
+ * the above-cited {@code XML} class. However, developers can instantiate their own
  * {@code MarshallerPool} in order to get more control on the marshalling and unmarshalling
  * processes, including the namespace URLs and the errors handling.
  *

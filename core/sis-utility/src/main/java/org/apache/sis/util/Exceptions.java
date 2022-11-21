@@ -193,13 +193,13 @@ public final class Exceptions extends Static {
      *   <li>It is an instance of {@link BackingStoreException} (typically wrapping a checked exception).</li>
      *   <li>It is an instance of {@link UncheckedIOException} (wrapping a {@link java.io.IOException}).</li>
      *   <li>It is an instance of {@link DirectoryIteratorException} (wrapping a {@link java.io.IOException}).</li>
-     *   <li>It is a parent type of the cause. For example some JDBC drivers wrap {@link SQLException}
+     *   <li>It is a parent type of the cause. For example, some JDBC drivers wrap {@link SQLException}
      *       in other {@code SQLException} without additional information.</li>
      * </ul>
      *
      * <div class="note"><b>Note:</b>
      * {@link java.security.PrivilegedActionException} is also a wrapper exception, but is not included in above list
-     * because it is used in very specific contexts. Furthermore classes related to security manager are deprecated
+     * because it is used in very specific contexts. Furthermore, classes related to security manager are deprecated
      * since Java 17.</div>
      *
      * This method uses only the exception class as criterion;

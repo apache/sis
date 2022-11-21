@@ -51,7 +51,7 @@ public final class DatabaseListener extends Initializer {
     /**
      * Invoked when a new database is created. The current Apache SIS version does not create the EPSG database
      * immediately. We rather rely on automatic installation by {@code EPSGInstaller} the first time that a CRS
-     * is requested. However we may revisit this policy in a future SIS version.
+     * is requested. However, we may revisit this policy in a future SIS version.
      *
      * @param  connection  connection to the empty database.
      * @throws SQLException if an error occurred while populating the database.

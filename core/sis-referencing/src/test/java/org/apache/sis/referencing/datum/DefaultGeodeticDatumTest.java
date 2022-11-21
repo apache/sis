@@ -203,7 +203,7 @@ public final strictfp class DefaultGeodeticDatumTest extends TestCase {
                 GeodeticDatumMock.WGS72.getPrimeMeridian());
         /*
          * Create a datum valid only in a specific region of the world and with no direct transformation to WGS72.
-         * However an indirect transformation to WGS72 is available through WGS84.
+         * However, an indirect transformation to WGS72 is available through WGS84.
          */
         properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, BursaWolfParametersTest.createED87_to_WGS84());
         final DefaultGeodeticDatum local = new DefaultGeodeticDatum(properties,

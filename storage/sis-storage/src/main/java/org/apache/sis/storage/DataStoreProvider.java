@@ -62,7 +62,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <h2>Thread safety</h2>
  * All {@code DataStoreProvider} implementations shall be thread-safe.
- * However the {@code DataStore} instances created by the providers do not need to be thread-safe.
+ * However, the {@code DataStore} instances created by the providers do not need to be thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -82,7 +82,7 @@ public abstract class DataStoreProvider {
      * The parameter should be defined as mandatory and typed with a well-known Java class such as
      * {@link java.net.URI}, {@link java.nio.file.Path}, JDBC {@linkplain javax.sql.DataSource}, <i>etc</i>.
      * The type should have a compact textual representation, for serialization in XML or configuration files.
-     * Consequently {@link java.io.InputStream} and {@link java.nio.channels.Channel} should be avoided.</p>
+     * Consequently, {@link java.io.InputStream} and {@link java.nio.channels.Channel} should be avoided.</p>
      *
      * @see #CREATE
      * @see #getOpenParameters()
@@ -254,7 +254,7 @@ public abstract class DataStoreProvider {
      * on return of this method. Implementers can use the mark/reset mechanism for this purpose.
      * Marks are available as {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)}
      * and {@link javax.imageio.stream.ImageInputStream#mark()}.
-     * Alternatively the {@link #probeContent(StorageConnector, Class, Prober)}
+     * Alternatively, the {@link #probeContent(StorageConnector, Class, Prober)}
      * helper method manages automatically the marks for a set of known types.
      * </div>
      *

@@ -125,10 +125,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * </table>
      *
      * <h4>Relationship between datum</h4>
-     * By definition, coordinate <b>conversions</b> do not change the datum. Consequently the given {@code sourceCRS}
+     * By definition, coordinate <b>conversions</b> do not change the datum. Consequently, the given {@code sourceCRS}
      * and {@code targetCRS} should use the same datum. If the datum is not the same, then the coordinate operation
      * should probably be a {@linkplain DefaultTransformation transformation} instead.
-     * However Apache SIS does not enforce that condition, but we encourage users to follow it.
+     * However, Apache SIS does not enforce that condition, but we encourage users to follow it.
      * The reason why SIS is tolerant is because some gray areas may exist about whether an operation
      * should be considered as a conversion or a transformation.
      *
@@ -136,9 +136,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS} using
      * the <cite>January 1st, 1950</cite> epoch to another temporal CRS using the <cite>January 1st, 1970</cite> epoch
      * is a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
-     * temporal datum} definition. However such operation does not have all the accuracy issues of transformations
+     * temporal datum} definition. However, such operation does not have all the accuracy issues of transformations
      * between geodetic datum (empirically determined, over-determined systems, stochastic nature of the parameters).
-     * Consequently some users may consider sufficient to represent temporal epoch changes as conversions instead
+     * Consequently, some users may consider sufficient to represent temporal epoch changes as conversions instead
      * than transformations.</div>
      *
      * Note that while Apache SIS accepts to construct {@code DefaultConversion} instances
@@ -336,7 +336,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *       {@code DefaultConversion}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultConversion} instance is created using the
      *       {@linkplain #DefaultConversion(Conversion) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -418,7 +418,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * of a derived CRS, because this method is invoked indirectly by SIS AbstractDerivedCRS constructor
              * before its `conversionFromBase` field is set. Since the Apache SIS implementations of derived CRS
              * map the datum to getConversionFromBase().getSourceCRS().getDatum(), invoking targetCRS.getDatum()
-             * below may result in a NullPointerException. Instead we verify that `this` conversion use the same
+             * below may result in a NullPointerException. Instead, we verify that `this` conversion use the same
              * datum for source and target CRS, since DerivedCRS and ProjectedCRS are expected to have the same
              * datum than their source CRS.
              */

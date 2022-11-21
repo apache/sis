@@ -53,7 +53,7 @@ import org.apache.sis.util.Classes;
  * <p>Elements can be added to this collection with calls to {@link #addAuthorityCode(String)} for deferred
  * {@linkplain #createObject(String) object creation}, or to {@link #add(IdentifiedObject)} for objects
  * that are already instantiated. This collection cannot contain two {@code IdentifiedObject} instances
- * having the same identifier. However the identifiers used by this class can be controlled by overriding
+ * having the same identifier. However, the identifiers used by this class can be controlled by overriding
  * {@link #getAuthorityCode(IdentifiedObject)}.</p>
  *
  * <p>Iterations over elements in this collection preserve insertion order.</p>
@@ -309,7 +309,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                      * The check for 'containsKey' is a paranoiac check in case the element has been removed
                      * in another thread while we were creating the object. This is likely to be unnecessary
                      * in the vast majority of cases where the set of codes is never modified after this set
-                     * has been published. However, if someone decided to do such concurrent modifications,
+                     * has been published. However if someone decided to do such concurrent modifications,
                      * not checking for concurrent removal could be a subtle and hard-to-find bug, so we are
                      * better to be safe. Note that if a concurrent removal happened, we still return the non-null
                      * object but we do not put it in this IdentifiedObjectSet. This behavior is as if this method
@@ -395,7 +395,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * will be re-thrown as an unchecked {@link BackingStoreException}.
      *
      * <p>This iterator is <strong>not</strong> thread safe – iteration should be done in a single thread.
-     * However the iterator is robust to concurrent changes in {@code IdentifiedObjectSet} during iteration.</p>
+     * However, the iterator is robust to concurrent changes in {@code IdentifiedObjectSet} during iteration.</p>
      *
      * @return an iterator over all {@code IdentifiedObject} instances in this set, in insertion order.
      * @throws BackingStoreException if an error occurred while creating the iterator.

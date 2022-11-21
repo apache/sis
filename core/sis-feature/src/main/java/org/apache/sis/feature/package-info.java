@@ -81,7 +81,7 @@
  *
  * <h2>Instantiation</h2>
  * Classes defined in this package are rarely instantiated directly (by a {@code new} statement).
- * Instead those classes are instantiated indirectly by invoking a method on a parent container,
+ * Instead, those classes are instantiated indirectly by invoking a method on a parent container,
  * or by using a builder. The starting point is {@code FeatureType}, which may be created by a
  * {@link org.apache.sis.feature.builder.FeatureTypeBuilder} or may be provided by a
  * {@link org.apache.sis.storage.DataStore} reading a data file.

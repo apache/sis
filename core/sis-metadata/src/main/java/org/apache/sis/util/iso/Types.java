@@ -514,7 +514,7 @@ public final class Types extends Static {
      * The package prefix (e.g. {@code "CI_"} in {@code "CI_Citation"}) can be omitted.
      * The flexibility is provided for allowing transition to newer ISO standards,
      * which are dropping the package prefixes.
-     * For example {@code "CS_AxisDirection"} in ISO 19111:2007
+     * For example, {@code "CS_AxisDirection"} in ISO 19111:2007
      * has been renamed {@code "AxisDirection"} in ISO 19111:2018.
      *
      * <p>Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
@@ -523,7 +523,7 @@ public final class Types extends Static {
      * <div class="note"><b>Future evolution:</b>
      * when a new ISO type does not yet have a corresponding GeoAPI interface,
      * this method may temporarily return an Apache SIS class instead, until a future version can use the interface.
-     * For example {@code forStandardName("CI_Individual")} returns
+     * For example, {@code forStandardName("CI_Individual")} returns
      * <code>{@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual}.class</code> in Apache SIS versions
      * that depend on GeoAPI 3.0, but the return type may be changed to {@code Individual.class} when Apache SIS will
      * be upgraded to GeoAPI 3.1.</div>
@@ -664,7 +664,7 @@ public final class Types extends Static {
     /**
      * Returns an international string for the values in the given properties map, or {@code null} if none.
      * This method is used when a property in a {@link java.util.Map} may have many localized variants.
-     * For example the given map may contains a {@code "remarks"} property defined by values associated to
+     * For example, the given map may contains a {@code "remarks"} property defined by values associated to
      * the {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
      *
      * <p>If the given map is {@code null}, then this method returns {@code null}.

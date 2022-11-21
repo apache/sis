@@ -24,6 +24,8 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
+
 
 /**
  * Lists some namespaces URLs used by JAXB when (un)marshalling.
@@ -108,7 +110,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String LAN = "http://standards.iso.org/iso/19115/-3/lan/1.0";
+    public static final String LAN = ISO_NAMESPACE + "19115/-3/lan/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -125,7 +127,7 @@ public final class Namespaces extends Static {
      *
      * @category ISO
      */
-    public static final String GCO = "http://standards.iso.org/iso/19115/-3/gco/1.0";
+    public static final String GCO = ISO_NAMESPACE + "19115/-3/gco/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -135,7 +137,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MCC = "http://standards.iso.org/iso/19115/-3/mcc/1.0";
+    public static final String MCC = ISO_NAMESPACE + "19115/-3/mcc/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -145,7 +147,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String FCC = "http://standards.iso.org/iso/19110/fcc/1.0";
+    public static final String FCC = ISO_NAMESPACE + "19110/fcc/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -162,7 +164,7 @@ public final class Namespaces extends Static {
      *
      * @category ISO
      */
-    public static final String GFC = "http://standards.iso.org/iso/19110/gfc/1.1";
+    public static final String GFC = ISO_NAMESPACE + "19110/gfc/1.1";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -172,7 +174,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String CAT = "http://standards.iso.org/iso/19115/-3/cat/1.0";
+    public static final String CAT = ISO_NAMESPACE + "19115/-3/cat/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -182,7 +184,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MDB = "http://standards.iso.org/iso/19115/-3/mdb/1.0";
+    public static final String MDB = ISO_NAMESPACE + "19115/-3/mdb/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -192,7 +194,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String CIT = "http://standards.iso.org/iso/19115/-3/cit/1.0";
+    public static final String CIT = ISO_NAMESPACE + "19115/-3/cit/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -202,7 +204,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String GEX = "http://standards.iso.org/iso/19115/-3/gex/1.0";
+    public static final String GEX = ISO_NAMESPACE + "19115/-3/gex/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -212,7 +214,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MRS = "http://standards.iso.org/iso/19115/-3/mrs/1.0";
+    public static final String MRS = ISO_NAMESPACE + "19115/-3/mrs/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -222,7 +224,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String RCE = "http://standards.iso.org/iso/19111/rce/1.0";
+    public static final String RCE = ISO_NAMESPACE + "19111/rce/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -232,7 +234,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MSR = "http://standards.iso.org/iso/19115/-3/msr/1.0";
+    public static final String MSR = ISO_NAMESPACE + "19115/-3/msr/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -242,7 +244,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MRC = "http://standards.iso.org/iso/19115/-3/mrc/1.0";
+    public static final String MRC = ISO_NAMESPACE + "19115/-3/mrc/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -252,7 +254,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MRI = "http://standards.iso.org/iso/19115/-3/mri/1.0";
+    public static final String MRI = ISO_NAMESPACE + "19115/-3/mri/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -262,7 +264,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MRD = "http://standards.iso.org/iso/19115/-3/mrd/1.0";
+    public static final String MRD = ISO_NAMESPACE + "19115/-3/mrd/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -272,7 +274,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MDT = "http://standards.iso.org/iso/19115/-3/mdt/1.0";
+    public static final String MDT = ISO_NAMESPACE + "19115/-3/mdt/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -282,7 +284,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MCO = "http://standards.iso.org/iso/19115/-3/mco/1.0";
+    public static final String MCO = ISO_NAMESPACE + "19115/-3/mco/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -292,7 +294,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MAC = "http://standards.iso.org/iso/19115/-3/mac/1.0";
+    public static final String MAC = ISO_NAMESPACE + "19115/-3/mac/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -302,7 +304,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MRL = "http://standards.iso.org/iso/19115/-3/mrl/1.0";
+    public static final String MRL = ISO_NAMESPACE + "19115/-3/mrl/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -312,7 +314,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MMI = "http://standards.iso.org/iso/19115/-3/mmi/1.0";
+    public static final String MMI = ISO_NAMESPACE + "19115/-3/mmi/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -322,7 +324,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String DQC = "http://standards.iso.org/iso/19157/-2/dqc/1.0";
+    public static final String DQC = ISO_NAMESPACE + "19157/-2/dqc/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -332,7 +334,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MDQ = "http://standards.iso.org/iso/19157/-2/mdq/1.0";
+    public static final String MDQ = ISO_NAMESPACE + "19157/-2/mdq/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -342,7 +344,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.3
      */
-    public static final String DQM = "http://standards.iso.org/iso/19157/-2/dqm/1.0";
+    public static final String DQM = ISO_NAMESPACE + "19157/-2/dqm/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -352,7 +354,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MDS = "http://standards.iso.org/iso/19115/-3/mds/1.0";
+    public static final String MDS = ISO_NAMESPACE + "19115/-3/mds/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -370,7 +372,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String SRV = "http://standards.iso.org/iso/19115/-3/srv/2.0";
+    public static final String SRV = ISO_NAMESPACE + "19115/-3/srv/2.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -380,7 +382,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MPC = "http://standards.iso.org/iso/19115/-3/mpc/1.0";
+    public static final String MPC = ISO_NAMESPACE + "19115/-3/mpc/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -390,7 +392,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MDA = "http://standards.iso.org/iso/19115/-3/mda/1.0";
+    public static final String MDA = ISO_NAMESPACE + "19115/-3/mda/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -400,7 +402,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MAS = "http://standards.iso.org/iso/19115/-3/mas/1.0";
+    public static final String MAS = ISO_NAMESPACE + "19115/-3/mas/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -410,7 +412,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MEX = "http://standards.iso.org/iso/19115/-3/mex/1.0";
+    public static final String MEX = ISO_NAMESPACE + "19115/-3/mex/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -420,7 +422,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String GCX = "http://standards.iso.org/iso/19115/-3/gcx/1.0";
+    public static final String GCX = ISO_NAMESPACE + "19115/-3/gcx/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -430,7 +432,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MD1 = "http://standards.iso.org/iso/19115/-3/md1/1.0";
+    public static final String MD1 = ISO_NAMESPACE + "19115/-3/md1/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -440,7 +442,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String MD2 = "http://standards.iso.org/iso/19115/-3/md2/1.0";
+    public static final String MD2 = ISO_NAMESPACE + "19115/-3/md2/1.0";
 
     /**
      * The <code>{@value}</code> URL. This is the namespace of
@@ -450,7 +452,7 @@ public final class Namespaces extends Static {
      * @category ISO
      * @since 1.0
      */
-    public static final String GMW = "http://standards.iso.org/iso/19115/-3/gmw/1.0";
+    public static final String GMW = ISO_NAMESPACE + "19115/-3/gmw/1.0";
 
     /**
      * The <code>{@value}</code> URL.
@@ -519,11 +521,11 @@ public final class Namespaces extends Static {
      * URLs for which the XML prefix to use directly follows an URL starts given in this array.
      */
     private static final String[] GENERIC_URLS = {
-        "http://standards.iso.org/iso/19115/-3/",
-        "http://standards.iso.org/iso/19115/-2/",
-        "http://standards.iso.org/iso/19157/-2/",
-        "http://standards.iso.org/iso/19111/",
-        "http://standards.iso.org/iso/19110/",
+        ISO_NAMESPACE + "19115/-3/",
+        ISO_NAMESPACE + "19115/-2/",
+        ISO_NAMESPACE + "19157/-2/",
+        ISO_NAMESPACE + "19111/",
+        ISO_NAMESPACE + "19110/",
         "http://www.isotc211.org/2005/",
         "http://www.opengis.net/",
         "http://www.w3.org/1999/",

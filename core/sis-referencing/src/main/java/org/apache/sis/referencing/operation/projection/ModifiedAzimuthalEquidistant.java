@@ -247,7 +247,7 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
          * Since D ≥ max(|x|,|y|) we get x/D and y/D close to zero.
          *
          * Note: the D ≥ max(|x|,|y|) assumption may not be always true (see `Formulas.fastHypot(…)`).
-         * Consequently sin(α) or cos(α) may be slightly greater than 1. However they are multiplied by terms
+         * Consequently, sin(α) or cos(α) may be slightly greater than 1. However, they are multiplied by terms
          * involving eccentricity, which are smaller than 1. An empirical verification is done with cos(φ₀) = 1
          * in AzimuthalEquidistantTest.testValuesNearZero().
          */

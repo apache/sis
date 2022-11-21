@@ -174,8 +174,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * in the given {@code operations} list, which make things clearer.
      *
      * <div class="note"><b>Note:</b>
-     * according ISO 19111, the accuracy attribute is allowed only for transformations. However this restriction
-     * is not enforced everywhere. For example the EPSG database declares an accuracy of 0 meter for conversions,
+     * according ISO 19111, the accuracy attribute is allowed only for transformations. However, this restriction
+     * is not enforced everywhere. For example, the EPSG database declares an accuracy of 0 meter for conversions,
      * which is conceptually exact. In this class we are departing from strict interpretation of the specification
      * since we are adding accuracy information to a concatenated operation. This departure should be considered
      * as a convenience feature only; accuracies are really relevant in transformations only.</div>
@@ -251,7 +251,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
              * operation on the assumption that its accuracy was computed by the same algorithm than this method).
              * See javadoc for a rational about why we take only transformations in account. If more than one
              * transformation is found, clear the collection and abandon the attempt to set the accuracy information.
-             * Instead the user will get a better result by invoking PositionalAccuracyConstant.getLinearAccuracy(…)
+             * Instead, the user will get a better result by invoking PositionalAccuracyConstant.getLinearAccuracy(…)
              * since that method conservatively computes the sum of all linear accuracy.
              */
             if (setAccuracy && (op instanceof Transformation || op instanceof ConcatenatedOperation)
@@ -304,8 +304,8 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * If the given object is already an instance of {@code DefaultConcatenatedOperation}, then it is returned
      * unchanged. Otherwise a new {@code DefaultConcatenatedOperation} instance is created using the
      * {@linkplain #DefaultConcatenatedOperation(ConcatenatedOperation) copy constructor} and returned.
-     * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
-     * object are not recursively copied.
+     * Note that this is a <dfn>shallow</dfn> copy operation,
+     * since the other properties contained in the given object are not recursively copied.
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.
      * @return a SIS implementation containing the values of the given object (may be the

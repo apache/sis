@@ -607,7 +607,7 @@ public class StoreListeners implements Localized {
      * as {@linkplain ExecutionException#getSuppressed() suppressed exceptions} of the cause.
      *
      * <p>This method should not delegate to {@link #warning(Exception)} because the error is not with the
-     * data store itself. Furthermore the exception may have occurred during {@code warning(…)} execution,
+     * data store itself. Furthermore, the exception may have occurred during {@code warning(…)} execution,
      * in which case the exception is a kind of "warning about warning report".</p>
      *
      * @param  method  name of the method invoking this method.

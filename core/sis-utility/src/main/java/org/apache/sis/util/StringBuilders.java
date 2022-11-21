@@ -30,7 +30,7 @@ import static java.lang.Character.*;
  *
  * <h2>Unicode support</h2>
  * Every methods defined in this class work on <cite>code points</cite> instead of characters
- * when appropriate. Consequently those methods should behave correctly with characters outside
+ * when appropriate. Consequently, those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -285,7 +285,7 @@ public final class StringBuilders extends Static {
 
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the “ é ” character is replaced by  “ e ” (without accent),
+     * For example, the “ é ” character is replaced by  “ e ” (without accent),
      * the  “ ″ ” symbol for minutes of angle is replaced by straight double quotes “ " ”,
      * and combined characters like ㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, <i>etc.</i> are replaced
      * by the corresponding sequences of characters.

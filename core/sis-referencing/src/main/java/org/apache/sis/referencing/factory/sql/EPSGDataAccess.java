@@ -131,9 +131,9 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * Current version of this class requires EPSG database version 6.6 or above.
  *
  * <h2>Object identifier (code or name)</h2>
- * EPSG codes are numerical identifiers. For example code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
+ * EPSG codes are numerical identifiers. For example, code 3395 stands for <cite>"WGS 84 / World Mercator"</cite>.
  * Coordinate Reference Objects are normally created from their numerical codes, but this factory accepts also names.
- * For example {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
+ * For example, {@code createProjectedCRS("3395")} and {@code createProjectedCRS("WGS 84 / World Mercator")} both fetch
  * the same object.
  * However, names may be ambiguous since the same name may be used for more than one object.
  * This is the case of <cite>"WGS 84"</cite> for instance.
@@ -1007,7 +1007,7 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Makes sure that an object constructed from the database is not incoherent.
      * If the code supplied to a {@code createFoo(String)} method exists in the database,
-     * then we should find only one record. However we will do a paranoiac check and verify if there is
+     * then we should find only one record. However, we will do a paranoiac check and verify if there is
      * more records, using a {@code while (results.next())} loop instead of {@code if (results.next())}.
      * This method is invoked in the loop for making sure that, if there is more than one record
      * (which should never happen), at least they have identical content.
@@ -1121,7 +1121,7 @@ codes:  for (int i=0; i<codes.length; i++) {
          * record is really from the table we are looking for since different tables may have objects with the same ID.
          *
          * Some aliases are identical to the name except that some letters are replaced by their accented letters.
-         * For example "Reseau Geodesique Francais" → "Réseau Géodésique Français". If we find such alias, replace
+         * For example, "Reseau Geodesique Francais" → "Réseau Géodésique Français". If we find such alias, replace
          * the name by the alias so we have proper display in user interface. Notes:
          *
          *   - WKT formatting will still be compliant with ISO 19162 because the WKT formatter replaces accented
@@ -1431,7 +1431,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      *   PROJECTED CRS
                      *
                      *   NOTE: This method invokes itself indirectly, through createGeographicCRS.
-                     *         Consequently we cannot use `result` anymore after this block.
+                     *         Consequently, we cannot use `result` anymore after this block.
                      * ---------------------------------------------------------------------- */
                     case "projected": {
                         final String csCode  = getString(code, result,  8);
@@ -1487,7 +1487,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             try {
                                 /*
                                  * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
-                                 * need the `instanceof` check. However the EPSG dataset version 8.9 also uses the
+                                 * need the `instanceof` check. However, the EPSG dataset version 8.9 also uses the
                                  * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
                                  *
                                  * TODO: there is an ambiguity when the source CRS is geographic but the operation
@@ -1677,7 +1677,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     /*
                      * Parse the date manually because it is declared as a VARCHAR instead of DATE in original
                      * SQL scripts. Apache SIS installer replaces VARCHAR by DATE, but we have no guarantee that
-                     * we are reading an EPSG database created by our installer. Furthermore an older version of
+                     * we are reading an EPSG database created by our installer. Furthermore, an older version of
                      * EPSG installer was using SMALLINT instead of DATE, because scripts before EPSG 9.0 were
                      * reporting only the epoch year.
                      */
@@ -2577,7 +2577,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * Search for units.   We typically have many different units but all of the same dimension
                      * (for example metres, kilometres, feet, etc.). In such case, the units Set will have only
                      * one element and that element will be the most frequently used unit.  But some parameters
-                     * accept units of different dimensions. For example the "Coordinate 1 of evaluation point"
+                     * accept units of different dimensions. For example, the "Coordinate 1 of evaluation point"
                      * (EPSG:8617) parameter value may be in metres or in degrees.   In such case the units Set
                      * will have two elements.
                      */
@@ -2713,7 +2713,7 @@ next:                   while (r.next()) {
                     /*
                      * Wrap the unchecked ParameterNotFoundException into the checked NoSuchIdentifierException,
                      * which is a FactoryException subclass.  Note that in principle, NoSuchIdentifierException is for
-                     * MathTransforms rather than parameters. However we are close in spirit here since we are setting
+                     * MathTransforms rather than parameters. However, we are close in spirit here since we are setting
                      * up MathTransform's parameters. Using NoSuchIdentifierException allows CoordinateOperationSet to
                      * know that the failure is probably caused by a MathTransform not yet supported in Apache SIS
                      * (or only partially supported) rather than some more serious failure in the database side.
@@ -2895,7 +2895,7 @@ next:                   while (r.next()) {
                      *
                      * In EPSG database 6.7, all defining conversions are projections and their dimensions are always 2.
                      * However, this default number of dimensions is not generalizable to other kind of operation methods.
-                     * For example the "Geocentric translation" operation method has 3-dimensional source and target CRS.
+                     * For example, the "Geocentric translation" operation method has 3-dimensional source and target CRS.
                      */
                     boolean isDimensionKnown = true;
                     final int sourceDimensions, targetDimensions;

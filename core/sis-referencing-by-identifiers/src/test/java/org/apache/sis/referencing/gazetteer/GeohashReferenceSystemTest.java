@@ -139,7 +139,7 @@ public final strictfp class GeohashReferenceSystemTest extends TestCase {
         /*
          * If the length is even, then longitude values have one more bit than latitudes,
          * which compensate for the fact that the range of longitude values is twice the
-         * range of latitude values. Consequently both coordinate values should have the
+         * range of latitude values. Consequently, both coordinate values should have the
          * same precision at equator, and moving to the pole changes only the radius.
          * Otherwise longitude error is twice larger than latitude error. At the pole,
          * the longitude error vanishes and only the latitude error matter.

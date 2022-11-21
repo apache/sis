@@ -47,7 +47,7 @@ public class MapLayer extends MapItem {
     /**
      * The {@value} property name, used for notifications about changes in map layer resource.
      * The data resource provides the digital data to be rendered. Note that not all kinds of resources
-     * are digital data. For example a resource may be a citation of facts or figures printed on paper,
+     * are digital data. For example, a resource may be a citation of facts or figures printed on paper,
      * photographic material, or other media (see all {@link org.opengis.metadata.citation.PresentationForm}
      * values having the {@code _HARDCOPY} suffix in their name).
      * Associated values should be instances of {@link DataSet} or {@link Aggregate}.
@@ -147,10 +147,10 @@ public class MapLayer extends MapItem {
      * This case may happen with processing or distant services resources.
      *
      * <p>The given resource should be a {@link DataSet} or an {@link Aggregate} of data sets.
-     * However this base class does not enforce those types. Subclasses may restrict the set
+     * However, this base class does not enforce those types. Subclasses may restrict the set
      * of resource types accepted by this method.</p>
      *
-     * <p>Note that not all kinds of resources are digital data. For example a resource may be an organization,
+     * <p>Note that not all kinds of resources are digital data. For example, a resource may be an organization,
      * or citation of facts, tables and figures printed on paper, photographic material, or other media
      * (see all {@link org.opengis.metadata.citation.PresentationForm} values having the {@code _HARDCOPY}
      * suffix in their name). The kind of resources in {@code MapLayer} shall be one of those representing

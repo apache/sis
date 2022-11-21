@@ -135,7 +135,7 @@ public abstract class BatchComputedImage extends ComputedImage {
      * @todo The return type should be changed to something more reactive, maybe {@link java.util.concurrent.Flow}.
      *       It would allow processing (e.g. map reprojection) of some tiles as soon as they become available,
      *       without waiting for all tiles to be available. Note that the tiles can be returned in any order.
-     *       For example the TIFF reader is reading tiles in arbitrary order, then rearranges them in the array.
+     *       For example, the TIFF reader is reading tiles in arbitrary order, then rearranges them in the array.
      *       So the "row-major" order in above javadoc could not apply anymore.
      *
      * @param  tiles  range of tile indices for which to precompute tiles.

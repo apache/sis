@@ -59,7 +59,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *
  * <p>By default, this comparator expects the documents to contain the same elements and
  * the same attributes (but the order of attributes may be different).
- * However it is possible to:</p>
+ * However, it is possible to:</p>
  *
  * <ul>
  *   <li>Specify whether comments shall be ignored (see {@link #ignoreComments})</li>
@@ -135,7 +135,7 @@ public strictfp class DocumentComparator {
      * <p>Whether the namespace is the full URL or only the prefix depends on whether
      * {@link DocumentBuilderFactory#setNamespaceAware(boolean)} was set to {@code true}
      * or {@code false} respectively before the XML document has been built.
-     * For example in order to ignore the standard {@code "schemaLocation"} attribute:</p>
+     * For example, in order to ignore the standard {@code "schemaLocation"} attribute:</p>
      *
      * <ul>
      *   <li>If {@code NamespaceAware} is {@code true}, then this {@code ignoredAttributes} collection
@@ -149,7 +149,7 @@ public strictfp class DocumentComparator {
      * if the user provided {@link Node} instances to the constructor. In such case, {@code DocumentComparator} has
      * no control on whether the nodes contain namespaces or not.</p>
      *
-     * <p>For example in order to ignore the namespace, type and schema location declaration,
+     * <p>For example, in order to ignore the namespace, type and schema location declaration,
      * the following strings can be added in this set:</p>
      *
      * {@preformat text

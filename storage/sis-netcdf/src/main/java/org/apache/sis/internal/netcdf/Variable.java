@@ -337,7 +337,7 @@ public abstract class Variable extends Node {
      * The empty string cannot be used for meaning "dimensionless unit"; some text is required.
      *
      * <p>Note: the UCAR library has its own API for handling units (e.g. {@link ucar.nc2.units.SimpleUnit}).
-     * However as of November 2018, this API does not allow us to identify the quantity type except for some
+     * However, as of November 2018, this API does not allow us to identify the quantity type except for some
      * special cases. We will parse the unit symbol ourselves instead, but we still need the full unit string
      * for parsing also its {@linkplain Axis#direction direction}.</p>
      *
@@ -530,7 +530,7 @@ public abstract class Variable extends Node {
 
     /**
      * Returns a builder for the grid geometry of this variable, or {@code null} if this variable is not a data cube.
-     * Not all variables have a grid geometry. For example collections of features do not have such grid.
+     * Not all variables have a grid geometry. For example, collections of features do not have such grid.
      * This method should be invoked only once per variable, but the same builder may be returned by different variables.
      * The grid may have fewer {@linkplain Grid#getDimensions() dimensions} than this variable,
      * in which case the additional {@linkplain #getGridDimensions() variable dimensions} can be considered as bands.
@@ -684,7 +684,7 @@ public abstract class Variable extends Node {
 
     /**
      * Returns the grid geometry for this variable, or {@code null} if this variable is not a data cube.
-     * Not all variables have a grid geometry. For example collections of features do not have such grid.
+     * Not all variables have a grid geometry. For example, collections of features do not have such grid.
      * The same grid geometry may be shared by many variables.
      * The grid may have fewer {@linkplain Grid#getDimensions() dimensions} than this variable,
      * in which case the additional {@linkplain #getGridDimensions() variable dimensions} can be considered as bands.
@@ -829,7 +829,7 @@ public abstract class Variable extends Node {
      *
      * If {@link #findGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
      * contain all dimensions returned by {@link Grid#getDimensions()}. It may contain more dimension however.
-     * Those additional dimensions can be considered as bands. Furthermore the dimensions of the {@code Grid}
+     * Those additional dimensions can be considered as bands. Furthermore, the dimensions of the {@code Grid}
      * may have a different {@linkplain Dimension#length() length} than the dimensions returned by this method.
      * If such length mismatch exists, then {@link #getGridGeometry()} will concatenate a scale factor to
      * the "grid to CRS" transform.
@@ -955,7 +955,7 @@ public abstract class Variable extends Node {
 
     /**
      * Builds the function converting values from their packed formats in the variable to "real" values.
-     * This method is invoked in contexts where a transfer function is assumed to exist. Consequently it
+     * This method is invoked in contexts where a transfer function is assumed to exist. Consequently, it
      * shall never return {@code null}, but may return the identity function.
      */
     final TransferFunction getTransferFunction() {
@@ -1101,7 +1101,7 @@ public abstract class Variable extends Node {
                 final String[] strings = createStringArray(array, Math.toIntExact(count), length);
                 /*
                  * Following method calls take the array reference without cloning it.
-                 * Consequently creating those two objects now (even if we may not use them) is reasonably cheap.
+                 * Consequently, creating those two objects now (even if we may not use them) is reasonably cheap.
                  */
                 values        = Vector.create(strings, false);
                 valuesAnyType = UnmodifiableArrayList.wrap(strings);
@@ -1112,7 +1112,7 @@ public abstract class Variable extends Node {
         /*
          * Do not invoke Vector.compress(…) if data are externally cached. Compressing vectors is useful only when
          * original array is discarded. But the UCAR library has its own cache mechanism which may keep references
-         * to the original arrays. Consequently compressing vectors may result in data being duplicated.
+         * to the original arrays. Consequently, compressing vectors may result in data being duplicated.
          */
         if (!isExternallyCached()) {
             /*

@@ -25,8 +25,8 @@ import static org.apache.sis.math.MathFunctions.atanh;
 /**
  * Base class of projections doing conversions between <cite>geodetic</cite> latitude and <cite>authalic</cite> latitude.
  * This is used by <cite>equal-area</cite> projections such as {@link AlbersEqualArea} and {@link CylindricalEqualArea}.
- * However not all equal-area projections extend this base class, and conversely not all sub-classes are equal-area.
- * For example the {@link Sinusoidal} projection, despite being equal-area, uses different formulas.
+ * However, not all equal-area projections extend this base class, and conversely not all sub-classes are equal-area.
+ * For example, the {@link Sinusoidal} projection, despite being equal-area, uses different formulas.
  *
  * <p>Note that no projection can be both conformal and equal-area. So the formulas in this class
  * are usually mutually exclusive with formulas in {@link ConformalProjection} class.</p>
@@ -34,7 +34,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * <h2>Note on class naming</h2>
  * Lee (1944) defines an <cite>authalic map projection</cite> to be one in which at any point the scales in
  * two orthogonal directions are inversely proportional. Those map projections have a constant areal scale.
- * However this {@code AuthalicConversion} is <strong>not</strong> necessarily an authalic projection.
+ * However, this {@code AuthalicConversion} is <strong>not</strong> necessarily an authalic projection.
  * Subclasses may want to use the latitude conversion formulas for other purposes.
  *
  * <h3>References</h3>
@@ -67,7 +67,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
      *
      *     <blockquote>φ = c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(6β)</blockquote>
      *
-     * However we rewrite above series expansion for taking advantage of trigonometric identities.
+     * However, we rewrite above series expansion for taking advantage of trigonometric identities.
      * The equation become (with different <var>c</var> values):
      *
      *     <blockquote>sin(2β)⋅(c₂ + cos(2β)⋅(c₄ + cos(2β)⋅c₆))</blockquote>
@@ -231,7 +231,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
     /**
      * Computes the latitude using equation 3-18 from Snyder, followed by iterative resolution of Snyder 3-16.
      * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
-     * be used in replacement of the iterative method. However in practice the series expansion seems to not
+     * be used in replacement of the iterative method. However, in practice the series expansion seems to not
      * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *

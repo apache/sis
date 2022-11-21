@@ -207,13 +207,13 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         this.attributeNames = attributeNames;
         final Object isUnsigned = getAttributeValue(CDM.UNSIGNED, "_unsigned");
         if (isUnsigned instanceof String) {
-            dataType = dataType.unsigned(Boolean.valueOf((String) isUnsigned));
+            dataType = dataType.unsigned(Boolean.parseBoolean((String) isUnsigned));
         }
         this.dataType = dataType;
         /*
          * The `size` value is provided in the netCDF files, but does not need to be stored because it can
          * be computed from dimension lengths and its type is not wide enough for large variables anyway.
-         * Instead we compute the length ourselves, excluding the unlimited dimension.
+         * Instead, we compute the length ourselves, excluding the unlimited dimension.
          */
         if (dataType != null && (offsetToNextRecord = dataType.size()) != 0) {
             for (int i=0; i<dimensions.length; i++) {
@@ -232,7 +232,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         }
         /*
          * If the value that we computed ourselves does not match the value declared in the netCDF file,
-         * maybe for some reason the writer used a different layout.  For example maybe it inserted some
+         * maybe for some reason the writer used a different layout.  For example, maybe it inserted some
          * additional padding.
          */
         if (size != -1) {                           // Maximal unsigned value, means possible overflow.

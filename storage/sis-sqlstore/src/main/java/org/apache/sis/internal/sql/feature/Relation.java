@@ -126,7 +126,7 @@ final class Relation extends TableReference {
      * Whether this relation is importing from or exporting to another table.
      *
      * This field is not stored because it is implied by the list where the relation is stored:
-     * Table.importedKeys or Table.exportedKeys. Instead this information is passed in argument
+     * Table.importedKeys or Table.exportedKeys. Instead, this information is passed in argument
      * when needed, with a "this.direction" comment.
      */
 //  private final Direction direction;
@@ -135,7 +135,7 @@ final class Relation extends TableReference {
      * The table that contains this relation.
      *
      * This field is not stored because it is implied by the list where the relation is stored:
-     * Table.importedKeys or Table.exportedKeys. Instead this information is passed in argument
+     * Table.importedKeys or Table.exportedKeys. Instead, this information is passed in argument
      * when needed, with a "this.owner" comment.
      */
 //  private final Table owner;

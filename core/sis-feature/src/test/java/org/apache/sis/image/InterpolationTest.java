@@ -147,7 +147,7 @@ public final strictfp class InterpolationTest extends TestCase {
     /**
      * Tests Lanczos interpolation. The Lanczos kernel has value 1 at the interpolated position
      * and 0 at distances that are an integer amount of pixels from the interpolated position.
-     * Consequently when interpolating exactly at pixel center, we expect the exact pixel value.
+     * Consequently, when interpolating exactly at pixel center, we expect the exact pixel value.
      */
     @Test
     public void testLanczos() {

@@ -83,7 +83,7 @@ final class Dispatcher implements InvocationHandler {
      *
      * <div class="note"><b>Design note:</b>
      * this field is declared in this {@code Dispatcher} class instead of {@link CachedStatement} because we need
-     * it before a {@code CachedStatement} instance can be found. Furthermore two {@code Dispatcher} instances may
+     * it before a {@code CachedStatement} instance can be found. Furthermore, two {@code Dispatcher} instances may
      * have different {@code preferredIndex} values even if their {@link CachedStatement#type} value is the same,
      * since their {@link #identifier} values are different.</div>
      */

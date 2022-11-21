@@ -170,7 +170,7 @@ public final strictfp class ExtentsTest extends TestCase {
         /*
          * EPSG:1241    USA - CONUS including EEZ
          * This is only an anti-regression test - the value has not been validated.
-         * However the expected area MUST be greater than the Alaska's one below,
+         * However, the expected area MUST be greater than the Alaska's one below,
          * otherwise SIS will select the wrong datum shift operation over USA!!
          */
         box.setBounds(-129.16, -65.70, 23.82, 49.38);
@@ -179,7 +179,7 @@ public final strictfp class ExtentsTest extends TestCase {
         /*
          * EPSG:2373    USA - Alaska including EEZ    (crossing the anti-meridian).
          * This is only an anti-regression test - the value has not been validated.
-         * However the expected area MUST be smaller than the CONUS's one above.
+         * However, the expected area MUST be smaller than the CONUS's one above.
          */
         box.setBounds(167.65, -129.99, 47.88, 74.71);
         assertTrue(DefaultGeographicBoundingBoxTest.isCrossingAntiMeridian(box));

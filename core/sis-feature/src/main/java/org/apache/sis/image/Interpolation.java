@@ -28,7 +28,7 @@ import java.nio.DoubleBuffer;
  * gives the sample values to the {@code interpolate(…)} method of this interpolation.
  *
  * <p>All methods in this class shall be safe for concurrent use in multi-threading context.
- * For example interpolations may be executed in a different thread for each tile in an image.</p>
+ * For example, interpolations may be executed in a different thread for each tile in an image.</p>
  *
  * <p>This class is designed for interpolations in a two-dimensional space only.</p>
  *

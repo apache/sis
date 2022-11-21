@@ -211,7 +211,7 @@ public class GeodeticCalculator {
      *     For representing a displacement in degrees, divide by {@linkplain #dφ_dy(double) ∂y/∂φ}.</li>
      * </ul>
      *
-     * Those vectors may not be normalized to unitary vectors. For example {@code msinα} is {@code sinα} multiplied
+     * Those vectors may not be normalized to unitary vectors. For example, {@code msinα} is {@code sinα} multiplied
      * by an unknown constant <var>m</var>. It is often not needed to know <var>m</var> value because most formulas
      * are written in a way that cancel the magnitude. If nevertheless needed, normalization is applied by dividing
      * those fields by {@code m = hypot(msinα, mcosα)}.
@@ -838,7 +838,7 @@ public class GeodeticCalculator {
      *
      * This method tries to stay within the given tolerance threshold of the geodesic track.
      * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
-     * For example a value of 1/10 of geodesic length may be sufficient.
+     * For example, a value of 1/10 of geodesic length may be sufficient.
      *
      * <div class="note"><b>Note:</b>
      * this method depends on the presence of {@code java.desktop} module. This constraint may be addressed
@@ -888,7 +888,7 @@ public class GeodeticCalculator {
      *
      * This method tries to stay within the given tolerance threshold of the geodesic track.
      * The {@code tolerance} parameter should not be too small for avoiding creation of unreasonably long chain of Bézier curves.
-     * For example a value of 1/10 of geodesic length may be sufficient.
+     * For example, a value of 1/10 of geodesic length may be sufficient.
      *
      * <div class="note"><b>Note:</b>
      * this method depends on the presence of {@code java.desktop} module. This constraint may be addressed
@@ -924,7 +924,7 @@ public class GeodeticCalculator {
     /**
      * Builds a geodesic path as a sequence of Bézier curves. The start point and end points are the points
      * in enclosing {@link GeodeticCalculator} at the time this class is instantiated. The start coordinates
-     * given by {@link #φ1} and {@link #λ1} shall never change for this whole builder lifetime. However the
+     * given by {@link #φ1} and {@link #λ1} shall never change for this whole builder lifetime. However, the
      * end coordinates ({@link #φ2}, {@link #λ2}) will vary at each step.
      */
     private class PathBuilder extends Bezier {
@@ -1008,7 +1008,7 @@ public class GeodeticCalculator {
              * screen with (longitude, latitude) axes, the angles seen on screen are not the real angles measured on Earth.
              * In order to see the "real" angles, we need to draw the shape on a conformal projection such as Mercator.
              * Said otherwise, the angle value computed from the (dx,dy) vector is "real" only in a conformal projection.
-             * Consequently if the output CRS is a Mercator projection, then the angle computed from the (dx,dy) vector
+             * Consequently, if the output CRS is a Mercator projection, then the angle computed from the (dx,dy) vector
              * at the end of this method should be the ending azimuth angle unchanged. We achieve this equivalence by
              * multiplying mcosα2 by a factor which will cancel the ∂y/∂φ factor of Mercator projection at that latitude.
              * Note that there is no need to scale msinα2 since ∂x/∂λ = 1 everywhere on Mercator projection with a=1.
@@ -1100,7 +1100,7 @@ public class GeodeticCalculator {
     /**
      * The provider of "Azimuthal Equidistant (Spherical)" or "Modified Azimuthal Equidistant" projection.
      * Usually it is not necessary to keep a reference to the provider because {@link #projectionFactory}
-     * finds them automatically. However by keeping a reference to it, we save the search phase.
+     * finds them automatically. However, by keeping a reference to it, we save the search phase.
      *
      * @see #createProjectionAroundStart()
      */

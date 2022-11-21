@@ -144,7 +144,7 @@ final class ScaledColorModel extends ComponentColorModel {
      *
      * <div class="note"><b>Note:</b>
      * we have to override this method because the {@link ComponentColorModel#equals(Object)} implementation
-     * is confused by our overriding of {@link #getTransparency()} method. However we do not need to override
+     * is confused by our overriding of {@link #getTransparency()} method. However, we do not need to override
      * {@link #hashCode()}.</div>
      */
     @Override

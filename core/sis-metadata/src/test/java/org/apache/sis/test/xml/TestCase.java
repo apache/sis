@@ -404,8 +404,8 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * Performs a simple ISO 19115-3 to ISO 19139:2007 translations using only search-and-replaces.
-     * For example this method replaces {@code "cit"} prefix by {@code "gmd"} and the corresponding
-     * {@value Namespaces#CIT} namespace by {@value LegacyNamespaces#GMD}. However this method does
+     * For example, this method replaces {@code "cit"} prefix by {@code "gmd"} and the corresponding
+     * {@value Namespaces#CIT} namespace by {@value LegacyNamespaces#GMD}. However, this method does
      * not perform any more complex translations like attributes refactored in other classes.  If a
      * more complex translation is required, the test case should provide the legacy XML verbatim
      * in a separated string.
@@ -425,7 +425,7 @@ public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
             while ((i = buffer.lastIndexOf(toSearch, i)) >= 0) {
                 /*
                  * Following may throw a StringIndexOutOfBoundsException if 'toSearch' is located at the
-                 * beginning (i == 0) or end (end == buffer.length()) of the buffer. However those cases
+                 * beginning (i == 0) or end (end == buffer.length()) of the buffer. However, those cases
                  * should never happen in Apache SIS test cases since it would be invalid XML.
                  */
                 if (!Character.isUnicodeIdentifierPart(buffer.codePointBefore(i))) {

@@ -46,7 +46,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * A listener of displacements in a source canvas which can reproduce the same displacement in a target canvas.
  * For example if a translation of 100 meters is applied in a source canvas, the same translation (in meters)
  * can be applied in the target canvas. This class does automatically the necessary conversions for taking in
- * account the differences in zoom levels and map projections. For example a translation of 10 pixels in one
+ * account the differences in zoom levels and map projections. For example, a translation of 10 pixels in one
  * canvas may map to a translation of 20 pixels in the other canvas for reproducing the same "real world" translation.
  *
  * <h2>Listeners</h2>

@@ -44,8 +44,8 @@ import org.opengis.referencing.IdentifiedObject;
  *   object after the original failure.</li>
  *
  *   <li><b>Change in an “immutable” object:</b><br>
- *   some objects are expected to be immutable. For example the same Coordinate Reference System (CRS) instance is
- *   typically shared by thousands of objects. However {@link org.opengis.referencing.crs.CoordinateReferenceSystem}
+ *   some objects are expected to be immutable. For example, the same Coordinate Reference System (CRS) instance is
+ *   typically shared by thousands of objects. However, {@link org.opengis.referencing.crs.CoordinateReferenceSystem}
  *   is an interface, Therefore, nothing prevent users from providing a mutable instance. For example if the value
  *   returned by {@link org.opengis.referencing.cs.CoordinateSystem#getDimension()} changes between two invocations,
  *   many objects that use that coordinate system will fall in an inconsistent state. If an operation detects such

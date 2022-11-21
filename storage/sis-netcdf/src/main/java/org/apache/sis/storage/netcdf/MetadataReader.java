@@ -75,7 +75,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
 // The following dependency is used only for static final String constants.
-// Consequently the compiled class files should not have this dependency.
+// Consequently, the compiled class files should not have this dependency.
 import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
@@ -695,7 +695,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         for (int i=0; i<axes.length; i++) {
             final Axis axis = axes[i];
             /*
-             * Axes usually have exactly one dimension. However some netCDF axes are backed by a two-dimensional
+             * Axes usually have exactly one dimension. However, some netCDF axes are backed by a two-dimensional
              * conversion grid. In such case, our Axis constructor should have ensured that the first element in
              * the `sourceDimensions` and `sourceSizes` arrays are for the grid dimension which is most closely
              * oriented toward the axis direction.
@@ -1067,7 +1067,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         addFileIdentifier();
         /*
          * Departure: UnidataDD2MI.xsl puts the source in Metadata.dataQualityInfo.lineage.statement.
-         * However since ISO 19115:2014, Metadata.resourceLineage.statement seems a more appropriate place.
+         * However, since ISO 19115:2014, Metadata.resourceLineage.statement seems a more appropriate place.
          * See https://issues.apache.org/jira/browse/SIS-361
          */
         for (final String path : searchPath) {

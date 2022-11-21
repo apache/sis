@@ -32,7 +32,7 @@ import org.apache.sis.storage.DataStoreContentException;
  * {@link java.nio.channels.ReadableByteChannel#read(ByteBuffer)} and
  * {@link ByteBuffer#get(byte[], int, int)} method calls.
  *
- * <p>This reader supports subsampling in any dimension. However subsampling in the first dimension
+ * <p>This reader supports subsampling in any dimension. However, subsampling in the first dimension
  * (the one with fastest varying index) is generally not efficient because it forces a large amount
  * of seek operations. This class makes no special case for making that specific subsampling faster.
  * It is generally not worth because subsampling in the first dimension is a special case anyway.

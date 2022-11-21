@@ -494,9 +494,9 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
      * <div class="note"><b>Note on rounding mode:</b>
      * calculation of source envelope should use {@link GridRoundingMode#ENCLOSING} for making sure that we include
      * all needed data. On the opposite, calculation of target envelope should use {@link GridRoundingMode#CONTAINED}
-     * for making sure that we interpolate only values where data are available. However such "fully contained" mode
+     * for making sure that we interpolate only values where data are available. However, such "fully contained" mode
      * is often overly strict because a very small rounding error can cause the lost of an image row or column,
-     * while using extrapolations for those values produce no perceptible errors. Consequently this method uses
+     * while using extrapolations for those values produce no perceptible errors. Consequently, this method uses
      * {@link GridRoundingMode#NEAREST} as a compromise.</div>
      *
      * @param  source       the source grid extent to transform.
@@ -666,7 +666,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
         }
         /*
          * Following call is potentially costly, depending on `source` implementation.
-         * For example it may cause loading of tiles from a file. For this reason we
+         * For example, it may cause loading of tiles from a file. For this reason we
          * call this method only here, when remaining operations are unlikely to fail.
          */
         final RenderedImage values = source.render(sourceExtent);

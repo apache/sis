@@ -488,7 +488,7 @@ public abstract class StaxDataStore extends URIDataStore {
             }
             /*
              * Maybe that storage was a Path, File or URL, in which case the constructor should have opened an
-             * InputStream for it. If not, then this was an unsupported storage type. However the input stream
+             * InputStream for it. If not, then this was an unsupported storage type. However, the input stream
              * may have been converted to an output stream during a write operation, in which case we need to
              * convert it back to an input stream.
              */

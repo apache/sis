@@ -149,7 +149,7 @@ public final class Metadata extends SimpleMetadata {
      * @see #getDates()
      *
      * @todo We would like to use {@link java.time}, but it does not yet work out-of-the-box with JAXB
-     *       (we need adapter). Furthermore current GeoAPI interfaces does not yet use {@code java.time}.
+     *       (we need adapter). Furthermore, current GeoAPI interfaces does not yet use {@code java.time}.
      */
     @XmlElement(name = Tags.TIME)
     public Date time;

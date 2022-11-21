@@ -73,7 +73,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  *
  * Widening conversions (for example from {@code short} to {@code long}) are always allowed.
  * Narrowing conversions are allowed if the result can be represented at least approximately by the target type.
- * For example conversions from {@code double} to {@code float} are always allowed (values that are too large for
+ * For example, conversions from {@code double} to {@code float} are always allowed (values that are too large for
  * the {@code float} type are represented by positive of negative infinity), but conversions from {@code long} to
  * {@code short} are allowed only if the value is between {@link Short#MIN_VALUE} and {@link Short#MAX_VALUE} inclusive.
  *
@@ -86,7 +86,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * By contrast, this {@code Vector} class is used in situations where <em>the decoding has already been done</em>
  * by the code that <em>create</em> a {@code Vector} object, but the data type may not be known
  * by the code that will <em>use</em> the {@code Vector} object.
- * For example a method performing a numerical calculation may want to see the data as {@code double} values
+ * For example, a method performing a numerical calculation may want to see the data as {@code double} values
  * without concern about whether the data were really stored as {@code double} or as {@code float} values.
  * For the situations where a {@link Buffer} is needed, inter-operability is provided by the {@link #buffer()}
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
@@ -113,7 +113,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * </ul>
      *
      * The given argument is not cloned.
-     * Consequently changes in the underlying array are reflected in this vector, and vice-versa.
+     * Consequently, changes in the underlying array are reflected in this vector, and vice-versa.
      *
      * <h4>Unsigned integers</h4>
      * Java has no primitive support for unsigned integers. But some file formats use unsigned integers,
@@ -174,7 +174,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
 
     /**
      * Wraps the given {@code float[]} array in a vector that preserve the string representations in base 10.
-     * For example the 0.1 {@code float} value casted to {@code double} normally produces 0.10000000149011612
+     * For example, the 0.1 {@code float} value casted to {@code double} normally produces 0.10000000149011612
      * because of the way IEEE 754 arithmetic represents numbers (in base 2 instead of base 10). But the
      * vector returned by this method will convert the 0.1 {@code float} value into the 0.1 {@code double} value.
      * Note that despite the appearance, this is <strong>not</strong> more accurate than the normal cast,
@@ -524,7 +524,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * internally as {@code byte}, and the vector cannot accept values outside the [0 … 255] range even if
      * they are valid {@link Short} values.</div>
      *
-     * The class of returned objects should be stable. For example this method should not use different types
+     * The class of returned objects should be stable. For example, this method should not use different types
      * for different range of values. This stability is recommended but not guaranteed because {@code Vector}
      * can also wrap arbitrary {@code Number[]} arrays.
      *
@@ -896,7 +896,7 @@ search:     for (;;) {
      * which can be negative. More specifically the index <var>i</var> in the returned vector will maps
      * the element at index <code>(first + step*<var>i</var>)</code> in this vector.
      *
-     * <p>This method does not copy the values. Consequently any modification to the
+     * <p>This method does not copy the values. Consequently, any modification to the
      * values of this vector will be reflected in the returned view and vice-versa.</p>
      *
      * @param  first   index of the first value in this vector to be included in the returned view.
@@ -1485,7 +1485,7 @@ search:     for (;;) {
     /**
      * Returns the vector data as a {@code java.nio} buffer.
      * Data are not copied: changes in the buffer are reflected on this vector and vice-versa.
-     * Date are provided in their "raw" form. For example unsigned integers are given as plain {@code int} elements
+     * Date are provided in their "raw" form. For example, unsigned integers are given as plain {@code int} elements
      * and it is caller responsibility to use {@link Integer#toUnsignedLong(int)} if needed.
      *
      * @return the vector data as a buffer. Absent if this vector is not backed by an array or a buffer.

@@ -43,7 +43,7 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
  * <div class="note"><b>Example</b>
  * SQL statements for an EPSG dataset hosted on the <cite>PostgreSQL</cite> database need to have their brackets
  * ({@code '['} and {@code ']'}) replaced by the quote character ({@code '"'}) before to be sent to the database
- * driver. Furthermore table names may be different. So the following MS-Access query:
+ * driver. Furthermore, table names may be different. So the following MS-Access query:
  *
  * <ul>
  *   <li>{@code SELECT * FROM [Coordinate Reference System]}</li>
@@ -91,7 +91,7 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
  *
  * By default this class auto-detects the schema that contains the EPSG tables and whether the table names are
  * the ones used by EPSG in the MS-Access version or the PostgreSQL, MySQL or Oracle version of the database.
- * Consequently it is legal to use the MS-Access table names, which are more readable, in a PostgreSQL database.
+ * Consequently, it is legal to use the MS-Access table names, which are more readable, in a PostgreSQL database.
  *
  * <h2>Thread safety</h2>
  * All {@code SQLTranslator} instances given to the {@link EPSGFactory} constructor
@@ -177,7 +177,7 @@ public class SQLTranslator implements Function<String,String> {
 
     /**
      * Whether the table names are prefixed by {@value #TABLE_PREFIX}. When installed by Apache SIS,
-     * the table names are not prefixed if the tables are stored in a schema. However the dataset may
+     * the table names are not prefixed if the tables are stored in a schema. However, the dataset may
      * have been installed manually by users following different rules.
      */
     private boolean isPrefixed;

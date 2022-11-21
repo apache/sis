@@ -172,7 +172,7 @@ public final class JarCollector extends AbstractMojo implements FileFilter {
      * the actual file name, because a classifier may have been added to the name.
      *
      * <p>The {@code .jar} extension is not quite appropriate for source and Javadoc files;
-     * a better extension would be {@code .zip}. Unfortunately the {@code .jar} extension
+     * a better extension would be {@code .zip}. Unfortunately, the {@code .jar} extension
      * for those content is a very common practice, so we have to filter them.</p>
      */
     @Override

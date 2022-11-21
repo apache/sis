@@ -186,7 +186,7 @@ public class Sinusoidal extends MeridianArcBased {
         final double rν    = sqrt(rν2);                                 // Reciprocal of the radius of curvature.
         final double dx_dλ = cosφ / rν;                                 // Part of Snyder 30-8.
         /*
-         * Note: in theory x/cos(φ) is indeterminate at φ=±π/2. However in this code,
+         * Note: in theory x/cos(φ) is indeterminate at φ=±π/2. However, in this code,
          * that indetermination never happen because there is no exact representation
          * of π/2 in base 2, so cos(φ) can never return 0.
          */
@@ -288,7 +288,7 @@ public class Sinusoidal extends MeridianArcBased {
             final double x = srcPts[srcOff  ];
             final double φ = srcPts[srcOff+1];
             /*
-             * Note: in theory x/cos(φ) is indeterminate at φ=±π/2. However in this code,
+             * Note: in theory x/cos(φ) is indeterminate at φ=±π/2. However, in this code,
              * that indetermination never happen because there is no exact representation
              * of π/2 in base 2, so cos(φ) can never return 0.
              */

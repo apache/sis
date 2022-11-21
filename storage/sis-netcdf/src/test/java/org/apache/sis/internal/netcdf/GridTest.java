@@ -32,7 +32,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 /**
  * Tests the {@link Grid} implementation. The default implementation tests
  * {@code org.apache.sis.internal.netcdf.ucar.GridGeometryWrapper} since the UCAR
- * library is our reference implementation. However subclasses can override the
+ * library is our reference implementation. However, subclasses can override the
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)

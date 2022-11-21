@@ -31,7 +31,7 @@ import static java.lang.Character.*;
  *
  * <h2>Unicode support</h2>
  * Every methods defined in this class work on <cite>code points</cite> instead of characters
- * when appropriate. Consequently those methods should behave correctly with characters outside
+ * when appropriate. Consequently, those methods should behave correctly with characters outside
  * the <cite>Basic Multilingual Plane</cite> (BMP).
  *
  * <h2>Policy on space characters</h2>
@@ -52,7 +52,7 @@ import static java.lang.Character.*;
  * <div class="note"><b>Example:</b>
  * Numbers formatted in the French locale use no-break spaces as group separators. When parsing a list of numbers,
  * ordinary spaces around the numbers may need to be ignored, but no-break spaces shall be considered as part of the
- * numbers. Consequently {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
+ * numbers. Consequently, {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
  * But if there is spaces to skip <em>inside</em> a single number, then {@code isSpaceChar(…)} is a good choice
  * for accepting no-break spaces and for stopping the parse operation at tabulations or line feed character.
  * A tabulation or line feed between two characters is very likely to separate two distinct values.</div>
@@ -693,9 +693,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * <div class="note"><b>Performance note:</b>
      * Prior JDK8 this method was usually cheap because all string instances created by
      * {@link String#substring(int,int)} shared the same {@code char[]} internal array.
-     * However since JDK8, the new {@code String} implementation copies the data in new arrays.
-     * Consequently it is better to use index rather than this method for splitting large {@code String}s.
-     * However this method still useful for other {@link CharSequence} implementations providing an efficient
+     * However, since JDK8, the new {@code String} implementation copies the data in new arrays.
+     * Consequently, it is better to use index rather than this method for splitting large {@code String}s.
+     * However, this method still useful for other {@link CharSequence} implementations providing an efficient
      * {@code subSequence(int,int)} method.</div>
      *
      * @param  text  the multi-line text from which to get the individual lines, or {@code null}.
@@ -923,7 +923,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
 
     /**
      * Replaces some Unicode characters by ASCII characters on a "best effort basis".
-     * For example the “ é ” character is replaced by  “ e ” (without accent),
+     * For example, the “ é ” character is replaced by  “ e ” (without accent),
      * the  “ ″ ” symbol for minutes of angle is replaced by straight double quotes “ " ”,
      * and combined characters like ㎏, ㎎, ㎝, ㎞, ㎢, ㎦, ㎖, ㎧, ㎩, ㎐, <i>etc.</i> are replaced
      * by the corresponding sequences of characters.
@@ -1168,7 +1168,7 @@ searchWordBreak:    while (true) {
      *   <li>Replace all occurrences of {@code '_'} by spaces.</li>
      *   <li>Converts all letters except the first one to lower case letters using
      *       {@link Character#toLowerCase(int)}. Note that this method does not use
-     *       the {@link String#toLowerCase()} method. Consequently the system locale
+     *       the {@link String#toLowerCase()} method. Consequently, the system locale
      *       is ignored. This method behaves as if the conversion were done in the
      *       {@linkplain java.util.Locale#ROOT root} locale.</li>
      * </ol>
@@ -1207,7 +1207,7 @@ searchWordBreak:    while (true) {
      *
      * <ol>
      *   <li>Invoke {@link #camelCaseToWords(CharSequence, boolean)}, which separate the words
-     *     on the basis of character case. For example {@code "transferFunctionType"} become
+     *     on the basis of character case. For example, {@code "transferFunctionType"} become
      *     <cite>"transfer function type"</cite>. This works fine for ISO 19115 identifiers.</li>
      *
      *   <li>Next replace all occurrence of {@code '_'} by spaces in order to take in account
@@ -1770,7 +1770,7 @@ cmp:    while (ia < lga) {
      *     return text.regionMatches(offset, part, 0, part.length());
      * }
      *
-     * This method does not thrown {@code IndexOutOfBoundsException}. Instead if
+     * This method does not thrown {@code IndexOutOfBoundsException}. Instead, if
      * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
      * then this method returns {@code false}.
      *
@@ -1810,7 +1810,7 @@ cmp:    while (ia < lga) {
      *     return text.regionMatches(ignoreCase, offset, part, 0, part.length());
      * }
      *
-     * This method does not thrown {@code IndexOutOfBoundsException}. Instead if
+     * This method does not thrown {@code IndexOutOfBoundsException}. Instead, if
      * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
      * then this method returns {@code false}.
      *
@@ -2088,7 +2088,7 @@ cmp:    while (ia < lga) {
 
     /**
      * Returns {@code true} if the character {@code c} is the beginning of a word or a non-word character.
-     * For example this method returns {@code true} if {@code c} is {@code '_'} in {@code "snake_case"} or
+     * For example, this method returns {@code true} if {@code c} is {@code '_'} in {@code "snake_case"} or
      * {@code "C"} in {@code "CamelCase"}.
      *
      * @param  s  the character sequence from which the {@code c} character has been obtained.

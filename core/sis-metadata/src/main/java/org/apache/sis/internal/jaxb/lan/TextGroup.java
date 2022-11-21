@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlElement;
  * marshaller {@link org.apache.sis.xml.XML#LOCALE} property has been set).</p>
  *
  * <p>The {@code TextGroup} name suggests that this object can contain many localized strings.
- * However it appears that despite its name, {@code TextGroup} shall always contains exactly 1
+ * However, it appears that despite its name, {@code TextGroup} shall always contains exactly 1
  * localized strings and the whole {@code TextGroup} element shall be repeated for each additional
  * languages. SIS uses the ISO 19139:2007 compliant form for marshalling, but accepts both forms
  * during unmarshalling. More specifically, the name suggests that the format should be:</p>
@@ -82,7 +82,7 @@ final class TextGroup {
      * {@code <LocalisedCharacterString>} elements inside a single {@code <textGroup>} element.
      *
      * <p>In ISO 19139:2007 compliant documents, the length of this array shall be exactly 1,
-     * as in the second example of class javadoc. However SIS allows arbitrary length
+     * as in the second example of class javadoc. However, SIS allows arbitrary length
      * (as in the first example of class javadoc) for compatibility and convenience reasons.</p>
      */
     @XmlElement(name = "LocalisedCharacterString")
@@ -97,7 +97,7 @@ final class TextGroup {
     /**
      * Constructs a {@linkplain TextGroup text group} for a single locale. This constructor
      * puts exactly one string in the {@code TextGroup}, as required by ISO 19139:2007.
-     * However it would be possible to declare another constructor allowing the more compact form
+     * However, it would be possible to declare another constructor allowing the more compact form
      * (the smaller) if there is a need for that in the future.
      *
      * @param  locale  the string language.

@@ -24,8 +24,8 @@ import static java.lang.Math.*;
 /**
  * Base class of {@link LambertConicConformal}, {@link Mercator} and {@link PolarStereographic} projections.
  * Those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve angles locally.
- * However we do not put this base class in public API because not all conformal projections extend this base class.
- * For example the {@link TransverseMercator} projection, despite being conformal, uses very different formulas.
+ * However, we do not put this base class in public API because not all conformal projections extend this base class.
+ * For example, the {@link TransverseMercator} projection, despite being conformal, uses very different formulas.
  *
  * <p>Note that no projection can be both conformal and equal-area. So the formulas in this class are usually
  * mutually exclusive with formulas in {@link AuthalicConversion} class (used for equal-area projections).</p>
@@ -44,7 +44,7 @@ import static java.lang.Math.*;
  *
  * <p>The Transverse Mercator projection is also conformal, but does not use the formulas provided in this class.
  * It will instead compute the coefficients itself and use its own, more complex, formulas with those coefficients.
- * However the formulas provided in this {@code ConformalProjection} class can be seen as a special case of
+ * However, the formulas provided in this {@code ConformalProjection} class can be seen as a special case of
  * Transverse Mercator formulas for <var>x</var> = 0.</p>
  *
  * <div class="note"><b>Reference:</b>
@@ -90,7 +90,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      *
      *     <blockquote>c₂⋅sin(2χ) + c₄⋅sin(4χ) + c₆⋅sin(6χ) + c₈⋅sin(8χ)</blockquote>
      *
-     * However we rewrite above series expansion for taking advantage of trigonometric identities.
+     * However, we rewrite above series expansion for taking advantage of trigonometric identities.
      * The equation become (with different <var>c</var> values):
      *
      *     <blockquote>sin(2χ)⋅(c₂ + cos(2χ)⋅(c₄ + cos(2χ)⋅(c₆ + cos(2χ)⋅c₈)))</blockquote>
@@ -224,7 +224,7 @@ abstract class ConformalProjection extends NormalizedProjection {
         /*
          * We should never reach this point for map projections on Earth. But if the ellipsoid is for some
          * other planet having a high eccentricity, then the above series expansion may not be sufficient.
-         * Try to improve by iteratively solving equation (7-9) from Snyder. However instead of using
+         * Try to improve by iteratively solving equation (7-9) from Snyder. However, instead of using
          * Snyder (7-11) as the starting point, we take the result of above calculation as the initial φ.
          * Assuming that it is closer to the real φ value, this save us some iteration loops and usually
          * gives us more accurate results (according MercatorMethodComparison tests).
@@ -274,7 +274,7 @@ abstract class ConformalProjection extends NormalizedProjection {
      *
      * <h4>The π/2 special case</h4>
      * The value at {@code Math.PI/2} is not exactly infinity because there is no exact representation of π/2.
-     * However since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
+     * However, since the conversion of 90° to radians gives {@code Math.PI/2}, we can presume that the user was
      * expecting infinity. The caller should check for the PI/2 special case himself if desired, as this method
      * does nothing special about it.
      *

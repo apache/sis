@@ -55,9 +55,9 @@ abstract class MetadataVisitor<R> {
      * The value may be null if the computation is in progress.
      *
      * <h4>The problem</h4>
-     * Cyclic associations can exist in ISO 19115 metadata. For example {@code Instrument} has a reference
+     * Cyclic associations can exist in ISO 19115 metadata. For example, {@code Instrument} has a reference
      * to the platform it is mounted on, and the {@code Platform} has a list of instruments mounted on it.
-     * Consequently walking down the metadata tree can cause infinite recursivity, unless we keep trace of
+     * Consequently, walking down the metadata tree can cause infinite recursivity, unless we keep trace of
      * previously visited metadata objects in order to avoid visiting them again.
      *
      * We use an {@link IdentityHashMap} for that purpose, since the recursivity problem exists only when revisiting

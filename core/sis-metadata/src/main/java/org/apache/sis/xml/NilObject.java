@@ -20,7 +20,7 @@ package org.apache.sis.xml;
 /**
  * A marker interface for nil XML elements providing an explanation about why the information is absent.
  * GeoAPI getter methods usually return a {@code null} value when no information is available for
- * a given attribute. However it is possible to specify why an information is absent, in which case
+ * a given attribute. However, it is possible to specify why an information is absent, in which case
  * the corresponding getter method will rather return an instance of this {@code NilObject} interface.
  * The information may be absent for various reasons, including the attribute being inapplicable in the metadata context
  * ({@link NilReason#INAPPLICABLE}), the information probably exists but is unknown to the data provider

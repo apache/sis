@@ -44,7 +44,7 @@ public final class DataOptionKey<T> extends OptionKey<T> {
     /**
      * The coordinate reference system (CRS) of data to use if not explicitly defined.
      * This option can be used when the file to read does not describe itself the data CRS.
-     * For example this option can be used when reading ASCII Grid without CRS information,
+     * For example, this option can be used when reading ASCII Grid without CRS information,
      * but is ignored if the ASCII Grid file is accompanied by a {@code *.prj} file giving the CRS.
      *
      * @since 1.2
