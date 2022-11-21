@@ -23,6 +23,7 @@ import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
 
 
 /**
@@ -38,7 +39,7 @@ public final strictfp class DefaultBandTest extends TestCase {
      * The XML fragment used for testing.
      */
     private static final String XML =
-              "<mrc:MI_Band xmlns:mrc=\"http://standards.iso.org/iso/19115/-3/mrc/1.0\" xmlns:gco=\"http://standards.iso.org/iso/19115/-3/gco/1.0\">\n"
+              "<mrc:MI_Band xmlns:mrc=\"" + ISO_NAMESPACE + "19115/-3/mrc/1.0\" xmlns:gco=\"" + ISO_NAMESPACE +  "19115/-3/gco/1.0\">\n"
             + "  <mrc:numberOfValues>\n"
             + "    <gco:Integer>1000</gco:Integer>\n"       // Only in 2014 schema.
             + "  </mrc:numberOfValues>\n"
@@ -47,7 +48,7 @@ public final strictfp class DefaultBandTest extends TestCase {
             + "  </mrc:nominalSpatialResolution>\n"
             + "  <mrc:detectedPolarisation>\n"
             + "    <mrc:MI_PolarisationOrientationCode "    // Spell with "s" in 2014 schema.
-            +       "codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MI_PolarisationOrientationCode\" codeListValue=\"vertical\">"
+            +       "codeList=\"" + ISO_NAMESPACE + "19115/resources/Codelist/cat/codelists.xml#MI_PolarisationOrientationCode\" codeListValue=\"vertical\">"
             +       "Vertical"
             +     "</mrc:MI_PolarisationOrientationCode>\n"
             + "  </mrc:detectedPolarisation>\n"
@@ -59,7 +60,7 @@ public final strictfp class DefaultBandTest extends TestCase {
      * that the legacy spelling is handled when (un)marshalling a legacy document.
      */
     private static final String XML_LEGACY =
-              "<gmi:MI_Band xmlns:gmi=\"http://standards.iso.org/iso/19115/-2/gmi/1.0\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">\n"
+              "<gmi:MI_Band xmlns:gmi=\"" + ISO_NAMESPACE + "19115/-2/gmi/1.0\" xmlns:gco=\"http://www.isotc211.org/2005/gco\">\n"
             + "  <gmi:nominalSpatialResolution>\n"
             + "    <gco:Real>10.0</gco:Real>\n"
             + "  </gmi:nominalSpatialResolution>\n"

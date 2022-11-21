@@ -31,6 +31,7 @@ import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
 
 
 /**
@@ -163,7 +164,7 @@ public final strictfp class CharSequenceSubstitutionTest extends TestCase {
                 "<mri:MD_DataIdentification xmlns:mri=\"" + Namespaces.MRI + "\">\n" +
                 "  <mri:purpose>\n" +
                 "    <mri:DS_InitiativeTypeCode\n" +
-                "        codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode\"\n" +
+                "        codeList=\"" + ISO_NAMESPACE + "19115/resources/Codelist/cat/codelists.xml#DS_InitiativeTypeCode\"\n" +
                 "        codeListValue=\"investigation\">Investigation</mri:DS_InitiativeTypeCode>\n" +
                 "  </mri:purpose>\n" +
                 "</mri:MD_DataIdentification>";
