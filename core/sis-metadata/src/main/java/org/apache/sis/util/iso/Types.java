@@ -565,7 +565,7 @@ public final class Types extends Static {
                 }
             }
             // Following code list is not defined in ISO 19115-2 but appears in XML schemas.
-            typeForNames.putIfAbsent("MI_SensorTypeCode", "org.apache.sis.internal.metadata.SensorType");
+            typeForNames.putIfAbsent("MI_SensorTypeCode", "org.apache.sis.internal.jaxb.metadata.replace.SensorType");
         }
         /*
          * Get the interface class for the given identifier, loading the class when first needed.
