@@ -402,11 +402,11 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
      * not explicitly included in parameter definitions since the axis lengths can be inferred from the
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid}.
-     * However {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.
+     * However, {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.
      *
      * <p>In addition, this method adds hidden parameters for alternative ways to express some standard parameters.
      * Those hidden parameters never appear in the {@linkplain DefaultParameterDescriptorGroup#descriptors() list
-     * of parameters}. However when one of those parameters is read or written, the work will be delegated to the
+     * of parameters}. However, when one of those parameters is read or written, the work will be delegated to the
      * standard parameters.</p>
      *
      * <table class="sis">

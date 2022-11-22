@@ -194,7 +194,7 @@ public class CoordinateOperationContext implements Serializable {
      * A value of 0 means to search for the most accurate operation.
      *
      * <p>When searching for the most accurate operation, SIS considers only the operations specified by the authority.
-     * For example the <cite>Molodensky</cite> method is a better datum shift approximation than <cite>Abridged Molodensky</cite>.
+     * For example, the <cite>Molodensky</cite> method is a better datum shift approximation than <cite>Abridged Molodensky</cite>.
      * But if all coordinate operations defined by the authority use the Abridged Molodensky method, then SIS will ignore
      * the Molodensky one.</p>
      *

@@ -65,7 +65,7 @@
  * Apache SIS supports arithmetic operations on units and on quantities.
  * The unit (including SI prefix) and the quantity type resulting from
  * those arithmetic operations are automatically inferred.
- * For example this line of code:
+ * For example, this line of code:
  *
  * {@preformat java
  *   System.out.println( Units.PASCAL.multiply(1000) );

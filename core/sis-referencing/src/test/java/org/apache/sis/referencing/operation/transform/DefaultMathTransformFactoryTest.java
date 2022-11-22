@@ -144,7 +144,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
 
     /**
      * Asks for names which are known to be duplicated. One of the duplicated elements is deprecated.
-     * However Apache SIS uses the same implementation.
+     * However, Apache SIS uses the same implementation.
      *
      * @throws NoSuchIdentifierException if the operation was not found.
      */

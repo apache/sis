@@ -69,7 +69,7 @@ final class CachedByteChannel implements SeekableByteChannel {
      * Number of bytes in the temporary file.
      *
      * In current implementation this value shall be identical to {@code file.position()}.
-     * However in a future implementation it will become different if we allow some parts
+     * However, in a future implementation it will become different if we allow some parts
      * of the file to be without data (sparse file), with data fetched using HTTP ranges.
      */
     private long validLength;

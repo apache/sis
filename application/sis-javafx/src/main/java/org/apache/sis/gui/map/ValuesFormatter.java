@@ -276,7 +276,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      * (produce 0 values) if invoked before {@link StatusBar#sampleValues} label is added in the scene graph.</p>
      *
      * <p>This method uses the same synchronization lock than {@link #evaluate(DirectPosition)}.
-     * Consequently this method may block if data loading are in progress in another thread.</p>
+     * Consequently, this method may block if data loading are in progress in another thread.</p>
      *
      * @param  selection  copy of {@link ValuesFromCoverage#selectedBands} made by the caller in JavaFX thread.
      * @param  labels     labels of {@link ValuesFromCoverage#valueChoices} menu items computed by caller in JavaFX thread.

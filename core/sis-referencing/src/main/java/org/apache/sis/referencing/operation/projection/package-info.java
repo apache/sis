@@ -61,7 +61,7 @@
  * <h2>Axis units and orientation</h2>
  * Many {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic coordinate reference systems}
  * use axis in (<var>latitude</var>, <var>longitude</var>) order, but not all. Axis order, orientation and units
- * are CRS-dependent. For example some CRS use longitude values increasing toward
+ * are CRS-dependent. For example, some CRS use longitude values increasing toward
  * {@linkplain org.opengis.referencing.cs.AxisDirection#EAST East}, while some others use longitude values
  * increasing toward {@linkplain org.opengis.referencing.cs.AxisDirection#WEST West}.
  * The axis order must be specified in all CRS, and any method working with them should take their
@@ -138,7 +138,7 @@
  * relative to the central meridian (not necessarily Greenwich). Its results are typically (<var>x</var>, <var>y</var>)
  * coordinates having ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
  * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientation.
- * However in some cases the actual input and output coordinates may be different than the above by some scale factor,
+ * However, in some cases the actual input and output coordinates may be different than the above by some scale factor,
  * translation or rotation, if the projection implementation choose to combine some linear coefficients with the
  * above-cited normalization and denormalization affine transforms.</p>
  *

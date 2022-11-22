@@ -91,7 +91,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * contains <var>A</var>), which result in a tree of infinite depth. Some examples can be found in ISO 19115
  * metadata. This {@code TreeTableFormat} class contains a safety against such cycles. The algorithm is based
  * on the assumption that for each node, the values and children are fully determined by the
- * {@linkplain TreeTable.Node#getUserObject() user object}, if non-null. Consequently for each node <var>C</var>
+ * {@linkplain TreeTable.Node#getUserObject() user object}, if non-null. Consequently, for each node <var>C</var>
  * to be formatted, if the user object of that node is the same instance (in the sense of the {@code ==} operator)
  * than the user object of a parent node <var>A</var>, then the children of the <var>C</var> node will not be formatted.
  *

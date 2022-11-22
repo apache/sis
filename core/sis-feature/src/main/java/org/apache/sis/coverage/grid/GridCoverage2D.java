@@ -84,7 +84,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * <h2>Image size and location</h2>
  * The {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height}
  * must be equal to the {@linkplain GridExtent#getSize(int) grid extent size} in the two dimensions of the slice.
- * However the image origin ({@linkplain RenderedImage#getMinX() minimal x} and {@linkplain RenderedImage#getMinY() y}
+ * However, the image origin ({@linkplain RenderedImage#getMinX() minimal x} and {@linkplain RenderedImage#getMinY() y}
  * values) does not need to be equal to the {@linkplain GridExtent#getLow(int) grid extent low values};
  * a translation will be applied as needed.
  *
@@ -422,8 +422,8 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * Verifies that the number of bands in the image is equal to the number of sample dimensions.
      * The number of bands is fetched from the sample model, which in theory shall never be null.
-     * However this class has a little bit of tolerance to missing sample model; it may happen
-     * when the image is used only as a matrix storage.
+     * However, this class has a little bit of tolerance to missing sample model.
+     * It may happen when the image is used only as a matrix storage.
      */
     private static void verifyBandCount(final List<? extends SampleDimension> range, final RenderedImage data) {
         if (range != null) {

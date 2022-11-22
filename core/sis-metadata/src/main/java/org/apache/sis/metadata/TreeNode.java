@@ -149,7 +149,7 @@ class TreeNode implements Node {
      *
      * <p>The purpose of this cache is to avoid invoking (by reflection) the same getter methods
      * twice in common situations like the {@link TreeTableView#toString()} implementation or in
-     * Graphical User Interface. However we may remove this field in any future SIS version if
+     * Graphical User Interface. However, we may remove this field in any future SIS version if
      * experience shows that it is more problematic than helpful.</p>
      */
     transient Object cachedValue;
@@ -383,7 +383,7 @@ class TreeNode implements Node {
          *
          * <p>If the property name is equal, ignoring case, to the simple type name, then this method
          * returns the subtype name (<a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>).
-         * For example instead of:</p>
+         * For example, instead of:</p>
          *
          * {@preformat text
          *   Citation
@@ -618,7 +618,7 @@ class TreeNode implements Node {
                 /*
                  * Unsafe addition into a collection. In SIS implementation, the collection is
                  * actually an instance of CheckedCollection, so the check will be performed at
-                 * runtime. However other implementations could use unchecked collection. We have
+                 * runtime. However, other implementations could use unchecked collection. We have
                  * done our best for converting the type above, there is not much more we can do...
                  */
                 // No @SuppressWarnings because this is a real hole.

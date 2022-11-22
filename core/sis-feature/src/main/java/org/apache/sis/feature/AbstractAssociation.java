@@ -245,11 +245,11 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * Returns a copy of this association.
      * The default implementation returns a <em>shallow</em> copy:
      * the association {@linkplain #getValue() value} is <strong>not</strong> cloned.
-     * However subclasses may choose to do otherwise.
+     * However, subclasses may choose to do otherwise.
      *
      * @return a clone of this association.
      * @throws CloneNotSupportedException if this association cannot be cloned.
-     *         The default implementation never throw this exception. However subclasses may throw it.
+     *         The default implementation never throw this exception. However, subclasses may throw it.
      */
     @Override
     public AbstractAssociation clone() throws CloneNotSupportedException {

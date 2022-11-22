@@ -465,7 +465,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <h4>Inverse transformation</h4>
      * The inverse transformation can be approximated by reversing the sign of the 7 parameters before to use them
      * in the above matrix. This is often considered sufficient since <cite>position vector transformations</cite>
-     * are themselves approximations. However Apache SIS will rather use
+     * are themselves approximations. However, Apache SIS will rather use
      * {@link org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse()} in order to increase the chances
      * that concatenation of transformations <var>A</var> → <var>B</var> followed by <var>B</var> → <var>A</var>
      * gives back the identity transform.

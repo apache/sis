@@ -360,7 +360,7 @@ public final class Warnings implements Localized, Serializable {
                 } else {
                     /*
                      * If there is no message, then we must have at least an exception.
-                     * Consequently a NullPointerException in following line would be a bug.
+                     * Consequently, a NullPointerException in following line would be a bug.
                      */
                     final String[] sources = exceptionSources.get(cause);
                     if (sources != null) {

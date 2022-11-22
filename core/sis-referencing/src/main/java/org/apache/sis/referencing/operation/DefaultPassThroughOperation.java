@@ -147,8 +147,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * If the given object is already an instance of {@code DefaultPassThroughOperation}, then it is returned
      * unchanged. Otherwise a new {@code DefaultPassThroughOperation} instance is created using the
      * {@linkplain #DefaultPassThroughOperation(PassThroughOperation) copy constructor} and returned.
-     * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
-     * object are not recursively copied.
+     * Note that this is a <dfn>shallow</dfn> copy operation,
+     * because the other properties contained in the given object are not recursively copied.
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.
      * @return a SIS implementation containing the values of the given object (may be the
@@ -232,7 +232,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
         } else if (operation != null) {
             /*
              * Should not happen with objects created by public methods since the constructor created the transform itself.
-             * However may happen with operations parsed from GML. As a fallback, search in the components of CompoundCRS.
+             * However, may happen with operations parsed from GML. As a fallback, search in the components of CompoundCRS.
              * This is not a universal fallback, but works for the most straightforward cases.
              */
             final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();

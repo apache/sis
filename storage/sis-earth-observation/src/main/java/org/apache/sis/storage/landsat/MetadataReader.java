@@ -274,7 +274,7 @@ final class MetadataReader extends MetadataBuilder {
             int start = CharSequences.skipLeadingWhitespaces(line, 0, end);
             if (start < end && line.charAt(start) != '#') {
                 /*
-                 * Separate the line into its key and value. For example in CORNER_UL_LAT_PRODUCT = 12.61111,
+                 * Separate the line into its key and value. For example, in CORNER_UL_LAT_PRODUCT = 12.61111,
                  * the key will be CORNER_UL_LAT_PRODUCT and the value will be 12.61111.
                  */
                 final int separator = line.indexOf('=', start);
@@ -909,7 +909,7 @@ final class MetadataReader extends MetadataBuilder {
         }
         /*
          * At this point we are done configuring he metadata builder. Creates the ISO 19115 metadata instance,
-         * then continue adding some more specific metadata elements by ourself. For example information about
+         * then continue adding some more specific metadata elements by ourself. For example, information about
          * bands are splitted in 3 different AttributeGroups based on their grid size.
          */
         setISOStandards(true);

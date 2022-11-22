@@ -300,7 +300,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                     /*
                      * This case may happen for baseCRS of kind GeodeticCRS, ProjectedCRS or EngineeringCRS.
                      * But only the latter is associated to EngineeringDatum; the two formers are associated
-                     * to GeodeticDatum. Consequently we can implement the EngineeringCRS.getDatum() method
+                     * to GeodeticDatum. Consequently, we can implement the EngineeringCRS.getDatum() method
                      * only if the base CRS is itself of kind EngineeringCRS.  Otherwise we will return the
                      * "type-neutral" DefaultDerivedCRS implementation.  Note that even in the latter case,
                      * the WKT format will still be able to detect that the WKT keyword is "EngineeringCRS".
@@ -629,7 +629,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * A derived geodetic CRS.  Note that base CRS of kind {@link GeodeticCRS} can be used both with this class
-     * and with {@link org.apache.sis.referencing.crs.DefaultDerivedCRS.Engineering}. Consequently an ambiguity
+     * and with {@link org.apache.sis.referencing.crs.DefaultDerivedCRS.Engineering}. Consequently, an ambiguity
      * may exist when choosing the kind if {@code DerivedCRS} to create for a given {@code GeodeticCRS}.
      */
     @XmlTransient
@@ -913,7 +913,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *
      * <div class="note"><b>Note:</b>
      * there is no setter at this time because SIS does not store this information in a {@code DefaultDerivedCRS}
-     * field. Instead, we rely on the interface that we implement. For example a {@code DefaultDerivedCRS} of type
+     * field. Instead, we rely on the interface that we implement. For example, a {@code DefaultDerivedCRS} of type
      * {@code SC_DerivedCRSType.vertical} will implement the {@link VerticalCRS} interface.</div>
      */
     @XmlElement(name = "derivedCRSType", required = true)

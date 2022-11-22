@@ -49,7 +49,7 @@ public final strictfp class AbstractFeatureTest extends FeatureTestCase {
     @SuppressWarnings("serial")
     private static final class CustomFeature extends AbstractFeature implements Cloneable {
         /**
-         * All property values. For this test we use a {@code java.util.Map}. However users who want to provide
+         * All property values. For this test we use a {@code java.util.Map}. However, users who want to provide
          * their own {@link AbstractFeature} implementation should consider to use plain Java fields instead.
          * If a feature backed by a {@code java.util.Map} is really wanted, then {@link SparseFeature} should
          * be considered.

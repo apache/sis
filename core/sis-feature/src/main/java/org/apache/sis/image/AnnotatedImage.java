@@ -158,7 +158,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * the {@link #parallel} argument specified to the constructor was {@code false}.</p>
      *
      * <p>If {@code areaOfInterest} is {@code null}, then {@link #boundsOfInterest} is always {@code null}.
-     * However the converse is not necessarily true.</p>
+     * However, the converse is not necessarily true.</p>
      */
     protected final Shape areaOfInterest;
 
@@ -169,7 +169,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * for quickly testing if the area of interest is rectangular.
      *
      * <p>If {@link #areaOfInterest} is {@code null}, then {@code boundsOfInterest} is always {@code null}.
-     * However the converse is not necessarily true.</p>
+     * However, the converse is not necessarily true.</p>
      */
     protected final Rectangle boundsOfInterest;
 
@@ -236,7 +236,7 @@ abstract class AnnotatedImage extends ImageAdapter {
         this.failOnException  = failOnException;
         /*
          * The `this.source` field should be as specified, even if it is another `AnnotatedImage`,
-         * for allowing computation of properties managed by those other instances. However we try
+         * for allowing computation of properties managed by those other instances. However, we try
          * to apply the cache on a deeper source if possible, for increasing the chances that the
          * cache is shared by all images using the same data. This is okay if calculation depends
          * only on sample value, not on other data.

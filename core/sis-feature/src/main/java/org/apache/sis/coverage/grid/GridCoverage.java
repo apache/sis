@@ -450,7 +450,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * The coordinates given by {@link RenderedImage#getMinX()} and {@link RenderedImage#getMinY() getMinY()}
      * will be the image location <em>relative to</em> the location specified in {@code sliceExtent}
      * {@linkplain GridExtent#getLow(int) low coordinates}.
-     * For example in the case of image {@linkplain RenderedImage#getMinX() minimum X coordinate}:
+     * For example, in the case of image {@linkplain RenderedImage#getMinX() minimum X coordinate}:
      *
      * <ul class="verbose">
      *   <li>A value of 0 means that the image left border is exactly where requested by {@code sliceExtent.getLow(xDimension)}.</li>

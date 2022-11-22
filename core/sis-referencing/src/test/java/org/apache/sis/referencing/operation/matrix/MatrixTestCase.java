@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * </ul>
  *
  * So this class is indirectly a test of those factory methods.
- * However this class does not test any other {@code Matrices} methods.
+ * However, this class does not test any other {@code Matrices} methods.
  *
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
@@ -70,7 +70,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      *
      * <h4>How this value is determined</h4>
      * Experience (by looking at {@link #statistics}) shows that the differences are usually smaller than 1E-12.
-     * However when using non-determinist sequence of random values ({@link #DETERMINIST} sets to {@code false}),
+     * However, when using non-determinist sequence of random values ({@link #DETERMINIST} sets to {@code false}),
      * we do have from time-to-time a difference around 1E-9.
      *
      * Those differences exist because SIS uses double-double arithmetic, while JAMA uses ordinary double.
@@ -406,7 +406,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tests {@link MatrixSIS#convertBefore(int, Number, Number)} using {@link AffineTransform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
-     * Consequently it is sub-classes responsibility to add a {@code testConvertBefore()} method
+     * Consequently, it is sub-classes responsibility to add a {@code testConvertBefore()} method
      * which invoke this method.
      *
      * @param  matrix     the matrix of size 3×3 to test.
@@ -476,7 +476,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     /**
      * Tests {@link MatrixSIS#convertAfter(int, Number, Number)} using {@link AffineTransform}
      * as a reference implementation. This test can be run only with matrices of size 3×3.
-     * Consequently it is sub-classes responsibility to add a {@code testConvertAfter()} method
+     * Consequently, it is sub-classes responsibility to add a {@code testConvertAfter()} method
      * which invoke this method.
      *
      * @param  matrix  the matrix of size 3×3 to test.
@@ -511,7 +511,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
 
     /**
      * Tests {@link MatrixSIS#translate(double[])} using {@link AffineTransform} as a reference implementation.
-     * This test can be run only with matrices of size 3×3. Consequently it is sub-classes responsibility to add
+     * This test can be run only with matrices of size 3×3. Consequently, it is sub-classes responsibility to add
      * a {@code testTranslateVector()} method which invoke this method.
      *
      * @param  matrix  an initially empty matrix of size 3×3 to test.
@@ -550,7 +550,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
 
     /**
      * Tests {@link MatrixSIS#multiply(double[])} using {@link AffineTransform} as a reference implementation.
-     * This test can be run only with matrices of size 3×3. Consequently it is sub-classes responsibility to add
+     * This test can be run only with matrices of size 3×3. Consequently, it is sub-classes responsibility to add
      * a {@code testMultiplyVector()} method which invoke this method.
      *
      * @param  matrix  an initially empty matrix of size 3×3 to test.

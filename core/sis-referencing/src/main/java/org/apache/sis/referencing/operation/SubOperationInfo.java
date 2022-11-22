@@ -85,7 +85,7 @@ final class SubOperationInfo {
 
     /**
      * The constant values to store in target coordinates, or {@code null} if none. This array is usually null.
-     * It may be non-null if no source CRS component has been found for a target CRS component. For example if
+     * It may be non-null if no source CRS component has been found for a target CRS component. For example, if
      * the source CRS has (<var>x</var>, <var>y</var>) axes and the target CRS has (<var>x</var>, <var>y</var>,
      * <var>t</var>) axes, then this array may be set to a non-null value for specifying the <var>t</var> value.
      * The array length is the number of dimensions in the full (usually compound) target CRS, but only the
@@ -205,7 +205,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
                                      * to (GeodeticCRS₂, VerticalCRS₂) target.  The source GeodeticCRS₁ should be mapped
                                      * to exactly one target component (which is GeodeticCRS₂)  and  VerticalCRS₁ mapped
                                      * to VerticalCRS₂.  But the operation on vertical coordinates may need GeodeticCRS₁
-                                     * for doing its work, so GeodeticCRS₁ is needed twice.  However when needed for the
+                                     * for doing its work, so GeodeticCRS₁ is needed twice. However, when needed for the
                                      * vertical coordinate operation, the GeodeticCRS₁ is used as an "interpolation CRS".
                                      * Interpolation CRS are handled in other code paths; it is not the business of this
                                      * SourceComponent class to care about them. From the point of view of this class,
@@ -231,7 +231,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
             /*
              * If we reach this point, we have not been able to find a source CRS that we can map to the target CRS.
              * Usually this is fatal; returning null will instruct the caller to throw `OperationNotFoundException`.
-             * However in some contexts (e.g. when searching for an operation between two `GridGeometry` instances)
+             * However, in some contexts (e.g. when searching for an operation between two `GridGeometry` instances)
              * it is possible to assign a constant value to the target coordinates. Those values cannot be guessed
              * by `sis-referencing`; they must be provided by caller. If such constants are specified, then we will
              * try to apply them.
@@ -326,7 +326,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
      * }
      * </div>
      *
-     * Furthermore some dimensions may be dropped,
+     * Furthermore, some dimensions may be dropped,
      * e.g. from (<var>x</var>, <var>y</var>, <var>t</var>) to (<var>x</var>, <var>y</var>).
      *
      * @param  sourceDimensions  number of dimensions in the source {@link CompoundCRS}.

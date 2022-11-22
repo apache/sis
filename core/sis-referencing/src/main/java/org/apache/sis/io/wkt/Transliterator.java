@@ -74,7 +74,7 @@ import org.apache.sis.util.Characters;
  * When using the <em>mathematics</em> convention, θ is the azimuthal angle in the
  * equatorial plane (roughly equivalent to longitude λ) while φ is an angle measured from a pole (also known as
  * colatitude). But when using the <em>physics</em> convention, the meaning of θ and φ are interchanged.
- * Furthermore some other conventions may measure the φ angle from the equatorial plane – like latitude – instead
+ * Furthermore, some other conventions may measure the φ angle from the equatorial plane – like latitude – instead
  * than from the pole. This class does not need to care about the meaning of those angles. The only recommendation
  * is that φ is mapped to <var>U</var> and θ is mapped to <var>V</var>, regardless of their meaning.</div>
  *
@@ -147,7 +147,7 @@ public abstract class Transliterator implements Serializable {
 
     /**
      * Returns a character sequences with the non-ASCII characters replaced or removed.
-     * For example this method replaces “ç” by “c” in “Triangulation fran<b>ç</b>aise”.
+     * For example, this method replaces “ç” by “c” in “Triangulation fran<b>ç</b>aise”.
      * This operation is usually not reversible; there is no converse method.
      *
      * <p>Implementations shall not care about {@linkplain Symbols#getOpeningQuote(int) opening} or
@@ -258,7 +258,7 @@ public abstract class Transliterator implements Serializable {
      *       for {@link AxisDirection#GEOCENTRIC_X}, {@link AxisDirection#GEOCENTRIC_Y GEOCENTRIC_Y}
      *       and {@link AxisDirection#GEOCENTRIC_Z GEOCENTRIC_Z} respectively in a Cartesian CS,
      *       if the given axis name is only an abbreviation.</li>
-     *   <li>Use unique camel-case names for axis names defined by ISO 19111 and ISO 19162. For example this method
+     *   <li>Use unique camel-case names for axis names defined by ISO 19111 and ISO 19162. For example, this method
      *       replaces <cite>“<b>e</b>llipsoidal height”</cite> by <cite>“<b>E</b>llipsoidal height”</cite>.</li>
      * </ul>
      *

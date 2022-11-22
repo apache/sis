@@ -120,7 +120,7 @@ import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
  *     when the mouse moves inside the region of interest.</li>
  * </ul>
  *
- * Alternatively users can omit some or all above listener registrations and invoke
+ * Alternatively, users can omit some or all above listener registrations and invoke
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -702,7 +702,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * This method is useful for tracking the pixel coordinates of an image obtained by
      * a call to {@link GridCoverage#render(GridExtent)}.
      * By {@code render(GridExtent)} contract, the {@link RenderedImage} pixel coordinates
-     * are relative to the requested {@link GridExtent}. Consequently we need to translate
+     * are relative to the requested {@link GridExtent}. Consequently, we need to translate
      * the grid coordinates so that the request coordinates start at zero.
      * This method handles that translation.
      *
@@ -742,7 +742,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Implementation of {@link #applyCanvasGeometry(GridGeometry)} without changing {@link #position} visibility state.
      * Invoking this method usually invalidate the coordinates shown in this status bar. The new coordinates cannot be
      * easily recomputed because the {@link #lastX} and {@link #lastY} values may not be valid anymore, as a result of
-     * possible changes in JavaFX local coordinate system. Consequently the coordinates should be temporarily hidden
+     * possible changes in JavaFX local coordinate system. Consequently, the coordinates should be temporarily hidden
      * until a new {@link MouseEvent} gives us the new local coordinates, unless this method is invoked in a context
      * where we know that the "real world" coordinates should be the same even if local coordinates changed.
      *
@@ -820,7 +820,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * JavaFX view and considered invalid  because they depend on the transforms applied
          * on JavaFX node, which may have changed together with `localToObjectiveCRS` change.
          * So we cannot use those values for updating the coordinates shown in status bar.
-         * Instead we will wait for the next mouse event to provide new local coordinates.
+         * Instead, we will wait for the next mouse event to provide new local coordinates.
          */
         ((LocalToObjective) localToObjectiveCRS).setNoCheck(localToCRS);
         sourceCoordinates   = Arrays.copyOf(pointOfInterest, srcDim);

@@ -30,7 +30,7 @@ package org.apache.sis.referencing.operation;
  * org.opengis.referencing.crs.CoordinateReferenceSystem,
  * org.opengis.referencing.operation.OperationMethod,
  * org.opengis.referencing.operation.MathTransform) its constructor}.
- * However SIS is stricter at {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS}
+ * However, SIS is stricter at {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS}
  * construction time.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)

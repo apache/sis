@@ -42,7 +42,7 @@ import org.apache.sis.geometry.MismatchedReferenceSystemException;
  * (the list is implemented by the {@link #sibling} field, which reference the next element in the list).</p>
  *
  * <div class="note"><b>Possible evolution:</b>
- * a future version could avoid extending {@link GeneralEnvelope}. Instead we could provide abstract
+ * a future version could avoid extending {@link GeneralEnvelope}. Instead, we could provide abstract
  * {@code contains(…)} methods and let subclasses define them, with possibly more efficient implementations.
  * We would still need an implementation that delegate to {@link GeneralEnvelope} since that class has the
  * advantage of handling envelopes crossing the anti-meridian.</div>

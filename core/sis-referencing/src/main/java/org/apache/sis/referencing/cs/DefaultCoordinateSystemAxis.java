@@ -78,7 +78,7 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * <h2>Axis names</h2>
  * In some case, the axis name is constrained by ISO 19111 depending on the
  * {@linkplain org.opengis.referencing.crs.CoordinateReferenceSystem coordinate reference system} type.
- * This constraint works in two directions. For example the names <cite>"geodetic latitude"</cite> and
+ * This constraint works in two directions. For example, the names <cite>"geodetic latitude"</cite> and
  * <cite>"geodetic longitude"</cite> shall be used to designate the coordinate axis names associated
  * with a {@link org.opengis.referencing.crs.GeographicCRS}. Conversely, these names shall not be used
  * in any other context. See the GeoAPI {@link CoordinateSystemAxis} javadoc for more information.
@@ -161,7 +161,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
 
     /**
      * Aliases for the "x" and "y" abbreviations (special cases). "x" and "y" are sometimes used (especially in WKT)
-     * for meaning "Easting" and "Northing". However we shall not add "x" and "y" as aliases in the {@link #ALIASES}
+     * for meaning "Easting" and "Northing". However, we shall not add "x" and "y" as aliases in the {@link #ALIASES}
      * map, because experience has shown that doing so cause a lot of undesirable side effects. The "x" abbreviation
      * is used for too many things ("Easting", "Westing", "Geocentric X", "Display right", "Display left") and likewise
      * for "y". Declaring them as aliases introduces confusion in many places. Instead, the "x" and "y" cases are
@@ -638,10 +638,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         Identifier name = that.getName();
         if (name != UNNAMED) {
             /*
-             * Checking the abbreviation is not sufficient. For example the polar angle and the
+             * Checking the abbreviation is not sufficient. For example, the polar angle and the
              * spherical latitude have the same abbreviation (θ). Legacy names like "Longitude"
              * (in addition to ISO 19111 "Geodetic longitude") bring more potential confusion.
-             * Furthermore, not all implementers use the greek letters. For example most CRS in
+             * Furthermore, not all implementers use the greek letters. For example, most CRS in
              * WKT format use the "Lat" abbreviation instead of the greek letter φ.
              * For comparisons without metadata, we ignore the unreliable abbreviation and check
              * the axis name instead. These names are constrained by ISO 19111 specification

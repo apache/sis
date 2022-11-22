@@ -81,7 +81,7 @@ public abstract class BandedCoverage {
      *   </li><li>
      *     Computational cost: if obtaining the overall envelope is too costly,
      *     an implementation might decide to leave the result empty instead of returning a too approximate envelope.
-     *     For example, if a coverage aggregates a lot of data (by dynamically choosing data in a catalog upon evaluation),
+     *     For example if a coverage aggregates a lot of data (by dynamically choosing data in a catalog upon evaluation),
      *     it might rather not compute envelope union for the entire catalog.
      *   </li><li>
      *     When the function does not have a clear boundary for its domain of validity,
@@ -179,7 +179,7 @@ public abstract class BandedCoverage {
         /**
          * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the coverage.
          * If {@code true} and if a given coordinate is outside the coverage, then this evaluator may translate
-         * the point along a wraparound axis in an attempt to get the point inside the coverage. For example if
+         * the point along a wraparound axis in an attempt to get the point inside the coverage. For example, if
          * the coverage CRS has a longitude axis, then the evaluator may translate the longitude value by a
          * multiple of 360°.
          *
@@ -204,7 +204,7 @@ public abstract class BandedCoverage {
          * @throws PointOutsideCoverageException if the evaluation failed because the input point
          *         has invalid coordinates and the {@link #isNullIfOutside()} flag is {@code false}.
          * @throws CannotEvaluateException if the values cannot be computed at the specified coordinates
-         *         for another reason. For example this exception may be thrown if the coverage data type
+         *         for another reason. For example, this exception may be thrown if the coverage data type
          *         cannot be converted to {@code double} by an identity or widening conversion.
          */
         @Override

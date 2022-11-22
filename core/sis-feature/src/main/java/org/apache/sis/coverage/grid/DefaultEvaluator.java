@@ -254,7 +254,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
     /**
      * Specifies whether this evaluator is allowed to wraparound coordinates that are outside the grid.
      * If {@code true} and if a given coordinate is outside the grid, then this evaluator may translate
-     * the point along a wraparound axis in an attempt to get the point inside the grid. For example if
+     * the point along a wraparound axis in an attempt to get the point inside the grid. For example, if
      * the coverage CRS has a longitude axis, then the evaluator may translate the longitude value by a
      * multiple of 360°.
      *

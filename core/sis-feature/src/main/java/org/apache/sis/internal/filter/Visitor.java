@@ -37,7 +37,7 @@ import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
 /**
  * An executor of different actions depending on filter or expression type.
  * Action are defined by {@link BiConsumer} where the first parameter is the filter or expression,
- * and the second parameter is an arbitrary object used as accumulator. For example the accumulator
+ * and the second parameter is an arbitrary object used as accumulator. For example, the accumulator
  * may be a {@link StringBuilder} where the filter is written as a SQL or CQL statement.
  *
  * <div class="note"><b>Relationship with the visitor pattern</b><br>
@@ -266,7 +266,7 @@ public abstract class Visitor<R,A> {
      * {@link #setFilterHandler(Enum, BiConsumer)} and similar methods, which use the exact {@code <R>} type.
      * This restriction exists because when doing otherwise, parameterized types become hard to express in Java
      * (we get a cascade of {@code super} keywords, something like {@code <? super ? super R>}).
-     * However doing the {@code (Filter<R>) filter} cast is actually safe if the handlers do not invoke any
+     * However, doing the {@code (Filter<R>) filter} cast is actually safe if the handlers do not invoke any
      * {@code filter} method having a return value (directly or indirectly as list elements) restricted to
      * the exact {@code <R>} type. Such methods do not exist in the GeoAPI interfaces, so the cast is safe
      * if the {@link BiConsumer} handlers do not invoke implementation-specific methods.
@@ -298,7 +298,7 @@ public abstract class Visitor<R,A> {
      * {@link #setExpressionHandler(String, BiConsumer)} and similar methods, which use the exact {@code <R>} type.
      * This restriction exists because when doing otherwise, parameterized types become hard to express in Java
      * (we get a cascade of {@code super} keywords, something like {@code <? super ? super R>}).
-     * However doing the {@code (Expression<R>,?) expression} cast is actually safe if the handlers do not invoke
+     * However, doing the {@code (Expression<R>,?) expression} cast is actually safe if the handlers do not invoke
      * any {@code expression} method having a return value (directly or indirectly as list elements) restricted to
      * the exact {@code <R>} type. Such methods do not exist in the GeoAPI interfaces, so the cast is safe
      * if the {@link BiConsumer} handlers do not invoke implementation-specific methods.

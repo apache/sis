@@ -112,7 +112,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * for matching quotes, balanced parenthesis or brackets, and valid number or date formats.
  * If a syntax error is detected, the loading process is interrupted at the point the error occurred;
  * CRS definitions after the error location are not loaded.
- * However WKT keywords and geodetic parameters (e.g. map projections) are not validated at this stage.
+ * However, WKT keywords and geodetic parameters (e.g. map projections) are not validated at this stage.
  *
  * <h3>Late validation</h3>
  * WKT keywords and geodetic parameters inside WKT elements are validated only when {@link #createObject(String)}
@@ -176,7 +176,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * <div class="note"><b>Implementation note:</b>
      * we manage the locks ourselves instead of using a {@link java.util.concurrent.ConcurrentHashMap}
      * because if a {@link #definitions} value needs to be computed, then we need to block all other
-     * threads anyway since {@link #parser} is not thread-safe. Consequently the high concurrency
+     * threads anyway since {@link #parser} is not thread-safe. Consequently, the high concurrency
      * capability provided by {@code ConcurrentHashMap} does not help us in this case.</div>
      */
     private final ReadWriteLock lock;
@@ -184,7 +184,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * CRS definitions associated to <var>authority:version:code</var> keys.
      * Keys are authority codes, ignoring code space (authority) and version.
-     * For example in "EPSG:9.1:4326" the key would be only "4326".
+     * For example, in "EPSG:9.1:4326" the key would be only "4326".
      * Values can be one of the following 4 types:
      *
      * <ol>
@@ -447,7 +447,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      *
      * <h4>Aliases for WKT fragments</h4>
      * Files with more than one WKT definition tend to repeat the same WKT fragments many times.
-     * For example the same {@code BaseGeogCRS[…]} element may be repeated in every {@code ProjectedCRS} definitions.
+     * For example, the same {@code BaseGeogCRS[…]} element may be repeated in every {@code ProjectedCRS} definitions.
      * Redundant fragments can be replaced by aliases for making the file more compact,
      * easier to read, faster to parse and with smaller memory footprint.
      *
@@ -706,7 +706,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         ArgumentChecks.ensureNonNull("objects", objects);
         /*
          * We work with iterator because we do not support parallelism yet.
-         * However a future version may support that, which is why argument
+         * However, a future version may support that, which is why argument
          * type is a `Stream`.
          */
         final Iterator<String> it = objects.iterator();

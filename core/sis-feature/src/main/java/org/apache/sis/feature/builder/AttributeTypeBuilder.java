@@ -539,7 +539,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     /**
      * Returns a view of all characteristics added to the {@code AttributeType} to build.
      * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
-     * However the returned list allows only {@linkplain List#remove(Object) remove} operations;
+     * However, the returned list allows only {@linkplain List#remove(Object) remove} operations;
      * new characteristics can be added only by calls to one of the {@code set/addCharacteristic(…)} methods.
      *
      * @return a live list over the characteristics declared to this builder.

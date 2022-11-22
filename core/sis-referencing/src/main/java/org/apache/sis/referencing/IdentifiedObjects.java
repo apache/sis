@@ -314,7 +314,7 @@ public final class IdentifiedObjects extends Static {
      * </ul>
      *
      * This method is can be used for fetching a more human-friendly identifier than the numerical values
-     * typically returned by {@link IdentifiedObject#getIdentifiers()}. However the returned value is not
+     * typically returned by {@link IdentifiedObject#getIdentifiers()}. However, the returned value is not
      * guaranteed to be unique.
      *
      * @param  object  the identified object, or {@code null}.
@@ -418,7 +418,7 @@ public final class IdentifiedObjects extends Static {
      * <p><strong>Note that this method checks the identifier validity.</strong>
      * If the given object declares explicitly an identifier, then this method will instantiate an object from the
      * authority factory using that identifier and compare it with the given object. If the comparison fails, then
-     * this method returns {@code null}. Consequently this method may return {@code null} even if the given object
+     * this method returns {@code null}. Consequently, this method may return {@code null} even if the given object
      * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
      * one can use the following pattern instead:
      *
@@ -529,7 +529,7 @@ public final class IdentifiedObjects extends Static {
      * <p><strong>Note that this method checks the identifier validity.</strong>
      * If the given object declares explicitly an identifier, then this method will instantiate an object from the
      * EPSG factory using that identifier and compare it with the given object. If the comparison fails, then this
-     * method returns {@code null}. Consequently this method may return {@code null} even if the given object
+     * method returns {@code null}. Consequently, this method may return {@code null} even if the given object
      * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
      * one can use the following pattern instead:
      *
@@ -770,7 +770,7 @@ public final class IdentifiedObjects extends Static {
      * </ul>
      *
      * This method is provided because the {@link GenericName#toString()} behavior is specified by its javadoc,
-     * while {@link Identifier} has no such contract. For example like most ISO 19115 objects in SIS,
+     * while {@link Identifier} has no such contract. For example, like most ISO 19115 objects in SIS,
      * the {@link org.apache.sis.metadata.iso.DefaultIdentifier} implementation is formatted as a tree.
      * This static method can be used when a "name-like" representation is needed for any implementation.
      *

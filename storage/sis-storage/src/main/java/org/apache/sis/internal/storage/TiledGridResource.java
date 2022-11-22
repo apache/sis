@@ -141,7 +141,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * Returns the number of sample values in an indivisible element of a tile.
      * An element is a primitive type such as {@code byte}, {@code int} or {@code float}.
      * This value is usually 1 because each sample value is usually stored in a separated element.
-     * However in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
+     * However, in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
      * it is difficult to start reading an image at <var>x</var> location other than a byte boundary.
      * By declaring an "atom" size of 8 sample values in dimension X, the {@link Subset} constructor
      * will ensure than the sub-region to read starts at a byte boundary when reading a bilevel image.
@@ -252,7 +252,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
         /**
          * Sample dimensions for each image band. This is the range of the grid coverage to create.
          * If {@link #includedBands} is non-null, then the the size of this list should be equal to
-         * {@link #includedBands} array length. However bands are not necessarily in the same order:
+         * {@link #includedBands} array length. However, bands are not necessarily in the same order:
          * the order of bands in this {@code ranges} list is the order specified by user, while the
          * order of bands in {@link #includedBands} is always increasing index order for efficiency
          * reasons.

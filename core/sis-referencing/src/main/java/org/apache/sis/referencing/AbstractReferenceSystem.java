@@ -38,7 +38,7 @@ import static org.apache.sis.util.collection.Containers.property;
 
 /**
  * Description of a spatial and temporal reference system used by a dataset.
- * Reference systems do not necessarily use coordinates. For example a reference system could use postal codes.
+ * Reference systems do not necessarily use coordinates. For example, a reference system could use postal codes.
  * The specialized case of referencing by coordinates is handled by the
  * {@link org.apache.sis.referencing.crs.AbstractCRS} subclass.
  *

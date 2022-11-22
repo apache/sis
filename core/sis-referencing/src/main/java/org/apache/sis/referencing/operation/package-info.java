@@ -49,13 +49,13 @@
  *
  * <ul>
  *   <li><b>Longitude rotation</b> (EPSG:9601) — the longitude offset may be specified in any units,
- *     but SIS unconditionally converts the value to degrees. Consequently the user is responsible
+ *     but SIS unconditionally converts the value to degrees. Consequently, the user is responsible
  *     for converting the longitude axis of source and target CRS to degrees before this operation is applied.</li>
  * </ul>
  *
  * <h2><cite>Early binding</cite> versus <cite>late binding</cite> implementations</h2>
  * There is sometimes multiple ways of transforming coordinates for a given pair of source and target CRS.
- * For example the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}
+ * For example, the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}
  * may vary depending on the area of interest, like in the transformations from NAD27 to WGS84.
  * Even for a fixed set of Bursa-Wolf parameter, there is various ways to use them (<cite>Molodensky</cite>,
  * <cite>Abridged Molodensky</cite>, <cite>Geocentric translation</cite>, <cite>etc.</cite>).

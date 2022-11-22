@@ -45,7 +45,7 @@ import org.apache.sis.util.Classes;
  * applications of the two following steps:
  *
  * <ol class="verbose">
- *   <li>First, translate coordinates toward zero. For example latitude or longitude values in the
+ *   <li>First, translate coordinates toward zero. For example, latitude or longitude values in the
  *       [50 … 60]° range have a precision of about 4E-6° (about 0.4 meter). But translating those
  *       coordinates to the [-5 … 5]° range increases their precision to 0.05 meter. The precision
  *       gain is more important when the original coordinates are projected coordinates with high

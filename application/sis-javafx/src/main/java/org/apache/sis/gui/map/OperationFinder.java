@@ -58,7 +58,7 @@ abstract class OperationFinder extends Task<MathTransform> {
      *
      * Actually this information is rarely needed. It is needed only if there is no known affine transform from grid
      * coordinates to some geospatial coordinates that we can use as a starting point (before to apply map projection
-     * to other CRSs if desired). For example some netCDF files provides the coordinates of each pixel in data arrays.
+     * to other CRSs if desired). For example, some netCDF files provides the coordinates of each pixel in data arrays.
      * Those data arrays can be stored (indirectly) in this {@code dataGeometry} object.
      */
     private final GridGeometry dataGeometry;

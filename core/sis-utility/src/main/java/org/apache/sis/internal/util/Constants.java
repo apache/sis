@@ -170,7 +170,7 @@ public final class Constants extends Static {
     /**
      * The OGC parameter name for the scale factor.
      * While Apache SIS uses EPSG names when possible, the OGC names are convenient in this case
-     * because they do not depend on the projection. For example EPSG has at least three different
+     * because they do not depend on the projection. For example, EPSG has at least three different
      * names for the scale factor, depending on the projection:
      *
      * <ul>
@@ -186,7 +186,7 @@ public final class Constants extends Static {
     /**
      * The OGC parameter name for the false easting or northing.
      * While Apache SIS uses EPSG names when possible, the OGC names are convenient in this case
-     * because they do not depend on the projection. For example EPSG has at least two different
+     * because they do not depend on the projection. For example, EPSG has at least two different
      * names for false northing, depending on the projection:
      *
      * <ul>

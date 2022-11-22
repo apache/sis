@@ -63,7 +63,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * statement blocking all other access to the map. This is okay if that particular {@code WeakValueHashMap} instance
  * is not expected to be used in a highly concurrent environment.
  *
- * <p>{@code WeakValueHashMap} works with array keys as one would expect. For example arrays of {@code int[]} are
+ * <p>{@code WeakValueHashMap} works with array keys as one would expect. For example, arrays of {@code int[]} are
  * compared using the {@link java.util.Arrays#equals(int[], int[])} method.</p>
  *
  * <h2>Thread safety</h2>

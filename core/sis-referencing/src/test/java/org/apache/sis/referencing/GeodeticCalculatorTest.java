@@ -388,7 +388,7 @@ public strictfp class GeodeticCalculatorTest extends TestCase {
      * This method approximates the Bézier curve by line segments. Then for each point of the approximated Bézier curve,
      * this method computes the location of a close point on the geodesic (more specifically a point at the same geodesic
      * distance from the start point). The distance in metres between the two points is measured and accumulated as a
-     * fraction of the expected resolution <var>r</var>. Consequently the values in ∆x/r and ∆y/r columns should be less
+     * fraction of the expected resolution <var>r</var>. Consequently, the values in ∆x/r and ∆y/r columns should be less
      * than 1.
      *
      * <div class="note"><b>Note:</b> the state of the given calculator is modified by this method.</div>

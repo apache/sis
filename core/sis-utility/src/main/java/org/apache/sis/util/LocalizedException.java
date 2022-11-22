@@ -40,7 +40,7 @@ import org.opengis.util.InternationalString;
  * to the client in Japanese language while the same error may be logged on the server side in the French language.
  * This allows system administrator to analyze the issue without the need to understand client's language.</div>
  *
- * The above policy is applied on a <em>best-effort</em> basis only. For example exceptions that
+ * The above policy is applied on a <em>best-effort</em> basis only. For example, exceptions that
  * do not implement {@code LocalizedException} may use any locale (not necessarily the default one),
  * and {@code LocalizedException} used as {@linkplain Exception#Exception(Throwable) wrappers} around
  * other exception usually lost their localization capability.
@@ -66,7 +66,7 @@ public interface LocalizedException {
 
     /**
      * Returns the message in the locale that depends on the context in which this exception has been thrown.
-     * For example it may be the local of a client application connected to a distant server.
+     * For example, it may be the local of a client application connected to a distant server.
      * This is the recommended language to show in widgets.
      *
      * @return the exception message in the locale of a service configured for a particular client.

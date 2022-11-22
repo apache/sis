@@ -74,8 +74,8 @@ public @interface StoreMetadata {
      * and shall not contain the leading dot. The first element in the list is the preferred suffix
      * to use for new files.
      *
-     * <p>The same suffixes may be used by many different formats. For example the {@code ".xml"} suffix
-     * is used for files in many mutually incompatible formats. Consequently the file suffixes shall not
+     * <p>The same suffixes may be used by many different formats. For example, the {@code ".xml"} suffix
+     * is used for files in many mutually incompatible formats. Consequently, the file suffixes shall not
      * be used as format identifiers.</p>
      *
      * @return the filename suffixes, case insensitive. Never null but can be empty.

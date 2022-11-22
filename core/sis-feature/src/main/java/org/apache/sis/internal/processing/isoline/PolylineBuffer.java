@@ -58,7 +58,7 @@ final class PolylineBuffer {
     /**
      * If the polyline has points added to its two extremities, the other extremity. Otherwise {@code null}.
      * The first point of {@code opposite} polyline is connected to the first point of this polyline.
-     * Consequently when those two polylines are joined in a single polyline, the coordinates of either
+     * Consequently, when those two polylines are joined in a single polyline, the coordinates of either
      * {@code this} or {@code opposite} must be iterated in reverse order.
      */
     PolylineBuffer opposite;

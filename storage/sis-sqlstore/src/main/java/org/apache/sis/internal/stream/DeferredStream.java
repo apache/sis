@@ -34,7 +34,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * a {@code DeferredStream} subclass can override the {@link #count()} method for running the count query
  * instead of counting elements of the stream manually.
  *
- * <p>Deferred streams are also useful with intermediate operations. For example a subclass can override
+ * <p>Deferred streams are also useful with intermediate operations. For example, a subclass can override
  * the {@link #skip(long)} and {@link #limit(long)} methods for modifying the SQL query with addition of
  * {@code OFFSET} and {@code FETCH NEXT} clauses before the worker stream is created.</p></div>
  *

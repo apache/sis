@@ -133,14 +133,14 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * {@code true} if we determined that this feature type does not have, directly or indirectly,
      * any unresolved name (i.e. a {@link DefaultAssociationRole#valueType} specified only be the
      * feature type name instead of its actual instance). A value of {@code true} means that all
-     * names have been resolved. However a value of {@code false} only means that we are not sure,
+     * names have been resolved. However, a value of {@code false} only means that we are not sure,
      * and that {@code resolve(FeatureType, Map)} should check again.
      *
      * <div class="note"><b>Note:</b>
      * Strictly speaking, this field should be declared {@code volatile} since the names could
      * be resolved late after construction, after the {@code DefaultFeatureType} instance became
-     * used by different threads. However this is not the intended usage of deferred associations.
-     * Furthermore a wrong value ({@code false} when it should be {@code true}) should only cause
+     * used by different threads. However, this is not the intended usage of deferred associations.
+     * Furthermore, a wrong value ({@code false} when it should be {@code true}) should only cause
      * more computation than needed, without changing the result.
      * </div>
      */
@@ -429,7 +429,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         /*
          * Rational for choosing whether the feature is sparse: By default, java.util.HashMap implementation creates
          * an internal array of length 16 (see HashMap.DEFAULT_INITIAL_CAPACITY).  In addition, the HashMap instance
-         * itself consumes approximately 8 "words" in memory.  Consequently there is no advantage in using HashMap
+         * itself consumes approximately 8 "words" in memory.  Consequently, there is no advantage in using HashMap
          * unless the number of properties is greater than 16 + 8 (note: we could specify a smaller initial capacity,
          * but the memory consumed by each internal Map.Entry quickly exceed the few saved words). Next, the default
          * HashMap threshold is 0.75, so there is again no advantage in using HashMap if we do not expect at least 25%
@@ -651,7 +651,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Returns {@code true} if this type is same or a super-type of the given type.
      * The check is based mainly on the feature type {@linkplain #getName() name}, which should be unique.
-     * However as a safety, this method also checks that all properties in this feature type is assignable
+     * However, as a safety, this method also checks that all properties in this feature type is assignable
      * from a property of the same name in the given type.
      *
      * <h4>Constraints</h4>

@@ -150,7 +150,7 @@ enum FormatFilter {
                              * mark/reset may interfere with the `canDecodeInput(…)` marks.
                              *
                              * Note: `ImageReaderSpi` implementations in Java 18 read up to 8 bytes
-                             * without verifying if those bytes exist. Consequently there is a risk
+                             * without verifying if those bytes exist. Consequently, there is a risk
                              * of `EOFException` here. A patch has been submitted to OpenJDK.
                              */
                             if (provider.canDecodeInput(input)) {

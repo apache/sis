@@ -43,7 +43,7 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
  *   <li>{@link #transform(double[], int, double[], int, boolean)}</li>
  * </ul>
  *
- * However more performance may be gained by overriding the other {@code transform} methods as well.
+ * However, more performance may be gained by overriding the other {@code transform} methods as well.
  *
  * <h2>Immutability and thread safety</h2>
  * All Apache SIS implementations of {@code MathTransform2D} are immutable and thread-safe.

@@ -101,16 +101,16 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  *
  * <div class="note"><b>API design:</b>
  * properties (setter methods) are used for values that can be applied unchanged on many different images.
- * For example the {@linkplain #getInterpolation() interpolation method} can be specified once and used
+ * For example, the {@linkplain #getInterpolation() interpolation method} can be specified once and used
  * unchanged for many {@link #resample resample(…)} operations.
  * On the other hand, method arguments are used for values that are usually specific to the image to process.
- * For example the {@link MathTransform} argument given to the {@link #resample resample(…)} operation depends
+ * For example, the {@link MathTransform} argument given to the {@link #resample resample(…)} operation depends
  * tightly on the source image and destination bounds (also given in arguments); those information usually need
  * to be recomputed for each image.</div>
  *
  * <h2>Deferred calculations</h2>
  * Methods in this class may compute the result at some later time after the method returned, instead of computing
- * the result immediately on method call. Consequently unless otherwise specified, {@link RenderedImage} arguments
+ * the result immediately on method call. Consequently, unless otherwise specified, {@link RenderedImage} arguments
  * should be <em>stable</em>, i.e. pixel values should not be modified after method return.
  *
  * <h2>Area of interest</h2>
@@ -373,7 +373,7 @@ public class ImageProcessor implements Cloneable {
     /**
      * Sets the colors to use for given categories in image, or {@code null} is unspecified.
      * This function provides a way to colorize images without knowing in advance the numerical values of pixels.
-     * For example instead of specifying <cite>"pixel value 0 in blue, 1 in green, 2 in yellow"</cite>,
+     * For example, instead of specifying <cite>"pixel value 0 in blue, 1 in green, 2 in yellow"</cite>,
      * this function allows to specify <cite>"Lakes in blue, Forests in green, Sand in yellow"</cite>.
      * It is still possible however to use numerical values if the function desires to do so,
      * since this information is available with {@link Category#getSampleRange()}.
@@ -423,7 +423,7 @@ public class ImageProcessor implements Cloneable {
     /**
      * Sets hints about desired positional accuracy, in "real world" units or in pixel units.
      * More than one hint can be specified for allowing the use of different units.
-     * For example the given array can contain an accuracy in metres and an accuracy in seconds,
+     * For example, the given array can contain an accuracy in metres and an accuracy in seconds,
      * for specifying desired accuracies in both spatial dimensions and in the temporal dimension.
      * Accuracy can also be specified in both real world units such as {@linkplain Units#METRE metres}
      * and in {@linkplain Units#PIXEL pixel units}, which are converted to real world units depending
@@ -710,7 +710,7 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Returns an image with the same sample values than the given image, but with its color ramp stretched between
-     * specified or inferred bounds. For example in a gray scale image, pixels with the minimum value will be black
+     * specified or inferred bounds. For example, in a gray scale image, pixels with the minimum value will be black
      * and pixels with the maximum value will be white. This operation is a kind of <cite>tone mapping</cite>,
      * a technique used in image processing to map one set of colors to another. The mapping applied by this method
      * is conceptually a simple linear transform (a scale and an offset) applied on sample values before they are
@@ -798,7 +798,7 @@ public class ImageProcessor implements Cloneable {
      * the source image bands in the same order, then {@code source} is returned directly.
      *
      * <p>This method returns an image sharing the same data buffer than the source image;
-     * pixel values are not copied. Consequently changes in the source image are reflected
+     * pixel values are not copied. Consequently, changes in the source image are reflected
      * immediately in the returned image.</p>
      *
      * <h4>Properties used</h4>
@@ -1083,7 +1083,7 @@ public class ImageProcessor implements Cloneable {
      * {@linkplain SampleDimension#getCategories() encapsulated in <code>SampleDimension</code>} objects.
      * The colors (map values) are determined by a function receiving {@link Category} inputs.
      * This separation makes easier to apply colors based on criterion other than numerical values.
-     * For example colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
+     * For example, colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
      * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
      * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
      * the ranges of values in the destination image.</p>

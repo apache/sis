@@ -149,7 +149,7 @@ public final class SystemRegistry extends ConverterRegistry {
     protected <S,T> ObjectConverter<S,T> createConverter(final Class<S> sourceClass, final Class<T> targetClass) {
         /*
          * Most methods in this package are provided in such a way that we need to look at the
-         * source class first, then at the target class. However before to perform those usual
+         * source class first, then at the target class. However, before to perform those usual
          * checks, we need to check for the inverse conversions below. The reason is that some
          * of them are identity conversion (e.g. going from java.sql.Date to java.util.Date),
          * but we don't want to leave the creation of those identity tranforms to the parent

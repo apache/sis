@@ -478,7 +478,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
          * If we reach this point and the sample is NaN, then it is not one of the NaN values known
          * to CategoryList constructor and cannot be mapped to a category.  Otherwise we found the
          * index of "insertion point" (~i). This means that `sample` is lower than category minimum
-         * at that index. Consequently if the sample value is inside the range of some category, it
+         * at that index. Consequently, if the sample value is inside the range of some category, it
          * can only be the previous category (~i-1).
          */
         return sampleIsNaN ? -1 : low - 1;

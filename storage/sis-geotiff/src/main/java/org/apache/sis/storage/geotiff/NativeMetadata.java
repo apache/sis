@@ -117,7 +117,7 @@ final class NativeMetadata extends GeoKeysLoader {
             long nextIFD;
             /*
              * Following loop is a simplified copy of `Reader.getImageFileDirectory(int)` method,
-             * without the "deferred entries" mechanism. Instead we seek immediately.
+             * without the "deferred entries" mechanism. Instead, we seek immediately.
              */
             int imageNumber = 0;
             while ((nextIFD = readInt(false)) != 0) {

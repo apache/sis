@@ -32,7 +32,7 @@ import static org.apache.sis.internal.util.Strings.appendUnicodeIdentifier;
  * An iterator over the {@linkplain IdentifiedObject#getName() name} of an identified object followed by
  * {@linkplain IdentifiedObject#getAlias() aliases} which are instance of {@link ReferenceIdentifier}.
  * This iterator is used for {@link AbstractIdentifiedObject} XML marshalling because GML merges the name
- * and aliases in a single {@code <gml:name>} property. However this iterator is useful only if the aliases
+ * and aliases in a single {@code <gml:name>} property. However, this iterator is useful only if the aliases
  * are instances of {@link NamedIdentifier}, or any other implementation which is both a name and an identifier.
  *
  * <p>This class also opportunistically provide helper methods for {@link AbstractIdentifiedObject} marshalling.</p>

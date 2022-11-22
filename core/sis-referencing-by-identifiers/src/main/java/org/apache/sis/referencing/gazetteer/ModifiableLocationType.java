@@ -83,7 +83,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * Those mandatory properties are the {@linkplain #getName() name}, {@linkplain #getTheme() theme},
  * {@linkplain #getIdentifications() identifications}, {@linkplain #getDefinition() definition},
  * {@linkplain #getTerritoryOfUse() territory of use} and {@linkplain #getOwner() owner}.
- * However in Apache SIS implementation, only the name is truly mandatory;
+ * However, in Apache SIS implementation, only the name is truly mandatory;
  * SIS is tolerant to missing value for all other properties.
  * But in the hope to improve ISO compliance, values of undefined properties are inherited
  * from the parents (if any) provided that all parents define the same values.
@@ -396,7 +396,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
 
     /**
      * Returns the parent location types (location types of which this location type is a sub-division).
-     * A location type can have more than one possible parent. For example the parent of a location type named
+     * A location type can have more than one possible parent. For example, the parent of a location type named
      * <cite>“street”</cite> could be <cite>“locality”</cite>, <cite>“town”</cite> or <cite>“administrative area”</cite>.
      *
      * <p>The collection returned by this method is unmodifiable. For adding or removing a parent,

@@ -583,7 +583,7 @@ public final class Extents extends Static {
      *
      * <p>The current implementation performs its computation on the
      * {@linkplain org.apache.sis.referencing.CommonCRS#SPHERE GRS 1980 Authalic Sphere}.
-     * However this may change in any future SIS version.</p>
+     * However, this may change in any future SIS version.</p>
      *
      * @param  box  the geographic bounding box for which to compute the area, or {@code null}.
      * @return an estimation of the area in the given bounding box (m²),
@@ -662,7 +662,7 @@ public final class Extents extends Static {
      * all other kinds are handled as if they were {@code null}.
      *
      * <p>We may improve this method in future Apache SIS version, but it is not yet clear how.
-     * For example how to handle {@link GeographicDescription} or {@link BoundingPolygon}?
+     * For example, how to handle {@link GeographicDescription} or {@link BoundingPolygon}?
      * This method should not be public before we find a better contract.</p>
      */
     static GeographicExtent intersection(final GeographicExtent e1, final GeographicExtent e2) {

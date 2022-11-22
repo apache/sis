@@ -343,7 +343,7 @@ public final class Equirectangular extends AbstractProvider {
                .convertBefore(1, null, -φ0);
         /*
          * At this point, we usually invoke 'denormalize.convertAfter(…, a, …)' where 'a' (the semi-major axis length)
-         * is taken as the Earth radius (R). However quoting EPSG: "If the figure of the earth used is an ellipsoid
+         * is taken as the Earth radius (R). However, quoting EPSG: "If the figure of the earth used is an ellipsoid
          * rather than a sphere then R should be calculated as the radius of the conformal sphere at the projection
          * origin at latitude φ1 using the formula for RC given in section 1.2, table 3".
          */

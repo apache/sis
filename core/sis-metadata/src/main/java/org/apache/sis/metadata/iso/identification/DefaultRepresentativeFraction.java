@@ -145,7 +145,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * implementation. If the given object is {@code null}, then this method returns {@code null}.
      * Otherwise if the given object is already a SIS implementation, then the given object is
      * returned unchanged. Otherwise a new SIS implementation is created and initialized to the
-     * property values of the given object, using a <cite>shallow</cite> copy operation
+     * property values of the given object, using a <em>shallow</em> copy operation
      * (i.e. properties are not cloned).
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.

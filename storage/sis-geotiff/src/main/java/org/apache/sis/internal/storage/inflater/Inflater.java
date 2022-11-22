@@ -280,7 +280,7 @@ public abstract class Inflater implements Closeable {
      * <h4>Case of multi-pixels packed image</h4>
      * If there is more than one sample value per element, then this method may round (at implementation choice)
      * the stream position to the first element boundary after skipping <var>n</var> sample values. For example
-     * a bilevel image packs 8 sample values per byte. Consequently a call to {@code skip(10)} may skip 2 bytes:
+     * a bilevel image packs 8 sample values per byte. Consequently, a call to {@code skip(10)} may skip 2 bytes:
      * one byte for the first 8 bits, then 2 bits rounded to the next byte boundary.
      *
      * <p>The exact rounding mode depends on the compression algorithm. To avoid erratic behavior, callers shall

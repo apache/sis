@@ -269,7 +269,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * default one.
      *
      * <p>But a more convolved reason is to reuse an element defined for another version of the file format.
-     * For example some elements may be identical in 1.0 and 1.1 versions of a file format, so we may want
+     * For example, some elements may be identical in 1.0 and 1.1 versions of a file format, so we may want
      * to define only one JAXB annotated class for both versions. In that case the {@code hideNS} argument is
      * <strong>not</strong> necessarily the {@linkplain XMLStreamWriter#setDefaultNamespace(String) default namespace}.
      * It is rather the namespace of the JAXB element that we want to erase (for example {@code "foo/1.1"}),

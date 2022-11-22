@@ -40,7 +40,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * Simple mathematical functions in addition to the ones provided in {@link Math}.
  * Some methods in this class are very similar to the standard {@link Math} methods
  * or could be implemented with straightforward formulas.
- * However the methods in this class put an emphasis on:
+ * However, the methods in this class put an emphasis on:
  *
  * <ul>
  *   <li>Rounding errors:
@@ -145,7 +145,7 @@ public final class MathFunctions extends Static {
 
     /**
      * The highest prime number supported by the {@link #nextPrimeNumber(int)} method.
-     * In the current implementation, this value is {@value}. However this limit may
+     * In the current implementation, this value is {@value}. However, this limit may
      * change in any future Apache SIS version.
      *
      * <div class="note"><b>Note:</b>
@@ -342,7 +342,7 @@ public final class MathFunctions extends Static {
      * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">exponentiation by squaring</a> technic.</div>
      *
      * The type of the {@code base} argument is {@code long} for convenience, since this method is used in contexts
-     * where relatively large integers are handled. However any value greater than the capacity of {@code int} type
+     * where relatively large integers are handled. However, any value greater than the capacity of {@code int} type
      * is guaranteed to fail with {@link ArithmeticException} unless {@code exponent} is 0 or 1.
      * Likewise any {@code exponent} value greater than 62 is guaranteed to fail unless {@code base} is 0 or 1.
      *

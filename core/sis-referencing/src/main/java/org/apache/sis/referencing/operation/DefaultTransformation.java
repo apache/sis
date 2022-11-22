@@ -137,8 +137,8 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      * If the given object is already an instance of {@code DefaultTransformation}, then it is returned unchanged.
      * Otherwise a new {@code DefaultTransformation} instance is created using the
      * {@linkplain #DefaultTransformation(Transformation) copy constructor} and returned.
-     * Note that this is a <cite>shallow</cite> copy operation, since the other properties contained in the given
-     * object are not recursively copied.
+     * Note that this is a <dfn>shallow</dfn> copy operation,
+     * because the other properties contained in the given object are not recursively copied.
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.
      * @return a SIS implementation containing the values of the given object (may be the

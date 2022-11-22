@@ -161,7 +161,7 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Types of changes that a coverage processor can do for executing an operation more efficiently.
-     * For example the processor may, in some cases, replace an operation by a more efficient one.
+     * For example, the processor may, in some cases, replace an operation by a more efficient one.
      * Those optimizations should not change significantly the sample values at any given location,
      * but may change other aspects (in a compatible way) such as the {@link GridCoverage} subclass
      * returned or the size of the underlying rendered images.

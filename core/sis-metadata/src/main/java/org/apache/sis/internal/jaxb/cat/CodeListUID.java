@@ -26,6 +26,8 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
 
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
+
 
 /**
  * Stores information about {@link CodeList} in order to marshal in the way defined by ISO 19115-3.
@@ -91,7 +93,7 @@ public final class CodeListUID {
      * which seems more stable. The TC 211 repository is used for downloads, while the standard ISO URL is sill
      * used for namespaces.
      */
-    public static final String METADATA_ROOT = "http://standards.iso.org/iso/19115/";
+    public static final String METADATA_ROOT = ISO_NAMESPACE + "19115/";
 
     /**
      * The root directory of OGC metadata schemas.

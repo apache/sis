@@ -58,8 +58,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  *
  * <h2>Unified identifiers view</h2>
  * The ISO 19115 model provides specific attributes for the {@linkplain #getISBN() ISBN} and
- * {@linkplain #getISSN() ISSN} codes. However the SIS library handles those codes like any
- * other identifiers. Consequently the ISBN and ISSN codes are included in the collection
+ * {@linkplain #getISSN() ISSN} codes. However, the SIS library handles those codes like any
+ * other identifiers. Consequently, the ISBN and ISSN codes are included in the collection
  * returned by {@link #getIdentifiers()}, except at XML marshalling time (for ISO 19115-3 compliance).
  *
  * <h2>Limitations</h2>
@@ -203,7 +203,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -249,7 +249,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *       {@code DefaultCitation}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultCitation} instance is created using the
      *       {@linkplain #DefaultCitation(Citation) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *

@@ -111,7 +111,7 @@ final class Localization {
         } catch (ArithmeticException | FactoryException e) {
             /*
              * May happen when the model tie points are not distributed on a regular grid.
-             * For example Sentinel 1 images may have tie points spaced by 1320 pixels on the X axis,
+             * For example, Sentinel 1 images may have tie points spaced by 1320 pixels on the X axis,
              * except the very last point which is only 1302 pixels after the previous one. We try to
              * handle such grids by splitting them in two parts: one grid for the columns where points
              * are spaced by 1320 pixels and one grid for the last column. Such splitting needs to be

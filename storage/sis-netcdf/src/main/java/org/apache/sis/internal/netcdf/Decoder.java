@@ -120,7 +120,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     final Datum[] datumCache;
 
     /**
-     * The CRS and <cite>grid to CRS</cite> transform defined by attributes in a variable. For example GDAL uses
+     * The CRS and <cite>grid to CRS</cite> transform defined by attributes in a variable. For example, GDAL uses
      * {@code "spatial_ref_sys"} and {@code "GeoTransform"} attributes associated to a variable having the name
      * specified by the {@code "grid_mapping"} attribute.
      *
@@ -442,7 +442,7 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
         /*
          * Add the CRS computed by grids only if we did not found any grid mapping information.
          * This is because grid mapping information override the CRS inferred by Grid from axes.
-         * Consequently if such information is present, grid CRS may be inaccurate.
+         * Consequently, if such information is present, grid CRS may be inaccurate.
          */
         if (list.isEmpty()) {
             final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.

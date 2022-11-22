@@ -328,7 +328,7 @@ public final class Matrices extends Static {
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
-     * Furthermore the matrix created by this method will produce expected results only for source or destination
+     * Furthermore, the matrix created by this method will produce expected results only for source or destination
      * points before the date line, since the wrap around operation cannot be represented by an affine transform.
      *
      * <h4>Example</h4>
@@ -393,7 +393,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a transform matrix changing axis order and/or direction. For example the transform may convert
+     * Creates a transform matrix changing axis order and/or direction. For example, the transform may convert
      * (<i>northing</i>, <i>westing</i>) coordinates into (<i>easting</i>, <i>northing</i>) coordinates.
      * This method tries to associate each {@code dstAxes} direction to either an equals {@code srcAxis}
      * direction, or to an opposite {@code srcAxis} direction.
@@ -469,7 +469,7 @@ public final class Matrices extends Static {
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If the given envelopes cross the date line, then this method requires their {@code getSpan(int)} method
      * to behave as documented in the {@link org.apache.sis.geometry.AbstractEnvelope#getSpan(int)} javadoc.
-     * Furthermore the matrix created by this method will produce expected results only for source or destination
+     * Furthermore, the matrix created by this method will produce expected results only for source or destination
      * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
      * operation cannot be represented by an affine transform.
      *
@@ -581,7 +581,7 @@ public final class Matrices extends Static {
 
     /**
      * Creates a matrix which converts a subset of coordinates using the transform given by another matrix.
-     * For example giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
+     * For example, giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
      * a pass through operation can convert the height values from feet to metres without affecting
      * the (<var>latitude</var>, <var>longitude</var>) values.
      *

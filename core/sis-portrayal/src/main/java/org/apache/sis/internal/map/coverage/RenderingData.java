@@ -94,7 +94,7 @@ import static java.util.logging.Logger.getLogger;
  *       We try to avoid that situation.</li>
  * </ul>
  *
- * Consequently our strategy is to prepare a resampled image for the whole data when the zoom level changed
+ * Consequently, our strategy is to prepare a resampled image for the whole data when the zoom level changed
  * and rely on tiling for reducing actual computations to required tiles. Since pan gestures are expressed
  * in pixel coordinates, the translation terms in {@code resampledToDisplay} transform should stay integers.
  *

@@ -184,7 +184,7 @@ final class Verifier {
                         /*
                          * Usual case where the expected value is a singleton. A ClassCastException below could be
                          * a bug in our code logic since non-null units is allowed only with numeric values in SIS
-                         * implementation. However the given descriptor could be a "foreigner" implementation.
+                         * implementation. However, the given descriptor could be a "foreigner" implementation.
                          */
                         try {
                             Number n = converter.convert((Number) value);

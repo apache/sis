@@ -276,7 +276,7 @@ final class ImageFileDirectory extends DataCube {
      * say, 5 then this {@code extraSamples} field will contain 2 values, one for each extra sample.
      *
      * <p>Extra components that are present must be stored as the last components in each pixel.
-     * For example, if {@code samplesPerPixel} is 4 and there is 1 extra component, then it is
+     * For example if {@code samplesPerPixel} is 4 and there is 1 extra component, then it is
      * located in the last component location in each pixel.</p>
      *
      * <p>ExtraSamples is typically used to include non-color information, such as opacity, in an image.
@@ -507,7 +507,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Adds the value read from the current position in the given stream for the entry identified
      * by the given GeoTIFF tag. This method may store the value either in a field of this class,
-     * or directly in the {@link ImageMetadataBuilder}. However in the latter case, this method
+     * or directly in the {@link ImageMetadataBuilder}. However, in the latter case, this method
      * should not write anything under the {@code "metadata/contentInfo"} node.
      *
      * @param  tag    the GeoTIFF tag to decode.
@@ -535,7 +535,7 @@ final class ImageFileDirectory extends DataCube {
             /*
              * How the components of each pixel are stored.
              * 1 = Chunky format. The component values for each pixel are stored contiguously (for example RGBRGBRGB).
-             * 2 = Planar format. For example one plane of Red components, one plane of Green and one plane if Blue.
+             * 2 = Planar format. For example, one plane of Red components, one plane of Green and one plane if Blue.
              */
             case Tags.PlanarConfiguration: {
                 final int value = type.readInt(input(), count);

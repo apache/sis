@@ -116,7 +116,7 @@ public enum Convention {
      *
      * <h4>Differences compared to WKT 2</h4>
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding axis names,
-     * parameter and code list values. For example in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
+     * parameter and code list values. For example, in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
      * which were defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
      * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead of the geocentric ones.
      * For more uniform handling of CRS objects in client code, SIS parser replaces some WKT 1 conventions by
@@ -150,7 +150,7 @@ public enum Convention {
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
      * <cite>Simple Feature</cite> is anterior to OGC 01-009 and defines the same format,
      * but was unclear about the unit of measurement for prime meridians and projection parameters.
-     * Consequently many implementations interpreted those angular units as fixed to degrees instead
+     * Consequently, many implementations interpreted those angular units as fixed to degrees instead
      * than being context-dependent.
      *
      * <p>This convention is identical to {@link #WKT1} except for the following aspects:</p>
@@ -236,7 +236,7 @@ public enum Convention {
      *       which means that the angular units are inferred from the context as required by the
      *       WKT 1 specification.</li>
      *   <li>If {@code true}, uses US unit names instead of the international names.
-     *       For example Americans said {@code "meter"} instead of {@code "metre"}.</li>
+     *       For example, Americans said {@code "meter"} instead of {@code "metre"}.</li>
      * </ul>
      */
     final boolean usesCommonUnits;

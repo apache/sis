@@ -51,7 +51,7 @@ public class MovingFeatures {
 
     /**
      * An alternative to {@link #TIME_AS_INSTANTS} used when times cannot be mapped to calendar dates.
-     * This characteristic uses the same name than {@code TIME_AS_INSTANTS}. Consequently at most one
+     * This characteristic uses the same name than {@code TIME_AS_INSTANTS}. Consequently, at most one
      * of {@code TIME_AS_INSTANTS} and {@code TIME_AS_NUMBERS} can be used on the same property.
      */
     private static final DefaultAttributeType<Number> TIME_AS_NUMBERS;

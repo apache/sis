@@ -72,7 +72,7 @@ public interface Tile {
      * <h4>State transition</h4>
      * {@link TileStatus#EXISTS} is not a guarantee that a call to {@link #getResource()} will succeed.
      * The error may be detected only during the first attempt to read the resource.
-     * Consequently this method may initially return {@code EXISTS},
+     * Consequently, this method may initially return {@code EXISTS},
      * then return {@code IN_ERROR} later after the first read attempt.
      *
      * @return information about the availability of this tile.

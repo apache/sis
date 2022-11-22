@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.quality;
 
 import java.util.Date;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
 import javax.xml.bind.annotation.XmlType;
@@ -153,7 +154,7 @@ public class AbstractElement extends ISOMetadata implements Element {
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param object  the metadata to copy values from, or {@code null} if none.
@@ -192,7 +193,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *       {@code AbstractElement}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractElement} instance is created using the
      *       {@linkplain #AbstractElement(Element) copy constructor} and returned.
-     *       Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -285,7 +286,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @see #getEvaluationMethodProperty(Function)
      */
     private <V> V getMeasureReferenceProperty(final Function<DefaultMeasureReference,V> getter) {
-        final DefaultMeasureReference m = measureReference;
+        final DefaultMeasureReference m = getMeasureReference();
         return (m != null) && FilterByVersion.LEGACY_METADATA.accept() ? getter.apply(m) : null;
     }
 
@@ -313,15 +314,20 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @Deprecated
+    @Dependencies("getMeasureReference")
     @XmlElement(name = "nameOfMeasure", namespace = LegacyNamespaces.GMD)
     public Collection<InternationalString> getNamesOfMeasure() {
         if (!FilterByVersion.LEGACY_METADATA.accept()) {
             return null;
         }
-        if (measureReference == null) {
-            measureReference = new DefaultMeasureReference();
+        DefaultMeasureReference m = getMeasureReference();
+        if (m == null) {
+            if (state() == State.FINAL) {
+                return Collections.emptyList();
+            }
+            setMeasureReference(m = new DefaultMeasureReference());
         }
-        return measureReference.getNamesOfMeasure();
+        return m.getNamesOfMeasure();
     }
 
     /**
@@ -347,6 +353,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @Deprecated
+    @Dependencies("getMeasureReference")
     @XmlElement(name = "measureIdentification", namespace = LegacyNamespaces.GMD)
     public Identifier getMeasureIdentification() {
         return getMeasureReferenceProperty(DefaultMeasureReference::getMeasureIdentification);
@@ -373,6 +380,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @Deprecated
+    @Dependencies("getMeasureReference")
     @XmlElement(name = "measureDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getMeasureDescription() {
         return getMeasureReferenceProperty(DefaultMeasureReference::getMeasureDescription);
@@ -422,7 +430,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @see #getMeasureReferenceProperty(Function)
      */
     private <V> V getEvaluationMethodProperty(final Function<DefaultEvaluationMethod,V> getter) {
-        final DefaultEvaluationMethod m = evaluationMethod;
+        final DefaultEvaluationMethod m = getEvaluationMethod();
         return (m != null) && FilterByVersion.LEGACY_METADATA.accept() ? getter.apply(m) : null;
     }
 
@@ -450,6 +458,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @Deprecated
+    @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationMethodType", namespace = LegacyNamespaces.GMD)
     public EvaluationMethodType getEvaluationMethodType() {
         return getEvaluationMethodProperty(DefaultEvaluationMethod::getEvaluationMethodType);
@@ -476,6 +485,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @Deprecated
+    @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationMethodDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getEvaluationMethodDescription() {
         return getEvaluationMethodProperty(DefaultEvaluationMethod::getEvaluationMethodDescription);
@@ -502,6 +512,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      */
     @Override
     @Deprecated
+    @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationProcedure", namespace = LegacyNamespaces.GMD)
     public Citation getEvaluationProcedure() {
         return getEvaluationMethodProperty(DefaultEvaluationMethod::getEvaluationProcedure);
@@ -536,10 +547,14 @@ public class AbstractElement extends ISOMetadata implements Element {
         if (!FilterByVersion.LEGACY_METADATA.accept()) {
             return null;
         }
-        if (evaluationMethod == null) {
-            evaluationMethod = new DefaultEvaluationMethod();
+        DefaultEvaluationMethod m = getEvaluationMethod();
+        if (m == null) {
+            if (state() == State.FINAL) {
+                return Collections.emptyList();
+            }
+            setEvaluationMethod(m = new DefaultEvaluationMethod());
         }
-        return evaluationMethod.getDates();
+        return m.getDates();
     }
 
     /**

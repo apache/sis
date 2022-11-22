@@ -298,7 +298,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
 
     /**
      * Returns the parent location types (location types of which this location type is a sub-division).
-     * A location type can have more than one possible parent. For example the parent of a location type named
+     * A location type can have more than one possible parent. For example, the parent of a location type named
      * <cite>“street”</cite> could be <cite>“locality”</cite>, <cite>“town”</cite> or <cite>“administrative area”</cite>.
      *
      * @return parent location types, or an empty collection if none.

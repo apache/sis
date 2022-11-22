@@ -53,7 +53,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * The tiling applied by {@code TiledProcess} is independent of {@link RenderedImage} tiling.
  * This class assumes that the objects to be calculated are geometries or other non-raster data.
- * Consequently tile size will be determined by other considerations such as the number of processors.
+ * Consequently, tile size will be determined by other considerations such as the number of processors.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

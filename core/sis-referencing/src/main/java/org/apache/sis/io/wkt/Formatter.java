@@ -1696,7 +1696,7 @@ public class Formatter implements Localized {
                 /*
                  * The unit that we removed was not the expected one. Probably the user has invoked
                  * addContextualUnit(…) again without a matching call to `restoreContextualUnit(…)`.
-                 * However this check does not work in `Convention.WKT1_COMMON_UNITS` mode, since the
+                 * However, this check does not work in `Convention.WKT1_COMMON_UNITS` mode, since the
                  * map is always empty in that mode.
                  */
                 if (!convention.usesCommonUnits) {
@@ -1741,7 +1741,7 @@ public class Formatter implements Localized {
      * Returns {@code true} if the WKT written by this formatter is not strictly compliant to the WKT specification.
      * This method returns {@code true} if {@link #setInvalidWKT(IdentifiedObject, Exception)} has been invoked at
      * least once. The action to take regarding invalid WKT is caller-dependent.
-     * For example {@link FormattableObject#toString()} will accepts loose WKT formatting and ignore
+     * For example, {@link FormattableObject#toString()} will accepts loose WKT formatting and ignore
      * this flag, while {@link FormattableObject#toWKT()} requires strict WKT formatting and will
      * thrown an exception if this flag is set.
      *

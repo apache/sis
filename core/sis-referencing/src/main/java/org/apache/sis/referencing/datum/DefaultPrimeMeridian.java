@@ -341,15 +341,15 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * <h4>Rational</h4>
      * According the ISO 19162 standard, it is legal to omit the {@code PrimeMeridian} angular unit when
-     * that unit is the same than the unit of the axes of the enclosing {@code GeographicCRS}. However the
+     * that unit is the same than the unit of the axes of the enclosing {@code GeographicCRS}. However, the
      * relationship between the CRS axes and the prime meridian is less obvious in WKT2 than it was in WKT1,
      * because the WKT2 {@code UNIT[…]} element is far from the {@code PRIMEM[…]} element while it was just
-     * below it in WKT1.   Furthermore, the {@code PRIMEM[…]} unit is one source of incompatibility between
+     * below it in WKT1. Furthermore, the {@code PRIMEM[…]} unit is one source of incompatibility between
      * various WKT1 parsers (i.e. some popular libraries are not conform to OGC 01-009 and ISO 19162).
      * So we are safer to unconditionally format any unit other than degrees, even if we could legally
      * omit them.
      *
-     * <p>However in order to keep the WKT slightly simpler in {@link Convention#WKT2_SIMPLIFIED} mode,
+     * <p>However, in order to keep the WKT slightly simpler in {@link Convention#WKT2_SIMPLIFIED} mode,
      * we make an exception to the above-cited safety if the {@code UNIT[…]} element is formatted right
      * below the {@code PRIMEM[…]} one, which happen if we are inside a base CRS.
      * See {@link #isElementOfBaseCRS(Formatter)} for more discussion.

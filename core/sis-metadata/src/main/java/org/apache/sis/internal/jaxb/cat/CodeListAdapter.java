@@ -80,8 +80,8 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      *     return new ValueType(value);
      * }
      *
-     * However is some cases, the {@code value} argument may be inspected.
-     * For example {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
+     * However, is some cases, the {@code value} argument may be inspected.
+     * For example, {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}
      * replaces {@code "licence"} by {@code "license"} for ISO 19115:2003 compatibility.
      *
      * @param  value  the value of {@link CodeList}, to be marshalled.

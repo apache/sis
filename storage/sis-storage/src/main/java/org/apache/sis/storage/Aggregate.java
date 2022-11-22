@@ -39,7 +39,7 @@ import java.util.Collection;
  *       The {@linkplain #components() components} may be the results of an ad hoc query, for example on a Web Service.</li>
  * </ul>
  *
- * The same resource may be part of more than one aggregate. For example the same resource could be part of
+ * The same resource may be part of more than one aggregate. For example, the same resource could be part of
  * a <cite>production series</cite> and a <cite>transfer aggregate</cite>. In Apache SIS implementation,
  * those two kinds of aggregate will usually be implemented by different {@link DataStore} instances.
  *

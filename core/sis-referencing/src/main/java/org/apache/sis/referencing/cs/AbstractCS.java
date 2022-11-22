@@ -62,7 +62,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * <p>This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass with {@code Default} prefix instead.
- * An exception to this rule may occurs when it is not possible to identify the exact type. For example it is not
+ * An exception to this rule may occurs when it is not possible to identify the exact type. For example, it is not
  * possible to infer the exact coordinate system from <cite>Well Known Text</cite> (WKT) version 1 in some cases
  * (e.g. in a {@code LOCAL_CS} element). In such exceptional situation, a plain {@code AbstractCS} object may be
  * instantiated.</p>
@@ -182,7 +182,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
             ensureNonNullElement("axes[#].unit", i, unit);
             /*
              * Ensures that axis direction and units are compatible with the
-             * coordinate system to be created. For example CartesianCS will
+             * coordinate system to be created. For example, CartesianCS will
              * accept only linear or dimensionless units.
              */
             switch (validateAxis(direction, unit)) {
@@ -265,7 +265,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *       {@code AbstractCS}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractCS} instance is created using the
      *       {@linkplain #AbstractCS(CoordinateSystem) copy constructor}
-     *       and returned. Note that this is a <cite>shallow</cite> copy operation, since the other
+     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -405,7 +405,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                     final CoordinateSystem fromDB = ((CSAuthorityFactory) factory).createCoordinateSystem(epsg.toString());
                     if (fromDB instanceof AbstractCS) {
                         /*
-                         * We should compare axes strictly using Arrays.equals(…). However axes in different order
+                         * We should compare axes strictly using Arrays.equals(…). However, axes in different order
                          * get different codes in EPSG database, which may them not strictly equal. We would need
                          * another comparison mode ignoring only the authority code. We don't add this complexity
                          * for now, and rather rely on the check for EPSG code done by the caller. If the original

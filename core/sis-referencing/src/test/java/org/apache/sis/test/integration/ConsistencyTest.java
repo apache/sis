@@ -135,7 +135,7 @@ public final strictfp class ConsistencyTest extends TestCase {
                 lookup(parseAndFormat(v2s, code, crs), crs);
                 /*
                  * There is more information lost in WKT 1 than in WKT 2, so we cannot test everything.
-                 * For example we cannot format fully three-dimensional geographic CRS because the unit
+                 * For example, we cannot format fully three-dimensional geographic CRS because the unit
                  * is not the same for all axes. We cannot format neither some axis directions.
                  */
                 try {
@@ -263,7 +263,7 @@ public final strictfp class ConsistencyTest extends TestCase {
         assertNotNull(crs.getName().getCode(), urn);
         /*
          * Lookup operation is not going to work if the CRS are not approximately equal.
-         * However in current Apache SIS implementation, we can perform this check only
+         * However, in current Apache SIS implementation, we can perform this check only
          * if the scale factor of units of measurement have the exact same value.
          *
          * This check can be removed after the following issue is resolved:

@@ -62,7 +62,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * Tests the {@link ResampledGridCoverage} implementation.
  * The tests in this class does not verify interpolation results
  * (this is {@link org.apache.sis.image.ResampledImageTest} job).
- * Instead it focus on the grid geometry inferred by the operation.
+ * Instead, it focuses on the grid geometry inferred by the operation.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)

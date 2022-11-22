@@ -103,7 +103,7 @@ public enum ComparisonMode {
      *
      * <h4>Application to coordinate operations</h4>
      * If the objects being compared are {@link org.opengis.referencing.operation.MathTransform} instances,
-     * then two transforms defined in a different way may be considered equivalent. For example it is possible
+     * then two transforms defined in a different way may be considered equivalent. For example, it is possible
      * to define a {@linkplain org.apache.sis.referencing.operation.projection.Mercator Mercator} projection in
      * two different ways, as a <cite>"Mercator (1SP)"</cite> or as a <cite>"Mercator (2SP)"</cite> projection,
      * each having their own set of parameters.

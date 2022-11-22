@@ -60,7 +60,7 @@ final class StoredTree implements Serializable {
     /**
      * Unmodifiable copy of {@link Element} without contextual information such as {@link Element#offset}.
      * The removal of contextual information increase greatly the possibility to reuse the same {@code Node}
-     * instances in many {@link StoredTree}s. For example the {@code UNIT["degrees", 0.0174532925199433]} node
+     * instances in many {@link StoredTree}s. For example, the {@code UNIT["degrees", 0.0174532925199433]} node
      * is repeated a lot, so we want to share only one {@code Node} instance for every places in the WKT tree
      * where degrees unit is declared, even if they appear at different offsets in the WKT string.
      *
@@ -84,7 +84,7 @@ final class StoredTree implements Serializable {
         /**
          * Snapshot of {@link Element#children} list. Array content shall not be modified.
          * This array is {@code null} if the keyword was not followed by a pair of brackets
-         * (e.g. "north"). A null value is not equivalent to an empty list. For example the
+         * (e.g. "north"). A null value is not equivalent to an empty list. For example, the
          * list is null when parsing {@code "FOO"} but is empty when parsing {@code "FOO[]"}.
          */
         private final Object[] children;
@@ -232,7 +232,7 @@ final class StoredTree implements Serializable {
 
         /**
          * Returns the string representation of the first value, which is usually the element name.
-         * For example in {@code DATUM["WGS 84", …]} this is "WGS 84". If there are no children then
+         * For example, in {@code DATUM["WGS 84", …]} this is "WGS 84". If there are no children then
          * this method returns the keyword, which is usually an enumeration value (for example "NORTH"}).
          *
          * @see StoredTree#toString()
@@ -301,7 +301,7 @@ final class StoredTree implements Serializable {
      * Root of a tree of {@link Element} snapshots.
      *
      * <h4>Multi-roots</h4>
-     * There is exactly one root in the vast majority of cases. However there is a situation
+     * There is exactly one root in the vast majority of cases. However, there is a situation
      * where we need to allow more roots: when user wants to represent a coordinate system.
      * A WKT 2 coordinate system looks like:
      *
@@ -580,7 +580,7 @@ final class StoredTree implements Serializable {
 
     /**
      * Returns the string representation of the first value of the root element, which is usually the element name.
-     * For example in {@code DATUM["WGS 84", …]} this is "WGS 84". If there are no children then this method returns
+     * For example, in {@code DATUM["WGS 84", …]} this is "WGS 84". If there are no children then this method returns
      * the keyword, which is usually an enumeration value (for example "NORTH"}).
      */
     @Override

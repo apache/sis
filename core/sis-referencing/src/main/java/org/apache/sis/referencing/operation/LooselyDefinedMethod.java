@@ -24,12 +24,12 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  * Operation methods that do not match exactly any of the predefined "standard" methods and for which
  * we do not define unambiguous sets of parameters. Those methods could be replaced by concatenations
  * of standard methods, but doing so would require more development work.  In the meantime, we define
- * those methods for avoiding to mislead users. For example we should not call a coordinate operation
+ * those methods for avoiding to mislead users. For example, we should not call a coordinate operation
  * "Affine" if it also performs conversion from geographic to geocentric coordinates.
  *
  * <h2>Restrictions</h2>
  * We do not provide any mechanism for instantiating a {@code CoordinateOperation} from those methods.
- * Consequently a coordinate operation can be formatted in WKT with those operation methods, but can
+ * Consequently, a coordinate operation can be formatted in WKT with those operation methods, but can
  * not be parsed. Attempt to parse such WKT will result in an error saying that the method is unknown.
  * This is better than formatting WKT with a standard but wrong operation name, in which case parsing
  * the WKT would produce unexpected results.

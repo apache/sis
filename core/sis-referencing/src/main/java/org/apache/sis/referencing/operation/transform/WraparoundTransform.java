@@ -44,7 +44,7 @@ import static java.util.logging.Logger.getLogger;
 
 /**
  * Enforces coordinate values in the range of a wraparound axis (typically longitude).
- * For example this transform can shift longitudes from the [0 … 360]° range to the [-180 … +180]° range.
+ * For example, this transform can shift longitudes from the [0 … 360]° range to the [-180 … +180]° range.
  * The destination range is centered at 0 with a minimal value of −{@link #period}/2 and a maximal value
  * of {@link #period}/2. For a range centered on a different value,
  * a {@linkplain MathTransforms#translation(double...) translation}
@@ -60,7 +60,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * <h2>Subclassing</h2>
  * In order to control the discontinuity problem, it may be necessary to subclass {@code WraparoundTransform}
- * and override the {@link #shift(double)} method. For example a subclass may control the wraparounds in a way
+ * and override the {@link #shift(double)} method. For example, a subclass may control the wraparounds in a way
  * to prevent the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getLowerCorner() lower corner} of an envelope
  * to become greater than the {@linkplain org.apache.sis.geometry.AbstractEnvelope#getUpperCorner() upper corner}.
  *
@@ -102,7 +102,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     public final double period;
     /*
      * DESIGN NOTE:
-     * A previous version of `WraparoundTransform` had no period. Instead it was expecting coordinates normalized
+     * A previous version of `WraparoundTransform` had no period. Instead, it was expecting coordinates normalized
      * in the [0 … 1] range. Coordinates in [0 … 360]° range were divided by 360 using an affine transforms before
      * `WraparoundTransform` and multiplied by 360 using another affine transform after `WraparoundTransform`.
      * That approach allowed to delegate more work to the affine transforms which can efficiently be combined
@@ -370,9 +370,9 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * <div class="note"><b>Mathematical note:</b>
      * strictly speaking the derivative at (<var>n</var> + 0.5) × {@link #period} where <var>n</var> is an integer
      * should be infinite because the coordinate value jumps "instantaneously" from any value to ±{@link #period}/2.
-     * However in practice we use derivatives as linear approximations around small regions, not for calculations
+     * However, in practice we use derivatives as linear approximations around small regions, not for calculations
      * requiring strict mathematical values. An infinite value goes against the approximation goal.
-     * Furthermore whether a source coordinate is an integer value or not is subject to rounding errors,
+     * Furthermore, whether a source coordinate is an integer value or not is subject to rounding errors,
      * which may cause unpredictable behavior if infinite values were returned.</div>
      *
      * @param  point  the position where to evaluate the derivative
@@ -500,7 +500,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                  * The `middle` transform should become simpler, ideally the identity transform.
                  *
                  * As an heuristic rule, we assume that it was worth simplifying if the implementation class changed.
-                 * For example a `ProjectiveTransform` middle transform may be replaced by `IdentityTransform` (ideal
+                 * For example, a `ProjectiveTransform` middle transform may be replaced by `IdentityTransform` (ideal
                  * case, but replacement by `TranslationTransform` is still good). But if we got the same class, then
                  * even if the matrix is a little bit simpler it is probably not simpler enough; we will probably get
                  * no performance benefit. In such case abandon this `tryConcatenate(…)` attempt for reducing risk of

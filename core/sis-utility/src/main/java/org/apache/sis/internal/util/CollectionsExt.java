@@ -204,7 +204,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns the given array if non-empty, or {@code null} if the given array is null or empty.
      * This method is generally not recommended, since public API should prefer empty array instead of null.
-     * However this method is occasionally useful for managing private fields.
+     * However, this method is occasionally useful for managing private fields.
      *
      * @param  <E>    the type of elements in the array.
      * @param  array  the array, or {@code null}.
@@ -217,7 +217,7 @@ public final class CollectionsExt extends Static {
     /**
      * Returns the given collection if non-empty, or {@code null} if the given collection is null or empty.
      * This method is generally not recommended, since public API should prefer empty collection instead of null.
-     * However this method is occasionally useful for managing private fields, especially for inter-operability
+     * However, this method is occasionally useful for managing private fields, especially for inter-operability
      * with frameworks that may expect or return null (e.g. if we want to exclude completely an empty collection
      * from marshalling with JAXB).
      *
@@ -379,7 +379,7 @@ public final class CollectionsExt extends Static {
      * {@link org.apache.sis.referencing.AbstractIdentifiedObject} names or identifiers.
      *
      * <p><em>The set returned by this method may or may not be a view of the given set</em>.
-     * Consequently this method shall be used <strong>only</strong> if the given set will
+     * Consequently, this method shall be used <strong>only</strong> if the given set will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableSet(Set)} method instead.</p>
      *
@@ -416,7 +416,7 @@ public final class CollectionsExt extends Static {
      * Such small maps occur frequently in Apache SIS.
      *
      * <p><em>The map returned by this method may or may not be a view of the given map</em>.
-     * Consequently this method shall be used <strong>only</strong> if the given map will
+     * Consequently, this method shall be used <strong>only</strong> if the given map will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableMap(Map)} method instead.</p>
      *
@@ -454,7 +454,7 @@ public final class CollectionsExt extends Static {
      * Returns a unmodifiable version of the given list.
      *
      * <p><em>The collection returned by this method may or may not be a view of the given list</em>.
-     * Consequently this method shall be used <strong>only</strong> if the given list will
+     * Consequently, this method shall be used <strong>only</strong> if the given list will
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableList(List)} method instead.</p>
      *

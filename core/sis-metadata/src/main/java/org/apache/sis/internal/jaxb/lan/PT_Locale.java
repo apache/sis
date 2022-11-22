@@ -72,7 +72,7 @@ import org.apache.sis.internal.util.CollectionsExt;
 public final class PT_Locale {
     /**
      * The wrapped locale, for information purpose. This object is not marshalled directly.
-     * Instead it will be decomposed in language and country components in {@link Wrapper}.
+     * Instead, it will be decomposed in language and country components in {@link Wrapper}.
      *
      * @see #getLocale()
      */

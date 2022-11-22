@@ -54,7 +54,7 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Limitations</h2>
  * Current implementation does not try to map source bands to target bands for the same colors.
- * For example it does not verify if band order needs to be reversed because an image is RGB and
+ * For example, it does not verify if band order needs to be reversed because an image is RGB and
  * the other image is BVR. It is caller responsibility to ensure that bands are in the same order.
  *
  * <p>Current implementation does not expand the destination image for accommodating

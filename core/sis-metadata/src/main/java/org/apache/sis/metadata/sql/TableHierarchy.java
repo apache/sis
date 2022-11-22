@@ -26,7 +26,7 @@ import org.apache.sis.util.iso.Types;
  * This features is partially supported in PostgreSQL database.
  *
  * <p>This class is a work around for databases that support table inheritances,
- * but not yet index inheritance. For example in PostgreSQL 9.5.13, we cannot yet declare
+ * but not yet index inheritance. For example, in PostgreSQL 9.5.13, we cannot yet declare
  * a foreigner key to the super table and find the entries in inherited tables that way.</p>
  *
  * <p>An alternative to current workaround would be to repeat a search in all child tables.
@@ -41,7 +41,7 @@ import org.apache.sis.util.iso.Types;
 final class TableHierarchy {
     /**
      * Delimiter characters for the table name in identifier. Table names are prefixed to identifiers only if
-     * the type represented by the table is a subtype. For example since {@code Organisation} is a subtype of
+     * the type represented by the table is a subtype. For example, since {@code Organisation} is a subtype of
      * {@code Party}, identifiers for organizations need to be prefixed by {@code {Organisation}} in order to
      * allow {@code MetadataSource} to know in which table to search for such party.
      *

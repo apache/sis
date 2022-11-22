@@ -304,7 +304,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
             candidates = null;
         }
         /*
-         * The following loop should be executed exactly once. However it may happen that the "best" slice
+         * The following loop should be executed exactly once. However, it may happen that the "best" slice
          * actually does not intersect the requested extent, for example because the merge strategy looked
          * only for temporal intersection and did not saw that the geographic extents do not intersect.
          */

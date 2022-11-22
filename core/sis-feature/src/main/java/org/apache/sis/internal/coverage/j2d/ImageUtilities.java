@@ -100,7 +100,7 @@ public final class ImageUtilities extends Static {
     /**
      * Clips the given rectangle to the bounds of the given image.
      * Note that {@link Rectangle#width} and/or {@link Rectangle#width} results may be negative.
-     * Consequently the caller should test {@link Rectangle#isEmpty()} on the returned value.
+     * Consequently, the caller should test {@link Rectangle#isEmpty()} on the returned value.
      *
      * @param  image  the image.
      * @param  aoi    a region of interest to clip to the image bounds.
@@ -357,7 +357,7 @@ public final class ImageUtilities extends Static {
                  *
                  * So it looks like that SampleModel already normalizes the color components
                  * to (Red, Green, Blue) order, at least when the image has been created with
-                 * a standard constructor. However we do not know yet what would be the behavior
+                 * a standard constructor. However, we do not know yet what would be the behavior
                  * if masks are not the same. For now we just log a warning.
                  */
                 int[] m1 = null;

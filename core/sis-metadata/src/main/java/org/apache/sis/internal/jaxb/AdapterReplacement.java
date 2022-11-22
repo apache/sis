@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * <p><b>WARNING:</b> there is currently no mechanism for ensuring that the registration performed
  * by an {@code AdapterReplacement} instance does not overwrite the registration performed by an
  * other {@code AdapterReplacement} instance. This is okay as long as the instances are defined
- * only in SIS. However we will need to revisit this issue if we move this interface to public API.</p>
+ * only in SIS. However, we will need to revisit this issue if we move this interface to public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

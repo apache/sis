@@ -224,7 +224,7 @@ public final strictfp class NormalizerTest extends TestCase {
 
     /**
      * Tests normalization of an ellipsoidal CS. The axes used in this test do not contain any EPSG code.
-     * Consequently the {@link Normalizer#normalize(CoordinateSystem, AxisFilter, boolean)} method should
+     * Consequently, the {@link Normalizer#normalize(CoordinateSystem, AxisFilter, boolean)} method should
      * be able to reuse them as-is even if axis order changed.
      */
     @Test

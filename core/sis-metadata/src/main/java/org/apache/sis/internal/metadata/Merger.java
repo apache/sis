@@ -316,7 +316,7 @@ distribute:                 while (it.hasNext()) {
                     }
                 } else {
                     /*
-                     * No @SuppressWarnings("unchecked") because this is really unchecked. However since the two maps
+                     * No @SuppressWarnings("unchecked") because this is really unchecked. However, since the two maps
                      * have been fetched by calls to the same getter method on two org.apache.sis.metadata.iso objects,
                      * the types should.
                      */

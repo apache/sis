@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A sequence of {@code DirectPosition}s which is a view over arrays of coordinate values.
- * Each dimension is stored in a separated array. For example this class can view three
+ * Each dimension is stored in a separated array. For example, this class can view three
  * arrays (x[], y[], and z[]) as a sequence of three-dimensional {@code DirectPosition}.
  *
  * <h2>Limitation</h2>

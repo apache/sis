@@ -28,7 +28,7 @@ import java.lang.annotation.RetentionPolicy;
  * creation time.
  *
  * If JDK provided listeners allowing SIS to be notified about locale and timezone changes, we would
- * reset the annotated object to {@code null}. However since those listeners do not exist as of JDK7,
+ * reset the annotated object to {@code null}. However, since those listeners do not exist as of JDK7,
  * we use this annotation in the meantime for identifying the code which would need to be revisited
  * if we want to take in account default locale/timezone changes in a future SIS version.
  *

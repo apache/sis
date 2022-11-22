@@ -66,7 +66,7 @@ import org.apache.sis.internal.util.Strings;
  * types in its {@linkplain #getDescription() description} map. Since each {@code RecordType} has a reference
  * to its schema, serializing a single {@code RecordType} could imply serializing all of them.
  * In order to reduce the risk of unexpected behavior, serialization is currently left to subclasses.
- * For example a subclass may define a {@code Object readResolve()} method (as documented in the
+ * For example, a subclass may define a {@code Object readResolve()} method (as documented in the
  * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
  *
  * @author  Martin Desruisseaux (Geomatys)

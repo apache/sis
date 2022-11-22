@@ -83,7 +83,7 @@ import org.apache.sis.util.Debug;
  * when it delegates its work to the {@code parameter(String)} method.
  *
  * <div class="note"><b>Example:</b>
- * The same parameter may be known under different names. For example the
+ * The same parameter may be known under different names. For example, the
  * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getSemiMajorAxis()
  * length of the semi-major axis of the ellipsoid} is commonly known as {@code "semi_major"}.
  * But that parameter can also be named {@code "semi_major_axis"}, {@code "earth_radius"} or simply {@code "a"}
@@ -154,7 +154,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *
      * <div class="note"><b>Use case:</b>
      * this method is used for hiding parameters that should be inferred from the context.
-     * For example the {@code "semi_major"} and {@code "semi_minor"} parameters are included
+     * For example, the {@code "semi_major"} and {@code "semi_minor"} parameters are included
      * in the list of {@link org.opengis.referencing.operation.MathTransform} parameters
      * because that class has no way to know the values if they are not explicitly provided.
      * But those semi-axis length parameters should not be included in the list of
@@ -439,7 +439,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
         }
         /*
          * If there is no ambiguity, we are done. In case of ambiguity we should throw an exception.
-         * However we will not throw the exception if this method is invoked from the getParameter(…)
+         * However, we will not throw the exception if this method is invoked from the getParameter(…)
          * method of a Parameters instance wrapping a non-SIS implementation. The reason is that for
          * foreigner implementations, the package-private getParameter(…) method will conservatively
          * delegate to the public parameter(…) method, in case the implementer overrides it. But for

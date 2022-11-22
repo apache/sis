@@ -184,14 +184,14 @@ public final class ClenshawSummation {
 
     /**
      * One term in in the evaluation of a {@link Coefficient}. This term is usually single fraction.
-     * For example a {@code Coefficient} may be defined as below:
+     * For example, a {@code Coefficient} may be defined as below:
      *
      * {@preformat math
      *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵
      * }
      *
      * In above example each of -1/2, 3/16 and -1/32 fraction is a {@code Term} instance.
-     * However this class allows a term to be defined by an array of fractions if each term
+     * However, this class allows a term to be defined by an array of fractions if each term
      * is itself defined by another series expansion.
      */
     private static final class Term {

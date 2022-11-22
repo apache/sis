@@ -111,7 +111,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      *
      * <div class="note"><b>Rational:</b>
      * we exclude empty ranges because the {@link Range#equals(Object)} consider them as equal.
-     * Consequently if empty ranges were included in the pool, this method would return in some
+     * Consequently, if empty ranges were included in the pool, this method would return in some
      * occasions an empty range with different values than the given {@code range} argument.
      * </div>
      *

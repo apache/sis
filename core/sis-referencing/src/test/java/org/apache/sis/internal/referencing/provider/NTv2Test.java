@@ -207,7 +207,7 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
         assertEquals("ymax",   84.00 * DEGREES_TO_SECONDS, envelope.getMaximum(1), 1E-10);
         /*
          * Test a point. This point is located on the 3th grid in the NTv2 file.
-         * Consequently if the NTv2 implementation just pickups the first grid,
+         * Consequently, if the NTv2 implementation just pickups the first grid,
          * then this test would fail with an error around 100 metres.
          */
         final double[] position = {-134.998106062 * DEGREES_TO_SECONDS, 61.000285047 * DEGREES_TO_SECONDS};

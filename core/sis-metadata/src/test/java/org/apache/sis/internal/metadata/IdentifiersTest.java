@@ -105,7 +105,7 @@ public final strictfp class IdentifiersTest extends TestCase {
         assertEquals("ValidIdentifier", Identifiers.getIdentifier(citation, true));
         /*
          * Following test uses '-' in the first identifier, which is an invalid Unicode identifier part.
-         * Consequently the identifier that we get depends on whether we ask for strict Unicode or not.
+         * Consequently, the identifier that we get depends on whether we ask for strict Unicode or not.
          */
         citation = citation("Web Map Server", identifier("OGC", "06-042"), identifier("ISO", "19128"));
         assertEquals("OGC:06-042", Identifiers.getIdentifier(citation, false));

@@ -181,7 +181,7 @@ public final strictfp class MetadataStandardTest extends TestCase {
     @Test
     @DependsOnMethod("testGetInterface")
     public void testGetWrongInterface() {
-        standard = new MetadataStandard("SIS", "org.apache.sis.dummy.", null);
+        standard = new MetadataStandard("SIS", "org.apache.sis.dummy.", (MetadataStandard[]) null);
         try {
             getInterface(DefaultCitation.class);
             fail("No dummy interface expected.");

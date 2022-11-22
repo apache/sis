@@ -232,9 +232,9 @@ public final class DataStoreOpener extends Task<DataStore> {
      * Generally {@code qualified} should be {@code false} if the label will be a node in a tree having the
      * filename as parent, and {@code true} if the label will be used outside the context of a tree.</p>
      *
-     * <p>This operation may be costly. For example the call to {@link Resource#getMetadata()}
+     * <p>This operation may be costly. For example, the call to {@link Resource#getMetadata()}
      * may cause the resource to open a connection to the EPSG database.
-     * Consequently his method should be invoked in a background thread.</p>
+     * Consequently, this method should be invoked in a background thread.</p>
      *
      * @param  resource   the resource for which to get a label, or {@code null}.
      * @param  locale     the locale to use for localizing international strings.
@@ -313,7 +313,7 @@ public final class DataStoreOpener extends Task<DataStore> {
      * Removes the given data store from cache and closes it. It is caller's responsibility
      * to ensure that the given data store is not used anymore before to invoke this method.
      * This method should be invoked from JavaFX thread for making sure there is no new usage
-     * of the given data store starting while we are closing it. However after the data store
+     * of the given data store starting while we are closing it. However, after the data store
      * has been removed from the cache, the close action is performed in a background thread.
      *
      * @param  toClose  the data store to remove from the cache and to close.

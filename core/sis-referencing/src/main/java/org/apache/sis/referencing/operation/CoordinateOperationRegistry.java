@@ -670,7 +670,7 @@ class CoordinateOperationRegistry {
                 continue;                                   // Try again with the next best case.
             }
             /*
-             * It is possible that the CRS given to this method were not quite right.  For example the user
+             * It is possible that the CRS given to this method were not quite right.  For example, the user
              * may have created his CRS from a WKT using a different axis order than the order specified by
              * the authority and still (wrongly) call those CRS "EPSG:xxxx".  So we check if the source and
              * target CRS for the operation we just created are equivalent to the CRS specified by the user.
@@ -712,7 +712,7 @@ class CoordinateOperationRegistry {
      *
      * <div class="note"><b>Note:</b>
      * in many cases, the inverse operation is numerically less accurate than the direct operation because it
-     * uses approximations like series expansions or iterative methods. However the numerical errors caused by
+     * uses approximations like series expansions or iterative methods. However, the numerical errors caused by
      * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
      * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
      * see ISO 19111 for more information).</div>
@@ -773,7 +773,7 @@ class CoordinateOperationRegistry {
     /**
      * Completes (if necessary) the given coordinate operation for making sure that the source CRS
      * is the given one and the target CRS is the given one.  In principle, the given CRS shall be
-     * equivalent to the operation source/target CRS. However discrepancies happen if the user CRS
+     * equivalent to the operation source/target CRS. However, discrepancies happen if the user CRS
      * have flipped axis order, or if we looked for 2D operation while the user provided 3D CRS.
      *
      * @param  operation  the coordinate operation to complete.
@@ -1085,7 +1085,7 @@ class CoordinateOperationRegistry {
              *   - Longitude rotation (EPSG:9601). Note that this is a transformation rather than a conversion.
              *   - Geographic3D to 2D conversion (EPSG:9659).
              *
-             * However there is a few special cases where we may be able to add a dimension in a non-linear operation.
+             * However, there is a few special cases where we may be able to add a dimension in a non-linear operation.
              * We can attempt those special cases by just giving the same parameters to the math transform factory
              * together with the desired CRS. Examples of such special cases are:
              *

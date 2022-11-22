@@ -672,7 +672,7 @@ apply:          if (forwardChangeOfCRS == null) {
 
     /**
      * Invoked when the target CRS has some dimensions that the source CRS does not have.
-     * For example this is invoked during the conversion from (<var>x</var>, <var>y</var>)
+     * For example, this is invoked during the conversion from (<var>x</var>, <var>y</var>)
      * coordinates to (<var>x</var>, <var>y</var>, <var>t</var>). If constant values can
      * be given to the missing dimensions, than those values are returned. Otherwise this
      * method returns {@code null}.

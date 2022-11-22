@@ -116,7 +116,7 @@ public abstract class FormattableObject {
      *
      * <p>By default this method formats this object according the {@link Convention#WKT2_SIMPLIFIED} rules,
      * except that Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
-     * Consequently the WKT is not guaranteed to be ISO 19162 compliant.
+     * Consequently, the WKT is not guaranteed to be ISO 19162 compliant.
      * For stricter conformance, use {@link #toWKT()} instead.</p>
      *
      * @return the Well Known Text (WKT) or an alternative representation of this object.

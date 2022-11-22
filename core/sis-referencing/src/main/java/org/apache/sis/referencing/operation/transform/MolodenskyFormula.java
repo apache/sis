@@ -43,7 +43,7 @@ import static java.lang.Math.*;
  *   <li>The "real" {@link MolodenskyTransform} (see that class for documentation about Molodensky transform).</li>
  *   <li>{@link InterpolatedMolodenskyTransform}, which conceptually works on geocentric coordinates but
  *       is implemented in Apache SIS using Molodensky (never abridged) formulas for performance reasons.
- *       However this implementation choice should be hidden to users (except by mention in javadoc).</li>
+ *       However, this implementation choice should be hidden to users (except by mention in javadoc).</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)

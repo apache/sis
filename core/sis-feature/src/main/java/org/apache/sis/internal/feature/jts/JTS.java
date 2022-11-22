@@ -48,7 +48,7 @@ import static java.util.logging.Logger.getLogger;
  * For library-agnostic functionalities, see {@link org.apache.sis.internal.feature.Geometries} instead.
  *
  * <p>This method may be modified or removed in any future version.
- * For example we may replace it by a more general mechanism working also on other geometry libraries.</p>
+ * For example, we may replace it by a more general mechanism working also on other geometry libraries.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
@@ -232,7 +232,7 @@ public final class JTS extends Static {
      *
      * <p><b>This operation may be slow!</b>
      * If many geometries need to be transformed, it is better to fetch the {@link CoordinateOperation} only once,
-     * then invoke {@link #transform(Geometry, CoordinateOperation)} for each geometry. Alternatively the geometries
+     * then invoke {@link #transform(Geometry, CoordinateOperation)} for each geometry. Alternatively, the geometries
      * can be stored in a single geometry collection in order to invoke this method only once.</p>
      *
      * @param  geometry   the geometry to transform, or {@code null}.

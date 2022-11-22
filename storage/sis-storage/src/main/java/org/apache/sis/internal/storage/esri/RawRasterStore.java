@@ -430,7 +430,7 @@ final class RawRasterStore extends RasterStore {
         /*
          * Create a sample model for the data layout. This block encapsulates all layout information
          * except `skipBytes` and `bandGapBytes`, which need to be taken in account at reading time.
-         * Note that there is many ways to create a sample model. For example a `BandedSampleModel`
+         * Note that there is many ways to create a sample model. For example, a `BandedSampleModel`
          * could store 3 bands in the same array or in 3 different arrays. The choices made in this
          * block must be consistent with the expectations of `read(…)` method implementation.
          */

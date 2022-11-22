@@ -25,7 +25,7 @@ import org.apache.sis.storage.Resource;
  * A resource which content can be accessed by smaller chunks called tiles.
  * The use of {@code TiledResource} is not strictly necessary for efficient data loading because
  * {@code Resource} implementations should automatically take advantage of tiling when answering requests.
- * However clients may use this information for optimizing their loading strategy.
+ * However, clients may use this information for optimizing their loading strategy.
  *
  * <p>A {@code TiledResource} may contain multiple {@link TileMatrixSet} instances,
  * each one for a different {@link org.opengis.referencing.crs.CoordinateReferenceSystem}.

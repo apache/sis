@@ -137,7 +137,7 @@ public final class Colorizer {
      * of those values is suitable, or a new sample dimension created by {@link #compact()}.
      *
      * <p>This sample dimension should not be returned to the user because it may not contain meaningful values.
-     * For example it may contain an "artificial" transfer function for computing a {@link MathTransform1D} from
+     * For example, it may contain an "artificial" transfer function for computing a {@link MathTransform1D} from
      * source range to the [0 … 255] value range.</p>
      */
     private SampleDimension target;

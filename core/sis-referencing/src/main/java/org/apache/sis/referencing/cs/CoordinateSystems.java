@@ -114,7 +114,7 @@ public final class CoordinateSystems extends Static {
          * Some EPSG direction names are of the form "South along 180 deg". We check that the
          * direction before "along" is valid and create a new axis direction if it is. We can
          * not just replace "South along 180 deg" by "South" because the same CRS may use two
-         * of those directions. For example EPSG:32661 has the following axis direction:
+         * of those directions. For example, EPSG:32661 has the following axis direction:
          *
          * South along 180 deg
          * South along 90 deg East

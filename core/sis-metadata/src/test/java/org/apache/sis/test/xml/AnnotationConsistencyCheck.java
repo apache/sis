@@ -115,7 +115,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * Returns the SIS implementation class for the given GeoAPI interface.
-     * For example the implementation of the {@link org.opengis.metadata.citation.Citation}
+     * For example, the implementation of the {@link org.opengis.metadata.citation.Citation}
      * interface is the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} class.
      *
      * @param  <T>   the type represented by the {@code type} argument.
@@ -217,7 +217,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * Returns the beginning of expected namespace for an element defined by the given UML.
-     * For example the namespace of most types defined by {@link Specification#ISO_19115}
+     * For example, the namespace of most types defined by {@link Specification#ISO_19115}
      * starts with is {@code "http://standards.iso.org/iso/19115/-3/"}.
      *
      * <p>The default implementation recognizes the
@@ -341,7 +341,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * Returns the name of the XML type for an interface described by the given UML.
-     * For example in ISO 19115-3, the XML type of {@code CI_Citation} is {@code CI_Citation_Type}.
+     * For example, in ISO 19115-3, the XML type of {@code CI_Citation} is {@code CI_Citation_Type}.
      * The default implementation returns {@link UML#identifier()}, possibly with {@code "Abstract"} prepended,
      * and unconditionally with {@code "_Type"} appended.
      * Subclasses shall override this method when mismatches are known to exist between the UML and XML type names.

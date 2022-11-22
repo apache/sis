@@ -43,7 +43,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  *
  * <div class="note"><b>Note:</b>
  * The rational for avoiding axis orientation restriction is that other {@code DirectPosition} implementations
- * do not have such restriction, and it would be hard to generalize. For example there is no clear "x" or "y"
+ * do not have such restriction, and it would be hard to generalize. For example, there is no clear "x" or "y"
  * classification for North-East direction.</div>
  *
  * <h2>Caution when used in collections</h2>

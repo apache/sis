@@ -161,8 +161,8 @@ final class TransformVersion {
 
     /**
      * Adds a one-way association from JAXB namespace to XML namespace. Many JAXB namespaces may map
-     * to the same XML namespace. For example most ISO 19115-3:2016 namespaces map to the same legacy
-     * ISO 19139:2007 namespace. Consequently this association is not easily reversible.
+     * to the same XML namespace. For example, most ISO 19115-3:2016 namespaces map to the same legacy
+     * ISO 19139:2007 namespace. Consequently, this association is not easily reversible.
      */
     private void addSurjective(final String jaxb, final String xml) {
         exports.put(jaxb, xml);

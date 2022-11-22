@@ -364,7 +364,7 @@ public class CoverageExplorer extends Widget {
         assert Platform.isFxApplicationThread();
         /*
          * We build when first requested because `ResourceExplorer` for example will never request this view.
-         * Instead it will invoke `getDataView(View)` or `getControls(View)` and layout those regions itself.
+         * Instead, it will invoke `getDataView(View)` or `getControls(View)` and layout those regions itself.
          */
         if (content == null) {
             /*

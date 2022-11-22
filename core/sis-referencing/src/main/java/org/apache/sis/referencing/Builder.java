@@ -120,12 +120,12 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  *
  * <h2>Builder property lifetimes</h2>
- * Some complex objects require the creation of many components. For example constructing a
+ * Some complex objects require the creation of many components. For example, constructing a
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (CRS) may require constructing a
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate system}, a
  * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum} and an
  * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} among other components.
- * However all those components often (but not necessarily) share the same authority, code space and version information.
+ * However, all those components often (but not necessarily) share the same authority, code space and version information.
  * In order to simplify that common usage, two groups of properties have different lifetimes in the {@code Builder} class:
  *
  * <ul>
@@ -790,7 +790,7 @@ public abstract class Builder<B extends Builder<B>> {
         ensureNonNull("authority", authority);
         final int length = (replacements != null) ? replacements.length : 0;
         /*
-         * IdentifiedObjects store the "primary name" separately from aliases. Consequently we will start
+         * IdentifiedObjects store the "primary name" separately from aliases. Consequently, we will start
          * the iteration at index -1 where i=-1 is used as a sentinel value meaning "primary name" before
          * to iterate over the aliases. Note that the type is not the same:
          *

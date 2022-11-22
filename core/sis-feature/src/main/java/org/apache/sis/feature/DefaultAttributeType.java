@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * </table>
  *
  * <h2>Attribute characterization</h2>
- * An {@code Attribute} can be characterized by other attributes. For example an attribute that carries a measurement
+ * An {@code Attribute} can be characterized by other attributes. For example, an attribute that carries a measurement
  * (e.g. air temperature) may have another attribute that holds the measurement accuracy (e.g. ±0.1°C).
  * The accuracy value is often constant for all instances of that attribute
  * (e.g. for all temperature measurements in the same dataset), but this is not mandatory.
@@ -74,7 +74,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * <ul>
  *   <li>The same characteristic name (e.g. “accuracy”) can be used for different attributes
  *       (e.g. “temperature”, “humidity”, <i>etc.</i>) since all characteristics are local to their attribute.</li>
- *   <li>A reference to an attribute gives also access to its characteristics. For example any method expecting
+ *   <li>A reference to an attribute gives also access to its characteristics. For example, any method expecting
  *       an {@code Attribute} argument, when given a measurement, can also get its accuracy at the same time.</li>
  *   <li>In the common case of a {@linkplain DefaultFeatureType#isSimple() simple feature} with characteristics
  *       that are constants, declaring them as attribute characteristics allows to specify the constants only once.</li>
@@ -92,7 +92,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *
  * <p>In particular, the {@link #getDefaultValue()} method does <strong>not</strong> clone the returned value.
  * This means that the same {@code defaultValue} instance may be shared by many {@link AbstractAttribute} instances.
- * Consequently the default value should be immutable for avoiding unexpected behavior.</p>
+ * Consequently, the default value should be immutable for avoiding unexpected behavior.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

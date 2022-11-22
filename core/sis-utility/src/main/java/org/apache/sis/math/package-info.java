@@ -31,7 +31,7 @@
  *
  *       <div class="note"><b>Note:</b>
  *       {@code Line} and {@code Plane} classes are not geometric objects since they are not bounded in space.
- *       For example the {@link java.awt.geom.Line2D} geometry have starting and ending points, while the
+ *       For example, the {@link java.awt.geom.Line2D} geometry have starting and ending points, while the
  *       {@code Line} class in this package extends to infinite.</div></li>
  *
  *   <li>{@link org.apache.sis.math.Vector} of real numbers, typically as views over arrays of primitive types.

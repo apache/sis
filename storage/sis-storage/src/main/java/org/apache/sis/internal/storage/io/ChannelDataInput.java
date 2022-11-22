@@ -55,7 +55,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * This class API is compatibly with the {@link java.io.DataInput} interface, so subclasses can implement that
  * interface if they wish. This class does not implement {@code DataInput} itself because it is not needed for
  * SIS purposes, and because {@code DataInput} has undesirable methods ({@code readLine()} and {@code readUTF()}).
- * However the {@link ChannelImageInputStream} class implements the {@code DataInput} interface, together with
+ * However, the {@link ChannelImageInputStream} class implements the {@code DataInput} interface, together with
  * the {@link javax.imageio.stream.ImageInputStream} one, mostly for situations when inter-operability with
  * {@link javax.imageio} is needed.
  *

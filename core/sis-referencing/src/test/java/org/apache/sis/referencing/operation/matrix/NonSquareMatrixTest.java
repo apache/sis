@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class is expected to be the last {@code MatrixTestCase} subclass to be executed,
  * because it sends the {@link #statistics} to {@link #out}. This condition is ensured if
  * the tests are executed by {@link org.apache.sis.test.suite.ReferencingTestSuite}.
- * However it is not a big deal if this condition is broken, as the only consequence
+ * However, it is not a big deal if this condition is broken, as the only consequence
  * is that reported statistics will be incomplete.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

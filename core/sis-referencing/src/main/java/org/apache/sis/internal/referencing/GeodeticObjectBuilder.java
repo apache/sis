@@ -69,7 +69,7 @@ import org.apache.sis.parameter.Parameters;
  * Reusing the same builder for creating many CRS has unspecified behavior.
  *
  * <p>For now, this class is defined in the internal package because this API needs more experimentation.
- * However this class may move in a public package later if we feel confident that its API is mature enough.</p>
+ * However, this class may move in a public package later if we feel confident that its API is mature enough.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

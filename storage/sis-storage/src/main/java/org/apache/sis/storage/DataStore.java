@@ -51,7 +51,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * <p>Each data store is itself a {@link Resource}. The data store subclasses should implement
  * a more specialized {@code Resource} interface depending on the format characteristics.
- * For example a {@code DataStore} for ShapeFiles will implement the {@link FeatureSet} interface,
+ * For example, a {@code DataStore} for ShapeFiles will implement the {@link FeatureSet} interface,
  * while a {@code DataStore} for netCDF files will implement the {@link Aggregate} interface.</p>
  *
  * <h2>Thread safety policy</h2>
@@ -64,7 +64,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * </ul>
  *
  * Since above properties are used only for information purpose, concurrent modifications during a read or write
- * operation should be harmless. Consequently subclasses are free use their own synchronization mechanism instead
+ * operation should be harmless. Consequently, subclasses are free use their own synchronization mechanism instead
  * than {@code synchronized(this)} lock.
  *
  * @author  Johann Sorel (Geomatys)
@@ -187,7 +187,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * <p>The return value should never be null if this {@code DataStore} has been created by
      * {@link DataStores#open(Object)} or by a {@link DataStoreProvider} {@code open(…)} method.
-     * However it may be null if this object has been instantiated by a direct call to its constructor.</p>
+     * However, it may be null if this object has been instantiated by a direct call to its constructor.</p>
      *
      * @return the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      *

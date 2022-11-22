@@ -21,6 +21,8 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
+
 
 /**
  * Tests the {@link Namespaces} class.
@@ -37,9 +39,9 @@ public final strictfp class NamespacesTest extends TestCase {
     @Test
     public void testGetPreferredPrefix() {
         assertEquals("gml",  Namespaces.getPreferredPrefix("http://www.opengis.net/gml/3.2", null));
-        assertEquals("mdb",  Namespaces.getPreferredPrefix("http://standards.iso.org/iso/19115/-3/mdb/1.0", null));
-        assertEquals("gmi",  Namespaces.getPreferredPrefix("http://standards.iso.org/iso/19115/-2/gmi/1.0", null));
-        assertEquals("srv",  Namespaces.getPreferredPrefix("http://standards.iso.org/iso/19115/-3/srv/2.0", null));
+        assertEquals("mdb",  Namespaces.getPreferredPrefix(ISO_NAMESPACE + "19115/-3/mdb/1.0", null));
+        assertEquals("gmi",  Namespaces.getPreferredPrefix(ISO_NAMESPACE + "19115/-2/gmi/1.0", null));
+        assertEquals("srv",  Namespaces.getPreferredPrefix(ISO_NAMESPACE + "19115/-3/srv/2.0", null));
         assertEquals("srv1", Namespaces.getPreferredPrefix("http://www.isotc211.org/2005/srv", null));
         assertEquals("gmd",  Namespaces.getPreferredPrefix("http://www.isotc211.org/2005/gmd", null));
     }

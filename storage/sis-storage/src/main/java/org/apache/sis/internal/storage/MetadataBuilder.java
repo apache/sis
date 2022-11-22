@@ -1999,7 +1999,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  type         the feature type to add, or {@code null} for no-operation.
      * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
-     *         Note that ISO-19115 considers 0 as an invalid value. Consequently if 0, the feature is not added.
+     *         Note that ISO-19115 considers 0 as an invalid value. Consequently, if 0, the feature is not added.
      * @return the name of the added feature (even if not added to the metadata), or {@code null} if none.
      *
      * @see FeatureCatalogBuilder#define(DefaultFeatureType)
@@ -2024,7 +2024,7 @@ parse:      for (int i = 0; i < length;) {
      *
      * @param  name         name of the feature type to add, or {@code null} for no-operation.
      * @param  occurrences  number of instances of the given feature type, or a negative value if unknown.
-     *         Note that ISO-19115 considers 0 as an invalid value. Consequently if 0, the feature is not added.
+     *         Note that ISO-19115 considers 0 as an invalid value. Consequently, if 0, the feature is not added.
      */
     public final void addFeatureType(final GenericName name, final long occurrences) {
         if (name != null && occurrences != 0) {

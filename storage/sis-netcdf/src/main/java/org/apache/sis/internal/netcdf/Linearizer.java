@@ -70,7 +70,7 @@ public final class Linearizer {
 
     /**
      * The datum to use as one of the predefined constants. The ellipsoid size do not matter
-     * because a linear regression will be applied anyway. However the eccentricity matter.
+     * because a linear regression will be applied anyway. However, the eccentricity matter.
      *
      * <p>When a non-linear transform exists in spherical or ellipsoidal variants, it may be sufficient to use
      * the spherical formulas instead of ellipsoidal formulas because the spherical ones are faster and more
@@ -312,7 +312,7 @@ public final class Linearizer {
             }
             /*
              * Axis order before linearization was taken in account by above `gridToTargetCRS(…, xdim, ydim)`.
-             * Consequently arguments below shall specify only the dimensions to select without reordering axes.
+             * Consequently, arguments below shall specify only the dimensions to select without reordering axes.
              * Note that after linearization, axes will be in a fixed order determined by the CRS.
              */
             grid.addLinearizers(projections, false, Math.min(xdim, ydim), Math.max(xdim, ydim));
@@ -343,8 +343,8 @@ search: for (final GridCacheValue replacement : replacements) {
                 /*
                  * In the most typical cases, the source CRS is geographic and the target CRS is projected.
                  * We can generally associate a source axis to a target axis by looking at their directions.
-                 * For example the "Longitude" source axis is approximately colinear with the "Easting" target axis.
-                 * However there is a use case where target axis directions cannot be matched directly to source:
+                 * For example, the "Longitude" source axis is approximately colinear with the "Easting" target axis.
+                 * However, there is a use case where target axis directions cannot be matched directly to source:
                  * if the projection is a polar projection with target axis directions such as "South along 90°E",
                  * then `AxisDirections.indexOfColinear(CoordinateSystem, CoordinateSystem)} will not find a match.
                  * We need the more flexible `indicesOfLenientMapping(…)` method.

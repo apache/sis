@@ -82,7 +82,7 @@ import org.apache.sis.measure.Units;
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
  * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilotes for centuries.
- * However software developers tend to consistently use the (<var>x</var>,<var>y</var>) order for every kind of CRS.
+ * However, software developers tend to consistently use the (<var>x</var>,<var>y</var>) order for every kind of CRS.
  * Those different practices resulted in contradictory definitions of axis order for almost every CRS of kind
  * {@code GeographicCRS}, for some {@code ProjectedCRS} in the South hemisphere (South Africa, Australia, <i>etc.</i>)
  * and for some polar projections among others.
@@ -99,7 +99,7 @@ import org.apache.sis.measure.Units;
  * <h2>Note on range of longitude values</h2>
  * Most geographic CRS have a longitude axis defined in the [-180 … +180]° range. All map projections in Apache SIS are
  * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2(y,x)}.
- * However some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
+ * However, some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
  * using the {@link #POSITIVE_RANGE} enumeration value. The choice of longitude range will impact not only some
  * coordinate conversions, but also the methods that verify the <cite>domain of validity</cite>
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
@@ -136,7 +136,7 @@ public enum AxesConvention implements AxisFilter {
      * <div class="note"><b>Rational:</b>
      * The reason why we do not normalize the range and the prime meridian is because doing so
      * would cause the conversion between old and new coordinate systems to be non-affine for axes
-     * having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}. Furthermore changing the
+     * having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}. Furthermore, changing the
      * prime meridian would be a datum change rather than a coordinate system change, and datum
      * changes are more difficult to handle by coordinate operation factories.
      * </div>
@@ -271,11 +271,11 @@ public enum AxesConvention implements AxisFilter {
      *
      * <h4>Usage</h4>
      * The most frequent usage of this enum is for shifting longitude values from the [-180 … +180]° range
-     * to the [0 … 360]° range. However this enum could also be used with climatological calendars if their
+     * to the [0 … 360]° range. However, this enum could also be used with climatological calendars if their
      * time axis has a wrapround range meaning.
      *
      * <p>Note that conversions from an coordinate system using the [-180 … +180]° range to a coordinate system
-     * using the [0 … 360]° range may not be affine. For example the data in the West hemisphere ([-180 … 0]°)
+     * using the [0 … 360]° range may not be affine. For example, the data in the West hemisphere ([-180 … 0]°)
      * may need to move on the right side of the East hemisphere ([180 … 360]°).
      * Some geometries may need to be separated in two parts, and others may need to be merged.</p>
      *

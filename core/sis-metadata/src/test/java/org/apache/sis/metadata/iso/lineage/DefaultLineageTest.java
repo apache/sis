@@ -67,7 +67,7 @@ public final strictfp class DefaultLineageTest extends TestCase {
     /**
      * Tests the marshalling of a {@code "mrl:LI_Source"} element.
      * If this case, the test uses only ISO 19115-1 elements (no ISO 19115-2).
-     * Consequently the XML name shall be {@code "mrl:LI_Source"}.
+     * Consequently, the XML name shall be {@code "mrl:LI_Source"}.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
@@ -92,7 +92,7 @@ public final strictfp class DefaultLineageTest extends TestCase {
     /**
      * Tests the marshalling of a legacy {@code "gmd:LI_Source"} element.
      * If this case, the test uses only ISO 19115-1 elements (no ISO 19115-2).
-     * Consequently the legacy XML name shall be {@code "gmd:LI_Source"}.
+     * Consequently, the legacy XML name shall be {@code "gmd:LI_Source"}.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
@@ -118,7 +118,7 @@ public final strictfp class DefaultLineageTest extends TestCase {
     /**
      * Tests the marshalling of a {@code "mrl:LE_Source"} element.
      * This test starts with the same metadata than {@link #testSource()} and adds an
-     * ISO 19115-2 specific property. Consequently the XML name, which was originally
+     * ISO 19115-2 specific property. Consequently, the XML name, which was originally
      * {@code "mrl:LI_Source"}, shall become {@code "mrl:LE_Source"}.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.
@@ -153,7 +153,7 @@ public final strictfp class DefaultLineageTest extends TestCase {
     /**
      * Tests the marshalling of a legacy {@code "gmi:LE_Source"} element.
      * This test starts with the same metadata than {@link #testLegacySource()} and adds
-     * an ISO 19115-2 specific property. Consequently the XML name, which was originally
+     * an ISO 19115-2 specific property. Consequently, the XML name, which was originally
      * {@code "gmd:LI_Source"}, shall become {@code "gmi:LE_Source"}.
      *
      * @throws JAXBException if an error occurred while marshalling the XML.

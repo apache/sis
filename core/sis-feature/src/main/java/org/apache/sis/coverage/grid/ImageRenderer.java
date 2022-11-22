@@ -395,7 +395,7 @@ public class ImageRenderer {
     /**
      * Returns the location of the image upper-left corner together with the image size. The image coordinate system
      * is relative to the {@code sliceExtent} specified at construction time: the (0,0) pixel coordinates correspond
-     * to the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low coordinates}. Consequently the rectangle
+     * to the {@code sliceExtent} {@linkplain GridExtent#getLow(int) low coordinates}. Consequently, the rectangle
      * {@linkplain Rectangle#x <var>x</var>} and {@linkplain Rectangle#y <var>y</var>} coordinates are (0,0) if
      * the image is located exactly in the area requested by {@code sliceExtent}, or is shifted as below otherwise:
      *

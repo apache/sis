@@ -295,7 +295,7 @@ public strictfp class PixelIteratorTest extends TestCase {
     }
 
     /**
-     * Returns the index in iteration of the given coordinates. For example a return value of 2 means
+     * Returns the index in iteration of the given coordinates. For example, a return value of 2 means
      * that the given (x,y) should be the third point in iteration (iteration starts at index zero).
      * This method must be overridden for each kind of iterator to test.
      *

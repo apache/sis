@@ -38,7 +38,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * <p>The final result is that envelopes transformed using {@code WraparoundInEnvelope} may be larger
  * than envelopes transformed using {@link WraparoundTransform} but should never be smaller.
- * For example when transforming the following envelope with wraparound on the dashed line:</p>
+ * For example, when transforming the following envelope with wraparound on the dashed line:</p>
  *
  * {@preformat text
  *     ┌─┆───────────────┆───┐           ┆              Envelope to transform.

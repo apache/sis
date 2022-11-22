@@ -106,7 +106,7 @@ import org.apache.sis.setup.OptionKey;
  * Because some image formats can store an arbitrary number of images,
  * this data store is considered as an aggregate with one resource per image.
  * All image should have the same size and all resources will share the same {@link GridGeometry}.
- * However this base class does not implement the {@link Aggregate} interface directly in order to
+ * However, this base class does not implement the {@link Aggregate} interface directly in order to
  * give a chance to subclasses to implement {@link GridCoverageResource} directly when the format
  * is known to support only one image per file.
  *

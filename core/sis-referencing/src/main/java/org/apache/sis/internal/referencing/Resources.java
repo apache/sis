@@ -416,7 +416,7 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NoConvergenceForPoints_2 = 47;
 
         /**
-         * No ‘{1}’ object found for code “{2}”. However only a subset of the {0} geodetic dataset has
+         * No ‘{1}’ object found for code “{2}”. However, only a subset of the {0} geodetic dataset has
          * been queried. See {3} for instruction about how to install the full {0} database.
          */
         public static final short NoSuchAuthorityCodeInSubset_4 = 48;

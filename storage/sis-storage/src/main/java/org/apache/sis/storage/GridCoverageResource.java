@@ -60,13 +60,13 @@ public interface GridCoverageResource extends DataSet {
      *       (the <cite>Coordinate Reference System</cite>).</li>
      *   <li>The conversion from grid coordinates to "real world" coordinates. This conversion is often,
      *       but not necessarily, a linear relationship. Axis order or direction may be changed by the conversion.
-     *       For example row indices may be increasing toward down while latitude coordinates are increasing toward up.</li>
+     *       For example, row indices may be increasing toward down while latitude coordinates are increasing toward up.</li>
      *   <li>An <em>estimation</em> of grid resolution for each "real world" axis.</li>
      * </ul>
      *
      * The grid returned by this method <em>should</em> be equal to the grid returned by
      * <code>{@linkplain #read(GridGeometry, int...) read}(null).{@linkplain GridCoverage#getGridGeometry() getGridGeometry()}</code>.
-     * However the grid geometry returned by this method is allowed to be only approximate if computing accurate information would be
+     * However, the grid geometry returned by this method is allowed to be only approximate if computing accurate information would be
      * prohibitively expensive, or if the grid geometry depends on the exact argument value given to the {@code read(…)} method.
      * At least, the {@linkplain GridGeometry#getDimension() number of dimensions} should match.
      *
@@ -98,7 +98,7 @@ public interface GridCoverageResource extends DataSet {
      *
      * <p>The list returned by this method <em>should</em> be equal to the list returned by
      * <code>{@linkplain #read(GridGeometry, int...) read}(null).{@linkplain GridCoverage#getSampleDimensions() getSampleDimensions()}</code>.
-     * However the sample dimensions returned by this method is allowed to be only approximate if computing accurate information
+     * However, the sample dimensions returned by this method is allowed to be only approximate if computing accurate information
      * would be prohibitively expensive, or if the sample dimensions depend on the {@code domain} argument (area of interest)
      * given to the {@code read(…)} method. At least, the number of sample dimensions should match.</p>
      *
@@ -153,7 +153,7 @@ public interface GridCoverageResource extends DataSet {
      *
      * <p>The returned subset may be a <em>view</em> of this set, i.e. changes in this {@code GridCoverageResource}
      * may be reflected immediately on the returned subset (and conversely), but not necessarily.
-     * However the returned subset may not have the same capabilities as this {@link GridCoverageResource}.
+     * However, the returned subset may not have the same capabilities as this {@link GridCoverageResource}.
      * In particular, write operations may become unsupported after complex queries.</p>
      *
      * <h4>Default implementation</h4>

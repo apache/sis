@@ -121,7 +121,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
         /*
          * Values around π/2 are a special case. Theoretically the result should be positive infinity.
          * But since we do not have an exact representatation of π/2, we instead get a high number.
-         * Furthermore the value does not become negative immediately after π/2; we have to skip an
+         * Furthermore, the value does not become negative immediately after π/2; we have to skip an
          * other IEEE 754 double value. This is because the real π/2 value is actually between PI/2
          * and nextUp(PI/2):
          *
@@ -213,7 +213,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Tests the {@link ConformalProjection#φ(double)} function. We expect it to be
      * the converse of the {@link ConformalProjection#expΨ(double, double)} function.
-     * In theory only the [-90° … +90°] range needs to be tested. However the function is still
+     * In theory only the [-90° … +90°] range needs to be tested. However, the function is still
      * consistent in the [-90° … +270°] range so we test that range for tracking this fact.
      *
      * @throws ProjectionException if an error occurred while projecting a point.

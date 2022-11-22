@@ -65,7 +65,7 @@ public final strictfp class RewindableLineReaderTest extends TestCase {
         /*
          * Skip a number of characters greater than the current buffer content. It should cause BufferedReader to
          * invalidate the mark. As a result of failure to execute BufferedReader.reset(), the 'reader' variable
-         * should get a new value. However while we expect the value to change, we do not require it since whether
+         * should get a new value. However, while we expect the value to change, we do not require it since whether
          * BufferedReader.reset() succeeded or not depends on BufferedReader implementation.
          */
         reader.skip(2 * TRANSFERT_SIZE);

@@ -457,7 +457,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      *     "(snip) the prime meridian’s {@literal <irm longitude>} value shall be given in
      *     the same angular units as those for the horizontal axes of the geographic CRS."
      *
-     * Consequently we expect the prime meridian to be in decimal degrees even if the WKT used in this test has
+     * Consequently, we expect the prime meridian to be in decimal degrees even if the WKT used in this test has
      * an {@code Unit[“grad”, 0.015707963267948967]} element, because this WK also declare the axis as being in
      * degrees. Since this can be confusing, we expect the parser to emit a warning.
      *
@@ -933,7 +933,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
         /*
          * Test "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
          * The `south` transform is actually the usual Transverse Mercator projection, despite
-         * having axis oriented toward South.  Consequently the "False Northing" parameter has
+         * having axis oriented toward South.  Consequently, the "False Northing" parameter has
          * the same meaning for those two CRS. Since we assigned the same False Northing value,
          * those two CRS have their "False origin" at the same location. This is why conversion
          * from `south` to `north` introduce no translation, only a reversal of y axis.

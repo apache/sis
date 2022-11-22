@@ -114,7 +114,7 @@ import static java.util.logging.Logger.getLogger;
  * </ul>
  *
  * <p>Each descriptor has many aliases, and those aliases may vary between different projections.
- * For example the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
+ * For example, the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
  * by OGC, while EPSG uses various names like <cite>"False easting"</cite> or <cite>"Easting at
  * false origin"</cite>.</p>
  *
@@ -144,7 +144,7 @@ import static java.util.logging.Logger.getLogger;
  * A parameter may be mandatory and still have a default value. In the context of this package, "mandatory"
  * means that the parameter is an essential part of the projection defined by standards.
  * Such mandatory parameters will always appears in any <cite>Well Known Text</cite> (WKT) formatting,
- * even if not explicitly set by the user. For example the central meridian is typically a mandatory
+ * even if not explicitly set by the user. For example, the central meridian is typically a mandatory
  * parameter with a default value of 0° (the Greenwich meridian).
  *
  * <p>Optional parameters, on the other hand, are often non-standard extensions.
@@ -222,7 +222,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * <div class="note"><b>Note:</b>
      * we do not use a concurrent map here because the number of entries is expected to be very small
-     * (about 2 entries), which make concurrent algorithms hardly efficient. Furthermore this map is
+     * (about 2 entries), which make concurrent algorithms hardly efficient. Furthermore, this map is
      * not used often.
      * </div>
      */
@@ -344,10 +344,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Returns a factory for the same transforms than this factory, but with caching potentially disabled.
      * By default, {@code DefaultMathTransformFactory} caches the {@link MathTransform} instances for sharing
      * existing instances when transforms are created many times with the same set of parameters.
-     * However this caching may be unnecessarily costly when the transforms to create are known to be short lived.
+     * However, this caching may be unnecessarily costly when the transforms to create are known to be short lived.
      * This method allows to get a factory better suited for short-lived objects.
      *
-     * <p>This method does not modify the state of this factory. Instead different factory instances for the
+     * <p>This method does not modify the state of this factory. Instead, different factory instances for the
      * different caching policy are returned.</p>
      *
      * @param  enabled  whether caching should be enabled.
@@ -625,7 +625,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * <div class="note"><b>Design note:</b>
          * ellipsoidal coordinate systems and ellipsoids are associated indirectly, through a geodetic CRS.
-         * However this method expects those two components to be given explicitly instead of inferring
+         * However, this method expects those two components to be given explicitly instead of inferring
          * them from a {@code CoordinateReferenceSystem} for making clear that {@code MathTransformFactory}
          * does not perform any {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
          * datum} analysis. For coordinate operations that take datum changes in account (including change
@@ -1102,7 +1102,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             provider   = method;
             parameters = userParams;
             /*
-             * Get the operation method for the appropriate number of dimensions. For example the default Molodensky
+             * Get the operation method for the appropriate number of dimensions. For example, the default Molodensky
              * operation expects two-dimensional source and target CRS. If a given CRS is three-dimensional, we need
              * a provider variant which will not concatenate a "geographic 3D to 2D" operation before the Molodensky
              * one. It is worth to perform this check only if the provider is a subclass of DefaultOperationMethod,
@@ -1371,7 +1371,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /*
          * Prepare the concatenation of the matrices computed above and the projection.
          * Note that at this stage, the dimensions between each step may not be compatible.
-         * For example the projection (step2) is usually two-dimensional while the source
+         * For example, the projection (step2) is usually two-dimensional while the source
          * coordinate system (step1) may be three-dimensional if it has a height.
          */
         MathTransform step1 = (swap1 != null) ? createAffineTransform(swap1) : MathTransforms.identity(parameterized.getSourceDimensions());
@@ -1509,7 +1509,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * If this method needs to set the values of {@code "semi_major"} and {@code "semi_minor"} parameters,
      * then it sets those values directly on the given {@code parameters} instance – not on a clone – for
      * allowing the caller to get back the complete parameter values.
-     * However this method only fills missing values, it never modify existing values.
+     * However, this method only fills missing values, it never modify existing values.
      *
      * @param  baseCRS     the source coordinate reference system.
      * @param  parameters  the parameter values for the transform.

@@ -29,7 +29,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
 /**
  * Tests the {@link Decoder} implementation. The default implementation tests
  * {@link org.apache.sis.internal.netcdf.ucar.DecoderWrapper} since the UCAR
- * library is our reference implementation. However subclasses can override the
+ * library is our reference implementation. However, subclasses can override the
  * {@link #createDecoder(TestData)} method in order to test a different implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)

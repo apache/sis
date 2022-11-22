@@ -370,7 +370,7 @@ public final class StoreUtilities extends Static {
     /**
      * Copies all feature from the given source to the given target.
      * We use this method as central point where such copy occur, in case we want to implement
-     * a more efficient algorithm in some future Apache SIS version. For example we could copy
+     * a more efficient algorithm in some future Apache SIS version. For example, we could copy
      * the files using {@link java.nio.file.Files} if we determine that it is possible.
      *
      * @param  source  the source set of features.

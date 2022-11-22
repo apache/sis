@@ -148,7 +148,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      *
      * <p>If this position and the given position have a non-null CRS, then the default implementation
      * requires the CRS to be {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)},
-     * otherwise a {@code MismatchedReferenceSystemException} is thrown. However subclass may choose
+     * otherwise a {@code MismatchedReferenceSystemException} is thrown. However, subclass may choose
      * to assign the CRS of this position to the CRS of the given position.</p>
      *
      * @param  position  the new position, or {@code null}.

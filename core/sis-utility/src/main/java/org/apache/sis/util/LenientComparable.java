@@ -19,7 +19,7 @@ package org.apache.sis.util;
 
 /**
  * Interfaces of classes for which instances can be compared for equality using different levels of strictness.
- * For example {@link org.opengis.referencing.operation.MathTransform} implementations can be
+ * For example, {@link org.opengis.referencing.operation.MathTransform} implementations can be
  * compared ignoring some properties (remarks, <i>etc.</i>) that are not relevant to the
  * coordinates calculation.
  *
@@ -72,7 +72,7 @@ package org.apache.sis.util;
  *            because there is no GeoAPI interfaces for the various kind of math transforms.</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Objects must be of the same class,
  *           but the parameter values can be different if they are different way to formulate the same transform.
- *           For example a <cite>"Mercator (2SP)"</cite> projection on a sphere with a <cite>standard parallel</cite>
+ *           For example, a <cite>"Mercator (2SP)"</cite> projection on a sphere with a <cite>standard parallel</cite>
  *           value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection on the same sphere
  *           with a <cite>scale factor</cite> value of 0.5.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes than the above

@@ -127,7 +127,7 @@ class TransformingNamespaces implements NamespaceContext {
         }
 
         /**
-         * Returns an arbitrary prefix for the given namespace. For example given the
+         * Returns an arbitrary prefix for the given namespace. For example, given the
          * {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"} namespace from ISO 19115-3,
          * this method returns {@code "gmd"} which was the prefix used in legacy ISO 19139:2007.
          *
@@ -154,7 +154,7 @@ class TransformingNamespaces implements NamespaceContext {
 
     /**
      * Returns the namespace for the given prefix. The same URI may be returned for many prefixes.
-     * For example when exporting from ISO 19115-3:2016 to legacy ISO 19139:2007, the {@code "mdb"},
+     * For example, when exporting from ISO 19115-3:2016 to legacy ISO 19139:2007, the {@code "mdb"},
      * {@code "cit"} and many other prefixes are all mapped to {@code "http://www.isotc211.org/2005/gmd"}.
      * This is legal according {@link NamespaceContext} javadoc.
      */
@@ -188,7 +188,7 @@ class TransformingNamespaces implements NamespaceContext {
     }
 
     /**
-     * Returns all prefixes for the given namespace. For example given the {@code "http://www.isotc211.org/2005/gmd"}
+     * Returns all prefixes for the given namespace. For example, given the {@code "http://www.isotc211.org/2005/gmd"}
      * namespace from legacy ISO 19139:2007, this method returns {@code "mdb"}, {@code "cit"} and all other prefixes
      * from the new ISO 19115-3:2016 specification which are used in replacement of the legacy {@code "gmd"} prefix.
      */

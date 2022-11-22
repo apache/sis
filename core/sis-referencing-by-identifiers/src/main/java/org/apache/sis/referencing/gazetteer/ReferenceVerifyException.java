@@ -27,7 +27,7 @@ package org.apache.sis.referencing.gazetteer;
  * </ul>
  *
  * The purpose of those verifications is to perform some error detection.
- * For example it may help to detect if a typo occurred when a user entered a coordinate manually.
+ * For example, it may help to detect if a typo occurred when a user entered a coordinate manually.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

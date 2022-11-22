@@ -517,7 +517,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * }
      *
      * Subclasses can override this method if they wish to use alternative implementations under some circumstances.
-     * For example many subclasses will replace {@code this} by a specialized implementation if they detect that the
+     * For example, many subclasses will replace {@code this} by a specialized implementation if they detect that the
      * ellipsoid is actually spherical.
      *
      * @param  factory  the factory to use for creating the transform.
@@ -543,7 +543,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * need to use is Δλ=−29°.</div>
      *
      * In order to avoid wraparound operations as much as possible, we test only the bound where anti-meridian
-     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore we add or subtract
+     * problem may happen; no wraparound will be applied for the opposite bound. Furthermore, we add or subtract
      * 360° only once. Even if the point did many turns around the Earth, the 360° shift will still be applied
      * at most once. The desire to apply the minimal amount of shifts is the reason why we do not use
      * {@link Math#IEEEremainder(double, double)}.
@@ -579,7 +579,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * <div class="note"><b>Example:</b>
      * the {@link ObliqueStereographic} formulas do not work anymore when the latitude of origin is 90°N or 90°S,
-     * because some internal coefficients become infinite. However the {@link PolarStereographic} implementation
+     * because some internal coefficients become infinite. However, the {@link PolarStereographic} implementation
      * is designed especially for those special cases. So the {@code ObliqueStereographic.createMapProjection(…)}
      * method can redirect to {@code PolarStereographic.createMapProjection(…)} when it detects such cases.</div>
      *
@@ -766,7 +766,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * <h4>Argument checks</h4>
      * The input longitude and latitude are usually (but not always) in the range [-π … π] and [-π/2 … π/2] respectively.
-     * However values outside those ranges are accepted on the assumption that most implementations use those values
+     * However, values outside those ranges are accepted on the assumption that most implementations use those values
      * only in trigonometric functions like {@linkplain Math#sin(double) sine} and {@linkplain Math#cos(double) cosine}.
      * If this assumption is not applicable to a particular subclass, then it is implementer responsibility to check
      * the range.

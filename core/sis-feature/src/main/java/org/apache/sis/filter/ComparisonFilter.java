@@ -57,7 +57,7 @@ import org.apache.sis.internal.geoapi.filter.BetweenComparisonOperator;
  *
  * <p>Comparisons between temporal objects are done with {@code isBefore(…)} or {@code isAfter(…)} methods when they
  * have a different semantic than the {@code compareTo(…)} methods. If the two temporal objects are not of the same
- * type, only the fields that are common two both types are compared. For example comparison between {@code LocalDate}
+ * type, only the fields that are common two both types are compared. For example, comparison between {@code LocalDate}
  * and {@code LocalDateTime} ignores the time fields.</p>
  *
  * <p>Comparisons of numerical types shall be done by overriding one of the {@code applyAs…} methods and

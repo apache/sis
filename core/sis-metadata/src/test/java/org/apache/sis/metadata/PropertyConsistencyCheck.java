@@ -371,7 +371,7 @@ public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsis
                         }
                         /*
                          * Currently, @Dependencies is applied only on deprecated getter methods.
-                         * However this policy may change in future Apache SIS versions.
+                         * However, this policy may change in future Apache SIS versions.
                          */
                         assertTrue(name, name.startsWith("get"));
                         assertTrue(name, method.isAnnotationPresent(Deprecated.class));

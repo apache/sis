@@ -26,6 +26,7 @@ import org.junit.Test;
 import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
 
 
 /**
@@ -51,10 +52,10 @@ public final strictfp class DefaultLegalConstraintsTest extends TestCase {
         final DefaultLegalConstraints c = unmarshal(DefaultLegalConstraints.class,
                 "<mco:MD_LegalConstraints xmlns:mco=\"" + Namespaces.MCO + "\">\n" +
                 "  <mco:accessConstraints>\n" +
-                "    <mco:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
+                "    <mco:MD_RestrictionCode codeListValue=\"intellectualPropertyRights\" codeList=\"" + ISO_NAMESPACE + "19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
                 "  </mco:accessConstraints>\n" +
                 "  <mco:useConstraints>\n" +            // Below is an intentionally empty code list value (SIS-157)
-                "    <mco:MD_RestrictionCode codeListValue=\"\" codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
+                "    <mco:MD_RestrictionCode codeListValue=\"\" codeList=\"" + ISO_NAMESPACE + "19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\"/>\n" +
                 "  </mco:useConstraints>\n" +
                 "</mco:MD_LegalConstraints>");
         /*
@@ -77,7 +78,7 @@ public final strictfp class DefaultLegalConstraintsTest extends TestCase {
                 "<mco:MD_LegalConstraints xmlns:mco=\"" + Namespaces.MCO + "\">\n" +
                 "  <mco:useConstraints>\n" +
                 "    <mco:MD_RestrictionCode"
-                        + " codeList=\"http://standards.iso.org/iso/19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\""
+                        + " codeList=\"" + ISO_NAMESPACE + "19115/resources/Codelist/cat/codelists.xml#MD_RestrictionCode\""
                         + " codeListValue=\"licence\">License</mco:MD_RestrictionCode>\n" +
                 "  </mco:useConstraints>\n" +
                 "</mco:MD_LegalConstraints>\n";

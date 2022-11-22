@@ -127,7 +127,7 @@ public abstract class AbstractInternationalString implements InternationalString
      * <h4>Handling of <code>null</code> argument value</h4>
      * The {@code Locale.ROOT} constant is new in Java 6. Some other libraries designed for Java 5
      * use the {@code null} value for "unlocalized" strings. Apache SIS accepts {@code null} value
-     * for inter-operability with those libraries. However the behavior is implementation dependent:
+     * for inter-operability with those libraries. However, the behavior is implementation dependent:
      * some subclasses will take {@code null} as a synonymous of the system default locale, while
      * other subclasses will take {@code null} as a synonymous of the root locale. In order to
      * ensure determinist behavior, client code are encouraged to specify only non-null values.

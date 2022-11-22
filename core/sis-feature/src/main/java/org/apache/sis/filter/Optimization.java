@@ -391,7 +391,7 @@ public class Optimization {
      * This method tries to transform a filter into a {@code F₀ AND F₁ AND F₂ AND F₃ AND ...} sequence.
      * This transformation is useful when some operands can be handled by the storage engine
      * (for example a SQL database) and other operands cannot.
-     * For example when reading features from a relational database,
+     * For example, when reading features from a relational database,
      * the implementation may choose to express the F₁ and F₃ operands as SQL statements
      * and apply the other operands in Java code.
      *

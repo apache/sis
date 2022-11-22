@@ -57,7 +57,7 @@
  *
  * <p>The current implementation uses
  * <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">double-double
- * arithmetic</a>. However this may change in any future SIS version.</p>
+ * arithmetic</a>. However, this may change in any future SIS version.</p>
  *
  * <h2>Related projects</h2>
  * This package is <strong>not</strong> designed for large matrices, and is rooted in

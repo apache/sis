@@ -27,7 +27,7 @@ import static org.apache.sis.test.TestUtilities.date;
 
 /**
  * Tests the {@link Range} class with date values. A previous version was using a dedicated
- * {@code DateRange} for this purpose. However the specialized class has been removed because
+ * {@code DateRange} for this purpose. However, the specialized class has been removed because
  * usage of {@code java.util.Date} is replaced by usage of ISO 19108 (temporal schema) types.
  *
  * @author  Martin Desruisseaux (IRD)

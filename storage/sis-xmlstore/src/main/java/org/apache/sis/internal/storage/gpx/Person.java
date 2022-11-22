@@ -48,7 +48,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * <p>Note that {@code Party} is an abstract type in ISO 19115 model. We are supposed to implement a subtype
  * ({@code Individual} or {@code Organisation}).
- * However the GPX metadata does not specifies whether the "person" is actually an individual or an organization.
+ * However, the GPX metadata does not specifies whether the "person" is actually an individual or an organization.
  * In this situation of doubt, we do not select a subtype for avoiding to provide a wrong information.</p>
  *
  * @author  Johann Sorel (Geomatys)

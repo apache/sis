@@ -391,8 +391,8 @@ public class ImagePropertyExplorer extends Widget {
         }
         /*
          * Table of image layout built with a fixed set of rows: no row will be added or removed after
-         * construction. Instead property values of existing rows will be modified when a new image is
-         * selected. Row selection are not allowed since we have nothing to do with selected rows.
+         * construction. Instead, property values of existing rows will be modified when a new image
+         * is selected. Row selection are not allowed since we have nothing to do with selected rows.
          */
         {
             final FilteredList<LayoutRow> filtered;
@@ -641,7 +641,7 @@ public class ImagePropertyExplorer extends Widget {
                 /*
                  * Gets a simple top-level class name for an image class. If the image is an enclosed class,
                  * searches for a parent class because enclosed class names are often not very informative.
-                 * For example `ImageRenderer.Untitled` is a `BufferedImage` subclass.
+                 * For example, `ImageRenderer.Untitled` is a `BufferedImage` subclass.
                  */
                 Class<?> type = image.getClass();
                 while (type.getEnclosingClass() != null) {

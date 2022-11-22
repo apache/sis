@@ -19,7 +19,7 @@
  * Extensions to standard Java I/O ({@link java.io.Reader}, {@link java.io.Writer},
  * {@link java.lang.Appendable}) and {@link java.text.Format}.
  * Many classes defined in this package are filters applying on-the-fly formatting while writing
- * text to the output device. For example {@link org.apache.sis.io.LineAppender} can wrap lines
+ * text to the output device. For example, {@link org.apache.sis.io.LineAppender} can wrap lines
  * to some maximal line length (e.g. 80 characters), and {@link org.apache.sis.io.TableAppender}
  * replaces all occurrence of {@code '\t'} by the amount of spaces needed for producing a tabular
  * output.

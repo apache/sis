@@ -32,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
 /**
  * A location described by an unmodifiable direct position that defines the centroid of an envelope.
  * This class encompasses most information in a single object, which make it lightweight to create
- * (less pressure on the garbage collector). However this is not a clear separation of responsibility,
+ * (less pressure on the garbage collector). However, this is not a clear separation of responsibility,
  * so this class should not be in public API.
  *
  * <p>Subclasses <strong>must</strong> override the following methods if the above coordinate reference

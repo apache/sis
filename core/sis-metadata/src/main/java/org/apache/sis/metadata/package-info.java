@@ -26,7 +26,7 @@
  *
  * <h2>How Metadata are defined</h2>
  * A metadata standard is defined by a set of Java interfaces belonging to a specific package and its sub-packages.
- * For example the ISO 19115 standard is defined by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
+ * For example, the ISO 19115 standard is defined by the <a href="http://www.geoapi.org">GeoAPI</a> interfaces
  * defined in the {@link org.opengis.metadata} package and sub-packages. That standard is identified in SIS by the
  * {@link org.apache.sis.metadata.MetadataStandard#ISO_19115} constant. Other standards are defined as well,
  * for example the {@link org.apache.sis.metadata.MetadataStandard#ISO_19123} constant stands for the standards
@@ -39,7 +39,7 @@
  * the property name is inferred from the method name like what the <cite>Java Beans</cite> framework does.</p>
  *
  * <p>The implementation classes, if they exist, are defined in different packages than the interfaces.
- * For example the ISO 19115 interfaces, declared in {@link org.opengis.metadata}, are implemented by
+ * For example, the ISO 19115 interfaces, declared in {@link org.opengis.metadata}, are implemented by
  * SIS in {@link org.apache.sis.metadata.iso}. The sub-packages hierarchy is the same, and the names
  * of implementation classes are the name of the implemented interfaces prefixed with {@code Abstract}
  * or {@code Default}.</p>
@@ -79,7 +79,7 @@
  *       {@code UnmodifiableMetadataException}.</li>
  *
  *   <li><b>As a {@link org.apache.sis.util.collection.TreeTable}</b><br>
- *       The metadata are organized as a tree. For example the {@code Citation} metadata contains one or many
+ *       The metadata are organized as a tree. For example, the {@code Citation} metadata contains one or many
  *       {@code ResponsibleParty} elements, each of them containing a {@code Contact} element, which contains
  *       a {@code Telephone} element, <i>etc</i>. For each node, there is many information that can be displayed
  *       in columns:

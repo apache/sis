@@ -65,7 +65,7 @@ import org.apache.sis.util.collection.TreeTable;
  * <h2>Thread safety</h2>
  * Instances of this class are <strong>not</strong> synchronized for multi-threading.
  * Synchronization, if needed, is caller's responsibility. Note that synchronization locks
- * are not necessarily the metadata instances. For example another common approach is to
+ * are not necessarily the metadata instances. For example, another common approach is to
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -206,7 +206,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
-     *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
+     *       Otherwise {@code null}. For example, in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
      *       for the first element and another node with index 1 for the second element.
      *
@@ -235,7 +235,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      *
      * <h4>Write operations</h4>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
-     * to have their {@code IDENTIFIER} set before any other operation. For example the following code
+     * to have their {@code IDENTIFIER} set before any other operation. For example, the following code
      * adds a title to a citation:
      *
      * {@preformat java

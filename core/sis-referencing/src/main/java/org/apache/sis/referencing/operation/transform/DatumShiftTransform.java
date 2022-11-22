@@ -53,7 +53,7 @@ import org.apache.sis.util.Debug;
  *
  * <h2>Datum shift methods overview</h2>
  * The two CRS's ellipsoids have slightly different scale and rotation in space, and their center are located in
- * a slightly different position. Consequently geodetic datum shifts are often approximated by a constant scale,
+ * a slightly different position. Consequently, geodetic datum shifts are often approximated by a constant scale,
  * rotation and translation applied on geocentric coordinates. Those approximations are handled in SIS
  * by concatenations of {@link EllipsoidToCentricTransform} with {@link LinearTransform} instead of a specific
  * {@code DatumShiftTransform} subclass.

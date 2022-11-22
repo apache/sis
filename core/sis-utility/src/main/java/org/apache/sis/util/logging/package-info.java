@@ -31,7 +31,7 @@
  * The SIS project uses the standard {@link java.util.logging.Logger} API for its logging.
  * It does not mean that users of the SIS library are forced to use that logging framework.
  * Java logging can be used as an API more powerful than {@link java.lang.System.Logger}
- * and other frameworks can redirect Java logging to themselves. For example adding the
+ * and other frameworks can redirect Java logging to themselves. For example, adding the
  * {@code jul-to-slf4j.jar} dependency to a project is sufficient for redirecting Java logging to SLF4J.
  *
  * @author  Martin Desruisseaux (Geomatys)

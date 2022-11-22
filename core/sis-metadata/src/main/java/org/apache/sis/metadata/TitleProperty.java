@@ -26,7 +26,7 @@ import java.lang.annotation.Documented;
 
 /**
  * Identifies the name of a property to use for summarizing in one line the content of a metadata object.
- * For example in a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation citation} instance,
+ * For example, in a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation citation} instance,
  * the {@code "title"} property is often the only information that a user needs for a first look.
  * This annotation is used in {@linkplain MetadataStandard#asTreeTable metadata tree views} for producing briefer trees,
  * especially when there is redundant node names.
@@ -56,7 +56,7 @@ import java.lang.annotation.Documented;
  * </div>
  *
  * The property referenced by this annotation should be the main property if possible, but not necessarily
- * since it may be only a label. However the property shall be a singleton ([0…1] or [1…1] multiplicity)
+ * since it may be only a label. However, the property shall be a singleton ([0…1] or [1…1] multiplicity)
  * and cannot be another metadata object.
  *
  * @author  Martin Desruisseaux (Geomatys)

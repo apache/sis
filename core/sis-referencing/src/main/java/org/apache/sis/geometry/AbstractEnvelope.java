@@ -572,7 +572,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * The length of the returned array depends on the number of dimensions where a
      * {@linkplain org.opengis.referencing.cs.RangeMeaning#WRAPAROUND wraparound} range is found.
      * Typically, wraparound occurs only in the range of longitude values, when the range crosses
-     * the anti-meridian (a.k.a. date line). However this implementation will take in account any
+     * the anti-meridian (a.k.a. date line). However, this implementation will take in account any
      * axis having wraparound {@linkplain CoordinateSystemAxis#getRangeMeaning() range meaning}.
      *
      * <p>Special cases:</p>
@@ -613,7 +613,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                 }
                 if (i >= Long.SIZE) {
                     // Actually the limit in our current implementation is not the number of axes, but the index of
-                    // axes where a wraparound has been found. However we consider that having more than 64 axes in
+                    // axes where a wraparound has been found. However, we consider that having more than 64 axes in
                     // a CRS is unusual enough for not being worth to make the distinction in the error message.
                     throw new IllegalStateException(Errors.format(Errors.Keys.ExcessiveListSize_2, "axis", dimension));
                 }
@@ -685,7 +685,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * ignores the infinite values and returns {@code true}.</div>
      *
      * If {@code isEmpty()} returns {@code false}, then {@link #isAllNaN()} is guaranteed to
-     * also return {@code false}. However the converse is not always true.
+     * also return {@code false}. However, the converse is not always true.
      *
      * @return {@code true} if this envelope is empty.
      *
@@ -1060,7 +1060,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <div class="note"><b>Note:</b>
      * Relative tolerance values (as opposed to absolute tolerance values) help to workaround the
-     * fact that tolerance value are CRS dependent. For example the tolerance value need to be
+     * fact that tolerance value are CRS dependent. For example, the tolerance value need to be
      * smaller for geographic CRS than for UTM projections, because the former typically has a
      * [-180…180]° range while the latter can have a range of thousands of meters.</div>
      *
@@ -1185,7 +1185,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
+     * However, it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
      * This method formats the numbers as with {@link Double#toString(double)} (i.e. without fixed number of fraction digits).
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
@@ -1248,7 +1248,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <div class="note"><b>Note:</b>
      * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However it is understood by many software libraries, for example GDAL and PostGIS.</div>
+     * However, it is understood by many software libraries, for example GDAL and PostGIS.</div>
      *
      * If the coordinate reference system is geodetic or projected, then coordinate values are formatted
      * with a precision equivalent to one centimetre on Earth (the actual number of fraction digits is

@@ -192,7 +192,7 @@ public class Convention {
      * The given parameter is a name from <cite>CF conventions</cite> or from <cite>Attribute Convention for Dataset Discovery
      * (ACDD)</cite>. Some of those attribute names are listed in the {@link org.apache.sis.storage.netcdf.AttributeNames} class.
      *
-     * <p>The returned names are conceptually a list. However instead of returning a {@link java.util.List},
+     * <p>The returned names are conceptually a list. However, instead of returning a {@link java.util.List},
      * this method is invoked repeatedly with increasing index values until this method returns {@code null}.
      * Implementation are encouraged to return the {@code name} argument unchanged as the value at index 0.</p>
      *
@@ -507,7 +507,7 @@ public class Convention {
                 case "crs_wkt": {
                     /*
                      * CF-Convention said that even if a WKT definition is provided, other attributes shall be present
-                     * and have precedence over the WKT definition. Consequently purpose of WKT in netCDF files is not
+                     * and have precedence over the WKT definition. Consequently, purpose of WKT in netCDF files is not
                      * obvious (except for CompoundCRS). We ignore them for now.
                      */
                     continue;
@@ -739,7 +739,7 @@ public class Convention {
      * to be created for each variable.
      *
      * <p>This method is invoked in contexts where a transfer function is assumed to exist, for example
-     * because {@link #validRange(Variable)} returned a non-null value. Consequently this method shall
+     * because {@link #validRange(Variable)} returned a non-null value. Consequently, this method shall
      * never return {@code null}, but can return the identity function.</p>
      *
      * @param  data  the variable from which to determine the transfer function.

@@ -59,7 +59,7 @@ final class Utils {
      *
      * <p>If a future version uses more than one authority factory, note that it would have the side effect
      * of making authority namespaces visible in the {@link CRSChooser} "Code" column, requiring more space.
-     * For example "4326" would become "EPSG:4326". We may need to revisit the widget layout in such case.</p>
+     * For example, "4326" would become "EPSG:4326". We may need to revisit the widget layout in such case.</p>
      */
     static CRSAuthorityFactory getDefaultFactory() throws FactoryException {
         return CRS.getAuthorityFactory(Constants.EPSG);

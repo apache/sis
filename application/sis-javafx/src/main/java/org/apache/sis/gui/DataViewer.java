@@ -203,7 +203,7 @@ public class DataViewer extends Application {
         window.show();
         /*
          * Hide splash screen when the application it ready to show. Despite above call to `window.show()`,
-         * the window will become really visible only after this method returned. Consequently the splash
+         * the window will become really visible only after this method returned. Consequently, the splash
          * screen will be hidden before the main window become visible.
          */
         final SplashScreen sp = SplashScreen.getSplashScreen();

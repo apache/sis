@@ -40,7 +40,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * The default implementation is straightforward and documented in the javadoc of each method.
  *
  * <p>This class provides a way to handle the errors which may exist in some XML documents.
- * For example a URL in the document may be malformed, causing a {@link MalformedURLException}
+ * For example, a URL in the document may be malformed, causing a {@link MalformedURLException}
  * to be thrown. If this error is not handled, it will cause the (un)marshalling of the entire
  * document to fail. An application may want to change this behavior by replacing URLs that
  * are known to be erroneous by fixed versions of those URLs. Example:</p>
@@ -100,7 +100,7 @@ public class ValueConverter {
      * @param  context     context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value       the value that can't be converted.
      * @param  sourceType  the base type of the value to convert. This is determined by the argument type of the method
-     *                     that caught the exception. For example the source type is always {@code URI.class}
+     *                     that caught the exception. For example, the source type is always {@code URI.class}
      *                     if the exception has been caught by the {@link #toURL(MarshalContext, URI)} method.
      * @param  targetType  the expected type of the converted object.
      * @param  exception   the exception that occurred during the conversion attempt.
@@ -117,7 +117,7 @@ public class ValueConverter {
     /**
      * Converts the given locale to a language code. For better compliance with ISO standards, the language code
      * should be a 3-letters ISO 639-2 code (e.g. {@code "jpn"} for {@linkplain Locale#JAPANESE Japanese}).
-     * However those codes may not be available for every locales.
+     * However, those codes may not be available for every locales.
      *
      * <p>The default implementation performs the following steps:</p>
      * <ul>

@@ -80,7 +80,7 @@ public final class Containers extends Static {
 
     /**
      * Returns an unmodifiable view of the given array. A direct reference to the given array is
-     * retained (i.e. the array is <strong>not</strong> cloned). Consequently the given array
+     * retained (i.e. the array is <strong>not</strong> cloned). Consequently, the given array
      * shall not be modified after construction if the returned list is intended to be immutable.
      *
      * <p>The returned list implements the {@link CheckedContainer} interface. The value returned by
@@ -101,7 +101,7 @@ public final class Containers extends Static {
 
     /**
      * Returns an unmodifiable view of a subregion of the given array. A direct reference to the
-     * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently the
+     * given array is retained (i.e. the array is <strong>not</strong> cloned). Consequently, the
      * specified sub-region of the given array shall not be modified after construction if the
      * returned list is intended to be immutable.
      *
@@ -134,7 +134,7 @@ public final class Containers extends Static {
      * <p>The {@link Set#add(Object) Set.add(E)} method is supported only if the given converter
      * is {@linkplain org.apache.sis.math.FunctionProperty#INVERTIBLE invertible}.
      * An invertible converter is not mandatory for other {@code Set} operations.
-     * However {@link Set#contains(Object) contains} and {@link Set#remove(Object) remove}
+     * However, {@link Set#contains(Object) contains} and {@link Set#remove(Object) remove}
      * operations are likely to be faster if the inverse converter is available.</p>
      *
      * <p>The derived set may contain fewer elements than the original set if some elements
@@ -257,7 +257,7 @@ public final class Containers extends Static {
      *
      * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
      * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
-     * However it is not needed for {@link java.util.IdentityHashMap}.</p>
+     * However, it is not needed for {@link java.util.IdentityHashMap}.</p>
      *
      * @param  count  the number of elements to be put into the hash map or hash set.
      * @return the minimal initial capacity to be given to the hash map constructor.

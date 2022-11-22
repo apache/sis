@@ -34,7 +34,7 @@ import javax.imageio.stream.ImageInputStream;
  *     ImageInputStream stream = ImageIO.createImageInputStream(Channels.newInputStream(channel));
  * }
  *
- * However the standard {@link javax.imageio.stream.ImageInputStreamImpl} implementation performs many work by itself,
+ * However, the standard {@link javax.imageio.stream.ImageInputStreamImpl} implementation performs many work by itself,
  * including supporting various {@linkplain ByteOrder byte order}, which could be more efficiently done by NIO.
  * Furthermore, this class allows us to reuse an existing buffer (especially direct buffer, which are costly to create)
  * and allow subclasses to store additional information, for example the file path.

@@ -81,7 +81,7 @@ import org.apache.sis.util.Classes;
  * the <i>sources</i> coordinates are pixel indices and the <i>targets</i> are (longitude, latitude) coordinates,
  * but we suspect that the <i>sources to targets</i> transform is some undetermined map projection, maybe Mercator.
  * A linear approximation between those coordinates will give poor results; the results would be much better if all
- * (longitude, latitude) coordinates were converted to the right projection first. However that map projection may
+ * (longitude, latitude) coordinates were converted to the right projection first. However, that map projection may
  * not be known, but we can try to guess it by trials-and-errors using a set of plausible projections.
  * That set can be specified by {@link #addLinearizers(Map, int...)}.
  * If the {@link #create(MathTransformFactory)} method finds that one of the specified projections seems a good fit,
@@ -621,7 +621,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * <p>All source positions shall have the same number of dimensions (the <cite>source dimension</cite>),
      * and all target positions shall have the same number of dimensions (the <cite>target dimension</cite>).
-     * However the source dimension does not need to be the same than the target dimension.
+     * However, the source dimension does not need to be the same than the target dimension.
      * Apache SIS currently supports only one- or two-dimensional source positions,
      * together with arbitrary target dimension.</p>
      *
@@ -1219,7 +1219,7 @@ search:         for (int j=domain(); --j >= 0;) {
             }
         }
         /*
-         * If some coordinates have been shifted, the range may become unreasonable. For example we may get a range
+         * If some coordinates have been shifted, the range may become unreasonable. For example, we may get a range
          * of [-440 … -160]° of longitude. Shift again in the direction that provide the best intersection with the
          * original range. Note that original range itself is sometimes "unreasonable". In that case we fallback on
          * values centered around zero, which matches common practice and reduces the risk of rounding errors.
@@ -1468,7 +1468,7 @@ search:         for (int j=domain(); --j >= 0;) {
                 /*
                  * Finished to try all transforms. If all of them failed, wrap the `TransformException`.
                  * We use a sub-type of `FactoryException` which allows callers to add their own information.
-                 * For example the caller may know that the grid was possibly out of CRS domain of validity
+                 * For example, the caller may know that the grid was possibly out of CRS domain of validity
                  * and wanted to try anyway (it can be difficult to predict in advance if it will work).
                  */
                 if (bestTransform == null) {
@@ -1586,7 +1586,7 @@ search:         for (int j=domain(); --j >= 0;) {
      *
      * <p>The envelope returned by {@link #getTargetEnvelope()} and all control points
      * returned by {@link #getControlPoint(int[])} are projected by the selected transform.
-     * Consequently if the target coordinates of original control points are desired,
+     * Consequently, if the target coordinates of original control points are desired,
      * then the transform returned by {@code create(…)} needs to be concatenated with
      * the {@linkplain MathTransform#inverse() inverse} of the transform returned by
      * this {@code linearizer()} method.</p>
@@ -1596,7 +1596,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * control points target coordinates}. The returned transform will contain an operation step performing
      * axis filtering and swapping implied by the {@code projToGrid} argument that was given to the
      * <code>{@linkplain #addLinearizers(Map, int...) addLinearizers}(…, projToGrid)}</code> method.
-     * Consequently if the {@code projToGrid} argument was not an arithmetic progression,
+     * Consequently, if the {@code projToGrid} argument was not an arithmetic progression,
      * then the transform returned by this method will not be one of the instances given to
      * {@code addLinearizers(…)}.
      *

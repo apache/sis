@@ -81,7 +81,7 @@ import org.apache.sis.io.wkt.Convention;
  * </div>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
- * However Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
+ * However, Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
  * flexibility allows SIS to preserve information about the (<var>x</var>,<var>y</var>,<var>z</var>)
  * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
  * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
@@ -101,7 +101,7 @@ import org.apache.sis.io.wkt.Convention;
  *   <li>{@code GeocentricCRS} or three-dimensional {@code GeographicCRS} can be combined with {@code TemporalCRS}.</li>
  * </ul>
  *
- * However users are encouraged to follow ISO 19162 restriction for better portability.
+ * However, users are encouraged to follow ISO 19162 restriction for better portability.
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)

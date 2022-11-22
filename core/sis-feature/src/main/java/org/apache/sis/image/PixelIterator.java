@@ -168,7 +168,7 @@ public class PixelIterator {
      * <p>This is initialized by {@link #fetchTile()} to the same values than {@link #currentUpperX} and
      * {@link #currentUpperY} but without clipping to the area of interest. We want to keep the flexibility
      * to overwrite with other coordinate system in future versions, if useful for {@link Window} performance.
-     * Consequently hose values should not be used in other context than {@link #fetchValues(Window, Object)}.</p>
+     * Consequently, those values should not be used in other context than {@link #fetchValues(Window, Object)}.</p>
      */
     private int windowLimitX, windowLimitY;
 
@@ -569,7 +569,7 @@ public class PixelIterator {
     /**
      * Returns the most efficient type ({@code int}, {@code float} or {@code double}) for transferring data between the
      * underlying rasters and this iterator. The transfer type is not necessarily the storage type used by the rasters.
-     * For example {@code int} values will be used for transferring data even if the underlying rasters store all sample
+     * For example, {@code int} values will be used for transferring data even if the underlying rasters store all sample
      * values as {@code byte}s.
      *
      * <p>The transfer type is only a hint since all iterator methods work for any type (conversions are applied as needed).
@@ -877,7 +877,7 @@ public class PixelIterator {
      * for updating the {@link #x} and {@link #y} fields.
      *
      * <p>Note 1: {@link #releaseTile()} is always invoked before this method.
-     * Consequently {@link #currentRaster} is already {@code null}.</p>
+     * Consequently, {@link #currentRaster} is already {@code null}.</p>
      *
      * <p>Note 2: there is no {@code currentLowerY} field in this {@code PixelIterator} class.
      * Instead, that value is returned by this method.</p>
@@ -944,7 +944,7 @@ public class PixelIterator {
      * that will allow {@link #moveTo(int,int)} and {@link #next()} to detect that we already finished iteration.
      *
      * <p>Note: {@link #releaseTile()} is always invoked before this method.
-     * Consequently {@link #currentRaster} is already {@code null}.</p>
+     * Consequently, {@link #currentRaster} is already {@code null}.</p>
      */
     private void endOfIteration() {
         /*
@@ -1370,8 +1370,8 @@ public class PixelIterator {
      *
      * <div class="note"><b>Performance note</b>
      * Java2D has numerous optimizations for the integer cases, with no equivalent for the floating point cases.
-     * Consequently if the data buffer is known to use some integer type, it is faster to get integer values and
-     * convert them to {@code double} values instead of to request directly floating-point values. However the
+     * Consequently, if the data buffer is known to use some integer type, it is faster to get integer values and
+     * convert them to {@code double} values instead of to request directly floating-point values. However, the
      * improvement is not as much as using {@link BandedIterator} as least for small windows. For that reason,
      * we do not provide the "integers converted to doubles" performance workaround for now. Even if we provided
      * it, this {@code DoubleWindow} would still be necessary for the general case (non-integer data buffers).

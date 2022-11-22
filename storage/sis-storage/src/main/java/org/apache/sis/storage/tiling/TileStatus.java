@@ -22,7 +22,7 @@ import java.io.IOException;
 /**
  * Information about the availability of a tile. Some {@link TileMatrix} implementations
  * may not know whether a tile exists or not before the first attempt to read that tile.
- * Consequently a tile status may be initially {@link #UNKNOWN} and transitions
+ * Consequently, a tile status may be initially {@link #UNKNOWN} and transitions
  * at a later time to a state such as {@link #EXISTS}, {@link #MISSING} or {@link #IN_ERROR}.
  *
  * @author  Alexis Manin (Geomatys)
@@ -45,7 +45,7 @@ public enum TileStatus {
     UNKNOWN,
 
     /**
-     * The tile exists. However this is not a guarantee that no I/O error will happen when reading the tile,
+     * The tile exists. However, this is not a guarantee that no I/O error will happen when reading the tile,
      * neither that the tile will be non-empty. If an I/O error happens at tile reading time,
      * then the tile status should transition from {@code EXISTS} to {@link #IN_ERROR}.
      */

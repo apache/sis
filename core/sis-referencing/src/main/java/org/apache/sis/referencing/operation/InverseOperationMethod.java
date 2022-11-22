@@ -127,7 +127,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      *
      * <div class="note"><b>Note:</b>
      * in many cases, the inverse operation is numerically less accurate than the direct operation because it
-     * uses approximations like series expansions or iterative methods. However the numerical errors caused by
+     * uses approximations like series expansions or iterative methods. However, the numerical errors caused by
      * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
      * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
      * see ISO 19111 for more information).</div>
@@ -165,7 +165,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
                              * The parameter descriptor does not specify whether the values for the inverse operation
                              * have the same sign or opposite sign. We could heuristically presume that we can invert
                              * the sign if the minimum value has the opposite sign than the maximum value  (as in the
-                             * [-10 … 10] range), but such assumption is dangerous. For example the values in a matrix
+                             * [-10 … 10] range), but such assumption is dangerous. For example, the values in a matrix
                              * could be bounded to a range like [-1 … 1], which would mislead above heuristic rule.
                              *
                              * Note that abandoning here does not mean that we will never know the parameter values.

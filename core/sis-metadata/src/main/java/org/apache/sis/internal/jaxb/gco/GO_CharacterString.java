@@ -49,8 +49,8 @@ import org.apache.sis.util.resources.Errors;
  * <p>{@code FileName} and {@code MimeFileType} are possible substitutions for {@code CharacterString}.
  * They make sense only in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic} or
  * other classes using URI, but the XML schema does not prevent their usage in place of other strings.
- * Consequently we unconditionally accept {@code FileName} and {@code MimeFileType} at unmarshalling time.
- * However marshalling will use the appropriate element for the kind of property to marshal.</p>
+ * Consequently, we unconditionally accept {@code FileName} and {@code MimeFileType} at unmarshalling time.
+ * However, marshalling will use the appropriate element for the kind of property to marshal.</p>
  *
  * <p>{@code <gco:CharacterString>} can also be replaced by {@link org.opengis.util.CodeList} or some
  * {@link java.lang.Enum} instances. See {@link Types} javadoc for an example.</p>

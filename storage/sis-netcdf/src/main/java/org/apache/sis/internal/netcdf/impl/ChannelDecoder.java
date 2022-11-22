@@ -1014,7 +1014,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                 }
                 /*
                  * In theory the "coordinates" attribute would enumerate all axes needed for covering all dimensions,
-                 * and we would not need to check for variables having dimension names. However in practice there is
+                 * and we would not need to check for variables having dimension names. However, in practice there is
                  * incomplete attributes, so we check for other dimensions even if the above loop did some work.
                  */
                 for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.

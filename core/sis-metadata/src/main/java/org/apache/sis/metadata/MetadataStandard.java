@@ -48,7 +48,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 
 /**
  * Enumeration of some metadata standards. A standard is defined by a set of Java interfaces
- * in a specific package or sub-packages. For example the {@linkplain #ISO_19115 ISO 19115}
+ * in a specific package or sub-packages. For example, the {@linkplain #ISO_19115 ISO 19115}
  * standard is defined by <a href="http://www.geoapi.org">GeoAPI</a> interfaces in the
  * {@link org.opengis.metadata} package and sub-packages.
  *
@@ -122,7 +122,7 @@ public class MetadataStandard implements Serializable {
      * should have precedence should be declared first.
      *
      * <p>The current implementation does not yet contains the user-defined instances.
-     * However it may be something that we will need to do in the future.</p>
+     * However, it may be something that we will need to do in the future.</p>
      */
     static final MetadataStandard[] INSTANCES;
 
@@ -187,7 +187,7 @@ public class MetadataStandard implements Serializable {
     /**
      * The dependencies, or {@code null} if none.
      * If non-null, dependencies will be tested in the order they appear in this array.
-     * Consequently if {@link #isMetadata(Class)} may return {@code true} for two or more
+     * Consequently, if {@link #isMetadata(Class)} may return {@code true} for two or more
      * dependencies, then the dependency which should have precedence should be declared first.
      *
      * <p>Note: the {@code null} value is for serialization compatibility.</p>
@@ -209,7 +209,7 @@ public class MetadataStandard implements Serializable {
     /**
      * Creates a new instance working on implementation of interfaces defined in the specified package.
      * If this {@code MetadataStandard} does not support a given class, then the dependencies will be
-     * tested in the order declared to this constructor. Consequently if {@link #isMetadata(Class)} may
+     * tested in the order declared to this constructor. Consequently, if {@link #isMetadata(Class)} may
      * return {@code true} for two or more dependencies, then the dependency which should have precedence
      * should be declared first.
      *
@@ -474,7 +474,7 @@ public class MetadataStandard implements Serializable {
      * <p>If the given class is the return value of a property, then the type of that property should be specified
      * in the {@code key.propertyType} argument. This information allows this method to take in account only types
      * that are assignable to {@code propertyType}, so we can handle classes that implement many metadata interfaces.
-     * For example the {@link org.apache.sis.internal.simple} package have various examples of implementing more than
+     * For example, the {@link org.apache.sis.internal.simple} package have various examples of implementing more than
      * one interface for convenience.</p>
      *
      * <p>This method ignores dependencies. Fallback on metadata standard dependencies shall be done by the caller.</p>
@@ -523,7 +523,7 @@ public class MetadataStandard implements Serializable {
             } else if (IMPLEMENTATION_CAN_ALTER_API) {
                 /*
                  * Found no interface. According to our method contract we should return null.
-                 * However we make an exception if the implementation class has a UML annotation.
+                 * However, we make an exception if the implementation class has a UML annotation.
                  * The reason is that when upgrading  API  from ISO 19115:2003 to ISO 19115:2014,
                  * implementations are provided in Apache SIS before the corresponding interfaces
                  * are published on GeoAPI. The reason why GeoAPI is slower to upgrade is that we
@@ -545,7 +545,7 @@ public class MetadataStandard implements Serializable {
      * <p>If the given class is the return value of a property, then the type of that property should be specified
      * in the {@code propertyType} argument. This information allows this method to take in account only the types
      * that are assignable to {@code propertyType}, so we can handle classes that implement many metadata interfaces.
-     * For example the {@link org.apache.sis.internal.simple} package have various examples of implementing more than
+     * For example, the {@link org.apache.sis.internal.simple} package have various examples of implementing more than
      * one interface for convenience.</p>
      *
      * @see Classes#getAllInterfaces(Class)
@@ -866,7 +866,7 @@ public class MetadataStandard implements Serializable {
      *
      * <h4>Disambiguating instances that implement more than one metadata interface</h4>
      * It is some time convenient to implement more than one interface by the same class.
-     * For example an implementation interested only in extents defined by geographic bounding boxes could implement
+     * For example, an implementation interested only in extents defined by geographic bounding boxes could implement
      * {@link org.opengis.metadata.extent.Extent} and {@link org.opengis.metadata.extent.GeographicBoundingBox}
      * by the same class. In such case, it is necessary to tell to this method which one of those two interfaces
      * shall be reflected in the returned map. This information can be provided by the {@code baseType} argument.
@@ -908,7 +908,7 @@ public class MetadataStandard implements Serializable {
      *
      *   <li>{@link org.apache.sis.util.collection.TableColumn#INDEX}<br>
      *       If the metadata property is a collection, then the zero-based index of the element in that collection.
-     *       Otherwise {@code null}. For example in a tree table view of {@code DefaultCitation}, if the
+     *       Otherwise {@code null}. For example, in a tree table view of {@code DefaultCitation}, if the
      *       {@code "alternateTitle"} collection contains two elements, then there is a node with index 0
      *       for the first element and another node with index 1 for the second element.
      *
@@ -937,7 +937,7 @@ public class MetadataStandard implements Serializable {
      *
      * <h4>Write operations</h4>
      * Only the {@code VALUE} column may be writable, with one exception: newly created children need
-     * to have their {@code IDENTIFIER} set before any other operation. For example the following code
+     * to have their {@code IDENTIFIER} set before any other operation. For example, the following code
      * adds a title to a citation:
      *
      * {@preformat java
@@ -982,13 +982,13 @@ public class MetadataStandard implements Serializable {
     /**
      * Compares the two specified metadata objects.
      * The two metadata arguments shall be implementations of a metadata interface defined by
-     * this {@code MetadataStandard}, otherwise an exception will be thrown. However the two
+     * this {@code MetadataStandard}, otherwise an exception will be thrown. However, the two
      * arguments do not need to be the same implementation class.
      *
      * <h4>Shallow or deep comparisons</h4>
-     * This method implements a <cite>shallow</cite> comparison in that properties are compared by
+     * This method implements a <em>shallow</em> comparison in that properties are compared by
      * invoking their {@code properties.equals(…)} method without <em>explicit</em> recursive call
-     * to this {@code standard.equals(…)} method for children metadata. However the comparison will
+     * to this {@code standard.equals(…)} method for children metadata. However, the comparison will
      * do <em>implicit</em> recursive calls if the {@code properties.equals(…)} implementations
      * delegate their work to this {@code standard.equals(…)} method, as {@link AbstractMetadata} does.
      * In the latter case, the final result is a deep comparison.

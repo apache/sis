@@ -136,14 +136,14 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * If grid coordinates in some target dimensions are cyclic, the period in number of cells.
      * For each scalar value in the {@link LocalizationGridBuilder#periods} array (in units of
-     * target CRS), the corresponding period in number of cells is a vector. For example a 360°
+     * target CRS), the corresponding period in number of cells is a vector. For example, a 360°
      * shift in longitude does not necessarily correspond to an horizontal or vertical offset
      * in grid indices; it may be a combination of both if the grid is inclined.
      *
      * <p>We should have as many vectors as non-zero values in {@link LocalizationGridBuilder#periods}.
      * Each {@code periodVector} (in cell units) should be computed from a {@code periods} vector with
      * exactly one non-zero value (in CRS units) for allowing shifts in different CRS dimensions to be
-     * applied independently. Consequently this field should actually be of type {@code double[][]}.
+     * applied independently. Consequently, this field should actually be of type {@code double[][]}.
      * But current version uses only one vector for avoiding the complexity of searching how to combine
      * multiple vectors. It is okay for the usual case where only one CRS axis has wraparound range,
      * but may need to be revisited in the future.</p>

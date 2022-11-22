@@ -213,7 +213,7 @@ class GridCacheKey {
         /**
          * Computes the equality test done by parent class. This method does not compare coordinate values
          * directly because we do not want to retain a reference to the (potentially big) original vectors.
-         * Instead we compare only digests of those vectors, on the assumption that the risk of collision
+         * Instead, we compare only digests of those vectors, on the assumption that the risk of collision
          * is very low.
          */
         @Override public boolean equals(final Object other) {

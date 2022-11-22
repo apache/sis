@@ -34,7 +34,7 @@ import org.apache.sis.feature.DefaultAttributeType;
 
 /**
  * Base implementation of iterators returned by {@link Store#features(boolean)}. This base class returns one feature
- * per line. For example iteration over the following file will produce 4 {@code Feature} instances, even if there is
+ * per line. For example, iteration over the following file will produce 4 {@code Feature} instances, even if there is
  * actually only three distinct instances because the feature "a" is splitted on 2 lines:
  *
  * {@preformat text
@@ -45,7 +45,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  * }
  *
  * <b>Multi-threading:</b> {@code Iter} is not thread-safe.
- * However many {@code Iter} instances can be used concurrently for the same {@link Store} instance.
+ * However, many {@code Iter} instances can be used concurrently for the same {@link Store} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

@@ -45,7 +45,7 @@ public final class Formulas extends Static {
      *
      * <h4>Maintenance</h4>
      * If this value is modified, then all usages of this constant should be verified.
-     * Some usages may need to be compensated. For example {@code GeodesicsOnEllipsoid}
+     * Some usages may need to be compensated. For example, {@code GeodesicsOnEllipsoid}
      * uses a millimetric precision by dividing the tolerance by 10 or more. We way want
      * to keep the same precision there even if {@code LINEAR_TOLERANCE} was made smaller.
      *
@@ -248,7 +248,7 @@ public final class Formulas extends Static {
      *
      * <h4>Caution</h4>
      * We may not need the full {@code Math.hypot(x,y)} accuracy in the context of map projections on ellipsoids.
-     * However some projection formulas require that {@code fastHypot(x,y) ≥ max(|x|,|y|)}, otherwise normalizations
+     * However, some projection formulas require that {@code fastHypot(x,y) ≥ max(|x|,|y|)}, otherwise normalizations
      * such as {@code x/hypot(x,y)} could result in values larger than 1, which in turn result in {@link Double#NaN}
      * when given to {@link Math#asin(double)}. The assumption on x, y and {@code sqrt(x²+y²)} relative magnitude is
      * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method does not check for such cases;

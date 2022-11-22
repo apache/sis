@@ -129,7 +129,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         this.method = method;
         /*
          * Undocumented property, because SIS usually infers the parameters from the MathTransform.
-         * However there is a few cases, for example the Molodenski transform, where we cannot infer the
+         * However, there is a few cases, for example the Molodenski transform, where we cannot infer the
          * parameters easily because the operation is implemented by a concatenation of math transforms.
          */
         setParameterValues(Containers.property(properties, CoordinateOperations.PARAMETERS_KEY, ParameterValueGroup.class), null);
@@ -315,14 +315,14 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          * dimensions, already checked above. We could also argue that `OperationMethod.parameters` are not metadata,
          * but their values should have been taken in account for the MathTransform creation, compared above.
          *
-         * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example in
+         * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example, in
          * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometimes provided as explicit parameters,
          * and sometimes inferred from the geodetic datum. The two cases would be different set of parameters from the
          * OperationMethod's point of view, but still result in the creation of identical MathTransforms.
          *
          * Another rational for treating OperationMethod as metadata is that SIS's MathTransform providers extend
-         * DefaultOperationMethod. Consequently there is a wide range of subclasses, which make the comparisons more
-         * difficult. For example Mercator1SP and Mercator2SP providers are two different ways to describe the same
+         * DefaultOperationMethod. Consequently, there is a wide range of subclasses, which make the comparisons more
+         * difficult. For example, Mercator1SP and Mercator2SP providers are two different ways to describe the same
          * projection. The SQL-backed EPSG factory uses yet another implementation.
          *
          * NOTE: A previous implementation made this final check:
@@ -382,7 +382,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * The {@code ParameterValueGroup} wrapper is a GeoAPI addition done for allowing usage of its
      * methods as a convenience (e.g. {@link ParameterValueGroup#parameter(String)}).
      *
-     * <p>However it could happen that the user really wanted to specify a {@code ParameterValueGroup} as the
+     * <p>However, it could happen that the user really wanted to specify a {@code ParameterValueGroup} as the
      * sole {@code <gml:parameterValue>} element. We currently have no easy way to distinguish those cases.
      * See {@link DefaultOperationMethod#getDescriptors()} for more discussion.</p>
      *

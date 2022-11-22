@@ -121,7 +121,7 @@ public final class Strings extends Static {
      *
      * <ul>
      *   <li>Unicode identifiers accept Japanese or Chinese ideograms for instance, which are considered as letters.</li>
-     *   <li>Unicode identifiers do not accept the {@code '-'} and {@code ':'} characters. However this restriction
+     *   <li>Unicode identifiers do not accept the {@code '-'} and {@code ':'} characters. However, this restriction
      *       fits well our need, since those characters are typical values for the {@code separator} argument.</li>
      *   <li>Note that {@code '_'} is valid both in {@code xs:ID} and Unicode identifier.</li>
      * </ul>

@@ -20,7 +20,7 @@ package org.apache.sis.io.wkt;
 /**
  * Whether WKT keywords shall be written with lower, upper or camel case styles.
  * The most common usage for WKT keywords is upper case.
- * However with version 2 of Well Known Text, camel case keywords may be easier to read
+ * However, with version 2 of Well Known Text, camel case keywords may be easier to read
  * because WKT 2 has more keywords made by combination of words. Examples:
  *
  * <table class="sis">

@@ -244,7 +244,7 @@ public class TensorParameters<E> implements Serializable {
         WKT1 = new MatrixParameters(numRow, numCol);
         /*
          * For the EPSG convention, there is no "num_row" or "num_col" parameters since the matrix
-         * size if fixed to 3×3. However since we still need them, we will declare them as optional
+         * size if fixed to 3×3. However, since we still need them, we will declare them as optional
          * and we will hide them from the descriptor unless the matrix size is different than 3×3.
          */
         numRow = new DefaultParameterDescriptor<>(IdentifiedObjects.getProperties(numRow),

@@ -392,7 +392,7 @@ public abstract class ChannelData implements Markable {
         } catch (InterruptedException e) {
             /*
              * Someone doesn't want to let us sleep. Stop the reading or writing process. We don't try to go back to
-             * work, because the waiting time was short and this method is invoked in loops. Consequently if the user
+             * work, because the waiting time was short and this method is invoked in loops. Consequently, if the user
              * interrupted us, it is probably because he waited for a long time and we still have not transferred any
              * new data.
              */

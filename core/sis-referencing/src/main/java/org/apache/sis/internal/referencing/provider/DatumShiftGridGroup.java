@@ -274,7 +274,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * has been unable to use directly one of the child transforms — so performance is not the priority in that
      * situation. During inverse transformations, this method is invoked for estimating an initial position before
      * iterative refinements. The given point may be outside all sub-grids (otherwise {@code SpecializableTransform}
-     * would have done the work itself at least in the forward transformation case). Consequently searching a sub-grid
+     * would have done the work itself at least in the forward transformation case). Consequently, searching a sub-grid
      * containing the given point is not sufficient; we need to search for the nearest grid even if the point is outside.
      *
      * @param  gridX   first grid coordinate of the point for which to get the translation.

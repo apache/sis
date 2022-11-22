@@ -304,7 +304,7 @@ public final class Shapes2D extends Static {
                  *   - s  are coordinate values in the source space (λ or φ)
                  *   - t  are coordinate values in the target space (x or y)
                  *
-                 * They are not necessarily in the same dimension. For example would could have
+                 * They are not necessarily in the same dimension. For example, would could have
                  * s=λ while t=y. This is typically the case when inspecting the top or bottom
                  * line segment of the rectangle.
                  *
@@ -341,7 +341,7 @@ public final class Shapes2D extends Static {
                                 if ((tgtDim == 0) ? (te < xmin || te > xmax) : (te < ymin || te > ymax)) {
                                     /*
                                      * At this point, we have determined that adding the extremum point
-                                     * to the rectangle would have expanded it. However we will not add
+                                     * to the rectangle would have expanded it. However, we will not add
                                      * that point directly, because maybe its position is not quite right
                                      * (since we used a cubic curve approximation). Instead, we project
                                      * the point on the rectangle border which is located vis-à-vis the
@@ -386,7 +386,7 @@ public final class Shapes2D extends Static {
          * with the calculation performed by the more general method working on Envelope. We
          * verified that the same values (coordinate tuples and derivatives) were ultimately
          * passed to the CurveExtremum.resolve(…) method, so we would expect the same result.
-         * However the iteration order is different. The result seems insensitive to iteration
+         * However, the iteration order is different. The result seems insensitive to iteration
          * order most of the time, but not always. However, it seems that the cases were the
          * results are different are the cases where the methods working with CoordinateOperation
          * object wipe out that difference anyway.

@@ -578,7 +578,7 @@ public final strictfp class UnitFormatTest extends TestCase {
     /**
      * Tests parsing of symbols containing an explicit exponentiation operation.
      * Usually the exponentiation is implicit, as in {@code "m*s-1"}.
-     * However some formats write it explicitly, as in {@code "m*s^-1"}.
+     * However, some formats write it explicitly, as in {@code "m*s^-1"}.
      */
     @Test
     @DependsOnMethod("testParseMultiplier")

@@ -77,7 +77,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
      * that the variable is a component of a vector. Those words are used in heuristic rules
      * for deciding if two variables should be stored in a single {@code Coverage} instance.
-     * For example the eastward (u) and northward (v) components of oceanic current vectors
+     * For example, the eastward (u) and northward (v) components of oceanic current vectors
      * should be stored as two sample dimensions of a single "Current" coverage.
      * Example of standard variable names:
      *
@@ -234,7 +234,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             /*
              * At this point we found a variable for which to create a resource. Most of the time, there is nothing else to do;
              * the resource will have a single variable and the same name than that unique variable. The resulting raster will
-             * have only one band (sample dimension). However in some cases the raster should have more than one band:
+             * have only one band (sample dimension). However, in some cases the raster should have more than one band:
              *
              *   1) if the variable has an extra dimension compared to the grid geometry;
              *   2) of if two or more variables should be grouped together.
@@ -262,7 +262,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
             } else {
                 /*
                  * At this point we found a variable where all dimensions are in the CRS. This is the usual case;
-                 * there are no bands explicitly declared in the netCDF file. However in some cases, we should put
+                 * there are no bands explicitly declared in the netCDF file. However, in some cases, we should put
                  * other variables together with the one we just found. Example:
                  *
                  *    1) baroclinic_eastward_sea_water_velocity
@@ -304,7 +304,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                             }
                         }
                         /*
-                         * If we have more than one variable, omit the keyword from the name. For example instead
+                         * If we have more than one variable, omit the keyword from the name. For example, instead
                          * of "baroclinic_eastward_sea_water_velocity", construct "baroclinic_sea_water_velocity".
                          * Note that we may need to remove duplicated '_' character after keyword removal.
                          */

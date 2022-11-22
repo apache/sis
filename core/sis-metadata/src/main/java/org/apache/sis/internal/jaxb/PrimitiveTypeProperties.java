@@ -24,7 +24,7 @@ import org.apache.sis.xml.NilReason;
 
 /**
  * A workaround for attaching properties ({@code nilreason}, {@code href}, <i>etc.</i>) to primitive type wrappers.
- * The normal approach in SIS is to implement the {@link org.apache.sis.xml.NilObject} interface. However we cannot
+ * The normal approach in SIS is to implement the {@link org.apache.sis.xml.NilObject} interface. However, we cannot
  * do so when the object is a final Java class like {@link Boolean}, {@link Integer}, {@link Double} or {@link String}.
  * This class provides a workaround using specific instances of those wrappers.
  *

@@ -701,7 +701,7 @@ public class RangeFormat extends Format implements Localized {
      *
      * <p>The returned character iterator contains all {@link java.text.NumberFormat.Field},
      * {@link java.text.DateFormat.Field} or {@link org.apache.sis.measure.AngleFormat.Field}
-     * attributes in addition to the {@link Field} ones. Consequently the same character may
+     * attributes in addition to the {@link Field} ones. Consequently, the same character may
      * have more than one attribute.</p>
      *
      * <p>In Apache SIS implementation, the returned character iterator also implements the

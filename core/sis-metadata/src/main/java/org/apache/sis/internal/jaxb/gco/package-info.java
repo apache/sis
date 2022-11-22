@@ -30,7 +30,7 @@
  *
  * <ul class="verbose">
  *   <li><b>JAXB adapters for primitive types.</b><br>
- *   JAXB can write directly Java primitive type at marshalling time "as is". However ISO 19115-3
+ *   JAXB can write directly Java primitive type at marshalling time "as is". However, ISO 19115-3
  *   requires those values to be wrapped by elements representing the data type.  A role of these
  *   adapters is to add these elements around the value.</li>
  *

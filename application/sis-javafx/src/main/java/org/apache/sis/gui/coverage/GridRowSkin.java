@@ -58,7 +58,7 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
      * This method also sets the content of the cell.
      *
      * <div class="note"><b>Note:</b> I'm not sure it is a good practice to add/remove children
-     * and to modify text values here, but I have not identified another place yet. However the
+     * and to modify text values here, but I have not identified another place yet. However, the
      * JavaFX implementation of table skin seems to do the same, so I presume it is okay.</div>
      *
      * The {@code width} argument can be a large number (for example 24000) because it includes
@@ -91,7 +91,7 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
         /*
          * Get the beginning (pos) and end (limit) of the region to render. We create only the amount
          * of GridCell instances needed for rendering this region. We should not create cells for the
-         * whole row since it would be too many cells (can be millions). Instead we recycle the cells
+         * whole row since it would be too many cells (can be millions). Instead, we recycle the cells
          * in a list of children that we try to keep small. All children starting at index 1 shall be
          * GridCell instances created in this method.
          */

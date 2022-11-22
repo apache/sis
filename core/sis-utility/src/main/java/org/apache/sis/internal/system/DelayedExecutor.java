@@ -118,7 +118,7 @@ public final class DelayedExecutor extends DaemonThread {
     @Override
     public final void run() {
         /*
-         * The reference queue should never be null. However some strange cases have been
+         * The reference queue should never be null. However, some strange cases have been
          * observed at shutdown time. If the field become null, assume that a shutdown is
          * under way and let the thread terminate.
          */

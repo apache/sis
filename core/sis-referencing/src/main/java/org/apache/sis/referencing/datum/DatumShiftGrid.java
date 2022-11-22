@@ -73,7 +73,7 @@ import org.apache.sis.measure.Units;
  *   <li><b>Datum shift by geographic translations</b><br>
  *   NADCON and NTv2 grids are defined with longitude (<var>λ</var>) and latitude (<var>φ</var>) inputs in angular
  *   <em>degrees</em> and give (<var>Δλ</var>, <var>Δφ</var>) translations in angular <em>seconds</em>.
- *   However SIS stores the translation values in units of grid cell rather than angular seconds.
+ *   However, SIS stores the translation values in units of grid cell rather than angular seconds.
  *   The translations will be applied by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
  *   directly on the given (<var>λ</var>,<var>φ</var>) coordinates.
  *   </li>
@@ -100,7 +100,7 @@ import org.apache.sis.measure.Units;
  * Implementations of this class shall be immutable and thread-safe.
  *
  * <h2>Number of dimensions</h2>
- * Input coordinates and translation vectors can have any number of dimensions. However in the current implementation,
+ * Input coordinates and translation vectors can have any number of dimensions. However, in the current implementation,
  * only the two first dimensions are used for interpolating the translation vectors. This restriction appears in the
  * following field and method signatures:
  *
@@ -120,7 +120,7 @@ import org.apache.sis.measure.Units;
  *
  * <h2>Longitude wraparound</h2>
  * Some grids are defined over an area beyond the [−180° … +180°] range of longitudes.
- * For example NADCON grid for Alaska is defined in a [−194° … −127.875°] range,
+ * For example, NADCON grid for Alaska is defined in a [−194° … −127.875°] range,
  * in which case a longitude of 170° needs to be replaced by −190° before it can be processed by the grid.
  * The default {@code DatumShiftGrid} class does not apply longitude wraparound automatically
  * (it does not even know which axis, if any, is longitude),
@@ -324,7 +324,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
              *
              *    env.setRange(i, -0.5, gridSize[i] - 0.5);
              *
-             * However it was causing spurious overlaps when two grids are side-by-side
+             * However, it was causing spurious overlaps when two grids are side-by-side
              * (no overlapping) but one grid has larger cells than the other other grid.
              * The 0.5 cell expansion caused the grid with larger cells to overlap the
              * grid with smaller cells. This case happens with NTv2 datum shift grid.
@@ -777,7 +777,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
     /**
      * Invoked when a {@code gridX} or {@code gridY} coordinate is outside the range of valid grid coordinates.
      * This method can replace the invalid coordinate by a valid one. The main purpose is to handle datum shift
-     * grids crossing the anti-meridian. For example NADCON grid for Alaska is defined in a [−194° … −127.875°]
+     * grids crossing the anti-meridian. For example, NADCON grid for Alaska is defined in a [−194° … −127.875°]
      * longitude range, so a longitude of 170° needs to be converted to a longitude of −190° before it can be
      * processed by that grid.
      *

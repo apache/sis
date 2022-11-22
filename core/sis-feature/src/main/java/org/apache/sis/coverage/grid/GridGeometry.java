@@ -110,7 +110,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * The first three properties should be mandatory,
  * but are allowed to be temporarily absent during grid coverage construction.
  * Temporarily absent properties are allowed because they may be inferred from a wider context.
- * For example a {@code GridGeometry} knows nothing about {@link RenderedImage},
+ * For example, a {@code GridGeometry} knows nothing about {@link RenderedImage},
  * but {@code GridCoverage2D} has this information and may use it for providing a missing grid extent.
  * By default, any request for an undefined property will throw an {@link IncompleteGridGeometryException}.
  * In order to check if a property is defined, use {@link #isDefined(int)}.
@@ -125,7 +125,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * in the {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS) instead).
  *
  * <p>Some applications cannot handle non-linear "grid to CRS" conversions.
- * For example encoding an image in a GeoTIFF file is much simpler if the "grid to CRS" conversion is linear.
+ * For example, encoding an image in a GeoTIFF file is much simpler if the "grid to CRS" conversion is linear.
  * The {@link DomainLinearizer} class can be used for replacing non-linear conversions by linear approximations.</p>
  *
  * <h2>Multi-threading</h2>
@@ -1224,7 +1224,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 /*
                  * The mask we just computed identifies non-linear source dimensions, but we need target
                  * dimensions. They are usually the same (the pass-through coordinate values do not have
-                 * their order changed). However we have a difficulty if the number of dimensions changes.
+                 * their order changed). However, we have a difficulty if the number of dimensions changes.
                  * We know that the change happen in the sub-transform, but we do not know where exactly.
                  * For example if the mask is 001010 and the number of dimensions increases by 1, we know
                  * that we still have "00" at the beginning and "0" at the end of the mask, but we don't
@@ -1370,7 +1370,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * </div>
      *
      * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
-     * {@code GridDerivation} preserves the number of dimensions. For example {@linkplain GridDerivation#slice slicing}
+     * {@code GridDerivation} preserves the number of dimensions. For example, {@linkplain GridDerivation#slice slicing}
      * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
      * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.
      *

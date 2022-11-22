@@ -164,7 +164,7 @@ final class Initializer {
                 }
                 /*
                  * The ellipsoid parameters (a, b or ivf) are assumed accurate in base 10 rather than in base 2,
-                 * because they are defined by authorities. For example the semi-major axis length of the WGS84
+                 * because they are defined by authorities. For example, the semi-major axis length of the WGS84
                  * ellipsoid is equal to exactly 6378137 metres by definition of that ellipsoid. The DoubleDouble
                  * constructor applies corrections for making those values more accurate in base 10 rather than 2.
                  */

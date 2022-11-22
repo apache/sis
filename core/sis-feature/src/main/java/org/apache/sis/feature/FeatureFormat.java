@@ -179,7 +179,7 @@ public class FeatureFormat extends TabularFormat<Object> {
      * Returns all columns that may be shown in the tables to format.
      * The columns included in the set may be shown, but not necessarily;
      * some columns will still be omitted if they are completely empty.
-     * However columns <em>not</em> included in the set are guaranteed to be omitted.
+     * However, columns <em>not</em> included in the set are guaranteed to be omitted.
      *
      * @return all columns that may be shown in the tables to format.
      *
@@ -317,7 +317,7 @@ public class FeatureFormat extends TabularFormat<Object> {
         }
         /*
          * Computes the columns to show. We start with the set of columns specified by setAllowedColumns(Set),
-         * then we check if some of those columns are empty. For example in many cases there are no attributes
+         * then we check if some of those columns are empty. For example, in many cases there are no attributes
          * with characteritic, in which case we will ommit the whole "characteristics" column. We perform such
          * check only for optional information, not for mandatory information like property names.
          */

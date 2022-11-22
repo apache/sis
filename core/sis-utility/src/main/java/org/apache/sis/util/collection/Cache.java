@@ -1335,14 +1335,14 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
      * If set to {@code true}, different values may be assigned to the same key. This is usually an
      * error, so the default {@code Cache} behavior is to thrown an {@link IllegalStateException}
-     * in such cases, typically when {@link Handler#putAndUnlock(Object)} is invoked. However in
-     * some cases we may want to relax this check. For example the EPSG database sometimes assigns
+     * in such cases, typically when {@link Handler#putAndUnlock(Object)} is invoked. However, in
+     * some cases we may want to relax this check. For example, the EPSG database sometimes assigns
      * the same key to different kinds of objects.
      *
      * <p>If key collisions are allowed and two threads invoke {@link #lock(Object)} concurrently
      * for the same key, then the value to be stored in the map will be the one computed by the
      * first thread who got the lock. The value computed by any other concurrent thread will be
-     * ignored by this {@code Cache} class. However those threads still return their computed
+     * ignored by this {@code Cache} class. However, those threads still return their computed
      * values to their callers.</p>
      *
      * <p>This property can also be set in order to allow some recursivity. If during the creation

@@ -313,7 +313,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *     }
      * }
      *
-     * However our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
+     * However, our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
      * for an unknown reason, the unmarshalled CS object is empty.</div>
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>

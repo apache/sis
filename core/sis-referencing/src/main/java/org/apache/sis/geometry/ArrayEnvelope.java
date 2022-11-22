@@ -215,7 +215,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      *     BOX(-180 -90, 180 90)
      * }
      *
-     * However this constructor is lenient to other geometry types like {@code POLYGON}.
+     * However, this constructor is lenient to other geometry types like {@code POLYGON}.
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}
      * constructor for more information.
      *

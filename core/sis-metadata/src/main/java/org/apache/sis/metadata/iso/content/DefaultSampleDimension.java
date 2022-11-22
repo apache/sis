@@ -188,7 +188,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <cite>shallow</cite> copy constructor, since the other metadata contained in the
+     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * <div class="note"><b>Note on properties validation:</b>
@@ -434,7 +434,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * <div class="note"><b>Note on XML marshalling:</b>
      * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
      * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
-     * not only the measurements in the electromagnetic spectrum. However this property will not appear in XML
+     * not only the measurements in the electromagnetic spectrum. However, this property will not appear in XML
      * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
      *
      * @return type of transfer function, or {@code null}.
@@ -488,7 +488,7 @@ public class DefaultSampleDimension extends DefaultRangeDimension {
      * <div class="note"><b>Note on XML marshalling:</b>
      * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
      * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
-     * not only the measurements in the electromagnetic spectrum. However this property will not appear in XML
+     * not only the measurements in the electromagnetic spectrum. However, this property will not appear in XML
      * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
      *
      * @return smallest distance between which separate points can be distinguished, or {@code null}.

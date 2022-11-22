@@ -50,7 +50,7 @@ import org.apache.sis.measure.Units;
  * The provider for <cite>"North American Datum Conversion"</cite> (EPSG:9613).
  * This transform requires data that are not bundled by default with Apache SIS.
  *
- * <p>The files given in parameters are theoretically binary files. However this provider accepts also ASCII files.
+ * <p>The files given in parameters are theoretically binary files. However, this provider accepts also ASCII files.
  * Those two kinds of files are recognized automatically; there is no need to specify whether the files are ASCII
  * or binary.</p>
  *

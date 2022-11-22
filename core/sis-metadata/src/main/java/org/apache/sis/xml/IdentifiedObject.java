@@ -44,13 +44,13 @@ import org.opengis.metadata.citation.Citation;
  * <i>etc.</i>) have an explicit single identifier attribute, while other GeoAPI objects
  * ({@link org.opengis.metadata.citation.Citation}, {@link org.opengis.metadata.acquisition.Objective},
  * referencing {@link org.opengis.referencing.IdentifiedObject}, <i>etc.</i>) allow an arbitrary
- * number of identifiers. However GeoAPI does not define explicit methods for handling the {@code id},
+ * number of identifiers. However, GeoAPI does not define explicit methods for handling the {@code id},
  * {@code uuid} or {@code href} attributes, since they are specific to XML marshalling (they do not
  * appear in OGC/ISO abstract specifications). This {@code IdentifiedObject} interface provides a
  * way to handle those identifiers.
  *
  * <p>Note that GeoAPI defines a similar interface, also named {@link org.opengis.referencing.IdentifiedObject}.
- * However that GeoAPI interface is not of general use, since it contains methods like
+ * However, that GeoAPI interface is not of general use, since it contains methods like
  * {@link org.opengis.referencing.IdentifiedObject#toWKT() toWKT()} that are specific to referencing
  * or geometric objects. In addition, the GeoAPI interface defines some attributes
  * ({@linkplain org.opengis.referencing.IdentifiedObject#getName() name},
@@ -119,7 +119,7 @@ public interface IdentifiedObject {
      *   this {@code Map} view.</li>
      *
      *   <li>The map view may also contain more entries than the {@linkplain #getIdentifiers()
-     *   identifier collection}. For example the {@link org.opengis.metadata.citation.Citation}
+     *   identifier collection}. For example, the {@link org.opengis.metadata.citation.Citation}
      *   interface defines separated attributes for ISBN, ISSN and other identifiers. This map
      *   view may choose to unify all those attributes in a single view.</li>
      * </ul>

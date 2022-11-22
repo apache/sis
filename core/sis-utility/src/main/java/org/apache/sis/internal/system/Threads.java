@@ -29,7 +29,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * <h2>Note on dependencies</h2>
  * This class shall not depend on {@link ReferenceQueueConsumer} or {@link DelayedExecutor},
- * because initialization of those classes create new threads. However it is okay to have
+ * because initialization of those classes create new threads. However, it is okay to have
  * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)

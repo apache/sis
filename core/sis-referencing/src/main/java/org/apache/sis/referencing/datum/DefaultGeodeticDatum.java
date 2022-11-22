@@ -73,7 +73,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * <ol class="verbose">
  *   <li><b>Fallback for datum shifts</b><br>
  *     There is different methods for transforming coordinates from one geodetic datum to another datum,
- *     and Bursa-Wolf parameters are used with some of them. However different set of parameters may exist
+ *     and Bursa-Wolf parameters are used with some of them. However, different set of parameters may exist
  *     for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
  *     know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
  *     sometimes together with the geographic extent of the coordinates to transform.
@@ -600,7 +600,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 /*
                  * Bursa-Wolf parameters are considered ignorable metadata. This is needed in order to get
                  * equalsIgnoreMetadata(…) to return true when comparing WGS84 datums with and without the
-                 * WKT 1 "TOWGS84[0,0,0,0,0,0,0]" element. Furthermore those Bursa-Wolf parameters are not
+                 * WKT 1 "TOWGS84[0,0,0,0,0,0,0]" element. Furthermore, those Bursa-Wolf parameters are not
                  * part of ISO 19111 specification.
                  */
             }

@@ -495,7 +495,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * <div class="note"><b>Note for subclasses:</b>
      * all {@code setName(…)} convenience methods in this builder delegate to this method.
-     * Consequently this method can be used as a central place where to control the creation of all names.</div>
+     * Consequently, this method can be used as a central place where to control the creation of all names.</div>
      *
      * @return {@code this} for allowing method calls chaining.
      */
@@ -620,7 +620,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * This list contains only properties declared explicitly to this builder;
      * it does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
      * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
-     * However the returned list allows only {@linkplain List#remove(Object) remove} operations;
+     * However, the returned list allows only {@linkplain List#remove(Object) remove} operations;
      * new attributes or associations can be added only by calls to one of the {@code addAttribute(…)}
      * or {@code addAssociation(…)} methods. Removal operations never affect the super-types.
      *
@@ -732,7 +732,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * </ul>
      *
      * Geometric objects outside the above list can still be used by declaring their type explicitly.
-     * However in this case there is no isolation level between the geometry types and the library that implement them.
+     * However, in this case there is no isolation level between the geometry types and the library that implement them.
      *
      * <div class="note"><b>Example:</b>
      * the following code creates an attribute named "MyPoint" with values of class
