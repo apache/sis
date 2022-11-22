@@ -303,7 +303,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * If the given object is already an instance of {@code DefaultConcatenatedOperation}, then it is returned
      * unchanged. Otherwise a new {@code DefaultConcatenatedOperation} instance is created using the
      * {@linkplain #DefaultConcatenatedOperation(ConcatenatedOperation) copy constructor} and returned.
-     * Note that this is a <dfn>shallow</dfn> copy operation,
+     * Note that this is a <em>shallow</em> copy operation,
      * since the other properties contained in the given object are not recursively copied.
      *
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.

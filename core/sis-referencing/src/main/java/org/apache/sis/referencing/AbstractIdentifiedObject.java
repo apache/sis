@@ -443,8 +443,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>Otherwise if the given object is already an instance of
      *       {@code AbstractIdentifiedObject}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractIdentifiedObject} instance is created using the
-     *       {@linkplain #AbstractIdentifiedObject(IdentifiedObject) copy constructor}
-     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
+     *       {@linkplain #AbstractIdentifiedObject(IdentifiedObject) copy constructor} and returned.
+     *       Note that this is a <em>shallow</em> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *
