@@ -36,7 +36,10 @@ import org.apache.sis.math.Fraction;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
- * @since   0.8
+ *
+ * @param <Q>  the kind of quantity to be measured using this units.
+ *
+ * @since 0.8
  * @module
  */
 final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {

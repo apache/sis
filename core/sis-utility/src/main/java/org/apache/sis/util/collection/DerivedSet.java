@@ -71,11 +71,13 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
     /**
      * The storage set whose values are derived from.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Set<S> storage;
 
     /**
      * The converter from the storage to the derived type.
      */
+    @SuppressWarnings("serial")
     protected final ObjectConverter<S,E> converter;
 
     /**
@@ -184,6 +186,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
         /**
          * The converter from the derived to the storage type.
          */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final ObjectConverter<E,S> inverse;
 
         /**

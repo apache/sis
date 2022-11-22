@@ -56,6 +56,7 @@ class UnaryFunction<R,V> extends Node {
      *
      * @see #getExpression()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Expression<? super R, ? extends V> expression;
 
     /**
@@ -98,10 +99,12 @@ class UnaryFunction<R,V> extends Node {
      * Filter operator that checks if an expression's value is {@code null}.  A {@code null}
      * is equivalent to no value present. The value 0 is a valid value and is not considered
      * {@code null}.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class IsNull<R> extends UnaryFunction<R,Object>
             implements NullOperator<R>, Optimization.OnFilter<R>
- {
+    {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2960285515924533419L;
 
@@ -131,6 +134,8 @@ class UnaryFunction<R,V> extends Node {
      * Filter operator that checks if an expression's value is nil.
      * The difference with {@link IsNull} is that a value should exist but
      * cannot be provided for the reason given by {@link #getNilReason()}.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class IsNil<R> extends UnaryFunction<R,Object>
             implements NilOperator<R>, Optimization.OnFilter<R>

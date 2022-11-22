@@ -48,7 +48,7 @@ import org.opengis.metadata.quality.SampleBasedInspection;
 @XmlRootElement(name = "AbstractDQ_DataEvaluation")
 @XmlSeeAlso({
     DefaultFullInspection.class,
-    DefaultIndirectEvaluation .class,
+    DefaultIndirectEvaluation.class,
     DefaultSampleBasedInspection.class
 })
 public class AbstractDataEvaluation extends DefaultEvaluationMethod implements DataEvaluation {

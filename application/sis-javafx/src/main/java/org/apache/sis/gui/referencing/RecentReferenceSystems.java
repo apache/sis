@@ -47,6 +47,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystem;
 import org.apache.sis.referencing.gazetteer.GazetteerException;
 import org.apache.sis.referencing.gazetteer.GazetteerFactory;
 import org.apache.sis.coverage.grid.GridGeometry;

@@ -38,7 +38,11 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <V> the type of attribute values. If the attribute supports multi-occurrences,
+ *            then this is the type of elements (not the collection type).
+ *
+ * @since 0.8
  * @module
  */
 class AttributeView<V> extends PropertyView<V> implements Attribute<V> {
@@ -50,6 +54,7 @@ class AttributeView<V> extends PropertyView<V> implements Attribute<V> {
     /**
      * The type of this attribute. Must be one of the properties listed in the {@link #feature}.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final AttributeType<V> type;
 
     /**
@@ -111,6 +116,9 @@ class AttributeView<V> extends PropertyView<V> implements Attribute<V> {
      * Specialization of {@code AttributeView} when the amount of values can be only zero or one.
      * This implementation takes shortcuts for the {@code getValue()} and {@code getValues()} methods.
      * This specialization is provided because it is the most common case.
+     *
+     * @param <V> the type of attribute values. If the attribute supports multi-occurrences,
+     *            then this is the type of elements (not the collection type).
      */
     private static final class Singleton<V> extends AttributeView<V> {
         /**

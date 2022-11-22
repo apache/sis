@@ -227,7 +227,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  scope     the {@linkplain AbstractName#scope() scope} of the type name to create,
      *                   or {@code null} for a global namespace.
      * @param  name      the type name as a string or an international string.
-     * @param  javaType  the value type to be returned by {@link #toJavaType()}, or {@code null} if none.
+     * @param  javaType  the Java type represented by the name, or {@code null} if none.
      * @return the type name for the given scope, character sequence and Java type.
      *
      * @see #toTypeName(Class)
