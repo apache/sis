@@ -105,6 +105,20 @@ final strictfp class PackageVerifier {
     }
 
     /**
+     * XML elements that are not yet in the XML schema used by this verifier.
+     * They are XML elements added by corrigendum applied on abstract models,
+     * but not yet (at the time of writing this test) propagated in the XML schema.
+     */
+    private static final Map<Class<?>, String> PENDING_XML_ELEMENTS;
+    static {
+        final Map<Class<?>,String> m = new HashMap<>();
+        m.put(org.apache.sis.metadata.iso.citation.AbstractParty.class, "partyIdentifier");
+        m.put(org.apache.sis.metadata.iso.content.DefaultSampleDimension.class, "rangeElementDescription");
+        m.put(org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation.class, "scope");
+        PENDING_XML_ELEMENTS = Collections.unmodifiableMap(m);
+    }
+
+    /**
      * The schemas to compare with the JAXB annotations.
      * Additional schemas will be loaded as needed.
      */
@@ -436,6 +450,9 @@ final strictfp class PackageVerifier {
             }
             final SchemaCompliance.Element info = properties.get(name);
             if (info == null) {
+                if (name.equals(PENDING_XML_ELEMENTS.get(currentClass))) {
+                    return;
+                }
                 throw new SchemaException(errorInClassMember(javaName)
                         .append("Unexpected XML element: ").append(name).toString());
             }

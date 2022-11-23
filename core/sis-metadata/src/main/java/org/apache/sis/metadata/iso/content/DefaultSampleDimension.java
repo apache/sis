@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.content;
 
+import java.util.Collection;
 import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -26,6 +27,7 @@ import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.SampleDimension;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.TransferFunctionType;
+import org.opengis.metadata.content.RangeElementDescription;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.measure.ValueRange;
@@ -33,6 +35,7 @@ import org.apache.sis.internal.jaxb.gco.GO_Real;
 import org.apache.sis.internal.jaxb.gco.GO_Integer;
 import org.apache.sis.internal.jaxb.gco.GO_Record;
 import org.apache.sis.internal.jaxb.gco.GO_RecordType;
+import org.apache.sis.internal.jaxb.metadata.MI_RangeElementDescription;
 
 import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositive;
 
@@ -63,7 +66,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.3
  * @since   0.5
  * @module
  */
@@ -80,7 +83,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
     "standardDeviation",
     "otherPropertyType",
     "otherProperty",
-    "bitsPerValue"
+    "bitsPerValue",
+    "rangeElementDescriptions"
 })
 @XmlRootElement(name = "MD_SampleDimension")
 @XmlSeeAlso({DefaultBand.class, DefaultRangeDimension.class})
@@ -146,6 +150,12 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * for the value in each band of each pixel.
      */
     private Integer bitsPerValue;
+
+    /**
+     * Provides the description and values of the specific range elements of a sample dimension.
+     */
+    @SuppressWarnings("serial")
+    private Collection<RangeElementDescription> rangeElementDescriptions;
 
     /**
      * Smallest distance between which separate points can be distinguished, as specified in
@@ -473,6 +483,32 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
         if (ensurePositive(DefaultSampleDimension.class, "bitsPerValue", true, newValue)) {
             bitsPerValue = newValue;
         }
+    }
+
+    /**
+     * Provides the description and values of the specific range elements of a sample dimension.
+     * Example: missing data.
+     *
+     * @return description and values of the specific range elements.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "rangeElementDescription")
+    @XmlJavaTypeAdapter(MI_RangeElementDescription.Since2014.class)
+    public Collection<RangeElementDescription> getRangeElementDescriptions() {
+        return rangeElementDescriptions = nonNullCollection(rangeElementDescriptions, RangeElementDescription.class);
+    }
+
+    /**
+     * Sets the description and values of the specific range elements of a sample dimension.
+     *
+     * @param  newValues  the new range element description.
+     *
+     * @since 1.3
+     */
+    public void setRangeElementDescriptions(final Collection<? extends RangeElementDescription> newValues) {
+        rangeElementDescriptions = writeCollection(newValues, rangeElementDescriptions, RangeElementDescription.class);
     }
 
     /**

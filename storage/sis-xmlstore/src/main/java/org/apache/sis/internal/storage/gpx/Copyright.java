@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
@@ -59,7 +60,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -248,6 +249,16 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
     @Override
     public InternationalString getName() {
         return (author != null) ? new SimpleInternationalString(author) : null;
+    }
+
+    /**
+     * Returns citation or party identifiers, which is an empty list.
+     *
+     * @return empty.
+     */
+    @Override
+    public Collection<Identifier> getIdentifiers() {
+        return Collections.emptyList();
     }
 
 

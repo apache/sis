@@ -28,11 +28,11 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.3
  * @since   0.3
  * @module
  */
-public final class MI_RangeElementDescription extends
+public class MI_RangeElementDescription extends
         PropertyType<MI_RangeElementDescription, RangeElementDescription>
 {
     /**
@@ -49,7 +49,7 @@ public final class MI_RangeElementDescription extends
      * @return {@code RangeElementDescription.class}
      */
     @Override
-    protected Class<RangeElementDescription> getBoundType() {
+    protected final Class<RangeElementDescription> getBoundType() {
         return RangeElementDescription.class;
     }
 
@@ -80,7 +80,7 @@ public final class MI_RangeElementDescription extends
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultRangeElementDescription getElement() {
+    public final DefaultRangeElementDescription getElement() {
         return DefaultRangeElementDescription.castOrCopy(metadata);
     }
 
@@ -89,7 +89,26 @@ public final class MI_RangeElementDescription extends
      *
      * @param  value  the unmarshalled metadata.
      */
-    public void setElement(final DefaultRangeElementDescription value) {
+    public final void setElement(final DefaultRangeElementDescription value) {
         metadata = value;
+    }
+
+    /**
+     * Wraps the value only if marshalling an element from the ISO 19115:2014 metadata model.
+     * Otherwise (i.e. if marshalling according legacy ISO 19115:2003 model), omits the element.
+     */
+    public static final class Since2014 extends MI_RangeElementDescription {
+        /** Empty constructor used only by JAXB. */
+        public Since2014() {
+        }
+
+        /**
+         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
+         *
+         * @return a non-null value only if marshalling ISO 19115-3 or newer.
+         */
+        @Override protected MI_RangeElementDescription wrap(final RangeElementDescription value) {
+            return accept2014() ? super.wrap(value) : null;
+        }
     }
 }

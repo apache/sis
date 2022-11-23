@@ -18,11 +18,15 @@ package org.apache.sis.metadata.iso.spatial;
 
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
 import org.opengis.metadata.spatial.VectorSpatialRepresentation;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.internal.jaxb.metadata.MD_Scope;
 
 
 /**
@@ -40,7 +44,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -55,6 +59,12 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -2238840586154687777L;
+
+    /**
+     * Level and extent of the spatial representation.
+     */
+    @SuppressWarnings("serial")
+    private Scope scope;
 
     /**
      * Constructs an initially empty spatial representation.
@@ -73,6 +83,32 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      */
     public AbstractSpatialRepresentation(final SpatialRepresentation object) {
         super(object);
+    }
+
+    /**
+     * Returns the level and extent of the spatial representation.
+     *
+     * @return level and extent of the spatial representation, or {@code null} if none.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "scope")
+    @XmlJavaTypeAdapter(MD_Scope.Since2014.class)
+    public Scope getScope() {
+        return scope;
+    }
+
+    /**
+     * Sets the level and extent of the spatial representation.
+     *
+     * @param  newValue  the new type of resource.
+     *
+     * @since 1.3
+     */
+    public void setScope(final Scope newValue) {
+        checkWritePermission(scope);
+        scope = newValue;
     }
 
     /**
