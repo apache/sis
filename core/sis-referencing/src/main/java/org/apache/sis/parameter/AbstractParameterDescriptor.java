@@ -22,7 +22,6 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.bind.annotation.XmlSchemaType;
-import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -224,17 +223,6 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
     @Override
     public Class<? extends GeneralParameterDescriptor> getInterface() {
         return GeneralParameterDescriptor.class;
-    }
-
-    /**
-     * Returns an indication if the parameter is an input to the service, an output or both.
-     * The default implementation returns {@link ParameterDirection#IN}.
-     *
-     * @return indication if the parameter is an input or output to the service, or {@code null} if unspecified.
-     */
-    @Override
-    public ParameterDirection getDirection() {
-        return ParameterDirection.IN;
     }
 
     /**

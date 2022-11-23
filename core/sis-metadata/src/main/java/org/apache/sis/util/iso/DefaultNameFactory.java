@@ -235,6 +235,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *
      * @since 1.3
      */
+    @Override
     public TypeName createTypeName(final NameSpace scope, final CharSequence name, final Type javaType) {
         return pool.unique(new DefaultTypeName(scope, name, javaType));
     }
