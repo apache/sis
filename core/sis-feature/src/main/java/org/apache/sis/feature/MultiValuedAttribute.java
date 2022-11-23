@@ -122,10 +122,10 @@ final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Clon
 
     /**
      * Returns all attribute values, or an empty collection if none.
-     * The returned collection is <cite>live</cite>: changes in the returned collection
+     * The returned collection is <em>live</em>: changes in the returned collection
      * will be reflected immediately in this {@code Attribute} instance, and conversely.
      *
-     * @return the attribute values in a <cite>live</cite> collection.
+     * @return the attribute values in a <em>live</em> collection.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

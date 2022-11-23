@@ -69,10 +69,10 @@ abstract class Field<V> implements Property {
 
     /**
      * Returns all features or attribute values, or an empty collection if none.
-     * The returned collection is <cite>live</cite>: changes in the returned collection
+     * The returned collection is <em>live</em>: changes in the returned collection
      * will be reflected immediately in this {@code Field} instance, and conversely.
      *
-     * @return the features or attribute values in a <cite>live</cite> collection.
+     * @return the features or attribute values in a <em>live</em> collection.
      */
     public Collection<V> getValues() {
         return new PropertySingleton<>(this);

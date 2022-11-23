@@ -81,7 +81,7 @@
  * Note that non-null values may be {@link org.apache.sis.xml.NilObject}s.</p>
  *
  * <p>Unless the metadata object has been marked as unmodifiable and unless otherwise noted in the Javadoc,
- * all collections returned by getter methods are <cite>live</cite>: adding new elements in the collection
+ * all collections returned by getter methods are <em>live</em>: adding new elements in the collection
  * modify directly the underlying metadata object.</p>
  *
  * @author  Cédric Briançon (Geomatys)

@@ -1016,7 +1016,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Returns the {@link #name} and all aliases which are also instance of {@link Identifier}.
      * The latter happen often in SIS implementation since many aliases are instance of {@link NamedIdentifier}.
      *
-     * <p>The returned collection is <cite>live</cite>: adding elements in that collection will modify this
+     * <p>The returned collection is <em>live</em>: adding elements in that collection will modify this
      * {@code AbstractIdentifiedObject} instance. This is needed for unmarshalling with JAXB and should not
      * be used in other context.</p>
      *
