@@ -71,7 +71,7 @@ import org.apache.sis.internal.util.Strings;
  * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.3
  *
  * @see DefaultRecordType
  * @see DefaultRecord
@@ -149,10 +149,23 @@ public class DefaultRecordSchema implements RecordSchema {
     }
 
     /**
+     * Creates the name of a record.
+     *
+     * @param  typeName  name of the record type to create.
+     * @return name of a record type.
+     *
+     * @since 1.3
+     */
+    public TypeName createRecordTypeName(final CharSequence typeName) {
+        ArgumentChecks.ensureNonNull("typeName", typeName);
+        return nameFactory.createTypeName(namespace, typeName, null);
+    }
+
+    /**
      * Creates a new record type of the given name, which will contain the given fields.
      * Fields are declared in iteration order.
      *
-     * @param  typeName  the record type name.
+     * @param  typeName  name of the record type to create.
      * @param  fields    the name of each record field, together with the expected value types.
      * @return a record type of the given name and fields.
      * @throws IllegalArgumentException if a record already exists for the given name but with different fields.
@@ -160,9 +173,8 @@ public class DefaultRecordSchema implements RecordSchema {
     public RecordType createRecordType(final CharSequence typeName, final Map<CharSequence,Class<?>> fields)
             throws IllegalArgumentException
     {
-        ArgumentChecks.ensureNonNull("typeName", typeName);
-        ArgumentChecks.ensureNonNull("fields",   fields);
-        final TypeName name = nameFactory.createTypeName(namespace, typeName);
+        ArgumentChecks.ensureNonNull("fields", fields);
+        final TypeName name = createRecordTypeName(typeName);
         final Map<CharSequence,Type> fieldTypes = ObjectConverters.derivedValues(fields, CharSequence.class, toTypes);
         RecordType record;
         synchronized (description) {
