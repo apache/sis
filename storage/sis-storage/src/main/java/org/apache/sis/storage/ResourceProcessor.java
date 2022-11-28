@@ -20,6 +20,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import java.util.function.Function;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
@@ -37,11 +38,25 @@ import org.opengis.referencing.operation.MathTransform1D;
  */
 public class ResourceProcessor implements Cloneable {
 
+    private final GridCoverageProcessor processor;
+
     /**
      * Creates a new processor with default configuration.
      */
-    public ResourceProcessor(){
+    public ResourceProcessor() { this(null); }
 
+    public ResourceProcessor(GridCoverageProcessor processor) {
+        this.processor = processor == null ? new GridCoverageProcessor() : processor;
+    }
+
+    /**
+     * @return The processor used internally to transform produced {@link GridCoverage grid coverages}. Not null.
+     */
+    public GridCoverageProcessor getProcessor() { return processor; }
+
+    @Override
+    public ResourceProcessor clone() {
+        return new ResourceProcessor(processor.clone());
     }
 
     /**
