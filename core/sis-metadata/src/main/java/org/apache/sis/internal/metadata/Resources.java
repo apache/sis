@@ -84,6 +84,21 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ExpectedInterface_2 = 5;
 
         /**
+         * Enregistrement multilignes
+         */
+        public static final short MultilineRecord = 9;
+
+        /**
+         * Single number
+         */
+        public static final short SingleNumber = 8;
+
+        /**
+         * Single text
+         */
+        public static final short SingleText = 7;
+
+        /**
          * This metadata is not modifiable.
          */
         public static final short UnmodifiableMetadata = 1;

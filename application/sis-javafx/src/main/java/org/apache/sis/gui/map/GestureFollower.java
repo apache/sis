@@ -237,7 +237,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
 
     /**
      * Returns {@code true} if this listener should replicate the following changes on the target canvas.
-     * This implementation returns {@code true} if the transform reason is {@link TransformChangeEvent.Reason#INTERM}.
+     * This implementation returns {@code true} if the transform reason is {@link TransformChangeEvent.Reason#INTERIM}.
      * It allows immediate feedback to users without waiting for the background thread to complete rendering.
      *
      * @param  event  a transform change event that occurred on the source canvas.

@@ -55,6 +55,11 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
         implements ValueReference<Feature, V>, Optimization.OnExpression<Feature, V>
 {
     /**
+     * For cross-version compatibility.
+     */
+    private static final long serialVersionUID = 2082322712413854288L;
+
+    /**
      * Path to the property from which to retrieve the value.
      * Each element in the array is an argument to give in a call to {@link Feature#getProperty(String)}.
      * This array should be considered read-only because it may be shared.

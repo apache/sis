@@ -150,7 +150,7 @@ public interface TreeTable {
 
         /**
          * Returns the children of this node. The returned collection may or may not be modifiable, at
-         * implementation choice. If the collection is modifiable, then it shall be <cite>live</cite>,
+         * implementation choice. If the collection is modifiable, then it shall be <em>live</em>,
          * i.e. any modification to the returned collection are reflected immediately in the tree.
          * This allows addition or removal of child nodes as below:
          *

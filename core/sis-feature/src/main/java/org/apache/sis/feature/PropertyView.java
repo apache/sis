@@ -48,7 +48,10 @@ import org.opengis.feature.MultiValuedPropertyException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <V> the type of property values.
+ *
+ * @since 0.8
  * @module
  */
 abstract class PropertyView<V> extends Field<V> implements Property, Serializable {
@@ -60,6 +63,7 @@ abstract class PropertyView<V> extends Field<V> implements Property, Serializabl
     /**
      * The feature from which to read and where to write the attribute or association value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final Feature feature;
 
     /**

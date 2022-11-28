@@ -271,6 +271,20 @@ public final class Names extends Static {
     }
 
     /**
+     * Creates a member name for a record of the given name.
+     * The given namespace is usually an instance of {@link TypeName}.
+     *
+     * @param  namespace  the name of the record which will contain this member name.
+     * @param  localPart  the name which is locale in the given namespace.
+     * @param  valueClass the type of values, used for inferring a {@link TypeName} instance.
+     * @return a member name in the given namespace for values of the given type.
+     */
+    static MemberName createMemberName(final GenericName namespace, final CharSequence localPart, final Class<?> valueClass) {
+        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        return factory.createMemberName(factory.createNameSpace(namespace, null), localPart, factory.toTypeName(valueClass));
+    }
+
+    /**
      * Creates a member name for values of the given class. A {@link TypeName} will be inferred
      * from the given {@code valueClass} as documented in the {@link DefaultTypeName} javadoc.
      *

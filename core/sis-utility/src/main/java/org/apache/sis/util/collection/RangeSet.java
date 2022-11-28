@@ -231,6 +231,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * if we want to support open intervals. All binary searches in this class will need to
      * take in account the possibility for duplicated values.</div>
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object array;
 
     /**
@@ -1517,6 +1518,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * A {@link RangeSet} implementation for {@link NumberRange} elements.
+     *
+     * @param <E>  the type of range elements.
      *
      * @see RangeSet#create(Class, boolean, boolean)
      */

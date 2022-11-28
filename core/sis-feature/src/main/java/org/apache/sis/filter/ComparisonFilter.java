@@ -540,6 +540,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsLessThan"} {@literal (<)} filter.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class LessThan<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -580,6 +582,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsLessThanOrEqualTo"} (≤) filter.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class LessThanOrEqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -620,6 +624,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsGreaterThan"} {@literal (>)} filter.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class GreaterThan<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -660,6 +666,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsGreaterThanOrEqualTo"} (≥) filter.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class GreaterThanOrEqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -700,6 +708,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsEqualTo"} (=) filter.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class EqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -740,6 +750,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
     /**
      * The {@code "PropertyIsNotEqualTo"} (≠) filter.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class NotEqualTo<R> extends ComparisonFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -782,6 +794,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * The {@code "PropertyIsBetween"} filter. This can be seen as a specialization of
      * {@link org.apache.sis.filter.LogicalFilter.And} when one expression is
      * {@link LessThanOrEqualTo} and a second expression is {@link GreaterThanOrEqualTo}.
+     *
+     * @param  <R>  the type of resources used as inputs.
      *
      * @see org.apache.sis.filter.LogicalFilter.And
      */

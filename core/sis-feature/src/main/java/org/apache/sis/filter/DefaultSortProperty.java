@@ -50,6 +50,7 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
     /**
      * The property on which to apply sorting.
      */
+    @SuppressWarnings("serial")     // Not statically typed as Serializable.
     private final ValueReference<? super R, ?> property;
 
     /**

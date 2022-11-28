@@ -37,7 +37,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  *
- * @param <Q>  the concrete subtype.
+ * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 1.0
  * @module
@@ -60,11 +60,13 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
      * and its system unit (stored in super-class) is something more complex than a scale
      * factor, otherwise we would not need this {@code DerivedScalar}.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Unit<Q> derivedUnit;
 
     /**
      * Converter from the system unit to the unit of this quantity.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final UnitConverter fromSystem;
 
     /**
@@ -197,6 +199,8 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     /**
      * Fallback used when no {@link DerivedScalar} implementation is available for a given quantity type.
      * This is basically a copy of {@link ScalarFallback} implementation adapted to {@code DerivedScalar}.
+     *
+     * @param <Q>  the type of quantity implemented by this scalar.
      */
     @SuppressWarnings("serial")
     static final class Fallback<Q extends Quantity<Q>> extends DerivedScalar<Q> implements InvocationHandler {

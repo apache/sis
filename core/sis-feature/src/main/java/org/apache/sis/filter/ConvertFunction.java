@@ -64,6 +64,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     /**
      * The converter to use.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final ObjectConverter<? super S, ? extends V> converter;
 
     /**

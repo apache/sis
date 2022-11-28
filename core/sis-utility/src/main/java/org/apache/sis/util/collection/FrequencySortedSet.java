@@ -63,6 +63,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * Values are positives if this set sorts by increasing frequencies, or negatives if this set sorts by
      * decreasing frequencies.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Map<E,Integer> count;
 
     /**
@@ -300,11 +301,13 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
         /**
          * Low endpoint (inclusive) of the subset. May be {@code null}.
          */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final E fromElement;
 
         /**
          * High endpoint (exclusive) of the subset. May be {@code null}.
          */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final E toElement;
 
         /**

@@ -148,7 +148,7 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
+     * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * <div class="note"><b>Note on properties validation:</b>
@@ -188,8 +188,8 @@ public class DefaultImageDescription extends DefaultCoverageDescription implemen
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultImageDescription}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultImageDescription} instance is created using the
-     *       {@linkplain #DefaultImageDescription(ImageDescription) copy constructor}
-     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
+     *       {@linkplain #DefaultImageDescription(ImageDescription) copy constructor} and returned.
+     *       Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *

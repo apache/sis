@@ -372,7 +372,7 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns a map view of the {@linkplain #getIdentifiers() identifiers} collection as (<var>authority</var>,
-     * <var>code</var>) entries. That map is <cite>live</cite>: changes in the identifiers list will be reflected
+     * <var>code</var>) entries. That map is <em>live</em>: changes in the identifiers list will be reflected
      * in the map, and conversely.
      */
     @Override

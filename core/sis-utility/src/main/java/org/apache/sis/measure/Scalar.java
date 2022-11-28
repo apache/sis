@@ -35,7 +35,7 @@ import org.apache.sis.internal.util.Numerics;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  *
- * @param <Q>  the concrete subtype.
+ * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 0.8
  * @module
@@ -54,6 +54,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     /**
      * The unit of measurement associated to the value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Unit<Q> unit;
 
     /**

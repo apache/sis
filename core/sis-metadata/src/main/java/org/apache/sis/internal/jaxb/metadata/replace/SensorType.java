@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.metadata;
+package org.apache.sis.internal.jaxb.metadata.replace;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
@@ -29,7 +29,7 @@ import org.opengis.util.CodeList;
  * For now GeoAPI does not yet provides it, but this choice may be revisited in a future GeoAPI version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.3
  * @since   0.7
  * @module
  */

@@ -68,6 +68,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      *
      * @see BinarySpatialOperator#getOperand1()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression1;
 
     /**
@@ -75,6 +76,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      *
      * @see BinarySpatialOperator#getOperand2()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression2;
 
     /**

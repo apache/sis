@@ -504,7 +504,7 @@
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>42.5.0</version>
+        <version>42.5.1</version>
         <scope>test</scope>
       </dependency>
 
@@ -859,7 +859,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <version>3.4.1</version>
         <configuration>
-          <source>${maven.compiler.source}</source>             <!-- Enables javadoc to handle language constructs present in target JDK. -->
+          <source>16</source>                                   <!-- Enables javadoc to handle language constructs present in target JDK. -->
           <encoding>${project.build.sourceEncoding}</encoding>  <!-- Encoding of Java source file. -->
           <docencoding>${website.encoding}</docencoding>        <!-- Encoding of the generated HTML files. -->
           <charset>${website.encoding}</charset>                <!-- Encoding to declare in the HTML META tag. -->

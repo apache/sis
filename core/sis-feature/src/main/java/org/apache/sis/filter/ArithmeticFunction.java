@@ -135,6 +135,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
 
     /**
      * The "Add" (+) expression.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class Add<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -173,6 +175,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
 
     /**
      * The "Subtract" (−) expression.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class Subtract<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -211,6 +215,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
 
     /**
      * The "Multiply" (×) expression.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class Multiply<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */
@@ -249,6 +255,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
 
     /**
      * The "Divide" (÷) expression.
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class Divide<R> extends ArithmeticFunction<R> {
         /** For cross-version compatibility during (de)serialization. */

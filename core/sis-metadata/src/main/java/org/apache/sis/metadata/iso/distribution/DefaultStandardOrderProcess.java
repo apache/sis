@@ -120,7 +120,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
+     * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -148,8 +148,8 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultStandardOrderProcess}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultStandardOrderProcess} instance is created using the
-     *       {@linkplain #DefaultStandardOrderProcess(StandardOrderProcess) copy constructor}
-     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
+     *       {@linkplain #DefaultStandardOrderProcess(StandardOrderProcess) copy constructor} and returned.
+     *       Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
