@@ -68,7 +68,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.folder.StoreTest.class,
     org.apache.sis.storage.aggregate.JoinFeatureSetTest.class,
     org.apache.sis.storage.aggregate.ConcatenatedFeatureSetTest.class,
-    org.apache.sis.storage.DataStoresTest.class
+    org.apache.sis.storage.DataStoresTest.class,
+    org.apache.sis.storage.ResourceProcessorTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
     /**
