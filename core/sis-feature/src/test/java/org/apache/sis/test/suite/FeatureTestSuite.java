@@ -101,6 +101,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,
     org.apache.sis.image.MaskedImageTest.class,
+    org.apache.sis.image.BandAggregateImageTest.class,
     org.apache.sis.image.BandedSampleConverterTest.class,
     org.apache.sis.image.ImageCombinerTest.class,
     org.apache.sis.image.ImageProcessorTest.class,

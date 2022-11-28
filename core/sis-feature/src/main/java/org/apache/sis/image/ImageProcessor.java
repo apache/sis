@@ -1214,6 +1214,37 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Commodity method for {@link #aggregateBands(List, List)}. Calling it is equivalent to:
+     *
+     * {@code aggregateBands(Arrays.asList(sources), null);}
+     * @param sources images whose bands must be aggregated, in order. At least two images must be provided.
+     *
+     * @see #aggregateBands(List, List)
+     */
+    public RenderedImage aggregateBands(RenderedImage... sources) {
+        return aggregateBands(Arrays.asList(sources), null);
+    }
+
+    /**
+     *
+     * @param sources Rendered images to aggregate, in order.
+     * @param bandsToSelectPerSource Bands to select for each source image, in order.
+     *                               If null or empty, we assume that all bands of all images must be selected.
+     *                               Any null or empty item means that all bands of the respective source image must be preserved.
+     * @return A computed image whose bands are the bands of provided images, in order.
+     */
+
+    public RenderedImage aggregateBands(List<RenderedImage> sources, List<int[]> bandsToSelectPerSource) {
+        RenderedImage[] sourceArray = sources.toArray(new RenderedImage[sources.size()]);
+        int[][] bandSelection = bandsToSelectPerSource == null || bandsToSelectPerSource.isEmpty()
+                ? null
+                : bandsToSelectPerSource.stream()
+                    .map(it -> it == null ? null : it.clone())
+                    .toArray(int[][]::new);
+        return BandAggregateImage.aggregateBands(sourceArray, bandSelection);
+    }
+
+    /**
      * Returns {@code true} if the given object is an image processor
      * of the same class with the same configuration.
      *
