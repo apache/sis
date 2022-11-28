@@ -189,7 +189,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     }
 
     /**
-     * Returns the values in this group. The returned list is <cite>live</cite>:
+     * Returns the values in this group. The returned list is <em>live</em>:
      * changes in this list are reflected on this {@code ParameterValueGroup}, and conversely.
      *
      * <h4>Restrictions</h4>

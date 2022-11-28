@@ -63,7 +63,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -244,6 +244,16 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
         return null;
     }
 
+    /**
+     * Returns citation or party identifiers, which is an empty list.
+     *
+     * @return empty.
+     */
+    @Override
+    public Collection<Identifier> getIdentifiers() {
+        return Collections.emptyList();
+    }
+
 
     /* -----------------------------------------------------------------------------------
      * Implementation of the Citation object returned by LegalConstraints.getReferences().
@@ -334,17 +344,6 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
     @Override
     public Date getEditionDate() {
         return null;
-    }
-
-    /**
-     * ISO 19115 metadata property not specified by GPX.
-     * This is part of the properties returned by {@code getReferences()}.
-     *
-     * @return the identifiers of the license.
-     */
-    @Override
-    public Collection<Identifier> getIdentifiers() {
-        return Collections.emptySet();
     }
 
     /**

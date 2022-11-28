@@ -238,7 +238,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *       {@code AbstractDatum}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code AbstractDatum} instance is created using the
      *       {@linkplain #AbstractDatum(Datum) copy constructor} and returned.
-     *       Note that this is a <dfn>shallow</dfn> copy operation,
+     *       Note that this is a <em>shallow</em> copy operation,
      *       because the other properties contained in the given object are not recursively copied.</li>
      * </ul>
      *

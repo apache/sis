@@ -22,10 +22,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Contact;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.xml.IdentifierSpace;
+import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
 
 // Branch-specific imports
 import org.opengis.annotation.UML;
@@ -61,14 +64,15 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.5
  * @module
  */
 @TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {
     "name",
-    "contactInfo"
+    "contactInfo",
+    "identifiers"
 })
 @XmlRootElement(name = "AbstractCI_Party")
 @XmlSeeAlso({
@@ -113,7 +117,7 @@ public class AbstractParty extends ISOMetadata {
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
+     * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -145,6 +149,43 @@ public class AbstractParty extends ISOMetadata {
     public void setName(final InternationalString newValue) {
        checkWritePermission(name);
        name = newValue;
+    }
+
+    /**
+     * Identifiers of the party.
+     *
+     * <h4>Unified identifiers view</h4>
+     * In this SIS implementation, the collection returned by this method includes the XML identifiers
+     * ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
+     * thus providing a unified view of every kind of identifiers associated to this party.
+     *
+     * <div class="note"><b>XML note:</b>
+     * The {@code <mac:identifier>} element marshalled to XML will exclude all the above cited identifiers,
+     * for compliance with ISO 19115 model. Those identifiers will appear in other XML elements or attributes.</div>
+     *
+     * @return identifiers of the party, or an empty collection if none.
+     *
+     * @since 1.3
+     */
+    @Override
+    @XmlElement(name = "partyIdentifier")
+    public Collection<Identifier> getIdentifiers() {
+        return NonMarshalledAuthority.filterOnMarshalling(super.getIdentifiers());
+    }
+
+    /**
+     * Sets the identifiers of the party.
+     *
+     * <p>XML identifiers ({@linkplain IdentifierSpace#ID ID}, {@linkplain IdentifierSpace#UUID UUID}, <i>etc.</i>),
+     * are not affected by this method, unless they are explicitly provided in the given collection.</p>
+     *
+     * @param  newValues  the new identifiers values.
+     *
+     * @since 1.3
+     */
+    public void setIdentifiers(Collection<? extends Identifier> newValues) {
+        newValues = NonMarshalledAuthority.setMarshallables(identifiers, newValues);
+        identifiers = writeCollection(newValues, identifiers, Identifier.class);
     }
 
     /**

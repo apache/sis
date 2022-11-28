@@ -77,16 +77,19 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
     /**
      * The storage map whose keys are derived from.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Map<SK,SV> storage;
 
     /**
      * The converter from the storage to the derived keys.
      */
+    @SuppressWarnings("serial")
     protected final ObjectConverter<SK,K> keyConverter;
 
     /**
      * The converter from the storage to the derived values.
      */
+    @SuppressWarnings("serial")
     protected final ObjectConverter<SV,V> valueConverter;
 
     /**
@@ -197,11 +200,17 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * A {@link DerivedMap} used when the {@link #keyConverter} is invertible.
      * Availability of the inverse conversion allows us to delegate some operations
      * to the {@linkplain #storage} map instead of iterating over all entries.
+     *
+     * @param <SK>  the type of keys in the storage map.
+     * @param <SV>  the type of values in the storage map.
+     * @param <K>   the type of keys in this map.
+     * @param <V>   the type of values in this map.
      */
     private static class InvertibleKey<SK,SV,K,V> extends DerivedMap<SK,SV,K,V> {
         private static final long serialVersionUID = 3499911507293121425L;
 
         /** The inverse of {@link #keyConverter}. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         protected final ObjectConverter<K,SK> keyInverse;
 
         InvertibleKey(final Map<SK,SV> storage,
@@ -235,11 +244,17 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * A {@link DerivedMap} used when the {@link #valueConverter} is invertible.
      * Availability of the inverse conversion allows us to delegate some operations
      * to the {@linkplain #storage} map instead of iterating over all entries.
+     *
+     * @param <SK>  the type of keys in the storage map.
+     * @param <SV>  the type of values in the storage map.
+     * @param <K>   the type of keys in this map.
+     * @param <V>   the type of values in this map.
      */
     private static final class InvertibleValue<SK,SV,K,V> extends DerivedMap<SK,SV,K,V> {
         private static final long serialVersionUID = -8290698486357636366L;
 
         /** The inverse of {@link #valueConverter}. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final ObjectConverter<V,SV> valueInverse;
 
         InvertibleValue(final Map<SK,SV> storage,
@@ -261,11 +276,17 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
      * A {@link DerivedMap} used when both the {@link #keyConverter} and {@link #valueConverter}
      * are invertible. Availability of the inverse conversion allows us to delegate some operations
      * to the {@linkplain #storage} map instead of iterating over all entries.
+     *
+     * @param <SK>  the type of keys in the storage map.
+     * @param <SV>  the type of values in the storage map.
+     * @param <K>   the type of keys in this map.
+     * @param <V>   the type of values in this map.
      */
     private static final class Invertible<SK,SV,K,V> extends InvertibleKey<SK,SV,K,V> {
         private static final long serialVersionUID = -6625938922337246124L;
 
         /** The inverse of {@link #valueConverter}. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final ObjectConverter<V,SV> valueInverse;
 
         /** The inverse of this entry converter. */

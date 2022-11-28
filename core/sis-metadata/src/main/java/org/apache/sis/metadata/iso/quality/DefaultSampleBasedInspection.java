@@ -89,9 +89,9 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
     public DefaultSampleBasedInspection() {
     }
 
-   /**
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
+     * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
@@ -105,7 +105,7 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
         }
     }
 
-     /**
+    /**
      * Returns the information of the type of sampling scheme and description of the sampling procedure.
      *
      * @return sampling scheme and sampling procedure.
@@ -126,7 +126,7 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
         samplingScheme = newValue;
     }
 
-     /**
+    /**
      * Returns the information of how lots are defined.
      *
      * @return information on lots.
@@ -147,7 +147,7 @@ public class DefaultSampleBasedInspection extends AbstractDataEvaluation {
         lotDescription = newValue;
     }
 
-     /**
+    /**
      * Returns the information on how many samples on average are extracted for inspection from each lot of population.
      *
      * @return average number of samples extracted for inspection.

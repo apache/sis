@@ -76,17 +76,21 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
     /**
      * A constant, literal value that can be used in expressions.
      * The {@link #apply(Object)} method ignores the argument and always returns {@link #getValue()}.
+     *
+     * @param  <R>  the type of resources used as inputs.
+     * @param  <V>  the type of value computed by the expression.
      */
     static class Literal<R,V> extends LeafExpression<R,V> implements org.apache.sis.internal.geoapi.filter.Literal<R,V> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -8383113218490957822L;
 
         /** The constant value to be returned by {@link #getValue()}. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         protected final V value;
 
         /** Creates a new literal holding the given constant value. */
         Literal(final V value) {
-            this.value = value;     // Null is accepted.
+            this.value = value;             // Null is accepted.
         }
 
         /** For {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations. */
@@ -171,12 +175,16 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
 
     /**
      * A literal value which is the result of transforming another literal.
+     *
+     * @param  <R>  the type of resources used as inputs.
+     * @param  <V>  the type of value computed by the expression.
      */
     static final class Transformed<R,V> extends Literal<R,V> implements Optimization.OnExpression<R,V> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -5120203649333919221L;
 
         /** The original expression. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         final Expression<R,?> original;
 
         /** Creates a new literal holding the given constant value. */

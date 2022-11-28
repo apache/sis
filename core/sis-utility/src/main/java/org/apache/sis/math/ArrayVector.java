@@ -43,7 +43,10 @@ import org.apache.sis.measure.NumberRange;
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.2
- * @since   0.8
+ *
+ * @param <E>  the base type of elements in the vector.
+ *
+ * @since 0.8
  * @module
  */
 abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {

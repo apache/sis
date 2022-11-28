@@ -88,7 +88,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema
@@ -471,14 +471,13 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Constructs an initially empty type describing exactly one value as a string.
+     * Constructs an initially empty type describing one field per line.
      * See {@link #setValue(String)} for a description of the supported XML content.
      */
     @SuppressWarnings("unused")
     private DefaultRecordType() {
-        final DefaultRecordType type = RecordSchemaSIS.STRING;
-        typeName  = type.typeName;
-        container = type.container;
+        typeName  = RecordSchemaSIS.MULTILINE;
+        container = RecordSchemaSIS.STRING.container;
     }
 
     /**
@@ -495,7 +494,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     }
 
     /**
-     * Sets the record type value as a string. Current implementation expect one field per line.
+     * Sets the record type value as a string. Current implementation expects one field per line.
      * A record can be anything, but usages that we have seen so far write a character sequence
      * of what seems <var>key</var>-<var>description</var> pairs. Examples:
      *
@@ -517,7 +516,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
                     element = element.subSequence(0, CharSequences.skipTrailingWhitespaces(element, 0, s));
                     // TODO: the part after ":" is the description. For now, we have no room for storing it.
                 }
-                final MemberName m = Names.createMemberName(null, null, element, String.class);
+                final MemberName m = Names.createMemberName(typeName, element, String.class);
                 fields.put(m, RecordSchemaSIS.INSTANCE.toAttributeType(String.class));
             }
             fieldTypes = computeTransientFields(fields);

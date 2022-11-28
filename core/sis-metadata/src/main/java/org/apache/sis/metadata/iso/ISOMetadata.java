@@ -162,7 +162,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * {@inheritDoc}
      *
      * <p>The default implementation returns a wrapper around the {@link #identifiers} list.
-     * That map is <cite>live</cite>: changes in the identifiers list will be reflected in the map,
+     * That map is <em>live</em>: changes in the identifiers list will be reflected in the map,
      * and conversely.</p>
      */
     @Override

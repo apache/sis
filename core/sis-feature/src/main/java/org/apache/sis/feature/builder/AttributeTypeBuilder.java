@@ -538,7 +538,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
 
     /**
      * Returns a view of all characteristics added to the {@code AttributeType} to build.
-     * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
+     * The returned list is <em>live</em>: changes in this builder are reflected in that list and conversely.
      * However, the returned list allows only {@linkplain List#remove(Object) remove} operations;
      * new characteristics can be added only by calls to one of the {@code set/addCharacteristic(…)} methods.
      *
@@ -556,7 +556,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
 
     /**
      * Returns the roles that the attribute play in the predefined operations managed by {@code AttributeTypeBuilder}.
-     * The set returned by this method is <cite>live</cite>: additions or removal on that set are reflected back on
+     * The set returned by this method is <em>live</em>: additions or removal on that set are reflected back on
      * this builder, and conversely.
      *
      * @return the roles that the attribute play in the predefined operations managed by {@code AttributeTypeBuilder}.

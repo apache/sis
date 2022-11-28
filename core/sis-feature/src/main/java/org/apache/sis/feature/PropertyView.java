@@ -39,7 +39,10 @@ import org.apache.sis.internal.feature.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <V> the type of property values.
+ *
+ * @since 0.8
  * @module
  */
 final class PropertyView {

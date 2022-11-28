@@ -28,7 +28,10 @@ import javax.measure.Unit;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
- * @since   0.8
+ *
+ * @param <Q>  the type of quantity implemented by this scalar.
+ *
+ * @since 0.8
  * @module
  */
 @SuppressWarnings("serial")

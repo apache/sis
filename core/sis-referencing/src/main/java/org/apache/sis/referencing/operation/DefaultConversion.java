@@ -335,8 +335,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultConversion}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultConversion} instance is created using the
-     *       {@linkplain #DefaultConversion(Conversion) copy constructor}
-     *       and returned. Note that this is a <dfn>shallow</dfn> copy operation, because the other
+     *       {@linkplain #DefaultConversion(Conversion) copy constructor} and returned.
+     *       Note that this is a <em>shallow</em> copy operation, because the other
      *       properties contained in the given object are not recursively copied.</li>
      * </ul>
      *

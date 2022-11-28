@@ -324,13 +324,14 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
          * General cases (after we processed all the special cases)
          * based on which standard defines the type or property.
          */
+        final Specification specification = uml.specification();
         if (/*uml.version()*/ 0 != 0) {
-            switch (uml.specification()) {
+            switch (specification) {
                 case ISO_19115:   return LegacyNamespaces.GMD;
                 case ISO_19115_2: return LegacyNamespaces.GMI;
             }
         }
-        switch (uml.specification()) {
+        switch (specification) {
             case ISO_19115:
             case ISO_19115_2: return CodeListUID.METADATA_ROOT;
             case ISO_19139:   return LegacyNamespaces.GMX;

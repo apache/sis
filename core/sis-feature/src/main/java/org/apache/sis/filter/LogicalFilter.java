@@ -52,6 +52,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     /**
      * The filter on which to apply the logical operator.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Filter<? super R>[] operands;
 
     /**
@@ -109,6 +110,8 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
     /**
      * The "And" operation (⋀).
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class And<R> extends LogicalFilter<R> {
         /** For cross-version compatibility. */
@@ -158,6 +161,8 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
     /**
      * The "Or" operation (⋁).
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class Or<R> extends LogicalFilter<R> {
         /** For cross-version compatibility. */
@@ -207,12 +212,15 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
     /**
      * The negation filter (¬).
+     *
+     * @param  <R>  the type of resources used as inputs.
      */
     static final class Not<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1296823195138427781L;
 
         /** The filter to negate. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final Filter<? super R> operand;
 
         /** Creates a new operator. */

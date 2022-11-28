@@ -59,7 +59,7 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * @param  expression2  the second of the two expressions to be used by this function.
      */
     TemporalFilter(final Expression<? super T, ?> expression1,
-                     final Expression<? super T, ?> expression2)
+                   final Expression<? super T, ?> expression2)
     {
         super(expression1, expression2);
     }
@@ -208,6 +208,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self = other}</li>
      *   <li>{@literal self.begin = other.begin  AND  self.end = other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Equals<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -261,6 +263,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.end < other}</li>
      *   <li>{@literal self.end < other.begin}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Before<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -312,6 +316,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin > other}</li>
      *   <li>{@literal self.begin > other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class After<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -361,6 +367,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.begin = other.begin  AND  self.end < other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Begins<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -396,6 +404,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.begin > other.begin  AND  self.end = other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Ends<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -432,6 +442,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin = other}</li>
      *   <li>{@literal self.begin = other.begin  AND  self.end > other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class BegunBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -473,6 +485,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.end = other}</li>
      *   <li>{@literal self.begin < other.begin  AND  self.end = other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class EndedBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -513,6 +527,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.end = other.begin}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Meets<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -557,6 +573,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.begin = other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class MetBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -601,6 +619,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.begin > other.begin  AND  self.end < other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class During<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -642,6 +662,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      *   <li>{@literal self.begin < other AND self.end > other}</li>
      *   <li>{@literal self.begin < other.begin  AND  self.end > other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Contains<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -688,6 +710,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.begin < other.begin  AND  self.end > other.begin  AND  self.end < other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class Overlaps<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -726,6 +750,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * <ul>
      *   <li>{@literal self.begin > other.begin  AND  self.begin < other.end  AND  self.end > other.end}</li>
      * </ul>
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class OverlappedBy<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */
@@ -762,6 +788,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
     /**
      * The {@code "AnyInteracts"} filter.
      * This is a shortcut for NOT (Before OR Meets OR MetBy OR After).
+     *
+     * @param  <T>  the type of resources used as inputs.
      */
     static final class AnyInteracts<T> extends TemporalFilter<T> {
         /** For cross-version compatibility during (de)serialization. */

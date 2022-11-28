@@ -48,7 +48,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
 @XmlRootElement(name = "AbstractDQ_DataEvaluation")
 @XmlSeeAlso({
     DefaultFullInspection.class,
-    DefaultIndirectEvaluation .class,
+    DefaultIndirectEvaluation.class,
     DefaultSampleBasedInspection.class
 })
 @UML(identifier="DQ_DataEvaluation", specification=UNSPECIFIED)
@@ -66,7 +66,7 @@ public class AbstractDataEvaluation extends DefaultEvaluationMethod {
 
     /**
      * Constructs a new instance initialized with the values from the specified metadata object.
-     * This is a <dfn>shallow</dfn> copy constructor, because the other metadata contained in the
+     * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.

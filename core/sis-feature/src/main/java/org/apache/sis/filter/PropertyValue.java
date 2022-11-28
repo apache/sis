@@ -253,6 +253,8 @@ split:  if (path != null) {
     /**
      * An expression fetching property values as an object of specified type.
      * The value is converted from {@link Object} to the specified type.
+     *
+     * @param  <V>  the type of value computed by the expression.
      */
     private static class Converted<V> extends PropertyValue<V> {
         /** For cross-version compatibility. */
@@ -401,6 +403,9 @@ split:  if (path != null) {
      * An expression fetching property values as an object of specified type.
      * The value is first casted from {@link Object} to the expected source type,
      * then converted to the specified target type.
+     *
+     * @param  <S>  the type of source value before conversion.
+     * @param  <V>  the type of value computed by the expression.
      */
     private static final class CastedAndConverted<S,V> extends Converted<V> {
         /** For cross-version compatibility. */
@@ -410,6 +415,7 @@ split:  if (path != null) {
         private final Class<S> source;
 
         /** The conversion from source type to the type to be returned. */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private final ObjectConverter<? super S, ? extends V> converter;
 
         /** Creates a new expression retrieving values from a property of the given name. */

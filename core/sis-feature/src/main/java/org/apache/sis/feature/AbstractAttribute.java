@@ -218,13 +218,13 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
 
     /**
      * Returns all attribute values, or an empty collection if none.
-     * The returned collection is <cite>live</cite>: changes in the returned collection
+     * The returned collection is <em>live</em>: changes in the returned collection
      * will be reflected immediately in this {@code Attribute} instance, and conversely.
      *
      * <p>The default implementation returns a collection which will delegate its work to
      * {@link #getValue()} and {@link #setValue(Object)}.</p>
      *
-     * @return the attribute values in a <cite>live</cite> collection.
+     * @return the attribute values in a <em>live</em> collection.
      */
     @Override
     public Collection<V> getValues() {

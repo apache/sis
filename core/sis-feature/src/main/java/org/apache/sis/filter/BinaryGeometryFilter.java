@@ -60,11 +60,13 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Optimi
     /**
      * The first of the two expressions to be used by this function.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression2;
 
     /**

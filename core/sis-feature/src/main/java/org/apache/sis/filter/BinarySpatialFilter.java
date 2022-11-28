@@ -64,7 +64,7 @@ final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> {
      * @return a filter checking for interactions of the bounding boxes.
      */
     BinarySpatialFilter(final Geometries<G> library, final Expression<? super R, ?> geometry,
-                    final Envelope bounds, final WraparoundMethod wraparound)
+                        final Envelope bounds, final WraparoundMethod wraparound)
     {
         super(library, geometry, new LeafExpression.Transformed<>(library.toGeometry2D(bounds, wraparound),
                                  new LeafExpression.Literal<>(bounds)), null);
@@ -81,9 +81,9 @@ final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> {
      * @return a filter for the specified operation between the two geometries.
      */
     BinarySpatialFilter(final SpatialOperatorName operatorType,
-                    final Geometries<G> library,
-                    final Expression<? super R, ?> geometry1,
-                    final Expression<? super R, ?> geometry2)
+                        final Geometries<G> library,
+                        final Expression<? super R, ?> geometry1,
+                        final Expression<? super R, ?> geometry2)
     {
         super(library, geometry1, geometry2, null);
         this.operatorType = operatorType;

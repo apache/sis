@@ -282,7 +282,7 @@ public class CoverageExplorer extends Widget {
      * Returns the handler of the window showing this coverage view.
      * Those windows are created when the user clicks on the "New window" button.
      * Each window provides the area where data are shown and where the user interacts.
-     * The window can be a JavaFX top-level window ({@link Stage}), but not necessarily.
+     * The window can be a JavaFX top-level window ({@link javafx.stage.Stage}), but not necessarily.
      * It may also be a tile in a mosaic of windows.
      *
      * @return the handler of the window showing this coverage view.

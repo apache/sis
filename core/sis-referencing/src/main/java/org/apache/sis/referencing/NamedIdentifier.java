@@ -341,7 +341,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *       {@code NamedIdentifier}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code NamedIdentifier} instance is created using the
      *       {@linkplain #NamedIdentifier(ReferenceIdentifier) copy constructor} and returned.
-     *       Note that this is a <dfn>shallow</dfn> copy operation, because the other
+     *       Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *
@@ -368,7 +368,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *       {@code NamedIdentifier}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code NamedIdentifier} instance is created using the
      *       {@linkplain #NamedIdentifier(GenericName) copy constructor} and returned.
-     *       Note that this is a <dfn>shallow</dfn> copy operation, because the other
+     *       Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
      *

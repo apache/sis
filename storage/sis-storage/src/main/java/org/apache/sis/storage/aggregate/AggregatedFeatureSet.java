@@ -136,11 +136,12 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     }
 
     /**
-     * Invoked the first time that {@link #getMetadata()} is invoked. The default implementation adds
-     * the information documented in {@link AbstractFeatureSet#createMetadata(MetadataBuilder)}, then
-     * adds the dependencies as lineages.
+     * Invoked in a synchronized block the first time that {@code getMetadata()} is invoked.
+     * The default implementation adds the information documented in the
+     * {@linkplain AbstractFeatureSet#createMetadata() parent class},
+     * then adds the dependencies as lineages.
      *
-     * @param  metadata  the builder where to set metadata properties.
+     * @return the newly created metadata, or {@code null} if unknown.
      * @throws DataStoreException if an error occurred while reading metadata from the data stores.
      */
     @Override

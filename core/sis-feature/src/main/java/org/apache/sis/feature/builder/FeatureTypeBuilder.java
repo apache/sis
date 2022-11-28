@@ -619,7 +619,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Returns a view of all attributes and associations added to the {@code FeatureType} to build.
      * This list contains only properties declared explicitly to this builder;
      * it does not include properties inherited from {@linkplain #getSuperTypes() super-types}.
-     * The returned list is <cite>live</cite>: changes in this builder are reflected in that list and conversely.
+     * The returned list is <em>live</em>: changes in this builder are reflected in that list and conversely.
      * However, the returned list allows only {@linkplain List#remove(Object) remove} operations;
      * new attributes or associations can be added only by calls to one of the {@code addAttribute(…)}
      * or {@code addAssociation(…)} methods. Removal operations never affect the super-types.
