@@ -16,9 +16,15 @@
  */
 package org.apache.sis.storage;
 
+import java.awt.image.ColorModel;
+import java.awt.image.RenderedImage;
 import java.util.function.Function;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
+import org.apache.sis.image.DataType;
+import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.storage.ConvertedCoverageResource;
+import org.apache.sis.measure.NumberRange;
 import org.opengis.referencing.operation.MathTransform1D;
 
 /**
@@ -59,7 +65,7 @@ public class ResourceProcessor implements Cloneable {
      * then changes in the source coverage are reflected in the returned coverage and conversely.
      *
      * @see GridCoverageProcessor#convert(org.apache.sis.coverage.grid.GridCoverage, org.opengis.referencing.operation.MathTransform1D[], java.util.function.Function)
-     * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType, ColorModel)
+     * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType, ColorModel)
      */
     public GridCoverageResource convert(final GridCoverageResource source, MathTransform1D[] converters,
             Function<SampleDimension.Builder, SampleDimension> sampleDimensionModifier)
