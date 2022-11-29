@@ -48,12 +48,12 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * The created file contains:
  *
  * <ul>
- *   <li>the content of the <code>application/sis-console/src/main/artifact</code> directory;</li>
+ *   <li>the content of the <code>application/sis-javafx/src/main/artifact</code> directory;</li>
  *   <li>the JAR files of all modules and their dependencies, without their native resources;</li>
  *   <li>the native resources in a separated {@code lib/} directory.</li>
  * </ul>
  *
- * This MOJO can be invoked from the command line in the {@code sis-console} module as below:
+ * This MOJO can be invoked from the command line in the {@code sis-javafx} module as below:
  *
  * <blockquote><code>mvn package org.apache.sis.core:sis-build-helper:dist</code></blockquote>
  *
@@ -113,7 +113,7 @@ public final class Assembler extends AbstractMojo implements FilenameFilter {
             zip.setLevel(9);
             appendRecursively(sourceDirectory, artifactBase, zip);
             /*
-             * At this point, all the "application/sis-console/src/main/artifact" and sub-directories
+             * At this point, all the "application/sis-javafx/src/main/artifact" and sub-directories
              * have been zipped. Now append the JAR files for each module and their dependencies.
              */
             final Map<String,byte[]> nativeFiles = new LinkedHashMap<>();
@@ -163,7 +163,7 @@ public final class Assembler extends AbstractMojo implements FilenameFilter {
     /**
      * Adds the given file in the ZIP file. If the given file is a directory, then this method
      * recursively adds all files contained in this directory. This method is invoked for zipping
-     * the "application/sis-console/src/main/artifact" directory and sub-directories before to zip.
+     * the "application/sis-javafx/src/main/artifact" directory and sub-directories before to zip.
      */
     private void appendRecursively(final File file, String relativeFile, final ZipArchiveOutputStream out) throws IOException {
         if (file.isDirectory()) {
