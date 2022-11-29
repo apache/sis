@@ -52,6 +52,7 @@ import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.setup.InstallationResources;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
@@ -65,7 +66,7 @@ import org.apache.sis.measure.Units;
  * in the {@link CRS#forCode(String)} method javadoc is always available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
  * @module
  */
@@ -120,6 +121,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
         if (authority == null) {
             final DefaultCitation c = new DefaultCitation(Citations.EPSG);
             c.setTitle(Vocabulary.formatInternational(Vocabulary.Keys.SubsetOf_1, c.getTitle()));
+            c.setEdition(new SimpleInternationalString(StandardDefinitions.VERSION));
             authority = c;
         }
         return authority;

@@ -37,6 +37,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.NoSuchIdentifierException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.AxisNames;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
@@ -75,11 +76,18 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class should not be loaded when a connection to an EPSG geodetic dataset is available.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.4
  * @module
  */
 final class StandardDefinitions {
+    /**
+     * The EPSG database version that most closely match the fallback CRS.
+     * We refer to latest version of the 9.x series instead of more recent
+     * data because the fallback CRS does not use datum ensemble.
+     */
+    static final String VERSION = "9.9.1";
+
     /**
      * The EPSG code for Greenwich meridian.
      *
@@ -105,7 +113,7 @@ final class StandardDefinitions {
     private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
         final Map<String,Object> map = new HashMap<>(8);
         if (code != 0) {
-            map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+            map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, Constants.EPSG, String.valueOf(code), VERSION, null));
         }
         map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
         map.put(ALIAS_KEY, alias);                                      // May be null, which is okay.
