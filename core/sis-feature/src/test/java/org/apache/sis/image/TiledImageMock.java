@@ -32,8 +32,10 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.util.Numerics;
@@ -271,19 +273,32 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
 
     /**
      * Initializes the sample values of all tiles to testing values.
-     * The sample values will be 3 digits numbers of the form "TXY" where:
+     * The sample values will be 3 digits numbers of the form "TYX" where:
      * <ul>
      *   <li><var>T</var> is the tile index starting with 1 for the first tile and increasing in a row-major fashion.</li>
-     *   <li><var>X</var> is the <var>x</var> coordinate (column index) of the sample value relative to current tile.</li>
-     *   <li><var>Y</var> is the <var>y</var> coordinate (row index) of the sample value relative to current tile.</li>
+     *   <li><var>Y</var> is the <var>y</var> coordinate (row 0-based index) of the sample value relative to current tile.</li>
+     *   <li><var>X</var> is the <var>x</var> coordinate (column 0-based index) of the sample value relative to current tile.</li>
      * </ul>
      *
-     * The "TXY" pattern holds if all values are less than 10. If some values are greater than 10,
-     * then the sample values are a mix of above values resulting from arithmetic sums.
-     *
-     * @param  band  band index where to set values. Other bands will be unmodified.
+     * The "TYX" pattern holds if all values are less than 10. If some values are greater than 10,
+     * then the sample values are a mix of above values resulting from the following arithmetic sum:
+     * {@code T * 100 + Y * 10 + X}.
+     * <br>
+     * All bands will be affected the same value.
+     * <br>
+     * <em>Important</em>: This method resets all tiles of this image. It means that:
+     * <ul>
+     *     <li>All previous modifications will be erased</li>
+     *     <li>Any band omitted as input will be erased. This is true even when omitting all tiles.</li>
+     * </ul>
+     * @param bands  band index where to set values. If none provided, all bands are <em>emptied</em>,
+     *               i.e. a fresh raster is created for each tile, but not filled.
      */
-    public synchronized void initializeAllTiles(final int band) {
+    public synchronized void initializeAllTiles(int... bands) {
+        if (bands == null) bands = new int[] {};
+        else if (Arrays.stream(bands).boxed().collect(Collectors.toSet()).size() < bands.length) {
+            throw new IllegalArgumentException("Input band list contain doublons. Please verify your input.");
+        }
         int ti = 0;
         for (int ty=0; ty<numYTiles; ty++) {
             for (int tx=0; tx<numXTiles; tx++) {
@@ -293,7 +308,8 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
                 final WritableRaster raster = Raster.createWritableRaster(sampleModel, new Point(x, y));
                 for (int j=0; j<tileHeight; j++) {
                     for (int i=0; i<tileWidth; i++) {
-                        raster.setSample(x+i, y+j, band, value + 10*j + i);
+                        final int pixelValue = value + 10 * j + i;
+                        for (int band : bands) raster.setSample(x+i, y+j, band, pixelValue);
                     }
                 }
                 tiles[ti++] = raster;
@@ -304,7 +320,7 @@ public final strictfp class TiledImageMock extends PlanarImage implements Writab
 
     /**
      * Initializes the sample values of all tiles to random values. The image must have been
-     * initialized by a call to {@link #initializeAllTiles(int)} before to invoke this method.
+     * initialized by a call to {@link #initializeAllTiles(int...)} before to invoke this method.
      *
      * @param  band       band index where to set values. Other bands will be unmodified.
      * @param  generator  the random number generator to use for obtaining values.
