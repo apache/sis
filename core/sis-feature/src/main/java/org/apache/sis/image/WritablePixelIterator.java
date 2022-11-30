@@ -217,7 +217,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setPixel(int, int, int[])
      * @see #getPixel(int[])
      */
-    public void setPixel​(final int[] values) {
+    public void setPixel(final int[] values) {
         destRaster.setPixel(x, y, values);
     }
 
@@ -232,7 +232,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setPixel(int, int, float[])
      * @see #getPixel(float[])
      */
-    public void setPixel​(final float[] values) {
+    public void setPixel(final float[] values) {
         destRaster.setPixel(x, y, values);
     }
 
@@ -247,7 +247,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setPixel(int, int, double[])
      * @see #getPixel(double[])
      */
-    public void setPixel​(final double[] values) {
+    public void setPixel(final double[] values) {
         destRaster.setPixel(x, y, values);
     }
 
