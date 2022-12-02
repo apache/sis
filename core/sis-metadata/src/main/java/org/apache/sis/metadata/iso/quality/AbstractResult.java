@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import java.util.Date;
+import java.time.temporal.Temporal;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlSeeAlso;
@@ -27,8 +27,7 @@ import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.apache.sis.internal.jaxb.metadata.MD_Scope;
-import org.apache.sis.internal.jaxb.gco.GO_DateTime;
-import org.apache.sis.internal.metadata.ImplementationHelper;
+import org.apache.sis.internal.jaxb.gco.GO_Temporal;
 
 // Branch-dependent imports
 import org.opengis.metadata.quality.Scope;
@@ -81,15 +80,15 @@ public class AbstractResult extends ISOMetadata implements Result {
     private Scope resultScope;
 
     /**
-     * Date when the result was generated, or {@link Long#MIN_VALUE} if none.
+     * Date when the result was generated, or {@code null} if none.
      */
-    private long dateTime;
+    @SuppressWarnings("serial")
+    private Temporal dateTime;
 
     /**
      * Constructs an initially empty result.
      */
     public AbstractResult() {
-        dateTime = Long.MIN_VALUE;
     }
 
     /**
@@ -106,9 +105,7 @@ public class AbstractResult extends ISOMetadata implements Result {
         if (object instanceof AbstractResult) {
             final AbstractResult impl = (AbstractResult) object;
             resultScope = impl.getResultScope();
-            dateTime    = ImplementationHelper.toMilliseconds(impl.getDateTime());
-        } else {
-            dateTime = Long.MIN_VALUE;
+            dateTime    = impl.getDateTime();
         }
     }
 
@@ -179,16 +176,19 @@ public class AbstractResult extends ISOMetadata implements Result {
 
     /**
      * Returns the date when the result was generated.
+     * This is typically a {@link java.time.LocalDate}, {@link java.time.LocalDateTime}
+     * or {@link java.time.ZonedDateTime} depending on whether the hour of the day and
+     * the time zone are provided.
      *
      * @return date of the result, or {@code null} if none.
      *
      * @since 1.3
      */
     @XmlElement(name = "dateTime")
-    @XmlJavaTypeAdapter(GO_DateTime.Since2014.class)
+    @XmlJavaTypeAdapter(GO_Temporal.Since2014.class)
     @UML(identifier="dateTime", obligation=OPTIONAL, specification=UNSPECIFIED)
-    public Date getDateTime() {
-        return ImplementationHelper.toDate(dateTime);
+    public Temporal getDateTime() {
+        return dateTime;
     }
 
     /**
@@ -198,7 +198,7 @@ public class AbstractResult extends ISOMetadata implements Result {
      *
      * @since 1.3
      */
-    public void setDateTime(final Date newValue) {
-        dateTime = ImplementationHelper.toMilliseconds(newValue);
+    public void setDateTime(final Temporal newValue) {
+        dateTime = newValue;
     }
 }

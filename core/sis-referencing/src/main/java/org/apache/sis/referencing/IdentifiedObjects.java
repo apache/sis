@@ -39,6 +39,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -60,7 +61,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
@@ -243,6 +244,8 @@ public final class IdentifiedObjects extends Static {
      * This method checks all {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers} in their iteration
      * order and returns the first identifier with an {@linkplain NamedIdentifier#getAuthority() authority} citation
      * {@linkplain Citations#identifierMatches(Citation, Citation) matching} the specified authority.
+     * If the specified authority implements {@link IdentifierSpace}, then the authority space name
+     * is also compared to the {@linkplain NamedIdentifier#getCodeSpace() code space} of each identifier.
      *
      * @param  object     the object to get the identifier from, or {@code null}.
      * @param  authority  the authority for the identifier to return, or {@code null} for
@@ -254,10 +257,17 @@ public final class IdentifiedObjects extends Static {
      */
     public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
-            for (final Identifier identifier : nonNull(object.getIdentifiers())) {
+            String cs = null;
+            if (authority instanceof IdentifierSpace<?>) {
+                cs = ((IdentifierSpace<?>) authority).getName();
+            }
+            for (final ReferenceIdentifier identifier : nonNull(object.getIdentifiers())) {
                 if (identifier != null) {                       // Paranoiac check.
+                    if (cs != null && cs.equalsIgnoreCase(identifier.getCodeSpace())) {
+                        return identifier;      // Match based on codespace.
+                    }
                     if (authority == null || Citations.identifierMatches(authority, identifier.getAuthority())) {
-                        return identifier;
+                        return identifier;      // Match based on citation.
                     }
                 }
             }

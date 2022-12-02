@@ -16,11 +16,11 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.AbstractList;
 import java.io.Serializable;
+import java.time.temporal.Temporal;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,6 +31,7 @@ import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefined;
@@ -110,8 +111,8 @@ public class DefaultEvaluationMethod extends ISOMetadata {
     /**
      * The start and end times as a list of O, 1 or 2 elements.
      */
-    private static final class Dates extends AbstractList<Date>
-            implements CheckedContainer<Date>, Cloneable, Serializable
+    private static final class Dates extends AbstractList<Temporal>
+            implements CheckedContainer<Temporal>, Cloneable, Serializable
     {
         /**
          * For cross-version compatibility.
@@ -119,10 +120,11 @@ public class DefaultEvaluationMethod extends ISOMetadata {
         private static final long serialVersionUID = 1210175223467194009L;
 
         /**
-         * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure
-         * was applied. Value is {@link Long#MIN_VALUE} if this information is not available.
+         * Start time ({@code date1}) and end time ({@code date2}) on which a data quality measure was applied.
+         * Value is {@code null} if this information is not available.
          */
-        private long date1, date2;
+        @SuppressWarnings("serial")
+        private Temporal date1, date2;
 
         /**
          * Creates a new list initialized with no dates.
@@ -135,8 +137,8 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          * Returns the type of elements in this list.
          */
         @Override
-        public Class<Date> getElementType() {
-            return Date.class;
+        public Class<Temporal> getElementType() {
+            return Temporal.class;
         }
 
         /**
@@ -144,8 +146,8 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          */
         @Override
         public void clear() {
-            date1 = Long.MIN_VALUE;
-            date2 = Long.MIN_VALUE;
+            date1 = null;
+            date2 = null;
         }
 
         /**
@@ -153,8 +155,8 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          */
         @Override
         public int size() {
-            if (date2 != Long.MIN_VALUE) return 2;
-            if (date1 != Long.MIN_VALUE) return 1;
+            if (date2 != null) return 2;
+            if (date1 != null) return 1;
             return 0;
         }
 
@@ -162,14 +164,17 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          * Returns the value at the given index.
          */
         @Override
-        @SuppressWarnings("fallthrough")
-        public Date get(final int index) {
-            long date = date1;
+        public Temporal get(final int index) {
+            Temporal date;
             switch (index) {
-                case 1:  date = date2;                                          // Fall through
-                case 0:  if (date != Long.MIN_VALUE) return new Date(date);     // else fallthrough.
-                default: throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
+                case 0:  date = date1; break;
+                case 1:  date = date2; break;
+                default: date = null;  break;
             }
+            if (date == null) {
+                throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
+            }
+            return date;
         }
 
         /**
@@ -177,9 +182,9 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          * Null values are not allowed.
          */
         @Override
-        public Date set(final int index, final Date value) {
-            final long date = value.getTime();
-            final Date previous = get(index);
+        public Temporal set(final int index, final Temporal date) {
+            ArgumentChecks.ensureNonNull("date", date);
+            final Temporal previous = get(index);
             switch (index) {
                 case 0: date1 = date; break;
                 case 1: date2 = date; break;
@@ -193,11 +198,11 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          */
         @Override
         @SuppressWarnings("fallthrough")
-        public Date remove(final int index) {
-            final Date previous = get(index);
+        public Temporal remove(final int index) {
+            final Temporal previous = get(index);
             switch (index) {
-                case 0: date1 = date2;                      // Fallthrough
-                case 1: date2 = Long.MIN_VALUE; break;
+                case 0: date1 = date2;  // Fallthrough
+                case 1: date2 = null; break;
             }
             modCount++;
             return previous;
@@ -208,9 +213,8 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          * Null values are not allowed.
          */
         @Override
-        public void add(final int index, final Date value) {
-            final long date = value.getTime();
-            if (date2 == Long.MIN_VALUE) {
+        public void add(final int index, final Temporal date) {
+            if (date2 == null) {
                 switch (index) {
                     case 0: {
                         date2 = date1;
@@ -219,7 +223,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
                         return;
                     }
                     case 1: {
-                        if (date1 == Long.MIN_VALUE) break;     // Exception will be thrown below.
+                        if (date1 == null) break;   // Exception will be thrown below.
                         date2 = date;
                         modCount++;
                         return;
@@ -234,16 +238,16 @@ public class DefaultEvaluationMethod extends ISOMetadata {
          */
         @Override
         @SuppressWarnings("fallthrough")
-        public boolean addAll(final Collection<? extends Date> dates) {
+        public boolean addAll(final Collection<? extends Temporal> dates) {
             final int c = modCount;
             if (dates != null) {
-                final Iterator<? extends Date> it = dates.iterator();
-                switch (size()) { // Fallthrough everywhere.
+                final Iterator<? extends Temporal> it = dates.iterator();
+                switch (size()) {               // Fallthrough everywhere.
                     case 0:  if (!it.hasNext()) break;
-                             date1 = it.next().getTime();
+                             date1 = it.next();
                              modCount++;
                     case 1:  if (!it.hasNext()) break;
-                             date2 = it.next().getTime();
+                             date2 = it.next();
                              modCount++;
                     default: if (!it.hasNext()) break;
                              throw new IllegalArgumentException(Errors.format(
@@ -383,7 +387,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
     @XmlElement(name = "dateTime")
     @UML(identifier="dateTime", obligation=OPTIONAL, specification=UNSPECIFIED)
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public Collection<Date> getDates() {
+    public Collection<Temporal> getDates() {
         if (Semaphores.query(Semaphores.NULL_COLLECTION)) {
             return isNullOrEmpty(dates) ? null : dates;
         }
@@ -399,7 +403,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
      *
      * @param  newValues  the new dates, or {@code null}.
      */
-    public void setDates(final Collection<? extends Date> newValues) {
+    public void setDates(final Collection<? extends Temporal> newValues) {
         if (newValues != dates) {               // Mandatory check for avoiding the call to 'dates.clear()'.
             checkWritePermission(valueIfDefined(dates));
             writeDates(newValues);
@@ -409,7 +413,7 @@ public class DefaultEvaluationMethod extends ISOMetadata {
     /**
      * Implementation of {@link #setDates(Collection)}.
      */
-    private void writeDates(final Collection<? extends Date> newValues) {
+    private void writeDates(final Collection<? extends Temporal> newValues) {
         if (isNullOrEmpty(newValues)) {
             dates = null;
         } else {

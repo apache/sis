@@ -95,20 +95,35 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
 
 /**
  * Frequently-used geodetic CRS and datum that are guaranteed to be available in SIS.
- * Methods in this enumeration are shortcuts for object definitions in the EPSG database.
- * If there is no EPSG database available, or if the query failed, or if there is no EPSG definition for an object,
- * then {@code CommonCRS} fallback on hard-coded values. Consequently, those methods never return {@code null}.
+ * Some (not all) objects defined in this enumeration are equivalent to objects defined
+ * in the EPSG geodetic dataset. In such case there is a choice:
+ *
+ * <ul class="verbose">
+ *   <li>If the <a href="https://sis.apache.org/epsg.html">EPSG dataset is installed</a>, then the methods
+ *       in this enumeration are effectively shortcuts for object definitions in the EPSG database.</li>
+ *   <li>If there is no EPSG database available, or if the query failed, or if there is no EPSG definition
+ *       for an object, then {@code CommonCRS} fallbacks on hard-coded values with minimal information.
+ *       The {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier} associated to the returned
+ *       object should be interpreted as "see that EPSG code for more complete definition".</li>
+ * </ul>
+ *
+ * Consequently, the methods in this enumeration never return {@code null}.
+ * The definitions used as fallbacks are available in public sources
+ * and do not include EPSG metadata except the identifier.
+ * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
+ * will be something like <cite>"EPSG geodetic dataset"</cite>, otherwise it will be <cite>"Subset of EPSG"</cite>.
  *
  * <p>Referencing objects are cached after creation. Invoking the same method on the same {@code CommonCRS}
  * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
  * (e.g. the application is running in a container environment and some modules have been installed or uninstalled).</p>
  *
- * <p><b>Example:</b> the following code fetches a geographic Coordinate Reference System using
- * (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:</p>
+ * <div class="note"><b>Example:</b> the following code fetches a geographic Coordinate Reference System
+ * using (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:
  *
  * {@preformat java
  *   GeographicCRS crs = CommonCRS.WGS84.normalizedGeographic();
  * }
+ * </div>
  *
  * For each enumeration value, the name of the CRS, datum and ellipsoid objects may or may not be the same.
  * Below is an alphabetical list of object names available in this enumeration:
@@ -118,23 +133,19 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  *   <tr><th>Name or alias</th>                                     <th>Object type</th>           <th>Enumeration value</th></tr>
  *   <tr><td>Clarke 1866</td>                                       <td>Ellipsoid</td>             <td>{@link #NAD27}</td></tr>
  *   <tr><td>European Datum 1950 (ED50)</td>                        <td>CRS, datum</td>            <td>{@link #ED50}</td></tr>
- *   <tr><td>European Terrestrial Reference Frame (ETRS) 1989</td>  <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
- *   <tr><td>European Terrestrial Reference System (ETRF) 1989</td> <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
- *   <tr><td>Greenwich</td>                                         <td>Prime meridian</td>        <td>{@link #WGS84}, {@link #WGS72}, {@link #ETRS89}, {@link #NAD83}, {@link #NAD27}, {@link #ED50}, {@link #SPHERE}</td></tr>
+ *   <tr><td>European Terrestrial Reference System (ETRS) 1989</td> <td>CRS, datum</td>            <td>{@link #ETRS89}</td></tr>
+ *   <tr><td>Greenwich</td>                                         <td>Prime meridian</td>        <td>Any enumeration value</td></tr>
  *   <tr><td>GRS 1980</td>                                          <td>Ellipsoid</td>             <td>{@link #GRS1980}, {@link #ETRS89}, {@link #NAD83}</td></tr>
  *   <tr><td>GRS 1980 Authalic Sphere</td>                          <td>Ellipsoid</td>             <td>{@link #SPHERE}</td></tr>
- *   <tr><td>Hayford 1909</td>                                      <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
  *   <tr><td>International 1924</td>                                <td>Ellipsoid</td>             <td>{@link #ED50}</td></tr>
- *   <tr><td>International 1979</td>                                <td>Ellipsoid</td>             <td>{@link #ETRS89}, {@link #NAD83}</td></tr>
  *   <tr><td>North American Datum 1927</td>                         <td>CRS, datum</td>            <td>{@link #NAD27}</td></tr>
  *   <tr><td>North American Datum 1983</td>                         <td>CRS, datum</td>            <td>{@link #NAD83}</td></tr>
- *   <tr><td>NWL 10D</td>                                           <td>Ellipsoid</td>             <td>{@link #WGS72}</td></tr>
  *   <tr><td>World Geodetic System (WGS) 1972</td>                  <td>CRS, datum, ellipsoid</td> <td>{@link #WGS72}</td></tr>
  *   <tr><td>World Geodetic System (WGS) 1984</td>                  <td>CRS, datum, ellipsoid</td> <td>{@link #WGS84}</td></tr>
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
@@ -149,15 +160,12 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>WGS84 properties</caption>
-     *   <tr><th>WMS identifier:</th>          <td>CRS:84</td></tr>
-     *   <tr><th>EPSG identifiers:</th>        <td>4326 &nbsp;(<i>datum:</i> 6326, &nbsp;<i>ellipsoid:</i> 7030)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"WGS 84" &nbsp;(<i>datum:</i> "World Geodetic System 1984")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 84", &nbsp;<i>ellipsoid:</i> "WGS84")</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td>CRS:84, EPSG:4326</td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>World Geodetic System 1984 (WGS 84)</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378137 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 metres <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257223563 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
@@ -169,14 +177,12 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>WGS72 properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td>4322 &nbsp;(<i>datum:</i> 6322, &nbsp;<i>ellipsoid:</i> 7043)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"WGS 72" &nbsp;(<i>datum:</i> "World Geodetic System 1972")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "WGS 72", &nbsp;<i>ellipsoid:</i> "NWL 10D")</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td>EPSG:4322</td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>World Geodetic System 1972 (WGS 72)</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378135</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356751 <i>(approximated)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378135 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356751 metres <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.26 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 60 in North and South hemispheres</td></tr>
      * </table></blockquote>
      */
@@ -185,20 +191,17 @@ public enum CommonCRS {
 
     /**
      * North American Datum 1983.
-     * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
+     * The ellipsoid is <cite>"GRS 1980"</cite>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
      * <blockquote><table class="compact">
      * <caption>NAD83 properties</caption>
-     *   <tr><th>WMS identifier:</th>          <td>CRS:83</td></tr>
-     *   <tr><th>EPSG identifiers:</th>        <td>4269 &nbsp;(<i>datum:</i> 6269, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"NAD83" &nbsp;(<i>datum:</i> "North American Datum 1983", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>"NAD83 (1986)" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
+     *   <tr><th>CRS identifier:</th>          <td>CRS:83, EPSG:4269</td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>North American Datum 1983 (NAD83)</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378137 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 metres <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 23 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
@@ -215,14 +218,11 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>NAD27 properties</caption>
-     *   <tr><th>WMS identifier:</th>          <td>CRS:27</td></tr>
-     *   <tr><th>EPSG identifiers:</th>        <td>4267 &nbsp;(<i>datum:</i> 6267, &nbsp;<i>ellipsoid:</i> 7008)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"NAD27" &nbsp;(<i>datum:</i> "North American Datum 1927", &nbsp;<i>ellipsoid:</i> "Clarke 1866")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "NAD27")</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td>CRS:27, EPSG:4267</td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>North American Datum 1927 (NAD27)</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378206.4</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356583.8 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378206.4 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356583.8 metres <i>(definitive)</i></td></tr>
      *   <tr><th>UTM zones:</th>               <td>1 to 22 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
@@ -231,19 +231,17 @@ public enum CommonCRS {
 
     /**
      * European Terrestrial Reference System 1989.
-     * The ellipsoid is <cite>"GRS 1980"</cite>, also known as <cite>"International 1979"</cite>.
+     * The ellipsoid is <cite>"GRS 1980"</cite>.
      * This ellipsoid is very close, but not identical, to the {@linkplain #WGS84} one.
      *
      * <blockquote><table class="compact">
      * <caption>ETRS89 properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td>4258 &nbsp;(<i>datum:</i> 6258, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"ETRS89" &nbsp;(<i>datum:</i> "European Terrestrial Reference System 1989", &nbsp;<i>ellipsoid:</i> "GRS 1980")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>"ETRF89", "EUREF89", "ETRS89-GRS80" &nbsp;(<i>ellipsoid:</i> "International 1979")</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td>EPSG:4258</td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>European Terrestrial Reference System 1989 (ETRS89)</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378137 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 metres <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 37 in the North hemisphere</td></tr>
      * </table></blockquote>
      *
@@ -256,18 +254,16 @@ public enum CommonCRS {
            (short) 0, (short) 0, (short) 25800, (short) 0, (byte) 28, (byte) 37),           // UPS and UTM info
 
     /**
-     * European Datum 1950.
+     * European Datum 1950 (ED50).
      *
      * <blockquote><table class="compact">
      * <caption>ED50 properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td>4230 &nbsp;(<i>datum:</i> 6230, &nbsp;<i>ellipsoid:</i> 7022)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"ED50" &nbsp;(<i>datum:</i> "European Datum 1950", &nbsp;<i>ellipsoid:</i> "International 1924")</td></tr>
-     *   <tr><th>Abbreviations or aliases:</th><td>(<i>datum:</i> "ED50", <i>ellipsoid:</i> "Hayford 1909")</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td>EPSG:4230</td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>European Datum 1950 (ED50)</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378388</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356912 <i>(approximated)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378388 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356912 metres <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>297 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      *   <tr><th>UTM zones:</th>               <td>28 to 38 in the North hemisphere</td></tr>
      * </table></blockquote>
      */
@@ -280,13 +276,12 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>GRS1980 properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td><del>4019</del> &nbsp;(<i>datum:</i> 6019, &nbsp;<i>ellipsoid:</i> 7019)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"Unknown datum based upon the GRS 1980 ellipsoid."</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td><del>EPSG:4019</del></td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>Unknown datum based upon the GRS 1980 ellipsoid</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6378137</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 <i>(approximated)</i></td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6378137 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6356752 metres <i>(approximated)</i></td></tr>
      *   <tr><th>Inverse flattening:</th>      <td>298.257222101 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
      * </table></blockquote>
      *
      * @since 1.0
@@ -299,12 +294,11 @@ public enum CommonCRS {
      *
      * <blockquote><table class="compact">
      * <caption>Sphere properties</caption>
-     *   <tr><th>EPSG identifiers:</th>        <td><del>4047</del> &nbsp;(<i>datum:</i> 6047, &nbsp;<i>ellipsoid:</i> 7048)</td></tr>
-     *   <tr><th>Primary names:</th>           <td>"Unspecified datum based upon the GRS 1980 Authalic Sphere"</td></tr>
+     *   <tr><th>CRS identifiers:</th>         <td><del>EPSG:4047</del></td></tr>
+     *   <tr><th>Name and abbreviation:</th>   <td>Unspecified datum based upon the GRS 1980 Authalic Sphere</td></tr>
      *   <tr><th>Prime meridian:</th>          <td>Greenwich</td></tr>
-     *   <tr><th>Semi-major axis length:</th>  <td>6371007</td></tr>
-     *   <tr><th>Semi-minor axis length:</th>  <td>6371007 <i>(definitive)</i></td></tr>
-     *   <tr><th>Ellipsoid axes unit:</th>     <td>{@link Units#METRE}</td></tr>
+     *   <tr><th>Semi-major axis length:</th>  <td>6371007 metres</td></tr>
+     *   <tr><th>Semi-minor axis length:</th>  <td>6371007 metres <i>(definitive)</i></td></tr>
      * </table></blockquote>
      *
      * @see org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius()
@@ -889,9 +883,9 @@ public enum CommonCRS {
      *   <caption>Commonly used ellipsoids</caption>
      *   <tr><th>Name or alias</th>                    <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>Clarke 1866</td>                      <td>{@link #NAD27}</td>  <td>7008</td></tr>
+     *   <tr><td>GRS 1980</td>                         <td>{@link #GRS1980}</td><td>7019</td></tr>
      *   <tr><td>GRS 1980 Authalic Sphere</td>         <td>{@link #SPHERE}</td> <td>7048</td></tr>
      *   <tr><td>International 1924</td>               <td>{@link #ED50}</td>   <td>7022</td></tr>
-     *   <tr><td>International 1979 / GRS 1980</td>    <td>{@link #ETRS89}</td> <td>7019</td></tr>
      *   <tr><td>World Geodetic System (WGS) 1972</td> <td>{@link #WGS72}</td>  <td>7043</td></tr>
      *   <tr><td>World Geodetic System (WGS) 1984</td> <td>{@link #WGS84}</td>  <td>7030</td></tr>
      * </table></blockquote>
@@ -1206,7 +1200,7 @@ public enum CommonCRS {
      *   <caption>Geodetic objects accessible by enumeration constants</caption>
      *   <tr><th>Name or alias</th>                      <th>Object type</th> <th>Enumeration value</th></tr>
      *   <tr><td>Barometric altitude</td>                <td>CRS, Datum</td>  <td>{@link #BAROMETRIC}</td></tr>
-     *   <!-- <s>Ellipsoidal height</s> intentionally omitted                 <td><s>{@link #ELLIPSOIDAL}</s></td> -->
+     *   <!-- <del>Ellipsoidal height</del> intentionally omitted             <td><del>{@link #ELLIPSOIDAL}</del></td> -->
      *   <tr><td>Mean Sea Level</td>                     <td>Datum</td>       <td>{@link #MEAN_SEA_LEVEL}</td></tr>
      *   <tr><td>Mean Sea Level depth</td>               <td>CRS</td>         <td>{@link #DEPTH}</td></tr>
      *   <tr><td>Mean Sea Level height</td>              <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
@@ -1221,7 +1215,7 @@ public enum CommonCRS {
      * The {@link #MEAN_SEA_LEVEL} value can be used instead as an approximation of geoidal heights.</div>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.7
+     * @version 1.3
      *
      * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
      *
@@ -1244,11 +1238,10 @@ public enum CommonCRS {
          *
          * <blockquote><table class="compact">
          * <caption>Mean Sea Level properties</caption>
-         *   <tr><th>EPSG identifiers:</th>         <td>5714 &nbsp;(<i>datum:</i> 5100)</td></tr>
-         *   <tr><th>Primary names:</th>            <td>"MSL height" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
-         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level height" &nbsp;(<i>datum:</i> "MSL")</td></tr>
-         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
-         *   <tr><th>Unit:</th>                     <td>{@link Units#METRE}</td></tr>
+         *   <tr><th>CRS identifiers:</th>      <td>EPSG:5714</td></tr>
+         *   <tr><th>Name or abbreviation:</th> <td>Mean Sea Level (MSL) height</td></tr>
+         *   <tr><th>Direction:</th>            <td>{@link AxisDirection#UP}</td></tr>
+         *   <tr><th>Unit:</th>                 <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
@@ -1260,11 +1253,10 @@ public enum CommonCRS {
          *
          * <blockquote><table class="compact">
          * <caption>Depth properties</caption>
-         *   <tr><th>EPSG identifiers:</th>         <td>5715 &nbsp;(<i>datum:</i> 5100)</td></tr>
-         *   <tr><th>Primary names:</th>            <td>"MSL depth" &nbsp;(<i>datum:</i> "Mean Sea Level")</td></tr>
-         *   <tr><th>Abbreviations or aliases:</th> <td>"mean sea level depth" &nbsp;(<i>datum:</i> "MSL")</td></tr>
-         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#DOWN}</td></tr>
-         *   <tr><th>Unit:</th>                     <td>{@link Units#METRE}</td></tr>
+         *   <tr><th>CRS identifiers:</th>      <td>EPSG:5715</td></tr>
+         *   <tr><th>Name or abbreviation:</th> <td>Mean Sea Level depth (MSL) depth</td></tr>
+         *   <tr><th>Direction:</th>            <td>{@link AxisDirection#DOWN}</td></tr>
+         *   <tr><th>Unit:</th>                 <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see VerticalDatumType#GEOIDAL
@@ -1276,12 +1268,10 @@ public enum CommonCRS {
          *
          * <blockquote><table class="compact">
          * <caption>NAVD88 properties</caption>
-         *   <tr><th>WMS identifier:</th>           <td>CRS:88</td></tr>
-         *   <tr><th>EPSG identifiers:</th>         <td>5703 &nbsp;(<i>datum:</i> 5103)</td></tr>
-         *   <tr><th>Primary names:</th>            <td>"NAVD88 height" &nbsp;(<i>datum:</i> "North American Vertical Datum 1988")</td></tr>
-         *   <tr><th>Abbreviations or aliases:</th> <td>" North American Vertical Datum of 1988 height (m)" &nbsp;(<i>datum:</i> "NAVD88")</td></tr>
-         *   <tr><th>Direction:</th>                <td>{@link AxisDirection#UP}</td></tr>
-         *   <tr><th>Unit:</th>                     <td>{@link Units#METRE}</td></tr>
+         *   <tr><th>CRS identifier:</th>       <td>CRS:88, EPSG:5703</td></tr>
+         *   <tr><th>Name or abbreviation:</th> <td>North American Vertical Datum 1988 (NAVD88) height</td></tr>
+         *   <tr><th>Direction:</th>            <td>{@link AxisDirection#UP}</td></tr>
+         *   <tr><th>Unit:</th>                 <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
          *
          * @see CommonCRS#NAD83
@@ -1377,7 +1367,7 @@ public enum CommonCRS {
          *   <caption>Commonly used vertical CRS</caption>
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
-         *   <!-- <s>Ellipsoidal height</s> intentionally omitted -->
+         *   <!-- <del>Ellipsoidal height</del> intentionally omitted -->
          *   <tr><td>Mean Sea Level depth</td>      <td>{@link #DEPTH}</td>              <td>5715</td></tr>
          *   <tr><td>Mean Sea Level height</td>     <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5714</td></tr>
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
@@ -1444,7 +1434,7 @@ public enum CommonCRS {
          *   <caption>Commonly used vertical datum</caption>
          *   <tr><th>Name or alias</th>             <th>Enum</th>                        <th>EPSG</th></tr>
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
-         *   <!-- <s>Ellipsoidal height</s> intentionally omitted -->
+         *   <!-- <del>Ellipsoidal height</del> intentionally omitted -->
          *   <tr><td>Mean Sea Level</td>            <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5100</td></tr>
          *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>

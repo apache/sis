@@ -18,13 +18,13 @@
 
 set -o errexit
 
-BASE_DIR="`readlink --canonicalize-existing $0`"
-BASE_DIR="`dirname $BASE_DIR`/.."
+BASE_DIR="`dirname $0`/.."
 SIS_DATA="${SIS_DATA:-$BASE_DIR/data}"
 export SIS_DATA
 
 # Execute SIS with any optional JAR that the user may put in the 'lib' directory.
 java -classpath "$BASE_DIR/lib/sis-console-1.3-SNAPSHOT.jar" \
+     -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
      -Dderby.stream.error.file="$BASE_DIR/log/derby.log" \
      org.apache.sis.console.Command $SIS_OPTS "$@"

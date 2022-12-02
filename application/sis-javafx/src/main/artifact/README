@@ -7,7 +7,7 @@ for developing geospatial applications in the Java programming language.
 The library can be used for desktop or server applications.
 
 Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
-project logo are trademarks of The Apache Software Foundation.
+project logo are trademarks of The Apache Software Foundation (ASF).
 
 
 Installation
@@ -27,7 +27,7 @@ Configuration (Unix only)
 
 A `SIS_OPTS` environment variable can optionally be set for specifying options
 to be given to any execution of Apache SIS. For example for setting the
-encoding to UTF-8:
+encoding to UTF-8 in the console application:
 
     export SIS_OPTS="--encoding UTF-8"
 

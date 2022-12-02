@@ -17,20 +17,11 @@ REM limitations under the License.
 
 
 SET BASE_DIR=%~dp0\..
-CALL "%BASE_DIR%\conf\setenv.bat"
 SET SIS_DATA=%BASE_DIR%\data
 
-IF "%PATH_TO_FX%"=="" (
-    java --class-path "%BASE_DIR%\lib\*" org.apache.sis.internal.setup.FXFinder "%BASE_DIR%\conf\setenv.bat"
-    IF %ERRORLEVEL% GEQ 1 EXIT /B 1
-    CALL "%BASE_DIR%\conf\setenv.bat"
-)
-
-java -splash:"%BASE_DIR%\lib\logo.jpg"^
- --add-modules javafx.graphics,javafx.controls,javafx.web^
- --module-path "%PATH_TO_FX%"^
- --class-path "%BASE_DIR%\lib\sis-javafx-1.3-SNAPSHOT.jar"^
- -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
- -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
- -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
- org.apache.sis.gui.DataViewer %SIS_OPTS%
+REM Execute SIS with any optional JAR that the user may put in the 'lib' directory.
+java -classpath "%BASE_DIR%\lib\sis-console-1.3-SNAPSHOT.jar"^
+     -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
+     -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
+     -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
+     org.apache.sis.console.Command %SIS_OPTS% %*

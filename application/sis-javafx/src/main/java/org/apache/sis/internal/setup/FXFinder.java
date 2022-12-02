@@ -34,7 +34,7 @@ import java.util.zip.ZipFile;
  * This is used when JavaFX cannot be found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -276,7 +276,10 @@ public final class FXFinder {
      * <pre>javafx-sdk-&lt;version&gt;/lib/javafx.controls.jar</pre>
      *
      * If the file seems valid, {@code null} is returned.
-     * Otherwise an error message is HTML is returned.
+     * Otherwise an error message in HTML is returned.
+     *
+     * @param  file  path to the zip file.
+     * @return {@code null} on success, otherwise error message in HTML.
      */
     static String checkZip(final File file) throws IOException {
         try (ZipFile zip = new ZipFile(file)) {
@@ -287,15 +290,21 @@ public final class FXFinder {
                     final String basedir = entry.getName();
                     if (basedir.startsWith(JAVAFX_DIRECTORY_PREFIX)) {
                         final int start = JAVAFX_DIRECTORY_PREFIX.length();
-                        int end = basedir.indexOf('.', start);
-                        if (end < start) end = basedir.length();
-                        final int version = Integer.parseInt(basedir.substring(start, end));
-                        if (version < JAVAFX_VERSION) {
-                            return "<html>Apache SIS requires JavaFX version " + JAVAFX_VERSION + " or later. "
-                                    + "The given file contains JavaFX version " + version + ".</html>";
+                        int end = start;
+                        while (end < basedir.length()) {
+                            final char c = basedir.charAt(end);
+                            if (c < '0' || c > '9') break;
+                            end++;
                         }
-                        if (zip.getEntry(basedir + JAVAFX_LIB_DIRECTORY + '/' + JAVAFX_SENTINEL_FILE) != null) {
-                            return null;        // Valid file.
+                        if (end > start) {
+                            final int version = Integer.parseInt(basedir.substring(start, end));
+                            if (version < JAVAFX_VERSION) {
+                                return "<html>Apache SIS requires JavaFX version " + JAVAFX_VERSION + " or later. "
+                                        + "The given file contains JavaFX version " + version + ".</html>";
+                            }
+                            if (zip.getEntry(basedir + JAVAFX_LIB_DIRECTORY + '/' + JAVAFX_SENTINEL_FILE) != null) {
+                                return null;        // Valid file.
+                            }
                         }
                     }
                     break;
