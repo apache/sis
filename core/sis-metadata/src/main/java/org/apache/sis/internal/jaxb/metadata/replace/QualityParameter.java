@@ -27,7 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.quality.DefaultDescription;
+import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
@@ -139,7 +139,7 @@ public final class QualityParameter extends Parameter {
         }
         InternationalString text = parameter.getDescription();
         if (text != null) {
-            description = new DefaultDescription(text);
+            description = new DefaultMeasureDescription(text);
         }
         valueType = parameter.getValueType();
         valueStructure = ValueStructure.valueOf(parameter.getValueClass()).orElse(null);

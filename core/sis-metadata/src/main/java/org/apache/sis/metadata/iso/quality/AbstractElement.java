@@ -31,7 +31,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.UsabilityElement;
+import org.opengis.metadata.quality.Usability;
 import org.opengis.metadata.quality.Completeness;
 import org.opengis.metadata.quality.TemporalQuality;
 import org.opengis.metadata.quality.ThematicAccuracy;
@@ -98,9 +98,9 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
     AbstractPositionalAccuracy.class,
     AbstractThematicAccuracy.class,
     AbstractTemporalQuality.class,
-    DefaultUsabilityElement.class,
+    DefaultUsability.class,
     AbstractMetaquality.class,
-    DefaultMeasure.class            // Not a subclass, but "weakly" associated.
+    DefaultQualityMeasure.class     // Not a subclass, but "weakly" associated.
 })
 public class AbstractElement extends ISOMetadata implements Element {
     /**
@@ -185,7 +185,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is an instance of {@link PositionalAccuracy},
      *       {@link TemporalQuality}, {@link ThematicAccuracy}, {@link LogicalConsistency},
-     *       {@link Completeness}, {@link UsabilityElement} or {@link Metaquality},
+     *       {@link Completeness}, {@link Usability} or {@link Metaquality},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
@@ -217,8 +217,8 @@ public class AbstractElement extends ISOMetadata implements Element {
         if (object instanceof Completeness) {
             return AbstractCompleteness.castOrCopy((Completeness) object);
         }
-        if (object instanceof UsabilityElement) {
-            return DefaultUsabilityElement.castOrCopy((UsabilityElement) object);
+        if (object instanceof Usability) {
+            return DefaultUsability.castOrCopy((Usability) object);
         }
         if (object instanceof Metaquality) {
             return AbstractMetaquality.castOrCopy((Metaquality) object);

@@ -53,7 +53,7 @@ import org.apache.sis.xml.Namespaces;
     "extendedDescription"
 })
 @XmlRootElement(name = "DQM_Description", namespace = Namespaces.DQM)
-public class DefaultDescription extends ISOMetadata implements Description {
+public class DefaultMeasureDescription extends ISOMetadata implements Description {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -74,7 +74,7 @@ public class DefaultDescription extends ISOMetadata implements Description {
     /**
      * Constructs an initially empty description.
      */
-    public DefaultDescription() {
+    public DefaultMeasureDescription() {
     }
 
     /**
@@ -82,7 +82,7 @@ public class DefaultDescription extends ISOMetadata implements Description {
      *
      * @param  text  text description, or {@code null} if none.
      */
-    public DefaultDescription(final CharSequence text) {
+    public DefaultMeasureDescription(final CharSequence text) {
         textDescription = Types.toInternationalString(text);
     }
 
@@ -95,7 +95,7 @@ public class DefaultDescription extends ISOMetadata implements Description {
      *
      * @see #castOrCopy(Description)
      */
-    public DefaultDescription(final Description object) {
+    public DefaultMeasureDescription(final Description object) {
         super(object);
         if (object != null) {
             textDescription     = object.getTextDescription();
@@ -110,9 +110,9 @@ public class DefaultDescription extends ISOMetadata implements Description {
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is already an instance of
-     *       {@code DefaultDescription}, then it is returned unchanged.</li>
-     *   <li>Otherwise a new {@code DefaultDescription} instance is created using the
-     *       {@linkplain #DefaultDescription(Description) copy constructor} and returned.
+     *       {@code DefaultMeasureDescription}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultMeasureDescription} instance is created using the
+     *       {@linkplain #DefaultMeasureDescription(Description) copy constructor} and returned.
      *       Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
@@ -121,11 +121,11 @@ public class DefaultDescription extends ISOMetadata implements Description {
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultDescription castOrCopy(final Description object) {
-        if (object == null || object instanceof DefaultDescription) {
-            return (DefaultDescription) object;
+    public static DefaultMeasureDescription castOrCopy(final Description object) {
+        if (object == null || object instanceof DefaultMeasureDescription) {
+            return (DefaultMeasureDescription) object;
         }
-        return new DefaultDescription(object);
+        return new DefaultMeasureDescription(object);
     }
 
     /**

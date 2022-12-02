@@ -74,7 +74,7 @@ import org.apache.sis.xml.Namespaces;
     "parameters"
 })
 @XmlRootElement(name = "DQM_Measure", namespace = Namespaces.DQM)
-public class DefaultMeasure extends ISOMetadata implements Measure {
+public class DefaultQualityMeasure extends ISOMetadata implements Measure {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -156,7 +156,7 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
     /**
      * Constructs an initially empty element.
      */
-    public DefaultMeasure() {
+    public DefaultQualityMeasure() {
     }
 
     /**
@@ -169,7 +169,7 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      * @see #castOrCopy(Measure)
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public DefaultMeasure(final Measure object) {
+    public DefaultQualityMeasure(final Measure object) {
         super(object);
         if (object != null) {
             measureIdentifier = object.getMeasureIdentifier();
@@ -194,9 +194,9 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is already an instance of
-     *       {@code DefaultMeasure}, then it is returned unchanged.</li>
-     *   <li>Otherwise a new {@code DefaultMeasure} instance is created using the
-     *       {@linkplain #DefaultMeasure(Measure) copy constructor} and returned.
+     *       {@code DefaultQualityMeasure}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultQualityMeasure} instance is created using the
+     *       {@linkplain #DefaultQualityMeasure(Measure) copy constructor} and returned.
      *       Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
@@ -205,11 +205,11 @@ public class DefaultMeasure extends ISOMetadata implements Measure {
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultMeasure castOrCopy(final Measure object) {
-        if (object instanceof DefaultMeasure) {
-            return (DefaultMeasure) object;
+    public static DefaultQualityMeasure castOrCopy(final Measure object) {
+        if (object instanceof DefaultQualityMeasure) {
+            return (DefaultQualityMeasure) object;
         }
-        return new DefaultMeasure(object);
+        return new DefaultQualityMeasure(object);
     }
 
     /**
