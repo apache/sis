@@ -83,6 +83,9 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      */
     public AbstractSpatialRepresentation(final SpatialRepresentation object) {
         super(object);
+        if (object != null) {
+            scope = object.getScope();
+        }
     }
 
     /**

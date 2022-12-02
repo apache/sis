@@ -70,6 +70,7 @@
     @XmlJavaTypeAdapter(DQM_SourceReference.class),
     @XmlJavaTypeAdapter(DQM_ValueStructure.class),
     @XmlJavaTypeAdapter(GO_Boolean.class),
+    @XmlJavaTypeAdapter(GO_Temporal.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
     @XmlJavaTypeAdapter(GO_GenericName.class),
     @XmlJavaTypeAdapter(GO_Record.class),

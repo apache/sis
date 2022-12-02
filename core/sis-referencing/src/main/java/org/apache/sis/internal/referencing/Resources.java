@@ -226,6 +226,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short EllipsoidalHeightNotAllowed_1 = 77;
 
         /**
+         * Definitions from public sources. When a definition corresponds to an EPSG object (ignoring
+         * metadata), the EPSG code is provided as a reference where to find the complete definition.
+         */
+        public static final short FallbackAuthorityNotice = 103;
+
+        /**
          * There is no local registry for version {1} of “{0}” authority. Fallback on default version
          * for objects creation.
          */

@@ -1027,7 +1027,7 @@ public class PixelIterator {
      *
      * @see Raster#getPixel(int, int, int[])
      */
-    public int[] getPixel​(final int[] dest) {
+    public int[] getPixel(final int[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -1043,7 +1043,7 @@ public class PixelIterator {
      *
      * @see Raster#getPixel(int, int, float[])
      */
-    public float[] getPixel​(final float[] dest) {
+    public float[] getPixel(final float[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -1059,7 +1059,7 @@ public class PixelIterator {
      *
      * @see Raster#getPixel(int, int, double[])
      */
-    public double[] getPixel​(final double[] dest) {
+    public double[] getPixel(final double[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -1085,7 +1085,7 @@ public class PixelIterator {
      *
      * @since 1.1
      */
-    public Object getDataElements​(final Object dest) {
+    public Object getDataElements(final Object dest) {
         return currentRaster.getDataElements​(x, y, dest);
     }
 

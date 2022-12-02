@@ -52,7 +52,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link StandardDefinitions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.4
  * @module
  */

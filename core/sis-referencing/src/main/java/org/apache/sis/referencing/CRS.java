@@ -155,9 +155,10 @@ public final class CRS extends Static {
 
     /**
      * Returns the Coordinate Reference System for the given authority code.
-     * The set of available codes depends on the {@link CRSAuthorityFactory} instances available on the classpath.
-     * There is many thousands of <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">CRS
-     * defined by EPSG authority or by other authorities</a>.
+     * There is <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">many thousands
+     * of reference systems</a> defined by the EPSG authority or by other authorities.
+     * Whether those codes are recognized or not depends on whether the
+     * <a href="https://sis.apache.org/epsg.html">EPSG dataset is installed</a>.
      * The following table lists a small subset of codes which are guaranteed to be available
      * on any installation of Apache SIS:
      *
@@ -167,14 +168,15 @@ public final class CRS extends Static {
      *   <tr><td>CRS:27</td>        <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:83</td>        <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:84</td>        <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:88</td>        <td>{@link CommonCRS.Vertical#NAVD88 NAVD88}</td><td>Vertical</td><td>North American Vertical Datum 1988 height</td></tr>
      *   <tr><td>EPSG:4230</td>     <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
-     *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference System 1989</td></tr>
      *   <tr><td>EPSG:4267</td>     <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>
      *   <tr><td>EPSG:4269</td>     <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>North American Datum 1983</td></tr>
      *   <tr><td>EPSG:4322</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic</td>      <td>World Geodetic System 1972</td></tr>
      *   <tr><td>EPSG:4326</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:4936</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geocentric</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG:4937</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic 3D</td>   <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4936</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geocentric</td>      <td>European Terrestrial Reference System 1989</td></tr>
+     *   <tr><td>EPSG:4937</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic 3D</td>   <td>European Terrestrial Reference System 1989</td></tr>
      *   <tr><td>EPSG:4978</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geocentric</td>      <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4979</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic 3D</td>   <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4984</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geocentric</td>      <td>World Geodetic System 1972</td></tr>
@@ -188,8 +190,14 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:5714</td>     <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      *   <tr><td>EPSG:5715</td>     <td>{@link CommonCRS.Vertical#DEPTH  DEPTH}</td>  <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
      *   <tr><td>OGC:JulianDate</td><td>{@link CommonCRS.Temporal#JULIAN JULIAN}</td> <td>Temporal</td> <td>Julian date (days)</td></tr>
+     *   <tr><td>OGC:TruncatedJulianDate</td><td>{@link CommonCRS.Temporal#TRUNCATED_JULIAN TRUNCATED_JULIAN}</td> <td>Temporal</td> <td>Truncated Julian date (days)</td></tr>
      *   <tr><td>OGC:UnixTime</td>  <td>{@link CommonCRS.Temporal#UNIX   UNIX}</td>   <td>Unix</td>     <td>Unix time (seconds)</td></tr>
      * </table></blockquote>
+     *
+     * For codes in above table, the EPSG geodetic database is used when available,
+     * otherwise Apache SIS fallbacks on definitions from public sources with no EPSG metadata except the identifiers.
+     * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
+     * will be something like <cite>"EPSG geodetic dataset"</cite>, otherwise it will be <cite>"Subset of EPSG"</cite>.
      *
      * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.

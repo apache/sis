@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
+import java.time.temporal.Temporal;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -43,6 +44,8 @@ import org.opengis.metadata.quality.Metaquality;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
+import org.apache.sis.internal.metadata.legacy.DateToTemporal;
+import org.apache.sis.internal.metadata.legacy.TemporalToDate;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
@@ -547,20 +550,18 @@ public class AbstractElement extends ISOMetadata implements Element {
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Collection<Date> getDates() {
-        if (!FilterByVersion.LEGACY_METADATA.accept()) {
-            return null;
-        }
-        EvaluationMethod m = getEvaluationMethod();
-        if (m == null) {
-            if (state() == State.FINAL) {
-                return Collections.emptyList();
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            EvaluationMethod m = getEvaluationMethod();
+            if (m == null) {
+                if (state() == State.FINAL) {
+                    return Collections.emptyList();
+                }
+                setEvaluationMethod(m = new DefaultEvaluationMethod());
             }
-            setEvaluationMethod(m = new DefaultEvaluationMethod());
+            Collection<? extends Temporal> dates = m.getDates();
+            if (dates != null) return new TemporalToDate(dates);
         }
-        if (m instanceof DefaultEvaluationMethod) {
-            return ((DefaultEvaluationMethod) m).getDates();
-        }
-        return Collections.unmodifiableCollection(m.getDates());
+        return null;
     }
 
     /**
@@ -574,7 +575,7 @@ public class AbstractElement extends ISOMetadata implements Element {
     @Deprecated
     public void setDates(final Collection<? extends Date> newValues) {
         if (!isNullOrEmpty(newValues)) {
-            setEvaluationMethodProperty(DefaultEvaluationMethod::setDates, newValues);
+            setEvaluationMethodProperty(DefaultEvaluationMethod::setDates, new DateToTemporal(newValues));
         }
     }
 
