@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Date;
 import java.util.function.Consumer;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import javax.xml.namespace.QName;
@@ -85,7 +86,7 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -106,15 +107,18 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
     /**
      * Creates a new XML writer for the given data store.
      *
-     * @param  owner  the data store for which this writer is created.
+     * @param  owner      the data store for which this writer is created.
+     * @param  temporary  the temporary stream where to write, or {@code null} for the main storage.
      * @throws DataStoreException if the output type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    protected StaxStreamWriter(final StaxDataStore owner) throws DataStoreException, XMLStreamException, IOException {
+    protected StaxStreamWriter(final StaxDataStore owner, final OutputStream temporary)
+            throws DataStoreException, XMLStreamException, IOException
+    {
         super(owner);
-        writer = owner.createWriter(this);      // Okay because will not store the 'this' reference.
+        writer = owner.createWriter(this, temporary);      // Okay because will not store the `this` reference.
     }
 
     /**

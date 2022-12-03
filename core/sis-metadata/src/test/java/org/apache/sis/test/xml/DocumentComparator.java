@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.net.URI;
 import java.net.URL;
 import java.io.File;
@@ -71,7 +73,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see TestCase
  * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
@@ -190,7 +192,7 @@ public strictfp class DocumentComparator {
      *
      * <ul>
      *   <li>{@link Node}; used directly without further processing.</li>
-     *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
+     *   <li>{@link Path}, {@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
@@ -248,6 +250,7 @@ public strictfp class DocumentComparator {
         if (input instanceof File)        return new FileInputStream((File) input);
         if (input instanceof URI)         return ((URI) input).toURL().openStream();
         if (input instanceof URL)         return ((URL) input).openStream();
+        if (input instanceof Path)        return Files.newInputStream((Path) input);
         if (input instanceof String)      return new ByteArrayInputStream(input.toString().getBytes("UTF-8"));
         throw new IOException("Cannot handle input type: " + (input != null ? input.getClass() : input));
     }
