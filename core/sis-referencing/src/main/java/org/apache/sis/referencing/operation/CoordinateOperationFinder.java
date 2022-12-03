@@ -1091,7 +1091,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  step1  the first  step, or {@code null} for the identity operation.
      * @param  step2  the second step, or {@code null} for the identity operation.
      * @return a concatenated operation, or {@code null} if all arguments were null.
-     * @throws FactoryException if the operation can't be constructed.
+     * @throws FactoryException if the operation cannot be constructed.
      */
     private CoordinateOperation concatenate(final CoordinateOperation step1,
                                             final CoordinateOperation step2)

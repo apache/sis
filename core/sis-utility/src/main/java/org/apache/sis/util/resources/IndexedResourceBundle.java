@@ -154,7 +154,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  base     the resource bundle class.
      * @param  locale   the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      *
      * @see Vocabulary#getResources(Locale)
      * @see Errors#getResources(Locale)

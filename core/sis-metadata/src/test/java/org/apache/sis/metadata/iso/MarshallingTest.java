@@ -644,7 +644,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
 
     /**
      * Invoked when a warning occurred while marshalling a test XML fragment. Expected warnings are
-     * "Can't find resource for bundle {@code java.util.PropertyResourceBundle}, key <cite>Foo</cite>".
+     * "Cannot find resource for bundle {@code java.util.PropertyResourceBundle}, key <cite>Foo</cite>".
      * When marshalling legacy XML only, additional warnings may occur.
      *
      * @param  warning  the warning.

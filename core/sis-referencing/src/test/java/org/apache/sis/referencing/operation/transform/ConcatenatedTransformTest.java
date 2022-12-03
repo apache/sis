@@ -74,11 +74,11 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
         validate();
         verifyTransform(source, target);
 
-        // Direct for general case - can't be validated.
+        // Direct for general case - cannot be validated.
         transform = new ConcatenatedTransformDirect(first, second);
         verifyTransform(source, target);
 
-        // Most general case - can't be validated.
+        // Most general case - cannot be validated.
         transform = new ConcatenatedTransform(first, second);
         verifyTransform(source, target);
 

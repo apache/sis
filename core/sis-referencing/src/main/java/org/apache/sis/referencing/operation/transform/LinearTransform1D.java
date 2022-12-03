@@ -372,7 +372,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
              * NOTE: 'LinearTransform1D' and 'ConstantTransform1D' are heavily used by 'Category'
              * from 'org.apache.sis.coverage' package. It is essential for Cateory to differenciate
              * various NaN values. Because 'equals' is used by WeakHashSet.unique(Object) (which
-             * is used by 'DefaultMathTransformFactory'), test for equality can't use the non-raw
+             * is used by 'DefaultMathTransformFactory'), test for equality cannot use the non-raw
              * doubleToLongBits method because it collapse all NaN into a single canonical value.
              * The 'doubleToRawLongBits' method instead provides the needed functionality.
              */

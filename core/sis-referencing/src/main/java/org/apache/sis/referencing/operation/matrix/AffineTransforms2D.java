@@ -268,7 +268,7 @@ public final class AffineTransforms2D extends Static {
      *                    this rectangle will not be modified except if {@code dest} references the same object.
      * @param  dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
      * @return the inverse transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
-     * @throws NoninvertibleTransformException if the affine transform can't be inverted.
+     * @throws NoninvertibleTransformException if the affine transform cannot be inverted.
      */
     public static Rectangle2D inverseTransform(final AffineTransform transform,
             final Rectangle2D bounds, final Rectangle2D dest) throws NoninvertibleTransformException
@@ -307,7 +307,7 @@ public final class AffineTransforms2D extends Static {
      *                    this point will not be modified except if {@code dest} references the same object.
      * @param  dest       point in which to place the result. If {@code null}, a new point will be created.
      * @return the inverse transform of the {@code vector}, or {@code null} if {@code source} was null.
-     * @throws NoninvertibleTransformException if the affine transform can't be inverted.
+     * @throws NoninvertibleTransformException if the affine transform cannot be inverted.
      */
     public static Point2D inverseDeltaTransform(final AffineTransform transform,
             final Point2D vector, final Point2D dest) throws NoninvertibleTransformException

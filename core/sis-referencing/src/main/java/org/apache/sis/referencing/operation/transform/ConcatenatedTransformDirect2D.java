@@ -87,7 +87,7 @@ final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect im
      *
      * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {

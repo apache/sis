@@ -35,7 +35,7 @@ import java.awt.image.SinglePixelPackedSampleModel;
  *
  * <p><b>Reminder:</b> {@link #getNumComponents()} will return 3 or 4 no matter
  * how many bands were specified to the constructor. This is not specific to this class;
- * {@code IndexColorModel} behave that way. So we can't rely on this method for checking
+ * {@code IndexColorModel} behave that way. So we cannot rely on this method for checking
  * the number of bands.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

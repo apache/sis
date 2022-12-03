@@ -234,7 +234,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional Cartesian coordinate reference system with (x,y) axes in metres.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
-     * this CS can't be reprojected to a geographic coordinate reference system for example).
+     * this CS cannot be reprojected to a geographic coordinate reference system for example).
      */
     public static final DefaultEngineeringCRS CARTESIAN_2D = new DefaultEngineeringCRS(
             getProperties(HardCodedCS.CARTESIAN_2D), HardCodedDatum.UNKNOWN, HardCodedCS.CARTESIAN_2D);
@@ -242,7 +242,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional Cartesian coordinate reference system with (x,y,z) axes in metres.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
-     * this CS can't be reprojected to a geographic coordinate reference system for example).
+     * this CS cannot be reprojected to a geographic coordinate reference system for example).
      */
     public static final DefaultEngineeringCRS CARTESIAN_3D = new DefaultEngineeringCRS(
             getProperties(HardCodedCS.CARTESIAN_3D), HardCodedDatum.UNKNOWN, HardCodedCS.CARTESIAN_3D);
@@ -339,7 +339,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional Cartesian coordinate reference system with (column, row) axes.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
-     * this CS can't be reprojected to a geographic coordinate reference system for example).
+     * this CS cannot be reprojected to a geographic coordinate reference system for example).
      *
      * <p>The {@code PixelInCell} attribute of the associated {@code ImageDatum}
      * is set to {@link PixelInCell#CELL_CENTER}.</p>
