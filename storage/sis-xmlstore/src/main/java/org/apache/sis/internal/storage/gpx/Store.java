@@ -17,30 +17,22 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.util.Optional;
-import java.util.Iterator;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.distribution.Format;
-import org.apache.sis.storage.WritableFeatureSet;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.storage.IllegalFeatureTypeException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.apache.sis.setup.OptionKey;
@@ -66,7 +58,7 @@ import org.opengis.feature.FeatureType;
  * @since   0.8
  * @module
  */
-public final class Store extends StaxDataStore implements WritableFeatureSet {
+public class Store extends StaxDataStore implements FeatureSet {
     /**
      * Version of the GPX file, or {@code null} if unknown.
      */
@@ -217,21 +209,6 @@ public final class Store extends StaxDataStore implements WritableFeatureSet {
     }
 
     /**
-     * Verifies the type of feature instances in this feature set.
-     * This method does nothing if the specified type is equal to {@link #getType()},
-     * or throws {@link IllegalFeatureTypeException} otherwise.
-     *
-     * @param  newType  new feature type definition (not {@code null}).
-     * @throws DataStoreException if the given type is not compatible with the types supported by the store.
-     */
-    @Override
-    public void updateType(final FeatureType newType) throws DataStoreException {
-        if (!newType.equals(getType())) {
-            throw new IllegalFeatureTypeException(getLocale(), StoreProvider.NAME, newType.getName());
-        }
-    }
-
-    /**
      * Returns the stream of features.
      * This store does not cache the features. Any new iteration over features will re-read from the file.
      * The XML file is kept open until the feature stream is closed;
@@ -260,113 +237,14 @@ public final class Store extends StaxDataStore implements WritableFeatureSet {
     }
 
     /**
-     * Appends new feature instances in this {@code FeatureSet}.
-     * Any feature already present in this {@link FeatureSet} will remain unmodified.
-     *
-     * @param  features  feature instances to append in this {@code FeatureSet}.
-     * @throws DataStoreException if the feature stream cannot be obtained or updated.
+     * Closes only the reader, without closing this store.
+     * This method may be invoked before write operation.
      */
-    @Override
-    public synchronized void add(final Iterator<? extends Feature> features) throws DataStoreException {
-        try (Updater updater = updater()) {
-            updater.add(features);
-            updater.flush();
-        }
-    }
-
-    /**
-     * Removes all feature instances from this {@code FeatureSet} which matches the given predicate.
-     *
-     * @param  filter  a predicate which returns {@code true} for feature instances to be removed.
-     * @return {@code true} if any elements were removed.
-     * @throws DataStoreException if the feature stream cannot be obtained or updated.
-     */
-    @Override
-    public synchronized boolean removeIf(final Predicate<? super Feature> filter) throws DataStoreException {
-        try (Updater updater = updater()) {
-            return updater.removeIf(filter);
-        }
-    }
-
-    /**
-     * Updates all feature instances from this {@code FeatureSet} which match the given predicate.
-     * If the given operator returns {@code null}, then the filtered feature is removed.
-     *
-     * @param  filter       a predicate which returns {@code true} for feature instances to be updated.
-     * @param  replacement  operation called for each matching {@link Feature} instance. May return {@code null}.
-     * @throws DataStoreException if the feature stream cannot be obtained or updated.
-     */
-    @Override
-    public synchronized void replaceIf(final Predicate<? super Feature> filter, final UnaryOperator<Feature> replacement)
-            throws DataStoreException
-    {
-        try (Updater updater = updater()) {
-            updater.replaceIf(filter, replacement);
-            updater.flush();
-        }
-    }
-
-    /**
-     * Returns the helper object to use for updating the GPX file.
-     *
-     * @todo In current version, we flush the updater after each write operation.
-     *       In a future version, we should keep it in a private field and flush
-     *       only after some delay, on close, or before a read operation.
-     */
-    private Updater updater() throws DataStoreException {
-        try {
-            return new Updater(this, getSpecifiedPath());
-        } catch (IOException e) {
-            throw new DataStoreException(e);
-        }
-    }
-
-    /**
-     * Replaces the content of this GPX file by the given metadata and features.
-     *
-     * @param  metadata  the metadata to write, or {@code null} if none.
-     * @param  features  the features to write, or {@code null} if none.
-     * @throws ConcurrentReadException if the {@code features} stream was provided by this data store.
-     * @throws DataStoreException if an error occurred while writing the data.
-     *
-     * @deprecated To be replaced by {@link #add(Iterator)}, after we resolved how to specify metadata.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-411">SIS-411</a>
-     */
-    @Deprecated
-    public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features) throws DataStoreException {
-        try {
-            /*
-             * If we created a reader for reading metadata, we need to close that reader now otherwise the call
-             * to `new Writer(…)` will fail.  Note that if that reader was in use by someone else, the `reader`
-             * field would be null and the `new Writer(…)` call should detect that a reader is in use somewhere.
-             */
-            final Reader r = reader;
-            if (r != null) {
-                reader = null;
-                r.close();
-            }
-            /*
-             * Get the writer if no read or other write operation is in progress, then write the data.
-             */
-            try (Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale), null)) {
-                writer.writeStartDocument();
-                if (features != null) {
-                    features.forEachOrdered(writer);
-                }
-                writer.writeEndDocument();
-            }
-        } catch (BackingStoreException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof DataStoreException) {
-                throw (DataStoreException) cause;
-            }
-            throw new DataStoreException(e.getLocalizedMessage(), cause);
-        } catch (Exception e) {
-            if (e instanceof UncheckedIOException) {
-                e = ((UncheckedIOException) e).getCause();
-            }
-            throw new DataStoreException(e);
+    final void closeReader() throws Exception {
+        final Reader r = reader;
+        if (r != null) {
+            reader = null;
+            r.close();
         }
     }
 
@@ -378,10 +256,8 @@ public final class Store extends StaxDataStore implements WritableFeatureSet {
     @Override
     public synchronized void close() throws DataStoreException {
         listeners.close();                  // Should never fail.
-        final Reader r = reader;
-        reader = null;
-        if (r != null) try {
-            r.close();
+        try {
+            closeReader();
         } catch (Exception e) {
             final DataStoreException ds = new DataStoreException(e);
             try {

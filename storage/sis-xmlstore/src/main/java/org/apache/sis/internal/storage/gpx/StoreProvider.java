@@ -35,7 +35,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -92,8 +92,12 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
-    public DataStore open(StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector);
+    public DataStore open(final StorageConnector connector) throws DataStoreException {
+        if (isWritable(connector)) {
+            return new WritableStore(this, connector);
+        } else {
+            return new Store(this, connector);
+        }
     }
 
     /**

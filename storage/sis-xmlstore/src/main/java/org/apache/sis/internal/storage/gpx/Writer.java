@@ -65,7 +65,7 @@ final class Writer extends StaxStreamWriter {
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
-    Writer(final Store owner, final Metadata metadata, final OutputStream temporary)
+    Writer(final WritableStore owner, final Metadata metadata, final OutputStream temporary)
             throws DataStoreException, XMLStreamException, IOException
     {
         super(owner, temporary);
@@ -146,7 +146,7 @@ final class Writer extends StaxStreamWriter {
     @Override
     public void write(final Feature feature) throws DataStoreException, XMLStreamException, JAXBException {
         if (feature != null) {
-            final Types types = ((Store) owner).types;
+            final Types types = ((WritableStore) owner).types;
             final FeatureType type = feature.getType();
             if (types.wayPoint.isAssignableFrom(type)) {
                 writeWayPoint(feature, Tags.WAY_POINT);

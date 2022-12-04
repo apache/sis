@@ -269,7 +269,7 @@ abstract class FormattedOutputCommand extends CommandRunner {
                      * Note: after such generalization is done, revert the xml-store dependency
                      *       scope in pom.xml from "compile" to "runtime".
                      */
-                    final org.apache.sis.internal.storage.gpx.Store fs = (org.apache.sis.internal.storage.gpx.Store) store;
+                    final org.apache.sis.internal.storage.gpx.WritableStore fs = (org.apache.sis.internal.storage.gpx.WritableStore) store;
                     if (version != null) {
                         fs.setVersion(version);
                     }

@@ -48,7 +48,7 @@ final class Updater extends RewriteOnUpdate {
      * @param  location  the main file, or {@code null} if unknown.
      * @throws IOException if an error occurred while determining whether the file is empty.
      */
-    Updater(final Store source, final Path location) throws IOException {
+    Updater(final WritableStore source, final Path location) throws IOException {
         super(source, location);
     }
 
@@ -84,6 +84,6 @@ final class Updater extends RewriteOnUpdate {
      */
     @Override
     protected StaxStreamWriter createWriter(OutputStream temporary) throws Exception {
-        return new Writer((Store) source, metadata, temporary);
+        return new Writer((WritableStore) source, metadata, temporary);
     }
 }

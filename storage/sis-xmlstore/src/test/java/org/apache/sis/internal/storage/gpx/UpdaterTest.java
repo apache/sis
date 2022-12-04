@@ -107,12 +107,12 @@ public final strictfp class UpdaterTest extends TestCase {
     /**
      * Creates a new GPX data store which will read and write in a temporary file.
      */
-    private Store create() throws DataStoreException, IOException {
+    private WritableStore create() throws DataStoreException, IOException {
         final StorageConnector connector = new StorageConnector(file);
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
                             StandardOpenOption.READ, StandardOpenOption.WRITE});
-        return new Store(provider, connector);
+        return new WritableStore(provider, connector);
     }
 
     /**
@@ -123,7 +123,7 @@ public final strictfp class UpdaterTest extends TestCase {
      */
     @Test
     public void testWriteEmpty() throws DataStoreException, IOException {
-        try (final Store store = create()) {
+        try (final WritableStore store = create()) {
             final Types types = store.types;
             final Feature point1 = types.wayPoint.newInstance();
             final Feature point2 = types.wayPoint.newInstance();
@@ -160,7 +160,7 @@ public final strictfp class UpdaterTest extends TestCase {
         }
         assertTrue(containsLat20());
         final boolean result;
-        try (final Store store = create()) {
+        try (final WritableStore store = create()) {
             result = store.removeIf((feature) -> {
                 Object point = feature.getPropertyValue("sis:geometry");
                 return ((Point) point).getY() == 20;
@@ -172,8 +172,11 @@ public final strictfp class UpdaterTest extends TestCase {
 
     /**
      * Returns whether the temporary file contains the {@code lat="20"} string.
+     * Also checks some invariants such as the presence of metadata.
      */
     private boolean containsLat20() throws IOException {
-        return org.apache.sis.internal.jdk9.JDK9.readString(file).contains("lat=\"20");     // May have trailing ".0".
+        final String xml = org.apache.sis.internal.jdk9.JDK9.readString(file);
+        assertTrue(xml.contains("<bounds "));       // Sentinel value for presence of metadata.
+        return xml.contains("lat=\"20");            // May have trailing ".0".
     }
 }
