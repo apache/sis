@@ -18,6 +18,9 @@ package org.apache.sis.storage;
 
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
@@ -46,6 +49,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.GenericName;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
 /**
  * A predefined set of operations on resources as convenience methods.
@@ -150,6 +154,21 @@ public class ResourceProcessor implements Cloneable {
         } else throw new IncompleteGridGeometryException("Cannot reproject a grid coverage resource whose geometry defines neither an envelope nor a conversion for grid to CRS");
 
         return new ResampledGridCoverageResource(source, reprojected, targetName, processor);
+    }
+
+    public GridCoverageResource aggregateBands(GridCoverageResource... bands) throws DataStoreException {
+        return aggregateBands(null, Arrays.asList(bands), null, null);
+    }
+
+    public GridCoverageResource aggregateBands(GenericName name, List<GridCoverageResource> resources, List<int[]> bandSelections, ColorModel userColors) throws DataStoreException {
+        ensureNonNull("resources", resources);
+        if (bandSelections != null) ensureValidIndex(resources.size(), bandSelections.size() - 1);
+        List<BandAggregateGridResource.BandSelection> selections = new ArrayList<>(resources.size());
+        for (int i = 0 ; i < resources.size() ; i++) {
+            int[] bands = (bandSelections == null || bandSelections.size() <= i) ? null : bandSelections.get(i);
+            selections.add(new BandAggregateGridResource.BandSelection(resources.get(i), bands));
+        }
+        return new BandAggregateGridResource(name, selections, userColors);
     }
 
     private static Optional<GeographicBoundingBox> searchGeographicExtent(GridCoverageResource source) throws DataStoreException {
