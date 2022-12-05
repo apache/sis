@@ -26,6 +26,8 @@ import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
+import org.apache.sis.internal.coverage.grid.GridDimensionSelection;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -502,6 +504,53 @@ public class GridCoverageProcessor implements Cloneable {
     public GridCoverage resample(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
         ArgumentChecks.ensureNonNull("target", target);
         return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
+    }
+
+    /**
+     * Remove all "flat" grid dimensions from input data. Flat dimensions are dimensions with a single grid cell.
+     * @param source The coverage we want to reduce to lower dimension.
+     * @return Either input coverage if no dimension can be removed, or a view of the coverage with less dimensions.
+     */
+    public GridCoverage squeeze(GridCoverage source) {
+        return GridDimensionSelection.squeeze(source.getGridGeometry())
+                .<GridCoverage>map(spec -> new DimensionSelectionCoverage(source, spec))
+                .orElse(source);
+    }
+
+    /**
+     * Create a coverage containing only specified dimensions.
+     *
+     * Constraints:
+     * <ul>
+     *     <li>Removed dimensions must have only one degree of liberty.</li>
+     *     <li>Output dimension order is the same as in source coverage, whatever order axes are given as input.</li>
+     *     <li>If input dataset contains dimensions that are not separable, but only part of them are selected, this code will fail.</li>
+     * </ul>
+     *
+     * @param source The coverage to reduce to lower dimension.
+     * @param gridAxesToPreserve Index of each grid dimension to maintain in result. Must contain at least one element.
+     */
+    public GridCoverage selectDimensions(GridCoverage source, int... gridAxesToPreserve) {
+        final GridDimensionSelection.Specification spec = GridDimensionSelection.preserve(source.getGridGeometry(), gridAxesToPreserve);
+        return new DimensionSelectionCoverage(source, spec);
+    }
+
+    /**
+     * Create a coverage trimmed from specified <em>grid</em> dimensions.
+     *
+     * Constraints:
+     * <ul>
+     *     <li>Removed dimensions must have only one degree of liberty.</li>
+     *     <li>Output dimension order is the same as in source coverage.</li>
+     *     <li>If input dataset contains dimensions that are not separable, but only part of them are selected for removal, this code will fail.</li>
+     * </ul>
+     *
+     * @param source Dataset to reduce.
+     * @param gridAxesToRemove Index of each grid dimension to strip from result. Must contain at least one element.
+     */
+    public GridCoverage removeDimensions(GridCoverage source, int... gridAxesToRemove) {
+        final GridDimensionSelection.Specification spec = GridDimensionSelection.remove(source.getGridGeometry(), gridAxesToRemove);
+        return new DimensionSelectionCoverage(source, spec);
     }
 
     /**

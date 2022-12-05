@@ -33,6 +33,7 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.internal.coverage.grid.GridDimensionSelection;
 import org.apache.sis.internal.storage.ConvertedCoverageResource;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.measure.NumberRange;
@@ -169,6 +170,59 @@ public class ResourceProcessor implements Cloneable {
             selections.add(new BandAggregateGridResource.BandSelection(resources.get(i), bands));
         }
         return new BandAggregateGridResource(name, selections, userColors);
+    }
+
+    /**
+     * Remove all "flat" grid dimensions from input data. Flat dimensions are dimensions with a single grid cell.
+     * @param resultName A name to affect to output coverage resource. If null, result will not have any identifier.
+     * @param source The coverage we want to reduce to lower dimension.
+     * @return Either input coverage if no dimension can be removed, or a view of the coverage with fewer dimensions.
+     * @see GridCoverageProcessor#squeeze(GridCoverage)
+     */
+    public GridCoverageResource squeeze(GenericName resultName, GridCoverageResource source) throws DataStoreException {
+        return GridDimensionSelection.squeeze(source.getGridGeometry())
+                .<GridCoverageResource>map(spec -> new DimensionSelectionResource(resultName, source, spec, processor))
+                .orElse(source);
+    }
+
+    /**
+     * Create a coverage containing only specified dimensions.
+     *
+     * Constraints:
+     * <ul>
+     *     <li>Removed dimensions must have only one degree of liberty.</li>
+     *     <li>Output dimension order is the same as in source coverage, whatever order axes are given as input.</li>
+     *     <li>If input dataset contains dimensions that are not separable, but only part of them are selected, this code will fail.</li>
+     * </ul>
+     *
+     * @param resultName A name to affect to output coverage resource. If null, result will not have any identifier.
+     * @param source The coverage to reduce to lower dimension.
+     * @param gridAxesToPreserve Index of each grid dimension to maintain in result. Must contain at least one element.
+     * @see GridCoverageProcessor#selectDimensions(GridCoverage, int...)
+     */
+    public GridCoverageResource selectDimensions(GenericName resultName, GridCoverageResource source, int... gridAxesToPreserve) throws DataStoreException {
+        final GridDimensionSelection.Specification spec = GridDimensionSelection.preserve(source.getGridGeometry(), gridAxesToPreserve);
+        return new DimensionSelectionResource(resultName, source, spec, processor);
+    }
+
+    /**
+     * Create a coverage trimmed from specified <em>grid</em> dimensions.
+     *
+     * Constraints:
+     * <ul>
+     *     <li>Removed dimensions must have only one degree of liberty.</li>
+     *     <li>Output dimension order is the same as in source coverage.</li>
+     *     <li>If input dataset contains dimensions that are not separable, but only part of them are selected for removal, this code will fail.</li>
+     * </ul>
+     *
+     * @param resultName A name to affect to output coverage resource. If null, result will not have any identifier.
+     * @param source Dataset to reduce.
+     * @param gridAxesToRemove Index of each grid dimension to strip from result. Must contain at least one element.
+     * @see GridCoverageProcessor#removeDimensions(GridCoverage, int...)
+     */
+    public GridCoverageResource removeDimensions(GenericName resultName, GridCoverageResource source, int... gridAxesToRemove) throws DataStoreException {
+        final GridDimensionSelection.Specification spec = GridDimensionSelection.remove(source.getGridGeometry(), gridAxesToRemove);
+        return new DimensionSelectionResource(resultName, source, spec, processor);
     }
 
     private static Optional<GeographicBoundingBox> searchGeographicExtent(GridCoverageResource source) throws DataStoreException {
