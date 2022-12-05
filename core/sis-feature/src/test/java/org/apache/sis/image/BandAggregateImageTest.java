@@ -154,7 +154,7 @@ public class BandAggregateImageTest extends TestCase {
         );
 
         // Repeat the test with a custom band selection.
-        result = processor.aggregateBands(Arrays.asList(im1, im2, im1), Arrays.asList(null, new int[] { 1 }, new int[] { 0 }));
+        result = processor.aggregateBands(Arrays.asList(im1, im2, im1), Arrays.asList(null, new int[] { 1 }, new int[] { 0 }), null);
         assertNotNull(result);
         assertArrayEquals(new int[] { 7, 7, 6, 9, 3, 3, 1, 2 }, new int[] { result.getMinX(), result.getMinY(), result.getWidth(), result.getHeight(), result.getTileWidth(), result.getTileHeight(), result.getMinTileX(), result.getMinTileY()});
         raster = result.getData();

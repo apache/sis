@@ -1214,15 +1214,15 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
-     * Commodity method for {@link #aggregateBands(List, List)}. Calling it is equivalent to:
+     * Commodity method for {@link #aggregateBands(List, List, ColorModel)}. Calling it is equivalent to:
      *
-     * {@code aggregateBands(Arrays.asList(sources), null);}
+     * {@code aggregateBands(Arrays.asList(sources), null, null);}
      * @param sources images whose bands must be aggregated, in order. At least two images must be provided.
      *
-     * @see #aggregateBands(List, List)
+     * @see #aggregateBands(List, List, ColorModel)
      */
     public RenderedImage aggregateBands(RenderedImage... sources) {
-        return aggregateBands(Arrays.asList(sources), null);
+        return aggregateBands(Arrays.asList(sources), null, null);
     }
 
     /**
@@ -1231,17 +1231,21 @@ public class ImageProcessor implements Cloneable {
      * @param bandsToSelectPerSource Bands to select for each source image, in order.
      *                               If null or empty, we assume that all bands of all images must be selected.
      *                               Any null or empty item means that all bands of the respective source image must be preserved.
+     * @param userColorModel Optional. The color model to apply on output image.
+     *                       If null, an approximate color model will be inferred using output number of bands and sample data type.
+     *                       There's no guarantee about the output color model, but it will not be null,
+     *                       and might be RGB or grey scale.
      * @return A computed image whose bands are the bands of provided images, in order.
      */
 
-    public RenderedImage aggregateBands(List<RenderedImage> sources, List<int[]> bandsToSelectPerSource) {
+    public RenderedImage aggregateBands(List<RenderedImage> sources, List<int[]> bandsToSelectPerSource, ColorModel userColorModel) {
         RenderedImage[] sourceArray = sources.toArray(new RenderedImage[sources.size()]);
         int[][] bandSelection = bandsToSelectPerSource == null || bandsToSelectPerSource.isEmpty()
                 ? null
                 : bandsToSelectPerSource.stream()
                     .map(it -> it == null ? null : it.clone())
                     .toArray(int[][]::new);
-        return BandAggregateImage.aggregateBands(sourceArray, bandSelection);
+        return BandAggregateImage.aggregateBands(sourceArray, bandSelection, userColorModel);
     }
 
     /**

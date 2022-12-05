@@ -6,6 +6,7 @@ import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.util.ArgumentChecks;
 
 import static java.lang.Math.multiplyExact;
@@ -76,8 +78,8 @@ final class BandAggregateImage extends ComputedImage {
      * FACTORY METHODS
      */
 
-    static RenderedImage aggregateBands(RenderedImage[] sources, int[][] bandsToPreserve) {
-        final ContextInformation info = parseAndValidateInput(sources, bandsToPreserve);
+    static RenderedImage aggregateBands(RenderedImage[] sources, int[][] bandsToPreserve, ColorModel userColorModel) {
+        final ContextInformation info = parseAndValidateInput(sources, bandsToPreserve, userColorModel);
         return tryTileOptimizedStrategy(info)
                 .rightOr(reason
                         -> fallbackStrategy(info)
@@ -95,16 +97,17 @@ final class BandAggregateImage extends ComputedImage {
      * Initial analysis of input images to aggregate. Note that this method aims to make source information more
      * accessible and easy to use before further processing. It also try to detect incompatibilities early, to
      * raise meaningful errors for users.
-     *
+     * <p>
      * Note: crunching data into a more dense/accessible shape aims to ease further analysis/optimisations. This should
      * allow more lisible and less coupled code, to ease setup of strategies, readability and maintenance.
      *
-     * @param sources images to aggregate, in order.
-     * @param bandsToPreserve Bands to use for each image, in order. Holds same contract as the {@link #aggregateBands(RenderedImage[], int[][]) factory method}.
+     * @param sources         images to aggregate, in order.
+     * @param bandsToPreserve Bands to use for each image, in order. Holds same contract as the {@link #aggregateBands(RenderedImage[], int[][], ColorModel) factory method}.
+     * @param userColorModel
      * @return Parsed information about data sources.
      * @throws IllegalArgumentException If we detect an incompatibility in source images that make them impossible to merge.
      */
-    private static ContextInformation parseAndValidateInput(RenderedImage[] sources, int[][] bandsToPreserve) throws IllegalArgumentException {
+    private static ContextInformation parseAndValidateInput(RenderedImage[] sources, int[][] bandsToPreserve, ColorModel userColorModel) throws IllegalArgumentException {
         if (bandsToPreserve != null && sources.length > bandsToPreserve.length) throw new IllegalArgumentException("More band selections than source images are provided.");
         if (sources.length < 2) throw new IllegalArgumentException("At least two images are required for band aggregation. For band selection on a single image, please use dedicated utility");
 
@@ -153,7 +156,7 @@ final class BandAggregateImage extends ComputedImage {
                 .filter(it -> !it.isEmpty())
                 .orElseThrow(() -> new IllegalArgumentException("source images do not intersect."));
 
-        return new ContextInformation(commonDataType, numBands, minTileWidthIdx, minTileHeightIdx, domains, intersection, sourcesWithBands);
+        return new ContextInformation(commonDataType, numBands, minTileWidthIdx, minTileHeightIdx, domains, intersection, sourcesWithBands, userColorModel);
     }
 
     private static int validateAndCountBands(int[] bandSelection, SampleModel model) {
@@ -203,11 +206,50 @@ final class BandAggregateImage extends ComputedImage {
         final SampleModel tileModel = new BandedSampleModel(context.commonDataType, tileWidth, tileHeight, context.outputBandNumber);
 
         Rectangle tileDisposition = new Rectangle(minTileX, minTileY, pixelDomain.width / tileWidth, pixelDomain.height / tileHeight);
-        return Either.right(new Specification(Collections.unmodifiableList(Arrays.asList(preparedSources)), createColorModel(context), tileModel, pixelDomain, tileDisposition, new TileCopy()));
+        ColorModel outColorModel = context.userColorModel;
+        if (outColorModel == null) outColorModel = createColorModel(context);
+        else if (!context.userColorModel.isCompatibleSampleModel(tileModel)) {
+            throw new IllegalArgumentException("User color model is not compatible with band aggregation sample model. Please provide a banded color model.");
+        }
+
+        return Either.right(new Specification(Collections.unmodifiableList(Arrays.asList(preparedSources)), outColorModel, tileModel, pixelDomain, tileDisposition, new TileCopy()));
     }
 
+    /**
+     * Approximate guess of the output color model:
+     * <ol>
+     *     <li>
+     *         If aggregation result is 3 or 4 bands, and data type is byte or short, we create a RGB color model.
+     *         If there's 4 bands, an RGBA color model is defined.
+     *     </li>
+     *     <li>Otherwise, if the first image is already single banded, we return directly its color model (if non null)</li>
+     *     <li>As a last resort, a greyscale color model is made, that try to "guess" value range from the data-type.</li>
+     * </ol>
+     */
     private static ColorModel createColorModel(ContextInformation context) {
-        return null; // TODO
+        if (context.outputBandNumber == 3 || context.outputBandNumber == 4) {
+            switch (context.commonDataType) {
+                case DataBuffer.TYPE_BYTE:
+                case DataBuffer.TYPE_SHORT:
+                    return ColorModelFactory.createRGB(context.commonDataType * Byte.SIZE, false, context.outputBandNumber == 4);
+            }
+        }
+
+        final SourceSelection first = context.sources.get(0);
+        if (first.image.getSampleModel().getNumBands() == 1 && first.image.getColorModel() != null) {
+            return first.image.getColorModel();
+        }
+
+        final double vmin, vmax;
+        switch (context.commonDataType) {
+            case DataBuffer.TYPE_BYTE:   vmin = 0               ; vmax = 255               ; break;
+            case DataBuffer.TYPE_SHORT:  vmin = Short.MIN_VALUE ; vmax = Short.MAX_VALUE   ; break;
+            case DataBuffer.TYPE_USHORT: vmin = 0               ; vmax = 65535             ; break;
+            case DataBuffer.TYPE_INT:    vmin = 0               ; vmax = Integer.MAX_VALUE ; break;
+            default:                     vmin = 0.0             ; vmax = 1.0;
+        }
+
+        return ColorModelFactory.createGrayScale(context.commonDataType, 1, 0, vmin, vmax);
     }
 
     private static Either<String, Specification> fallbackStrategy(ContextInformation info) {
@@ -260,7 +302,9 @@ final class BandAggregateImage extends ComputedImage {
 
         final List<SourceSelection> sources;
 
-        public ContextInformation(int commonDataType, int outputBandNumber, int minTileWidthIndex, int minTileHeightIndex, List<Rectangle> sourcePxDomains, Rectangle intersection, List<SourceSelection> sources) {
+        final ColorModel userColorModel;
+
+        public ContextInformation(int commonDataType, int outputBandNumber, int minTileWidthIndex, int minTileHeightIndex, List<Rectangle> sourcePxDomains, Rectangle intersection, List<SourceSelection> sources, ColorModel userColorModel) {
             this.commonDataType = commonDataType;
             this.outputBandNumber = outputBandNumber;
             this.minTileWidthIndex = minTileWidthIndex;
@@ -268,6 +312,7 @@ final class BandAggregateImage extends ComputedImage {
             this.sourcePxDomains = Collections.unmodifiableList(new ArrayList<>(sourcePxDomains));
             this.intersection = intersection;
             this.sources = Collections.unmodifiableList(new ArrayList<>(sources));
+            this.userColorModel = userColorModel;
         }
     }
 
