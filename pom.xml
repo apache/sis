@@ -890,7 +890,7 @@
             </group>
             <group>
               <title>Applications</title>
-              <packages>org.apache.sis.console*:org.apache.sis.services*</packages>
+              <packages>org.apache.sis.gui*:org.apache.sis.console*:org.apache.sis.services*:org.apache.sis.openoffice*</packages>
             </group>
             <group>
               <title>Data storage</title>

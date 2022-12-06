@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * because IOGP allows implementations to modify non-essential properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.4
  * @module
  *
@@ -181,8 +181,8 @@ public final strictfp class GeodeticObjectVerifier {
      * @param  ellipsoid  the ellipsoid to verify.
      */
     public static void assertIsWGS84(final Ellipsoid ellipsoid) {
-        assertEquals("name",              "WGS 84",          ellipsoid.getName().getCode());
-        assertEquals("axisUnit",          Units.METRE,          ellipsoid.getAxisUnit());
+        assertTrue  ("name",              ellipsoid.getName().getCode().matches("WGS\\s?(?:19)?84"));
+        assertEquals("axisUnit",          Units.METRE,       ellipsoid.getAxisUnit());
         assertEquals("semiMajorAxis",     6378137,           ellipsoid.getSemiMajorAxis(),     STRICT);
         assertEquals("semiMinorAxis",     6356752.314245179, ellipsoid.getSemiMinorAxis(),     0.001);
         assertEquals("inverseFlattening", 298.257223563,     ellipsoid.getInverseFlattening(), STRICT);
