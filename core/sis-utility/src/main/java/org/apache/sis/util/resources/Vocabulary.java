@@ -1435,7 +1435,7 @@ public final class Vocabulary extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Vocabulary getResources(final Locale locale) throws MissingResourceException {
         return getBundle(Vocabulary.class, locale);

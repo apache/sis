@@ -98,7 +98,7 @@ public class ValueConverter {
      *
      * @param  <T>         the compile-time type of the {@code sourceType} argument.
      * @param  context     context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value       the value that can't be converted.
+     * @param  value       the value that cannot be converted.
      * @param  sourceType  the base type of the value to convert. This is determined by the argument type of the method
      *                     that caught the exception. For example, the source type is always {@code URI.class}
      *                     if the exception has been caught by the {@link #toURL(MarshalContext, URI)} method.

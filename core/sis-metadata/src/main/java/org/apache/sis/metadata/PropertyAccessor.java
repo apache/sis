@@ -969,7 +969,7 @@ class PropertyAccessor {
         Object newValue = newValues[0];
         Class<?> targetType = getter.getReturnType();
         if (newValue == null) {
-            // Can't test elementType, because it has been converted to the wrapper class.
+            // Cannot test elementType, because it has been converted to the wrapper class.
             if (targetType.isPrimitive()) {
                 newValues[0] = Numbers.valueOfNil(targetType);
             }
@@ -1073,7 +1073,7 @@ class PropertyAccessor {
      *
      * @param  elements    the array which contains element to convert.
      * @param  targetType  the base type of target elements.
-     * @throws ClassCastException if an element can't be converted.
+     * @throws ClassCastException if an element cannot be converted.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     private void convert(final Object[] elements, final Class<?> targetType) throws ClassCastException {

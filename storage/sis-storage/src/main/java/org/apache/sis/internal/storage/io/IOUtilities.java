@@ -475,7 +475,7 @@ public final class IOUtilities extends Static {
      *                   then {@code null}. This argument is ignored if the given path does not need
      *                   to be converted from URL to {@code File}.
      * @return the path as a {@link File} if possible, or a {@link URL} otherwise.
-     * @throws IOException if the given path is not a file and can't be parsed as a URL.
+     * @throws IOException if the given path is not a file and cannot be parsed as a URL.
      */
     public static Object toFileOrURL(final String path, final String encoding) throws IOException {
         if (path == null) {

@@ -86,7 +86,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      * Illustration of the use of a data quality measure.
      */
     @SuppressWarnings("serial")
-    private DefaultDescription example;
+    private DefaultMeasureDescription example;
 
     /**
      * Value type for the result of the basic measure.
@@ -166,7 +166,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      */
     @XmlElement(name = "example")
     @UML(identifier="example", obligation=OPTIONAL, specification=UNSPECIFIED)
-    public DefaultDescription getExample() {
+    public DefaultMeasureDescription getExample() {
         return example;
     }
 
@@ -175,7 +175,7 @@ public class DefaultBasicMeasure extends ISOMetadata {
      *
      * @param  newValues  the new basic measure example.
      */
-    public void setExample(final DefaultDescription newValues) {
+    public void setExample(final DefaultMeasureDescription newValues) {
         checkWritePermission(example);
         example = newValues;
     }

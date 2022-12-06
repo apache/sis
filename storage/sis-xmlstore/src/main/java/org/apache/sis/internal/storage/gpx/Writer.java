@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.bind.JAXBException;
@@ -39,7 +40,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -57,16 +58,17 @@ final class Writer extends StaxStreamWriter {
     /**
      * Creates a new GPX writer for the given data store.
      *
-     * @param  owner     the data store for which this writer is created.
-     * @param  metadata  the metadata to write, or {@code null} if none.
+     * @param  owner      the data store for which this writer is created.
+     * @param  metadata   the metadata to write, or {@code null} if none.
+     * @param  temporary  the temporary stream where to write, or {@code null} for the main storage.
      * @throws DataStoreException if the output type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
-    public Writer(final Store owner, final Metadata metadata)
+    Writer(final WritableStore owner, final Metadata metadata, final OutputStream temporary)
             throws DataStoreException, XMLStreamException, IOException
     {
-        super(owner);
+        super(owner, temporary);
         this.metadata = metadata;
         final Version ver = owner.version;
         if (ver != null && ver.compareTo(StoreProvider.V1_0, 2) <= 0) {
@@ -144,7 +146,7 @@ final class Writer extends StaxStreamWriter {
     @Override
     public void write(final AbstractFeature feature) throws DataStoreException, XMLStreamException, JAXBException {
         if (feature != null) {
-            final Types types = ((Store) owner).types;
+            final Types types = ((WritableStore) owner).types;
             final DefaultFeatureType type = feature.getType();
             if (types.wayPoint.isAssignableFrom(type)) {
                 writeWayPoint(feature, Tags.WAY_POINT);

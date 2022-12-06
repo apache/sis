@@ -58,7 +58,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
 })
 @XmlRootElement(name = "DQ_StandaloneQualityReportInformation")
 @UML(identifier="DQ_StandaloneQualityReportInformation", specification=UNSPECIFIED)
-public class DefaultStandaloneQualityReportInformation extends ISOMetadata {
+public class DefaultEvaluationReportInformation extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -79,7 +79,7 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata {
     /**
      * Constructs an initially empty standalone quality report information.
      */
-    public DefaultStandaloneQualityReportInformation() {
+    public DefaultEvaluationReportInformation() {
     }
 
     /**
@@ -89,7 +89,7 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata {
      *
      * @param object  the metadata to copy values from, or {@code null} if none.
      */
-    public DefaultStandaloneQualityReportInformation(final DefaultStandaloneQualityReportInformation object) {
+    public DefaultEvaluationReportInformation(final DefaultEvaluationReportInformation object) {
         super(object);
         if (object != null) {
             reportReference  = object.getReportReference();

@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.apache.sis.metadata.iso.quality.DefaultMeasure;
+import org.apache.sis.metadata.iso.quality.DefaultQualityMeasure;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -30,7 +30,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @since   1.3
  * @module
  */
-public final class DQM_Measure extends PropertyType<DQM_Measure, DefaultMeasure> {
+public final class DQM_Measure extends PropertyType<DQM_Measure, DefaultQualityMeasure> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -42,17 +42,17 @@ public final class DQM_Measure extends PropertyType<DQM_Measure, DefaultMeasure>
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code DefaultMeasure.class}
+     * @return {@code DefaultQualityMeasure.class}
      */
     @Override
-    protected Class<DefaultMeasure> getBoundType() {
-        return DefaultMeasure.class;
+    protected Class<DefaultQualityMeasure> getBoundType() {
+        return DefaultQualityMeasure.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQM_Measure(final DefaultMeasure metadata) {
+    private DQM_Measure(final DefaultQualityMeasure metadata) {
         super(metadata);
     }
 
@@ -64,7 +64,7 @@ public final class DQM_Measure extends PropertyType<DQM_Measure, DefaultMeasure>
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected DQM_Measure wrap(final DefaultMeasure metadata) {
+    protected DQM_Measure wrap(final DefaultQualityMeasure metadata) {
         return new DQM_Measure(metadata);
     }
 
@@ -76,7 +76,7 @@ public final class DQM_Measure extends PropertyType<DQM_Measure, DefaultMeasure>
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultMeasure getElement() {
+    public DefaultQualityMeasure getElement() {
         return metadata;
     }
 
@@ -85,7 +85,7 @@ public final class DQM_Measure extends PropertyType<DQM_Measure, DefaultMeasure>
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultMeasure metadata) {
+    public void setElement(final DefaultQualityMeasure metadata) {
         this.metadata = metadata;
     }
 }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.jdk9;
 
+import java.io.IOException;
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
@@ -23,6 +24,8 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
@@ -32,6 +35,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -349,5 +353,14 @@ public final class JDK9 {
      */
     public static <T> List<T> toList(final Stream<T> s) {
         return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
+    }
+
+    /**
+     * Placeholder for {@link Files#readString(Path)}.
+     */
+    public static String readString(final Path path) throws IOException {
+        final StringJoiner j = new StringJoiner("\n");
+        Files.readAllLines(path).forEach(j::add);
+        return j.toString();
     }
 }

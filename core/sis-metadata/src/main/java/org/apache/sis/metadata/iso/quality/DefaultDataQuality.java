@@ -100,7 +100,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * Can be used for providing more details than reported as standard metadata.
      */
     @SuppressWarnings("serial")
-    private DefaultStandaloneQualityReportInformation standaloneQualityReport;
+    private DefaultEvaluationReportInformation standaloneQualityReport;
 
     /**
      * Constructs an initially empty data quality.
@@ -228,7 +228,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      */
     @XmlElement(name = "standaloneQualityReport")
     @UML(identifier="standaloneQualityReport", obligation=OPTIONAL, specification=UNSPECIFIED)
-    public DefaultStandaloneQualityReportInformation getStandaloneQualityReport() {
+    public DefaultEvaluationReportInformation getStandaloneQualityReport() {
         return standaloneQualityReport;
     }
 
@@ -239,7 +239,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @since 1.3
      */
-    public void setStandaloneQualityReport(final DefaultStandaloneQualityReportInformation newValue) {
+    public void setStandaloneQualityReport(final DefaultEvaluationReportInformation newValue) {
         checkWritePermission(standaloneQualityReport);
         standaloneQualityReport = newValue;
     }

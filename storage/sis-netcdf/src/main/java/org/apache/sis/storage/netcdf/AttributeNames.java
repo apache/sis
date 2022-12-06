@@ -58,7 +58,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  * The attributes recognized by SIS are listed below:
  *
  * <blockquote><table class="compact">
- * <caption>List of all netCDF attributes</caption>
+ * <caption>List of all netCDF attributes mapped by Apache SIS to ISO 19115 metadata</caption>
  * <tr style="vertical-align:top"><td style="width: 25%">
  * {@value     #ACCESS_CONSTRAINT}<br>
  * {@value     #ACKNOWLEDGEMENT}<br>
@@ -135,7 +135,7 @@ import org.opengis.metadata.extent.GeographicDescription;
  *
  * <h2>References</h2>
  * <ul>
- *   <li><a href="http://wiki.esipfed.org/index.php/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
+ *   <li><a href="https://wiki.esipfed.org/Category:Attribute_Conventions_Dataset_Discovery">NetCDF
  *       Attribute Convention for Dataset Discovery</a> wiki</li>
  * </ul>
  *

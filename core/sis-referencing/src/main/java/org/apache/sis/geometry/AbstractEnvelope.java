@@ -534,7 +534,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @param  unit  the unit for the return value.
      * @return the span in terms of the given unit.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     * @throws IncommensurableException if the length can't be converted to the specified units.
+     * @throws IncommensurableException if the length cannot be converted to the specified units.
      */
     public double getSpan(final int dimension, final Unit<?> unit)
             throws IndexOutOfBoundsException, IncommensurableException

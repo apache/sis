@@ -101,9 +101,9 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
     AbstractPositionalAccuracy.class,
     AbstractThematicAccuracy.class,
     AbstractTemporalQuality.class,
-    DefaultUsabilityElement.class,
+    DefaultUsability.class,
     AbstractMetaquality.class,
-    DefaultMeasure.class            // Not a subclass, but "weakly" associated.
+    DefaultQualityMeasure.class     // Not a subclass, but "weakly" associated.
 })
 public class AbstractElement extends ISOMetadata implements Element {
     /**
@@ -221,7 +221,7 @@ public class AbstractElement extends ISOMetadata implements Element {
             return AbstractCompleteness.castOrCopy((Completeness) object);
         }
         if (object instanceof Usability) {
-            return DefaultUsabilityElement.castOrCopy((Usability) object);
+            return DefaultUsability.castOrCopy((Usability) object);
         }
         // Intentionally tested after the sub-interfaces.
         if (object == null || object instanceof AbstractElement) {

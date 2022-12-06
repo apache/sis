@@ -50,7 +50,7 @@ public final class Preformat extends Taglet {
      * Special characters to replace by HTML entities.
      */
     private static final String[] SPECIAL_CHARS = new String[] {
-        "&#64;", "@", // Because we can't use @ directly in {@preformat}.
+        "&#64;", "@", // Because we cannot use @ directly in {@preformat}.
         "&",     "&amp;",
         "<",     "&lt;",
         ">",     "&gt;"

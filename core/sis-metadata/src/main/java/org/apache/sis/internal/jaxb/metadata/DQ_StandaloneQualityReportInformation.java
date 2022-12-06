@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.apache.sis.metadata.iso.quality.DefaultStandaloneQualityReportInformation;
+import org.apache.sis.metadata.iso.quality.DefaultEvaluationReportInformation;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -35,7 +35,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @module
  */
 public final class DQ_StandaloneQualityReportInformation extends
-        PropertyType<DQ_StandaloneQualityReportInformation, DefaultStandaloneQualityReportInformation>
+        PropertyType<DQ_StandaloneQualityReportInformation, DefaultEvaluationReportInformation>
 {
     /**
      * Empty constructor for JAXB only.
@@ -48,17 +48,17 @@ public final class DQ_StandaloneQualityReportInformation extends
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code DefaultStandaloneQualityReportInformation.class}
+     * @return {@code DefaultEvaluationReportInformation.class}
      */
     @Override
-    protected Class<DefaultStandaloneQualityReportInformation> getBoundType() {
-        return DefaultStandaloneQualityReportInformation.class;
+    protected Class<DefaultEvaluationReportInformation> getBoundType() {
+        return DefaultEvaluationReportInformation.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQ_StandaloneQualityReportInformation(final DefaultStandaloneQualityReportInformation metadata) {
+    private DQ_StandaloneQualityReportInformation(final DefaultEvaluationReportInformation metadata) {
         super(metadata);
     }
 
@@ -71,7 +71,7 @@ public final class DQ_StandaloneQualityReportInformation extends
      *         or {@code null} if marshalling a too old version of the standard.
      */
     @Override
-    protected DQ_StandaloneQualityReportInformation wrap(final DefaultStandaloneQualityReportInformation metadata) {
+    protected DQ_StandaloneQualityReportInformation wrap(final DefaultEvaluationReportInformation metadata) {
         return accept2014() ? new DQ_StandaloneQualityReportInformation(metadata) : null;
     }
 
@@ -83,7 +83,7 @@ public final class DQ_StandaloneQualityReportInformation extends
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultStandaloneQualityReportInformation getElement() {
+    public DefaultEvaluationReportInformation getElement() {
         return metadata;
     }
 
@@ -92,7 +92,7 @@ public final class DQ_StandaloneQualityReportInformation extends
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultStandaloneQualityReportInformation metadata) {
+    public void setElement(final DefaultEvaluationReportInformation metadata) {
         this.metadata = metadata;
     }
 }

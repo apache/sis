@@ -60,7 +60,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
 })
 @XmlRootElement(name = "DQM_Description", namespace = Namespaces.DQM)
 @UML(identifier="DQM_Description", specification=UNSPECIFIED)
-public class DefaultDescription extends ISOMetadata {
+public class DefaultMeasureDescription extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -81,7 +81,7 @@ public class DefaultDescription extends ISOMetadata {
     /**
      * Constructs an initially empty description.
      */
-    public DefaultDescription() {
+    public DefaultMeasureDescription() {
     }
 
     /**
@@ -89,7 +89,7 @@ public class DefaultDescription extends ISOMetadata {
      *
      * @param  text  text description, or {@code null} if none.
      */
-    public DefaultDescription(final CharSequence text) {
+    public DefaultMeasureDescription(final CharSequence text) {
         textDescription = Types.toInternationalString(text);
     }
 
@@ -100,7 +100,7 @@ public class DefaultDescription extends ISOMetadata {
      *
      * @param object  the metadata to copy values from, or {@code null} if none.
      */
-    public DefaultDescription(final DefaultDescription object) {
+    public DefaultMeasureDescription(final DefaultMeasureDescription object) {
         super(object);
         if (object != null) {
             textDescription     = object.getTextDescription();

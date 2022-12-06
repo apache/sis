@@ -848,7 +848,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {

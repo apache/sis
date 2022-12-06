@@ -44,7 +44,7 @@ import static java.util.logging.Logger.getLogger;
  * is available, then that simple primary key will be used as the citation title.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see IdentifierSpace
  * @see Citations
@@ -192,11 +192,19 @@ public class CitationConstant extends SimpleCitation {
     }
 
     /**
+     * Returns the title, which is mandatory.
+     */
+    @Override
+    public InternationalString getTitle() {
+        InternationalString title = delegate().getTitle();
+        return (title != null) ? title : super.getTitle();
+    }
+
+    /**
      * Redirects the call to the delegate citation (the instance which actually contain the data).
      *
      * @return the value returned by the delegate.
      */
-    @Override public InternationalString                        getTitle()                   {return delegate().getTitle();}
     @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return delegate().getAlternateTitles();}
     @Override public Collection<? extends CitationDate>         getDates()                   {return delegate().getDates();}
     @Override public InternationalString                        getEdition()                 {return delegate().getEdition();}

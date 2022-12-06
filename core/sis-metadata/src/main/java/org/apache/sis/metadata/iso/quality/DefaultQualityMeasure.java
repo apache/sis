@@ -76,7 +76,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
 })
 @XmlRootElement(name = "DQM_Measure", namespace = Namespaces.DQM)
 @UML(identifier="DQM_Measure", specification=UNSPECIFIED)
-public class DefaultMeasure extends ISOMetadata {
+public class DefaultQualityMeasure extends ISOMetadata {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -124,7 +124,7 @@ public class DefaultMeasure extends ISOMetadata {
      * needed to establish the result of applying the measure.
      */
     @SuppressWarnings("serial")
-    private DefaultDescription description;
+    private DefaultMeasureDescription description;
 
     /**
      * Reference to the source of an item that has been adopted from an external source.
@@ -148,12 +148,12 @@ public class DefaultMeasure extends ISOMetadata {
      * Illustration of the use of a data quality measure.
      */
     @SuppressWarnings("serial")
-    private Collection<DefaultDescription> examples;
+    private Collection<DefaultMeasureDescription> examples;
 
     /**
      * Constructs an initially empty element.
      */
-    public DefaultMeasure() {
+    public DefaultQualityMeasure() {
     }
 
     /**
@@ -164,7 +164,7 @@ public class DefaultMeasure extends ISOMetadata {
      * @param object  the metadata to copy values from, or {@code null} if none.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public DefaultMeasure(final DefaultMeasure object) {
+    public DefaultQualityMeasure(final DefaultQualityMeasure object) {
         super(object);
         if (object != null) {
             measureIdentifier = object.getMeasureIdentifier();
@@ -174,7 +174,7 @@ public class DefaultMeasure extends ISOMetadata {
             definition        = object.getDefinition();
             description       = object.getDescription();
             valueType         = object.getValueType();
-            examples          = copyCollection(object.getExamples(), DefaultDescription.class);
+            examples          = copyCollection(object.getExamples(), DefaultMeasureDescription.class);
             basicMeasure      = object.getBasicMeasure();
             sourceReferences  = copyCollection(object.getSourceReferences(), DefaultSourceReference.class);
             parameters        = copyCollection(object.getParameters(), (Class) ParameterDescriptor.class);
@@ -317,7 +317,7 @@ public class DefaultMeasure extends ISOMetadata {
      */
     @XmlElement(name = "description")
     @UML(identifier="description", obligation=CONDITIONAL, specification=UNSPECIFIED)
-    public DefaultDescription getDescription() {
+    public DefaultMeasureDescription getDescription() {
        return description;
     }
 
@@ -326,7 +326,7 @@ public class DefaultMeasure extends ISOMetadata {
      *
      * @param  newValue  the new measure description.
      */
-    public void setDescription(final DefaultDescription newValue)  {
+    public void setDescription(final DefaultMeasureDescription newValue)  {
         checkWritePermission(description);
         description = newValue;
     }
@@ -406,8 +406,8 @@ public class DefaultMeasure extends ISOMetadata {
      */
     @XmlElement(name = "example")
     @UML(identifier="example", obligation=OPTIONAL, specification=UNSPECIFIED)
-    public Collection<DefaultDescription> getExamples() {
-        return examples = nonNullCollection(examples, DefaultDescription.class);
+    public Collection<DefaultMeasureDescription> getExamples() {
+        return examples = nonNullCollection(examples, DefaultMeasureDescription.class);
     }
 
     /**
@@ -415,7 +415,7 @@ public class DefaultMeasure extends ISOMetadata {
      *
      * @param  newValues  the new examples.
      */
-    public void setExamples(final Collection<? extends DefaultDescription> newValues) {
-        examples = writeCollection(newValues, examples, DefaultDescription.class);
+    public void setExamples(final Collection<? extends DefaultMeasureDescription> newValues) {
+        examples = writeCollection(newValues, examples, DefaultMeasureDescription.class);
     }
 }

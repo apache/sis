@@ -234,8 +234,12 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
         assertSame("When the given parameters match exactly the UTM central meridian and latitude of origin,"
                 + " the CRS created by AUTO:42002 should be the same than the CRS created by AUTO:42001.",
                 crs, factory.createProjectedCRS("AUTO2:42002,1,-123,0"));
-
-        assertEpsgNameAndIdentifierEqual("WGS 84 / UTM zone 10N", 32610, crs);
+        /*
+         * Do not use `assertEpsgNameAndIdentifierEqual(…)` because the "EPSG" authority is missing
+         * (actually is "Subset of EPSG") if the CRS was built from the fallback factory.
+         */
+        assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
+        assertEquals("identifier", "32610", getSingleton(crs.getIdentifiers()).getCode());
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(TransverseMercator.NAME, crs.getConversionFromBase().getMethod().getName().getCode());
         assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
@@ -368,30 +372,33 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testCRS84")
     public void testWKT() throws FactoryException {
+        final String WGS84 = "“WGS\\E\\s?(?:19)?\\Q84”";                // Accept "WGS 84" or "WGS 1984"
         GeographicCRS crs = factory.createGeographicCRS("CRS:84");
-        assertWktEquals(Convention.WKT1,
-                "GEOGCS[“WGS 84”,\n" +
+        assertWktEqualsRegex(Convention.WKT1, "(?m)\\Q" +               // Multilines
+                "GEOGCS[" + WGS84 + ",\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
-                "    SPHEROID[“WGS 84”, 6378137.0, 298.257223563]],\n" +
+                "    SPHEROID[" + WGS84 + ", 6378137.0, 298.257223563]],\n" +
                 "    PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295],\n" +
                 "  AXIS[“Longitude”, EAST],\n" +
                 "  AXIS[“Latitude”, NORTH],\n" +
-                "  AUTHORITY[“CRS”, “84”]]", crs);
+                "  AUTHORITY[“CRS”, “84”]]\\E", crs);
 
         assertWktEqualsRegex(Convention.WKT2, "(?m)\\Q" +
-                "GEODCRS[“WGS 84”,\n" +
+                "GEODCRS[" + WGS84 + ",\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
-                "    ELLIPSOID[“WGS 84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
+                "    ELLIPSOID[" + WGS84 + ", 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]],\n" +
                 "    PRIMEM[“Greenwich”, 0.0, ANGLEUNIT[“degree”, 0.017453292519943295]],\n" +
                 "  CS[ellipsoidal, 2],\n" +
                 "    AXIS[“Longitude (L)”, east, ORDER[1]],\n" +
                 "    AXIS[“Latitude (B)”, north, ORDER[2]],\n" +
                 "    ANGLEUNIT[“degree”, 0.017453292519943295],\n" +
-                "  SCOPE[“Horizontal component of 3D system.\\E.*\\Q”],\n" +
+                "\\E(?:  SCOPE\\[“.+”\\],\n)?\\Q" +                     // Ignore SCOPE[…] if present.
                 "  AREA[“World\\E.*\\Q”],\n" +
                 "  BBOX[-90.00, -180.00, 90.00, 180.00],\n" +
-                "  ID[“CRS”, 84, CITATION[“WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]]\\E", crs);
+                "  ID[“CRS”, 84, CITATION[“WMS”], URI[“urn:ogc:def:crs:OGC:1.3:CRS84”]]" +
+                "\\E(?:,\n  REMARK\\[“.+”\\])?\\]",                     // Ignore trailing REMARK[…] if present.
+                crs);
         /*
          * Note: the WKT specification defines the ID element as:
          *

@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
-import org.apache.sis.metadata.iso.quality.DefaultDescription;
+import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -30,7 +30,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @since   1.3
  * @module
  */
-public final class DQM_Description extends PropertyType<DQM_Description, DefaultDescription> {
+public final class DQM_Description extends PropertyType<DQM_Description, DefaultMeasureDescription> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -42,17 +42,17 @@ public final class DQM_Description extends PropertyType<DQM_Description, Default
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code DefaultDescription.class}
+     * @return {@code DefaultMeasureDescription.class}
      */
     @Override
-    protected Class<DefaultDescription> getBoundType() {
-        return DefaultDescription.class;
+    protected Class<DefaultMeasureDescription> getBoundType() {
+        return DefaultMeasureDescription.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private DQM_Description(final DefaultDescription metadata) {
+    private DQM_Description(final DefaultMeasureDescription metadata) {
         super(metadata);
     }
 
@@ -64,7 +64,7 @@ public final class DQM_Description extends PropertyType<DQM_Description, Default
      * @return a {@code PropertyType} wrapping the given the metadata element.
      */
     @Override
-    protected DQM_Description wrap(final DefaultDescription metadata) {
+    protected DQM_Description wrap(final DefaultMeasureDescription metadata) {
         return new DQM_Description(metadata);
     }
 
@@ -76,7 +76,7 @@ public final class DQM_Description extends PropertyType<DQM_Description, Default
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultDescription getElement() {
+    public DefaultMeasureDescription getElement() {
         return metadata;
     }
 
@@ -85,7 +85,7 @@ public final class DQM_Description extends PropertyType<DQM_Description, Default
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDescription metadata) {
+    public void setElement(final DefaultMeasureDescription metadata) {
         this.metadata = metadata;
     }
 }

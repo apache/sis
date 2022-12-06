@@ -192,7 +192,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this transform.
      *
-     * @throws UnsupportedOperationException if this object can't be formatted as WKT.
+     * @throws UnsupportedOperationException if this object cannot be formatted as WKT.
      */
     @Override
     public final String toWKT() throws UnsupportedOperationException {

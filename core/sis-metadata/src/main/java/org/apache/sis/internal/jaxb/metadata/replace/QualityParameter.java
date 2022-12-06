@@ -27,7 +27,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.iso.quality.DefaultDescription;
+import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.internal.jaxb.gco.GO_GenericName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.iso.Names;
@@ -93,7 +93,7 @@ public final class QualityParameter extends Parameter {
      * @see #getDescription()
      */
     @XmlElement
-    DefaultDescription description;
+    DefaultMeasureDescription description;
 
     /**
      * Value type of the data quality parameter (shall be one of the data types defined in ISO/TS 19103:2005).

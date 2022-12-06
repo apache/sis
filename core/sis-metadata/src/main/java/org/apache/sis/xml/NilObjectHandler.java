@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
@@ -47,7 +48,7 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * For now, it doesn't seem worth to cache the handlers.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -130,11 +131,11 @@ final class NilObjectHandler implements InvocationHandler {
                     return (attribute instanceof NilReason) ? (NilReason) attribute : null;
                 }
                 case "getIdentifierMap": {
-                    return (attribute instanceof IdentifierMap) ? (IdentifierMap) attribute : null;
+                    return (attribute instanceof IdentifierMap) ? (IdentifierMap) attribute : Collections.emptyMap();
                 }
                 case "getIdentifiers": {
                     return (attribute instanceof IdentifierMapAdapter) ?
-                            ((IdentifierMapAdapter) attribute).getIdentifiers(method.getReturnType()) : null;
+                            ((IdentifierMapAdapter) attribute).getIdentifiers(method.getReturnType()) : Collections.emptyList();
                 }
                 case "toString": {
                     return Strings.bracket(getInterface(proxy), attribute);

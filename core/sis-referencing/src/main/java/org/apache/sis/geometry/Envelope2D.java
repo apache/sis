@@ -39,7 +39,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
-// Following imports are needed because we can't extend AbstractEnvelope.
+// Following imports are needed because we cannot extend AbstractEnvelope.
 // We want to write this class as if it was an AbstractEnvelope subclass.
 import static org.apache.sis.geometry.AbstractEnvelope.getAxis;
 import static org.apache.sis.geometry.AbstractEnvelope.getCommonCRS;

@@ -443,7 +443,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 {
                     child = new DefaultNameSpace(this, name, headSeparator, separator);
                     /*
-                     * Do not cache that instance. Actually we can't guess if that instance
+                     * Do not cache that instance. Actually we cannot guess if that instance
                      * would be more appropriate for caching purpose than the old one. We
                      * just assume that keeping the oldest one is more conservative.
                      */
