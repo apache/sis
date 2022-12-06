@@ -228,7 +228,7 @@ public abstract class ClauseResolver extends AutoChecker {
             return compare(rs, value1, value2);
         else
         {
-            // if one value doesn't match to a type, we can't perform the comparison.
+            // if one value doesn't match to a type, we cannot perform the comparison.
             if ((w1 == false && b1 == false) || (w2 == false && b2 == false))
                return null;
             else {

@@ -100,7 +100,7 @@ final class Reader extends StaxStreamReader {
      * @throws IOException if an error occurred while preparing the input stream.
      * @throws Exception if another kind of error occurred while closing a previous stream.
      */
-    public Reader(final Store owner) throws Exception {
+    Reader(final Store owner) throws Exception {
         super(owner);
     }
 

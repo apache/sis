@@ -46,7 +46,7 @@ import org.opengis.feature.Feature;
 
 /**
  * Tests (indirectly) the {@link Writer} class.
- * This class creates a {@link Store} instance and uses it in write mode.
+ * This class creates a {@link WritableStore} instance and uses it in write mode.
  * The {@link Reader} is used for verifying the content.
  *
  * @author  Johann Sorel (Geomatys)
@@ -86,10 +86,10 @@ public final strictfp class WriterTest extends TestCase {
     /**
      * Creates a new GPX data store which will read and write in memory.
      */
-    private Store create() throws DataStoreException {
+    private WritableStore create() throws DataStoreException {
         final StorageConnector connector = new StorageConnector(output);
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
-        return new Store(provider, connector);
+        return new WritableStore(provider, connector);
     }
 
     /**
@@ -137,7 +137,7 @@ public final strictfp class WriterTest extends TestCase {
      */
     private void testMetadata(final Version version, final String expected) throws Exception {
         final Metadata metadata = MetadataTest.create();
-        try (Store store = create()) {
+        try (WritableStore store = create()) {
             store.setVersion(version);
             store.write(metadata, null);
         }
@@ -233,7 +233,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param expected  name of a test file containing the expected XML result.
      */
     private void testFeatures(final Version version, final Type type, final String expected) throws Exception {
-        try (Store store = create()) {
+        try (WritableStore store = create()) {
             store.version = version;
             testFeatures(store, type);
         }
@@ -247,7 +247,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param store  the store where to write.
      * @param type   the kind of feature to write: way point, route or track.
      */
-    private void testFeatures(final Store store, final Type type) throws Exception {
+    private void testFeatures(final WritableStore store, final Type type) throws Exception {
         final Types types = store.types;
         /*
          * Way Points as defined in "waypoint.xml" test file.
@@ -370,7 +370,7 @@ public final strictfp class WriterTest extends TestCase {
         final StorageConnector connector = new StorageConnector(
                 TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
-        try (Store store = new Store(provider, connector)) {
+        try (WritableStore store = new WritableStore(provider, connector)) {
             /*
              * Read part of the file. We verify its content as a matter of principle,
              * but the main purpose of following code is to advance in the stream.

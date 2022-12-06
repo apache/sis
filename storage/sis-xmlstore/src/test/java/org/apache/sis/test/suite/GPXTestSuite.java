@@ -28,7 +28,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.gpx.TypesTest.class,
     org.apache.sis.internal.storage.gpx.MetadataTest.class,
     org.apache.sis.internal.storage.gpx.ReaderTest.class,
-    org.apache.sis.internal.storage.gpx.WriterTest.class
+    org.apache.sis.internal.storage.gpx.WriterTest.class,
+    org.apache.sis.internal.storage.gpx.UpdaterTest.class
 })
 public final strictfp class GPXTestSuite extends TestSuite {
     /**

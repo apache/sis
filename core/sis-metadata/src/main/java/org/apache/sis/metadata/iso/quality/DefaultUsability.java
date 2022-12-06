@@ -31,12 +31,12 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @since   0.3
  * @module
  *
- * @deprecated Renamed {@link DefaultUsabilityElement} for following a renaming in ISO 19157:2013.
+ * @deprecated Removed from latest ISO 19157 standard.
  */
 @Deprecated
 @XmlType(name = "QE_Usability_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "QE_Usability", namespace = LegacyNamespaces.GMI)
-public class DefaultUsability extends DefaultUsabilityElement implements Usability {
+public class DefaultUsability extends AbstractElement implements Usability {
     /**
      * Serial number for inter-operability with different versions.
      */

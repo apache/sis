@@ -151,7 +151,7 @@ public class MonolineFormatter extends Formatter {
      * A comparator for logging level. This comparator sorts finest levels first and severe levels last.
      */
     private static final Comparator<Level> COMPARATOR = (final Level l1, final Level l2) -> {
-        // We can't just return (i1 - i2) because some levels are
+        // We cannot just return (i1 - i2) because some levels are
         // Integer.MIN_VALUE or Integer.MAX_VALUE, which cause overflow.
         final int i1 = l1.intValue();
         final int i2 = l2.intValue();

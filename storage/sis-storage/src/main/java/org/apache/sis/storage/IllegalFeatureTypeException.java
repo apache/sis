@@ -69,7 +69,7 @@ public class IllegalFeatureTypeException extends DataStoreException {
     /**
      * Creates an exception with a default message in the given locale.
      *
-     * @param locale     the message locale.
+     * @param locale     the locale for the message, or {@code null} for the default locale.
      * @param format     short name of the format that do not accept the given feature type.
      * @param dataType   name of the feature type that cannot be accepted by the data store.
      */

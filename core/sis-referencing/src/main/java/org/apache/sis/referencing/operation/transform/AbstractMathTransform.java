@@ -527,7 +527,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *                 May be the same than {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
-     * @throws TransformException if a point can't be transformed. Some implementations will stop at the first failure,
+     * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the un-transformable points with {@link Float#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the latter case should set
      *         the {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.

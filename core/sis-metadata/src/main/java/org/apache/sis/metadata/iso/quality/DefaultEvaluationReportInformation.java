@@ -53,7 +53,7 @@ import org.opengis.metadata.quality.StandaloneQualityReportInformation;
     "abstract"
 })
 @XmlRootElement(name = "DQ_StandaloneQualityReportInformation")
-public class DefaultStandaloneQualityReportInformation extends ISOMetadata implements StandaloneQualityReportInformation {
+public class DefaultEvaluationReportInformation extends ISOMetadata implements StandaloneQualityReportInformation {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -74,7 +74,7 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata imple
     /**
      * Constructs an initially empty standalone quality report information.
      */
-    public DefaultStandaloneQualityReportInformation() {
+    public DefaultEvaluationReportInformation() {
     }
 
     /**
@@ -86,7 +86,7 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata imple
      *
      * @see #castOrCopy(StandaloneQualityReportInformation)
      */
-    public DefaultStandaloneQualityReportInformation(final StandaloneQualityReportInformation object) {
+    public DefaultEvaluationReportInformation(final StandaloneQualityReportInformation object) {
         super(object);
         if (object != null) {
             reportReference  = object.getReportReference();
@@ -101,9 +101,9 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata imple
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is already an instance of
-     *       {@code DefaultStandaloneQualityReportInformation}, then it is returned unchanged.</li>
-     *   <li>Otherwise a new {@code DefaultStandaloneQualityReportInformation} instance is created using the
-     *       {@linkplain #DefaultStandaloneQualityReportInformation(StandaloneQualityReportInformation) copy constructor}
+     *       {@code DefaultEvaluationReportInformation}, then it is returned unchanged.</li>
+     *   <li>Otherwise a new {@code DefaultEvaluationReportInformation} instance is created using the
+     *       {@linkplain #DefaultEvaluationReportInformation(StandaloneQualityReportInformation) copy constructor}
      *       and returned. Note that this is a <em>shallow</em> copy operation, because the other
      *       metadata contained in the given object are not recursively copied.</li>
      * </ul>
@@ -112,11 +112,11 @@ public class DefaultStandaloneQualityReportInformation extends ISOMetadata imple
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    public static DefaultStandaloneQualityReportInformation castOrCopy(final StandaloneQualityReportInformation object) {
+    public static DefaultEvaluationReportInformation castOrCopy(final StandaloneQualityReportInformation object) {
         if (object instanceof StandaloneQualityReportInformation) {
-            return DefaultStandaloneQualityReportInformation.castOrCopy((DefaultStandaloneQualityReportInformation) object);
+            return DefaultEvaluationReportInformation.castOrCopy((DefaultEvaluationReportInformation) object);
         }
-        return new DefaultStandaloneQualityReportInformation(object);
+        return new DefaultEvaluationReportInformation(object);
     }
 
     /**

@@ -77,7 +77,7 @@ public final strictfp class XLinkTest extends TestCase {
         assertFalse("Hash code cannot be zero.", hashCode == 0);
 
         link.setShow(XLink.Show.NEW);
-        assertNull("Can't be Type.SIMPLE if a label is defined.", link.getType());
+        assertNull("Cannot be Type.SIMPLE if a label is defined.", link.getType());
         assertEquals("XLink[href=\"org:apache:sis:href\", role=\"org:apache:sis:role\", title=\"Some title\", show=\"new\", label=\"SomeLabel\"]", link.toString());
         assertFalse("Hash code should have changed.", hashCode == (hashCode = link.hashCode()));
         assertFalse("Hash code cannot be zero.", hashCode == 0);

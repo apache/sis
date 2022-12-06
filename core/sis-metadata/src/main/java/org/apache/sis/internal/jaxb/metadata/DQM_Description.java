@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.quality.Description;
-import org.apache.sis.metadata.iso.quality.DefaultDescription;
+import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -77,8 +77,8 @@ public final class DQM_Description extends PropertyType<DQM_Description, Descrip
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultDescription getElement() {
-        return DefaultDescription.castOrCopy(metadata);
+    public DefaultMeasureDescription getElement() {
+        return DefaultMeasureDescription.castOrCopy(metadata);
     }
 
     /**
@@ -86,7 +86,7 @@ public final class DQM_Description extends PropertyType<DQM_Description, Descrip
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultDescription metadata) {
+    public void setElement(final DefaultMeasureDescription metadata) {
         this.metadata = metadata;
     }
 }

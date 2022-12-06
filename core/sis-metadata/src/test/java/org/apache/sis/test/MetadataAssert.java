@@ -134,8 +134,8 @@ public strictfp class MetadataAssert extends Assert {
      *
      * <ul>
      *   <li>{@link org.w3c.dom.Node}: used directly without further processing.</li>
-     *   <li>{@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}: the
-     *       stream is opened and parsed as a XML document.</li>
+     *   <li>{@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}:
+     *       the stream is opened and parsed as a XML document.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *

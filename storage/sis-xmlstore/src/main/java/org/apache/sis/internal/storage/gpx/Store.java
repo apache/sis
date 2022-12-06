@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.gpx;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
@@ -30,12 +29,10 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.ConcurrentReadException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.storage.StoreUtilities;
 import org.apache.sis.internal.storage.xml.stream.StaxDataStore;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.apache.sis.setup.OptionKey;
@@ -52,6 +49,8 @@ import org.opengis.feature.FeatureType;
 
 /**
  * A data store backed by GPX files.
+ * This store does not cache the feature instances.
+ * Any new {@linkplain #features(boolean) request for features} will re-read from the file.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -59,7 +58,7 @@ import org.opengis.feature.FeatureType;
  * @since   0.8
  * @module
  */
-public final class Store extends StaxDataStore implements FeatureSet {
+public class Store extends StaxDataStore implements FeatureSet {
     /**
      * Version of the GPX file, or {@code null} if unknown.
      */
@@ -73,6 +72,7 @@ public final class Store extends StaxDataStore implements FeatureSet {
     /**
      * If a reader has been created for parsing the {@linkplain #metadata} and has not yet been used
      * for iterating over the features, that reader. Otherwise {@code null}.
+     * Used for continuing XML parsing after metadata header instead of closing and reopening the file.
      */
     private Reader reader;
 
@@ -210,6 +210,9 @@ public final class Store extends StaxDataStore implements FeatureSet {
 
     /**
      * Returns the stream of features.
+     * This store does not cache the features. Any new iteration over features will re-read from the file.
+     * The XML file is kept open until the feature stream is closed;
+     * callers should not modify the file while an iteration is in progress.
      *
      * @param  parallel  ignored in current implementation.
      * @return a stream over all features in the XML file.
@@ -234,46 +237,14 @@ public final class Store extends StaxDataStore implements FeatureSet {
     }
 
     /**
-     * Replaces the content of this GPX file by the given metadata and features.
-     *
-     * @param  metadata  the metadata to write, or {@code null} if none.
-     * @param  features  the features to write, or {@code null} if none.
-     * @throws ConcurrentReadException if the {@code features} stream was provided by this data store.
-     * @throws DataStoreException if an error occurred while writing the data.
+     * Closes only the reader, without closing this store.
+     * This method may be invoked before write operation.
      */
-    public synchronized void write(final Metadata metadata, final Stream<? extends Feature> features) throws DataStoreException {
-        try {
-            /*
-             * If we created a reader for reading metadata, we need to close that reader now otherwise the call
-             * to 'new Writer(…)' will fail.  Note that if that reader was in use by someone else, the 'reader'
-             * field would be null and the 'new Writer(…)' call should detect that a reader is in use somewhere.
-             */
-            final Reader r = reader;
-            if (r != null) {
-                reader = null;
-                r.close();
-            }
-            /*
-             * Get the writer if no read or other write operation is in progress, then write the data.
-             */
-            try (Writer writer = new Writer(this, org.apache.sis.internal.storage.gpx.Metadata.castOrCopy(metadata, locale))) {
-                writer.writeStartDocument();
-                if (features != null) {
-                    features.forEachOrdered(writer);
-                }
-                writer.writeEndDocument();
-            }
-        } catch (BackingStoreException e) {
-            final Throwable cause = e.getCause();
-            if (cause instanceof DataStoreException) {
-                throw (DataStoreException) cause;
-            }
-            throw new DataStoreException(e.getLocalizedMessage(), cause);
-        } catch (Exception e) {
-            if (e instanceof UncheckedIOException) {
-                e = ((UncheckedIOException) e).getCause();
-            }
-            throw new DataStoreException(e);
+    final void closeReader() throws Exception {
+        final Reader r = reader;
+        if (r != null) {
+            reader = null;
+            r.close();
         }
     }
 
@@ -285,10 +256,8 @@ public final class Store extends StaxDataStore implements FeatureSet {
     @Override
     public synchronized void close() throws DataStoreException {
         listeners.close();                  // Should never fail.
-        final Reader r = reader;
-        reader = null;
-        if (r != null) try {
-            r.close();
+        try {
+            closeReader();
         } catch (Exception e) {
             final DataStoreException ds = new DataStoreException(e);
             try {
