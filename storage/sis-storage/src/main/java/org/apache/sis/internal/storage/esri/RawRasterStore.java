@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.esri;
 import java.util.List;
 import java.util.Locale;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.ByteOrder;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -189,6 +190,17 @@ final class RawRasterStore extends RasterStore {
     RawRasterStore(final RawRasterStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         input = connector.commit(ChannelDataInput.class, RawRasterStoreProvider.NAME);
+    }
+
+    /**
+     * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
+     *
+     * @return the main file and auxiliary files as paths, or an empty array if unknown.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
+     */
+    @Override
+    public Path[] getComponentFiles() throws DataStoreException {
+        return listComponentFiles(RawRasterStoreProvider.HDR, PRJ, STX, CLR);
     }
 
     /**
