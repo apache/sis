@@ -443,7 +443,7 @@ public class MetadataStandard implements Serializable {
         }
         /*
          * At this point, all cached values (including those in dependencies) have been checked.
-         * Performs the 'findInterface' computation only in last resort. Current implementation
+         * Performs the `findInterface(…)` computation only in last resort. Current implementation
          * does not store negative results in order to avoid filling the cache with unrelated classes.
          */
         final Class<?> standardType = findInterface(key);
@@ -490,7 +490,7 @@ public class MetadataStandard implements Serializable {
             }
         } else {
             /*
-             * Gets every interfaces from the supplied package in declaration order,
+             * Gets every interfaces from the supplied class in declaration order,
              * including the ones declared in the super-class.
              */
             final Set<Class<?>> interfaces = new LinkedHashSet<>();
@@ -518,7 +518,7 @@ public class MetadataStandard implements Serializable {
                 }
                 /*
                  * Found more than one interface; we don't know which one to pick.
-                 * Returns 'null' for now; the caller will thrown an exception.
+                 * Returns `null` for now; the caller will thrown an exception.
                  */
             } else if (IMPLEMENTATION_CAN_ALTER_API) {
                 /*
@@ -1050,7 +1050,7 @@ public class MetadataStandard implements Serializable {
             }
         } else {
             /*
-             * If we get here, a cycle has been found. Returns 'true' in order to allow the caller to continue
+             * If we get here, a cycle has been found. Returns `true` in order to allow the caller to continue
              * comparing other properties. It is okay because someone else is comparing those two same objects,
              * and that later comparison will do the actual check for property values.
              */
@@ -1075,7 +1075,7 @@ public class MetadataStandard implements Serializable {
             final Integer hash = HashCode.getOrCreate().walk(this, null, metadata, true);
             if (hash != null) return hash;
             /*
-             * 'hash' may be null if a cycle has been found. Example: A depends on B which depends on A,
+             * `hash` may be null if a cycle has been found. Example: A depends on B which depends on A,
              * in which case the null value is returned for the second occurrence of A (not the first one).
              * We cannot compute a hash code value here, but it should be okay since that metadata is part
              * of a bigger metadata object, and that enclosing object should have other properties for computing

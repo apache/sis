@@ -84,12 +84,12 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      * Creates a new input stream from the given {@code ChannelDataInput}.
      * This constructor is invoked when we need to change the implementation class
      * from {@code ChannelDataInput} to {@code ChannelImageInputStream}.
+     * The old input should not be used anymore after this constructor has been invoked.
      *
      * @param  input  the existing instance from which to takes the channel and buffer.
-     * @throws IOException if an error occurred while reading the channel.
      */
-    public ChannelImageInputStream(final ChannelDataInput input) throws IOException {
-        super(input.filename, input.channel, input.buffer, true);
+    public ChannelImageInputStream(final ChannelDataInput input) {
+        super(input);
     }
 
     /**
