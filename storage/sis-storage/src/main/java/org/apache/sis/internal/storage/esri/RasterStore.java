@@ -95,7 +95,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      *
      * @see #getComponentFiles()
      */
-    private static final String STX = "stx", CLR = "clr";
+    static final String STX = "stx", CLR = "clr";
 
     /**
      * The color model, created from the {@code "*.clr"} file content when first needed.

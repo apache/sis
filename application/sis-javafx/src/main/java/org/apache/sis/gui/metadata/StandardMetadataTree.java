@@ -106,7 +106,7 @@ public class StandardMetadataTree extends MetadataTree {
             tree = ((AbstractMetadata) metadata).asTreeTable();
         } else {
             // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
-            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
+            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, Metadata.class, ValueExistencePolicy.COMPACT);
         }
         setContent(tree);
     }

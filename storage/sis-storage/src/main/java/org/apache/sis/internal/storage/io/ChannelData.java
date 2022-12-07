@@ -126,6 +126,22 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
+     * Creates a new instance from the given {@code ChannelData}.
+     * This constructor is invoked when we need to change the implementation class.
+     * The old {@code ChannelData} should not be used anymore after this constructor.
+     *
+     * @param  old  the existing instance from which to takes the channel and buffer.
+     */
+    ChannelData(final ChannelData old) {
+        filename      = old.filename;
+        buffer        = old.buffer;
+        channelOffset = old.channelOffset;
+        bufferOffset  = old.bufferOffset;
+        bitPosition   = old.bitPosition;
+        mark          = old.mark;
+    }
+
+    /**
      * Creates a new instance for a buffer filled with the bytes to use.
      * This constructor uses an independent, read-only view of the given buffer.
      * No reference to the given buffer will be retained.

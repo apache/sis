@@ -107,6 +107,18 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
+     * Creates a new input stream from the given {@code ChannelDataInput}.
+     * This constructor is invoked when we need to change the implementation class.
+     * The old input should not be used anymore after this constructor has been invoked.
+     *
+     * @param  input  the existing instance from which to takes the channel and buffer.
+     */
+    ChannelDataInput(final ChannelDataInput input) {
+        super(input);
+        channel = input.channel;
+    }
+
+    /**
      * Creates a new instance for a buffer filled with the bytes to use.
      * This constructor uses an independent, read-only view of the given buffer.
      * No reference to the given buffer will be retained.
