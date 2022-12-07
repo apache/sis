@@ -26,6 +26,8 @@ import java.lang.reflect.Method;
 import java.util.stream.Stream;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.FeatureSet;
@@ -39,7 +41,6 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.sql.feature.BinaryEncoding;
 import org.apache.sis.internal.sql.feature.GeometryGetterTest;
 import org.apache.sis.internal.feature.jts.JTS;
-import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.sql.TestDatabase;
@@ -55,7 +56,7 @@ import org.opengis.feature.Feature;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Geometry;
 
-import static org.junit.Assert.*;
+import static org.opengis.test.Assert.*;
 
 
 /**
@@ -63,7 +64,7 @@ import static org.junit.Assert.*;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -128,7 +129,12 @@ public final strictfp class PostgresTest extends TestCase {
      */
     private static void testInfoStatements(final ExtendedInfo info) throws Exception {
         assertEquals("findSRID", 4326, info.findSRID(HardCodedCRS.WGS84));
-        assertSame("fetchCRS", CRS.forCode("EPSG:3395"), info.fetchCRS(3395));
+        final CoordinateReferenceSystem expected = GeometryGetterTest.getExpectedCRS(3395);
+        final CoordinateReferenceSystem actual   = info.fetchCRS(3395);
+        assertInstanceOf("findSRID", ProjectedCRS.class, actual);
+        if (expected != null) {
+            assertSame("fetchCRS", expected, actual);
+        }
     }
 
     /**
@@ -192,7 +198,12 @@ public final strictfp class PostgresTest extends TestCase {
             default: throw new AssertionError(filename);
         }
         try {
-            assertEquals(GeometryGetterTest.getExpectedCRS(geomSRID), JTS.getCoordinateReferenceSystem(geometry));
+            final CoordinateReferenceSystem expected = GeometryGetterTest.getExpectedCRS(geomSRID);
+            final CoordinateReferenceSystem actual = JTS.getCoordinateReferenceSystem(geometry);
+            assertNotNull(actual);
+            if (expected != null) {
+                assertEquals(expected, actual);
+            }
         } catch (FactoryException e) {
             throw new AssertionError(e);
         }

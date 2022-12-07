@@ -22,6 +22,7 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.GeometryWithCRS;
@@ -43,7 +44,7 @@ import static org.junit.Assert.*;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
  * @module
  */
@@ -144,8 +145,10 @@ public strictfp final class GeometryGetterTest extends TestCase {
                 final Geometry geometry = (Geometry) reader.getValue(fromSridToCRS, results, 2);
                 final GeometryWrapper<?> expected = GF.parseWKT(wkt);
                 assertEquals("WKT and WKB parsings gave different results.", expected.implementation(), geometry);
-                assertSame("SRID", getExpectedCRS(results.getInt(3)),
-                           GF.castOrWrap(geometry).getCoordinateReferenceSystem());
+                final CoordinateReferenceSystem expectedCRS = getExpectedCRS(results.getInt(3));
+                if (expectedCRS != null) {
+                    assertSame("SRID", expectedCRS, GF.castOrWrap(geometry).getCoordinateReferenceSystem());
+                }
             }
         }
     }
@@ -157,14 +160,20 @@ public strictfp final class GeometryGetterTest extends TestCase {
      * used for the test. Other databases may have different mapping.
      *
      * @param  srid  the SRID for which to get the CRS.
-     * @return the CRS for the given SRID.
+     * @return the CRS for the given SRID, or {@code null} if not available.
      * @throws FactoryException if an error occurred while fetching the CRS.
      */
     public static CoordinateReferenceSystem getExpectedCRS(final int srid) throws FactoryException {
+        final String code;
         switch (srid) {
-            case 3395: return CRS.forCode("EPSG:3395");
+            case 3395: code = "EPSG:3395"; break;
             case 4326: return CommonCRS.WGS84.normalizedGeographic();
             default:   throw new AssertionError(srid);
+        }
+        try {
+            return CRS.forCode(code);
+        } catch (NoSuchAuthorityCodeException ignore) {
+            return null;     // No EPSG database available.
         }
     }
 }
