@@ -245,6 +245,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The axis types are {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
      *
      * @param  bounds  the bounds to copy in the new grid extent.
+     * @throws IllegalArgumentException if the rectangle is empty.
      *
      * @since 1.1
      */
@@ -260,6 +261,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  width   number of pixels in each row.
      * @param  height  number of pixels in each column.
+     * @throws IllegalArgumentException if the width or the height is not greater than zero.
      */
     public GridExtent(final long width, final long height) {
         ArgumentChecks.ensureStrictlyPositive("width",  width);
@@ -1748,7 +1750,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns the intersection of this grid extent with to the given grid extent.
+     * Returns the intersection of this grid extent with the given grid extent.
      * The given extent shall have the same number of dimensions than this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
      * be the same in all dimensions, ignoring types that are absent.
@@ -1760,12 +1762,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @since 1.3
      */
-    public GridExtent intersect(final GridExtent other) {
-        return combine(other, false);
+    public Optional<GridExtent> intersect(final GridExtent other) {
+        return Optional.ofNullable(combine(other, false));
     }
 
     /**
-     * Returns the union of this grid extent with to the given grid extent.
+     * Returns the union of this grid extent with the given grid extent.
      * The given extent shall have the same number of dimensions than this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
      * be the same in all dimensions, ignoring types that are absent.
@@ -1783,6 +1785,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Implementation of {@link #union(GridExtent)} and {@link #intersect(GridExtent)}
+     *
+     * @param  other  the grid to combine with.
+     * @return the union or intersection result, or {@code null} if the intersection gave an empty result.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      */
     private GridExtent combine(final GridExtent other, final boolean union) {
         final int n = coordinates.length;
@@ -1809,6 +1816,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         while (i < n) {clipped[i] = extremum(coordinates[i], other.coordinates[i],  union); i++;}
         if (Arrays.equals(clipped,  this.coordinates)) return this;
         if (Arrays.equals(clipped, other.coordinates)) return other;
+        if (!union) {
+            for (i=0; i<m; i++) {
+                if (clipped[i] > clipped[i+m]) {
+                    return null;                    // No intersection.
+                }
+            }
+        }
         return new GridExtent(this, clipped);
     }
 
