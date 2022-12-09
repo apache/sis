@@ -158,6 +158,25 @@
     </dependency>
   </dependencies>
 
+  <profiles>
+    <profile>
+      <id>apache-release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <configuration>
+              <additionalOptions>
+                <!-- Mysterious hack needed for allowing javadoc build to succeed. -->
+                <additionalOption>--class-path ${settings.localRepository}/org/opengis/geoapi/3.0.1/geoapi-3.0.1.jar</additionalOption>
+              </additionalOptions>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
 
   <!-- ===========================================================
            Sub-modules included in the build
