@@ -1759,11 +1759,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return the intersection result. May be one of the existing instances.
      * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
      * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
+     * @throws DisjointExtentException if the given extent does not intersect this extent.
      *
      * @since 1.3
      */
-    public Optional<GridExtent> intersect(final GridExtent other) {
-        return Optional.ofNullable(combine(other, false));
+    public GridExtent intersect(final GridExtent other) {
+        return combine(other, false);
     }
 
     /**
@@ -1819,7 +1820,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         if (!union) {
             for (i=0; i<m; i++) {
                 if (clipped[i] > clipped[i+m]) {
-                    return null;                    // No intersection.
+                    throw new DisjointExtentException(this, other, i);
                 }
             }
         }

@@ -277,12 +277,18 @@ public final strictfp class GridExtentTest extends TestCase {
     @Test
     public void testIntersect() {
         final GridExtent domain = createOther();
-        final GridExtent extent = create3D().intersect(domain).get();
+        final GridExtent extent = create3D().intersect(domain);
         assertExtentEquals(extent, 0, 150, 399);
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
-        assertSame(extent.intersect(domain).get(), extent);
-        assertFalse(extent.intersect(domain.translate(1000)).isPresent());
+        assertSame(extent.intersect(domain), extent);
+        final GridExtent disjoint = domain.translate(0, 1000);
+        try {
+            extent.intersect(disjoint);
+            fail("Expected DisjointExtentException.");
+        } catch (DisjointExtentException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**
@@ -309,7 +315,7 @@ public final strictfp class GridExtentTest extends TestCase {
                 new DimensionNameType[] {DimensionNameType.COLUMN, DimensionNameType.TRACK, DimensionNameType.TIME},
                 new long[] {100, 200, 40}, new long[] {500, 800, 50}, false);
         try {
-            domain.intersect(other).get();
+            domain.intersect(other);
             fail("Should not be allowed");
         } catch (IllegalArgumentException e) {
             assertNotNull(e.getMessage());

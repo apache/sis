@@ -482,7 +482,7 @@ public class GridDerivation {
         final double[] scales;
         if (areaOfInterest.isExtentOnly()) {
             if (baseExtent != null) {
-                baseExtent = baseExtent.intersect(areaOfInterest.extent).orElseThrow(DisjointExtentException::new);
+                baseExtent = baseExtent.intersect(areaOfInterest.extent);
                 subGridSetter = "subgrid";
             }
             scales = areaOfInterest.resolution;
@@ -879,7 +879,7 @@ public class GridDerivation {
             }
         }
         if (areaOfInterest != null && baseExtent != null) {
-            baseExtent = baseExtent.intersect(areaOfInterest).orElseThrow(DisjointExtentException::new);
+            baseExtent = baseExtent.intersect(areaOfInterest);
             subGridSetter = "subgrid";
         }
         if (subsampling == null) {
@@ -1175,7 +1175,7 @@ public class GridDerivation {
                     resized = resized.forChunkSize(chunkSize);
                 }
                 if (clipping == GridClippingMode.STRICT) {
-                    resized = resized.intersect(base.extent).orElseThrow(DisjointExtentException::new);
+                    resized = resized.intersect(base.extent);
                 }
                 if (!resized.equals(baseExtent)) {
                     baseExtent = resized;
