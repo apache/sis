@@ -66,7 +66,7 @@ import org.apache.sis.util.Classes;
  * be null and the CRS defined by the {@code DataOptionKey} will be used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.2
  * @module
  */
@@ -146,7 +146,12 @@ public abstract class PRJDataStore extends URIDataStore {
     protected final void readPRJ() throws DataStoreException {
         Exception cause = null;
         try {
-            final String wkt = readAuxiliaryFile(PRJ).toString();
+            final AuxiliaryContent content = readAuxiliaryFile(PRJ);
+            if (content == null) {
+                listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, PRJ));
+                return;
+            }
+            final String wkt = content.toString();
             final StoreFormat format = new StoreFormat(locale, timezone, null, listeners);
             format.setConvention(Convention.WKT1_COMMON_UNITS);         // Ignored if the format is WKT 2.
             final ParsePosition pos = new ParsePosition(0);
@@ -177,7 +182,7 @@ public abstract class PRJDataStore extends URIDataStore {
      * An arbitrary size limit is applied for safety.
      *
      * @param  extension    the filename extension of the auxiliary file to open.
-     * @return the file content together with the source. Should be short-lived.
+     * @return the file content together with the source, or {@code null} if none. Should be short-lived.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
      * @throws IOException if another error occurred while opening the stream.

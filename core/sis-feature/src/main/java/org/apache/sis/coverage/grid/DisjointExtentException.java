@@ -72,7 +72,7 @@ public class DisjointExtentException extends IllegalGridGeometryException {
      * @param upper  the upper bound specified by user, which is invalid.
      */
     DisjointExtentException(final Object dim, final long min, final long max, final long lower, final long upper) {
-        super(Resources.format(Resources.Keys.GridEnvelopeOutsideCoverage_5, new Object[] {dim, min, max, lower, upper}));
+        super(Resources.format(Resources.Keys.GridExtentsAreDisjoint_5, new Object[] {dim, min, max, lower, upper}));
     }
 
     /**
