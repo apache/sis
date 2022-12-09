@@ -90,6 +90,9 @@ import org.apache.sis.util.iso.Types;
 
 import static java.util.Collections.singletonMap;
 
+// Branch-dependent imports
+import org.opengis.referencing.ReferenceIdentifier;
+
 
 /**
  * Well Known Text (WKT) parser for referencing objects. This include, but is not limited too,
@@ -455,11 +458,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     codeSpace, code, (version != null) ? version.toString() : null, null);
             final Object previous = properties.put(IdentifiedObject.IDENTIFIERS_KEY, id);
             if (previous != null) {
-                Identifier[] identifiers;
-                if (previous instanceof Identifier) {
-                    identifiers = new Identifier[] {(Identifier) previous, id};
+                ReferenceIdentifier[] identifiers;
+                if (previous instanceof ReferenceIdentifier) {
+                    identifiers = new ReferenceIdentifier[] {(ReferenceIdentifier) previous, id};
                 } else {
-                    identifiers = (Identifier[]) previous;
+                    identifiers = (ReferenceIdentifier[]) previous;
                     final int n = identifiers.length;
                     identifiers = Arrays.copyOf(identifiers, n + 1);
                     identifiers[n] = id;
