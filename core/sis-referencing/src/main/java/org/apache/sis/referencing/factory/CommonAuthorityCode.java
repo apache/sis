@@ -117,7 +117,7 @@ final class CommonAuthorityCode {
         int end = CharSequences.skipTrailingWhitespaces(code, s, length);
         final int startOfParameters = code.indexOf(SEPARATOR, s);
         if (startOfParameters >= 0) {
-            complement = code.substring(startOfParameters + 1, end);
+            complement = code.substring(CharSequences.skipLeadingWhitespaces(code, startOfParameters + 1, end), end);
             end = CharSequences.skipTrailingWhitespaces(code, s, startOfParameters);
         }
         localCode = code.substring(s, end);
@@ -136,11 +136,19 @@ final class CommonAuthorityCode {
     }
 
     /**
+     * Returns whether there is no parameters.
+     */
+    final boolean isParameterless() {
+        return (complement == null) || complement.isEmpty();
+    }
+
+    /**
      * Returns the result of parsing the comma-separated list of optional parameters after the code.
      * If there is no parameter, then this method returns an empty array.
      * Caller should not modify the returned array.
      *
      * @return the parameters after the code, or an empty array if none.
+     * @throws NumberFormatException if at least one number cannot be parsed.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final double[] parameters() {
