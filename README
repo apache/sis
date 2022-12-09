@@ -57,8 +57,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Some Apache SIS subcomponents have dependencies subject to different
-license terms. All those dependencies except GeoAPI and JSR-363 are
-optional. Your use of those dependencies is subject to the terms and
+license terms. All those dependencies except GeoAPI, JSR-363 and JAXB API
+are optional. Your use of those dependencies is subject to the terms and
 conditions of the licenses listed in the NOTICE file.
 
 

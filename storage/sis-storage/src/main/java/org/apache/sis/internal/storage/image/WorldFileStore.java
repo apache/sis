@@ -370,17 +370,21 @@ loop:   for (int convention=0;; convention++) {
      * Reads the "World file" by parsing an auxiliary file with the given suffix.
      *
      * @param  wld  suffix of the auxiliary file.
-     * @return the "World file" content as an affine transform.
+     * @return the "World file" content as an affine transform, or {@code null} if none was found.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if the file content cannot be parsed.
      */
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
-        final AuxiliaryContent content  = readAuxiliaryFile(wld);
-        final String           filename = content.getFilename();
-        final CharSequence[]   lines    = CharSequences.splitOnEOL(readAuxiliaryFile(wld));
-        final int              expected = 6;        // Expected number of elements.
-        int                    count    = 0;        // Actual number of elements.
-        final double[]         elements = new double[expected];
+        final AuxiliaryContent content = readAuxiliaryFile(wld);
+        if (content == null) {
+            listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, wld));
+            return null;
+        }
+        final String         filename = content.getFilename();
+        final CharSequence[] lines    = CharSequences.splitOnEOL(content);
+        final int            expected = 6;        // Expected number of elements.
+        int                  count    = 0;        // Actual number of elements.
+        final double[]       elements = new double[expected];
         for (int i=0; i<expected; i++) {
             final String line = lines[i].toString().trim();
             if (!line.isEmpty() && line.charAt(0) != '#') {

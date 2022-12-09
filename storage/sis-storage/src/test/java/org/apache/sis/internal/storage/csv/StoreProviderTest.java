@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.storage.csv;
 
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
@@ -29,7 +31,7 @@ import static org.junit.Assert.*;
  * Tests {@link StoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
  * @module
  */
@@ -43,6 +45,7 @@ public final strictfp class StoreProviderTest extends TestCase {
     public void testProbeContent() throws DataStoreException {
         final StoreProvider p = new StoreProvider();
         final StorageConnector c = new StorageConnector(StoreTest.testData());
+        c.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         assertEquals(ProbeResult.SUPPORTED, p.probeContent(c));
     }
 }

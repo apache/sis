@@ -181,10 +181,10 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GridEnvelopeMustBeNDimensional_1 = 22;
 
         /**
-         * Envelope is outside grid coverage. Indices [{3,number} … {4,number}] in dimension {0} do not
-         * intersect the [{1,number} … {2,number}] grid extent.
+         * The specified grid extent is outside the domain. Indices [{3,number} … {4,number}] specified
+         * in dimension {0} do not intersect the [{1,number} … {2,number}] grid extent.
          */
-        public static final short GridEnvelopeOutsideCoverage_5 = 23;
+        public static final short GridExtentsAreDisjoint_5 = 23;
 
         /**
          * Sample value range {1} for “{0}” category is illegal.

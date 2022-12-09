@@ -358,6 +358,10 @@ final class RawRasterStore extends RasterStore {
         RawRasterLayout layout = RawRasterLayout.BIL;
         ByteOrder byteOrder    = ByteOrder.nativeOrder();
         final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR);
+        if (header == null) {
+            throw new DataStoreException(Resources.forLocale(getLocale())
+                    .getString(Resources.Keys.CanNotReadAuxiliaryFile_1, RawRasterStoreProvider.HDR));
+        }
         for (CharSequence line : CharSequences.splitOnEOL(header)) {
             final int length   = line.length();
             final int keyStart = CharSequences.skipLeadingWhitespaces(line, 0, length);
@@ -381,12 +385,12 @@ final class RawRasterStore extends RasterStore {
                         case BANDROWBYTES:  bandRowBytes  = parseStrictlyPositive(keyword, value); break;
                         case TOTALROWBYTES: totalRowBytes = parseStrictlyPositive(keyword, value); break;
                         case BANDGAPBYTES:  bandGapBytes  = Integer.parseInt(value); break;
-                        case SKIPBYTES:     skipBytes     = Long.valueOf(value); break;
-                        case ULXMAP:        ulxmap        = Double.valueOf(value); geomask |= 1; break;
-                        case ULYMAP:        ulymap        = Double.valueOf(value); geomask |= 2; break;
-                        case XDIM:          xdim          = Double.valueOf(value); geomask |= 4; break;
-                        case YDIM:          ydim          = Double.valueOf(value); geomask |= 8; break;
-                        case NODATA:        nodataValue   = Double.valueOf(value); break;
+                        case SKIPBYTES:     skipBytes     = Long.parseLong(value); break;
+                        case ULXMAP:        ulxmap        = Double.parseDouble(value); geomask |= 1; break;
+                        case ULYMAP:        ulymap        = Double.parseDouble(value); geomask |= 2; break;
+                        case XDIM:          xdim          = Double.parseDouble(value); geomask |= 4; break;
+                        case YDIM:          ydim          = Double.parseDouble(value); geomask |= 8; break;
+                        case NODATA:        nodataValue   = Double.parseDouble(value); break;
                         case PIXELTYPE:     signed        = indexOf(keyword, value, "SIGNED", "SIGNEDINT") >= 0; break;
                         case LAYOUT:        layout        = RawRasterLayout.valueOf(value.toUpperCase(Locale.US)); break;
                         case BYTEORDER: {

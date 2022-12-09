@@ -282,6 +282,13 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
         assertSame(extent.intersect(domain), extent);
+        final GridExtent disjoint = domain.translate(0, 1000);
+        try {
+            extent.intersect(disjoint);
+            fail("Expected DisjointExtentException.");
+        } catch (DisjointExtentException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**

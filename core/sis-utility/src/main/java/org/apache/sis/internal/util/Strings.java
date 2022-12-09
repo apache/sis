@@ -70,7 +70,7 @@ public final class Strings extends Static {
     }
 
     /**
-     * Returns the given text is non-null, or the empty string otherwise.
+     * Returns the given text if non-null, or the empty string otherwise.
      *
      * @param  text  text or null.
      * @return given text or empty string (never null).
