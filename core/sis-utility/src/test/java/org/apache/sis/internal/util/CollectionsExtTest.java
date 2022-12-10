@@ -30,7 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.function.Predicate;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -42,7 +41,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CollectionsExt} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -149,21 +148,6 @@ public final strictfp class CollectionsExtTest extends TestCase {
             Collections.shuffle(elements);
             assertMapEquals(expected, CollectionsExt.toCaseInsensitiveNameMap(elements, Locale.ROOT));
         }
-    }
-
-    /**
-     * Tests {@link CollectionsExt#filter(Iterator, Predicate)}.
-     */
-    @Test
-    public void testFilter() {
-        final Iterator<Integer> it = CollectionsExt.filter(Arrays.asList(2, 5, 7, 4, 8).iterator(), (Integer n) -> (n & 1) == 0);
-        assertTrue  (   it.hasNext());
-        assertEquals(2, it.next().intValue());
-        assertEquals(4, it.next().intValue());
-        assertTrue  (   it.hasNext());
-        assertTrue  (   it.hasNext());
-        assertEquals(8, it.next().intValue());
-        assertFalse (   it.hasNext());
     }
 
     /**

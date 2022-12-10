@@ -46,7 +46,6 @@ import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -303,7 +302,7 @@ public class ImageRenderer {
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
-        bands = CollectionsExt.toArray(coverage.getSampleDimensions(), SampleDimension.class);
+        bands = coverage.getSampleDimensions().toArray(SampleDimension[]::new);
         geometry = coverage.getGridGeometry();
         final GridExtent source = geometry.getExtent();
         final int dimension = source.getDimension();

@@ -40,7 +40,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
@@ -899,7 +898,7 @@ public class StoreListeners implements Localized {
                 throw illegalEventType(type);
             }
         }
-        permittedEventTypes = READ_EVENT_TYPES.equals(types) ? READ_EVENT_TYPES : CollectionsExt.compact(types);
+        permittedEventTypes = READ_EVENT_TYPES.equals(types) ? READ_EVENT_TYPES : Set.copyOf(types);
         ForType.removeUnreachables(listeners, types);
     }
 

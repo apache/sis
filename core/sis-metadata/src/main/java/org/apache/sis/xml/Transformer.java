@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,7 +34,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
@@ -185,7 +183,7 @@ abstract class Transformer {
         namespaces             = new HashMap<>();
         outerElements          = new ArrayList<>();
         renamedAttributes      = new ArrayList<>();
-        outerElementProperties = Collections.emptyMap();
+        outerElementProperties = Map.of();
     }
 
     /**
@@ -365,9 +363,8 @@ abstract class Transformer {
         }
         /*
          * At this point we finished computing the map values. Many values are maps with only 1 entry.
-         * Save a little bit of space by replacing maps of 1 element by Collections.singletonMap(…).
          */
-        m.replaceAll((k, v) -> CollectionsExt.compact(v));
+        m.replaceAll((k, v) -> Map.copyOf(v));
         return m;
     }
 
@@ -386,8 +383,8 @@ abstract class Transformer {
     final List<Attribute> attributes() {
         final List<Attribute> attributes;
         switch (renamedAttributes.size()) {
-            case 0:  attributes = Collections.emptyList(); break;      // Avoid object creation for this common case.
-            case 1:  attributes = Collections.singletonList(renamedAttributes.remove(0)); break;
+            case 0:  attributes = List.of(); break;             // Avoid object creation for this common case.
+            case 1:  attributes = List.of(renamedAttributes.remove(0)); break;
             default: attributes = Arrays.asList(renamedAttributes.toArray(new Attribute[renamedAttributes.size()]));
                      renamedAttributes.clear();
                      break;
@@ -422,7 +419,7 @@ abstract class Transformer {
                         String localPart = value.substring(s+1).trim();
                         QName name = new QName(namespace, localPart, prefix);
                         final Map<String,String> currentMap = outerElementProperties;
-                        outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Collections.emptyMap());
+                        outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Map.of());
                         final boolean changed = (name != (name = convert(name)));
                         outerElementProperties = currentMap;
                         if (changed) {
@@ -493,7 +490,7 @@ abstract class Transformer {
         final String localPart = name.getLocalPart();
         if (isTypeElement(localPart)) {
             outerElements.add(name);
-            outerElementProperties = renamingMap(name.getNamespaceURI()).getOrDefault(localPart, Collections.emptyMap());
+            outerElementProperties = renamingMap(name.getNamespaceURI()).getOrDefault(localPart, Map.of());
         }
     }
 
@@ -519,7 +516,7 @@ abstract class Transformer {
                         namespace = XMLConstants.NULL_NS_URI;
                         localPart = null;
                     }
-                    outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Collections.emptyMap());
+                    outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Map.of());
                     break;
                 }
             }

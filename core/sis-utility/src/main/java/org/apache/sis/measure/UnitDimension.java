@@ -130,7 +130,7 @@ final class UnitDimension implements Dimension, Serializable {
         }
         /*
          * Implementation note: following code duplicates the functionality of Map.computeIfAbsent(…),
-         * but we had to do it because we compute not only the value, but also the 'components' key.
+         * but we had to do it because we compute not only the value, but also the `components` key.
          */
         UnitDimension dim = (UnitDimension) UnitRegistry.get(components);
         if (dim == null) {
@@ -239,7 +239,7 @@ final class UnitDimension implements Dimension, Serializable {
         }
         /*
          * Fallback for non-SIS implementations. The cast from <? extends Dimension> to <Dimension>
-         * is safe if we use the 'components' map as a read-only map (no put operation allowed).
+         * is safe if we use the `components` map as a read-only map (no put operation allowed).
          */
         @SuppressWarnings("unchecked")
         Map<Dimension,Integer> components = (Map<Dimension,Integer>) dimension.getBaseDimensions();
@@ -352,8 +352,8 @@ final class UnitDimension implements Dimension, Serializable {
             final UnitDimension that = (UnitDimension) other;
             if (symbol == that.symbol) {
                 /*
-                 * Do not compare 'components' if 'symbols' is non-zero because in such case
-                 * the components map contains 'this', which would cause an infinite loop.
+                 * Do not compare `components` if `symbols` is non-zero because in such case
+                 * the components map contains `this`, which would cause an infinite loop.
                  */
                 return (symbol != 0) || components.equals(that.components);
             }
@@ -367,8 +367,8 @@ final class UnitDimension implements Dimension, Serializable {
     @Override
     public int hashCode() {
         /*
-         * Do not use 'components' in hash code calculation if 'symbols' is non-zero
-         * beause in such case the map contains 'this', which would cause an infinite loop.
+         * Do not use `components` in hash code calculation if `symbols` is non-zero
+         * beause in such case the map contains `this`, which would cause an infinite loop.
          */
         return (symbol != 0) ? symbol ^ (int) serialVersionUID : components.hashCode();
     }

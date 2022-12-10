@@ -36,7 +36,6 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -312,7 +311,7 @@ abstract class Pooled {
                                 copy.put(key, (String) schema);
                             }
                         }
-                        copy = CollectionsExt.unmodifiableOrCopy(copy);
+                        copy = Map.copyOf(copy);
                     }
                     schemas = copy;
                     return;

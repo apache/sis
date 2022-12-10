@@ -269,7 +269,7 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         switch (merged.size()) {
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(merged.get(0));
-            default: return Containers.unmodifiableList(CollectionsExt.toArray(merged, Identifier.class));
+            default: return Containers.unmodifiableList(merged.toArray(Identifier[]::new));
         }
     }
 

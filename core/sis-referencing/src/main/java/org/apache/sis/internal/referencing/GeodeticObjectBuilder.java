@@ -49,7 +49,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -641,7 +640,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         }
         ArgumentChecks.ensureValidIndex(srcDim - repDim, firstDimension);
         if (source instanceof CompoundCRS) {
-            final CoordinateReferenceSystem[] components = CollectionsExt.toArray(((CompoundCRS) source).getComponents(), CoordinateReferenceSystem.class);
+            final var components = ((CompoundCRS) source).getComponents().toArray(CoordinateReferenceSystem[]::new);
             int lower = 0;
             for (int i=0; i<components.length; i++) {
                 final CoordinateReferenceSystem c = components[i];
