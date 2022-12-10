@@ -486,7 +486,13 @@
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
-        <version>10.14.2.0</version>        <!-- 10.14 is the last series compatible with JDK 8. -->
+        <version>10.15.2.0</version>        <!-- 10.15 is the last series compatible with JDK 11. -->
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derbytools</artifactId>
+        <version>10.15.2.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
