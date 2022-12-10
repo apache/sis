@@ -46,7 +46,6 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
@@ -883,7 +882,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     public Set<String> getCodeSpaces() {
         lock.readLock().lock();
         try {
-            return JDK9.copyOf(codespaces);
+            return Set.copyOf(codespaces);
         } finally {
             lock.readLock().unlock();
         }

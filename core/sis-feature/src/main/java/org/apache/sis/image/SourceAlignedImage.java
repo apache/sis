@@ -25,7 +25,6 @@ import java.awt.image.RenderedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -57,7 +56,7 @@ abstract class SourceAlignedImage extends ComputedImage {
      * May be used as the {@code inherit} argument in {@link #filterPropertyNames(String[], Set, String[])}.
      * Inheriting those properties make sense for operations that do not change pixel coordinates.
      */
-    static final Set<String> POSITIONAL_PROPERTIES = JDK9.setOf(GRID_GEOMETRY_KEY,
+    static final Set<String> POSITIONAL_PROPERTIES = Set.of(GRID_GEOMETRY_KEY,
             POSITIONAL_ACCURACY_KEY, ResampledImage.POSITIONAL_CONSISTENCY_KEY);
 
     /**

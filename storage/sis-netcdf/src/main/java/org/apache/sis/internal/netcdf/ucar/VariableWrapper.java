@@ -18,6 +18,7 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.File;
@@ -47,7 +48,6 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.Grid;
 import org.apache.sis.internal.netcdf.GridAdjustment;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
@@ -575,7 +575,7 @@ final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
             for (int j=upper; --j >= lower;) {
                 if (chars[j] > ' ') {
                     while (chars[lower] <= ' ') lower++;
-                    if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                    if (Arrays.equals(chars, lower, ++j, chars, plo, phi)) {
                         element = previous;
                     } else {
                         element  = new String(chars, lower, j - lower);

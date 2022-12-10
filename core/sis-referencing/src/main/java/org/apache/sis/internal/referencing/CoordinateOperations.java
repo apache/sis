@@ -42,7 +42,6 @@ import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.Containers;
 
@@ -293,7 +292,7 @@ public final class CoordinateOperations extends SystemListener {
             indices[i] = dim;
             r &= ~(1L << dim);
         }
-        final Set<Integer> dimensions = JDK9.setOf(indices);
+        final Set<Integer> dimensions = Set.of(indices);
         if (useCache) {
             synchronized (CACHE) {
                 final Set<Integer> existing = CACHE[(int) changes];

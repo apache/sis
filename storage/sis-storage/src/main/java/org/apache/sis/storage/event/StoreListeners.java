@@ -36,7 +36,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
@@ -122,7 +121,7 @@ public class StoreListeners implements Localized {
      * @see #useReadOnlyEvents()
      */
     private static final Set<Class<? extends StoreEvent>> READ_EVENT_TYPES =
-                         JDK9.setOf(WarningEvent.class, CloseEvent.class);
+                         Set.of(WarningEvent.class, CloseEvent.class);
 
     /**
      * The {@link CascadedStoreEvent.ParentListener}s registered on {@link #parent}.

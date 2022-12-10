@@ -23,7 +23,6 @@ import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -42,7 +41,7 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
      *
      * @see #getPropertyNames()
      */
-    private static final Set<String> INHERITED_PROPERTIES = JDK9.setOf(
+    private static final Set<String> INHERITED_PROPERTIES = Set.of(
             GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY, MASK_KEY);
 
     /**

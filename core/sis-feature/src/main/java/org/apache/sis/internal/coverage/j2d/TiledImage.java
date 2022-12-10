@@ -17,13 +17,11 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
-import java.util.Collections;
 import java.awt.Image;
 import java.awt.image.Raster;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -95,7 +93,7 @@ public class TiledImage extends PlanarImage {
         this.minTileX   = minTileX;
         this.minTileY   = minTileY;
         this.tiles      = tiles;
-        this.properties = (properties != null) ? JDK9.copyOf(properties) : Collections.emptyMap();
+        this.properties = (properties != null) ? Map.copyOf(properties) : Map.of();
     }
 
     /**

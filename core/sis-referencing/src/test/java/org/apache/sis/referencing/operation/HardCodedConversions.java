@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.Collections;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -182,8 +181,8 @@ public final strictfp class HardCodedConversions {
         final DefaultConversion c = create("Lambert Conic Conformal", method, pg);
         final ImmutableIdentifier id = new ImmutableIdentifier(Citations.ESRI, "ESRI", "102110");
         return new DefaultProjectedCRS(
-                JDK9.mapOf(ProjectedCRS.NAME_KEY, "RGF 1993 Lambert",
-                           ProjectedCRS.IDENTIFIERS_KEY, id),
+                Map.of(ProjectedCRS.NAME_KEY, "RGF 1993 Lambert",
+                       ProjectedCRS.IDENTIFIERS_KEY, id),
                 HardCodedCRS.GRS80, c, HardCodedCS.PROJECTED);
     }
 

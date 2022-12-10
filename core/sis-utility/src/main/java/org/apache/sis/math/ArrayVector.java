@@ -33,7 +33,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -281,7 +280,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other instanceof Doubles) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Doubles) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -401,7 +400,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Floats) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -561,7 +560,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Longs) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -691,7 +690,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Integers) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -825,7 +824,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Shorts) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -934,7 +933,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Bytes) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
