@@ -424,7 +424,7 @@ public final class DefinitionURI {
                             orderedComponents.put(sequenceNumber, parse(uri, isURN, splitAt, next));
                             splitAt = next;
                         } while (hasMore);
-                        result.components = orderedComponents.values().toArray(new DefinitionURI[orderedComponents.size()]);
+                        result.components = orderedComponents.values().toArray(DefinitionURI[]::new);
                     }
                     // Fall through
                 }

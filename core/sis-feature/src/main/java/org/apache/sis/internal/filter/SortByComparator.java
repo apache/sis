@@ -74,7 +74,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      */
     @SuppressWarnings({"unchecked","rawtypes"})             // Generic array creation.
     private SortByComparator(final Map<?, SortProperty<R>> merged) {
-        properties = merged.values().toArray(new SortProperty[merged.size()]);
+        properties = merged.values().toArray(SortProperty[]::new);
     }
 
     /**

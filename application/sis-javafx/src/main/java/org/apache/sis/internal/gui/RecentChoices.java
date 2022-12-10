@@ -183,7 +183,7 @@ public final class RecentChoices {
                 if (!CRS_THIS_RUN.add(code.trim())) {
                     return;
                 }
-                codes = CRS_THIS_RUN.toArray(new String[CRS_THIS_RUN.size()]);
+                codes = CRS_THIS_RUN.toArray(String[]::new);
             }
             saveReferenceSystems(codes);
         }
@@ -196,7 +196,7 @@ public final class RecentChoices {
     public static void saveReferenceSystems() {
         final String[] codes;
         synchronized (CRS_THIS_RUN) {
-            codes = CRS_THIS_RUN.toArray(new String[CRS_THIS_RUN.size()]);
+            codes = CRS_THIS_RUN.toArray(String[]::new);
         }
         saveReferenceSystems(codes);
     }

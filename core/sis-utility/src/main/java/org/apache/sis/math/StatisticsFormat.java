@@ -272,7 +272,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             list.add(stats);
             stats = stats.differences();
         }
-        format(list.toArray(new Statistics[list.size()]), toAppendTo);
+        format(list.toArray(Statistics[]::new), toAppendTo);
     }
 
     /**

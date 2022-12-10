@@ -972,7 +972,7 @@ public class Canvas extends Observable implements Localized {
                      */
                     supplementalDimensions = CanvasExtent.findSupplementalDimensions(crs,
                             multidimToObjective.derivative(pointOfInterest), components);
-                    augmentedObjectiveCRS = CRS.compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
+                    augmentedObjectiveCRS = CRS.compound(components.toArray(CoordinateReferenceSystem[]::new));
                     if (Utilities.equalsIgnoreMetadata(augmentedObjectiveCRS, crs)) {
                         augmentedObjectiveCRS = crs;
                     }

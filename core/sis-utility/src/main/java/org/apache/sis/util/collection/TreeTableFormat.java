@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ConcurrentModificationException;
@@ -881,8 +880,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         if (columnIndices != null) {
             columns = DefaultTreeTable.getColumns(columnIndices);
         } else {
-            final List<TableColumn<?>> c = tree.getColumns();
-            columns = c.toArray(new TableColumn<?>[c.size()]);
+            columns = tree.getColumns().toArray(TableColumn<?>[]::new);
         }
         if (recursivityGuard == null) {
             recursivityGuard = new HashSet<>();

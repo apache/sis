@@ -125,7 +125,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
             if (!isEnvelopeComputed) {
                 final List<Envelope> envelopes = new ArrayList<>();
                 if (getEnvelopes(envelopes)) try {
-                    envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
+                    envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(Envelope[]::new)));
                 } catch (TransformException e) {
                     listeners.warning(e);
                 }

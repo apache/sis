@@ -196,8 +196,8 @@ public abstract class TypeRegistration {
             final UnaryOperator<Object> c = t.beforeMarshal();
             if (c != null) toImpl.add(c);
         }
-        converters = toImpl.toArray(new UnaryOperator[toImpl.size()]);
-        return types.toArray(new Class<?>[types.size()]);
+        converters = toImpl.toArray(UnaryOperator[]::new);
+        return types.toArray(Class<?>[]::new);
     }
 
     /**

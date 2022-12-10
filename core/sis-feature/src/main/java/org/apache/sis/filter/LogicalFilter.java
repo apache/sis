@@ -64,7 +64,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     @SuppressWarnings({"unchecked", "rawtypes"})
     LogicalFilter(final Collection<? extends Filter<? super R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
-        operands = op.toArray(new Filter[op.size()]);
+        operands = op.toArray(Filter[]::new);
         if (operands.length < 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.TooFewArguments_2, 2, operands.length));
         }

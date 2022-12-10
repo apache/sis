@@ -1697,7 +1697,7 @@ search:         for (int j=domain(); --j >= 0;) {
          * └────────────┴─────────────┘
          */
         if (linearizers != null) {
-            final ProjectedTransformTry[] alternatives = linearizers.toArray(new ProjectedTransformTry[linearizers.size()]);
+            final var alternatives = linearizers.toArray(ProjectedTransformTry[]::new);
             Arrays.sort(alternatives);
             buffer.append(Strings.CONTINUATION_ITEM);
             vocabulary.appendLabel(Vocabulary.Keys.Preprocessing, buffer);

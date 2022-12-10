@@ -99,7 +99,7 @@ abstract class PrimaryKey {
         /** Creates a new primary key composed of the given columns. */
         Composite(final Class<?> valueClass, final Collection<String> columns) {
             super(valueClass);
-            this.columns = UnmodifiableArrayList.wrap(columns.toArray(new String[columns.size()]));
+            this.columns = UnmodifiableArrayList.wrap(columns.toArray(String[]::new));
         }
 
         /** Returns all columns composing this primary key. */

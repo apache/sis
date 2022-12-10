@@ -321,7 +321,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
         } while (namespaces.hasNext());
         if (changed) {
             assert !uniqueNamespaces.isEmpty();
-            final Namespace[] exported = uniqueNamespaces.values().toArray(new Namespace[uniqueNamespaces.size()]);
+            final var exported = uniqueNamespaces.values().toArray(Namespace[]::new);
             uniqueNamespaces.clear();
             return Arrays.asList(exported);
         } else {

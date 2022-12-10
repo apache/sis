@@ -232,8 +232,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private FrameworkMethod[] getFilteredChildren() {
         if (filteredChildren == null) {
-            final List<FrameworkMethod> children = super.getChildren();
-            filteredChildren = children.toArray(new FrameworkMethod[children.size()]);
+            filteredChildren = super.getChildren().toArray(FrameworkMethod[]::new);
             sortDependantTestsLast(filteredChildren);
         }
         return filteredChildren;

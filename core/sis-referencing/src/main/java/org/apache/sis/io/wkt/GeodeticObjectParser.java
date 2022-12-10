@@ -753,7 +753,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
             } while (axis != null);
             if (!isWKT1 || !ignoreAxes) {
-                axes = list.toArray(new CoordinateSystemAxis[list.size()]);
+                axes = list.toArray(CoordinateSystemAxis[]::new);
                 Arrays.sort(axes, this);                    // Take ORDER[n] elements in account.
             }
         }
@@ -2199,7 +2199,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         try {
             return new EllipsoidalHeightCombiner(factories).createCompoundCRS(
                             parseMetadataAndClose(element, name, null),
-                            components.toArray(new CoordinateReferenceSystem[components.size()]));
+                            components.toArray(CoordinateReferenceSystem[]::new));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }

@@ -78,7 +78,7 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
      * @param  accessor  expression to use for evaluating the property value after the last element of the path.
      */
     AssociationValue(final List<String> path, final PropertyValue<V> accessor) {
-        this.path = path.toArray(new String[path.size()]);
+        this.path = path.toArray(String[]::new);
         this.accessor = accessor;
     }
 

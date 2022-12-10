@@ -385,7 +385,7 @@ abstract class Transformer {
         switch (renamedAttributes.size()) {
             case 0:  attributes = List.of(); break;             // Avoid object creation for this common case.
             case 1:  attributes = List.of(renamedAttributes.remove(0)); break;
-            default: attributes = Arrays.asList(renamedAttributes.toArray(new Attribute[renamedAttributes.size()]));
+            default: attributes = Arrays.asList(renamedAttributes.toArray(Attribute[]::new));
                      renamedAttributes.clear();
                      break;
         }

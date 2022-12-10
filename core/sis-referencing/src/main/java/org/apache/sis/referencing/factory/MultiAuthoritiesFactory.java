@@ -1813,7 +1813,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                         }
                     }
                 }
-                finders = list.toArray(new IdentifiedObjectFinder[list.size()]);
+                finders = list.toArray(IdentifiedObjectFinder[]::new);
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(FactoryException.class);
             }

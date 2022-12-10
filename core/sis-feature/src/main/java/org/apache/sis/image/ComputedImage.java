@@ -655,7 +655,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     public Point[] getWritableTileIndices() {
         final List<Point> indices = new ArrayList<>();
         if (reference.getWritableTileIndices(indices)) {
-            return indices.toArray(new Point[indices.size()]);
+            return indices.toArray(Point[]::new);
         }
         return null;
     }

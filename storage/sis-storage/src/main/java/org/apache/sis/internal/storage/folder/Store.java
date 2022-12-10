@@ -378,7 +378,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
             } catch (BackingStoreException ex) {
                 throw ex.unwrapOrRethrow(DataStoreException.class);
             }
-            components = UnmodifiableArrayList.wrap(resources.toArray(new Resource[resources.size()]));
+            components = UnmodifiableArrayList.wrap(resources.toArray(Resource[]::new));
         }
         return components;              // Safe because unmodifiable list.
     }

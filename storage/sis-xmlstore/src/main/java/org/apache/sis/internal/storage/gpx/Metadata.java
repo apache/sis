@@ -306,7 +306,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
         if (keywords != null) {
-            return Collections.singletonList(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
+            return Collections.singletonList(new DefaultKeywords(keywords.toArray(String[]::new)));
         }
         return Collections.emptyList();
     }

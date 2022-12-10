@@ -341,7 +341,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
              */
             return createLocalName(scope, name);
         }
-        return createGenericName(scope, names.toArray(new String[names.size()]));
+        return createGenericName(scope, names.toArray(String[]::new));
     }
 
     /**

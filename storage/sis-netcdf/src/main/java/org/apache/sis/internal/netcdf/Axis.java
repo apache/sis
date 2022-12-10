@@ -589,7 +589,7 @@ public final class Axis extends NamedElement {
             }
         }
         if (!aliases.isEmpty()) {
-            properties.put(CoordinateSystemAxis.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
+            properties.put(CoordinateSystemAxis.ALIAS_KEY, aliases.toArray(GenericName[]::new));
         }
         /*
          * Axis abbreviation, direction and unit of measurement are mandatory. If any of them is null,

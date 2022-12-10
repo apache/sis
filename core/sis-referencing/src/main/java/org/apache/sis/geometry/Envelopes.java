@@ -1006,7 +1006,7 @@ poles:  for (int i=0; i<dimension; i++) {
         if (results.isEmpty() && transformed != null) {
             return new GeneralEnvelope[] {transformed};
         }
-        return results.toArray(new GeneralEnvelope[results.size()]);
+        return results.toArray(GeneralEnvelope[]::new);
     }
 
     /**

@@ -95,7 +95,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
                         final GeometryWrapper<G> tr = literal.transform(targetCRS);
                         if (tr != literal) {
                             @SuppressWarnings({"unchecked","rawtypes"})
-                            final Expression<? super R, ?>[] effective = getParameters().toArray(new Expression[0]);  // TODO: use generator in JDK9.
+                            final Expression<? super R, ?>[] effective = getParameters().toArray(Expression[]::new);
                             effective[1] = Optimization.literal(tr);
                             return recreate(effective);
                         }

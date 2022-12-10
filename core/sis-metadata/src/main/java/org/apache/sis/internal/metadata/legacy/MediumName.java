@@ -134,7 +134,7 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
      */
     public static MediumName[] values() {
         synchronized (VALUES) {
-            return VALUES.toArray(new MediumName[VALUES.size()]);
+            return VALUES.toArray(MediumName[]::new);
         }
     }
 

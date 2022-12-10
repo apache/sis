@@ -1033,14 +1033,14 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
                  * use axes from "coordinates" attribute first followed by other axes.
                  */
-                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(VariableInfo[]::new));
                 GridInfo existing = shared.putIfAbsent(grid, grid);
                 if (existing != null) {
                     grid = existing;
                 }
                 variable.grid = grid;
             }
-            gridGeometries = shared.values().toArray(new Grid[shared.size()]);
+            gridGeometries = shared.values().toArray(Grid[]::new);
         }
         return gridGeometries;
     }

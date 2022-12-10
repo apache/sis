@@ -158,7 +158,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
         out.defaultWriteObject();
         final Attribute<?>[] characterizedBy;
         if (characteristics instanceof CharacteristicMap) {
-            characterizedBy = characteristics.values().toArray(new Attribute<?>[characteristics.size()]);
+            characterizedBy = characteristics.values().toArray(Attribute[]::new);
         } else {
             characterizedBy = null;
         }
@@ -362,7 +362,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
             if (!map.isEmpty()) {
                 if (!(map instanceof CharacteristicTypeMap)) {
                     final Collection<AttributeType<?>> types = map.values();
-                    map = CharacteristicTypeMap.create(type, types.toArray(new AttributeType<?>[types.size()]));
+                    map = CharacteristicTypeMap.create(type, types.toArray(AttributeType<?>[]::new));
                 }
                 return new CharacteristicMap(this, (CharacteristicTypeMap) map);
             }

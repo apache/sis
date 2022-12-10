@@ -99,7 +99,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      * @param items  list of items of the table to clear.
      */
     private void clear(final ObservableList<Category> items) {
-        final Category[] content = items.toArray(new Category[items.size()]);
+        final Category[] content = items.toArray(Category[]::new);
         items.clear();              // For forcing a repaint of the table.
         customizedColors.clear();
         items.setAll(content);

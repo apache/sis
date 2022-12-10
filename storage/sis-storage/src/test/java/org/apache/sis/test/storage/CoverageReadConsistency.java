@@ -449,7 +449,7 @@ nextSlice:  for (;;) {
     public static void printDurations() {
         if (statistics != null) {
             // It is too late for using `TestCase.out`.
-            System.out.print(StatisticsFormat.getInstance().format(statistics.toArray(new Statistics[statistics.size()])));
+            System.out.print(StatisticsFormat.getInstance().format(statistics.toArray(Statistics[]::new)));
             statistics = null;
         }
     }

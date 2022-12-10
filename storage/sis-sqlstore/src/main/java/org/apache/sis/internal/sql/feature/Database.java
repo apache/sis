@@ -379,7 +379,7 @@ public class Database<G> extends Syntax  {
             hasGeometry |= table.hasGeometry;
             hasRaster   |= table.hasRaster;
         }
-        tables = tableList.toArray(new Table[tableList.size()]);
+        tables = tableList.toArray(Table[]::new);
     }
 
     /**
@@ -398,7 +398,7 @@ public class Database<G> extends Syntax  {
                 }
             }
         }
-        return types.toArray(new String[types.size()]);
+        return types.toArray(String[]::new);
     }
 
     /**

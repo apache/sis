@@ -409,7 +409,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @see DefaultFeatureType#getSuperTypes()
      */
     public FeatureType[] getSuperTypes() {
-        return superTypes.toArray(new FeatureType[superTypes.size()]);
+        return superTypes.toArray(FeatureType[]::new);
     }
 
     /**
@@ -992,7 +992,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 }
             }
             feature = new DefaultFeatureType(identification(), isAbstract(),
-                    superTypes.toArray(new FeatureType[superTypes.size()]),
+                    superTypes.toArray(FeatureType[]::new),
                     ArraysExt.resize(propertyTypes, propertyCursor));
         }
         return feature;

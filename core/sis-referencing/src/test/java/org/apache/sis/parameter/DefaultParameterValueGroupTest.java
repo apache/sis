@@ -240,10 +240,10 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         final DefaultParameterDescriptorGroup group, subGroup;
         final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
         subGroup = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"),
-                2, 4, descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+                2, 4, descriptors.toArray(GeneralParameterDescriptor[]::new));
         descriptors.add(subGroup);
         group = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theGroup"),
-                descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+                descriptors.toArray(GeneralParameterDescriptor[]::new));
         /*
          * Prepare the GeneralParameterValue instances that we are going to add in the above group.
          * We assign arbitrary integer values to each instance if order to be able to differentiate

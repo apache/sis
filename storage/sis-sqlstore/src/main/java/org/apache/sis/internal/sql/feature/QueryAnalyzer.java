@@ -181,6 +181,6 @@ final class QueryAnalyzer extends FeatureAnalyzer {
                 attributes.add(column);
             }
         }
-        return attributes.toArray(new Column[attributes.size()]);
+        return attributes.toArray(Column[]::new);
     }
 }

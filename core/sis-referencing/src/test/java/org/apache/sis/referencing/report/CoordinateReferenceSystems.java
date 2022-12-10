@@ -774,7 +774,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     protected void sortRows() {
         super.sortRows();
         @SuppressWarnings("SuspiciousToArrayCall")
-        final ByName[] data = rows.toArray(new ByName[rows.size()]);
+        final ByName[] data = rows.toArray(ByName[]::new);
         final Map<String,String> sections = new TreeMap<>();
         for (final ByName row : data) {
             final String section = row.section;

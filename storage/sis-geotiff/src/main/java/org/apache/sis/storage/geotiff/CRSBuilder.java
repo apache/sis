@@ -535,7 +535,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Returns all remaining keys, sorted in increasing order.
      */
     private Short[] remainingKeys() {
-        final Short[] keys = geoKeys.keySet().toArray(new Short[geoKeys.size()]);
+        final Short[] keys = geoKeys.keySet().toArray(Short[]::new);
         Arrays.sort(keys);
         return keys;
     }

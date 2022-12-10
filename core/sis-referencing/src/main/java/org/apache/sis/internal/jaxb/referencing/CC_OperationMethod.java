@@ -233,7 +233,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
                     final ParameterValueGroup source = (ParameterValueGroup) p;
                     final ParameterValueGroup target = new DefaultParameterValueGroup((ParameterDescriptorGroup) replacement);
                     final Collection<GeneralParameterValue> values = source.values();
-                    store(values.toArray(new GeneralParameterValue[values.size()]), target.values(), replacements);
+                    store(values.toArray(GeneralParameterValue[]::new), target.values(), replacements);
                     p = target;
                 }
             }

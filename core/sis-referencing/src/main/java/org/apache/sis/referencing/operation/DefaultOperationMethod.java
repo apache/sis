@@ -932,8 +932,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (parameters != null) {
             final List<GeneralParameterDescriptor> descriptors = parameters.descriptors();
             if (descriptors != null) {      // Paranoiac check (should not be allowed).
-                return CC_OperationMethod.filterImplicit(descriptors.toArray(
-                        new GeneralParameterDescriptor[descriptors.size()]));
+                return CC_OperationMethod.filterImplicit(descriptors.toArray(GeneralParameterDescriptor[]::new));
             }
         }
         return null;

@@ -199,7 +199,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         identifier       = decoder.nameFactory.createLocalName(decoder.namespace, name);
         visibleBand      = decoder.convention().getVisibleBand();
         sampleDimensions = new SampleDimension[numBands];
-        data             = bands.toArray(new Variable[bands.size()]);
+        data             = bands.toArray(Variable[]::new);
         assert data.length == (bandDimension >= 0 ? 1 : sampleDimensions.length);
     }
 

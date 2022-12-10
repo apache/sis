@@ -274,7 +274,7 @@ public final strictfp class ParameterFormatTest extends TestCase {
                 "│ EPSG:9804  │ Mercator (variant A) │ Mercator_1SP │\n" +
                 "└────────────┴──────────────────────┴──────────────┘\n", text);
 
-        text = format.format(parameters.toArray(new IdentifiedObject[parameters.size()]));
+        text = format.format(parameters.toArray(IdentifiedObject[]::new));
         assertMultilinesEquals(
                 "┌────────────┬────────────────────────────────┬────────────────────┐\n" +
                 "│ Identifier │ EPSG                           │ OGC                │\n" +

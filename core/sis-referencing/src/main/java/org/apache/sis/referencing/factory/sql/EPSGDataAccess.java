@@ -1177,7 +1177,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             properties.put(IdentifiedObject.NAME_KEY, id);
         }
         if (!aliases.isEmpty()) {
-            properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
+            properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(GenericName[]::new));
         }
         if (code != null) {
             final String codeString = code.toString();
@@ -2675,7 +2675,7 @@ next:                   while (r.next()) {
                 descriptors.add(owner.createParameterDescriptor(getString(method, result, 1)));
             }
         }
-        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);
+        return descriptors.toArray(ParameterDescriptor<?>[]::new);
     }
 
     /**

@@ -59,7 +59,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     private static Map<String,Object> properties(final Set<Identifier> identifiers) {
         final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("name",       "GRS 1980"));
-        assertNull(properties.put("identifiers", identifiers.toArray(new Identifier[identifiers.size()])));
+        assertNull(properties.put("identifiers", identifiers.toArray(Identifier[]::new)));
         assertNull(properties.put("codespace",  "EPSG"));
         assertNull(properties.put("version",    "8.3"));
         assertNull(properties.put("alias",      "International 1979"));

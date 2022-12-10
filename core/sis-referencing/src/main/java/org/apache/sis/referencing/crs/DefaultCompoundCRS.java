@@ -202,7 +202,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
          * Note that this is already be done if the given array does not contain nested CompoundCRS.
          */
         if (singles != this.components) {
-            verify(properties, singles.toArray(new SingleCRS[singles.size()]));
+            verify(properties, singles.toArray(SingleCRS[]::new));
         }
     }
 
@@ -350,7 +350,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         if (setSingleComponents(crs)) {
             components = singles;                           // Shares the same list.
         } else {
-            components = UnmodifiableArrayList.wrap(crs.toArray(new CoordinateReferenceSystem[crs.size()]));
+            components = UnmodifiableArrayList.wrap(crs.toArray(CoordinateReferenceSystem[]::new));
         }
     }
 
@@ -380,7 +380,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> crs) {
         final List<SingleCRS> flattened = new ArrayList<>(crs.size());
         final boolean identical = ReferencingUtilities.getSingleComponents(crs, flattened);
-        singles = UnmodifiableArrayList.wrap(flattened.toArray(new SingleCRS[flattened.size()]));
+        singles = UnmodifiableArrayList.wrap(flattened.toArray(SingleCRS[]::new));
         return identical;
     }
 
@@ -649,8 +649,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @XmlJavaTypeAdapter(SC_CRS.class)
     @XmlElement(name = "componentReferenceSystem", required = true)
     private CoordinateReferenceSystem[] getXMLComponents() {
-        final List<SingleCRS> crs = getSingleComponents();
-        return crs.toArray(new CoordinateReferenceSystem[crs.size()]);
+        return getSingleComponents().toArray(CoordinateReferenceSystem[]::new);
     }
 
     /**

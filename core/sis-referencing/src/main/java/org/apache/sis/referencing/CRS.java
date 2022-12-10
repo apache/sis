@@ -985,7 +985,7 @@ public final class CRS extends Static {
         }
         final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
-        return compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
+        return compound(components.toArray(CoordinateReferenceSystem[]::new));
     }
 
     /**

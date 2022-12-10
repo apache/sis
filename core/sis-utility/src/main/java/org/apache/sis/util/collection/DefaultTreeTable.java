@@ -180,7 +180,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *         {@link UnmodifiableArrayList#wrap(Object[])}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
-        return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);
+        return columnIndices.keySet().toArray(TableColumn<?>[]::new);
     }
 
     /**
@@ -433,7 +433,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
                 columnIndices = ((DefaultTreeTable) table).columnIndices;
             } else {
                 final List<TableColumn<?>> columns = table.getColumns();
-                columnIndices = createColumnIndices(columns.toArray(new TableColumn<?>[columns.size()]));
+                columnIndices = createColumnIndices(columns.toArray(TableColumn<?>[]::new));
             }
         }
 

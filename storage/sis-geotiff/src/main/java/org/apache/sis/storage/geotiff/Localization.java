@@ -210,7 +210,7 @@ final class Localization {
         for (int i=0; i<n; i++) {
             uniques.add(values.doubleValue(i));
         }
-        final Double[] array = uniques.toArray(new Double[uniques.size()]);
+        final Double[] array = uniques.toArray(Double[]::new);
         uniques.clear();
         int i = array.length;
         if (i >= 3) {

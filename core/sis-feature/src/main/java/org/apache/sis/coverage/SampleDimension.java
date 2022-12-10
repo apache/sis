@@ -174,7 +174,7 @@ public class SampleDimension implements Serializable {
         if (categories.isEmpty()) {
             list = CategoryList.EMPTY;
         } else {
-            list = CategoryList.create(categories.toArray(new Category[categories.size()]), background);
+            list = CategoryList.create(categories.toArray(Category[]::new), background);
         }
         this.name       = name;
         this.background = background;

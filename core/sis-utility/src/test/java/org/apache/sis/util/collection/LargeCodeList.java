@@ -63,7 +63,7 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
      */
     public static LargeCodeList[] values() {
         synchronized (VALUES) {
-            return VALUES.toArray(new LargeCodeList[VALUES.size()]);
+            return VALUES.toArray(LargeCodeList[]::new);
         }
     }
 

@@ -513,7 +513,7 @@ public final class SEPortrayer {
             for (String propName : copy) {
                 columns.add(new FeatureQuery.NamedExpression(filterFactory.property(propName), propName));
             }
-            query.setProjection(columns.toArray(new FeatureQuery.NamedExpression[columns.size()]));
+            query.setProjection(columns.toArray(FeatureQuery.NamedExpression[]::new));
         }
         //TODO optimize filter
         //TODO add linear resolution
