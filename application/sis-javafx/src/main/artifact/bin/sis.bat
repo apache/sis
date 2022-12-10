@@ -24,4 +24,4 @@ java -classpath "%BASE_DIR%\lib\sis-console-2.0-SNAPSHOT.jar"^
      -Djava.util.logging.config.class=org.apache.sis.util.logging.Initializer^
      -Djava.util.logging.config.file="%BASE_DIR%\conf\logging.properties"^
      -Dderby.stream.error.file="%BASE_DIR%\log\derby.log"^
-     org.apache.sis.console.Command %SIS_OPTS% %*
+     %JAVA_OPTS% org.apache.sis.console.Command %SIS_OPTS% %*
