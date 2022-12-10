@@ -14,12 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.system;
+package org.apache.sis.services;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
+import org.apache.sis.internal.system.Shutdown;
+import org.apache.sis.internal.system.SystemListener;
 
 
 /**

@@ -378,8 +378,8 @@ public final class XML extends Static {
      * The field name uses the uppercase convention because this field is almost constant:
      * this field is initially null, then created by {@link #getPool()} when first needed.
      * Once created the field value usually doesn't change. However, the field may be reset
-     * to {@code null} in an OSGi context when modules are loaded or unloaded, because the
-     * set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
+     * to {@code null} when modules are loaded or unloaded by a container such as OSGi,
+     * because the set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
      *
      * @see #getPool()
      */
@@ -409,8 +409,8 @@ public final class XML extends Static {
      * <div class="note"><b>Implementation note:</b>
      * Current implementation uses the double-check idiom. This is usually a deprecated practice
      * (the recommended alterative is to use static class initialization), but in this particular
-     * case the field may be reset to {@code null} if OSGi modules are loaded or unloaded, so static
-     * class initialization would be a little bit too rigid.</div>
+     * case the field may be reset to {@code null} if modules are loaded or unloaded by a container,
+     * so static class initialization would be a little bit too rigid.</div>
      */
     @SuppressWarnings("DoubleCheckedLocking")
     private static MarshallerPool getPool() throws JAXBException {

@@ -136,16 +136,4 @@
     </plugins>
   </build>
 
-
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
-  <dependencies>
-    <!-- Optional dependencies (provided scope) -->
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
-    </dependency>
-  </dependencies>
-
 </project>

@@ -510,12 +510,6 @@
 
       <!-- Optional dependencies -->
       <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.core</artifactId>
-        <version>6.0.0</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>cdm-core</artifactId>
         <version>5.5.3</version>
