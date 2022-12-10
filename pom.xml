@@ -460,12 +460,6 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>javax</groupId>
-        <artifactId>javaee-api</artifactId>
-        <version>8.0.1</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
         <version>2.3.3</version>
@@ -879,7 +873,7 @@
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
           <detectJavaApiLink>false</detectJavaApiLink>          <!-- Let us declare link to Java API. -->
           <links>
-            <link>https://docs.oracle.com/javase/8/docs/api</link>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api</link>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/snapshot/javadoc</link>
           </links>

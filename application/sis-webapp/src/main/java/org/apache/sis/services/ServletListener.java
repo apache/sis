@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.system;
+package org.apache.sis.services;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+import org.apache.sis.internal.system.Shutdown;
 
 
 /**
@@ -27,10 +28,7 @@ import javax.servlet.annotation.WebListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- *
- * @see OSGiActivator
- *
- * @since 0.3
+ * @since   0.3
  * @module
  */
 @WebListener("Apache SIS shutdown hook")

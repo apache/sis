@@ -29,9 +29,6 @@ import org.osgi.framework.BundleListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
- *
- * @see ServletListener
- *
  * @since 0.3
  * @module
  */
