@@ -49,7 +49,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * bit tedious to explain, which is another indication that they should not be in public API.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -335,14 +335,14 @@ public final class CollectionsExt extends Static {
      * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
      * values will be included in the returned set.
      *
+     * <p>This method differs from {@link Set#of(Object...)} in that it preserves element order.</p>
+     *
      * @param  <E>          the type of array elements.
      * @param  excludeNull  {@code true} for excluding the {@code null} element from the returned set.
      * @param  array        the array to copy in a set. May be {@code null} or contain null elements.
      * @return a set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Collections#unmodifiableSet(Set)
-     *
-     * @todo Consider replacing by {@code Set.of(...)} in JDK9.
      */
     @SafeVarargs
     @SuppressWarnings("fallthrough")
@@ -689,6 +689,24 @@ public final class CollectionsExt extends Static {
             }
         }
         return list;
+    }
+
+    /**
+     * Returns a unmodifiable copy of the given set, preserving order.
+     *
+     * @param  <E>   the type of elements.
+     * @param  set   the set to copy, or {@code null}.
+     * @return a copy of the given set, or {@code null} if the given set was null.
+     */
+    public static <E> Set<E> copyPreserveOrder(final Set<E> set) {
+        if (set == null) {
+            return null;
+        }
+        switch (set.size()) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(set.iterator().next());
+            default: return Collections.unmodifiableSet(new LinkedHashSet<>(set));
+        }
     }
 
     /**

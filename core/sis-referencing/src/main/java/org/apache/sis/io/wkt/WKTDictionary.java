@@ -149,6 +149,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Code spaces of authority codes recognized by this factory.
      * This set is computed from the {@code "ID[…]"} elements found in WKT definitions.
+     * Code spaces are sorted with most frequently used space first.
      *
      * @see #getCodeSpaces()
      */
@@ -882,7 +883,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     public Set<String> getCodeSpaces() {
         lock.readLock().lock();
         try {
-            return Set.copyOf(codespaces);
+            return CollectionsExt.copyPreserveOrder(codespaces);
         } finally {
             lock.readLock().unlock();
         }

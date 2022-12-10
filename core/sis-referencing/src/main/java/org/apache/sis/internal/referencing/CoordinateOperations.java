@@ -41,6 +41,7 @@ import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.Containers;
@@ -51,7 +52,7 @@ import org.apache.sis.util.collection.Containers;
  * until first needed. Contains also utility methods related to coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  * @module
  */
@@ -292,7 +293,7 @@ public final class CoordinateOperations extends SystemListener {
             indices[i] = dim;
             r &= ~(1L << dim);
         }
-        final Set<Integer> dimensions = Set.of(indices);
+        final Set<Integer> dimensions = CollectionsExt.immutableSet(true, indices);
         if (useCache) {
             synchronized (CACHE) {
                 final Set<Integer> existing = CACHE[(int) changes];
