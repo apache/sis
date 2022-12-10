@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk9;
+package org.apache.sis.internal.jdk17;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -23,19 +23,18 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
 /**
- * Place holder for some functionalities defined only in JDK9.
- * This file will be deleted on the SIS JDK9 branch.
+ * Place holder for some functionalities defined in a JDK more recent than Java 11.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.4
  * @version 0.8
  * @module
  */
-public final class JDK9 {
+public final class JDK17 {
     /**
      * Do not allow instantiation of this class.
      */
-    private JDK9() {
+    private JDK17() {
     }
 
     /**
@@ -46,7 +45,7 @@ public final class JDK9 {
      * @param  dst   destination array
      */
     public static void get(final ByteBuffer b, int index, final byte[] dst) {
-        JDK9.get(b, index, dst, 0, dst.length);
+        get(b, index, dst, 0, dst.length);
     }
 
     /**

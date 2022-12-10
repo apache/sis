@@ -28,4 +28,4 @@
  * @version 0.8
  * @module
  */
-package org.apache.sis.internal.jdk9;
+package org.apache.sis.internal.jdk17;

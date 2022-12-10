@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.jdk9;
+package org.apache.sis.internal.jdk17;
 
 import org.apache.sis.util.resources.Errors;
 

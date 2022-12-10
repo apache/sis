@@ -19,7 +19,7 @@ package org.apache.sis.internal.storage.inflater;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.image.DataType;
-import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.jdk17.JDK17;
 
 
 /**
@@ -264,7 +264,7 @@ abstract class HorizontalPredictor extends PredictorChannel {
         @Override
         void saveLastPixel(final ByteBuffer buffer, int offset, int position) {
             System.arraycopy(savedValues, savedValues.length - offset, savedValues, 0, offset);
-            JDK9.get(buffer, position, savedValues, offset, savedValues.length - offset);
+            JDK17.get(buffer, position, savedValues, offset, savedValues.length - offset);
         }
 
         /**
