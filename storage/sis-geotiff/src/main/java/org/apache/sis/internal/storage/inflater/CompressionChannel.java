@@ -117,8 +117,7 @@ abstract class CompressionChannel extends PixelChannel {
         } else {
             capacity = Numerics.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;      // ≥ BUFFER_SIZE
         }
-        // TODO: remove cast with JDK9.
-        final ByteBuffer buffer = (ByteBuffer) ByteBuffer.allocate(capacity).order(input.buffer.order()).limit(0);
+        final ByteBuffer buffer = ByteBuffer.allocate(capacity).order(input.buffer.order()).limit(0);
         return new ChannelDataInput(input.filename, channel, buffer, true);
     }
 

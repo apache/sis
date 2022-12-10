@@ -24,7 +24,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.2
+ * @since   1.4
  * @version 0.8
  * @module
  */

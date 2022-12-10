@@ -16,16 +16,7 @@
  */
 package org.apache.sis.internal.jdk9;
 
-import java.io.IOException;
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.DoubleBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-import java.nio.LongBuffer;
-import java.nio.ShortBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
@@ -34,9 +25,6 @@ import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Optional;
-import java.util.StringJoiner;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -47,7 +35,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * This file will be deleted on the SIS JDK9 branch.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.1
+ * @since   1.4
  * @version 0.8
  * @module
  */
@@ -56,33 +44,6 @@ public final class JDK9 {
      * Do not allow instantiation of this class.
      */
     private JDK9() {
-    }
-
-    /**
-     * Placeholder for {@link Optional#ifPresentOrElse(Consumer, Runnable)}.
-     */
-    public static <T> void ifPresentOrElse(Optional<T> optional, Consumer<? super T> action, Runnable emptyAction) {
-        if (optional.isPresent()) {
-            action.accept(optional.get());
-        } else {
-            emptyAction.run();
-        }
-    }
-
-    /**
-     * Placeholder for {@code List.of(...)}.
-     *
-     * @param  <E>       type of elements.
-     * @param  elements  the elements to put in an unmodifiable list.
-     * @return an unmodifiable list of the given elements.
-     */
-    @SafeVarargs
-    public static <E> List<E> listOf(final E... elements) {
-        switch (elements.length) {
-            case 0:  return Collections.emptyList();
-            case 1:  return Collections.singletonList(elements[0]);
-            default: return UnmodifiableArrayList.wrap(elements);
-        }
     }
 
     /**
@@ -137,38 +98,6 @@ public final class JDK9 {
     }
 
     /**
-     * Place holder for {@code Buffer.slice()}.
-     *
-     * @param  b the buffer to slice.
-     * @return the sliced buffer.
-     */
-    public static Buffer slice(Buffer b) {
-        if (b instanceof ByteBuffer)   return ((ByteBuffer) b).slice();
-        if (b instanceof ShortBuffer)  return ((ShortBuffer) b).slice();
-        if (b instanceof IntBuffer)    return ((IntBuffer) b).slice();
-        if (b instanceof LongBuffer)   return ((LongBuffer) b).slice();
-        if (b instanceof FloatBuffer)  return ((FloatBuffer) b).slice();
-        if (b instanceof DoubleBuffer) return ((DoubleBuffer) b).slice();
-        throw new IllegalArgumentException();
-    }
-
-    /**
-     * Place holder for {@code Buffer.duplicate()}.
-     *
-     * @param  b the buffer to duplicate.
-     * @return the duplicate buffer.
-     */
-    public static Buffer duplicate(Buffer b) {
-        if (b instanceof ByteBuffer)   return ((ByteBuffer) b).duplicate();
-        if (b instanceof ShortBuffer)  return ((ShortBuffer) b).duplicate();
-        if (b instanceof IntBuffer)    return ((IntBuffer) b).duplicate();
-        if (b instanceof LongBuffer)   return ((LongBuffer) b).duplicate();
-        if (b instanceof FloatBuffer)  return ((FloatBuffer) b).duplicate();
-        if (b instanceof DoubleBuffer) return ((DoubleBuffer) b).duplicate();
-        throw new IllegalArgumentException();
-    }
-
-    /**
      * Place holder for {@code ByteBuffer.get(int, byte[])}.
      *
      * @param  b     the buffer from which to get bytes.
@@ -192,34 +121,6 @@ public final class JDK9 {
         for (int i=0; i<length; i++) {
             dst[offset + i] = b.get(index + i);
         }
-    }
-
-    /**
-     * Place holder for {@code Class.getPackageName()}.
-     *
-     * @param  c  the class for which to get the package name.
-     * @return the name of the package.
-     */
-    public static String getPackageName(Class<?> c) {
-        Class<?> outer;
-        while ((outer = c.getEnclosingClass()) != null) {
-            c = outer;
-        }
-        String name = c.getName();
-        final int separator = name.lastIndexOf('.');
-        name = (separator >= 1) ? name.substring(0, separator) : "";
-        return name;
-    }
-
-    /**
-     * Place holder for {@code Math.multiplyFull​(int, int)}.
-     *
-     * @param  x  the first value.
-     * @param  y  the second value.
-     * @return Product of the two values.
-     */
-    public static long multiplyFull​(int x, int y) {
-        return ((long) x) * ((long) y);
     }
 
     /**
@@ -353,14 +254,5 @@ public final class JDK9 {
      */
     public static <T> List<T> toList(final Stream<T> s) {
         return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
-    }
-
-    /**
-     * Placeholder for {@link Files#readString(Path)}.
-     */
-    public static String readString(final Path path) throws IOException {
-        final StringJoiner j = new StringJoiner("\n");
-        Files.readAllLines(path).forEach(j::add);
-        return j.toString();
     }
 }

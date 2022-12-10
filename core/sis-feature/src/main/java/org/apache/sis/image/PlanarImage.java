@@ -36,8 +36,9 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
+
+import static java.lang.Math.multiplyFull;
 
 
 /**
@@ -384,7 +385,7 @@ public abstract class PlanarImage implements RenderedImage {
     @Override
     public int getTileGridXOffset() {
         // We may have temporary `int` overflow after multiplication but exact result after addition.
-        return Math.toIntExact(getMinX() - JDK9.multiplyFull(getMinTileX(), getTileWidth()));
+        return Math.toIntExact(getMinX() - multiplyFull(getMinTileX(), getTileWidth()));
     }
 
     /**
@@ -398,7 +399,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public int getTileGridYOffset() {
-        return Math.toIntExact(getMinY() - JDK9.multiplyFull(getMinTileY(), getTileHeight()));
+        return Math.toIntExact(getMinY() - multiplyFull(getMinTileY(), getTileHeight()));
     }
 
     /**
@@ -576,16 +577,16 @@ public abstract class PlanarImage implements RenderedImage {
             if (sm.getWidth()  < tileWidth)  return "tileWidth";
             if (sm.getHeight() < tileHeight) return "tileHeight";
         }
-        long remainder = JDK9.multiplyFull(getNumXTiles(), tileWidth) - getWidth();
+        long remainder = multiplyFull(getNumXTiles(), tileWidth) - getWidth();
         if (remainder != 0) {
             return (remainder >= 0 && remainder < tileWidth) ? "width" : "numXTiles";
         }
-        remainder = JDK9.multiplyFull(getNumYTiles(), tileHeight) - getHeight();
+        remainder = multiplyFull(getNumYTiles(), tileHeight) - getHeight();
         if (remainder != 0) {
             return (remainder >= 0 && remainder < tileHeight) ? "height" : "numYTiles";
         }
-        if (JDK9.multiplyFull(getMinTileX(), tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
-        if (JDK9.multiplyFull(getMinTileY(), tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
+        if (multiplyFull(getMinTileX(), tileWidth)  + getTileGridXOffset() != getMinX()) return "tileX";
+        if (multiplyFull(getMinTileY(), tileHeight) + getTileGridYOffset() != getMinY()) return "tileY";
         return null;
     }
 

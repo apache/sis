@@ -22,7 +22,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.apache.sis.internal.jdk9.JDK9;
 
 import static org.junit.Assert.*;
 
@@ -76,7 +75,7 @@ public final class ProjectDirectories {
             throw new AssertionError(e);
         }
         classesPackageDirectory = dir;
-        packageName = JDK9.getPackageName(c);
+        packageName = c.getPackageName();
         String pkg = packageName;
         int s = pkg.length();
         do {

@@ -21,7 +21,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -320,8 +319,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction multiply(final Fraction other) {
-        return simplify(this, JDK9.multiplyFull(numerator,   other.numerator),
-                              JDK9.multiplyFull(denominator, other.denominator));
+        return simplify(this, Math.multiplyFull(numerator,   other.numerator),
+                              Math.multiplyFull(denominator, other.denominator));
     }
 
     /**
@@ -332,8 +331,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction divide(final Fraction other) {
-        return simplify(this, JDK9.multiplyFull(numerator,   other.denominator),
-                              JDK9.multiplyFull(denominator, other.numerator));
+        return simplify(this, Math.multiplyFull(numerator,   other.denominator),
+                              Math.multiplyFull(denominator, other.numerator));
     }
 
     /**
@@ -507,8 +506,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     @Override
     public int compareTo(final Fraction other) {
-        return Long.signum(JDK9.multiplyFull(numerator, other.denominator)
-                         - JDK9.multiplyFull(other.numerator, denominator));
+        return Long.signum(Math.multiplyFull(numerator, other.denominator)
+                         - Math.multiplyFull(other.numerator, denominator));
     }
 
     /**

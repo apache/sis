@@ -24,7 +24,6 @@ import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.Optional;
 import java.util.function.IntSupplier;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -92,7 +91,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -1076,7 +1075,7 @@ search:     for (;;) {
         @Override
         public Optional<Buffer> buffer() {
             if (step == 1) {
-                Vector.this.buffer().map((b) -> JDK9.slice(b.position(first).limit(first + length)));
+                Vector.this.buffer().map((b) -> b.position(first).limit(first + length).slice());
             }
             return super.buffer();
         }

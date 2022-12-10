@@ -39,7 +39,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 
@@ -167,7 +166,7 @@ public class BufferedGridCoverage extends GridCoverage {
          */
         final GridExtent extent = domain.getExtent();
         final long expectedSize = getSampleCount(extent, numBands);
-        final long bufferSize = JDK9.multiplyFull(data.getSize(), numBanks);
+        final long bufferSize = Math.multiplyFull(data.getSize(), numBanks);
         if (bufferSize < expectedSize) {
             final StringBuilder b = new StringBuilder();
             for (int i=0; i < extent.getDimension(); i++) {

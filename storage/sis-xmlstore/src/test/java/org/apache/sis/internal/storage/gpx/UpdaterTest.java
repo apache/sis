@@ -175,7 +175,7 @@ public final strictfp class UpdaterTest extends TestCase {
      * Also checks some invariants such as the presence of metadata.
      */
     private boolean containsLat20() throws IOException {
-        final String xml = org.apache.sis.internal.jdk9.JDK9.readString(file);
+        final String xml = Files.readString(file);
         assertTrue(xml.contains("<bounds "));       // Sentinel value for presence of metadata.
         return xml.contains("lat=\"20");            // May have trailing ".0".
     }

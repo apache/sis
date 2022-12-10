@@ -42,12 +42,12 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
+import static java.lang.Math.multiplyFull;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 
 
 /**
