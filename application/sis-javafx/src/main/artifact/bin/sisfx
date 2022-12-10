@@ -38,7 +38,7 @@ fi
 java -splash:"$BASE_DIR/lib/logo.jpg" \
      --add-modules javafx.graphics,javafx.controls,javafx.web \
      --module-path "$PATH_TO_FX" \
-     --class-path "$BASE_DIR/lib/sis-javafx-1.3-SNAPSHOT.jar" \
+     --class-path "$BASE_DIR/lib/sis-javafx-1.4-SNAPSHOT.jar" \
      -Djava.util.logging.config.class="org.apache.sis.util.logging.Initializer" \
      -Djava.util.logging.config.file="$BASE_DIR/conf/logging.properties" \
      -Dderby.stream.error.file="$BASE_DIR/log/derby.log" \
