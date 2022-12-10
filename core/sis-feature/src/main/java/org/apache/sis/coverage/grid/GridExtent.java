@@ -93,7 +93,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  * @module
  */
@@ -826,16 +826,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * @deprecated Replaced by {@link #getPointOfInterest(PixelInCell)}.
-     *
-     * @return the grid coordinates of a representative point.
-     */
-    @Deprecated
-    public double[] getPointOfInterest() {
-        return getPointOfInterest(PixelInCell.CELL_CORNER);
-    }
-
-    /**
      * Returns the grid coordinates of a representative point.
      * This point may be used for estimating a {@linkplain GridGeometry#getResolution(boolean) grid resolution}.
      * The default implementation returns the median (or center) coordinates of this grid extent,
@@ -1297,21 +1287,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent selectDimensions(int... dimensions) {
         dimensions = verifyDimensions(dimensions, getDimension());
         return (dimensions != null) ? reorder(dimensions) : this;
-    }
-
-    /**
-     * Returns a grid extent that encompass only some dimensions of this grid extent.
-     *
-     * @param  dimensions  the dimensions to select, in strictly increasing order.
-     * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
-     *
-     * @since 1.1
-     *
-     * @deprecated Renamed {@link #selectDimensions(int...)} for clarity.
-     */
-    @Deprecated
-    public GridExtent reduceDimension(int... dimensions) {
-        return selectDimensions(dimensions);
     }
 
     /**

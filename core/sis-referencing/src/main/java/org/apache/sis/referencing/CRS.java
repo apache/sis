@@ -142,7 +142,7 @@ import org.opengis.geometry.Geometry;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -986,24 +986,6 @@ public final class CRS extends Static {
         final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
         return compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
-    }
-
-    /**
-     * Gets or creates a coordinate reference system with a subset of the dimensions of the given CRS.
-     *
-     * @param  crs         the CRS to reduce the dimensionality.
-     * @param  dimensions  the dimensions to retain.
-     * @return a coordinate reference system for the given dimensions.
-     * @throws FactoryException if the geodetic factory failed to create a compound CRS.
-     *
-     * @since 1.0
-     *
-     * @deprecated Renamed {@link #selectDimensions(CoordinateReferenceSystem, int...)} for clarity and consistency with
-     *             {@link org.apache.sis.coverage.grid.GridExtent} and {@link org.apache.sis.coverage.grid.GridGeometry}.
-     */
-    @Deprecated
-    public static CoordinateReferenceSystem reduce(final CoordinateReferenceSystem crs, final int... dimensions) throws FactoryException {
-        return selectDimensions(crs, dimensions);
     }
 
     /**

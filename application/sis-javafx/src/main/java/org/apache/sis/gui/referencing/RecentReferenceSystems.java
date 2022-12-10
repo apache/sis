@@ -83,7 +83,7 @@ import static java.util.logging.Logger.getLogger;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  * @module
  */
@@ -1047,23 +1047,7 @@ next:       for (int i=0; i<count; i++) {
     }
 
     /**
-     * @deprecated Replaced by {@link #createChoiceBox(boolean, ChangeListener)}.
-     */
-    @Deprecated
-    public ChoiceBox<ReferenceSystem> createChoiceBox(final ChangeListener<ReferenceSystem> action) {
-        return createChoiceBox(true, action);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #createMenuItems(boolean, ChangeListener)}.
-     */
-    @Deprecated
-    public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
-        return createMenuItems(true, action);
-    }
-
-    /**
-     * Returns the property for the selected value in a menu created by {@link #createMenuItems(ChangeListener)}.
+     * Returns the property for the selected value in a menu created by {@link #createMenuItems(boolean, ChangeListener)}.
      *
      * @param  menu  the menu, or {@code null} if none.
      * @return the property for the selected value, or {@code null} if none.

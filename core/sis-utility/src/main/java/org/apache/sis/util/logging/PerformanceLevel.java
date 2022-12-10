@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -77,12 +77,6 @@ public final class PerformanceLevel extends Level {
      * <code>SLOWER.{@linkplain #setMinDuration(long, TimeUnit)}</code>.
      */
     public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", Vocabulary.Keys.Slower, 630, 10_000_000_000L);
-
-    /**
-     * @deprecated Renamed {@link #SLOWNESS}.
-     */
-    @Deprecated
-    public static final PerformanceLevel SLOW = SLOWNESS;
 
     /**
      * The minimal duration (in nanoseconds) for logging the record.

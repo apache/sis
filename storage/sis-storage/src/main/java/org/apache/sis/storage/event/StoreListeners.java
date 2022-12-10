@@ -84,7 +84,7 @@ import org.apache.sis.storage.Resource;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  * @module
  */
@@ -421,16 +421,6 @@ public class StoreListeners implements Localized {
     }
 
     /**
-     * @deprecated Renamed {@link #useReadOnlyEvents()}.
-     *
-     * @since 1.2
-     */
-    @Deprecated
-    public void useWarningEventsOnly() {
-        useReadOnlyEvents();
-    }
-
-    /**
      * Reports a warning described by the given message.
      *
      * <p>This method is a shortcut for <code>{@linkplain #warning(Level, String, Exception)
@@ -615,15 +605,6 @@ public class StoreListeners implements Localized {
      */
     static void canNotNotify(final String method, final ExecutionException error) {
         Logging.unexpectedException(Logger.getLogger(Modules.STORAGE), StoreListeners.class, method, error);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #fire(Class, StoreEvent)} for consistency with the argument order
-     *             in all other methods of this class.
-     */
-    @Deprecated
-    public <E extends StoreEvent> boolean fire(final E event, final Class<E> eventType) {
-        return fire(eventType, event);
     }
 
     /**
