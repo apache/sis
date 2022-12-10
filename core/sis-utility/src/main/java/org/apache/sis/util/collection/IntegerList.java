@@ -451,7 +451,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return iterator over the integer values in this list.
      *
-     * @since 0.8-jdk8
+     * @since 1.0
      */
     @Override
     public PrimitiveIterator.OfInt iterator() {
@@ -464,7 +464,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return spliterator over the integer values in this list.
      *
-     * @since 0.8-jdk8
+     * @since 1.0
      */
     @Override
     public Spliterator.OfInt spliterator() {
@@ -482,7 +482,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @param parallel  {@code true} for a parallel stream, or {@code false} for a sequential stream.
      * @return a stream of values in this list as primitive types.
      *
-     * @since 0.8-jdk8
+     * @since 1.0
      */
     public IntStream stream(boolean parallel) {
         return StreamSupport.intStream(spliterator(), parallel);

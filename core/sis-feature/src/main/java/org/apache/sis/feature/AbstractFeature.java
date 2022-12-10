@@ -325,7 +325,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
      * or may not be modifiable, at implementation choice. Generally the caller cannot add new elements into the
      * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
-     * casts (e.g. {@code Collection<String>} cannot be checked at runtime (at least as of Java 8).
+     * casts (e.g. {@code Collection<String>} cannot be checked at runtime.
      * If a type-safe modifiable collection is desired, the following approach can be used instead:
      *
      * {@preformat java

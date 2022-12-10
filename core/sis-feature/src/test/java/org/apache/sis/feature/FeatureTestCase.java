@@ -352,9 +352,9 @@ public abstract strictfp class FeatureTestCase extends TestCase {
                 Collections.singletonMap(DefaultFeatureType.NAME_KEY, "City"),
                 false, null, DefaultAttributeTypeTest.universities()));
         /*
-         * The value below is an instance of Collection<String>. But as of Java 8, the <String> parameterized type
-         * cannot be verified at runtime. The best check we can have is Collection<?>, which does not allow addition
-         * of new values.
+         * The value below is an instance of Collection<String>.
+         * But the <String> parameterized type cannot be verified at runtime.
+         * The best check we can have is Collection<?>, which does not allow addition of new values.
          */
         Collection<?> values = (Collection<?>) feature.getPropertyValue("universities");
         assertTrue("isEmpty", values.isEmpty());

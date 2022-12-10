@@ -522,7 +522,7 @@ public final class XML extends Static {
             }
         }
         /*
-         * STAX results are not handled by JAXB as of JDK 8. We have to handle those cases ourselves.
+         * STAX results are not handled by JAXB. We have to handle those cases ourselves.
          * This workaround should be removed if a future JDK version handles those cases.
          */
         if (output instanceof StAXResult) {
@@ -650,7 +650,7 @@ public final class XML extends Static {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
         final Object object;
         /*
-         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation as of JDK 8.
+         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation.
          * We have to handle those cases ourselves. This workaround should be removed if a future JDK version handles
          * those cases.
          */

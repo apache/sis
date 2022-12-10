@@ -23,7 +23,7 @@
      Maven project configuration file
      http://maven.apache.org/
 
-     Apache SIS build requires Java 11 or higher, but compiled files can be executed on Java 8.
+     Apache SIS build requires Java 17 or higher, but compiled files can be executed on Java 11.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
      Build development snapshot:        mvn clean install
@@ -553,8 +553,8 @@
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>1.3</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
     <javafx.version>19</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->

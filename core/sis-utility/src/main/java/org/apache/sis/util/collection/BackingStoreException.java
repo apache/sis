@@ -43,7 +43,7 @@ import org.apache.sis.util.Exceptions;
  * }
  *
  * <h2>Relationship with {@code java.io.UncheckedIOException}</h2>
- * JDK8 provides a {@link java.io.UncheckedIOException} which partially overlaps
+ * Java 8 provides a {@link java.io.UncheckedIOException} which partially overlaps
  * the purpose of this {@code BackingStoreException}. While Apache SIS still uses
  * {@code BackingStoreException} as a general mechanism for any kind of checked exceptions,
  * client code would be well advised to catch both kind of exceptions for robustness.

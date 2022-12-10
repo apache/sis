@@ -14,7 +14,7 @@ Installation
 ============
 
 For developing applications using the SIS library or for using on command-line,
-the only requirement is Java 8 or later. For launching the desktop application,
+the only requirement is Java 11 or later. For launching the desktop application,
 requirements are Java 16 or later and JavaFX 13 or later.
 
 1) Unzip `apache-sis-1.4-bin.zip` in any directory.
