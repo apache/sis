@@ -16,7 +16,7 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Collections;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.Objects;
 import java.net.URI;
@@ -60,8 +60,7 @@ public final strictfp class ParameterMarshallingTest extends TestCase {
      */
     private static <T> DefaultParameterValue<T> create(final Class<T> type, final Range<?> valueDomain) {
         return new DefaultParameterValue<>(new DefaultParameterDescriptor<>(
-                Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY,
-                        "A parameter of type " + type.getSimpleName()),
+                Map.of(DefaultParameterDescriptor.NAME_KEY, "A parameter of type " + type.getSimpleName()),
                 1, 1, type, valueDomain, null, null));
     }
 
@@ -106,7 +105,7 @@ public final strictfp class ParameterMarshallingTest extends TestCase {
     @Test
     public void testDescriptor() throws JAXBException {
         final DefaultParameterDescriptor<Double> descriptor = new DefaultParameterDescriptor<>(
-                Collections.singletonMap(DefaultParameterDescriptor.NAME_KEY, "A descriptor"),
+                Map.of(DefaultParameterDescriptor.NAME_KEY, "A descriptor"),
                 0, 1, Double.class, null, null, null);
         final String xml = XML.marshal(descriptor);
         assertXmlEquals(

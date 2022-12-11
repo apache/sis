@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -507,7 +506,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * @param  name  name of the geodetic object (datum, coordinate system, …) to create.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

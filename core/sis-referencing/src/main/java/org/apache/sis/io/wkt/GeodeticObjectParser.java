@@ -905,7 +905,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             name = AxisDirections.appendTo(buffer.append("CS"), axes);
         }
         if (csProperties == null) {
-            csProperties = singletonMap(CoordinateSystem.NAME_KEY, name);
+            csProperties = Map.of(CoordinateSystem.NAME_KEY, name);
         } else {
             csProperties.put(CoordinateSystem.NAME_KEY, name);
         }
@@ -2250,8 +2250,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         number, AxisDirection.OTHER, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
-            final CoordinateSystem derivedCS = new AbstractCS(
-                    singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
+            final Map<String,Object> axisName = singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes));
+            final CoordinateSystem derivedCS = new AbstractCS(axisName, axes);
             /*
              * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
              * This coordinate system cannot be easily constructed from the information provided by

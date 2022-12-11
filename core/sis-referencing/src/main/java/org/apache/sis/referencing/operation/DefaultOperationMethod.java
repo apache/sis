@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Collections;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -321,7 +320,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 return getProperties(parameters, null);
             }
         }
-        return Collections.singletonMap(NAME_KEY, NilReferencingObject.UNNAMED);
+        return Map.of(NAME_KEY, NilReferencingObject.UNNAMED);
     }
 
     /**

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.AffineCS;
@@ -50,10 +50,10 @@ public final strictfp class DefaultImageCRSTest extends TestCase {
      * @param cartesian {@code true} for a Cartesian coordinate system, or {@code false} for an affine one.
      */
     private static DefaultImageCRS create(final boolean cartesian) {
-        return new DefaultImageCRS(Collections.singletonMap(DefaultImageCRS.NAME_KEY, "An image CRS"),
-                new DefaultImageDatum(Collections.singletonMap(DefaultImageDatum.NAME_KEY, "C1"), PixelInCell.CELL_CENTER),
-                cartesian ? HardCodedCS.GRID : new DefaultAffineCS(
-                        Collections.singletonMap(DefaultAffineCS.NAME_KEY, "Grid"),
+        return new DefaultImageCRS(Map.of(DefaultImageCRS.NAME_KEY, "An image CRS"),
+                new DefaultImageDatum(Map.of(DefaultImageDatum.NAME_KEY, "C1"), PixelInCell.CELL_CENTER),
+                        cartesian ? HardCodedCS.GRID : new DefaultAffineCS(
+                                Map.of(DefaultAffineCS.NAME_KEY, "Grid"),
                                 HardCodedAxes.COLUMN, HardCodedAxes.ROW));
     }
 

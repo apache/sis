@@ -17,7 +17,6 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import java.util.Collections;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -73,7 +72,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
 
     /** Returns properties map for an object of the given name. */
     private static Map<String,String> name(final String name) {
-        return Collections.singletonMap(MapProjectionDescriptor.NAME_KEY, name);
+        return Map.of(MapProjectionDescriptor.NAME_KEY, name);
     }
 
     /**

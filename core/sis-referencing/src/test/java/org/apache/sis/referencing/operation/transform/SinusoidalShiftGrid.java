@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.Collections;
+import java.util.Map;
 import java.awt.geom.AffineTransform;
 import javax.measure.quantity.Dimensionless;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -163,7 +163,7 @@ final strictfp class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Di
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
         return new DefaultParameterDescriptorGroup(
-                Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY, "Test grid"), 0, 1);
+                Map.of(DefaultParameterDescriptorGroup.NAME_KEY, "Test grid"), 0, 1);
     }
 
     /**

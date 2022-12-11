@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Collections;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
@@ -419,7 +418,7 @@ public final class XML extends Static {
             synchronized (XML.class) {
                 pool = POOL;                            // Double-check idiom: see javadoc.
                 if (pool == null) {
-                    POOL = pool = new MarshallerPool(Collections.singletonMap(LENIENT_UNMARSHAL, Boolean.TRUE));
+                    POOL = pool = new MarshallerPool(Map.of(LENIENT_UNMARSHAL, Boolean.TRUE));
                 }
             }
         }

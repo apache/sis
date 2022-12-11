@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Locale;
-import java.util.Collections;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
@@ -127,7 +127,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
-        marshaller.setProperty(XML.SCHEMAS, Collections.singletonMap("gmd",
+        marshaller.setProperty(XML.SCHEMAS, Map.of("gmd",
                 "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas"));     // Intentionally omit trailing '/'.
         final String actual = marshal(marshaller, rp);
         pool.recycle(marshaller);

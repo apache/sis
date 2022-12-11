@@ -19,7 +19,6 @@ package org.apache.sis.measure;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -135,7 +134,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertNull("SECOND", Units.SECOND.getBaseUnits());
         assertTrue("UNITY",  Units.UNITY .getBaseUnits().isEmpty());
 
-        assertMapEquals(Collections.singletonMap(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
+        assertMapEquals(Map.of(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
 
         final Map<Unit<?>,Integer> expected = new HashMap<>(4);
         assertNull(expected.put(Units.KILOGRAM, 1));

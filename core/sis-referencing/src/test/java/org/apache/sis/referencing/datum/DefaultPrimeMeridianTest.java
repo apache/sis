@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.Map;
 import javax.measure.quantity.Angle;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -32,7 +33,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
@@ -87,7 +87,8 @@ public final strictfp class DefaultPrimeMeridianTest extends TestCase {
     @Test
     @DependsOnMethod("testWKT_inGrads")
     public void testWKT_withUnformattableUnit() {
-        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(singletonMap(DefaultPrimeMeridian.NAME_KEY, "Test"),
+        final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(
+                Map.of(DefaultPrimeMeridian.NAME_KEY, "Test"),
                 10.3, Units.valueOfEPSG(9111).asType(Angle.class));
         /*
          * In WKT 1 format, if there is no contextual unit (which is the case of this test),

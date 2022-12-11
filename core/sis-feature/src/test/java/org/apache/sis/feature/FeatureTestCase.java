@@ -16,9 +16,9 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.quality.Result;
@@ -152,7 +152,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     @Test
     public void testGetProperty() {
         final DefaultFeatureType type = new DefaultFeatureType(
-                Collections.singletonMap(DefaultFeatureType.NAME_KEY, "My shapefile"), false, null,
+                Map.of(DefaultFeatureType.NAME_KEY, "My shapefile"), false, null,
                 DefaultAttributeTypeTest.attribute("COMMUNE"),
                 DefaultAttributeTypeTest.attribute("REF_INSEE"),
                 DefaultAttributeTypeTest.attribute("CODE_POSTAL"));
@@ -253,7 +253,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          */
         assertEquals("universities", List.of(), getAttributeValue("universities"));
         feature.setPropertyValue("universities", "University of arts");
-        assertEquals("universities", Collections.singletonList("University of arts"), getAttributeValue("universities"));
+        assertEquals("universities", List.of("University of arts"), getAttributeValue("universities"));
         /*
          * Switch to 'getProperty' mode only after we have set at least one value,
          * in order to test the conversion of existing values to property instances.
@@ -349,7 +349,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
     @DependsOnMethod("testSimpleProperties")
     public void testAddToCollection() {
         feature = createFeature(new DefaultFeatureType(
-                Collections.singletonMap(DefaultFeatureType.NAME_KEY, "City"),
+                Map.of(DefaultFeatureType.NAME_KEY, "City"),
                 false, null, DefaultAttributeTypeTest.universities()));
         /*
          * The value below is an instance of Collection<String>.

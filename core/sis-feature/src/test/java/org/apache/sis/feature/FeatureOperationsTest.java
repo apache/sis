@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Collections;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import org.opengis.geometry.Envelope;
@@ -93,7 +92,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
      * Creates a map of identification properties containing only an entry for the given name.
      */
     private static Map<String,?> name(final Object name) {
-        return Collections.singletonMap(DefaultAttributeType.NAME_KEY, name);
+        return Map.of(DefaultAttributeType.NAME_KEY, name);
     }
 
     /**

@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.util.Map;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
@@ -298,8 +298,8 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         {
             return candidate;
         }
-        return DefaultEllipsoid.createEllipsoid(Collections.singletonMap(Ellipsoid.NAME_KEY,
-                NilReferencingObject.UNNAMED), semiMajorAxis, semiMinorAxis, Units.METRE);
+        return DefaultEllipsoid.createEllipsoid(Map.of(Ellipsoid.NAME_KEY, NilReferencingObject.UNNAMED),
+                                                semiMajorAxis, semiMinorAxis, Units.METRE);
     }
 
     /**

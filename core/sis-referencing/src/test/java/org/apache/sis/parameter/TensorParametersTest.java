@@ -29,7 +29,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.internal.util.Constants.NUM_ROW;
@@ -320,7 +319,7 @@ public strictfp class TensorParametersTest extends TestCase {
                     }
                 }
                 final ParameterValueGroup group = param.createValueGroup(
-                        singletonMap(ParameterDescriptor.NAME_KEY, "Test"), matrix);
+                        Map.of(ParameterDescriptor.NAME_KEY, "Test"), matrix);
                 validate(group);
                 assertEquals(NUM_ROW,    numRow, group.parameter(NUM_ROW).intValue());
                 assertEquals(NUM_COL,    numCol, group.parameter(NUM_COL).intValue());

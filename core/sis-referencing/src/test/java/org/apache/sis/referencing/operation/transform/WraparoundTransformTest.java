@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.List;
-import java.util.Collections;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
@@ -85,8 +85,8 @@ public final strictfp class WraparoundTransformTest extends TestCase {
      */
     @Test
     public void testOneAxis() throws TransformException {
-        final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
-                Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
+        final var op = new AbstractCoordinateOperation(
+                Map.of(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
                 HardCodedCRS.WGS84_LATITUDE_FIRST,
                 HardCodedCRS.WGS84_LATITUDE_FIRST.forConvention(AxesConvention.POSITIVE_RANGE),
                 null, MathTransforms.scale(3, 5));
@@ -143,8 +143,8 @@ public final strictfp class WraparoundTransformTest extends TestCase {
      */
     @Test
     public void testTwoAxes() throws TransformException {
-        final AbstractCoordinateOperation op = new AbstractCoordinateOperation(
-                Collections.singletonMap(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
+        final var op = new AbstractCoordinateOperation(
+                Map.of(AbstractCoordinateOperation.NAME_KEY, "Wrapper"),
                 HardCodedCRS.WGS84_WITH_TIME.forConvention(AxesConvention.POSITIVE_RANGE),
                 HardCodedCRS.WGS84_WITH_CYCLIC_TIME, null, MathTransforms.scale(3, 2, 5));
         /*

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -41,8 +41,7 @@ public final strictfp class DefaultCompoundCSTest extends TestCase {
     public void testConstruction() {
         final DefaultCompoundCS cs = new DefaultCompoundCS(
                 HardCodedCS.PROJECTED,
-                new DefaultVerticalCS(Collections.singletonMap(DefaultVerticalCS.NAME_KEY,
-                        HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
+                new DefaultVerticalCS(Map.of(DefaultVerticalCS.NAME_KEY, HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
                 HardCodedCS.DAYS
         );
         assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", cs.getName().getCode());

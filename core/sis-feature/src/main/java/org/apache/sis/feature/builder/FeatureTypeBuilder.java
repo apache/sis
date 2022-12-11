@@ -1002,7 +1002,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Helper method for creating identification info of synthetic attributes.
      */
     private static Map<String,?> name(final GenericName name) {
-        return Collections.singletonMap(AbstractOperation.NAME_KEY, name);
+        return Map.of(AbstractOperation.NAME_KEY, name);
     }
 
     /**

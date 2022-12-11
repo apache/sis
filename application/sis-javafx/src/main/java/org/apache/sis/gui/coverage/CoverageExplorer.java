@@ -16,9 +16,9 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Map;
 import java.util.EnumMap;
 import java.util.Optional;
-import java.util.Collections;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -612,8 +612,7 @@ public class CoverageExplorer extends Widget {
                     name = e.getClass().getSimpleName();
                 }
             }
-            referenceSystems.setGridReferencing(true,
-                    Collections.singletonMap(name, coverage.getGridGeometry()));
+            referenceSystems.setGridReferencing(true, Map.of(name, coverage.getGridGeometry()));
         }
         /*
          * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`

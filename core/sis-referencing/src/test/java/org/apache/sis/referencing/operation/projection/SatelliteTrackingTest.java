@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
@@ -68,7 +68,7 @@ public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase 
         final SatelliteTracking provider = new SatelliteTracking();
         final ParameterValueGroup values = provider.getParameters().createValue();
         final DefaultEllipsoid    sphere = DefaultEllipsoid.createEllipsoid(
-                Collections.singletonMap(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED), 1, 1, Units.METRE);
+                Map.of(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED), 1, 1, Units.METRE);
 
         values.parameter("semi_major")                 .setValue(sphere.getSemiMajorAxis());
         values.parameter("semi_minor")                 .setValue(sphere.getSemiMinorAxis());

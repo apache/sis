@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Collections;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
@@ -175,7 +174,7 @@ public final class DefinitionURI {
      * If new entries are added, then see the TODO comment in the {@link #codeForGML(String, String, String, int,
      * DefinitionURI)} method.</p>
      */
-    private static final Map<String,String> PATHS = Collections.singletonMap("crs", "//" + DOMAIN + "/gml/srs/");
+    private static final Map<String,String> PATHS = Map.of("crs", "//" + DOMAIN + "/gml/srs/");
 
     /**
      * A version number to be considered as if no version were provided.

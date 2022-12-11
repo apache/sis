@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
@@ -249,7 +248,7 @@ public abstract class TypeRegistration {
             }
         }
         if (properties == null) {
-            return Collections.singletonMap(ROOT_ADAPTERS, c);
+            return Map.of(ROOT_ADAPTERS, c);
         }
         final Map<String,Object> copy = new HashMap<>(properties);
         copy.put(ROOT_ADAPTERS, c);

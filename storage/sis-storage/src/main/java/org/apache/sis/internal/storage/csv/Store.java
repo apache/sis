@@ -578,9 +578,10 @@ final class Store extends URIDataStore implements FeatureSet {
             }
             properties.add(createProperty(name, type, minOccurrence, maxOccurrence, characteristics));
         }
+        // Do not use Map.of(…) because `name` may be null. Let constructor throw the exception.
         final String name = IOUtilities.filenameWithoutExtension(super.getDisplayName());
         return new DefaultFeatureType(Collections.singletonMap(DefaultFeatureType.NAME_KEY, name),
-                false, null, properties.toArray(PropertyType[]::new));
+                                      false, null, properties.toArray(PropertyType[]::new));
     }
 
     /**
@@ -591,7 +592,7 @@ final class Store extends URIDataStore implements FeatureSet {
             final int minOccurrence, final int maxOccurrence, final AttributeType<?>[] characteristics)
     {
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
-                type, minOccurrence, maxOccurrence, null, characteristics);
+                                          type, minOccurrence, maxOccurrence, null, characteristics);
     }
 
     /**

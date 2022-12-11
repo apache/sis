@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Collections;
+import java.util.Map;
 import java.lang.reflect.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
@@ -112,7 +112,7 @@ public final class Names extends Static {
             return null;
         }
         return factory.createNameSpace(factory.createLocalName(null, namespace),
-                (separator == null) ? null : Collections.singletonMap("separator.head", separator));
+                (separator == null) ? null : Map.of("separator.head", separator));
     }
 
     /**

@@ -30,7 +30,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static java.util.Collections.singletonMap;
 
 // Branch-dependent imports
 import org.opengis.feature.PropertyType;
@@ -52,7 +51,7 @@ public final strictfp class DefaultFeatureTypeTest extends TestCase {
      * to be given to {@link AbstractIdentifiedType} constructor.
      */
     private static Map<String,?> name(final Object name) {
-        return singletonMap(AbstractIdentifiedType.NAME_KEY, name);
+        return Map.of(AbstractIdentifiedType.NAME_KEY, name);
     }
 
     /**

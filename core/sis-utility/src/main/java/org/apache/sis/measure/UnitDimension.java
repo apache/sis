@@ -95,7 +95,7 @@ final class UnitDimension implements Dimension, Serializable {
     @SuppressWarnings("ThisEscapedInObjectConstruction")    // Safe because this class is final.
     UnitDimension(final char symbol) {
         this.symbol = symbol;
-        components  = Collections.singletonMap(this, new Fraction(1,1).unique());
+        components  = Map.of(this, new Fraction(1,1).unique());
         UnitRegistry.init(components, this);
     }
 
@@ -244,7 +244,7 @@ final class UnitDimension implements Dimension, Serializable {
         @SuppressWarnings("unchecked")
         Map<Dimension,Integer> components = (Map<Dimension,Integer>) dimension.getBaseDimensions();
         if (components == null) {
-            return Collections.singletonMap(dimension, new Fraction(1,1));
+            return Map.of(dimension, new Fraction(1,1));
         }
         return ObjectConverters.derivedValues(components, Dimension.class, FractionConverter.FromInteger.INSTANCE);
     }

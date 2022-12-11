@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.referencing;
 import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
-import java.util.Collections;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
@@ -163,7 +162,7 @@ public final strictfp class CC_OperationParameterGroupTest extends TestCase {
         /*
          * All references to 'fromValue' will need to be replaced by references to 'complete'.
          */
-        assertEquals("replacements", Collections.singletonMap(fromValue, complete), replacements);
+        assertEquals("replacements", Map.of(fromValue, complete), replacements);
     }
 
     /**

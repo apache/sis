@@ -26,7 +26,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -104,7 +103,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      */
     public static DefaultAttributeType<String> universities() {
         return new DefaultAttributeType<>(
-                singletonMap(DefaultAttributeType.NAME_KEY, "universities"),
+                Map.of(DefaultAttributeType.NAME_KEY, "universities"),
                 String.class, 0, Integer.MAX_VALUE, null);
     }
 
@@ -113,7 +112,7 @@ public final strictfp class DefaultAttributeTypeTest extends TestCase {
      * This is the kind of attribute created by the ShapeFile reader.
      */
     static DefaultAttributeType<String> attribute(final String name) {
-        return new DefaultAttributeType<>(singletonMap(DefaultAttributeType.NAME_KEY, name), String.class, 1, 1, null);
+        return new DefaultAttributeType<>(Map.of(DefaultAttributeType.NAME_KEY, name), String.class, 1, 1, null);
     }
 
     /**

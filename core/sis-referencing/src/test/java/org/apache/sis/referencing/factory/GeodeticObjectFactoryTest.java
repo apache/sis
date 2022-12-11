@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -143,7 +142,7 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
      * This is the only mandatory property for object creation.
      */
     private static Map<String,?> name(final String name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

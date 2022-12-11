@@ -2008,7 +2008,7 @@ public enum CommonCRS {
      * Puts the given name in a map of properties to be given to object constructors.
      */
     private static Map<String,?> properties(final InternationalString name) {
-        return singletonMap(NAME_KEY, new NamedIdentifier(null, name));
+        return Map.of(NAME_KEY, new NamedIdentifier(null, name));
     }
 
     /**

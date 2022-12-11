@@ -18,7 +18,6 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Map;
 import java.util.Date;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import javax.measure.Unit;
@@ -140,7 +139,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a map of properties containing only the name of the given object.
      */
     private static Map<String,Object> name(final IdentifiedObject template) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+        return Map.of(IdentifiedObject.NAME_KEY, template.getName());
     }
 
     /**
@@ -205,7 +204,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     {
         final DatumFactory factory = factories.getDatumFactory();
         final Ellipsoid ellipsoid = factory.createFlattenedSphere(
-                Collections.singletonMap(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
+                Map.of(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
         datum = factory.createGeodeticDatum(name(ellipsoid), ellipsoid, CommonCRS.WGS84.primeMeridian());
         return this;
     }

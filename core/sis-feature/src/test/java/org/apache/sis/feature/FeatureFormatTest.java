@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -110,7 +109,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
      * Convenience method returning the given name in a {@code properties} map.
      */
     private static Map<String,?> name(final String name) {
-        return Collections.singletonMap(DefaultFeatureType.NAME_KEY, name);
+        return Map.of(DefaultFeatureType.NAME_KEY, name);
     }
 
     /**

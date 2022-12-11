@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
@@ -135,8 +134,8 @@ final class Types {
         geometries = Geometries.implementation(library);
         final Map<String,InternationalString[]> resources = new HashMap<>();
         final ScopedName    geomName = AttributeConvention.GEOMETRY_PROPERTY;
-        final Map<String,?> geomInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, geomName);
-        final Map<String,?> envpInfo = Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
+        final Map<String,?> geomInfo = Map.of(AbstractIdentifiedType.NAME_KEY, geomName);
+        final Map<String,?> envpInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
         /*
          * The parent of all FeatureTypes to be created in this constructor.
          * This parent has a single property, "sis:identifier" of type Integer,

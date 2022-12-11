@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -112,7 +111,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
      * Creates an operation method of the given name.
      */
     private static OperationMethod method(final String name) {
-        final Map<String,?> properties = Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY,
+        final Map<String,?> properties = Map.of(DefaultParameterDescriptorGroup.NAME_KEY,
                 new ImmutableIdentifier(Citations.SIS, Constants.SIS, name));
         final DefaultParameterDescriptorGroup descriptor = new DefaultParameterDescriptorGroup(properties, 1, 1);
         return new DefaultOperationMethod(properties, descriptor);

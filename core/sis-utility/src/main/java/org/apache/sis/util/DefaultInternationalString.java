@@ -59,7 +59,9 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * The string values in different locales (never {@code null}).
+     * May contains the {@code null} key.
      */
+    @SuppressWarnings("serial")
     private Map<Locale,String> localeMap;
 
     /**
@@ -111,7 +113,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 localeMap = Collections.singletonMap(entry.getKey(), entry.getValue());
             } else {
                 localeMap = new LinkedHashMap<>(strings);
-                // If HashMap is replaced by another type, please revisit 'getLocales()'.
+                // If HashMap is replaced by another type, revisit `getLocales()`.
             }
         }
         final boolean nullMapKey = localeMap.containsKey(null);
@@ -139,7 +141,7 @@ public class DefaultInternationalString extends AbstractInternationalString impl
                 return;
             }
             case 1: {
-                // If HashMap is replaced by another type, please revisit 'getLocales()'.
+                // If HashMap is replaced by another type, revisit `getLocales()`.
                 localeMap = new LinkedHashMap<>(localeMap);
                 localeSet = null;
                 break;
@@ -260,8 +262,8 @@ public class DefaultInternationalString extends AbstractInternationalString impl
              *  3) Locale.getDefault()
              *
              * Locale.getDefault() must be last because the i18n string is often constructed with
-             * an English sentence for the 'ROOT' locale (the unlocalized text), without explicit
-             * entry for the English locale since the 'ROOT' locale is the fallback. If we were
+             * an English sentence for the `ROOT` locale (the unlocalized text), without explicit
+             * entry for the English locale since the `ROOT` locale is the fallback. If we were
              * looking for the default locale first on a system having French as the default locale,
              * we would get a sentence in French when the user asked for a sentence in English or
              * any language not explicitly declared.

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Collections;
+import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import org.opengis.geometry.DirectPosition;
@@ -588,11 +588,11 @@ public final strictfp class GridDerivationTest extends TestCase {
          * for any point INSIDE the envelope, it's non-determinist about points perfectly aligned on the edge.
          * So, here we will test a point very near to the envelope edge, but still into it.
          */
-        final GeneralEnvelope grid3d = new GeneralEnvelope(3);
+        final var grid3d = new GeneralEnvelope(3);
         grid3d.setEnvelope(0, 0, 0, 1920, 1080, 4);
 
-        final DefaultCompoundCRS crs3d = new DefaultCompoundCRS(
-                Collections.singletonMap("name", "geo3d"),
+        final var crs3d = new DefaultCompoundCRS(
+                Map.of("name", "geo3d"),
                 HardCodedCRS.WGS84,
                 HardCodedCRS.TIME);
 

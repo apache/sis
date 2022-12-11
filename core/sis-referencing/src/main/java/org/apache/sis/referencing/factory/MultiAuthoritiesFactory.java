@@ -1610,7 +1610,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     String name = IdentifiedObjects.getIdentifierOrName(ops[0]) + " ⟶ "
                                 + IdentifiedObjects.getIdentifierOrName(ops[ops.length - 1]);
                     combined = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
-                            .createConcatenatedOperation(Collections.singletonMap(CoordinateOperation.NAME_KEY, name), ops);
+                            .createConcatenatedOperation(Map.of(CoordinateOperation.NAME_KEY, name), ops);
                 }
                 break;
             }

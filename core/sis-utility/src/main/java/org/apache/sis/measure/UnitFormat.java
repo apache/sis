@@ -716,7 +716,7 @@ appPow: if (unit == null) {
         } else {
             // Fallback for foreigner implementations (power restricted to integer).
             Map<? extends Unit<?>, Integer> c = unscaled.getBaseUnits();
-            if (c == null) c = Collections.singletonMap(unit, 1);
+            if (c == null) c = Map.of(unit, 1);
             components = c;
             for (final Map.Entry<? extends Unit<?>, Integer> e : c.entrySet()) {
                 final int power = e.getValue();
