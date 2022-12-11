@@ -938,19 +938,13 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                      * Verify if an existing collection (assigned to another type) provides the same values.
                      * If we find one, share the same instance for reducing memory usage.
                      */
-                    boolean share = false;
                     for (final Set<String> other : codeCaches.values()) {
                         if (codes.equals(other)) {
                             codes = other;
-                            share = true;
                             break;
                         }
                     }
-                    if (!share) {
-                        // TODO: replace by Set.copyOf(Set) in JDK9 and remove the `share` flag
-                        // (not needed because Set.copyOf(Set) does the verification itself).
-                        codes = CollectionsExt.unmodifiableOrCopy(codes);
-                    }
+                    codes = Set.copyOf(codes);
                     codeCaches.put(type, codes);
                 }
             } finally {

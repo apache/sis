@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.xml;
 
+import java.util.Map;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -29,7 +30,7 @@ import org.apache.sis.internal.storage.Capability;
  * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.4
  * @module
  */
@@ -46,14 +47,14 @@ public final class StoreProvider extends AbstractProvider {
      * Creates a new provider.
      */
     public StoreProvider() {
-        super(null);
-        mimeForNameSpaces.put(      Namespaces.GML,       "application/gml+xml");
-        mimeForNameSpaces.put(      Namespaces.CSW,       "application/vnd.ogc.csw_xml");
-        mimeForNameSpaces.put(LegacyNamespaces.CSW,       "application/vnd.ogc.csw_xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMD,       "application/vnd.iso.19139+xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMI,       "application/vnd.iso.19139+xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMI_ALIAS, "application/vnd.iso.19139+xml");
-        mimeForRootElements.put("MD_Metadata",            "application/vnd.iso.19139+xml");
+        super(null,
+              Map.of(      Namespaces.GML,       "application/gml+xml",
+                           Namespaces.CSW,       "application/vnd.ogc.csw_xml",
+                     LegacyNamespaces.CSW,       "application/vnd.ogc.csw_xml",
+                     LegacyNamespaces.GMD,       "application/vnd.iso.19139+xml",
+                     LegacyNamespaces.GMI,       "application/vnd.iso.19139+xml",
+                     LegacyNamespaces.GMI_ALIAS, "application/vnd.iso.19139+xml"),
+              Map.of("MD_Metadata",              "application/vnd.iso.19139+xml"));
         // More types to be added in future versions.
     }
 

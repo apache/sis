@@ -483,28 +483,26 @@ public class StoreListeners implements Localized {
      */
     public void warning(final Level level, String message, final Exception exception) {
         ArgumentChecks.ensureNonNull("level", level);
-        final LogRecord record;
-        final StackTraceElement[] trace;
-        if (exception != null) {
-            trace = exception.getStackTrace();
+        if (exception == null) {
+            ArgumentChecks.ensureNonEmpty("message", message);
+        } else {
             message = Exceptions.formatChainedMessages(getLocale(), message, exception);
             if (message == null) {
                 message = exception.toString();
             }
-            record = new LogRecord(level, message);
-            record.setThrown(exception);
-        } else {
-            ArgumentChecks.ensureNonEmpty("message", message);
-            trace = Thread.currentThread().getStackTrace();         // TODO: on JDK9, use StackWalker instead.
-            record = new LogRecord(level, message);
         }
-        try {
-            for (final StackTraceElement e : trace) {
+        final LogRecord record = new LogRecord(level, message);
+        if (exception == null) {
+           StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> stream.filter(
+                   (frame) -> setPublicSource(record, frame.getDeclaringClass(), frame.getMethodName())).findFirst());
+         } else try {
+            record.setThrown(exception);
+            for (final StackTraceElement e : exception.getStackTrace()) {
                 if (setPublicSource(record, Class.forName(e.getClassName()), e.getMethodName())) {
                     break;
                 }
             }
-        } catch (ClassNotFoundException | SecurityException e) {
+        } catch (ClassNotFoundException e) {
             Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
         }
         warning(record, StoreUtilities.removeStackTraceInLogs());
@@ -512,7 +510,7 @@ public class StoreListeners implements Localized {
 
     /**
      * Eventually sets the class name and method name in the given record,
-     * and returns {@code true} if the method is public resource method.
+     * and returns {@code true} if the method is a public resource method.
      *
      * @param  record      the record where to set the source class/method name.
      * @param  type        the source class. This method does nothing if the class is not a {@link Resource}.
