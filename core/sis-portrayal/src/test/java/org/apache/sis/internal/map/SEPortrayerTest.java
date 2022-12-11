@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.map;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -122,7 +121,7 @@ public class SEPortrayerTest extends TestCase {
         shark1.setPropertyValue("specie", "White Shark");
         shark1.setPropertyValue("length", 12.0);
 
-        fishes = new MemoryFeatureSet(null, sharkType, Arrays.asList(fish1, fish2, shark1));
+        fishes = new MemoryFeatureSet(null, sharkType, List.of(fish1, fish2, shark1));
 
         final FeatureTypeBuilder boatbuilder = new FeatureTypeBuilder();
         boatbuilder.setName("boat");
@@ -147,7 +146,7 @@ public class SEPortrayerTest extends TestCase {
         boat2.setPropertyValue("geom", poly2);
         boat2.setPropertyValue("description", "A submarine");
 
-        boats = new MemoryFeatureSet(null, boatType, Arrays.asList(boat1, boat2));
+        boats = new MemoryFeatureSet(null, boatType, List.of(boat1, boat2));
     }
 
     private Set<Match> present(MapItem item) {
@@ -525,7 +524,7 @@ public class SEPortrayerTest extends TestCase {
         style.featureTypeStyles().add(fts);
         fts.rules().add(ruleBase);
 
-        final List<Resource> list = Arrays.asList(fishes, boats);
+        final List<Resource> list = List.of(fishes, boats);
         final Aggregate agg = new Aggregate() {
             @Override
             public Collection<? extends Resource> components() throws DataStoreException {

@@ -153,7 +153,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @DependsOnMethod("testWithoutIdentifier")
     public void testWithSingleIdentifier() {
         final Identifier               identifier  = new ImmutableIdentifier(null, "EPSG", "7019");
-        final Set<Identifier>          identifiers = Collections.singleton(identifier);
+        final Set<Identifier>          identifiers = Set.of(identifier);
         final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
         final Identifier               gmlId       = validate(object, identifiers, "epsg-7019");
         assertNotNull("gmlId",                   gmlId);
@@ -188,7 +188,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @DependsOnMethod("testWithManyIdentifiers")
     public void testAsSubtype() {
         final Identifier               identifier  = new NamedIdentifier(EPSG, "7019");
-        final Set<Identifier>          identifiers = Collections.singleton(identifier);
+        final Set<Identifier>          identifiers = Set.of(identifier);
         final AbstractIdentifiedObject object      = new AbstractDatum(properties(identifiers));
         final Identifier               gmlId       = validate(object, identifiers, "epsg-datum-7019");
         assertNotNull("gmlId",                   gmlId);

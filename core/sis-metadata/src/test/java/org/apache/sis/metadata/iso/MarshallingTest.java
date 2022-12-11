@@ -18,7 +18,8 @@ package org.apache.sis.metadata.iso;
 
 import java.util.Date;
 import java.util.Locale;
-import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Collections;
@@ -145,7 +146,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             md.setMetadataIdentifier(id);
         }
         // Languages — one language only, and one (country, language) tuple.
-        final Collection<Locale> languages = Arrays.asList(Locale.ENGLISH, Locale.CANADA_FRENCH);
+        final Collection<Locale> languages = List.of(Locale.ENGLISH, Locale.CANADA_FRENCH);
         md.setLanguages(languages);
 
         // Character Sets (character encoding)
@@ -195,8 +196,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *       └─Position name………………………………………… Philosopher
              */
             final DefaultContact contact = new DefaultContact();
-            contact.setPhones(Arrays.asList(new DefaultTelephone("555-444-3333", TelephoneType.VOICE),
-                                            new DefaultTelephone("555-555-5555", TelephoneType.FACSIMILE)));
+            contact.setPhones(List.of(new DefaultTelephone("555-444-3333", TelephoneType.VOICE),
+                                      new DefaultTelephone("555-555-5555", TelephoneType.FACSIMILE)));
             {
                 {
                     // Address information
@@ -230,8 +231,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final DefaultIndividual individual  = new DefaultIndividual("Socrates", "Philosopher", null);
             final DefaultIndividual individual2 = new DefaultIndividual("Hermocrates", "Politician", contact);
             final DefaultOrganisation org = new DefaultOrganisation("Plato Republic", null, individual, contact);
-            md.setContacts(Arrays.asList(new DefaultResponsibility(Role.POINT_OF_CONTACT, null, org),
-                                         new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
+            md.setContacts(List.of(new DefaultResponsibility(Role.POINT_OF_CONTACT, null, org),
+                                   new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
         }
         // Date info (date stamp in legacy ISO 19115:2003 model)
         final Collection<CitationDate> dateInfo = Collections.singleton(new DefaultCitationDate(new Date(1260961229580L), DateType.CREATION));
@@ -263,7 +264,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final DefaultDimension cols = new DefaultDimension(DimensionNameType.COLUMN, 2233);
             rows.setResolution(10.0);
             cols.setResolution( 5.0);
-            georectified.setAxisDimensionProperties(Arrays.asList(rows, cols));
+            georectified.setAxisDimensionProperties(List.of(rows, cols));
             georectified.setCellGeometry(CellGeometry.AREA);
             georectified.setPointInPixel(PixelOrientation.UPPER_RIGHT);
             georectified.getCornerPoints().add(NilReason.MISSING.createNilObject(Point.class));
@@ -404,7 +405,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             resolution.setDistance(56777.0);
             dataId.getSpatialResolutions().add(resolution);
         }
-        dataId.setTopicCategories(Arrays.asList(TopicCategory.OCEANS, TopicCategory.SOCIETY));
+        dataId.setTopicCategories(List.of(TopicCategory.OCEANS, TopicCategory.SOCIETY));
         dataId.getStatus().add(Progress.HISTORICAL_ARCHIVE);
         /*
          * Citation………………………………………………………… A lost island
@@ -420,12 +421,12 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         cit.setEdition(new SimpleInternationalString("First edition"));
         cit.setEditionDate(new Date(1523311200000L));
         cit.setCollectiveTitle(new SimpleInternationalString("Popular legends"));
-        cit.setAlternateTitles(Arrays.asList(new SimpleInternationalString("Island lost again"),
-                                             new Anchor(new URI("http://map-example.com"), "Map example")));
+        cit.setAlternateTitles(List.of(new SimpleInternationalString("Island lost again"),
+                                       new Anchor(new URI("http://map-example.com"), "Map example")));
         cit.getDates().add(new DefaultCitationDate(new Date(1523224800000L), DateType.CREATION));
         cit.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "lost-island");
         dataId.setCitation(cit);
-        dataId.setTemporalResolutions(Collections.emptySet());          // TODO: need a more complete sis-temporal.
+        dataId.setTemporalResolutions(Set.of());          // TODO: need a more complete sis-temporal.
         final Collection<MaintenanceInformation> resourceMaintenances;
         {
             /*
@@ -487,8 +488,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final DefaultKeywordClass keywordClass = new DefaultKeywordClass();
             keywordClass.setClassName(new SimpleInternationalString("Greek elements"));
             keywords.setKeywordClass(keywordClass);
-            keywords.setKeywords(Arrays.asList(new SimpleInternationalString("Water"),
-                                               new SimpleInternationalString("Aether")));
+            keywords.setKeywords(List.of(new SimpleInternationalString("Water"),
+                                         new SimpleInternationalString("Aether")));
             keywords.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "greek-elements");
             descriptiveKeywords = Collections.singleton(keywords);
             dataId.setDescriptiveKeywords(descriptiveKeywords);
@@ -545,7 +546,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             }
             serviceId.getContainsOperations().add(operationMetadata);
             serviceId.getOperatesOn().add(dataId);
-            md.setIdentificationInfo(Arrays.asList(dataId, serviceId));
+            md.setIdentificationInfo(List.of(dataId, serviceId));
         }
         {
             // Content info
@@ -587,7 +588,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                     sampleDimension.setMaxValue(22.22);
                     sampleDimension.setUnits(Units.CELSIUS);
                     sampleDimension.setScaleFactor(1.5);
-                    attributeGroup.setAttributes(Arrays.asList(rangeDimension, sampleDimension));
+                    attributeGroup.setAttributes(List.of(rangeDimension, sampleDimension));
                     coverageDescription.getAttributeGroups().add(attributeGroup);
                 }
             }
@@ -595,7 +596,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final DefaultFeatureCatalogueDescription featureCatalogueDescription = new DefaultFeatureCatalogueDescription();
             featureCatalogueDescription.setIncludedWithDataset(true);
             featureCatalogueDescription.setCompliant(true);
-            md.setContentInfo(Arrays.asList(coverageDescription, featureCatalogueDescription));
+            md.setContentInfo(List.of(coverageDescription, featureCatalogueDescription));
         }
         return md;
     }

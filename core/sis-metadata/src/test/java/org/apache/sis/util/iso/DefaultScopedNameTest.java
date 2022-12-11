@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
+import java.util.List;
 import java.util.Arrays;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.SimpleInternationalString;
@@ -69,9 +70,9 @@ public final strictfp class DefaultScopedNameTest extends TestCase {
      */
     @Test
     public void testSimpleInternationalString() {
-        GenericName n1 = new DefaultScopedName(null, Arrays.asList("ns1", "Route"));
-        GenericName n2 = new DefaultScopedName(null, Arrays.asList(new SimpleInternationalString("ns1"), "Route"));
-        GenericName n3 = new DefaultScopedName(null, Arrays.asList("ns1", new SimpleInternationalString("Route")));
+        GenericName n1 = new DefaultScopedName(null, List.of("ns1", "Route"));
+        GenericName n2 = new DefaultScopedName(null, List.of(new SimpleInternationalString("ns1"), "Route"));
+        GenericName n3 = new DefaultScopedName(null, List.of("ns1", new SimpleInternationalString("Route")));
         assertNameEqual(n1, n2);
         assertNameEqual(n1, n3);
         assertNameEqual(n2, n3);

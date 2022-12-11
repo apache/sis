@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.NoSuchElementException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Projection;
@@ -58,13 +58,13 @@ public final strictfp class OperationMethodSetTest extends TestCase {
      */
     @SuppressWarnings("serial")
     private static DefaultOperationMethod createMethod(final Class<? extends Projection> type, final String method) {
-        Map<String,?> properties = Collections.singletonMap(DefaultOperationMethod.NAME_KEY, method);
+        Map<String,?> properties = Map.of(DefaultOperationMethod.NAME_KEY, method);
         final ParameterDescriptorGroup parameters = new DefaultParameterDescriptorGroup(properties, 1, 1);
         /*
          * Recycle the ParameterDescriptorGroup name for DefaultOperationMethod.
          * This save us one object creation, and is often the same name anyway.
          */
-        properties = Collections.singletonMap(DefaultOperationMethod.NAME_KEY, parameters.getName());
+        properties = Map.of(DefaultOperationMethod.NAME_KEY, parameters.getName());
         return new DefaultOperationMethod(properties, 2, 2, parameters) {
             @Override public Class<? extends Projection> getOperationType() {
                 return type;
@@ -151,8 +151,8 @@ public final strictfp class OperationMethodSetTest extends TestCase {
         /*
          * Lambert case. Test twice since the two excecutions will take different code paths.
          */
-        assertEquals(Collections.singleton(lamb), lambert);
-        assertEquals(Collections.singleton(lamb), lambert);
+        assertEquals(Set.of(lamb), lambert);
+        assertEquals(Set.of(lamb), lambert);
         /*
          * Test filtering: the test should not contain any conic projection.
          */

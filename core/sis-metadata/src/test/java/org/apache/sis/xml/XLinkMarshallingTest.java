@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml;
 
-import java.util.Collections;
+import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
@@ -103,7 +103,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
         final DefaultDataIdentification identification = new DefaultDataIdentification();
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setIdentificationInfo(Collections.singleton(identification));
+        metadata.setIdentificationInfo(Set.of(identification));
 
         assertXmlEquals(LINK_ONLY_XML, marshal(metadata), "xmlns:*");
         verify(true, unmarshal(DefaultMetadata.class, LINK_ONLY_XML));
@@ -136,7 +136,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         identification.setAbstract(new SimpleInternationalString("This is a test."));
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setIdentificationInfo(Collections.singleton(identification));
+        metadata.setIdentificationInfo(Set.of(identification));
 
         assertXmlEquals(LINK_WITH_ELEMENT_XML, marshal(metadata), "xmlns:*");
         final DefaultMetadata unmarshal = unmarshal(DefaultMetadata.class, LINK_WITH_ELEMENT_XML);

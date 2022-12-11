@@ -16,10 +16,10 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.EnumSet;
-import java.util.Arrays;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.test.TestCase;
@@ -50,8 +50,8 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
      */
     @Test
     public void testNoExclusion() {
-        final Set<Integer> source = new HashSet<>(Arrays.asList(2,  7,  12,  17,  20 ));
-        final Set<Integer> target = new HashSet<>(Arrays.asList(20, 70, 120, 170, 200));
+        final Set<Integer> source = new HashSet<>(List.of(2,  7,  12,  17,  20 ));
+        final Set<Integer> target = new HashSet<>(List.of(20, 70, 120, 170, 200));
         final Set<Integer> tested = DerivedSet.create(source, this);
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);
@@ -76,8 +76,8 @@ public final strictfp class DerivedSetTest extends TestCase implements ObjectCon
      */
     @Test
     public void testWithExclusion() {
-        final Set<Integer> source = new HashSet<>(Arrays.asList(2,  7,  12,  EXCLUDED, 20));
-        final Set<Integer> target = new HashSet<>(Arrays.asList(20, 70, 120, 200));
+        final Set<Integer> source = new HashSet<>(List.of(2,  7,  12,  EXCLUDED, 20));
+        final Set<Integer> target = new HashSet<>(List.of(20, 70, 120, 200));
         final Set<Integer> tested = DerivedSet.create(source, this);
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);

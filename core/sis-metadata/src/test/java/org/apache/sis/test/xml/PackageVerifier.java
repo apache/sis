@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
@@ -79,44 +78,32 @@ final strictfp class PackageVerifier {
      * we had to keep the namespace declared in {@link org.apache.sis.util.iso.DefaultScopedName}
      * (the replacement is performed by {@code org.apache.sis.xml.TransformingWriter}).</p>
      */
-    private static final Map<String, Set<String>> LEGACY_NAMESPACES;
-    static {
-        final Map<String, Set<String>> m = new HashMap<>(8);
-        m.put(LegacyNamespaces.GMD, ALL);
-        m.put(LegacyNamespaces.GMI, ALL);
-        m.put(LegacyNamespaces.GMX, ALL);
-        m.put(LegacyNamespaces.SRV, ALL);
-        m.put(Namespaces.GCO, Collections.singleton("ScopedName"));     // Not to be confused with standard <srv:scopedName>
-        LEGACY_NAMESPACES = Collections.unmodifiableMap(m);
-    }
+    private static final Map<String, Set<String>> LEGACY_NAMESPACES = Map.of(
+            LegacyNamespaces.GMD, ALL,
+            LegacyNamespaces.GMI, ALL,
+            LegacyNamespaces.GMX, ALL,
+            LegacyNamespaces.SRV, ALL,
+            Namespaces.GCO, Set.of("ScopedName"));     // Not to be confused with standard <srv:scopedName>
 
     /**
      * Types declared in JAXB annotations to be considered as equivalent to types in XML schemas.
      */
-    private static final Map<String,String> TYPE_EQUIVALENCES;
-    static {
-        final Map<String,String> m = new HashMap<>();
-        m.put("PT_FreeText",             "CharacterString");
-        m.put("Abstract_Citation",       "CI_Citation");
-        m.put("AbstractCI_Party",        "CI_Party");
-        m.put("Abstract_Responsibility", "CI_Responsibility");
-        m.put("Abstract_Extent",         "EX_Extent");
-        TYPE_EQUIVALENCES = Collections.unmodifiableMap(m);
-    }
+    private static final Map<String,String> TYPE_EQUIVALENCES = Map.of(
+            "PT_FreeText",             "CharacterString",
+            "Abstract_Citation",       "CI_Citation",
+            "AbstractCI_Party",        "CI_Party",
+            "Abstract_Responsibility", "CI_Responsibility",
+            "Abstract_Extent",         "EX_Extent");
 
     /**
      * XML elements that are not yet in the XML schema used by this verifier.
      * They are XML elements added by corrigendum applied on abstract models,
      * but not yet (at the time of writing this test) propagated in the XML schema.
      */
-    private static final Map<Class<?>, String> PENDING_XML_ELEMENTS;
-    static {
-        final Map<Class<?>,String> m = new HashMap<>();
-        m.put(org.apache.sis.metadata.iso.citation.AbstractParty.class, "partyIdentifier");
-        m.put(org.apache.sis.metadata.iso.content.DefaultSampleDimension.class, "rangeElementDescription");
-        m.put(org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation.class, "scope");
-        PENDING_XML_ELEMENTS = Collections.unmodifiableMap(m);
-    }
+    private static final Map<Class<?>, String> PENDING_XML_ELEMENTS = Map.of(
+            org.apache.sis.metadata.iso.citation.AbstractParty.class, "partyIdentifier",
+            org.apache.sis.metadata.iso.content.DefaultSampleDimension.class, "rangeElementDescription",
+            org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation.class, "scope");
 
     /**
      * The schemas to compare with the JAXB annotations.
@@ -265,7 +252,7 @@ final strictfp class PackageVerifier {
         classNS           = null;
         currentClass      = type;
         isDeprecatedClass = false;
-        properties        = Collections.emptyMap();
+        properties        = Map.of();
 
         final XmlType        xmlType = type.getDeclaredAnnotation(XmlType.class);
         final XmlRootElement xmlRoot = type.getDeclaredAnnotation(XmlRootElement.class);
@@ -434,7 +421,7 @@ final strictfp class PackageVerifier {
          * We do not verify fully the properties in legacy namespaces because we didn't loaded their schemas.
          * However, we verify at least that those properties are not declared as required.
          */
-        if (LEGACY_NAMESPACES.getOrDefault(ns, Collections.emptySet()).contains(name)) {
+        if (LEGACY_NAMESPACES.getOrDefault(ns, Set.of()).contains(name)) {
             if (!isDeprecatedClass && element.required()) {
                 throw new SchemaException(errorInClassMember(javaName)
                         .append("Legacy property should not be required.").toString());

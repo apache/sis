@@ -94,7 +94,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *
      * @see #getCodeSpaces()
      */
-    private static final Set<String> CODESPACES = Collections.singleton(Constants.EPSG);
+    private static final Set<String> CODESPACES = Set.of(Constants.EPSG);
 
     /**
      * The factory to use for creating {@link Connection}s to the EPSG database.

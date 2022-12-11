@@ -17,7 +17,6 @@
 package org.apache.sis.internal.util;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.AbstractMap;
@@ -155,11 +154,11 @@ public final strictfp class CollectionsExtTest extends TestCase {
      */
     @Test
     public void testIdentityEquals() {
-        final List<String> c1 = Arrays.asList("A", "B", "C");
-        final List<String> c2 = Arrays.asList("A", "B");
+        final List<String> c1 = List.of("A", "B", "C");
+        final List<String> c2 = List.of("A", "B");
         assertFalse(CollectionsExt.identityEquals(c1.iterator(), c2.iterator()));
         assertFalse(CollectionsExt.identityEquals(c2.iterator(), c1.iterator()));
-        assertTrue(CollectionsExt.identityEquals(c1.iterator(), Arrays.asList("A", "B", "C").iterator()));
+        assertTrue(CollectionsExt.identityEquals(c1.iterator(), List.of("A", "B", "C").iterator()));
     }
 
     /**
@@ -170,7 +169,7 @@ public final strictfp class CollectionsExtTest extends TestCase {
     @Test
     public void testToArray() {
         final String[] expected = new String[] {"One", "Two", "Three"};
-        final String[] actual = CollectionsExt.toArray(Arrays.asList(expected), String.class);
+        final String[] actual = CollectionsExt.toArray(List.of(expected), String.class);
         assertArrayEquals(expected, actual);
     }
 }

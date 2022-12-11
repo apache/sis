@@ -16,8 +16,8 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Arrays;
 import java.util.Map;
+import java.util.List;
 import java.util.Collections;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
@@ -110,7 +110,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
         assertInstanceOf("bounds", EnvelopeOperation.class, property);
         final EnvelopeOperation op = (EnvelopeOperation) property;
         assertSame("targetCRS", HardCodedCRS.WGS84, op.targetCRS);
-        assertSetEquals(Arrays.asList("classes", "climbing wall", "gymnasium"), op.getDependencies());
+        assertSetEquals(List.of("classes", "climbing wall", "gymnasium"), op.getDependencies());
     }
 
     /**

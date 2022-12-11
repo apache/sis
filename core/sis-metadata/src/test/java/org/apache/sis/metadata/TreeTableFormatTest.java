@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Arrays;
+import java.util.List;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
 import org.apache.sis.util.collection.TableColumn;
@@ -35,7 +35,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
@@ -116,7 +115,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         coded   .setPresentationForms(singleton(PresentationForm.IMAGE_HARDCOPY));
         untitled.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.AUTHOR, null, null)));
         final DefaultProcessing processing = new DefaultProcessing();
-        processing.setDocumentations(asList(titled, coded, untitled));
+        processing.setDocumentations(List.of(titled, coded, untitled));
         final String text = format.format(processing.asTreeTable());
         assertMultilinesEquals(
             "Processing\n" +
@@ -135,7 +134,7 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     public void testImageDescription() {
         final DefaultImageDescription image = new DefaultImageDescription();
-        image.setAttributeGroups(Arrays.asList(
+        image.setAttributeGroups(List.of(
             new DefaultAttributeGroup(null, createBand(0.25, 0.26)),
             new DefaultAttributeGroup(null, createBand(0.28, 0.29))
         ));
@@ -160,12 +159,12 @@ public final strictfp class TreeTableFormatTest extends TestCase {
     @Test
     public void testTreeWithCustomElements() {
         final DefaultCitation citation = new DefaultCitation();
-        citation.setAlternateTitles(Arrays.asList(
+        citation.setAlternateTitles(List.of(
                 new SimpleInternationalString("Apple"),
                 new SimpleInternationalString("Orange"),
                 new SimpleInternationalString("Kiwi")));
 
-        citation.setPresentationForms(Arrays.asList(
+        citation.setPresentationForms(List.of(
                 PresentationForm.IMAGE_DIGITAL,
                 PresentationForm.valueOf("AUDIO_DIGITAL"),  // Existing form
                 PresentationForm.valueOf("test")));         // Custom form

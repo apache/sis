@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.feature;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.EnumSet;
 import java.util.Iterator;
 import org.opengis.geometry.Envelope;
@@ -127,7 +127,7 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
      */
     @Test
     public void testMergePolylines() {
-        final Iterator<Object> c1 = Arrays.asList(
+        final Iterator<Object> c1 = List.of(
                 factory.createPoint(  4,   5),
                 factory.createPoint(  7,   9),
                 factory.createPoint(  9,   3),
@@ -137,14 +137,14 @@ public abstract strictfp class GeometriesTestCase extends TestCase {
                 factory.createPoint( -2,  -5),
                 factory.createPoint( -1,  -6)).iterator();
 
-        final Iterator<Object> c2 = Arrays.asList(
+        final Iterator<Object> c2 = List.of(
                 factory.createPoint( 14,  12),
                 factory.createPoint( 15,  11),
                 factory.createPoint( 13,  10)).iterator();
 
         final Object g1 = factory.castOrWrap(c1.next()).mergePolylines(c1);
         final Object g2 = factory.castOrWrap(c2.next()).mergePolylines(c2);
-        geometry = factory.castOrWrap(g1).mergePolylines(Arrays.asList(factory.createPoint(13, 11), g2).iterator());
+        geometry = factory.castOrWrap(g1).mergePolylines(List.of(factory.createPoint(13, 11), g2).iterator());
 
         createWrapper();
         final GeneralEnvelope env = wrapper.getEnvelope();

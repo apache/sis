@@ -16,11 +16,9 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Collection;
-import java.util.Collections;
 import org.apache.sis.feature.Features;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -141,7 +139,7 @@ split:  if (path != null) {
      */
     @Override
     protected final Collection<?> getChildren() {
-        return isVirtual ? Arrays.asList(name, isVirtual) : Collections.singleton(name);
+        return isVirtual ? List.of(name, isVirtual) : List.of(name);
     }
 
     /**

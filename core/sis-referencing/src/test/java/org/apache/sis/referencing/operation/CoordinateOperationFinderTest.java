@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
 import java.util.Collections;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
@@ -279,7 +279,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
         assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation",  Transformation.class, operation);
         assertEquals    ("method", method, ((SingleOperation) operation).getMethod().getName().getCode());
 
@@ -340,7 +340,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
         assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation",  Transformation.class, operation);
         assertEquals("method", "Geocentric translations (geog2D domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
@@ -386,7 +386,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
         assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation", Transformation.class,  operation);
         assertEquals    ("method", "Geocentric translations (geocentric domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());

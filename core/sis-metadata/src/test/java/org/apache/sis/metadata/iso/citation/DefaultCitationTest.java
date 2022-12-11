@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.net.URI;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -82,12 +82,12 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         title.add(Locale.ENGLISH,  "Undercurrent");
         citation.setTitle(title);
         citation.setISBN("9782505004509");
-        citation.setPresentationForms(Arrays.asList(
+        citation.setPresentationForms(List.of(
                 PresentationForm.DOCUMENT_HARDCOPY,
                 PresentationForm.DOCUMENT_DIGITAL));
         citation.setAlternateTitles(Collections.singleton(
                 new SimpleInternationalString("Andākarento")));   // Actually a different script of the Japanese title.
-        citation.setCitedResponsibleParties(Arrays.asList(
+        citation.setCitedResponsibleParties(List.of(
                 new DefaultResponsibility(Role.AUTHOR, null, new DefaultIndividual("Testsuya Toyoda", null, null)),
                 new DefaultResponsibility(Role.EDITOR, Extents.WORLD, new DefaultOrganisation("Kōdansha", null, null, null))));
         return citation;
@@ -115,7 +115,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
          * The ISSN code shall be retained because it is a new code.
          */
         assertNull("ISSN shall be initially null.", citation.getISSN());
-        citation.setIdentifiers(Arrays.asList(
+        citation.setIdentifiers(List.of(
                 new DefaultIdentifier(Citations.NETCDF, "MyNetCDF"),
                 new DefaultIdentifier(Citations.EPSG,   "MyEPSG"),
                 new DefaultIdentifier(Citations.ISBN,   "NewISBN"),
@@ -247,7 +247,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
         final DefaultCitation c = new DefaultCitation("Fight against poverty");
-        c.setCitedResponsibleParties(Arrays.asList(
+        c.setCitedResponsibleParties(List.of(
                 new DefaultResponsibility(Role.ORIGINATOR, null, new DefaultIndividual("Maid Marian", null, contact)),
                 new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
         ));

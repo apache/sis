@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
@@ -143,7 +143,7 @@ public final strictfp class LogicalFilterTest extends TestCase {
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
 
-        filter = anyArity.apply(Arrays.asList(f1, f2, f1));
+        filter = anyArity.apply(List.of(f1, f2, f1));
         assertArrayEquals(new Filter<?>[] {f1, f2, f1}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);

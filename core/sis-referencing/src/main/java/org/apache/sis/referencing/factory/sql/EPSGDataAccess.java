@@ -436,7 +436,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
          * We do not cache this citation because the caching service is already provided by ConcurrentAuthorityFactory.
          */
         final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-        c.setIdentifiers(Collections.singleton(new ImmutableIdentifier(null, null, Constants.EPSG)));
+        c.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, Constants.EPSG)));
         try {
             /*
              * Get the most recent version number from the history table. We get the date in local timezone

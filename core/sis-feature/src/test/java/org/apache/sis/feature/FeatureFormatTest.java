@@ -16,9 +16,9 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
@@ -151,7 +151,7 @@ public final strictfp class FeatureFormatTest extends TestCase {
         final AbstractFeature feature = isSparse ? new SparseFeature(type) : new DenseFeature(type);
         feature.setPropertyValue("city", "Tokyo");
         feature.setPropertyValue("population", 13185502);                               // In 2011.
-        feature.setPropertyValue("universities", Arrays.asList("Waseda", "Keio"));
+        feature.setPropertyValue("universities", List.of("Waseda", "Keio"));
         feature.setPropertyValue("temperature", Float.NaN);
 
         final FeatureFormat format = create();

@@ -18,10 +18,10 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
-import java.util.Arrays;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -230,7 +230,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @see #getCodeSpaces()
      */
     private static final Set<String> CODESPACES = Collections.unmodifiableSet(
-            new LinkedHashSet<>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
+            new LinkedHashSet<>(List.of(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
 
     /**
      * First code in the AUTO(2) namespace.

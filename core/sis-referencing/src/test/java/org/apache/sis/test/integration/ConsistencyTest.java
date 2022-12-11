@@ -16,8 +16,6 @@
  */
 package org.apache.sis.test.integration;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.text.ParseException;
 import javax.measure.Quantity;
@@ -72,15 +70,14 @@ public final strictfp class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.
      */
-    private static final Set<String> EXCLUDES = new HashSet<>(Arrays.asList(
+    private static final Set<String> EXCLUDES = Set.of(
         "CRS:1",            // Computer display: WKT parser alters the (i,j) axis names.
         "EPSG:5819",        // EPSG topocentric example A: DerivedCRS wrongly handled as a ProjectedCRS. See SIS-518.
         "AUTO2:42001",      // This projection requires parameters, but we provide none.
         "AUTO2:42002",      // This projection requires parameters, but we provide none.
         "AUTO2:42003",      // This projection requires parameters, but we provide none.
         "AUTO2:42004",      // This projection requires parameters, but we provide none.
-        "AUTO2:42005"       // This projection requires parameters, but we provide none.
-    ));
+        "AUTO2:42005");     // This projection requires parameters, but we provide none.
 
     /**
      * Width of the code columns in the warnings formatted by {@link #print(String, String, Object)}.

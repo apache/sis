@@ -17,7 +17,6 @@
 package org.apache.sis.internal.filter;
 
 import java.util.List;
-import java.util.Collections;
 import java.lang.reflect.Field;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.test.TestCase;
@@ -61,7 +60,7 @@ public final strictfp class FunctionNamesTest extends TestCase {
      * Base class for dummy implementation of filter.
      */
     private static abstract class FilterBase implements ComparisonOperator<Object> {
-        @Override public List<Expression<Object,?>> getExpressions() {return Collections.emptyList();}
+        @Override public List<Expression<Object,?>> getExpressions() {return List.of();}
         @Override public boolean test(Object resource) {return false;}
     }
 

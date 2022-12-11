@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.metadata;
 
-import java.util.Arrays;
+import java.util.Set;
+import java.util.List;
 import java.util.Locale;
 import java.util.Iterator;
 import java.util.Collections;
@@ -56,7 +57,7 @@ public final strictfp class MergerTest extends TestCase {
         final DefaultCoverageDescription         coverage = new DefaultCoverageDescription();
         final DefaultImageDescription            image    = new DefaultImageDescription();
         final DefaultMetadata                    metadata = new DefaultMetadata();
-        features.setFeatureCatalogueCitations(Collections.singleton(new DefaultCitation("Shapefile")));
+        features.setFeatureCatalogueCitations(Set.of(new DefaultCitation("Shapefile")));
         features.setIncludedWithDataset(Boolean.TRUE);
         metadata.getContentInfo().add(features);
 
@@ -82,7 +83,7 @@ public final strictfp class MergerTest extends TestCase {
         image.setProcessingLevelCode(new DefaultIdentifier("Level 2"));
         metadata.getContentInfo().add(image);
 
-        features.setFeatureCatalogueCitations(Collections.singleton(new DefaultCitation("GPX file")));
+        features.setFeatureCatalogueCitations(Set.of(new DefaultCitation("GPX file")));
         features.setIncludedWithDataset(Boolean.TRUE);
         metadata.getContentInfo().add(features);
 
@@ -101,9 +102,9 @@ public final strictfp class MergerTest extends TestCase {
         final Merger merger = new Merger(null);
         merger.copy(source, target);
 
-        assertSetEquals(Arrays.asList(Locale.JAPANESE, Locale.FRENCH),
+        assertSetEquals(List.of(Locale.JAPANESE, Locale.FRENCH),
                         target.getLocalesAndCharsets().keySet());
-        assertSetEquals(Arrays.asList(StandardCharsets.UTF_16, StandardCharsets.UTF_8),
+        assertSetEquals(List.of(StandardCharsets.UTF_16, StandardCharsets.UTF_8),
                         target.getLocalesAndCharsets().values());
 
         final Iterator<ContentInformation> it       = target.getContentInfo().iterator();

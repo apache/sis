@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Collections;
 import javax.xml.bind.Marshaller;
@@ -196,7 +196,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     @Test
     public void testExtraCodes() throws JAXBException {
         final DefaultCitation id = new DefaultCitation();
-        id.setPresentationForms(Arrays.asList(
+        id.setPresentationForms(List.of(
                 PresentationForm.valueOf("IMAGE_DIGITAL"),      // Existing code with UML id="imageDigital"
                 PresentationForm.valueOf("test")));             // New code
 

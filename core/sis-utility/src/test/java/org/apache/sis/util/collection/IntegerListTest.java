@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.ConcurrentModificationException;
@@ -149,11 +148,11 @@ public final strictfp class IntegerListTest extends TestCase {
         final Set<Integer> set = new HashSet<>();
         list.fill(value);
         set.addAll(list);
-        assertEquals("fill(value)", Collections.singleton(value), set);
+        assertEquals("fill(value)", Set.of(value), set);
         list.fill(0);
         set.clear();
         set.addAll(list);
-        assertEquals("fill(0)", Collections.singleton(0), set);
+        assertEquals("fill(0)", Set.of(0), set);
     }
 
     /**

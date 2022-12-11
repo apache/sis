@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.metadata.quality.DataQuality;
@@ -251,7 +251,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
          * Set the attribute value on a property having [0 … ∞] multiplicity.
          * The feature implementation should put the value in a list.
          */
-        assertEquals("universities", Collections.emptyList(), getAttributeValue("universities"));
+        assertEquals("universities", List.of(), getAttributeValue("universities"));
         feature.setPropertyValue("universities", "University of arts");
         assertEquals("universities", Collections.singletonList("University of arts"), getAttributeValue("universities"));
         /*
@@ -360,7 +360,7 @@ public abstract strictfp class FeatureTestCase extends TestCase {
         assertTrue("isEmpty", values.isEmpty());
         // Cannot perform values.add("something") here.
 
-        feature.setPropertyValue("universities", Arrays.asList("UCAR", "Marie-Curie"));
+        feature.setPropertyValue("universities", List.of("UCAR", "Marie-Curie"));
         values = (Collection<?>) feature.getPropertyValue("universities");
         assertArrayEquals(new String[] {"UCAR", "Marie-Curie"}, values.toArray());
     }

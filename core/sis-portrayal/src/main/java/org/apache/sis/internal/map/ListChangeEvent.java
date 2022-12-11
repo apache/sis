@@ -17,9 +17,6 @@
 package org.apache.sis.internal.map;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import org.apache.sis.measure.NumberRange;
 
@@ -46,7 +43,7 @@ public final class ListChangeEvent<T> extends PropertyChangeEvent {
         super(source, propertyName, originalList, originalList);
         this.range = range;
         this.type = type;
-        this.items = (items != null) ? Collections.unmodifiableList(new ArrayList<>(items)) : null;
+        this.items = (items != null) ? List.copyOf(items) : null;
     }
 
     /**
@@ -77,7 +74,7 @@ public final class ListChangeEvent<T> extends PropertyChangeEvent {
     }
 
     public static <T> ListChangeEvent<T> added(Object source, String propertyName, List<T> originalList, T newItem, final int index) {
-        return added(source, propertyName, originalList, Arrays.asList(newItem),
+        return added(source, propertyName, originalList, List.of(newItem),
                 NumberRange.create(index, true, index, true));
     }
 
@@ -86,7 +83,7 @@ public final class ListChangeEvent<T> extends PropertyChangeEvent {
     }
 
     public static <T> ListChangeEvent<T> removed(Object source, String propertyName, List<T> originalList, T newItem, final int index) {
-        return removed(source, propertyName, originalList, Arrays.asList(newItem),
+        return removed(source, propertyName, originalList, List.of(newItem),
                 NumberRange.create(index, true, index, true));
     }
 

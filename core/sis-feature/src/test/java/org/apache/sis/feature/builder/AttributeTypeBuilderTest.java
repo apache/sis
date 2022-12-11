@@ -16,8 +16,8 @@
  */
 package org.apache.sis.feature.builder;
 
-import java.util.Arrays;
 import java.util.Set;
+import java.util.List;
 import java.util.Collections;
 import com.esri.core.geometry.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -236,7 +236,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertFalse("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
 
         assertTrue("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
-        assertSetEquals(Arrays.asList(AttributeRole.DEFAULT_GEOMETRY, AttributeRole.IDENTIFIER_COMPONENT), roles);
+        assertSetEquals(List.of(AttributeRole.DEFAULT_GEOMETRY, AttributeRole.IDENTIFIER_COMPONENT), roles);
         assertFalse("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
 
         assertTrue("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));

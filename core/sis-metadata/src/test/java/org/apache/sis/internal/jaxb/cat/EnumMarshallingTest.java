@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.EnumSet;
 import java.util.Collection;
 import javax.xml.bind.JAXBException;
@@ -46,7 +46,7 @@ public final strictfp class EnumMarshallingTest extends TestCase {
      */
     @Test
     public void testTopicCategories() throws JAXBException {
-        final Collection<TopicCategory> topics = Arrays.asList(
+        final List<TopicCategory> topics = List.of(
                 TopicCategory.OCEANS,
                 TopicCategory.ENVIRONMENT,
                 TopicCategory.IMAGERY_BASE_MAPS_EARTH_COVER);   // We need to test at least one enum with many words.

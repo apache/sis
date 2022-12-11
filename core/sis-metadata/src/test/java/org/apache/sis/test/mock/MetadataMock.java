@@ -17,6 +17,7 @@
 package org.apache.sis.test.mock;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
@@ -86,7 +87,7 @@ public final strictfp class MetadataMock extends SimpleMetadata {
     @Override
     @Deprecated
     public Collection<Locale> getLanguages() {
-        return (language != null) ? Collections.singleton(language) : Collections.emptySet();
+        return (language != null) ? Set.of(language) : Set.of();
     }
 
     /**

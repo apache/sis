@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import java.util.Arrays;
+import java.util.List;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -422,8 +422,8 @@ public abstract strictfp class RegistryTestCase<G> extends TestCase {
     public void testLineString() {
         assertRequireArguments("ST_LineString");
         final Object result = evaluate("ST_LineString",
-                Arrays.asList(library.createPoint(10, 20),
-                              library.createPoint(30, 40)), HardCodedCRS.WGS84);
+                List.of(library.createPoint(10, 20),
+                        library.createPoint(30, 40)), HardCodedCRS.WGS84);
         assertPolylineEquals(result, HardCodedCRS.WGS84, 10, 20, 30, 40);
     }
 

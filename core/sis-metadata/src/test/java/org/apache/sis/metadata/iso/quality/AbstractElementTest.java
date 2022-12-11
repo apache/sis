@@ -18,7 +18,7 @@ package org.apache.sis.metadata.iso.quality;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
 import org.apache.sis.test.TestCase;
@@ -44,7 +44,7 @@ public final strictfp class AbstractElementTest extends TestCase {
         final Instant   startTime = Instant.parse("2009-05-08T14:10:00Z");
         final Instant     endTime = Instant.parse("2009-05-12T21:45:00Z");
         final DefaultEvaluationMethod method = new DefaultEvaluationMethod();
-        method.setDates(Arrays.asList(startTime, endTime));
+        method.setDates(List.of(startTime, endTime));
         final AbstractElement element = new AbstractElement();
         element.setEvaluationMethod(method);
 
