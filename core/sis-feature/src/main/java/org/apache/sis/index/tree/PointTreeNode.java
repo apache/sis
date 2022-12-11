@@ -96,7 +96,7 @@ abstract class PointTreeNode implements Cloneable, Serializable {
     static void enterQuadrant(final double[] region, final int quadrant) {
         final int n = region.length >>> 1;
         for (int i = n; --i >= 0;) {
-            region[i] += factor(quadrant, i) * (region[i+n] *= 0.5);    // TODO: use Math.fma with JDK9.
+            region[i] = Math.fma(factor(quadrant, i), region[i+n] *= 0.5, region[i]);
         }
     }
 

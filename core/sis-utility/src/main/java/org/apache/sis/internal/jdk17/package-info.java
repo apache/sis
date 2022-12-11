@@ -16,7 +16,7 @@
  */
 
 /**
- * Place-holder for JDK9 classes that do not exist in JDK8.
+ * Place-holder for classes that do not exist in JDK 11.
  *
  * <STRONG>Do not use!</STRONG>
  *

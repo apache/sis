@@ -17,7 +17,6 @@
 package org.apache.sis.filter;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import java.math.BigInteger;
 import java.math.BigDecimal;
@@ -101,7 +100,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * @return a list of size 2 containing the two expressions.
      */
     public List<Expression<? super R, ?>> getExpressions() {
-        return Arrays.asList(expression1, expression2);         // TODO: use List.of(…) with JDK9.
+        return List.of(expression1, expression2);
     }
 
     /**

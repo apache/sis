@@ -1067,7 +1067,7 @@ public class SampleDimension implements Serializable {
             final double scale     = Δvalue / Δsample;
             final TransferFunction transferFunction = new TransferFunction();
             transferFunction.setScale(scale);
-            transferFunction.setOffset(minValue - scale * minSample);               // TODO: use Math.fma with JDK9.
+            transferFunction.setOffset(Math.fma(-scale, minSample, minValue));
             return addQuantitative(name, samples, transferFunction.getTransform(),
                     (converted instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) converted).unit() : null);
         }

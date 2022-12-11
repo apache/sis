@@ -17,7 +17,6 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.List;
-import java.util.Arrays;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.filter.Optimization;
@@ -121,7 +120,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Arrays.asList(unwrap(geometry1), unwrap(geometry2));     // TODO: use List.of(…) with JDK9.
+        return List.of(unwrap(geometry1), unwrap(geometry2));
     }
 
     /**
@@ -177,7 +176,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
          */
         @Override
         public List<Expression<? super R, ?>> getParameters() {
-            return Arrays.asList(unwrap(geometry1), unwrap(geometry2), argument);   // TODO: use List.of(…) with JDK9.
+            return List.of(unwrap(geometry1), unwrap(geometry2), argument);
         }
 
         /**

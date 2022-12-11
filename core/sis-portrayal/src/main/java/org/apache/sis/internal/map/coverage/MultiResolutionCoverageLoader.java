@@ -237,7 +237,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                          */
                         e = 0;
                         for (int k=0; k<objDim; k++) {
-                            e += d.getElement(j,k) * m.getElement(k,i);     // TODO: use Math.fma(…) with JDK9.
+                            e = Math.fma(d.getElement(j,k), m.getElement(k,i), e);
                         }
                     }
                     sum += e * e;

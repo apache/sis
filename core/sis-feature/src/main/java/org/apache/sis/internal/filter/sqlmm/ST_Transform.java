@@ -17,7 +17,6 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.List;
-import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -107,7 +106,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Arrays.asList(unwrap(geometry), srid);             // TODO: use List.of(…) with JDK9.
+        return List.of(unwrap(geometry), srid);
     }
 
     /**

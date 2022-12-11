@@ -477,8 +477,7 @@ public final class CollectionsExt extends Static {
                          * implements CheckedContainer is not a goal here, and is actually unsafe since we have
                          * no guarantee (except Javadoc contract) that the <E> in CheckedContainer<E> is really
                          * the same than in Collection<E>.  We tolerate this hole for now because we documented
-                         * the restriction in CheckedContainer javadoc, but future version may replace this block
-                         * by JDK9 collections.
+                         * the restriction in CheckedContainer javadoc.
                          */
                         @SuppressWarnings("unchecked")       // Okay if collection is compliant with CheckedContainer contract.
                         final E[] array = (E[]) Array.newInstance(((CheckedContainer<E>) list).getElementType(), length);

@@ -106,7 +106,7 @@ public final strictfp class FunctionNamesTest extends TestCase {
      */
     @Test
     public void verifyLiteral() {
-        final Literal<Object,Object> expression = new Literal<Object,Object>() {
+        final var expression = new Literal<Object,Object>() {
             @Override public Object getValue() {return null;}
             @Override public <N> Expression<Object, N> toValueType(Class<N> target) {
                 throw new UnsupportedOperationException();
@@ -120,8 +120,7 @@ public final strictfp class FunctionNamesTest extends TestCase {
      */
     @Test
     public void verifyValueReference() {
-        // TODO: use diamond operator with JDK9.
-        final ValueReference<Object,Object> expression = new ValueReference<Object,Object>() {
+        final var expression = new ValueReference<Object,Object>() {
             @Override public String getXPath()      {return null;}
             @Override public Object apply(Object o) {return null;}
             @Override public <N> Expression<Object,N> toValueType(Class<N> target) {

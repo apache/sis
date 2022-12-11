@@ -270,9 +270,6 @@ public final class Numerics extends Static {
      * @return {@code value} × {@code multiplier} / {@code divisor} rounded toward zero.
      */
     public static long multiplyDivide(final long value, final long multiplier, final long divisor) {
-        // TODO: uncomment with JDK9
-//      final long high = Math.multiplyHigh(value, multiplier);
-//      return Math.multiplyExact(value * multiplier / divisor, high);
         return Math.multiplyExact(value, multiplier) / divisor;
     }
 
