@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.util.function.BiFunction;
+import java.math.BigInteger;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -39,7 +40,7 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -270,7 +271,13 @@ public final class Numerics extends Static {
      * @return {@code value} × {@code multiplier} / {@code divisor} rounded toward zero.
      */
     public static long multiplyDivide(final long value, final long multiplier, final long divisor) {
-        return Math.multiplyExact(value, multiplier) / divisor;
+        try {
+            return Math.multiplyExact(value, multiplier) / divisor;
+        } catch (ArithmeticException e) {
+            // We do not have a better algorithm at this time.
+            return BigInteger.valueOf(value).multiply(BigInteger.valueOf(multiplier))
+                             .divide(BigInteger.valueOf(divisor)).longValueExact();
+        }
     }
 
     /**

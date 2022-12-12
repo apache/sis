@@ -99,7 +99,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * This map is initialized only once and should not be modified after that point.
      */
     private static final Map<String, Map<String,String>> NAMESPACES = load(false, FILENAME, LEGACY_NAMESPACES, 260);
-    // TODO: use Set.copyOf(…) with JDK10.
 
     /**
      * Returns the namespace for the given ISO type, or {@code null} if unknown.

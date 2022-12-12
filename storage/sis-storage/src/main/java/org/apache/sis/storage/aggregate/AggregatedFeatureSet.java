@@ -100,7 +100,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
                 }
             } else {
                 final Optional<Envelope> e = fs.getEnvelope();
-                if (!e.isPresent()) return false;                   // TODO: use isEmpty() with JDK11.
+                if (e.isEmpty()) return false;
                 addTo.add(e.get());
             }
         }

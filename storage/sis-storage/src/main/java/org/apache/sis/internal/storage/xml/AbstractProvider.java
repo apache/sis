@@ -115,7 +115,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
             }
             // Quick check for "<?xml " header.
             for (int i=0; i<HEADER.length; i++) {
-                if (buffer.get() != HEADER[i]) {              // TODO: use ByteBuffer.mismatch(…) with JDK11.
+                if (buffer.get() != HEADER[i]) {
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }
