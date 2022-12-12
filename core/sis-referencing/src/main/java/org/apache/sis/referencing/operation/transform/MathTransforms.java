@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Collections;
 import java.util.Optional;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
@@ -590,10 +589,10 @@ public final class MathTransforms extends Static {
             if (transform instanceof ConcatenatedTransform) {
                 return ((ConcatenatedTransform) transform).getSteps();
             } else {
-                return Collections.singletonList(transform);
+                return List.of(transform);
             }
         } else {
-            return Collections.emptyList();
+            return List.of();
         }
     }
 

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.Unmarshaller;
@@ -256,7 +255,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
             if (value instanceof PositionalAccuracy[]) {
                 coordinateOperationAccuracy = CollectionsExt.nonEmptySet((PositionalAccuracy[]) value);
             } else {
-                coordinateOperationAccuracy = Collections.singleton((PositionalAccuracy) value);
+                coordinateOperationAccuracy = Set.of((PositionalAccuracy) value);
             }
         }
     }
@@ -407,7 +406,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (sourceCRS != null && targetCRS != null) {
             wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCRS.getCoordinateSystem());
         } else {
-            wrapAroundChanges = Collections.emptySet();
+            wrapAroundChanges = Set.of();
         }
     }
 

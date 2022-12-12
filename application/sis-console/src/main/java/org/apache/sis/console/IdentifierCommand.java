@@ -136,6 +136,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
                     rows.add(create(rs));
                 }
             } else {
+                // This list may contain a null element.
                 rows = Collections.singletonList(create((ReferenceSystem) metadata));
             }
             print(rows);

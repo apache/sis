@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import java.util.Arrays;
 import java.util.Locale;
 import org.opengis.metadata.citation.Address;
@@ -41,7 +42,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.apache.sis.test.MetadataAssert.*;
-import static java.util.Collections.singleton;
 
 
 /**
@@ -90,8 +90,8 @@ public final strictfp class TreeNodeTest extends TestCase {
         // Add a second responsible party with deeper hierarchy.
         final DefaultContact contact = new DefaultContact();
         final DefaultAddress address = new DefaultAddress();
-        address.setElectronicMailAddresses(singleton("Some email"));
-        contact.setAddresses(singleton(address));
+        address.setElectronicMailAddresses(Set.of("Some email"));
+        contact.setAddresses(Set.of(address));
         party = new DefaultIndividual("Some person of contact", null, contact);
         responsibility = new DefaultResponsibility(Role.POINT_OF_CONTACT, null, party);
         assertTrue(citation.getCitedResponsibleParties().add(responsibility));

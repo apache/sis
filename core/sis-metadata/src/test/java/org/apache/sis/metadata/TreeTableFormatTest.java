@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import java.util.List;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.PresentationForm;
@@ -35,7 +36,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -111,9 +111,9 @@ public final strictfp class TreeTableFormatTest extends TestCase {
         final DefaultCitation   titled = new DefaultCitation("Some specification");
         final DefaultCitation    coded = new DefaultCitation();
         final DefaultCitation untitled = new DefaultCitation();
-        titled  .setPresentationForms(singleton(PresentationForm.DOCUMENT_HARDCOPY));
-        coded   .setPresentationForms(singleton(PresentationForm.IMAGE_HARDCOPY));
-        untitled.setCitedResponsibleParties(singleton(new DefaultResponsibility(Role.AUTHOR, null, null)));
+        titled  .setPresentationForms(Set.of(PresentationForm.DOCUMENT_HARDCOPY));
+        coded   .setPresentationForms(Set.of(PresentationForm.IMAGE_HARDCOPY));
+        untitled.setCitedResponsibleParties(Set.of(new DefaultResponsibility(Role.AUTHOR, null, null)));
         final DefaultProcessing processing = new DefaultProcessing();
         processing.setDocumentations(List.of(titled, coded, untitled));
         final String text = format.format(processing.asTreeTable());

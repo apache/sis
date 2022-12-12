@@ -243,7 +243,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         if (descriptor instanceof DefaultParameterDescriptorGroup &&
                 ((DefaultParameterDescriptorGroup) descriptor).descriptors == c)
         {
-            descriptors = c; // Share the immutable instance (no need to clone).
+            descriptors = c;            // Share the immutable instance (no need to clone).
         } else {
             descriptors = asList(c.toArray(GeneralParameterDescriptor[]::new));
         }
@@ -254,6 +254,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     private static List<GeneralParameterDescriptor> asList(final GeneralParameterDescriptor[] parameters) {
         switch (parameters.length) {
+            /*
+             * Use `Collections` instead of `List.of(…)` for consistency with
+             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
+             */
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(parameters[0]);
             case 2:  // fall through

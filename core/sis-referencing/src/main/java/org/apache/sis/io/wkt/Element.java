@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
@@ -183,7 +182,7 @@ final class Element {
     Element(final String keyword, final LinkedList<Object> children, final int offset, final Locale errorLocale) {
         this.keyword       = keyword;
         this.isEnumeration = (children == null);
-        this.children      = isEnumeration ? Collections.emptyList() : children;
+        this.children      = isEnumeration ? List.of() : children;
         this.isFragment    = (offset < 0);
         this.offset        = isFragment ? ~offset : offset;
         this.errorLocale   = errorLocale;
@@ -237,7 +236,7 @@ final class Element {
                                 openingBracket = text.codePointAt(lower))) < 0)
         {
             position.setIndex(lower);
-            children = Collections.emptyList();
+            children = List.of();
             isEnumeration = true;
             return;
         }

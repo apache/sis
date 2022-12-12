@@ -905,7 +905,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             name = AxisDirections.appendTo(buffer.append("CS"), axes);
         }
         if (csProperties == null) {
-            csProperties = Map.of(CoordinateSystem.NAME_KEY, name);
+            csProperties = singletonMap(CoordinateSystem.NAME_KEY, name);
         } else {
             csProperties.put(CoordinateSystem.NAME_KEY, name);
         }

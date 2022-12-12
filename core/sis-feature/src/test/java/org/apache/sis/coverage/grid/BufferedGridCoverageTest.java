@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
@@ -94,7 +93,7 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
             Arrays.fill(buffer, i, i += sliceSize, t + 10);
         }
         final DataBufferInt data = new DataBufferInt(buffer, size);
-        final GridCoverage coverage = new BufferedGridCoverage(domain, Collections.singletonList(band), data);
+        final GridCoverage coverage = new BufferedGridCoverage(domain, List.of(band), data);
         /*
          * Verify a value in each temporal slice.
          */

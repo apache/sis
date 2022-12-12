@@ -18,7 +18,6 @@ package org.apache.sis.feature.builder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -334,7 +333,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 role = null;
             }
             if (role != null) {
-                final Set<AttributeRole> rc = Collections.singleton(role);
+                final Set<AttributeRole> rc = Set.of(role);
                 if (property instanceof AbstractOperation) {
                     for (final String dependency : ((AbstractOperation) property).getDependencies()) {
                         propertyRoles.merge(dependency, rc, AttributeRole::merge);

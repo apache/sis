@@ -17,7 +17,6 @@
 package org.apache.sis.util.iso;
 
 import java.util.List;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
 import java.io.ObjectStreamException;
@@ -223,7 +222,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      */
     @Override
     public final List<DefaultLocalName> getParsedNames() {
-        return Collections.singletonList(this);
+        return List.of(this);
     }
 
     /**

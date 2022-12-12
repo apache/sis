@@ -18,7 +18,6 @@ package org.apache.sis.console;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
@@ -202,7 +201,7 @@ final class TransformCommand extends FormattedOutputCommand {
          * This will be used when searching for a coordinate operation.
          */
         GeographicBoundingBox areaOfInterest = null;
-        List<double[]> points = Collections.emptyList();
+        List<double[]> points = List.of();
         final boolean useStandardInput = useStandardInput();
         if (useStandardInput || !files.isEmpty()) {
             if (useStandardInput) {

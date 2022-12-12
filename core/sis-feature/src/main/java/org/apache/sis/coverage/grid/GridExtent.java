@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Arrays;
@@ -111,15 +110,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #typeFromAxes(CoordinateReferenceSystem, int)
      */
-    private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS;
-    static {
-        final Map<AxisDirection,DimensionNameType> dir = new HashMap<>(6);
-        dir.put(AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN);
-        dir.put(AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW);
-        dir.put(AxisDirection.UP,              DimensionNameType.VERTICAL);
-        dir.put(AxisDirection.FUTURE,          DimensionNameType.TIME);
-        AXIS_DIRECTIONS = dir;
-    }
+    private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS = Map.of(
+            AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN,
+            AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW,
+            AxisDirection.UP,              DimensionNameType.VERTICAL,
+            AxisDirection.FUTURE,          DimensionNameType.TIME);
 
     /**
      * Default axis types for the two-dimensional cases.

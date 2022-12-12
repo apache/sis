@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.function.Function;
@@ -311,7 +310,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         if (fragments == null) {
             if (!modifiable) {
                 // Most common cases: invoked before to parse a WKT and no fragments specified.
-                return Collections.emptyMap();
+                return Map.of();
             }
             fragments = new TreeMap<>();
             isCloned  = false;

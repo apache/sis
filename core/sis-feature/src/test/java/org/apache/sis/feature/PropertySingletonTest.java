@@ -23,7 +23,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -128,7 +127,7 @@ public final strictfp class PropertySingletonTest extends TestCase {
     @Test
     @DependsOnMethod("testSingleton")
     public void testRemoveAll() {
-        final Set<Integer> attributes = singleton(1000);
+        final Set<Integer> attributes = Set.of(1000);
         assertTrue (singleton.addAll(attributes));
         assertFalse(singleton.isEmpty());
         assertTrue (singleton.removeAll(attributes));

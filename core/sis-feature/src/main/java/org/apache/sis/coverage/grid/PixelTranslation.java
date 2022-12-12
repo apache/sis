@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.io.Serializable;
 
 import org.opengis.referencing.operation.Matrix;
@@ -108,20 +107,18 @@ public final class PixelTranslation extends Static implements Serializable {
     /**
      * The offset for various pixel orientations. Keys must be upper-case names.
      */
-    private static final Map<PixelOrientation, PixelTranslation> ORIENTATIONS = new HashMap<>(12);
-    static {
-        add(CENTER,       0.0,  0.0);
-        add(UPPER_LEFT,  -0.5, -0.5);
-        add(UPPER_RIGHT,  0.5, -0.5);
-        add(LOWER_LEFT,  -0.5,  0.5);
-        add(LOWER_RIGHT,  0.5,  0.5);
-    }
+    private static final Map<PixelOrientation, PixelTranslation> ORIENTATIONS = Map.ofEntries(
+            entry(CENTER,       0.0,  0.0),
+            entry(UPPER_LEFT,  -0.5, -0.5),
+            entry(UPPER_RIGHT,  0.5, -0.5),
+            entry(LOWER_LEFT,  -0.5,  0.5),
+            entry(LOWER_RIGHT,  0.5,  0.5));
 
     /** For {@link #ORIENTATIONS} construction only. */
-    private static void add(final PixelOrientation orientation, final double dx, final double dy) {
-        if (ORIENTATIONS.put(orientation, new PixelTranslation(orientation, dx, dy)) != null) {
-            throw new AssertionError();
-        }
+    private static Map.Entry<PixelOrientation, PixelTranslation> entry(
+                    PixelOrientation orientation, double dx, double dy)
+    {
+        return Map.entry(orientation, new PixelTranslation(orientation, dx, dy));
     }
 
     /**

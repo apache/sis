@@ -17,7 +17,6 @@
 package org.apache.sis.storage;
 
 import java.util.List;
-import java.util.Collections;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -136,10 +135,10 @@ public interface GridCoverageResource extends DataSet {
         if (gg != null && gg.isDefined(GridGeometry.RESOLUTION)) {      // Should never be null but we are paranoiac.
             final double[] resolution = gg.getResolution(false);
             if (!ArraysExt.allEquals(resolution, Double.NaN)) {
-                return Collections.singletonList(resolution);
+                return List.of(resolution);
             }
         }
-        return Collections.emptyList();
+        return List.of();
     }
 
     /**

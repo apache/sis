@@ -18,8 +18,6 @@ package org.apache.sis.internal.earth.netcdf;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 import java.util.regex.Pattern;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
@@ -92,22 +90,18 @@ public final class GCOM_W extends Convention {
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-W.
      */
-    private static final Map<String,String> ATTRIBUTES;
-    static {
-        final Map<String,String> m = new HashMap<>();
-        m.put(AttributeNames.TITLE,               "ProductName");              // identification­Info / citation / title
-        m.put(AttributeNames.PRODUCT_VERSION,     "ProductVersion");           // identification­Info / citation / edition
-        m.put(AttributeNames.IDENTIFIER.TEXT,     "GranuleID");                // identification­Info / citation / identifier / code
-        m.put(AttributeNames.DATE_CREATED,        "ProductionDateTime");       // identification­Info / citation / date
-        m.put(AttributeNames.TIME.MINIMUM,        "ObservationStartDateTime"); // identification­Info / extent / temporal­Element / extent
-        m.put(AttributeNames.TIME.MAXIMUM,        "ObservationEndDateTime");   // identification­Info / extent / temporal­Element / extent
-        m.put(AttributeNames.CREATOR.INSTITUTION, "ProcessingCenter");         // identification­Info / citation / citedResponsibleParty
-        m.put(AttributeNames.SUMMARY,             "GeophysicalName");          // identification­Info / abstract
-        m.put(AttributeNames.PLATFORM.TEXT,       "PlatformShortName");        // acquisition­Information / platform / identifier
-        m.put(AttributeNames.INSTRUMENT.TEXT,     "SensorShortName");          // acquisition­Information / platform / instrument / identifier
-        m.put(AttributeNames.SOURCE,              "InputFileName");            // data­Quality­Info / lineage / source / description
-        ATTRIBUTES = m;
-    }
+    private static final Map<String,String> ATTRIBUTES = Map.ofEntries(
+        Map.entry(AttributeNames.TITLE,               "ProductName"),               // identification­Info / citation / title
+        Map.entry(AttributeNames.PRODUCT_VERSION,     "ProductVersion"),            // identification­Info / citation / edition
+        Map.entry(AttributeNames.IDENTIFIER.TEXT,     "GranuleID"),                 // identification­Info / citation / identifier / code
+        Map.entry(AttributeNames.DATE_CREATED,        "ProductionDateTime"),        // identification­Info / citation / date
+        Map.entry(AttributeNames.TIME.MINIMUM,        "ObservationStartDateTime"),  // identification­Info / extent / temporal­Element / extent
+        Map.entry(AttributeNames.TIME.MAXIMUM,        "ObservationEndDateTime"),    // identification­Info / extent / temporal­Element / extent
+        Map.entry(AttributeNames.CREATOR.INSTITUTION, "ProcessingCenter"),          // identification­Info / citation / citedResponsibleParty
+        Map.entry(AttributeNames.SUMMARY,             "GeophysicalName"),           // identification­Info / abstract
+        Map.entry(AttributeNames.PLATFORM.TEXT,       "PlatformShortName"),         // acquisition­Information / platform / identifier
+        Map.entry(AttributeNames.INSTRUMENT.TEXT,     "SensorShortName"),           // acquisition­Information / platform / instrument / identifier
+        Map.entry(AttributeNames.SOURCE,              "InputFileName"));            // data­Quality­Info / lineage / source / description
 
     /**
      * Names of variables to use as axes (first word only).
@@ -203,7 +197,7 @@ public final class GCOM_W extends Convention {
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
+        return Set.of(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
     }
 
     /**

@@ -35,7 +35,6 @@ import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.Polyline;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singletonList;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -154,9 +153,9 @@ public final strictfp class StoreTest extends TestCase {
             verifyFeatureType(store.featureType, Polyline.class, Integer.MAX_VALUE);
             assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<Feature> it = store.features(false).iterator();
-            assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:51", new double[] {11, 2, 12, 3, 10, 3}, singletonList("walking"), List.of(1, 2));
-            assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        singletonList("walking"), List.of(2));
-            assertPropertyEquals(it.next(), "c", "12:33:51", "12:36:51", new double[] {12, 1, 10, 2, 11, 3}, singletonList("vehicle"), List.of(1));
+            assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:51", new double[] {11, 2, 12, 3, 10, 3}, List.of("walking"), List.of(1, 2));
+            assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        List.of("walking"), List.of(2));
+            assertPropertyEquals(it.next(), "c", "12:33:51", "12:36:51", new double[] {12, 1, 10, 2, 11, 3}, List.of("vehicle"), List.of(1));
             assertFalse(it.hasNext());
         }
     }

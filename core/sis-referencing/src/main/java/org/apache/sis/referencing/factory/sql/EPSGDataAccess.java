@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Calendar;
 import java.util.Date;
@@ -563,7 +562,7 @@ addURIs:    for (int i=0; ; i++) {
                 return existing;
             }
         }
-        Map<String,String> result = Collections.emptyMap();
+        Map<String,String> result = Map.of();
         for (final TableInfo table : TableInfo.EPSG) {
             /*
              * We test `isAssignableFrom` in the two ways for catching the following use cases:
@@ -627,7 +626,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     @Override
     public Set<String> getCodeSpaces() {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -2554,7 +2553,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final Set<Unit<?>> units;
                 if (epsg != null && Arrays.binarySearch(EPSG_CODE_PARAMETERS, epsg) >= 0) {
                     type  = Integer.class;
-                    units = Collections.emptySet();
+                    units = Set.of();
                 } else {
                     /*
                      * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,

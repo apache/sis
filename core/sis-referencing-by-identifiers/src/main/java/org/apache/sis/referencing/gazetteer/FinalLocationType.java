@@ -177,6 +177,10 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
             array[i] = copy;
         }
         switch (array.length) {
+            /*
+             * Use `Collections` instead of `List.of(…)` for consistency with
+             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
+             */
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(array[0]);
             default: return UnmodifiableArrayList.wrap(array);

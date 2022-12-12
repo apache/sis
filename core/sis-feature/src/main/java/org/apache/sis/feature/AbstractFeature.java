@@ -298,7 +298,10 @@ public abstract class AbstractFeature implements Feature, Serializable {
         if (Field.isSingleton(attribute.getMaximumOccurs())) {
             return defaultValue;
         } else {
-            // Following is for compliance with getPropertyValue(String) method contract - see its javadoc.
+            /*
+             * Following is for compliance with getPropertyValue(String) method contract - see its javadoc.
+             * We use `Collections` instead of `List.of` for accepting `List.contains(null)`.
+             */
             return (defaultValue != null) ? Collections.singletonList(defaultValue) : Collections.emptyList();
         }
     }

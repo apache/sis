@@ -17,9 +17,9 @@
 package org.apache.sis.filter;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.StringJoiner;
 import org.apache.sis.feature.Features;
@@ -100,7 +100,7 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
      */
     @Override
     protected final Collection<?> getChildren() {
-        return Collections.singleton(getXPath());
+        return Set.of(getXPath());
     }
 
     /**

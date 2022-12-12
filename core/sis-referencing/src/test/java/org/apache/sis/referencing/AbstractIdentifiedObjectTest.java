@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Collections;
 import org.opengis.test.Validators;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
@@ -133,7 +132,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      */
     @Test
     public void testWithoutIdentifier() {
-        final Set<Identifier>          identifiers = Collections.emptySet();
+        final Set<Identifier>          identifiers = Set.of();
         final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
         final Identifier               gmlId       = validate(object, identifiers, "GRS1980");
         assertNull("gmlId", gmlId);
@@ -234,7 +233,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
-        final Set<Identifier>     identifiers = Collections.emptySet();
+        final Set<Identifier>     identifiers = Set.of();
         final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
         final AbstractIdentifiedObject actual = assertSerializedEquals(object);
         assertNotSame(object, actual);

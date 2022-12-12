@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Collections;
+import java.util.List;
 import java.awt.image.DataBuffer;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -61,12 +61,10 @@ public final strictfp class ConvertedGridCoverageTest extends TestCase {
         /*
          * The "grid to CRS" transform does not matter for this test.
          */
-        final GridGeometry grid = new GridGeometry(new GridExtent(2, 1), PixelInCell.CELL_CENTER,
-                new AffineTransform2D(1, 0, 0, 1, 1, 0), HardCodedCRS.WGS84);
+        final var grid = new GridGeometry(new GridExtent(2, 1), PixelInCell.CELL_CENTER,
+                            new AffineTransform2D(1, 0, 0, 1, 1, 0), HardCodedCRS.WGS84);
 
-        final BufferedGridCoverage coverage = new BufferedGridCoverage(
-                grid, Collections.singletonList(sd), DataBuffer.TYPE_SHORT);
-
+        final var coverage = new BufferedGridCoverage(grid, List.of(sd), DataBuffer.TYPE_SHORT);
         coverage.data.setElem(0, -1);
         coverage.data.setElem(1,  3);
         return coverage;

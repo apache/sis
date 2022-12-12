@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
@@ -623,8 +622,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultCompoundCRS() {
-        components = Collections.emptyList();
-        singles    = Collections.emptyList();
+        components = List.of();
+        singles    = List.of();
         /*
          * At least one component CRS is mandatory for SIS working. We do not verify their presence here
          * because the verification would have to be done in an 'afterMarshal(…)' method and throwing an

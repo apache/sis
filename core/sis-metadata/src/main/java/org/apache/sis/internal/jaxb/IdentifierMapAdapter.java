@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -99,7 +98,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * An immutable empty instance.
      */
-    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Collections.emptySet());
+    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Set.of());
 
     /**
      * The identifiers to wrap in a map view.

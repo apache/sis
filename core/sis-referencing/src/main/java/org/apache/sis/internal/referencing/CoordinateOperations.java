@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.function.Supplier;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -179,7 +178,7 @@ public final class CoordinateOperations extends SystemListener {
             {
                 return CoordinateOperations.factory();
             }
-            properties = Collections.emptyMap();
+            properties = Map.of();
         }
         final HashMap<String,Object> p = new HashMap<>(properties);
         p.putIfAbsent(ReferencingFactoryContainer.CRS_FACTORY, crsFactory);
@@ -252,7 +251,7 @@ public final class CoordinateOperations extends SystemListener {
                 return wrapAroundChanges(source, target.getCoordinateSystem());
             }
         }
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**

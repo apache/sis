@@ -18,7 +18,6 @@ package org.apache.sis.internal.filter.sqlmm;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Collections;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
@@ -83,10 +82,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
      */
     @Override
     public final List<Expression<? super R, ?>> getParameters() {
-        if (srid == null) {
-            return Collections.singletonList(geometry);
-        }
-        return List.of(geometry, srid);
+        return (srid != null) ? List.of(geometry, srid) : List.of(geometry);
     }
 
     /**

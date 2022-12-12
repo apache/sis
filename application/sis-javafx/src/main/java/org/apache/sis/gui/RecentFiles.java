@@ -18,7 +18,7 @@ package org.apache.sis.gui;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.Collections;
+import java.util.Set;
 import java.util.StringJoiner;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -173,6 +173,6 @@ final class RecentFiles implements EventHandler<ActionEvent> {
     @Override
     public void handle(final ActionEvent event) {
         final Object file = ((MenuItem) event.getSource()).getUserData();
-        explorer.loadResources(Collections.singleton(file));
+        explorer.loadResources(Set.of(file));
     }
 }

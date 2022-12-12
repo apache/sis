@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import org.opengis.referencing.cs.PolarCS;
@@ -111,21 +110,15 @@ public abstract class Transliterator implements Serializable {
     /**
      * Default names to associate to axis directions in a Cartesian coordinate system.
      * Those names do not apply to other kind of coordinate systems.
-     *
-     * <p>For thread safety reasons, this map shall not be modified after construction.</p>
      */
-    private static final Map<AxisDirection,String> CARTESIAN;
-    static {
-        final Map<AxisDirection,String> m = new HashMap<>(12);
-        m.put(AxisDirection.EAST,         AxisNames.EASTING);
-        m.put(AxisDirection.WEST,         AxisNames.WESTING);
-        m.put(AxisDirection.NORTH,        AxisNames.NORTHING);
-        m.put(AxisDirection.SOUTH,        AxisNames.SOUTHING);
-        m.put(AxisDirection.GEOCENTRIC_X, AxisNames.GEOCENTRIC_X);
-        m.put(AxisDirection.GEOCENTRIC_Y, AxisNames.GEOCENTRIC_Y);
-        m.put(AxisDirection.GEOCENTRIC_Z, AxisNames.GEOCENTRIC_Z);
-        CARTESIAN = m;
-    }
+    private static final Map<AxisDirection,String> CARTESIAN = Map.of(
+            AxisDirection.EAST,         AxisNames.EASTING,
+            AxisDirection.WEST,         AxisNames.WESTING,
+            AxisDirection.NORTH,        AxisNames.NORTHING,
+            AxisDirection.SOUTH,        AxisNames.SOUTHING,
+            AxisDirection.GEOCENTRIC_X, AxisNames.GEOCENTRIC_X,
+            AxisDirection.GEOCENTRIC_Y, AxisNames.GEOCENTRIC_Y,
+            AxisDirection.GEOCENTRIC_Z, AxisNames.GEOCENTRIC_Z);
 
     /**
      * A transliterator compliant with ISO 19162 on a <cite>"best effort"</cite> basis.

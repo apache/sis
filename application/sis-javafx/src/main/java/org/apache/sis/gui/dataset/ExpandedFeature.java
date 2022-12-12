@@ -19,7 +19,7 @@ package org.apache.sis.gui.dataset;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.Property;
@@ -166,8 +166,8 @@ final class ExpandedFeature implements Feature {
         }
         final Object[] elements = values[i];
         return (index < elements.length)
-               ? Collections.singletonList(elements[index])
-               : Collections.emptyList();
+               ? List.of(elements[index])
+               : List.of();
     }
 
     /**

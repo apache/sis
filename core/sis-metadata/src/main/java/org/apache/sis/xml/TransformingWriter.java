@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Queue;
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLEventWriter;
@@ -84,7 +83,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      *
      * This map is initialized only once and should not be modified after that point.
      */
-    private static final Map<String, Map<String,String>> NAMESPACES = load(true, FILENAME, Collections.emptySet(), 60);
+    private static final Map<String, Map<String,String>> NAMESPACES = load(true, FILENAME, Set.of(), 60);
 
     /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
@@ -110,8 +109,8 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
     private static final Map<QName, Set<QName>> ELEMENTS_TO_REORDER;
     static {
         final Map<QName, Set<QName>> m = new HashMap<>(4);
-        m.put(new QName(Namespaces.SRV, "couplingType",  "srv"), Collections.singleton(new QName(Namespaces.SRV, "coupledResource", "srv")));
-        m.put(new QName(Namespaces.SRV, "connectPoint",  "srv"), Collections.singleton(new QName(Namespaces.SRV, "parameter",       "srv")));
+        m.put(new QName(Namespaces.SRV, "couplingType",  "srv"), Set.of(new QName(Namespaces.SRV, "coupledResource", "srv")));
+        m.put(new QName(Namespaces.SRV, "connectPoint",  "srv"), Set.of(new QName(Namespaces.SRV, "parameter",       "srv")));
         /*
          * ISO 19139:2997 declared `topicCategory` and `extent` in MD_DataIdentification subclass, while ISO 19115-3
          * moves them to the MD_Identification parent class. In order to write topicCategory at location expected by
@@ -313,7 +312,7 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
      */
     private List<Namespace> export(final Iterator<Namespace> namespaces, boolean changed) {
         if (!namespaces.hasNext()) {
-            return changed ? Collections.emptyList() : null;
+            return changed ? List.of() : null;
         }
         do {
             final Namespace namespace = namespaces.next();

@@ -584,9 +584,11 @@ public final class DefinitionURI {
             if (path == null) {
                 return null;
             }
-            // TODO: For now do nothing since PATHS is a singleton. However if a future SIS version
-            //       defines more PATHS entries, then we should replace here the `paths` reference by
-            //       a new Collections.singletonMap containing only the entry of interest.
+            /*
+             * TODO: For now do nothing because PATHS is a singleton. However if a future SIS version
+             *       defines more PATHS entries, then we should replace here the `paths` reference by
+             *       a new `Map.of(…)` containing only the entry of interest.
+             */
         }
         for (final Map.Entry<String,String> entry : paths.entrySet()) {
             final String path = entry.getValue();

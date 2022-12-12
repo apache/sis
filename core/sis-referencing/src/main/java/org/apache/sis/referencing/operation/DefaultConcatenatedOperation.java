@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -412,7 +411,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultConcatenatedOperation() {
-        operations = Collections.emptyList();
+        operations = List.of();
     }
 
     /**

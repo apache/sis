@@ -273,7 +273,7 @@ public final class ChannelDecoder extends Decoder {
          */
         DimensionInfo[] dimensions = null;
         VariableInfo[]  variables  = null;
-        List<Map.Entry<String,Object>> attributes = Collections.emptyList();
+        List<Map.Entry<String,Object>> attributes = List.of();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -299,7 +299,7 @@ public final class ChannelDecoder extends Decoder {
             this.variableMap = toCaseInsensitiveNameMap(variables);
         } else {
             this.variables   = new VariableInfo[0];
-            this.variableMap = Collections.emptyMap();
+            this.variableMap = Map.of();
         }
         initialize();
     }
@@ -617,7 +617,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            List<Map.Entry<String,Object>> attributes = Collections.emptyList();
+            List<Map.Entry<String,Object>> attributes = List.of();
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);

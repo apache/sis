@@ -18,7 +18,6 @@ package org.apache.sis.gui.referencing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -429,7 +428,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
         @Override
         protected PartialResult call() throws Exception {
             long lastTime = System.nanoTime();
-            List<String> codes = Collections.emptyList();
+            List<String> codes = List.of();
             final CRSAuthorityFactory factory = getFactory();
             try {
                 if (loadCodes) {

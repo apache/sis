@@ -18,7 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import org.opengis.util.LocalName;
 import org.apache.sis.util.collection.CodeListSet;
@@ -86,7 +85,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
      */
     @Override
     public Collection<LocalName> getResourceIdentifiers() {
-        return Collections.singleton(AttributeConvention.IDENTIFIER_PROPERTY.tip());
+        return Set.of(AttributeConvention.IDENTIFIER_PROPERTY.tip());
     }
 
     /**

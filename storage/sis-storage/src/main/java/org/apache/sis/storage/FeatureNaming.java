@@ -215,7 +215,7 @@ public class FeatureNaming<E> {
                 /*
                  * If there is more than one GenericName for the same alias, we have an ambiguity.
                  * Remove any value associated to that alias, unless the value was associated to
-                 * exactly the user-specified name (not an alias). The 'get' method in this class
+                 * exactly the user-specified name (not an alias). The `get` method in this class
                  * will know when the value is missing because of ambiguous name.
                  */
                 if (!fullNames.contains(alias)) {
@@ -223,7 +223,7 @@ public class FeatureNaming<E> {
                 }
             } else if (values.putIfAbsent(alias, value) != null) {
                 /*
-                 * If a value already existed for that alias but the alias was not declared in the 'aliases' map,
+                 * If a value already existed for that alias but the alias was not declared in the `aliases` map,
                  * this means that the list was implicitly Collections.singletonList(key). Since we now have an
                  * additional value, we need to add explicitly the previously implicit value.
                  */
@@ -269,7 +269,7 @@ public class FeatureNaming<E> {
             remaining = CollectionsExt.removeFromMultiValuesMap(aliases, alias, key);
             /*
              * The list of remaining GenericNames may be empty but should never be null unless the tail
-             * is inconsistent with the one found by the 'add(…) method.  Otherwise if there is exactly
+             * is inconsistent with the one found by the `add(…)` method. Otherwise if there is exactly
              * one remaining GenericName, then the alias is not ambiguous anymore for that name.
              */
             error |= (remaining == null);

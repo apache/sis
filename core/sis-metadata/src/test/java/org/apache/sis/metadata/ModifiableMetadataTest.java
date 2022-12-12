@@ -16,8 +16,8 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import java.util.Arrays;
-import java.util.Collections;
 import org.opengis.metadata.distribution.MediumFormat;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.distribution.DefaultMedium;
@@ -94,7 +94,7 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
         md.setVolumes(4);                                                                   // New value.
         md.setMediumNote(new SimpleInternationalString("A new note."));                     // Overwriting.
         md.getMediumFormats().add(MediumFormat.TAR);
-        md.setMediumFormats(Collections.singleton(MediumFormat.CPIO));                      // Discard TAR.
+        md.setMediumFormats(Set.of(MediumFormat.CPIO));                                     // Discard TAR.
         md.getMediumFormats().add(MediumFormat.ISO_9660);
         assertPropertiesEqual(4, "A new note.", MediumFormat.CPIO, MediumFormat.ISO_9660);
     }
@@ -131,7 +131,7 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
         }
-        md.setMediumFormats(Collections.singleton(MediumFormat.CPIO));
+        md.setMediumFormats(Set.of(MediumFormat.CPIO));
         try {
             md.getMediumFormats().add(MediumFormat.ISO_9660);
             fail("Adding new value shall not be allowed.");
@@ -178,7 +178,7 @@ public final strictfp class ModifiableMetadataTest extends TestCase {
             // This is the expected exception.
         }
         try {
-            md.setMediumFormats(Collections.singleton(MediumFormat.CPIO));
+            md.setMediumFormats(Set.of(MediumFormat.CPIO));
             fail("Setting new value shall not be allowed.");
         } catch (UnmodifiableMetadataException e) {
             verifyUnmodifiableException(e);

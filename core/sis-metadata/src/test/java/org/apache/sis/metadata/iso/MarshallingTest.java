@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -150,7 +149,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         md.setLanguages(languages);
 
         // Character Sets (character encoding)
-        final Collection<Charset> charSets = Collections.singleton(StandardCharsets.ISO_8859_1);
+        final Collection<Charset> charSets = Set.of(StandardCharsets.ISO_8859_1);
         md.setCharacterSets(charSets);
         {
             // Parent metadata
@@ -202,7 +201,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                 {
                     // Address information
                     final DefaultAddress address = new DefaultAddress();
-                    address.setDeliveryPoints(Collections.singleton(new SimpleInternationalString("123 Main Street")));
+                    address.setDeliveryPoints(Set.of(new SimpleInternationalString("123 Main Street")));
                     address.getElectronicMailAddresses().add("test@example.com");
                     address.setCity(new SimpleInternationalString("Metropolis city"));
                     address.setAdministrativeArea(new SimpleInternationalString("Utopia province"));
@@ -222,7 +221,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                 onlineResource.setFunction(OnLineFunction.SEARCH);
                 onlineResource.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "timaeus");    // For enabling references
                 contact.getOnlineResources().add(onlineResource);
-                contact.setHoursOfService(Collections.singleton(new SimpleInternationalString("Weekdays 9:00 AM - 5:00 PM")));
+                contact.setHoursOfService(Set.of(new SimpleInternationalString("Weekdays 9:00 AM - 5:00 PM")));
                 contact.setContactInstructions(new SimpleInternationalString("Through thought"));
                 contact.setContactType(new SimpleInternationalString("Virtual"));
                 contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "thought");           // For enabling references
@@ -235,7 +234,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                                    new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
         }
         // Date info (date stamp in legacy ISO 19115:2003 model)
-        final Collection<CitationDate> dateInfo = Collections.singleton(new DefaultCitationDate(new Date(1260961229580L), DateType.CREATION));
+        final Collection<CitationDate> dateInfo = Set.of(new DefaultCitationDate(new Date(1260961229580L), DateType.CREATION));
         md.setDateInfo(dateInfo);
         {
             // Metadata standard
@@ -315,7 +314,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             elementInfo.setDomainValue(new SimpleInternationalString("Alpha, beta or gamma."));
             elementInfo.setShortName("ExtEltName");
             elementInfo.setDomainCode(1234);
-            elementInfo.setParentEntity(Collections.singleton("VirtualObject"));
+            elementInfo.setParentEntity(Set.of("VirtualObject"));
             elementInfo.setRule(new SimpleInternationalString("Element exists in cited resource."));
             elementInfo.setRationale(new SimpleInternationalString("For testing extended elements."));
             elementInfo.getSources().add(NilReason.valueOf("other:test").createNilObject(Responsibility.class));
@@ -361,7 +360,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
             extent.getTemporalElements().add(temporal);
             extent.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "azores");     // For enabling references
-            extents = Collections.singleton(extent);
+            extents = Set.of(extent);
             dataId.setExtents(extents);
         }
         final Collection<Constraints> resourceConstraints;
@@ -387,7 +386,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             graphic.getImageConstraints().add(new DefaultConstraints());
             graphic.getLinkages().add(new DefaultOnlineResource());
             constraint.getGraphics().add(graphic);
-            constraint.setUseLimitations(Collections.singleton(new SimpleInternationalString("Not for navigation.")));
+            constraint.setUseLimitations(Set.of(new SimpleInternationalString("Not for navigation.")));
 
             // Releasability
             final DefaultReleasability releasability = new DefaultReleasability();
@@ -395,7 +394,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             constraint.setReleasability(releasability);
             constraint.setConstraintApplicationScope(new DefaultScope(ScopeCode.DOCUMENT));
             constraint.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "public");         // For enabling references
-            resourceConstraints = Collections.singleton(constraint);
+            resourceConstraints = Set.of(constraint);
             dataId.setResourceConstraints(resourceConstraints);
         }
         dataId.getSpatialRepresentationTypes().add(SpatialRepresentationType.GRID);
@@ -452,7 +451,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             }
             maintenanceInfo.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "not-planned");
             maintenanceInfo.getMaintenanceScopes().add(maintenanceScope);
-            resourceMaintenances = Collections.singleton(maintenanceInfo);
+            resourceMaintenances = Set.of(maintenanceInfo);
             dataId.setResourceMaintenances(resourceMaintenances);
         }
         {
@@ -491,7 +490,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             keywords.setKeywords(List.of(new SimpleInternationalString("Water"),
                                          new SimpleInternationalString("Aether")));
             keywords.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "greek-elements");
-            descriptiveKeywords = Collections.singleton(keywords);
+            descriptiveKeywords = Set.of(keywords);
             dataId.setDescriptiveKeywords(descriptiveKeywords);
         }
         {
@@ -504,7 +503,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             final DefaultUsage usage = new DefaultUsage();
             usage.setSpecificUsage(new SimpleInternationalString("For testing purpose only."));
             usage.setUsageDate(new Date(1523361600000L));
-            usage.setResponses(Collections.singleton(new SimpleInternationalString("Random elements")));
+            usage.setResponses(Set.of(new SimpleInternationalString("Random elements")));
             usage.setUserDeterminedLimitations(new SimpleInternationalString("Not to be used outside MarshallingTest.java test file."));
             dataId.getResourceSpecificUsages().add(usage);
         }
@@ -515,7 +514,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             associatedResource.setAssociationType(AssociationType.DEPENDENCY);
             associatedResource.setInitiativeType(InitiativeType.EXPERIMENT);
             associatedResource.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "dependency");
-            associatedResources = Collections.singleton(associatedResource);
+            associatedResources = Set.of(associatedResource);
             dataId.setAssociatedResources(associatedResources);
         }
         dataId.setLanguages(languages);     // Locales (ISO 19115:2014) a.k.a Languages and CharacterSets (ISO 19115:2003)
@@ -532,7 +531,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             serviceId.setDescriptiveKeywords(descriptiveKeywords);
             serviceId.setResourceConstraints(resourceConstraints);
             serviceId.setAssociatedResources(associatedResources);
-            serviceId.setServiceTypeVersions(Collections.singleton("Version 1000+"));
+            serviceId.setServiceTypeVersions(Set.of("Version 1000+"));
             // TODO: Coupled resources
             final DefaultCoupledResource coupledResource = new DefaultCoupledResource();
             serviceId.getCoupledResources().add(coupledResource);

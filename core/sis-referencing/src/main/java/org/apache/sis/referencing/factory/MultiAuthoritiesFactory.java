@@ -520,7 +520,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             return ((GeodeticAuthorityFactory) factory).getCodeSpaces();
         } else {
             final String authority = Citations.toCodeSpace(factory.getAuthority());
-            return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
+            return (authority != null) ? Set.of(authority) : Set.of();
         }
     }
 

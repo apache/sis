@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.net.URI;
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
@@ -85,7 +85,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         citation.setPresentationForms(List.of(
                 PresentationForm.DOCUMENT_HARDCOPY,
                 PresentationForm.DOCUMENT_DIGITAL));
-        citation.setAlternateTitles(Collections.singleton(
+        citation.setAlternateTitles(Set.of(
                 new SimpleInternationalString("Andākarento")));   // Actually a different script of the Japanese title.
         citation.setCitedResponsibleParties(List.of(
                 new DefaultResponsibility(Role.AUTHOR, null, new DefaultIndividual("Testsuya Toyoda", null, null)),

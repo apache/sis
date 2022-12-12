@@ -19,7 +19,6 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
@@ -704,7 +703,7 @@ public final class CRS extends Static {
             if (AuthorityFactories.failure(e)) {
                 throw e;
             } else try {
-                return Collections.singletonList(factory.createOperation(sourceCRS, targetCRS, context));
+                return List.of(factory.createOperation(sourceCRS, targetCRS, context));
             } catch (FactoryException ex) {
                 ex.addSuppressed(e);
                 throw ex;
@@ -1319,7 +1318,7 @@ public final class CRS extends Static {
     public static List<SingleCRS> getSingleComponents(final CoordinateReferenceSystem crs) {
         final List<SingleCRS> singles;
         if (crs == null) {
-            singles = Collections.emptyList();
+            singles = List.of();
         } else if (crs instanceof CompoundCRS) {
             if (crs instanceof DefaultCompoundCRS) {
                 singles = ((DefaultCompoundCRS) crs).getSingleComponents();
@@ -1330,7 +1329,7 @@ public final class CRS extends Static {
             }
         } else {
             // Intentional CassCastException here if the crs is not a SingleCRS.
-            singles = Collections.singletonList((SingleCRS) crs);
+            singles = List.of((SingleCRS) crs);
         }
         return singles;
     }

@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.Collections;
 import java.util.Arrays;
 import java.util.Locale;
 import java.text.DateFormat;
@@ -140,7 +139,7 @@ class MathTransformParser extends AbstractParser {
      * @param  mtFactory  the factory to use for creating {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), Collections.emptyMap(), null, null, null,
+        this(Symbols.getDefault(), Map.of(), null, null, null,
                 new ReferencingFactoryContainer(null, null, null, null, null, mtFactory), null);
     }
 

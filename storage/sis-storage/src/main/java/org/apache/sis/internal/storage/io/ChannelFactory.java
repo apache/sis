@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.io;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Collections;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -173,7 +172,7 @@ public abstract class ChannelFactory {
          */
         final Set<OpenOption> optionSet;
         if (options == null || options.length == 0) {
-            optionSet = Collections.singleton(StandardOpenOption.READ);
+            optionSet = Set.of(StandardOpenOption.READ);
         } else {
             optionSet = new HashSet<>(Arrays.asList(options));
             optionSet.add(StandardOpenOption.READ);

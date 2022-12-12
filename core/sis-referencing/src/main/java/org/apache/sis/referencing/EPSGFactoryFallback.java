@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import javax.measure.Unit;
@@ -123,7 +122,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
      */
     @Override
     public Set<String> getCodeSpaces() {
-        return Collections.singleton(Constants.EPSG);
+        return Set.of(Constants.EPSG);
     }
 
     /**

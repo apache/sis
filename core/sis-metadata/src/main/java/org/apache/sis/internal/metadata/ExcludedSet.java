@@ -33,8 +33,6 @@ import org.apache.sis.util.resources.Errors;
  *
  * @param <E>  the type of elements that the collection would have if it was non-empty.
  *
- * @see Collections#emptySet()
- *
  * @since 0.3
  * @module
  */

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -254,7 +253,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     public EPSGFactory(Map<String,?> properties) throws FactoryException {
         super(EPSGDataAccess.class);
         if (properties == null) {
-            properties = Collections.emptyMap();
+            properties = Map.of();
         }
         DataSource ds  = (DataSource)                 properties.get("dataSource");
         Locale locale  = (Locale)                     properties.get("locale");

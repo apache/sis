@@ -17,7 +17,6 @@
 package org.apache.sis.xml;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import javax.xml.XMLConstants;
 import org.apache.sis.util.Static;
@@ -536,42 +535,38 @@ public final class Namespaces extends Static {
      * A map of (<var>URLs</var>, <var>prefix</var>). Stores URLs for which
      * the prefix to use cannot be easily inferred from the URL itself.
      */
-    private static final Map<String,String> SPECIFIC_URLS;
-    static {
-        final Map<String,String> p = new HashMap<>(40);
-        p.put(XMLConstants.W3C_XML_SCHEMA_NS_URI,                          "xs");
-        p.put(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,                "xsi");
-        p.put("http://www.w3.org/2004/02/skos/core#",                    "skos");
-        p.put("http://www.w3.org/1999/02/22-rdf-syntax-ns#",              "rdf");
-        p.put("http://www.w3.org/1998/Math/MathML",                       "mml");
-        p.put("http://www.opengis.net/sensorML/1.0",                     "sml1");
-        p.put("http://www.opengis.net/sensorML/1.0.1",                    "sml");
-        p.put("http://www.opengis.net/swe/1.0",                          "swe1");
-        p.put("http://www.opengis.net/cat/csw/3.0",                       "csw");
-        p.put("http://www.opengis.net/cat/csw/2.0.2",                    "csw2");
-        p.put("http://www.opengis.net/ows/2.0",                           "ows");
-        p.put("http://www.opengis.net/cat/wrs/1.0",                       "wrs");
-        p.put("http://www.opengis.net/cat/wrs",                         "wrs09");
-        p.put("http://www.opengis.net/ows-6/utds/0.3",                   "utds");
-        p.put("http://www.opengis.net/citygml/1.0",                      "core");
-        p.put("http://www.opengis.net/citygml/building/1.0",            "build");
-        p.put("http://www.opengis.net/citygml/cityfurniture/1.0",   "furniture");
-        p.put("http://www.opengis.net/citygml/transportation/1.0",         "tr");
-        p.put("http://www.isotc211.org/2005/gco",                        "gcol");   // "l" for "legacy" (prior version 1).
-        p.put("http://www.isotc211.org/2005/srv",                        "srv1");
-        p.put("http://www.purl.org/dc/elements/1.1/",                     "dc2");
-        p.put("http://www.purl.org/dc/terms/",                           "dct2");
-        p.put("http://purl.org/dc/terms/",                                "dct");
-        p.put("http://www.inspire.org",                                   "ins");
-        p.put("http://inspira.europa.eu/networkservice/view/1.0",  "inspire_vs");
-        p.put("urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",                 "xal");
-        p.put("urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0",              "rim");
-        p.put("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.5",            "rim25");
-        p.put("urn:oasis:names:tc:xacml:2.0:context:schema:os", "xacml-context");
-        p.put("urn:oasis:names:tc:xacml:2.0:policy:schema:os",   "xacml-policy");
-        p.put("urn:us:gov:ic:ism:v2",                                   "icism");
-        SPECIFIC_URLS = p;
-    }
+    private static final Map<String,String> SPECIFIC_URLS = Map.ofEntries(
+            Map.entry(XMLConstants.W3C_XML_SCHEMA_NS_URI,                          "xs"),
+            Map.entry(XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI,                "xsi"),
+            Map.entry("http://www.w3.org/2004/02/skos/core#",                    "skos"),
+            Map.entry("http://www.w3.org/1999/02/22-rdf-syntax-ns#",              "rdf"),
+            Map.entry("http://www.w3.org/1998/Math/MathML",                       "mml"),
+            Map.entry("http://www.opengis.net/sensorML/1.0",                     "sml1"),
+            Map.entry("http://www.opengis.net/sensorML/1.0.1",                    "sml"),
+            Map.entry("http://www.opengis.net/swe/1.0",                          "swe1"),
+            Map.entry("http://www.opengis.net/cat/csw/3.0",                       "csw"),
+            Map.entry("http://www.opengis.net/cat/csw/2.0.2",                    "csw2"),
+            Map.entry("http://www.opengis.net/ows/2.0",                           "ows"),
+            Map.entry("http://www.opengis.net/cat/wrs/1.0",                       "wrs"),
+            Map.entry("http://www.opengis.net/cat/wrs",                         "wrs09"),
+            Map.entry("http://www.opengis.net/ows-6/utds/0.3",                   "utds"),
+            Map.entry("http://www.opengis.net/citygml/1.0",                      "core"),
+            Map.entry("http://www.opengis.net/citygml/building/1.0",            "build"),
+            Map.entry("http://www.opengis.net/citygml/cityfurniture/1.0",   "furniture"),
+            Map.entry("http://www.opengis.net/citygml/transportation/1.0",         "tr"),
+            Map.entry("http://www.isotc211.org/2005/gco",                        "gcol"),   // "l" for "legacy" (prior version 1).
+            Map.entry("http://www.isotc211.org/2005/srv",                        "srv1"),
+            Map.entry("http://www.purl.org/dc/elements/1.1/",                     "dc2"),
+            Map.entry("http://www.purl.org/dc/terms/",                           "dct2"),
+            Map.entry("http://purl.org/dc/terms/",                                "dct"),
+            Map.entry("http://www.inspire.org",                                   "ins"),
+            Map.entry("http://inspira.europa.eu/networkservice/view/1.0",  "inspire_vs"),
+            Map.entry("urn:oasis:names:tc:ciq:xsdschema:xAL:2.0",                 "xal"),
+            Map.entry("urn:oasis:names:tc:ebxml-regrep:xsd:rim:3.0",              "rim"),
+            Map.entry("urn:oasis:names:tc:ebxml-regrep:rim:xsd:2.5",            "rim25"),
+            Map.entry("urn:oasis:names:tc:xacml:2.0:context:schema:os", "xacml-context"),
+            Map.entry("urn:oasis:names:tc:xacml:2.0:policy:schema:os",   "xacml-policy"),
+            Map.entry("urn:us:gov:ic:ism:v2",                                   "icism"));
 
     /**
      * Returns the preferred prefix for the given namespace URI.

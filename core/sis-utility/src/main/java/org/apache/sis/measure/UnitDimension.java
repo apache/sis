@@ -16,7 +16,7 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Collections;
+import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.io.Serializable;
@@ -68,7 +68,7 @@ final class UnitDimension implements Dimension, Serializable {
     /**
      * Pseudo-dimension for dimensionless units.
      */
-    static final UnitDimension NONE = new UnitDimension(Collections.emptyMap());
+    static final UnitDimension NONE = new UnitDimension(Map.of());
     // No need to store in UnitRegistry since UnitDimension performs special checks for dimensionless instances.
 
     /**
@@ -78,6 +78,7 @@ final class UnitDimension implements Dimension, Serializable {
      *
      * @see #getBaseDimensions()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final Map<UnitDimension,Fraction> components;
 
     /**
@@ -197,7 +198,7 @@ final class UnitDimension implements Dimension, Serializable {
      */
     final boolean numeratorIs(final char s) {
         if (symbol == s) {                                  // Optimization for a simple case.
-            assert components.keySet().equals(Collections.singleton(this));
+            assert components.keySet().equals(Set.of(this));
             return true;
         }
         boolean found = false;

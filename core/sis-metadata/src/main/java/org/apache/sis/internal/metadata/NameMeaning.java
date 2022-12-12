@@ -17,7 +17,6 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import javax.measure.Unit;
 import org.opengis.parameter.*;
@@ -116,23 +115,21 @@ public final class NameMeaning extends Static {
      *
      * @since 0.7
      */
-    private static final Map<String,String> AUTHORITIES = new HashMap<>(12);
-    static {
-        add(Constants.EPSG);    // IOGP
-        add(Constants.OGC);     // Open Geospatial Consortium
-        add("OGC-WFS");         // OGC Web Feature Service
-        add("SI");              // Système International d'Unités
-        add("UCUM");            // Unified Code for Units of Measure
-        add("UNSD");            // United Nations Statistics Division
-        add("USNO");            // United States Naval Observatory
-    }
+    private static final Map<String,String> AUTHORITIES = Map.ofEntries(
+            entry(Constants.EPSG),      // IOGP
+            entry(Constants.OGC),       // Open Geospatial Consortium
+            entry("OGC-WFS"),           // OGC Web Feature Service
+            entry("SI"),                // Système International d'Unités
+            entry("UCUM"),              // Unified Code for Units of Measure
+            entry("UNSD"),              // United Nations Statistics Division
+            entry("USNO"));             // United States Naval Observatory
 
     /**
-     * Adds the given authority to the {@link #AUTHORITIES} map.
-     * This method shall be invoked at class initialization time only.
+     * Returns an {@link #AUTHORITIES} entry for the common case
+     * where the code space is the same as the key.
      */
-    private static void add(final String authority) {
-        AUTHORITIES.put(authority, authority);
+    private static Map.Entry<String,String> entry(final String authority) {
+        return Map.entry(authority, authority);
     }
 
     /**

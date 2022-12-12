@@ -19,7 +19,6 @@ package org.apache.sis.test.xml;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.nio.file.Files;
@@ -88,20 +87,17 @@ public strictfp class DocumentComparator {
      *
      * @see #substitutePrefix(String)
      */
-    private static final Map<String, String> PREFIX_URL = new HashMap<>(16);
-    static {
-        final Map<String,String> map = PREFIX_URL;
-        map.put("xmlns", "http://www.w3.org/2000/xmlns");           // No trailing slash.
-        map.put("xlink", Namespaces.XLINK);
-        map.put("xsi",   Namespaces.XSI);
-        map.put("gco",   Namespaces.GCO);
-        map.put("mdb",   Namespaces.MDB);
-        map.put("srv",   Namespaces.SRV);
-        map.put("gml",   Namespaces.GML);
-        map.put("gmd",   LegacyNamespaces.GMD);
-        map.put("gmx",   LegacyNamespaces.GMX);
-        map.put("gmi",   LegacyNamespaces.GMI);
-    }
+    private static final Map<String, String> PREFIX_URL = Map.of(
+            "xmlns", "http://www.w3.org/2000/xmlns",                // No trailing slash.
+            "xlink", Namespaces.XLINK,
+            "xsi",   Namespaces.XSI,
+            "gco",   Namespaces.GCO,
+            "mdb",   Namespaces.MDB,
+            "srv",   Namespaces.SRV,
+            "gml",   Namespaces.GML,
+            "gmd",   LegacyNamespaces.GMD,
+            "gmx",   LegacyNamespaces.GMX,
+            "gmi",   LegacyNamespaces.GMI);
 
     /**
      * The DOM factory, created when first needed.
