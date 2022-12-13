@@ -59,6 +59,9 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.image.DataType;
 
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+
 
 /**
  * An Image File Directory (FID) in a TIFF image.
@@ -72,7 +75,7 @@ import org.apache.sis.image.DataType;
  * @author  Johann Sorel (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  *
@@ -89,7 +92,7 @@ final class ImageFileDirectory extends DataCube {
 
     /**
      * Possible value for {@link #sampleFormat} specifying how to interpret each data sample in a pixel.
-     * Those values are not necessarily the same than the ones documented in {@link Tags#SampleFormat}.
+     * Those values are not necessarily the same than the ones documented in {@code TAG_SAMPLE_FORMAT}.
      * Default value is {@link #UNSIGNED}.
      */
     private static final byte SIGNED = 1, UNSIGNED = 0, FLOAT = 3;
@@ -537,33 +540,33 @@ final class ImageFileDirectory extends DataCube {
              * 1 = Chunky format. The component values for each pixel are stored contiguously (for example RGBRGBRGB).
              * 2 = Planar format. For example, one plane of Red components, one plane of Green and one plane if Blue.
              */
-            case Tags.PlanarConfiguration: {
+            case TAG_PLANAR_CONFIGURATION: {
                 final int value = type.readInt(input(), count);
                 switch (value) {
-                    case 1:  isPlanar = false; break;
-                    case 2:  isPlanar = true;  break;
-                    default: return value;                  // Cause a warning to be reported by the caller.
+                    case PLANAR_CONFIGURATION_CHUNKY: isPlanar = false; break;
+                    case PLANAR_CONFIGURATION_PLANAR: isPlanar = true;  break;
+                    default: return value;      // Cause a warning to be reported by the caller.
                 }
                 break;
             }
             /*
              * The number of columns in the image, i.e., the number of pixels per row.
              */
-            case Tags.ImageWidth: {
+            case TAG_IMAGE_WIDTH: {
                 imageWidth = type.readUnsignedLong(input(), count);
                 break;
             }
             /*
              * The number of rows of pixels in the image.
              */
-            case Tags.ImageLength: {
+            case TAG_IMAGE_LENGTH: {
                 imageHeight = type.readUnsignedLong(input(), count);
                 break;
             }
             /*
              * The tile width in pixels. This is the number of columns in each tile.
              */
-            case Tags.TileWidth: {
+            case TAG_TILE_WIDTH: {
                 setTileTagFamily(TILE);
                 tileWidth = type.readInt(input(), count);
                 break;
@@ -571,7 +574,7 @@ final class ImageFileDirectory extends DataCube {
             /*
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
-            case Tags.TileLength: {
+            case TAG_TILE_LENGTH: {
                 setTileTagFamily(TILE);
                 tileHeight = type.readInt(input(), count);
                 break;
@@ -580,7 +583,7 @@ final class ImageFileDirectory extends DataCube {
              * The number of rows per strip. This is considered by SIS as a special kind of tiles.
              * From this point of view, TileLength = RowPerStrip and TileWidth = ImageWidth.
              */
-            case Tags.RowsPerStrip: {
+            case TAG_ROWS_PER_STRIP: {
                 setTileTagFamily(STRIP);
                 tileHeight = type.readInt(input(), count);
                 break;
@@ -588,7 +591,7 @@ final class ImageFileDirectory extends DataCube {
             /*
              * The tile length (height) in pixels. This is the number of rows in each tile.
              */
-            case Tags.TileOffsets: {
+            case TAG_TILE_OFFSETS: {
                 setTileTagFamily(TILE);
                 tileOffsets = type.readVector(input(), count);
                 break;
@@ -597,7 +600,7 @@ final class ImageFileDirectory extends DataCube {
              * For each strip, the byte offset of that strip relative to the beginning of the TIFF file.
              * In Apache SIS implementation, strips are considered as a special kind of tiles.
              */
-            case Tags.StripOffsets: {
+            case TAG_STRIP_OFFSETS: {
                 setTileTagFamily(STRIP);
                 tileOffsets = type.readVector(input(), count);
                 break;
@@ -605,7 +608,7 @@ final class ImageFileDirectory extends DataCube {
             /*
              * The tile width in pixels. This is the number of columns in each tile.
              */
-            case Tags.TileByteCounts: {
+            case TAG_TILE_BYTE_COUNTS: {
                 setTileTagFamily(TILE);
                 tileByteCounts = type.readVector(input(), count);
                 break;
@@ -614,7 +617,7 @@ final class ImageFileDirectory extends DataCube {
              * For each strip, the number of bytes in the strip after compression.
              * In Apache SIS implementation, strips are considered as a special kind of tiles.
              */
-            case Tags.StripByteCounts: {
+            case TAG_STRIP_BYTE_COUNTS: {
                 setTileTagFamily(STRIP);
                 tileByteCounts = type.readVector(input(), count);
                 break;
@@ -622,12 +625,12 @@ final class ImageFileDirectory extends DataCube {
             /*
              * Legacy tags for JPEG formats, to be also interpreted as a tile.
              */
-            case Tags.JPEGInterchangeFormat: {
+            case TAG_JPEG_INTERCHANGE_FORMAT: {
                 setTileTagFamily(JPEG);
                 tileOffsets = type.readVector(input(), count);
                 break;
             }
-            case Tags.JPEGInterchangeFormatLength: {
+            case TAG_JPEG_INTERCHANGE_FORMAT_LENGTH: {
                 setTileTagFamily(JPEG);
                 tileByteCounts = type.readVector(input(), count);
                 break;
@@ -643,7 +646,7 @@ final class ImageFileDirectory extends DataCube {
             /*
              * Compression scheme used on the image data.
              */
-            case Tags.Compression: {
+            case TAG_COMPRESSION: {
                 final int value = type.readInt(input(), count);
                 compression = Compression.valueOf(value);
                 if (compression == Compression.UNKNOWN) {
@@ -655,7 +658,7 @@ final class ImageFileDirectory extends DataCube {
              * Mathematical operator that is applied to the image data before an encoding scheme is applied.
              * 1=none, 2=horizontal differencing. More values may be added in the future.
              */
-            case Tags.Predictor: {
+            case TAG_PREDICTOR: {
                 final int value = type.readInt(input(), count);
                 predictor = Predictor.valueOf(value);
                 if (predictor == Predictor.UNKNOWN) {
@@ -667,12 +670,12 @@ final class ImageFileDirectory extends DataCube {
              * The logical order of bits within a byte. If this value is 2, then
              * bits order shall be reversed in every bytes before decompression.
              */
-            case Tags.FillOrder: {
+            case TAG_FILL_ORDER: {
                 final int value = type.readInt(input(), count);
                 switch (value) {
-                    case 1: isBitOrderReversed = false; break;
-                    case 2: isBitOrderReversed = true;  break;
-                    default: return value;                  // Cause a warning to be reported by the caller.
+                    case FILL_ORDER_LEFT_TO_RIGHT: isBitOrderReversed = false; break;
+                    case FILL_ORDER_RIGHT_TO_LEFT: isBitOrderReversed = true;  break;
+                    default: return value;      // Cause a warning to be reported by the caller.
                 }
                 break;
             }
@@ -680,14 +683,17 @@ final class ImageFileDirectory extends DataCube {
              * How to interpret each data sample in a pixel. The size of data samples is still
              * specified by the BitsPerSample field.
              */
-            case Tags.SampleFormat: {
+            case TAG_SAMPLE_FORMAT: {
                 final int value = type.readInt(input(), count);
                 switch (value) {
-                    default: return value;                          // Warning to be reported by the caller.
-                    case 1: sampleFormat = UNSIGNED; break;         // Unsigned integer data (default).
-                    case 2: sampleFormat = SIGNED;   break;         // Two’s complement signed integer data.
-                    case 3: sampleFormat = FLOAT;    break;         // IEEE floating point data.
-                    case 4: warning(Level.WARNING, Resources.Keys.UndefinedDataFormat_1, filename()); break;
+                    default: return value;      // Warning to be reported by the caller.
+                    case SAMPLE_FORMAT_UNSIGNED_INTEGER: sampleFormat = UNSIGNED; break;
+                    case SAMPLE_FORMAT_SIGNED_INTEGER:   sampleFormat = SIGNED;   break;
+                    case SAMPLE_FORMAT_FLOATING_POINT:   sampleFormat = FLOAT;    break;
+                    case SAMPLE_FORMAT_UNDEFINED: {
+                        warning(Level.WARNING, Resources.Keys.UndefinedDataFormat_1, filename());
+                        break;
+                    }
                 }
                 break;
             }
@@ -696,7 +702,7 @@ final class ImageFileDirectory extends DataCube {
              * pixel (e.g. 3 for RGB values). Typically, all components have the same number of bits.
              * But the TIFF specification allows different values.
              */
-            case Tags.BitsPerSample: {
+            case TAG_BITS_PER_SAMPLE: {
                 final Vector values = type.readVector(input(), count);
                 /*
                  * The current implementation requires that all `bitsPerSample` elements have the same value.
@@ -717,7 +723,7 @@ final class ImageFileDirectory extends DataCube {
              * The number of components per pixel. Usually 1 for bilevel, grayscale, and palette-color images,
              * and 3 for RGB images. Default value is 1.
              */
-            case Tags.SamplesPerPixel: {
+            case TAG_SAMPLES_PER_PIXEL: {
                 samplesPerPixel = type.readShort(input(), count);
                 break;
             }
@@ -727,7 +733,7 @@ final class ImageFileDirectory extends DataCube {
              * image normally has SamplesPerPixel=3. If SamplesPerPixel is greater than 3, then the ExtraSamples field
              * describes the meaning of the extra samples. It may be an alpha channel, but not necessarily.
              */
-            case Tags.ExtraSamples: {
+            case TAG_EXTRA_SAMPLES: {
                 extraSamples = type.readVector(input(), count);
                 break;
             }
@@ -747,7 +753,7 @@ final class ImageFileDirectory extends DataCube {
              * 3 = Palette color. The value of the component is used as an index into the RGB values of the ColorMap.
              * 4 = Transparency Mask. Defines an irregularly shaped region of another image in the same TIFF file.
              */
-            case Tags.PhotometricInterpretation: {
+            case TAG_PHOTOMETRIC_INTERPRETATION: {
                 final short value = type.readShort(input(), count);
                 if (value < 0 || value > Byte.MAX_VALUE) return value;
                 photometricInterpretation = (byte) value;
@@ -760,7 +766,7 @@ final class ImageFileDirectory extends DataCube {
              * The number of values for each color is (1 << BitsPerSample) where 0 represents the minimum intensity
              * (black is 0,0,0) and 65535 represents the maximum intensity.
              */
-            case Tags.ColorMap: {
+            case TAG_COLOR_MAP: {
                 colorMap = type.readVector(input(), count);
                 break;
             }
@@ -768,8 +774,8 @@ final class ImageFileDirectory extends DataCube {
              * The minimum component value used. MinSampleValue is a single value that apply to all bands
              * while SMinSampleValue lists separated values for each band. Default is 0.
              */
-            case Tags.MinSampleValue:
-            case Tags.SMinSampleValue: {
+            case TAG_MIN_SAMPLE_VALUE:
+            case TAG_S_MIN_SAMPLE_VALUE: {
                 minValues = extremum(minValues, type.readVector(input(), count), false);
                 isMinSpecified = true;
                 break;
@@ -779,8 +785,8 @@ final class ImageFileDirectory extends DataCube {
              * This field is for statistical purposes and should not to be used to affect the
              * visual appearance of an image, unless a map styling is applied.
              */
-            case Tags.MaxSampleValue:
-            case Tags.SMaxSampleValue: {
+            case TAG_MAX_SAMPLE_VALUE:
+            case TAG_S_MAX_SAMPLE_VALUE: {
                 maxValues = extremum(maxValues, type.readVector(input(), count), true);
                 isMaxSpecified = true;
                 break;
@@ -801,7 +807,7 @@ final class ImageFileDirectory extends DataCube {
              * Bit 2 is 1 if the image defines a transparency mask for another image in this TIFF file (see PhotometricInterpretation).
              * Bit 4 indicates MRC imaging model as described in ITU-T recommendation T.44 [T.44] (See ImageLayer tag) - RFC 2301.
              */
-            case Tags.NewSubfileType: {
+            case TAG_NEW_SUBFILE_TYPE: {
                 subfileType = type.readInt(input(), count);
                 break;
             }
@@ -811,13 +817,13 @@ final class ImageFileDirectory extends DataCube {
              * 2 = reduced-resolution image data
              * 3 = a single page of a multi-page image (see PageNumber).
              */
-            case Tags.SubfileType: {
+            case TAG_SUBFILE_TYPE: {
                 final int value = type.readInt(input(), count);
                 switch (value) {
-                    default: return value;                          // Warning to be reported by the caller.
-                    case 1:  subfileType &= ~1; break;
-                    case 2:  subfileType |=  1; break;
-                    case 3:  subfileType |=  2; break;
+                    default: return value;                // Warning to be reported by the caller.
+                    case SUBFILE_TYPE_FULL_RESOLUTION:    subfileType &= ~NEW_SUBFILE_TYPE_REDUCED_RESOLUTION; break;
+                    case SUBFILE_TYPE_REDUCED_RESOLUTION: subfileType |=  NEW_SUBFILE_TYPE_REDUCED_RESOLUTION; break;
+                    case SUBFILE_TYPE_SINGLE_PAGE:        subfileType |=  NEW_SUBFILE_TYPE_SINGLE_PAGE;        break;
                 }
                 break;
             }
@@ -833,14 +839,14 @@ final class ImageFileDirectory extends DataCube {
              * An array of unsigned SHORT values, which are primarily grouped into blocks of 4.
              * The first 4 values are special, and contain GeoKey directory header information.
              */
-            case Tags.GeoKeyDirectory: {
+            case (short) TAG_GEO_KEY_DIRECTORY: {
                 referencing().keyDirectory = type.readVector(input(), count);
                 break;
             }
             /*
              * Stores all of the `double` valued GeoKeys, referenced by the GeoKeyDirectory.
              */
-            case Tags.GeoDoubleParams: {
+            case (short) TAG_GEO_DOUBLE_PARAMS: {
                 referencing().numericParameters = type.readVector(input(), count);
                 break;
             }
@@ -849,7 +855,7 @@ final class ImageFileDirectory extends DataCube {
              * which will be splitted by CRSBuilder, but we allow an arbitrary amount as a paranoiac check.
              * Note that TIFF files use 0 as the end delimiter in strings (C/C++ convention).
              */
-            case Tags.GeoAsciiParams: {
+            case (short) TAG_GEO_ASCII_PARAMS: {
                 referencing().setAsciiParameters(type.readString(input(), count, encoding()));
                 break;
             }
@@ -857,16 +863,19 @@ final class ImageFileDirectory extends DataCube {
              * The orientation of the image with respect to the rows and columns.
              * This is an integer numeroted from 1 to 7 inclusive (see TIFF specification for meaning).
              */
-            case Tags.Orientation: {
+            case TAG_ORIENTATION: {
                 // TODO
                 break;
             }
             /*
-             * The "grid to CRS" conversion as a 4×4 matrix in row-major fashion. The third matrix row and
-             * the third matrix column may contain only zero values; this block does not reduce the number
-             * of dimensions from 3 to 2.
+             * Specifies the "grid to CRS" conversion between the raster space and the model space.
+             * If specified, the tag shall have the 16 values of a 4×4 matrix in row-major fashion.
+             * The last matrix row (i.e. the last 4 values) should be [0 0 0 1].
+             * The row before should be [0 0 0 0] if the conversion is two-dimensional.
+             * This block does not reduce the number of dimensions from 3 to 2.
+             * Only one of `ModelPixelScaleTag` and `ModelTransformation` should be used.
              */
-            case Tags.ModelTransformation: {
+            case (short) TAG_MODEL_TRANSFORMATION: {
                 final Vector m = type.readVector(input(), count);
                 final int n;
                 switch (m.size()) {
@@ -880,10 +889,20 @@ final class ImageFileDirectory extends DataCube {
                 break;
             }
             /*
-             * The "grid to CRS" conversion with only the scale factor specified. This block sets the
-             * translation column to NaN, meaning that it will need to be computed from the tie point.
+             * A vector of 3 floating-point values defining the "grid to CRS" conversion without rotation.
+             * The conversion is defined as below, when (I,J,K,X,Y,Z) is the tie point singleton record:
+             *
+             * ┌                       ┐
+             * │   Sx   0    0    Tx   │       Tx = X - I/Sx
+             * │   0   -Sy   0    Ty   │       Ty = Y + J/Sy
+             * │   0    0    Sz   Tz   │       Tz = Z - K/Sz  (if not 0)
+             * │   0    0    0    1    │
+             * └                       ┘
+             *
+             * This block sets the translation column to NaN, meaning that it will need to be computed from
+             * the tie point. Only one of `ModelPixelScaleTag` and `ModelTransformation` should be used.
              */
-            case Tags.ModelPixelScaleTag: {
+            case (short) TAG_MODEL_PIXEL_SCALE: {
                 final Vector m = type.readVector(input(), count);
                 final int size = m.size();
                 if (size < 2 || size > 3) {     // Length should be exactly 3, but we make this reader tolerant.
@@ -894,8 +913,9 @@ final class ImageFileDirectory extends DataCube {
             }
             /*
              * The mapping from pixel coordinates to CRS coordinates as a sequence of (I,J,K, X,Y,Z) records.
+             * This tag is also known as `Georeference`.
              */
-            case Tags.ModelTiePoints: {
+            case (short) TAG_MODEL_TIE_POINT: {
                 referencing().modelTiePoints = type.readVector(input(), count);
                 break;
             }
@@ -913,7 +933,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/citation/series/name
              */
-            case Tags.DocumentName: {
+            case TAG_DOCUMENT_NAME: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addSeries(value);
                 }
@@ -924,7 +944,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/citation/series/page
              */
-            case Tags.PageName: {
+            case TAG_PAGE_NAME: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addPage(value);
                 }
@@ -937,7 +957,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/citation/series/page
              */
-            case Tags.PageNumber: {
+            case TAG_PAGE_NUMBER: {
                 final Vector v = type.readVector(input(), count);
                 int p = 0, n = 0;
                 switch (v.size()) {
@@ -954,7 +974,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/citation/title
              */
-            case Tags.ImageDescription: {
+            case TAG_IMAGE_DESCRIPTION: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addTitle(Strings.singleLine(" ", value));
                 }
@@ -966,7 +986,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/citation/party/name
              */
-            case Tags.Artist: {
+            case TAG_ARTIST: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addAuthor(value);
                 }
@@ -978,7 +998,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/resourceConstraint
              */
-            case Tags.Copyright: {
+            case (short) TAG_COPYRIGHT: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.parseLegalNotice(value);
                 }
@@ -989,7 +1009,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/identificationInfo/citation/date
              */
-            case Tags.DateTime: {
+            case TAG_DATE_TIME: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addCitationDate(reader.getDateFormat().parse(value),
                             DateType.CREATION, MetadataBuilder.Scope.RESOURCE);
@@ -1001,7 +1021,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/resourceLineage/processStep/processingInformation/procedureDescription
              */
-            case Tags.HostComputer: {
+            case TAG_HOST_COMPUTER: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addHostComputer(value);
                 }
@@ -1012,7 +1032,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/resourceLineage/processStep/processingInformation/softwareReference/title
              */
-            case Tags.Software: {
+            case TAG_SOFTWARE: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addSoftwareReference(value);
                 }
@@ -1022,7 +1042,7 @@ final class ImageFileDirectory extends DataCube {
              * Manufacturer of the scanner, video digitizer, or other type of equipment used to generate the image.
              * Synthetic images should not include this field.
              */
-            case Tags.Make: {
+            case TAG_MAKE: {
                 // TODO: is Instrument.citation.citedResponsibleParty.party.name an appropriate place?
                 // what would be the citation title? A copy of Tags.Model?
                 break;
@@ -1033,7 +1053,7 @@ final class ImageFileDirectory extends DataCube {
              *
              * Destination: metadata/acquisitionInformation/platform/instrument/identifier
              */
-            case Tags.Model: {
+            case TAG_MODEL: {
                 for (final String value : type.readString(input(), count, encoding())) {
                     metadata.addInstrument(null, value);
                 }
@@ -1042,8 +1062,8 @@ final class ImageFileDirectory extends DataCube {
             /*
              * The number of pixels per ResolutionUnit in the ImageWidth or ImageHeight direction.
              */
-            case Tags.XResolution:
-            case Tags.YResolution: {
+            case TAG_X_RESOLUTION:
+            case TAG_Y_RESOLUTION: {
                 metadata.setResolution(type.readDouble(input(), count));
                 break;
             }
@@ -1054,7 +1074,7 @@ final class ImageFileDirectory extends DataCube {
              *   2 = Inch (default).
              *   3 = Centimeter.
              */
-            case Tags.ResolutionUnit: {
+            case TAG_RESOLUTION_UNIT: {
                 return metadata.setResolutionUnit(type.readInt(input(), count));
                 // Non-null return value cause a warning to be reported by the caller.
             }
@@ -1066,7 +1086,7 @@ final class ImageFileDirectory extends DataCube {
              *   2 = An ordered dither or halftone technique has been applied to the image data.
              *   3 = A randomized process such as error diffusion has been applied to the image data.
              */
-            case Tags.Threshholding: {
+            case TAG_THRESHHOLDING: {
                 return metadata.setThreshholding(type.readShort(input(), count));
                 // Non-null return value cause a warning to be reported by the caller.
             }
@@ -1074,9 +1094,9 @@ final class ImageFileDirectory extends DataCube {
              * The width and height of the dithering or halftoning matrix used to create
              * a dithered or halftoned bilevel file. Meaningful only if Threshholding = 2.
              */
-            case Tags.CellWidth:
-            case Tags.CellLength: {
-                metadata.setCellSize(type.readShort(input(), count), tag == Tags.CellWidth);
+            case TAG_CELL_WIDTH:
+            case TAG_CELL_LENGTH: {
+                metadata.setCellSize(type.readShort(input(), count), tag == TAG_CELL_WIDTH);
                 break;
             }
 
@@ -1090,14 +1110,14 @@ final class ImageFileDirectory extends DataCube {
              * For each string of contiguous unused bytes in a TIFF file, the number of bytes and the byte offset
              * in the string. Those tags are deprecated and do not need to be supported.
              */
-            case Tags.FreeByteCounts:
-            case Tags.FreeOffsets:
+            case TAG_FREE_BYTE_COUNTS:
+            case TAG_FREE_OFFSETS:
             /*
              * For grayscale data, the optical density of each possible pixel value, plus the precision of that
              * information. This is ignored by most TIFF readers.
              */
-            case Tags.GrayResponseCurve:
-            case Tags.GrayResponseUnit: {
+            case TAG_GRAY_RESPONSE_CURVE:
+            case TAG_GRAY_RESPONSE_UNIT: {
                 warning(Level.FINE, Resources.Keys.IgnoredTag_1, Tags.name(tag));
                 break;
             }
@@ -1214,21 +1234,21 @@ final class ImageFileDirectory extends DataCube {
      */
     final boolean validateMandatoryTags() throws DataStoreContentException {
         if (isValidated) return false;
-        if (imageWidth  < 0) throw missingTag(Tags.ImageWidth);
-        if (imageHeight < 0) throw missingTag(Tags.ImageLength);
+        if (imageWidth  < 0) throw missingTag((short) TAG_IMAGE_WIDTH);
+        if (imageHeight < 0) throw missingTag((short) TAG_IMAGE_LENGTH);
         final short offsetsTag, byteCountsTag;
         switch (tileTagFamily) {
             case JPEG:                      // Handled as strips.
             case STRIP: {
                 if (tileWidth  < 0) tileWidth  = Math.toIntExact(imageWidth);
                 if (tileHeight < 0) tileHeight = Math.toIntExact(imageHeight);
-                offsetsTag    = Tags.StripOffsets;
-                byteCountsTag = Tags.StripByteCounts;
+                offsetsTag    = TAG_STRIP_OFFSETS;
+                byteCountsTag = TAG_STRIP_BYTE_COUNTS;
                 break;
             }
             case TILE:  {
-                offsetsTag    = Tags.TileOffsets;
-                byteCountsTag = Tags.TileByteCounts;
+                offsetsTag    = TAG_TILE_OFFSETS;
+                byteCountsTag = TAG_TILE_BYTE_COUNTS;
                 break;
             }
             default: {
@@ -1241,14 +1261,14 @@ final class ImageFileDirectory extends DataCube {
         }
         if (samplesPerPixel == 0) {
             samplesPerPixel = 1;
-            missingTag(Tags.SamplesPerPixel, 1, false, false);
+            missingTag((short) TAG_SAMPLES_PER_PIXEL, 1, false, false);
         }
         if (bitsPerSample == 0) {
             bitsPerSample = 1;
-            missingTag(Tags.BitsPerSample, 1, false, false);
+            missingTag((short) TAG_BITS_PER_SAMPLE, 1, false, false);
         }
         if (colorMap != null) {
-            ensureSameLength(Tags.ColorMap, Tags.BitsPerSample, colorMap.size(),  3 * (1 << bitsPerSample));
+            ensureSameLength((short) TAG_COLOR_MAP, (short) TAG_BITS_PER_SAMPLE, colorMap.size(),  3 * (1 << bitsPerSample));
         }
         if (sampleFormat != FLOAT) {
             long minValue, maxValue;
@@ -1286,12 +1306,12 @@ final class ImageFileDirectory extends DataCube {
             }
             case 0b0001: {          // Compute missing tile width.
                 tileWidth = computeTileSize(tileHeight);
-                missingTag(Tags.TileWidth, tileWidth, true, true);
+                missingTag((short) TAG_TILE_WIDTH, tileWidth, true, true);
                 break;
             }
             case 0b0010: {          // Compute missing tile height.
                 tileHeight = computeTileSize(tileWidth);
-                missingTag(Tags.TileLength, tileHeight, true, true);
+                missingTag((short) TAG_TILE_LENGTH, tileHeight, true, true);
                 break;
             }
             case 0b0100: {          // Compute missing tile byte count in uncompressed case.
@@ -1308,8 +1328,8 @@ final class ImageFileDirectory extends DataCube {
             default: {
                 final short tag;
                 switch (Integer.lowestOneBit(missing)) {
-                    case 0b0001: tag = Tags.TileWidth;  break;
-                    case 0b0010: tag = Tags.TileLength; break;
+                    case 0b0001: tag = TAG_TILE_WIDTH;  break;
+                    case 0b0010: tag = TAG_TILE_LENGTH; break;
                     default:     tag = byteCountsTag;   break;
                 }
                 throw missingTag(tag);
@@ -1334,7 +1354,7 @@ final class ImageFileDirectory extends DataCube {
          * the translation terms now.
          */
         if (referencing != null && !referencing.validateMandatoryTags()) {
-            throw missingTag(Tags.ModelTiePoints);
+            throw missingTag((short) TAG_MODEL_TIE_POINT);
         }
         isValidated = true;
         return true;
@@ -1405,7 +1425,7 @@ final class ImageFileDirectory extends DataCube {
      * of another image in this TIFF file.
      */
     final boolean isReducedResolution() {
-        return (subfileType & 1) != 0;
+        return (subfileType & NEW_SUBFILE_TYPE_REDUCED_RESOLUTION) != 0;
     }
 
     /**
@@ -1612,17 +1632,17 @@ final class ImageFileDirectory extends DataCube {
             short missing = 0;              // Non-zero if there is a warning about missing information.
             switch (photometricInterpretation) {
                 default: {                  // For any unrecognized code, fallback on grayscale with 0 as black.
-                    unsupportedTagValue(Tags.PhotometricInterpretation, photometricInterpretation);
+                    unsupportedTagValue((short) TAG_PHOTOMETRIC_INTERPRETATION, photometricInterpretation);
                     break;
                 }
                 case -1: {
-                    missing = Tags.PhotometricInterpretation;
+                    missing = TAG_PHOTOMETRIC_INTERPRETATION;
                     break;
                 }
-                case  0:                   // WhiteIsZero: 0 is imaged as white.
-                case  1: {                 // BlackIsZero: 0 is imaged as black.
+                case  PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO:
+                case  PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO: {
                     final Color[] colors = {Color.BLACK, Color.WHITE};
-                    if (photometricInterpretation == 0) {
+                    if (photometricInterpretation == PHOTOMETRIC_INTERPRETATION_WHITE_IS_ZERO) {
                         ArraysExt.swap(colors, 0, 1);
                     }
                     double min = 0;
@@ -1636,7 +1656,7 @@ final class ImageFileDirectory extends DataCube {
                     colorModel = ColorModelFactory.createColorScale(dataType, samplesPerPixel, visibleBand, min, max, colors);
                     break;
                 }
-                case 2: {                   // RGB: (0,0,0) is black and (255,255,255) is white.
+                case PHOTOMETRIC_INTERPRETATION_RGB: {
                     final int numBands = sm.getNumBands();
                     if (numBands < 3 || numBands > 4) {
                         throw new DataStoreContentException(Errors.format(Errors.Keys.UnexpectedValueInElement_2, "numBands", numBands));
@@ -1646,9 +1666,9 @@ final class ImageFileDirectory extends DataCube {
                     colorModel = ColorModelFactory.createRGB(bitsPerSample, packed, hasAlpha);
                     break;
                 }
-                case  3: {                  // PaletteColor
+                case PHOTOMETRIC_INTERPRETATION_PALETTE_COLOR: {
                     if (colorMap == null) {
-                        missing = Tags.ColorMap;
+                        missing = TAG_COLOR_MAP;
                         break;
                     }
                     int gi = colorMap.size() / 3;

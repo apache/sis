@@ -14,18 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.geotiff;
+
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+import static org.junit.Assert.*;
+
 
 /**
- * Utility classes for the implementation of GeoTIFF reader and writer.
- *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Tests {@link Tags}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.8
+ * @since   1.4
  * @module
  */
-package org.apache.sis.internal.geotiff;
+public final strictfp class TagsTest extends TestCase {
+    /**
+     * Tests {@link Tags#name(short)}.
+     */
+    @Test
+    public void testName() {
+        assertEquals("Artist",             Tags.name((short) TAG_ARTIST));
+        assertEquals("Copyright",          Tags.name((short) TAG_COPYRIGHT));
+        assertEquals("GeoKeyDirectoryTag", Tags.name((short) TAG_GEO_KEY_DIRECTORY));
+        assertEquals("GEO_METADATA",       Tags.name(Tags.GEO_METADATA));
+    }
+}
