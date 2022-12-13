@@ -16,9 +16,9 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
+import java.util.Set;
+import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.BiFunction;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -130,7 +130,7 @@ public final strictfp class LogicalFilterTest extends TestCase {
         } catch (NullPointerException ex) {
         }
         try {
-            anyArity.apply(Collections.singleton(f1));
+            anyArity.apply(Set.of(f1));
             fail("Creation with less then two operands shall raise an exception.");
         } catch (IllegalArgumentException ex) {
             assertNotNull(ex.getMessage());
@@ -143,7 +143,7 @@ public final strictfp class LogicalFilterTest extends TestCase {
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
 
-        filter = anyArity.apply(Arrays.asList(f1, f2, f1));
+        filter = anyArity.apply(List.of(f1, f2, f1));
         assertArrayEquals(new Filter<?>[] {f1, f2, f1}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);

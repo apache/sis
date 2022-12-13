@@ -198,7 +198,7 @@ public abstract class FirstKeywordPeek {
                 do n = channel.read(buffer);
                 while (n >= 0 && buffer.hasRemaining());
             }
-            return probeContent((ByteBuffer) buffer.flip().mark(), null);        // TODO: remove cast in JDK9.
+            return probeContent(buffer.flip().mark(), null);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

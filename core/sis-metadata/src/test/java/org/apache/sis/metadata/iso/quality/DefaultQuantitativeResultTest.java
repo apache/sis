@@ -17,8 +17,9 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.Iterator;
-import java.util.Collections;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
@@ -84,7 +85,7 @@ public final strictfp class DefaultQuantitativeResultTest extends TestCase {
          */
         final RecordType recordType = RecordSchemaSIS.INSTANCE.createRecordType(
                 RecordSchemaSIS.MULTILINE.toInternationalString(),
-                Collections.singletonMap("Result of quality measurement", String.class));
+                Map.of("Result of quality measurement", String.class));
         /*
          * The `Record` constructor invoked at unmarshalling time sets the type
          * to the hard-coded "Single text" value. We need to use the same type.
@@ -98,14 +99,14 @@ public final strictfp class DefaultQuantitativeResultTest extends TestCase {
          */
         assertNotEquals(recordType, record.getRecordType());        // Actually a limitation, not an intended behavior.
         final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
-        result.setValues(Collections.singletonList(record));
+        result.setValues(List.of(record));
         result.setValueType(recordType);
         /*
          * Opportunistically test the redirection implemented in deprecated methods.
          */
         final DefaultQuantitativeAttributeAccuracy element = new DefaultQuantitativeAttributeAccuracy();
-        element.setNamesOfMeasure(Collections.singleton(new SimpleInternationalString("Some quality flag")));
-        element.setResults(Collections.singleton(result));
+        element.setNamesOfMeasure(Set.of(new SimpleInternationalString("Some quality flag")));
+        element.setResults(Set.of(result));
         return element;
     }
 

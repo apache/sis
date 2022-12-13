@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
@@ -234,7 +233,7 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         if (Double.isNaN(tb)) {
             tb = ta*(sb/sa - Δf);
         }
-        final Map<String,?> name = Collections.singletonMap(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED);
+        final Map<String,?> name = Map.of(DefaultEllipsoid.NAME_KEY, NilReferencingObject.UNNAMED);
         final Ellipsoid source = new Ellipsoid(name, sa, sb,  Δa,  Δf);
         final Ellipsoid target = new Ellipsoid(name, ta, tb, -Δa, -Δf);
         source.other = target;

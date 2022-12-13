@@ -18,7 +18,6 @@ package org.apache.sis.feature.builder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -334,7 +333,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 role = null;
             }
             if (role != null) {
-                final Set<AttributeRole> rc = Collections.singleton(role);
+                final Set<AttributeRole> rc = Set.of(role);
                 if (property instanceof AbstractOperation) {
                     for (final String dependency : ((AbstractOperation) property).getDependencies()) {
                         propertyRoles.merge(dependency, rc, AttributeRole::merge);
@@ -409,7 +408,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * @see DefaultFeatureType#getSuperTypes()
      */
     public FeatureType[] getSuperTypes() {
-        return superTypes.toArray(new FeatureType[superTypes.size()]);
+        return superTypes.toArray(FeatureType[]::new);
     }
 
     /**
@@ -992,7 +991,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
                 }
             }
             feature = new DefaultFeatureType(identification(), isAbstract(),
-                    superTypes.toArray(new FeatureType[superTypes.size()]),
+                    superTypes.toArray(FeatureType[]::new),
                     ArraysExt.resize(propertyTypes, propertyCursor));
         }
         return feature;
@@ -1002,7 +1001,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Helper method for creating identification info of synthetic attributes.
      */
     private static Map<String,?> name(final GenericName name) {
-        return Collections.singletonMap(AbstractOperation.NAME_KEY, name);
+        return Map.of(AbstractOperation.NAME_KEY, name);
     }
 
     /**

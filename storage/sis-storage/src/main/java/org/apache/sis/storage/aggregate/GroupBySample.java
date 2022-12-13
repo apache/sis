@@ -47,7 +47,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
      * @param  ranges  the sample dimensions of this group.
      */
     private GroupBySample(final List<SampleDimension> ranges) {
-        this.ranges = ranges;       // TODO: use List.copyOf(…) with JDK10.
+        this.ranges = List.copyOf(ranges);
     }
 
     /**

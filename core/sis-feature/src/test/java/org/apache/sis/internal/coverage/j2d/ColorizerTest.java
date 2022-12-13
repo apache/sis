@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.AbstractMap.SimpleEntry;
 import java.awt.Color;
@@ -50,7 +50,7 @@ public final strictfp class ColorizerTest extends TestCase {
      */
     @Test
     public void testRangeAndColors() throws TransformException {
-        final Colorizer colorizer = new Colorizer(Arrays.asList(
+        final Colorizer colorizer = new Colorizer(List.of(
                 new SimpleEntry<>(NumberRange.create(0, true,  0, true), new Color[] {Color.GRAY}),
                 new SimpleEntry<>(NumberRange.create(1, true,  1, true), new Color[] {ColorModelFactory.TRANSPARENT}),
                 new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})));

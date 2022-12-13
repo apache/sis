@@ -19,7 +19,6 @@ package org.apache.sis.metadata;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
@@ -437,10 +436,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
     @DependsOnMethod("testSet")
     public void testSetCollection() {
         final DefaultCitation instance = new DefaultCitation("Ignored title");
-        final List<InternationalString> oldTitles = Arrays.<InternationalString>asList(
+        final List<InternationalString> oldTitles = List.of(
                 new SimpleInternationalString("Old title 1"),
                 new SimpleInternationalString("Old title 2"));
-        final List<InternationalString> newTitles = Arrays.<InternationalString>asList(
+        final List<InternationalString> newTitles = List.of(
                 new SimpleInternationalString("New title 1"),
                 new SimpleInternationalString("New title 2"));
 
@@ -522,7 +521,7 @@ public final strictfp class PropertyAccessorTest extends TestCase {
         }
 
         // Check final collection content.
-        final List<InternationalString> expected = Arrays.asList(title1, title2);
+        final List<InternationalString> expected = List.of(title1, title2);
         assertEquals("alternateTitles", expected, accessor.get(index, instance));
         assertTitleEquals("title", "Ignored title", instance);
     }
@@ -546,10 +545,10 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      */
     public void testSetInAppendMode() {
         final DefaultCitation instance = new DefaultCitation();
-        final List<InternationalString> oldTitles = Arrays.<InternationalString>asList(
+        final List<InternationalString> oldTitles = List.of(
                 new SimpleInternationalString("Old title 1"),
                 new SimpleInternationalString("Old title 2"));
-        final List<InternationalString> newTitles = Arrays.<InternationalString>asList(
+        final List<InternationalString> newTitles = List.of(
                 new SimpleInternationalString("New title 1"),
                 new SimpleInternationalString("New title 2"));
         final List<InternationalString> merged = new ArrayList<>(oldTitles);

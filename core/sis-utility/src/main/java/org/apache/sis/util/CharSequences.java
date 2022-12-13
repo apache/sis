@@ -691,9 +691,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * </ul>
      *
      * <div class="note"><b>Performance note:</b>
-     * Prior JDK8 this method was usually cheap because all string instances created by
+     * Prior Java 8 this method was usually cheap because all string instances created by
      * {@link String#substring(int,int)} shared the same {@code char[]} internal array.
-     * However, since JDK8, the new {@code String} implementation copies the data in new arrays.
+     * However, since Java 8, the new {@code String} implementation copies the data in new arrays.
      * Consequently, it is better to use index rather than this method for splitting large {@code String}s.
      * However, this method still useful for other {@link CharSequence} implementations providing an efficient
      * {@code subSequence(int,int)} method.</div>

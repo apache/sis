@@ -16,8 +16,8 @@
  */
 package org.apache.sis.feature.builder;
 
+import java.util.Map;
 import java.util.Iterator;
-import java.util.Collections;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
@@ -375,7 +375,7 @@ public final strictfp class FeatureTypeBuilderTest extends TestCase {
         final FeatureType parentType = builder.build();
 
         builder = new FeatureTypeBuilder().setName("Child").setSuperTypes(parentType);
-        builder.addProperty(FeatureOperations.link(Collections.singletonMap(AbstractOperation.NAME_KEY, "B"), pa));
+        builder.addProperty(FeatureOperations.link(Map.of(AbstractOperation.NAME_KEY, "B"), pa));
         final FeatureType childType = builder.build();
 
         final Iterator<? extends PropertyType> it = childType.getProperties(true).iterator();

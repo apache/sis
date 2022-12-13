@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
@@ -45,8 +45,8 @@ public final strictfp class DefaultEngineeringCRSTest extends TestCase {
      * Creates an engineering CRS using a two-dimensional Cartesian coordinate system.
      */
     private static DefaultEngineeringCRS createCartesian() {
-        return new DefaultEngineeringCRS(Collections.singletonMap(DefaultEngineeringCRS.NAME_KEY, "A construction site CRS"),
-                new DefaultEngineeringDatum(Collections.singletonMap(DefaultEngineeringDatum.NAME_KEY, "P1")),
+        return new DefaultEngineeringCRS(Map.of(DefaultEngineeringCRS.NAME_KEY, "A construction site CRS"),
+                new DefaultEngineeringDatum(Map.of(DefaultEngineeringDatum.NAME_KEY, "P1")),
                 HardCodedCS.CARTESIAN_2D);
     }
 
@@ -54,8 +54,8 @@ public final strictfp class DefaultEngineeringCRSTest extends TestCase {
      * Creates an engineering CRS using a three-dimensional Spherical coordinate system.
      */
     private static DefaultEngineeringCRS createSpherical() {
-        return new DefaultEngineeringCRS(Collections.singletonMap(DefaultEngineeringCRS.NAME_KEY, "A spherical CRS"),
-                new DefaultEngineeringDatum(Collections.singletonMap(DefaultEngineeringDatum.NAME_KEY, "Centre")),
+        return new DefaultEngineeringCRS(Map.of(DefaultEngineeringCRS.NAME_KEY, "A spherical CRS"),
+                new DefaultEngineeringDatum(Map.of(DefaultEngineeringDatum.NAME_KEY, "Centre")),
                 HardCodedCS.SPHERICAL);
     }
 

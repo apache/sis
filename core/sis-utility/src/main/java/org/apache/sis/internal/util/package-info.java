@@ -30,7 +30,7 @@
  * so some serialized classes still exist in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */

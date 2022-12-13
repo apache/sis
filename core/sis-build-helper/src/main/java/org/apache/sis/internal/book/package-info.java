@@ -16,7 +16,7 @@
  */
 
 /**
- * Takes the source HTML files in the {@code sis-site/main/source/developer-guide/} directory
+ * Takes the source HTML files in the {@code sis-site/main/content/developer-guide/} directory
  * and assembles them in a single file to be published in the {@code asf-staging/book/} directory.
  *
  * <p>The main class in this package is {@link org.apache.sis.internal.book.Assembler}.
@@ -28,7 +28,7 @@
  * │       └─ sis-build-helper
  * └─ site
  *     ├─ main
- *     │   └─ source
+ *     │   └─ content
  *     └─ asf-staging
  *         └─ book
  * </pre>

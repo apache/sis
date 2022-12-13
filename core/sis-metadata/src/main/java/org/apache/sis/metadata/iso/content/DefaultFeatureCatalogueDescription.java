@@ -218,7 +218,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @deprecated Replaced by {@code getLocalesAndCharsets().keySet()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     public Collection<Locale> getLanguages() {
@@ -232,7 +232,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setLanguages(final Collection<? extends Locale> newValues) {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
         setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
@@ -291,7 +291,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      * @deprecated As of ISO 19115:2014, replaced by {@link #getFeatureTypeInfo()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getFeatureTypeInfo")
     @XmlElement(name = "featureTypes", namespace = LegacyNamespaces.GMD)
     public final Collection<GenericName> getFeatureTypes() {
@@ -325,7 +325,7 @@ public class DefaultFeatureCatalogueDescription extends AbstractContentInformati
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setFeatureTypeInfo(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setFeatureTypes(final Collection<? extends GenericName> newValues) {
         checkWritePermission(valueIfDefined(featureTypes));
         ((LegacyPropertyAdapter<GenericName,?>) getFeatureTypes()).setValues(newValues);

@@ -520,7 +520,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             return ((GeodeticAuthorityFactory) factory).getCodeSpaces();
         } else {
             final String authority = Citations.toCodeSpace(factory.getAuthority());
-            return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
+            return (authority != null) ? Set.of(authority) : Set.of();
         }
     }
 
@@ -1610,7 +1610,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     String name = IdentifiedObjects.getIdentifierOrName(ops[0]) + " ⟶ "
                                 + IdentifiedObjects.getIdentifierOrName(ops[ops.length - 1]);
                     combined = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
-                            .createConcatenatedOperation(Collections.singletonMap(CoordinateOperation.NAME_KEY, name), ops);
+                            .createConcatenatedOperation(Map.of(CoordinateOperation.NAME_KEY, name), ops);
                 }
                 break;
             }
@@ -1813,7 +1813,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                         }
                     }
                 }
-                finders = list.toArray(new IdentifiedObjectFinder[list.size()]);
+                finders = list.toArray(IdentifiedObjectFinder[]::new);
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(FactoryException.class);
             }

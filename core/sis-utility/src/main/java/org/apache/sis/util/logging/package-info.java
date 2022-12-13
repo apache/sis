@@ -35,7 +35,7 @@
  * {@code jul-to-slf4j.jar} dependency to a project is sufficient for redirecting Java logging to SLF4J.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://docs.oracle.com/en/java/javase/18/core/java-logging-overview.html">Java Logging Overview</a>
  *

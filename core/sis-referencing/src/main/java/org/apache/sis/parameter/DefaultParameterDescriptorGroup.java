@@ -190,7 +190,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             || ((DefaultParameterDescriptorGroup) parameters).descriptors != descriptors)
         {
             // Note sure where the list come from, we are better to copy its content.
-            final GeneralParameterDescriptor[] p = descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+            final GeneralParameterDescriptor[] p = descriptors.toArray(GeneralParameterDescriptor[]::new);
             verifyNames(properties, p);
             descriptors = asList(p);
         }
@@ -243,9 +243,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         if (descriptor instanceof DefaultParameterDescriptorGroup &&
                 ((DefaultParameterDescriptorGroup) descriptor).descriptors == c)
         {
-            descriptors = c; // Share the immutable instance (no need to clone).
+            descriptors = c;            // Share the immutable instance (no need to clone).
         } else {
-            descriptors = asList(c.toArray(new GeneralParameterDescriptor[c.size()]));
+            descriptors = asList(c.toArray(GeneralParameterDescriptor[]::new));
         }
     }
 
@@ -254,6 +254,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     private static List<GeneralParameterDescriptor> asList(final GeneralParameterDescriptor[] parameters) {
         switch (parameters.length) {
+            /*
+             * Use `Collections` instead of `List.of(…)` for consistency with
+             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
+             */
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(parameters[0]);
             case 2:  // fall through
@@ -471,8 +475,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     @XmlElement(name = "parameter", required = true)
     private GeneralParameterDescriptor[] getDescriptors() {
-        final List<GeneralParameterDescriptor> descriptors = descriptors();     // Give to user a chance to override.
-        return descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+        return descriptors().toArray(GeneralParameterDescriptor[]::new);
     }
 
     /**

@@ -282,7 +282,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#getEquivalentScale()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getSourceSpatialResolution")
     @XmlElement(name = "scaleDenominator", namespace = LegacyNamespaces.GMD)
     public RepresentativeFraction getScaleDenominator() {
@@ -304,7 +304,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultResolution#setEquivalentScale(RepresentativeFraction)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setScaleDenominator(final RepresentativeFraction newValue)  {
         checkWritePermission(sourceSpatialResolution);
         Resolution resolution = null;
@@ -428,7 +428,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#getExtents()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getScope")
     @XmlElement(name = "sourceExtent", namespace = LegacyNamespaces.GMD)
     public Collection<Extent> getSourceExtents() {
@@ -457,7 +457,7 @@ public class DefaultSource extends ISOMetadata implements Source {
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultScope#setExtents(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setSourceExtents(final Collection<? extends Extent> newValues) {
         checkWritePermission(scope);
         Scope scope = this.scope;

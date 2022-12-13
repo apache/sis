@@ -42,8 +42,8 @@ import static java.lang.Math.rint;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.addExact;
 import static java.lang.Math.toIntExact;
+import static java.lang.Math.multiplyFull;
 import static java.util.logging.Logger.getLogger;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
 
 

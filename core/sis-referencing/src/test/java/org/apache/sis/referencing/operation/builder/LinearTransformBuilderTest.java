@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.builder;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.Collections;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
@@ -469,9 +468,9 @@ public final strictfp class LinearTransformBuilderTest extends TestCase {
             }
         }
         final NonLinearTransform tr = new NonLinearTransform();
-        builder.addLinearizers(Collections.singletonMap("x² y³", tr));
-        builder.addLinearizers(Collections.singletonMap("x³ y²", tr), 1, 0);
-        builder.addLinearizers(Collections.singletonMap("identity", MathTransforms.identity(2)));
+        builder.addLinearizers(Map.of("x² y³", tr));
+        builder.addLinearizers(Map.of("x³ y²", tr), 1, 0);
+        builder.addLinearizers(Map.of("identity", MathTransforms.identity(2)));
         final Matrix m = builder.create(null).getMatrix();
         assertEquals("linearizer", "x³ y²", builder.linearizer().get().getKey());
         assertNotSame("linearizer", tr, builder.linearizer().get());    // Not same because axes should have been swapped.

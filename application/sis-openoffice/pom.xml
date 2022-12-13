@@ -132,6 +132,11 @@
           <artifactId>derby</artifactId>
           <scope>runtime</scope>
         </dependency>
+        <dependency>
+          <groupId>org.apache.derby</groupId>
+          <artifactId>derbytools</artifactId>
+          <scope>runtime</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>

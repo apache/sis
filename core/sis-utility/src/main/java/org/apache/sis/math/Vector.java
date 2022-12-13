@@ -24,7 +24,6 @@ import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.Optional;
 import java.util.function.IntSupplier;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
@@ -92,7 +91,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.util.collection.IntegerList
  *
@@ -163,9 +162,9 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     public static Vector create(final double[] array) {
         /*
          * NOTE: we do not use variable-length argument (double...) because doing so may force us to
-         * declare 'create' methods for all other primitive types,  otherwise some developers may be
-         * surprised that 'create(0, 1, 2, 3)' converts the integer values to doubles. We do not yet
-         * provide explicit 'create(...)' methods for other primitive types because it is not needed
+         * declare `create` methods for all other primitive types,  otherwise some developers may be
+         * surprised that `create(0, 1, 2, 3)` converts the integer values to doubles. We do not yet
+         * provide explicit `create(...)` methods for other primitive types because it is not needed
          * by Apache SIS and it would lost a feature of current API, which is to force developers to
          * think whether their integers are signed or unsigned.
          */
@@ -651,7 +650,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
             /*
              * For the first level of repetitions, we rely on a method to be overridden by subclasses
              * for detecting the length of consecutive identical numbers. We could have used the more
-             * generic algorithm based on 'equals(int, int, Vector, int)' instead, but this approach
+             * generic algorithm based on `equals(int, int, Vector, int)` instead, but this approach
              * is faster.
              */
             int r0 = 0;
@@ -668,7 +667,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              * and shall not be modified anymore for the rest of this method. This is the first integer value in the
              * array to be returned. Following algorithm applies to deeper levels.
              *
-             * The 'skip' variable is an optimization. Code below would work with skip = 0 all the times, but this is
+             * The `skip` variable is an optimization. Code below would work with skip = 0 all the times, but this is
              * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing an amount of values that
              * we can skip in the special case where r0 = 1 increases the speed a lot.
              */
@@ -691,11 +690,11 @@ search:     for (;;) {
                     if (skip != 0) {
                         /*
                          * Optimization for reducing the number of method calls when r0 = 1: the default algorithm is to
-                         * search for a position multiple of 'r0' where all values since the beginning of the vector are
-                         * repeated. But if 'r0' is 1, the default algorithms perform a costly check at every positions.
-                         * To avoid that, we use 'indexOf' for searching the index of the next position where a match may
+                         * search for a position multiple of `r0` where all values since the beginning of the vector are
+                         * repeated. But if `r0` is 1, the default algorithms perform a costly check at every positions.
+                         * To avoid that, we use `indexOf` for searching the index of the next position where a match may
                          * exist (we don't care anymore about multiples of r0 since r0 is 1). If the first expected values
-                         * are constants, we use 'indexOf' again for checking efficiently those constants.
+                         * are constants, we use `indexOf` again for checking efficiently those constants.
                          */
                         r = indexOf(0, r, true);
                         if (skip != 1) {
@@ -709,10 +708,11 @@ search:     for (;;) {
                     }
                     if (r >= size) break;
                 }
-                if (equals(skip, Math.min(r0, size - r), this, r + skip)) {
+                final int base = Math.min(r0, size - r);
+                if (base < skip || equals(skip, base, this, r + skip)) {
                     /*
-                     * Found a possible repetition of length r. Verify if this repetition pattern is observed until
-                     * the end of the vector. If not, we will search for the next possible repetition.
+                     * Found a possible repetition of length r. Verify if this repetition pattern is observed
+                     * until the end of the vector. If not, we will search for the next possible repetition.
                      */
                     for (int i=r; i<size; i += r) {
                         if (!equals(0, Math.min(r, size - i), this, i)) {
@@ -774,7 +774,7 @@ search:     for (;;) {
             final int type = Numbers.getEnumConstant(getElementType());
             /*
              * For integer types, verify if the increment is constant. We do not use the "first + inc*i"
-             * formula because some 'long' values cannot be represented accurately as 'double' values.
+             * formula because some `long` values cannot be represented accurately as `double` values.
              * The result will be converted to the same type than the vector element type if possible,
              * or the next wider type if the increment is an unsigned value too big for the element type.
              */
@@ -819,7 +819,7 @@ search:     for (;;) {
                     final float  value = floatValue(i);
                     final double delta = Math.abs(first + inc*i-- - value);
                     final double accur = Math.ulp(value);
-                    if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use '!' for catching NaN.
+                    if (!((accur > tolerance) ? (delta < accur) : (delta <= tolerance))) {  // Use `!` for catching NaN.
                         return null;
                     }
                 }
@@ -828,7 +828,7 @@ search:     for (;;) {
             } else {
                 while (i >= 1) {
                     final double delta = Math.abs(first + inc*i - doubleValue(i--));
-                    if (!(delta <= tolerance)) {                   // Use '!' for catching NaN.
+                    if (!(delta <= tolerance)) {                   // Use `!` for catching NaN.
                         return null;
                     }
                 }
@@ -1076,7 +1076,7 @@ search:     for (;;) {
         @Override
         public Optional<Buffer> buffer() {
             if (step == 1) {
-                Vector.this.buffer().map((b) -> JDK9.slice(b.position(first).limit(first + length)));
+                Vector.this.buffer().map((b) -> b.position(first).limit(first + length).slice());
             }
             return super.buffer();
         }
@@ -1420,8 +1420,8 @@ search:     for (;;) {
             return createSequence(getElementType(), get(0), inc, length);
         }
         /*
-         * Verify if the vector contains only NaN values. This extra check is useful because 'increment()'
-         * returns null if the array contains NaN. Note that for array of integers, 'isNaN(int)' is very
+         * Verify if the vector contains only NaN values. This extra check is useful because `increment()`
+         * returns null if the array contains NaN. Note that for array of integers, `isNaN(int)` is very
          * efficient and the loop will stop immediately after the first iteration.
          */
         int i = 0;
@@ -1671,6 +1671,7 @@ search:     for (;;) {
      * @param  other        the other vector to compare values with this vector. May be {@code this}.
      * @param  otherOffset  index of the first element to compare in the other vector.
      * @return whether values over the specified range of the two vectors are equal.
+     * @throws IllegalArgumentException if {@code lower} is greater than {@code upper}.
      */
     boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
         while (lower < upper) {

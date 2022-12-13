@@ -17,7 +17,6 @@
 package org.apache.sis.setup;
 
 import java.util.Set;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.ServiceLoader;
 import java.net.URL;
@@ -142,7 +141,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
      */
     @Override
     public Set<String> getAuthorities() {
-        return (destinationDirectory != null) ? Collections.singleton(EPSG) : Collections.emptySet();
+        return (destinationDirectory != null) ? Set.of(EPSG) : Set.of();
     }
 
     /**

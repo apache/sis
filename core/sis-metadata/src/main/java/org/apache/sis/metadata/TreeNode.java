@@ -16,11 +16,11 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
@@ -76,7 +76,7 @@ class TreeNode implements Node {
      * does not implement the {@link List} interface. So we are better to never give to the user
      * a collection implementing {@code List} in order to signal incorrect casts sooner.</p>
      */
-    private static final Collection<Node> LEAF = Collections.emptySet();
+    private static final Collection<Node> LEAF = Set.of();
 
     /**
      * The table for which this node is an element. Contains information like

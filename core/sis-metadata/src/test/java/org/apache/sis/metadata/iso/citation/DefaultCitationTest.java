@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.net.URI;
-import java.util.Arrays;
+import java.util.Set;
+import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import javax.xml.bind.JAXBException;
@@ -83,20 +83,20 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         title.add(Locale.ENGLISH,  "Undercurrent");
         citation.setTitle(title);
         citation.setISBN("9782505004509");
-        citation.setPresentationForms(Arrays.asList(
+        citation.setPresentationForms(List.of(
                 PresentationForm.DOCUMENT_HARDCOPY,
                 PresentationForm.DOCUMENT_DIGITAL));
-        citation.setAlternateTitles(Collections.singleton(
+        citation.setAlternateTitles(Set.of(
                 new SimpleInternationalString("Andākarento")));   // Actually a different script of the Japanese title.
 
         final DefaultResponsibleParty author = new DefaultResponsibleParty(Role.AUTHOR);
-        author.setParties(Collections.singleton(new DefaultIndividual("Testsuya Toyoda", null, null)));
+        author.setParties(Set.of(new DefaultIndividual("Testsuya Toyoda", null, null)));
 
         final DefaultResponsibleParty editor = new DefaultResponsibleParty(Role.EDITOR);
-        editor.setParties(Collections.singleton(new DefaultOrganisation("Kōdansha", null, null, null)));
-        editor.setExtents(Collections.singleton(Extents.WORLD));
+        editor.setParties(Set.of(new DefaultOrganisation("Kōdansha", null, null, null)));
+        editor.setExtents(Set.of(Extents.WORLD));
 
-        citation.setCitedResponsibleParties(Arrays.asList(author, editor));
+        citation.setCitedResponsibleParties(List.of(author, editor));
         return citation;
     }
 
@@ -122,7 +122,7 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
          * The ISSN code shall be retained because it is a new code.
          */
         assertNull("ISSN shall be initially null.", citation.getISSN());
-        citation.setIdentifiers(Arrays.asList(
+        citation.setIdentifiers(List.of(
                 new DefaultIdentifier(Citations.NETCDF, "MyNetCDF"),
                 new DefaultIdentifier(Citations.EPSG,   "MyEPSG"),
                 new DefaultIdentifier(Citations.ISBN,   "NewISBN"),
@@ -256,9 +256,9 @@ public final strictfp class DefaultCitationTest extends TestUsingFile {
         final DefaultCitation c = new DefaultCitation("Fight against poverty");
         final DefaultResponsibleParty r1 = new DefaultResponsibleParty(Role.ORIGINATOR);
         final DefaultResponsibleParty r2 = new DefaultResponsibleParty(Role.FUNDER);
-        r1.setParties(Collections.singleton(new DefaultIndividual("Maid Marian", null, contact)));
-        r2.setParties(Collections.singleton(new DefaultIndividual("Robin Hood",  null, contact)));
-        c.setCitedResponsibleParties(Arrays.asList(r1, r2));
+        r1.setParties(Set.of(new DefaultIndividual("Maid Marian", null, contact)));
+        r2.setParties(Set.of(new DefaultIndividual("Robin Hood",  null, contact)));
+        c.setCitedResponsibleParties(List.of(r1, r2));
         c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
         c.getPresentationForms().add(PresentationForm.PHYSICAL_OBJECT);
         /*

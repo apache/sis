@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.sql.SQLException;
@@ -173,7 +172,7 @@ final class Analyzer {
                 } else {
                     name = nameFactory.createGenericName(null, catalog, schema);
                 }
-                namespace = nameFactory.createNameSpace(name, Collections.singletonMap("separator", "."));
+                namespace = nameFactory.createNameSpace(name, Map.of("separator", "."));
             } else {
                 namespace = null;
             }

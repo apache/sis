@@ -17,7 +17,6 @@
 package org.apache.sis.internal.feature;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
@@ -364,8 +363,8 @@ select: if (commonCRS == null) {
             final ReferencingFactoryContainer f = new ReferencingFactoryContainer();
             method = f.getCoordinateOperationFactory().getOperationMethod("Mercator_2SP");
             cartCS = f.getStandardProjectedCS();
-            name   = Collections.singletonMap(DefaultConversion.NAME_KEY,
-                        new ImmutableIdentifier(Citations.SIS, "SIS", "Mercator for geometry"));
+            name   = Map.of(DefaultConversion.NAME_KEY,
+                            new ImmutableIdentifier(Citations.SIS, "SIS", "Mercator for geometry"));
         }
 
         /**

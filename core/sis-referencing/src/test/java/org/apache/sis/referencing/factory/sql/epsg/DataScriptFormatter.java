@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory.sql.epsg;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.function.UnaryOperator;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
@@ -157,7 +156,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         m.put("epsg_primemeridian",                lastColumn );
         m.put("epsg_unitofmeasure",                lastColumn );
         booleanColumnIndicesForTables = m;
-        doubleColumnIndicesForTables = Collections.singletonMap("epsg_coordoperationparamvalue", new int[] {2});
+        doubleColumnIndicesForTables = Map.of("epsg_coordoperationparamvalue", new int[] {2});
     }
 
     /**

@@ -273,7 +273,7 @@ public final class ChannelDecoder extends Decoder {
          */
         DimensionInfo[] dimensions = null;
         VariableInfo[]  variables  = null;
-        List<Map.Entry<String,Object>> attributes = Collections.emptyList();
+        List<Map.Entry<String,Object>> attributes = List.of();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -299,7 +299,7 @@ public final class ChannelDecoder extends Decoder {
             this.variableMap = toCaseInsensitiveNameMap(variables);
         } else {
             this.variables   = new VariableInfo[0];
-            this.variableMap = Collections.emptyMap();
+            this.variableMap = Map.of();
         }
         initialize();
     }
@@ -617,7 +617,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            List<Map.Entry<String,Object>> attributes = Collections.emptyList();
+            List<Map.Entry<String,Object>> attributes = List.of();
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -1033,14 +1033,14 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
                  * use axes from "coordinates" attribute first followed by other axes.
                  */
-                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(VariableInfo[]::new));
                 GridInfo existing = shared.putIfAbsent(grid, grid);
                 if (existing != null) {
                     grid = existing;
                 }
                 variable.grid = grid;
             }
-            gridGeometries = shared.values().toArray(new Grid[shared.size()]);
+            gridGeometries = shared.values().toArray(Grid[]::new);
         }
         return gridGeometries;
     }

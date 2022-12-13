@@ -100,7 +100,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
                 }
             } else {
                 final Optional<Envelope> e = fs.getEnvelope();
-                if (!e.isPresent()) return false;                   // TODO: use isEmpty() with JDK11.
+                if (e.isEmpty()) return false;
                 addTo.add(e.get());
             }
         }
@@ -125,7 +125,7 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
             if (!isEnvelopeComputed) {
                 final List<Envelope> envelopes = new ArrayList<>();
                 if (getEnvelopes(envelopes)) try {
-                    envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
+                    envelope = ImmutableEnvelope.castOrCopy(Envelopes.union(envelopes.toArray(Envelope[]::new)));
                 } catch (TransformException e) {
                     listeners.warning(e);
                 }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.report;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
@@ -265,8 +264,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * The datums from the above list which are deprecated, but that we do not want to replace by the non-deprecated
      * datum. We disable some replacements when they allow better sorting of deprecated CRS.
      */
-    private static final Set<String> KEEP_DEPRECATED_DATUM = new HashSet<>(Arrays.asList(
-        "Dealul Piscului 1970"));           // Datum does not exist but is an alias for S-42 in Romania.
+    private static final Set<String> KEEP_DEPRECATED_DATUM = Set.of(
+        "Dealul Piscului 1970");            // Datum does not exist but is an alias for S-42 in Romania.
 
     /**
      * Shortcut for {@link #SECTION_TITLES} initialization.
@@ -279,7 +278,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     /**
      * Words to ignore in a datum name in order to detect if a CRS name is the acronym of the datum name.
      */
-    private static final Set<String> DATUM_WORDS_TO_IGNORE = new HashSet<>(Arrays.asList(
+    private static final Set<String> DATUM_WORDS_TO_IGNORE = Set.of(
             "of",           // VIVD:   Virgin Islands Vertical Datum of 2009
             "de",           // RRAF:   Reseau de Reference des Antilles Francaises
             "des",          // RGAF:   Reseau Geodesique des Antilles Francaises
@@ -288,7 +287,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             "para",         // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
             "del",          // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
             "las",          // SIRGAS: Sistema de Referencia Geocentrico para las AmericaS 2000
-            "Tides"));      // MLWS:   Mean Low Water Spring Tides
+            "Tides");       // MLWS:   Mean Low Water Spring Tides
 
     /**
      * The keywords before which to cut the CRS names when sorting by alphabetical order.
@@ -774,7 +773,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     protected void sortRows() {
         super.sortRows();
         @SuppressWarnings("SuspiciousToArrayCall")
-        final ByName[] data = rows.toArray(new ByName[rows.size()]);
+        final ByName[] data = rows.toArray(ByName[]::new);
         final Map<String,String> sections = new TreeMap<>();
         for (final ByName row : data) {
             final String section = row.section;

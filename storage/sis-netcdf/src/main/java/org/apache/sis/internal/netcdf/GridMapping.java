@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -415,7 +414,7 @@ final class GridMapping {
                 name = fallback.toString();
             }
         }
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

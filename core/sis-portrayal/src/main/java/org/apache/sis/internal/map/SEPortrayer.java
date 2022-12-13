@@ -20,7 +20,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -513,7 +512,7 @@ public final class SEPortrayer {
             for (String propName : copy) {
                 columns.add(new FeatureQuery.NamedExpression(filterFactory.property(propName), propName));
             }
-            query.setProjection(columns.toArray(new FeatureQuery.NamedExpression[columns.size()]));
+            query.setProjection(columns.toArray(FeatureQuery.NamedExpression[]::new));
         }
         //TODO optimize filter
         //TODO add linear resolution
@@ -562,7 +561,7 @@ public final class SEPortrayer {
                 }
             }
             if (!found) {
-                return Collections.emptyList();
+                return List.of();
             }
         }
         // Check semantic, only if we have a feature type.
@@ -603,7 +602,7 @@ public final class SEPortrayer {
                         // Cannot define a `text` type with current API.
                     }
                 }
-                if (!valid) return Collections.emptyList();
+                if (!valid) return List.of();
             }
         }
 

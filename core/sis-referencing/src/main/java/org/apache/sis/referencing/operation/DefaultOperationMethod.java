@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Collections;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -171,7 +170,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     private Integer sourceDimensions;
 
     /**
@@ -186,7 +185,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     private Integer targetDimensions;
 
     /**
@@ -265,7 +264,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed "source dimensions" and "target dimensions" attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final Integer sourceDimensions,
                                   final Integer targetDimensions,
@@ -321,7 +320,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 return getProperties(parameters, null);
             }
         }
-        return Collections.singletonMap(NAME_KEY, NilReferencingObject.UNNAMED);
+        return Map.of(NAME_KEY, NilReferencingObject.UNNAMED);
     }
 
     /**
@@ -477,7 +476,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @deprecated Not needed anymore since ISO 19111:2019 removed the
      *             "source dimensions" and "target dimensions" attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     public static OperationMethod redimension(OperationMethod method,
             final int sourceDimensions, final int targetDimensions)
     {
@@ -519,7 +518,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         return redimension(this, sourceDimensions, this.sourceDimensions,
                                  targetDimensions, this.targetDimensions);
@@ -602,7 +601,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @deprecated This attribute has been removed from ISO 19111:2019.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     @XmlElement(name = "sourceDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getSourceDimensions() {
@@ -620,7 +619,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @deprecated This attribute has been removed from ISO 19111:2019.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     @XmlElement(name = "targetDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getTargetDimensions() {
@@ -932,8 +931,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (parameters != null) {
             final List<GeneralParameterDescriptor> descriptors = parameters.descriptors();
             if (descriptors != null) {      // Paranoiac check (should not be allowed).
-                return CC_OperationMethod.filterImplicit(descriptors.toArray(
-                        new GeneralParameterDescriptor[descriptors.size()]));
+                return CC_OperationMethod.filterImplicit(descriptors.toArray(GeneralParameterDescriptor[]::new));
             }
         }
         return null;

@@ -16,7 +16,7 @@
  */
 
 /**
- * Place-holder for JDK9 classes that do not exist in JDK8.
+ * Place-holder for classes that do not exist in JDK 11.
  *
  * <STRONG>Do not use!</STRONG>
  *
@@ -24,8 +24,8 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.2
+ * @since   1.4
  * @version 0.8
  * @module
  */
-package org.apache.sis.internal.jdk9;
+package org.apache.sis.internal.jdk17;

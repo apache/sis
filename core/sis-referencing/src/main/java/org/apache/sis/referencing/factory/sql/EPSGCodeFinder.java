@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.List;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -172,7 +171,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      */
     private static class Condition {
         /** A sentinel value for filtering by name. */
-        static final Condition NAME = new Condition("NAME", Collections.emptySet());
+        static final Condition NAME = new Condition("NAME", Set.of());
 
         /** The column on which the condition apply. */
         final String column;
@@ -239,7 +238,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     private static final class FloatCondition extends Condition {
         /** Creates a new condition for the given value. */
         FloatCondition(final String column, final double value) {
-            super(column, Collections.singleton(value));
+            super(column, Set.of(value));
         }
 
         /**
@@ -305,7 +304,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                             if ((filters[i] = dependencies((i==0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE",
                                     CoordinateReferenceSystem.class, components.get(i), false)) == null)
                             {
-                                return Collections.emptySet();
+                                return Set.of();
                             }
                         }
                         break crs;
@@ -336,10 +335,10 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             } else if (object instanceof SingleCRS) {
                 filter = dependencies("DATUM_CODE", Datum.class, ((SingleCRS) object).getDatum(), true);
             } else {
-                return Collections.emptySet();
+                return Set.of();
             }
             if (filter == null) {
-                return Collections.emptySet();
+                return Set.of();
             }
             filters = new Condition[] {filter};
         } else if (isInstance(Datum.class, object)) {
@@ -359,13 +358,13 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     Condition.NAME
                 };
                 if (filters[0] == null) {
-                    return Collections.emptySet();
+                    return Set.of();
                 }
             } else {
                 if (isInstance(VerticalDatum.class, object)) {
                     final VerticalDatumType type = ((VerticalDatum) object).getVerticalDatumType();
                     if (type != null && !type.equals(EPSGDataAccess.VERTICAL_DATUM_TYPE)) {
-                        return Collections.emptySet();
+                        return Set.of();
                     }
                 }
                 filters = new Condition[] {

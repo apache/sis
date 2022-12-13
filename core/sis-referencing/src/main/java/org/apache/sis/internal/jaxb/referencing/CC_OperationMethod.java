@@ -18,7 +18,6 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.Map;
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlElement;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
@@ -180,7 +179,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
             Context.warningOccured(Context.current(), DefaultOperationMethod.class, "setDescriptors", e, true);
             method = null;
         }
-        final Map<String,?> properties = Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name);
+        final Map<String,?> properties = Map.of(ParameterDescriptorGroup.NAME_KEY, name);
         if (method != null) {
             /*
              * Verify that the predefined operation method contains at least all the parameters specified by
@@ -233,7 +232,7 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
                     final ParameterValueGroup source = (ParameterValueGroup) p;
                     final ParameterValueGroup target = new DefaultParameterValueGroup((ParameterDescriptorGroup) replacement);
                     final Collection<GeneralParameterValue> values = source.values();
-                    store(values.toArray(new GeneralParameterValue[values.size()]), target.values(), replacements);
+                    store(values.toArray(GeneralParameterValue[]::new), target.values(), replacements);
                     p = target;
                 }
             }

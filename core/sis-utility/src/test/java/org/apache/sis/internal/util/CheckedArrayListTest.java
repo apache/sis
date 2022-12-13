@@ -46,7 +46,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
         assertTrue(list.add("One"));
         assertTrue(list.add("Two"));
         assertTrue(list.add("Three"));
-        assertEquals(Arrays.asList("One", "Two", "Three"), list);
+        assertEquals(List.of("One", "Two", "Three"), list);
     }
 
     /**
@@ -57,7 +57,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
         final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(Collections.addAll(list, "Two", "Three"));
-        assertEquals(Arrays.asList("One", "Two", "Three"), list);
+        assertEquals(List.of("One", "Two", "Three"), list);
     }
 
     /**
@@ -137,7 +137,7 @@ public final strictfp class CheckedArrayListTest extends TestCase {
     @DependsOnMethod("testAddAll")
     public void testCastOrCopy() {
         assertNull(CheckedArrayList.castOrCopy(null, String.class));
-        final List<String> fruits = Arrays.asList("Apple", "Orange", "Raisin");
+        final List<String> fruits = List.of("Apple", "Orange", "Raisin");
         final CheckedArrayList<String> asStrings = CheckedArrayList.castOrCopy(fruits, String.class);
         assertEquals ("Should have the given element type.", String.class, asStrings.getElementType());
         assertNotSame("Should have created a new instance.", fruits, asStrings);

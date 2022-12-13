@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.InternationalString;
@@ -125,7 +126,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
     @TestStep
     public static void testSearch(final MetadataSource source) throws MetadataStoreException {
         final DefaultCitation specification = new DefaultCitation("PNG (Portable Network Graphics) Specification");
-        specification.setAlternateTitles(Collections.singleton(new SimpleInternationalString("PNG")));
+        specification.setAlternateTitles(Set.of(new SimpleInternationalString("PNG")));
         final DefaultFormat format = new DefaultFormat();
         format.setFormatSpecificationCitation(specification);
 

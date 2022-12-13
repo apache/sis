@@ -18,8 +18,9 @@ package org.apache.sis.test.integration;
 
 import java.net.URI;
 import java.net.URL;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.StringWriter;
@@ -63,9 +64,6 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.XML;
-
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonMap;
 
 // Test dependencies
 import org.apache.sis.test.LoggingWatcher;
@@ -125,9 +123,9 @@ public final strictfp class MetadataTest extends TestCase {
     private DefaultMetadata createHardCoded() {
         final DefaultMetadata metadata = new DefaultMetadata();
         metadata.setMetadataIdentifier(new DefaultIdentifier("test/Metadata.xml"));
-        metadata.setLocalesAndCharsets(singletonMap(Locale.ENGLISH, StandardCharsets.UTF_8));
-        metadata.setMetadataScopes(singleton(new DefaultMetadataScope(ScopeCode.DATASET, "Pseudo Common Data Index record")));
-        metadata.setDateInfo(singleton(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
+        metadata.setLocalesAndCharsets(Map.of(Locale.ENGLISH, StandardCharsets.UTF_8));
+        metadata.setMetadataScopes(Set.of(new DefaultMetadataScope(ScopeCode.DATASET, "Pseudo Common Data Index record")));
+        metadata.setDateInfo(Set.of(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
         /*
          * Contact information for the author. The same party will be used for custodian and distributor,
          * with only the role changed. Note that we need to create an instance of the deprecated class,
@@ -141,27 +139,27 @@ public final strictfp class MetadataTest extends TestCase {
             online.setProtocol("http");
             final DefaultContact contact = new DefaultContact(online);
             contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "IFREMER");
-            contact.setPhones(Arrays.asList(
+            contact.setPhones(List.of(
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x6", TelephoneType.VOICE),
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x4", TelephoneType.FACSIMILE)
             ));
             final DefaultAddress address = new DefaultAddress();
-            address.setDeliveryPoints(singleton("Brest institute"));
+            address.setDeliveryPoints(Set.of("Brest institute"));
             address.setCity(new SimpleInternationalString("Plouzane"));
             address.setPostalCode("29280");
             address.setCountry(country);
-            address.setElectronicMailAddresses(singleton("xx@xx.fr"));
-            contact.setAddresses(singleton(address));
-            author.setParties(singleton(new DefaultOrganisation("Some marine institute", null, null, contact)));
-            metadata.setContacts(singleton(author));
+            address.setElectronicMailAddresses(Set.of("xx@xx.fr"));
+            contact.setAddresses(Set.of(address));
+            author.setParties(Set.of(new DefaultOrganisation("Some marine institute", null, null, contact)));
+            metadata.setContacts(Set.of(author));
         }
         /*
          * Data indentification.
          */
         {
             final DefaultCitation citation = new DefaultCitation("Some set of points");
-            citation.setAlternateTitles(singleton(new SimpleInternationalString("Code XYZ")));
-            citation.setDates(Arrays.asList(
+            citation.setAlternateTitles(Set.of(new SimpleInternationalString("Code XYZ")));
+            citation.setDates(List.of(
                     new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION),
                     new DefaultCitationDate(TestUtilities.date("1979-08-02 22:00:00"), DateType.CREATION)));
             {
@@ -170,18 +168,18 @@ public final strictfp class MetadataTest extends TestCase {
                 final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.com.univ-mrs.fr/LOB/"));
                 online.setProtocol("http");
                 final DefaultContact contact = new DefaultContact(online);
-                contact.setPhones(Arrays.asList(
+                contact.setPhones(List.of(
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x5", TelephoneType.VOICE),
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x8", TelephoneType.FACSIMILE)
                 ));
                 final DefaultAddress address = new DefaultAddress();
-                address.setDeliveryPoints(singleton("Oceanology institute"));
+                address.setDeliveryPoints(Set.of("Oceanology institute"));
                 address.setCity(new SimpleInternationalString("Marseille"));
                 address.setPostalCode("13288");
                 address.setCountry(country);
-                contact.setAddresses(singleton(address));
-                originator.setParties(singleton(new DefaultOrganisation("Oceanology laboratory", null, null, contact)));
-                citation.setCitedResponsibleParties(singleton(originator));
+                contact.setAddresses(Set.of(address));
+                originator.setParties(Set.of(new DefaultOrganisation("Oceanology laboratory", null, null, contact)));
+                citation.setCitedResponsibleParties(Set.of(originator));
             }
             final DefaultDataIdentification identification = new DefaultDataIdentification(
                     citation,                                                   // Citation
@@ -192,7 +190,7 @@ public final strictfp class MetadataTest extends TestCase {
                 @SuppressWarnings("deprecation")
                 final DefaultResponsibleParty custodian = new DefaultResponsibleParty((DefaultResponsibility) author);
                 custodian.setRole(Role.CUSTODIAN);
-                identification.setPointOfContacts(singleton(custodian));
+                identification.setPointOfContacts(Set.of(custodian));
             }
             /*
              * Data indentification / Keywords.
@@ -202,12 +200,12 @@ public final strictfp class MetadataTest extends TestCase {
                         new Anchor(URI.create("SDN:P021:35:ATTN"), "Transmittance and attenuance of the water column"));
                 keyword.setType(KeywordType.THEME);
                 final DefaultCitation thesaurus = new DefaultCitation("BODC Parameter Discovery Vocabulary");
-                thesaurus.setAlternateTitles(singleton(new SimpleInternationalString("P021")));
-                thesaurus.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2008-11-25 23:00:00"), DateType.REVISION)));
+                thesaurus.setAlternateTitles(Set.of(new SimpleInternationalString("P021")));
+                thesaurus.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("2008-11-25 23:00:00"), DateType.REVISION)));
                 thesaurus.setEdition(new Anchor(URI.create("SDN:C371:1:35"), "35"));
-                thesaurus.setIdentifiers(singleton(new ImmutableIdentifier(null, null, "http://www.seadatanet.org/urnurl/")));
+                thesaurus.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, "http://www.seadatanet.org/urnurl/")));
                 keyword.setThesaurusName(thesaurus);
-                identification.setDescriptiveKeywords(singleton(keyword));
+                identification.setDescriptiveKeywords(Set.of(keyword));
             }
             /*
              * Data indentification / Browse graphic.
@@ -215,15 +213,15 @@ public final strictfp class MetadataTest extends TestCase {
             {
                 final DefaultBrowseGraphic g = new DefaultBrowseGraphic(URI.create("file:///thumbnail.png"));
                 g.setFileDescription(new SimpleInternationalString("Arbitrary thumbnail for this test only."));
-                identification.setGraphicOverviews(singleton(g));
+                identification.setGraphicOverviews(Set.of(g));
             }
             /*
              * Data indentification / Resource constraint.
              */
             {
                 final DefaultLegalConstraints constraint = new DefaultLegalConstraints();
-                constraint.setAccessConstraints(singleton(Restriction.LICENCE));
-                identification.setResourceConstraints(singleton(constraint));
+                constraint.setAccessConstraints(Set.of(Restriction.LICENCE));
+                identification.setResourceConstraints(Set.of(constraint));
             }
             /*
              * Data indentification / Aggregate information.
@@ -232,12 +230,12 @@ public final strictfp class MetadataTest extends TestCase {
                 @SuppressWarnings("deprecation")
                 final DefaultAssociatedResource aggregateInfo = new DefaultAggregateInformation();
                 final DefaultCitation name = new DefaultCitation("Some oceanographic campaign");
-                name.setAlternateTitles(singleton(new SimpleInternationalString("Pseudo group of data")));
-                name.setDates(singleton(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
+                name.setAlternateTitles(Set.of(new SimpleInternationalString("Pseudo group of data")));
+                name.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
                 aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
                 aggregateInfo.setAssociationType(AssociationType.LARGER_WORK_CITATION);
-                identification.setAssociatedResources(singleton(aggregateInfo));
+                identification.setAssociatedResources(Set.of(aggregateInfo));
             }
             /*
              * Data indentification / Extent.
@@ -257,7 +255,7 @@ public final strictfp class MetadataTest extends TestCase {
 
                 final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
                 temporal.setBounds(TestUtilities.date("1990-06-05 00:00:00"), TestUtilities.date("1990-07-02 00:00:00"));
-                identification.setExtents(singleton(new DefaultExtent(
+                identification.setExtents(Set.of(new DefaultExtent(
                         null,
                         new DefaultGeographicBoundingBox(1.1666, 1.1667, 36.4, 36.6),
                         new DefaultVerticalExtent(10, 25, vcrs),
@@ -270,7 +268,7 @@ public final strictfp class MetadataTest extends TestCase {
                 identification.setEnvironmentDescription (new SimpleInternationalString("Possibly cloudy."));
                 identification.setSupplementalInformation(new SimpleInternationalString("This metadata has been modified with dummy values."));
             }
-            metadata.setIdentificationInfo(singleton(identification));
+            metadata.setIdentificationInfo(Set.of(identification));
         }
         /*
          * Information about spatial representation.
@@ -278,18 +276,18 @@ public final strictfp class MetadataTest extends TestCase {
         {
             final DefaultVectorSpatialRepresentation rep = new DefaultVectorSpatialRepresentation();
             final DefaultGeometricObjects geoObj = new DefaultGeometricObjects(GeometricObjectType.POINT);
-            rep.setGeometricObjects(singleton(geoObj));
-            metadata.setSpatialRepresentationInfo(singleton(rep));
+            rep.setGeometricObjects(Set.of(geoObj));
+            metadata.setSpatialRepresentationInfo(Set.of(rep));
         }
         /*
          * Information about Coordinate Reference System.
          */
         {
             final DefaultCitation citation = new DefaultCitation("World Geodetic System 84");
-            citation.setAlternateTitles(singleton(new SimpleInternationalString("L101")));
-            citation.setIdentifiers(singleton(new ImmutableIdentifier(null, null, "SDN:L101:2:4326")));
+            citation.setAlternateTitles(Set.of(new SimpleInternationalString("L101")));
+            citation.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, "SDN:L101:2:4326")));
             citation.setEdition(new Anchor(URI.create("SDN:C371:1:2"), "2"));
-            metadata.setReferenceSystemInfo(singleton(
+            metadata.setReferenceSystemInfo(Set.of(
                     new ReferenceSystemMetadata(new ImmutableIdentifier(citation, "L101", "4326"))));
         }
         /*
@@ -298,14 +296,14 @@ public final strictfp class MetadataTest extends TestCase {
         {
             final DefaultImageDescription contentInfo = new DefaultImageDescription();
             contentInfo.setCloudCoverPercentage(50.0);
-            metadata.setContentInfo(singleton(contentInfo));
+            metadata.setContentInfo(Set.of(contentInfo));
         }
         /*
          * Extension to metadata.
          */
         {
             final DefaultMetadataExtensionInformation extensionInfo = new DefaultMetadataExtensionInformation();
-            extensionInfo.setExtendedElementInformation(singleton(new DefaultExtendedElementInformation(
+            extensionInfo.setExtendedElementInformation(Set.of(new DefaultExtendedElementInformation(
                     "SDN:EDMO",                                                     // Name
                     "European Directory of Marine Organisations",                   // Definition
                     null,                                                           // Condition
@@ -313,7 +311,7 @@ public final strictfp class MetadataTest extends TestCase {
                     "SeaDataNet",                                                   // Parent entity
                     "For testing only",                                             // Rule
                     NilReason.MISSING.createNilObject(ResponsibleParty.class))));   // Source
-            metadata.setMetadataExtensionInfo(singleton(extensionInfo));
+            metadata.setMetadataExtensionInfo(Set.of(extensionInfo));
         }
         /*
          * Distribution information.
@@ -323,14 +321,14 @@ public final strictfp class MetadataTest extends TestCase {
             final DefaultResponsibleParty distributor = new DefaultResponsibleParty((DefaultResponsibility) author);
             final DefaultDistribution distributionInfo = new DefaultDistribution();
             distributor.setRole(Role.DISTRIBUTOR);
-            distributionInfo.setDistributors(singleton(new DefaultDistributor(distributor)));
+            distributionInfo.setDistributors(Set.of(new DefaultDistributor(distributor)));
 
             final DefaultFormat format = new DefaultFormat();
             final DefaultCitation specification = new DefaultCitation();
-            specification.setAlternateTitles(singleton(new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII")));
+            specification.setAlternateTitles(Set.of(new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII")));
             specification.setEdition(new SimpleInternationalString("1.0"));
             format.setFormatSpecificationCitation(specification);
-            distributionInfo.setDistributionFormats(singleton(format));
+            distributionInfo.setDistributionFormats(Set.of(format));
 
             final DefaultDigitalTransferOptions transfer = new DefaultDigitalTransferOptions();
             transfer.setTransferSize(2.431640625);
@@ -338,8 +336,8 @@ public final strictfp class MetadataTest extends TestCase {
             onlines.setDescription(new SimpleInternationalString("Dummy download link"));
             onlines.setFunction(OnLineFunction.DOWNLOAD);
             onlines.setProtocol("ftp");
-            transfer.setOnLines(singleton(onlines));
-            distributionInfo.setTransferOptions(singleton(transfer));
+            transfer.setOnLines(Set.of(onlines));
+            distributionInfo.setTransferOptions(Set.of(transfer));
             metadata.setDistributionInfo(distributionInfo);
         }
         return metadata;

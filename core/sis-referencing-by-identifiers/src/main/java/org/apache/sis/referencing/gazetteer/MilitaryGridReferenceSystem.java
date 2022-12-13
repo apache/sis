@@ -83,7 +83,6 @@ import org.apache.sis.measure.Units;
 import static java.util.logging.Logger.getLogger;
 
 // Branch-dependent imports
-import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
@@ -1294,7 +1293,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public long estimateSize() {
-            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / JDK9.multiplyFull(step, step);
+            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / Math.multiplyFull(step, step);
         }
 
         /**

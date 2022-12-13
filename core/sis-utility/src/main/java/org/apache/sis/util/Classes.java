@@ -412,10 +412,10 @@ public final class Classes extends Static {
      *
      * @see Class#getInterfaces()
      */
-    @SuppressWarnings({"unchecked","rawtypes"})                             // Generic array creation.
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
         final Set<Class<?>> interfaces = getInterfaceSet(type);
-        return (interfaces != null) ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_ARRAY;
+        return (interfaces != null) ? interfaces.toArray(Class[]::new) : EMPTY_ARRAY;
     }
 
     /**

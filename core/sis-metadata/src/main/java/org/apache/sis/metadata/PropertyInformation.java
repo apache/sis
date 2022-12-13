@@ -17,8 +17,8 @@
 package org.apache.sis.metadata;
 
 import java.util.Locale;
+import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import java.lang.reflect.Method;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.Datatype;
@@ -292,7 +292,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
      */
     @Override
     public Collection<String> getParentEntity() {
-        return Collections.singleton(getCodeSpace());
+        return Set.of(getCodeSpace());
     }
 
     /**

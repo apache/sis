@@ -16,14 +16,13 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import java.util.Set;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -51,7 +50,8 @@ public final strictfp class PropertySingletonTest extends TestCase {
      */
     public PropertySingletonTest() {
         attribute = new SingletonAttribute<>(new DefaultAttributeType<>(
-                singletonMap(DefaultAttributeType.NAME_KEY, "test"), Integer.class, 0, 1, null));
+                        Map.of(DefaultAttributeType.NAME_KEY, "test"),
+                        Integer.class, 0, 1, null));
         singleton = new PropertySingleton<>(attribute);
     }
 
@@ -127,7 +127,7 @@ public final strictfp class PropertySingletonTest extends TestCase {
     @Test
     @DependsOnMethod("testSingleton")
     public void testRemoveAll() {
-        final Set<Integer> attributes = singleton(1000);
+        final Set<Integer> attributes = Set.of(1000);
         assertTrue (singleton.addAll(attributes));
         assertFalse(singleton.isEmpty());
         assertTrue (singleton.removeAll(attributes));

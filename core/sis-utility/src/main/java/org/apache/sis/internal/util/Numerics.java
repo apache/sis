@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.util.function.BiFunction;
+import java.math.BigInteger;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -39,13 +40,13 @@ import static java.lang.Math.ulp;
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
 public final class Numerics extends Static {
     /**
-     * Some frequently used {@link Double} values. As of Java 8, those values do not
+     * Some frequently used {@link Double} values. As of Java 11, those values do not
      * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
      */
     private static final Map<Object,Object> CACHE = new HashMap<>(32);
@@ -270,10 +271,13 @@ public final class Numerics extends Static {
      * @return {@code value} × {@code multiplier} / {@code divisor} rounded toward zero.
      */
     public static long multiplyDivide(final long value, final long multiplier, final long divisor) {
-        // TODO: uncomment with JDK9
-//      final long high = Math.multiplyHigh(value, multiplier);
-//      return Math.multiplyExact(value * multiplier / divisor, high);
-        return Math.multiplyExact(value, multiplier) / divisor;
+        try {
+            return Math.multiplyExact(value, multiplier) / divisor;
+        } catch (ArithmeticException e) {
+            // We do not have a better algorithm at this time.
+            return BigInteger.valueOf(value).multiply(BigInteger.valueOf(multiplier))
+                             .divide(BigInteger.valueOf(divisor)).longValueExact();
+        }
     }
 
     /**

@@ -46,10 +46,6 @@ public final strictfp class MarshallerPoolTest extends TestCase {
         final MarshallerPool pool = new MarshallerPool(JAXBContext.newInstance(new Class<?>[0]), null);
         final Marshaller marshaller = pool.acquireMarshaller();
         assertNotNull(marshaller);
-        /*
-         * PooledMarshaller should convert the property name from "com.sun.xml.bind.xmlHeaders" to
-         * "com.sun.xml.internal.bind.xmlHeaders" if we are running JDK implementation of JAXB.
-         */
         assertNull(marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));
         marshaller.setProperty("com.sun.xml.bind.xmlHeaders", "<DTD ...>");
         assertEquals("<DTD ...>", marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));

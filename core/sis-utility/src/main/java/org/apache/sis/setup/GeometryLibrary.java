@@ -52,8 +52,6 @@ public enum GeometryLibrary {
      *
      * Note that contrarily to JTS and ESRI libraries,
      * a point does not extend any root geometry class in Java2D.
-     *
-     * @see <a href="http://docs.oracle.com/javase/8/docs/technotes/guides/2d/index.html">Java2D home page</a>
      */
     JAVA2D,
 

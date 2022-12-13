@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Calendar;
 import java.util.Date;
@@ -436,7 +435,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
          * We do not cache this citation because the caching service is already provided by ConcurrentAuthorityFactory.
          */
         final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-        c.setIdentifiers(Collections.singleton(new ImmutableIdentifier(null, null, Constants.EPSG)));
+        c.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, Constants.EPSG)));
         try {
             /*
              * Get the most recent version number from the history table. We get the date in local timezone
@@ -563,7 +562,7 @@ addURIs:    for (int i=0; ; i++) {
                 return existing;
             }
         }
-        Map<String,String> result = Collections.emptyMap();
+        Map<String,String> result = Map.of();
         for (final TableInfo table : TableInfo.EPSG) {
             /*
              * We test `isAssignableFrom` in the two ways for catching the following use cases:
@@ -627,7 +626,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     @Override
     public Set<String> getCodeSpaces() {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -1177,7 +1176,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             properties.put(IdentifiedObject.NAME_KEY, id);
         }
         if (!aliases.isEmpty()) {
-            properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
+            properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(GenericName[]::new));
         }
         if (code != null) {
             final String codeString = code.toString();
@@ -2554,7 +2553,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final Set<Unit<?>> units;
                 if (epsg != null && Arrays.binarySearch(EPSG_CODE_PARAMETERS, epsg) >= 0) {
                     type  = Integer.class;
-                    units = Collections.emptySet();
+                    units = Set.of();
                 } else {
                     /*
                      * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
@@ -2675,7 +2674,7 @@ next:                   while (r.next()) {
                 descriptors.add(owner.createParameterDescriptor(getString(method, result, 1)));
             }
         }
-        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);
+        return descriptors.toArray(ParameterDescriptor<?>[]::new);
     }
 
     /**

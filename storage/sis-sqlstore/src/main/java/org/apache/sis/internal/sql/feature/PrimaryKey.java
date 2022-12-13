@@ -18,7 +18,6 @@ package org.apache.sis.internal.sql.feature;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -85,7 +84,7 @@ abstract class PrimaryKey {
         /** Returns the single column composing this primary key. */
         @Override
         public List<String> getColumns() {
-            return Collections.singletonList(column);
+            return List.of(column);
         }
     }
 
@@ -99,7 +98,7 @@ abstract class PrimaryKey {
         /** Creates a new primary key composed of the given columns. */
         Composite(final Class<?> valueClass, final Collection<String> columns) {
             super(valueClass);
-            this.columns = UnmodifiableArrayList.wrap(columns.toArray(new String[columns.size()]));
+            this.columns = UnmodifiableArrayList.wrap(columns.toArray(String[]::new));
         }
 
         /** Returns all columns composing this primary key. */

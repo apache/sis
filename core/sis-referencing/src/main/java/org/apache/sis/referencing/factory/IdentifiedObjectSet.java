@@ -200,7 +200,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
         synchronized (objects) {
             if (codes == null) {
                 final Set<String> keys = objects.keySet();
-                codes = keys.toArray(new String[keys.size()]);
+                codes = keys.toArray(String[]::new);
             }
             return codes;
         }

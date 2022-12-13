@@ -488,8 +488,8 @@ public class WraparoundAdjustment {
                             shifted = new GeneralEnvelope(areaOfInterest);
                         }
                         areaOfInterest = shifted;           // `shifted` may have been set before the loop.
-                        shifted.setRange(i, lower + lowerCycles * period,   // TODO: use Math.fma in JDK9.
-                                            upper + upperCycles * period);
+                        shifted.setRange(i, Math.fma(period, lowerCycles, lower),
+                                            Math.fma(period, upperCycles, upper));
                     }
                 }
             }
@@ -553,7 +553,7 @@ public class WraparoundAdjustment {
                             shifted = new GeneralDirectPosition(pointOfInterest);
                         }
                         pointOfInterest = shifted;                         // `shifted` may have been set before the loop.
-                        shifted.setOrdinate(i, x + delta * period);        // TODO: use Math.fma in JDK9.
+                        shifted.setOrdinate(i, Math.fma(period, delta, x));
                     }
                 }
             }

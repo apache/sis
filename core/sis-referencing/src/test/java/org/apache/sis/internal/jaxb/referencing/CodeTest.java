@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import java.util.Collections;
+import java.util.Set;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.internal.util.Constants;
@@ -95,7 +95,7 @@ public final strictfp class CodeTest extends TestCase {
     @DependsOnMethod("testWithVersion")
     public void testForIdentifiedObject() {
         final Identifier id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
-        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
+        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
         assertNotNull(value);
         assertEquals("codeSpace", Constants.IOGP, value.codeSpace);
         assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
@@ -112,7 +112,7 @@ public final strictfp class CodeTest extends TestCase {
         authority.getIdentifiers().add(new ImmutableIdentifier(null, "OGP", "EPSG"));
 
         final Identifier id = new ImmutableIdentifier(authority, "EPSG", "4326", "8.2", null);
-        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Collections.singleton(id));
+        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
         assertNotNull(value);
         assertEquals("codeSpace", "OGP", value.codeSpace);
         assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);

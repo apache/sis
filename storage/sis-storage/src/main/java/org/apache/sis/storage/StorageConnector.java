@@ -18,7 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Map;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.io.Reader;
 import java.io.DataInput;
@@ -222,6 +221,7 @@ public class StorageConnector implements Serializable {
      *
      * @see #getStorage()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final Object storage;
 
     /**
@@ -242,6 +242,7 @@ public class StorageConnector implements Serializable {
      * @see #getOption(OptionKey)
      * @see #setOption(OptionKey, Object)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Map<OptionKey<?>, Object> options;
 
     /**
@@ -1517,7 +1518,7 @@ public class StorageConnector implements Serializable {
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
         if (views == null) {
-            views = Collections.emptyMap();         // For blocking future usage of this StorageConnector instance.
+            views = Map.of();               // For blocking future usage of this StorageConnector instance.
             if (storage != view && storage instanceof AutoCloseable) try {
                 ((AutoCloseable) storage).close();
             } catch (DataStoreException e) {
@@ -1586,7 +1587,7 @@ public class StorageConnector implements Serializable {
                 }
             }
         }
-        views = Collections.emptyMap();         // For blocking future usage of this StorageConnector instance.
+        views = Map.of();                   // For blocking future usage of this StorageConnector instance.
         /*
          * Now close all remaining items. Typically (but not necessarily) there is only one remaining item.
          * If an exception occurs, we will propagate it only after we are done closing all items.

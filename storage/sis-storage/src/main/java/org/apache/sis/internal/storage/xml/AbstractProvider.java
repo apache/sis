@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.io.Reader;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -35,7 +34,7 @@ import org.apache.sis.internal.storage.DocumentedStoreProvider;
  * (JAXB, StAX, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -58,17 +57,15 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
     private static final byte[] HEADER = {'<','?','x','m','l',' '};
 
     /**
-     * The mapping from XML namespaces to MIME types. This map shall be populated by subclasses
-     * at construction time, then never modified anymore since we do not synchronize it.
+     * The mapping from XML namespaces to MIME types.
      *
-     * <div class="note"><b>Example</b>
-     * public MyDataStore() {
-     *     mimeForNameSpaces.put("http://www.opengis.net/gml/3.2",        "application/gml+xml");
-     *     mimeForNameSpaces.put("http://www.isotc211.org/2005/gmd",      "application/vnd.iso.19139+xml");
-     *     mimeForNameSpaces.put("http://www.opengis.net/cat/csw/2.0.2",  "application/vnd.ogc.csw_xml");
-     * }</div>
-     *
-     * @todo replace by {@code Map.of(…)} on JDK9 branch.
+     * <table class="sis">
+     *   <caption>Example</caption>
+     *   <tr><th>Key</th>                                  <th>Value</th></tr>
+     *   <tr><td>http://www.opengis.net/gml/3.2</td>       <td>application/gml+xml</td></tr>
+     *   <tr><td>http://www.isotc211.org/2005/gmd</td>     <td>application/vnd.iso.19139+xml</td></tr>
+     *   <tr><td>http://www.opengis.net/cat/csw/2.0.2</td> <td>application/vnd.ogc.csw_xml</td></tr>
+     * </table>
      */
     protected final Map<String,String> mimeForNameSpaces;
 
@@ -76,25 +73,25 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
      * The mapping from root elements to MIME types. Used only if the root element is in
      * the default namespace and contains no {@code xmlns} attributes for that namespace.
      *
-     * <div class="note"><b>Example</b>
-     * public MyDataStore() {
-     *     mimeForRootElements.put("MD_Metadata", "application/vnd.iso.19139+xml");
-     * }</div>
-     *
-     * @todo replace by {@code Map.of(…)} on JDK9 branch.
+     * <table class="sis">
+     *   <caption>Example</caption>
+     *   <tr><th>Key</th>         <th>Value</th></tr>
+     *   <tr><td>MD_Metadata</td> <td>application/vnd.iso.19139+xml</td></tr>
+     * </table>
      */
     protected final Map<String,String> mimeForRootElements;
 
     /**
-     * Creates a new provider. Subclasses shall populate the {@link #mimeForNameSpaces} map with a mapping
-     * from their namespace to the MIME type to declare.
+     * Creates a new provider.
      *
      * @param  name  the primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
+     * @param  mimeForNameSpaces    the mapping from XML namespaces to MIME type.
+     * @param  mimeForRootElements  the mapping from root elements to MIME types, used only as a fallback.
      */
-    protected AbstractProvider(final String name) {
+    protected AbstractProvider(final String name, final Map<String,String> mimeForNameSpaces, final Map<String,String> mimeForRootElements) {
         super(name);
-        mimeForNameSpaces   = new HashMap<>();
-        mimeForRootElements = new HashMap<>();
+        this.mimeForNameSpaces   = mimeForNameSpaces;
+        this.mimeForRootElements = mimeForRootElements;
     }
 
     /**
@@ -118,7 +115,7 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
             }
             // Quick check for "<?xml " header.
             for (int i=0; i<HEADER.length; i++) {
-                if (buffer.get() != HEADER[i]) {              // TODO: use ByteBuffer.mismatch(…) with JDK11.
+                if (buffer.get() != HEADER[i]) {
                     return ProbeResult.UNSUPPORTED_STORAGE;
                 }
             }

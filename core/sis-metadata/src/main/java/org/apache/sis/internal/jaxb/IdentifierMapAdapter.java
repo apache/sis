@@ -21,10 +21,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -99,7 +97,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * An immutable empty instance.
      */
-    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Collections.emptySet());
+    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Set.of());
 
     /**
      * The identifiers to wrap in a map view.
@@ -132,10 +130,10 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     public final Collection<Identifier> getIdentifiers(final Class<?> type) {
         if (!type.isInstance(identifiers)) {
             if (type.isAssignableFrom(Set.class)) {
-                return new HashSet<>(identifiers);      // TODO: use Set.copyOf in JDK10.
+                return Set.copyOf(identifiers);
             }
             if (type.isAssignableFrom(List.class)) {
-                return new ArrayList<>(identifiers);    // TODO: use List.copyOf in JDK10.
+                return List.copyOf(identifiers);
             }
         }
         return identifiers;

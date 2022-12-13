@@ -16,13 +16,13 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 
 
@@ -46,8 +46,8 @@ public final strictfp class DefaultResponsibilityTest extends TestCase {
         final DefaultIndividual  party = new DefaultIndividual("An author", null, null);
         final DefaultResponsibleParty r = new DefaultResponsibleParty(Role.AUTHOR);
         final DefaultCitation citation = new DefaultCitation();
-        r.setParties(singleton(party));
-        citation.setCitedResponsibleParties(singleton(r));
+        r.setParties(Set.of(party));
+        citation.setCitedResponsibleParties(Set.of(r));
         final String xml = marshal(citation, VERSION_2007);
         assertXmlEquals("<gmd:CI_Citation xmlns:gco=\"" + LegacyNamespaces.GCO + '"' +
                                         " xmlns:gmd=\"" + LegacyNamespaces.GMD + "\">\n" +

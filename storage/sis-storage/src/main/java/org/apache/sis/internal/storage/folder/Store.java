@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Optional;
@@ -257,7 +256,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
                 nameFactory = DefaultFactories.forBuildin(NameFactory.class);
             }
             GenericName name = nameFactory.createLocalName(null, super.getDisplayName());
-            NameSpace   ns   = nameFactory.createNameSpace(name, Collections.singletonMap("separator", "/"));
+            NameSpace   ns   = nameFactory.createNameSpace(name, Map.of("separator", "/"));
             identifier       = nameFactory.createLocalName(ns, ".");
         }
         return identifier;
@@ -378,7 +377,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
             } catch (BackingStoreException ex) {
                 throw ex.unwrapOrRethrow(DataStoreException.class);
             }
-            components = UnmodifiableArrayList.wrap(resources.toArray(new Resource[resources.size()]));
+            components = UnmodifiableArrayList.wrap(resources.toArray(Resource[]::new));
         }
         return components;              // Safe because unmodifiable list.
     }

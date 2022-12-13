@@ -136,7 +136,7 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      */
     @Override
     public double doubleValue(final int index) {
-        return base.doubleValue(index) * scale + offset;        // TODO: use Math.fma in JDK9.
+        return Math.fma(base.doubleValue(index), scale, offset);
     }
 
     /**
@@ -218,7 +218,7 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      */
     private Number convert(Number value) {
         if (value != null) {
-            value = value.doubleValue() * scale + offset;       // TODO: use Math.fma in JDK9.
+            value = Math.fma(value.doubleValue(), scale, offset);
         }
         return value;
     }
@@ -320,7 +320,7 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
      */
     @Override
     final Vector createTransform(final double s, final double t) {
-        return base.transform(scale * s, offset * s + t);            // TODO: use Math.fma with JDK9.
+        return base.transform(scale * s, Math.fma(offset, s, t));
     }
 
     /**
@@ -332,7 +332,7 @@ final class LinearlyDerivedVector extends Vector implements Serializable {
     public double[] doubleValues() {
         final double[] array = base.doubleValues();
         for (int i=0; i<array.length; i++) {
-            array[i] = array[i] * scale + offset;           // TODO: use Math.fma with JDK9.
+            array[i] = Math.fma(array[i], scale, offset);
         }
         return array;
     }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Map;
 import java.net.URI;
 import java.io.StringReader;
 import java.util.logging.Filter;
@@ -33,7 +34,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.util.logging.Logger.getLogger;
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.MetadataAssert.*;
 
 
@@ -317,8 +317,9 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
          * Unmarshals the given object while listening to warnings.
          */
         public DefaultBrowseGraphic unmarshal(final String xml) throws JAXBException {
-            return (DefaultBrowseGraphic) XML.unmarshal(new StreamSource(new StringReader(xml)),
-                    singletonMap(XML.WARNING_FILTER, this));
+            return (DefaultBrowseGraphic) XML.unmarshal(
+                    new StreamSource(new StringReader(xml)),
+                    Map.of(XML.WARNING_FILTER, this));
         }
     }
 }

@@ -18,7 +18,7 @@ package org.apache.sis.geometry;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Collections;
+import java.util.Map;
 import org.apache.sis.measure.Range;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -165,7 +165,7 @@ public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvel
     public void testTransform4to2D() throws TransformException {
         final CoordinateReferenceSystem targetCRS = HardCodedCRS.WGS84;
         final CoordinateReferenceSystem sourceCRS = new DefaultCompoundCRS(
-                Collections.singletonMap(DefaultCompoundCRS.NAME_KEY, "4D CRS"),
+                Map.of(DefaultCompoundCRS.NAME_KEY, "4D CRS"),
                 HardCodedCRS.WGS84,
                 HardCodedCRS.GRAVITY_RELATED_HEIGHT,
                 HardCodedCRS.TIME);

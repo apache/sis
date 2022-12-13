@@ -52,7 +52,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -135,7 +134,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * For example if the unit of measurement of an axis is meter but the precision is 1000 metres,
      * then {@code CoordinateFormat} will automatically uses kilometres units instead of metres.
      */
-    private static final Set<Unit<?>> SCALABLES = JDK9.setOf(Units.METRE, Units.PASCAL);
+    private static final Set<Unit<?>> SCALABLES = Set.of(Units.METRE, Units.PASCAL);
 
     /**
      * The separator between each coordinate values to be formatted.

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -163,7 +162,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
              * SpecializableTransforms we will store directly the specializations that it contains. It will
              * reduce the amountof steps when transforming coordinates.
              */
-            List<SubArea> inherited = Collections.emptyList();
+            List<SubArea> inherited = List.of();
             if (tr instanceof SpecializableTransform) {
                 inherited = ((SpecializableTransform) tr).roots();
                 tr        = ((SpecializableTransform) tr).global;
@@ -197,9 +196,9 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     @SuppressWarnings("unchecked")
     private List<SubArea> roots() {
         if (domains == null) {
-            return Collections.emptyList();
+            return List.of();
         } else if (domains instanceof SubArea) {
-            return Collections.singletonList((SubArea) domains);
+            return List.of((SubArea) domains);
         } else {
             /*
              * We are cheating here since we have a `List<RTreeNode>`. But this `SpecializableTransform`

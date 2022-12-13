@@ -16,7 +16,6 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import javax.measure.Unit;
@@ -168,7 +167,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.EARTH_RADIUS), 0, 1, Double.class,
+                InverseFlattening.properties(Constants.EARTH_RADIUS), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, Units.METRE), null, null);
 
         /**
@@ -253,14 +252,14 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                toMap(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
+                properties(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, Units.UNITY), null, null);
 
         /**
          * Helper method for {@link #DESCRIPTOR} constructions.
          */
-        static Map<String,?> toMap(final String name) {
-            return Collections.singletonMap(NAME_KEY, new NamedIdentifier(NETCDF, name));
+        private static Map<String,?> properties(final String name) {
+            return Map.of(NAME_KEY, new NamedIdentifier(NETCDF, name));
         }
 
         /**
@@ -372,7 +371,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Boolean> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, Boolean.FALSE);
+                InverseFlattening.properties(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, Boolean.FALSE);
 
         /**
          * The parameters for the inverse flattening factor.
@@ -437,7 +436,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * {@value Constants#STANDARD_PARALLEL_2}. This is not a standard parameter.
          */
         static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.STANDARD_PARALLEL),
+                InverseFlattening.properties(Constants.STANDARD_PARALLEL),
                 0, 1, double[].class, null, null, null);
 
         /**

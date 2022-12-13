@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.util.Type;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
@@ -69,7 +69,7 @@ public final strictfp class DefaultRecordTypeTest extends TestCase {
      */
     private DefaultRecordType create() throws IllegalArgumentException {
         final Type fieldType = new SimpleAttributeType<>(fieldTypeName, Integer.class);
-        return new DefaultRecordType(recordTypeName, container, Collections.singletonMap(fieldName, fieldType));
+        return new DefaultRecordType(recordTypeName, container, Map.of(fieldName, fieldType));
     }
 
     /**

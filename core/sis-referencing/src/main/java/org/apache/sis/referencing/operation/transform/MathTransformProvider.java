@@ -52,7 +52,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * <div class="note">{@preformat java
  *     public class MyProjectionProvider extends DefaultOperationMethod implements MathTransformProvider {
  *         public MyProjectionProvider() {
- *             super(Collections.singletonMap(NAME_KEY, "My projection"),
+ *             super(Map.of(NAME_KEY, "My projection"),
  *                     2, // Number of source dimensions
  *                     2, // Number of target dimensions
  *                     parameters);

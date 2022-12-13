@@ -36,12 +36,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.StoreUtilities;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
@@ -84,7 +82,7 @@ import org.apache.sis.storage.Resource;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  * @module
  */
@@ -122,7 +120,7 @@ public class StoreListeners implements Localized {
      * @see #useReadOnlyEvents()
      */
     private static final Set<Class<? extends StoreEvent>> READ_EVENT_TYPES =
-                         JDK9.setOf(WarningEvent.class, CloseEvent.class);
+                         Set.of(WarningEvent.class, CloseEvent.class);
 
     /**
      * The {@link CascadedStoreEvent.ParentListener}s registered on {@link #parent}.
@@ -421,16 +419,6 @@ public class StoreListeners implements Localized {
     }
 
     /**
-     * @deprecated Renamed {@link #useReadOnlyEvents()}.
-     *
-     * @since 1.2
-     */
-    @Deprecated
-    public void useWarningEventsOnly() {
-        useReadOnlyEvents();
-    }
-
-    /**
      * Reports a warning described by the given message.
      *
      * <p>This method is a shortcut for <code>{@linkplain #warning(Level, String, Exception)
@@ -495,28 +483,26 @@ public class StoreListeners implements Localized {
      */
     public void warning(final Level level, String message, final Exception exception) {
         ArgumentChecks.ensureNonNull("level", level);
-        final LogRecord record;
-        final StackTraceElement[] trace;
-        if (exception != null) {
-            trace = exception.getStackTrace();
+        if (exception == null) {
+            ArgumentChecks.ensureNonEmpty("message", message);
+        } else {
             message = Exceptions.formatChainedMessages(getLocale(), message, exception);
             if (message == null) {
                 message = exception.toString();
             }
-            record = new LogRecord(level, message);
-            record.setThrown(exception);
-        } else {
-            ArgumentChecks.ensureNonEmpty("message", message);
-            trace = Thread.currentThread().getStackTrace();         // TODO: on JDK9, use StackWalker instead.
-            record = new LogRecord(level, message);
         }
-        try {
-            for (final StackTraceElement e : trace) {
+        final LogRecord record = new LogRecord(level, message);
+        if (exception == null) {
+           StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> stream.filter(
+                   (frame) -> setPublicSource(record, frame.getDeclaringClass(), frame.getMethodName())).findFirst());
+         } else try {
+            record.setThrown(exception);
+            for (final StackTraceElement e : exception.getStackTrace()) {
                 if (setPublicSource(record, Class.forName(e.getClassName()), e.getMethodName())) {
                     break;
                 }
             }
-        } catch (ClassNotFoundException | SecurityException e) {
+        } catch (ClassNotFoundException e) {
             Logging.ignorableException(StoreUtilities.LOGGER, StoreListeners.class, "warning", e);
         }
         warning(record, StoreUtilities.removeStackTraceInLogs());
@@ -524,7 +510,7 @@ public class StoreListeners implements Localized {
 
     /**
      * Eventually sets the class name and method name in the given record,
-     * and returns {@code true} if the method is public resource method.
+     * and returns {@code true} if the method is a public resource method.
      *
      * @param  record      the record where to set the source class/method name.
      * @param  type        the source class. This method does nothing if the class is not a {@link Resource}.
@@ -615,15 +601,6 @@ public class StoreListeners implements Localized {
      */
     static void canNotNotify(final String method, final ExecutionException error) {
         Logging.unexpectedException(Logger.getLogger(Modules.STORAGE), StoreListeners.class, method, error);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #fire(Class, StoreEvent)} for consistency with the argument order
-     *             in all other methods of this class.
-     */
-    @Deprecated
-    public <E extends StoreEvent> boolean fire(final E event, final Class<E> eventType) {
-        return fire(eventType, event);
     }
 
     /**
@@ -919,7 +896,7 @@ public class StoreListeners implements Localized {
                 throw illegalEventType(type);
             }
         }
-        permittedEventTypes = READ_EVENT_TYPES.equals(types) ? READ_EVENT_TYPES : CollectionsExt.compact(types);
+        permittedEventTypes = READ_EVENT_TYPES.equals(types) ? READ_EVENT_TYPES : Set.copyOf(types);
         ForType.removeUnreachables(listeners, types);
     }
 

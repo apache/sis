@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.xml.stream;
 
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.xml.MarshallerPool;
@@ -27,7 +28,7 @@ import org.apache.sis.internal.storage.xml.AbstractProvider;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -40,13 +41,14 @@ public abstract class StaxDataStoreProvider extends AbstractProvider {
     private volatile MarshallerPool jaxb;
 
     /**
-     * Creates a new provider. Subclasses shall populate the {@link #mimeForNameSpaces}
-     * map with a mapping from their namespace to the MIME type to declare.
+     * Creates a new provider.
      *
      * @param  name  the primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
+     * @param  mimeForNameSpaces    the mapping from XML namespaces to MIME type.
+     * @param  mimeForRootElements  the mapping from root elements to MIME types, used only as a fallback.
      */
-    protected StaxDataStoreProvider(final String name) {
-        super(name);
+    protected StaxDataStoreProvider(final String name, final Map<String,String> mimeForNameSpaces, final Map<String,String> mimeForRootElements) {
+        super(name, mimeForNameSpaces, mimeForRootElements);
     }
 
     /**

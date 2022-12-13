@@ -17,7 +17,6 @@
 package org.apache.sis.measure;
 
 import java.util.List;
-import java.util.Collections;
 import java.io.Serializable;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
@@ -155,6 +154,6 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      */
     @Override
     public List<UnitConverter> getConversionSteps() {
-        return Collections.singletonList(this);
+        return List.of(this);
     }
 }

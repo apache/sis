@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.ObjectConverter;
@@ -126,7 +126,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      */
     @Override
     protected Collection<?> getChildren() {
-        return Arrays.asList(expression, converter.getSourceClass(), converter.getTargetClass());
+        return List.of(expression, converter.getSourceClass(), converter.getTargetClass());
     }
 
     /**

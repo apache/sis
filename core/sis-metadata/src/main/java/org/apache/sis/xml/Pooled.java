@@ -36,7 +36,6 @@ import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -46,13 +45,12 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
 /**
  * Base class of {@link PooledMarshaller} and {@link PooledUnmarshaller}.
  * This class provides basic service for saving the initial values of (un)marshaller properties,
- * in order to reset them to their initial values after usage. This is required in order to allow
- * (un)marshaller reuse. In addition this base class translates properties key from JDK 6 names to
- * "endorsed JAR" names if needed.
+ * in order to reset them to their initial values after usage.
+ * This is required in order to allow (un)marshaller reuse.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -62,16 +60,6 @@ abstract class Pooled {
      * Those keys are documented in {@link XML#SCHEMAS}.
      */
     private static final String[] SCHEMA_KEYS = {"cat", "gmd", "gmi", "gml"};
-
-    /**
-     * {@code true} if the JAXB implementation is the one bundled in JDK 6, or {@code false}
-     * if this is the external implementation provided as a JAR file in the endorsed directory.
-     * If {@code true}, then an additional {@code "internal"} package name needs to be inserted
-     * in the property keys.
-     *
-     * @see Implementation#toInternal(String)
-     */
-    private final boolean internal;
 
     /**
      * The initial state of the (un)marshaller. Will be filled only as needed,
@@ -103,7 +91,7 @@ abstract class Pooled {
 
     /**
      * The timezone, or {@code null} if unspecified.
-     *  Can be set by the {@link XML#TIMEZONE} property.
+     * Can be set by the {@link XML#TIMEZONE} property.
      */
     private TimeZone timezone;
 
@@ -164,13 +152,8 @@ abstract class Pooled {
 
     /**
      * Creates a {@link PooledTemplate}.
-     *
-     * @param internal  {@code true} if the JAXB implementation is the one bundled in JDK 6,
-     *        or {@code false} if this is the external implementation provided as a JAR file
-     *        in the endorsed directory.
      */
-    Pooled(final boolean internal) {
-        this.internal = internal;
+    Pooled() {
         initialProperties = new LinkedHashMap<>();
     }
 
@@ -182,7 +165,6 @@ abstract class Pooled {
      */
     Pooled(final Pooled template) {
         initialProperties = new LinkedHashMap<>();
-        internal = template.internal;
     }
 
     /**
@@ -230,11 +212,11 @@ abstract class Pooled {
     }
 
     /**
-     * Resets the given marshaller property to its initial state. This method is invoked
-     * automatically by the {@link #reset(Pooled)} method. The key is either a {@link String}
-     * or a {@link Class}. If this is a string, then the value shall be given to the
-     * {@code setProperty(key, value)} method. Otherwise the value shall be given to
-     * {@code setFoo(value)} method where {@code "Foo"} is determined from the key.
+     * Resets the given marshaller property to its initial state. This method is invoked automatically
+     * by the {@link #reset(Pooled)} method. The key is either a {@link String} or a {@link Class}.
+     * If this is a string, then the value shall be given to the {@code setProperty(key, value)} method.
+     * Otherwise the value shall be given to {@code setFoo(value)} method
+     * where {@code "Foo"} is determined from the key.
      *
      * @param  key    the property to reset.
      * @param  value  the initial value to give to the property.
@@ -329,7 +311,7 @@ abstract class Pooled {
                                 copy.put(key, (String) schema);
                             }
                         }
-                        copy = CollectionsExt.unmodifiableOrCopy(copy);
+                        copy = Map.copyOf(copy);
                     }
                     schemas = copy;
                     return;
@@ -399,9 +381,6 @@ abstract class Pooled {
          * If we reach this point, the given name is not a SIS property. Try to handle
          * it as a (un)marshaller-specific property, after saving the previous value.
          */
-        if (internal) {
-            name = Implementation.toInternal(name);
-        }
         if (!initialProperties.containsKey(name) && initialProperties.put(name, getStandardProperty(name)) != null) {
             // Should never happen, unless on concurrent changes in a backgroung thread.
             throw new ConcurrentModificationException(name);
@@ -434,12 +413,7 @@ abstract class Pooled {
                 return (n != 0) ? ArraysExt.resize(substitutes, n) : null;
             }
             case TypeRegistration.ROOT_ADAPTERS: return (rootAdapters != null) ? rootAdapters.clone() : null;
-            default: {
-                if (internal) {
-                    name = Implementation.toInternal(name);
-                }
-                return getStandardProperty(name);
-            }
+            default: return getStandardProperty(name);
         }
     }
 

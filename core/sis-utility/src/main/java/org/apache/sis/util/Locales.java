@@ -98,7 +98,7 @@ public final class Locales extends Static {
      * to {@code String} instances.
      *
      * <div class="note"><b>Implementation note:</b>
-     * Oracle JDK8 implementation computes the 3-letters codes on-the-fly instead of holding references
+     * OpenJDK 8 implementation computes the 3-letters codes on-the-fly instead of holding references
      * to pre-existing strings. If we were holding string references here, we would prevent the garbage
      * collector to collect the strings for all languages and countries. This would probably be a waste
      * of resources.</div>

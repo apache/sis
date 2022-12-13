@@ -45,7 +45,6 @@ import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
@@ -95,7 +94,7 @@ public final class StoreUtilities extends Static {
      *
      * @see #basedOnASCII(Charset)
      */
-    private static final Set<String> basedOnASCII = JDK9.setOf("US-ASCII", "ISO-8859-1", "UTF-8");
+    private static final Set<String> basedOnASCII = Set.of("US-ASCII", "ISO-8859-1", "UTF-8");
 
     /**
      * Do not allow instantiation of this class.

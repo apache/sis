@@ -69,7 +69,7 @@ public final class SensorType extends CodeList<SensorType> {
      */
     public static SensorType[] values() {
         synchronized (VALUES) {
-            return VALUES.toArray(new SensorType[VALUES.size()]);
+            return VALUES.toArray(SensorType[]::new);
         }
     }
 

@@ -577,8 +577,7 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      */
     @XmlElement(name = "parameterValue", required = true)
     private GeneralParameterValue[] getValues() {
-        final List<GeneralParameterValue> values = values();   // Gives to user a chance to override.
-        return values.toArray(new GeneralParameterValue[values.size()]);
+        return values().toArray(GeneralParameterValue[]::new);
     }
 
     /**

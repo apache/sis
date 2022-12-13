@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.util.*;
 import java.lang.reflect.Array;
-import java.util.function.Predicate;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
@@ -48,8 +47,13 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * purpose of a geospatial library and may change at any time. Some method contracts are a little
  * bit tedious to explain, which is another indication that they should not be in public API.
  *
+ * <h2>Null values</h2>
+ * All methods in this class accepts null values. The collections created by this class also accept null.
+ * This class prefers {@link Collections} methods instead of the new static {@code of(…)} method in interfaces
+ * because the former accept null values while the latter throws {@link NullPointerException}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -335,14 +339,15 @@ public final class CollectionsExt extends Static {
      * sense of {@link Object#equals(Object)}, then only the last instance of the duplicated
      * values will be included in the returned set.
      *
+     * <p>This method differs from {@link Set#of(Object...)} in that it preserves element order
+     * and optionally accepts null elements.</p>
+     *
      * @param  <E>          the type of array elements.
      * @param  excludeNull  {@code true} for excluding the {@code null} element from the returned set.
      * @param  array        the array to copy in a set. May be {@code null} or contain null elements.
      * @return a set containing the array elements, or {@code null} if the given array was null.
      *
      * @see Collections#unmodifiableSet(Set)
-     *
-     * @todo Consider replacing by {@code Set.of(...)} in JDK9.
      */
     @SafeVarargs
     @SuppressWarnings("fallthrough")
@@ -383,30 +388,24 @@ public final class CollectionsExt extends Static {
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableSet(Set)} method instead.</p>
      *
+     * <p>This method differs from {@link Set#copyOf(Collection)} in that it may avoid copy,
+     * preserves element order and optionally null elements.</p>
+     *
      * @param  <E>  the type of elements in the set.
      * @param  set  the set to make unmodifiable, or {@code null}.
      * @return a unmodifiable version of the given set, or {@code null} if the given set was null.
      *
      * @see #compact(Set)
      */
-    public static <E> Set<E> unmodifiableOrCopy(Set<E> set) {
-        if (set != null) {
-            switch (set.size()) {
-                case 0: {
-                    set = Collections.emptySet();
-                    break;
-                }
-                case 1: {
-                    set = Collections.singleton(set.iterator().next());
-                    break;
-                }
-                default: {
-                    set = Collections.unmodifiableSet(set);
-                    break;
-                }
-            }
+    public static <E> Set<E> unmodifiableOrCopy(final Set<E> set) {
+        if (set == null) {
+            return null;
         }
-        return set;
+        switch (set.size()) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(set.iterator().next());
+            default: return Collections.unmodifiableSet(set);
+        }
     }
 
     /**
@@ -420,34 +419,28 @@ public final class CollectionsExt extends Static {
      * <strong>not</strong> be modified after this method call. In case of doubt, use the
      * standard {@link Collections#unmodifiableMap(Map)} method instead.</p>
      *
+     * <p>This method differs from {@link Map#copyOf(Map)} in that it may avoid copy,
+     * preserves element order and optionally null elements.</p>
+     *
      * @param  <K>  the type of keys in the map.
      * @param  <V>  the type of values in the map.
      * @param  map  the map to make unmodifiable, or {@code null}.
      * @return a unmodifiable version of the given map, or {@code null} if the given map was null.
      *
      * @see #compact(Map)
-     *
-     * @todo Replace by {@code Map.copyOf(Map)} on JDK10, except when order matter ({@link LinkedHashMap}).
      */
-    public static <K,V> Map<K,V> unmodifiableOrCopy(Map<K,V> map) {
-        if (map != null) {
-            switch (map.size()) {
-                case 0: {
-                    map = Collections.emptyMap();
-                    break;
-                }
-                case 1: {
-                    final Map.Entry<K,V> entry = map.entrySet().iterator().next();
-                    map = Collections.singletonMap(entry.getKey(), entry.getValue());
-                    break;
-                }
-                default: {
-                    map = Collections.unmodifiableMap(map);
-                    break;
-                }
-            }
+    public static <K,V> Map<K,V> unmodifiableOrCopy(final Map<K,V> map) {
+        if (map == null) {
+            return null;
         }
-        return map;
+        switch (map.size()) {
+            case 0: return Collections.emptyMap();
+            case 1: {
+                final Map.Entry<K,V> entry = map.entrySet().iterator().next();
+                return Collections.singletonMap(entry.getKey(), entry.getValue());
+            }
+            default: return Collections.unmodifiableMap(map);
+        }
     }
 
     /**
@@ -484,8 +477,7 @@ public final class CollectionsExt extends Static {
                          * implements CheckedContainer is not a goal here, and is actually unsafe since we have
                          * no guarantee (except Javadoc contract) that the <E> in CheckedContainer<E> is really
                          * the same than in Collection<E>.  We tolerate this hole for now because we documented
-                         * the restriction in CheckedContainer javadoc, but future version may replace this block
-                         * by JDK9 collections.
+                         * the restriction in CheckedContainer javadoc.
                          */
                         @SuppressWarnings("unchecked")       // Okay if collection is compliant with CheckedContainer contract.
                         final E[] array = (E[]) Array.newInstance(((CheckedContainer<E>) list).getElementType(), length);
@@ -627,53 +619,11 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Returns a more compact representation of the given set. This method is similar to
-     * {@link #unmodifiableOrCopy(Set)} except that it does not wrap the set in an unmodifiable
-     * view. The intent is to avoid one level of indirection for performance and memory reasons.
-     * This is okay only if the set is kept in a private field and never escape outside that class.
-     *
-     * @param  <E>  the type of elements in the set.
-     * @param  set  the set to compact, or {@code null}.
-     * @return a unmodifiable version of the given set, or {@code null} if the given set was null.
-     *
-     * @see #unmodifiableOrCopy(Set)
-     */
-    public static <E> Set<E> compact(final Set<E> set) {
-        if (set != null) {
-            switch (set.size()) {
-                case 0: return Collections.emptySet();
-                case 1: return Collections.singleton(set.iterator().next());
-            }
-        }
-        return set;
-    }
-
-    /**
-     * Returns a more compact representation of the given list. This method is similar to
-     * {@link #unmodifiableOrCopy(List)} except that it does not wrap the list in an unmodifiable view.
-     * The intent is to avoid one level of indirection for performance and memory reasons.
-     * This is okay only if the list is kept in a private field and never escape outside that class.
-     *
-     * @param  <E>   the type of elements in the list.
-     * @param  list  the list to compact, or {@code null}.
-     * @return a unmodifiable version of the given list, or {@code null} if the given list was null.
-     *
-     * @see #unmodifiableOrCopy(List)
-     */
-    public static <E> List<E> compact(final List<E> list) {
-        if (list != null) {
-            switch (list.size()) {
-                case 0: return Collections.emptyList();
-                case 1: return Collections.singletonList(list.get(0));
-            }
-        }
-        return list;
-    }
-
-    /**
      * Returns a snapshot of the given list. The returned list will not be affected by changes
      * in the given list after this method call. This method makes no guaranteed about whether
      * the returned list is modifiable or not.
+     *
+     * <p>This method differs from {@link List#copyOf(Collection)} in that it accepts null elements.</p>
      *
      * @param  <E>   the type of elements in the list.
      * @param  list  the list for which to take a snapshot, or {@code null} if none.
@@ -689,6 +639,24 @@ public final class CollectionsExt extends Static {
             }
         }
         return list;
+    }
+
+    /**
+     * Returns a unmodifiable copy of the given set, preserving order.
+     *
+     * @param  <E>   the type of elements.
+     * @param  set   the set to copy, or {@code null}.
+     * @return a copy of the given set, or {@code null} if the given set was null.
+     */
+    public static <E> Set<E> copyPreserveOrder(final Set<E> set) {
+        if (set == null) {
+            return null;
+        }
+        switch (set.size()) {
+            case 0:  return Collections.emptySet();
+            case 1:  return Collections.singleton(set.iterator().next());
+            default: return Collections.unmodifiableSet(new LinkedHashSet<>(set));
+        }
     }
 
     /**
@@ -717,13 +685,6 @@ public final class CollectionsExt extends Static {
      *
      * <p>Note that in the {@link Iterator} and {@link Enumeration} cases, the given value object
      * is not valid anymore after this method call since it has been used for the iteration.</p>
-     *
-     * <p>If the returned object needs to be a list, then this method can be chained
-     * with {@link #toList(Collection)} as below:</p>
-     *
-     * {@preformat java
-     *     List<?> list = toList(toCollection(object));
-     * }
      *
      * @param  value  the value to return as a collection, or {@code null}.
      * @return the value as a collection, or wrapped in a collection (never {@code null}).
@@ -781,36 +742,8 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Casts or copies the given collection to a list. Special cases:
-     *
-     * <ul>
-     *   <li>If the given collection is {@code null}, then this method returns {@code null}.</li>
-     *   <li>If the given collection is already a list, then it is returned unchanged.</li>
-     *   <li>Otherwise the elements are copied in a new list, which is returned.</li>
-     * </ul>
-     *
-     * This method can be chained with {@link #toCollection(Object)}
-     * for handling a wider range of types:
-     *
-     * {@preformat java
-     *     List<?> list = toList(toCollection(object));
-     * }
-     *
-     * @param  <T>         the type of elements in the given collection.
-     * @param  collection  the collection to cast or copy to a list.
-     * @return the given collection as a list, or a copy of the given collection.
-     */
-    public static <T> List<T> toList(final Collection<T> collection) {
-        if (collection instanceof List<?>) {
-            return (List<T>) collection;
-        }
-        return new ArrayList<>(collection);
-    }
-
-    /**
-     * Returns the elements of the given collection as an array. This method can be used when the {@code valueClass}
-     * argument is not known at compile-time. If the {@code valueClass} is known at compile-time, then callers should
-     * use {@link Collection#toArray(Object[])} instead.
+     * Returns the elements of the given collection as an array.
+     * This method can be used when the {@code valueClass} argument is not known at compile-time.
      *
      * @param  <T>         the compile-time value of {@code valueClass}.
      * @param  collection  the collection from which to get the elements.
@@ -818,8 +751,6 @@ public final class CollectionsExt extends Static {
      * @return the collection elements as an array, or {@code null} if {@code collection} is null.
      *
      * @since 0.6
-     *
-     * @todo Remove after migration to JDK11.
      */
     @SuppressWarnings("unchecked")
     public static <T> T[] toArray(final Collection<? extends T> collection, final Class<T> valueClass) {
@@ -944,57 +875,6 @@ public final class CollectionsExt extends Static {
             }
         }
         return map;
-    }
-
-    /**
-     * Returns an iterator over the elements of the given iterator where the predicate returns {@code true}.
-     * The iterator may return {@code null} elements.
-     *
-     * @param  <E>     type of elements in the iterator to return.
-     * @param  it      the iterator to filter.
-     * @param  filter  the predicate to use for filtering elements.
-     * @return an iterator over filtered elements.
-     */
-    public static <E> Iterator<E> filter(final Iterator<E> it, final Predicate<? super E> filter) {
-        return new Iterator<E>() {
-            /** Whether the {@code next} element has been verified as valid. */
-            private boolean valid;
-
-            /** The next element to return. */
-            private E next;
-
-            /** Tests whether there is more elements to return. */
-            @Override public boolean hasNext() {
-                if (!valid) {
-                    do {
-                        if (!it.hasNext()) {
-                            return false;
-                        }
-                        next = it.next();
-                    } while (!filter.test(next));
-                    valid = true;
-                }
-                return true;
-            }
-
-            /**
-             * Returns the next element. If there are no more elements,
-             * the exception will be thrown by the wrapped iterator.
-             */
-            @Override public E next() {
-                if (!valid) {
-                    do next = it.next();
-                    while (!filter.test(next));
-                }
-                valid = false;
-                return next;
-            }
-
-            /** Remove the last element returned by the iterator. */
-            @Override public void remove() {
-                it.remove();
-            }
-        };
     }
 
     /**

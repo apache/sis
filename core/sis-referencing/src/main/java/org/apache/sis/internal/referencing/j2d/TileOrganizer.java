@@ -365,7 +365,7 @@ public class TileOrganizer {
          * First, compute the pyramid levels along the X axis. Transforms that we were unable
          * to classify will be discarded from the first run and put in a subsequent run.
          */
-        AffineTransform[] transforms = gridToCRS.toArray(new AffineTransform[gridToCRS.size()]);
+        AffineTransform[] transforms = gridToCRS.toArray(AffineTransform[]::new);
         Arrays.sort(transforms, X_COMPARATOR);
         int length = transforms.length;
         while (length != 0) {

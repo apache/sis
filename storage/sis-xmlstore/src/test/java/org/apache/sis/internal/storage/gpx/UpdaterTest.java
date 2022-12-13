@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
-import java.util.Arrays;
+import java.util.List;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -133,7 +133,7 @@ public final strictfp class UpdaterTest extends TestCase {
             point3.setPropertyValue("sis:geometry", new Point(35, 30));
             point1.setPropertyValue("time", Instant.parse("2010-01-10T00:00:00Z"));
             point3.setPropertyValue("time", Instant.parse("2010-01-30T00:00:00Z"));
-            store.add(Arrays.asList(point1, point2, point3).iterator());
+            store.add(List.of(point1, point2, point3).iterator());
         }
         assertXmlEquals(
                 "<gpx xmlns=\"" + Tags.NAMESPACE + "1/1\" version=\"1.1\">\n" +
@@ -175,7 +175,7 @@ public final strictfp class UpdaterTest extends TestCase {
      * Also checks some invariants such as the presence of metadata.
      */
     private boolean containsLat20() throws IOException {
-        final String xml = org.apache.sis.internal.jdk9.JDK9.readString(file);
+        final String xml = Files.readString(file);
         assertTrue(xml.contains("<bounds "));       // Sentinel value for presence of metadata.
         return xml.contains("lat=\"20");            // May have trailing ".0".
     }

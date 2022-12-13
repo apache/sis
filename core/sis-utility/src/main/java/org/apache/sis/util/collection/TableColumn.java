@@ -17,7 +17,6 @@
 package org.apache.sis.util.collection;
 
 import java.util.Map;
-import java.util.Collections;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
@@ -175,7 +174,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * A map containing only the {@link #NAME} column.
      * This is the default set of columns when parsing a tree table.
      */
-    static final Map<TableColumn<?>,Integer> NAME_MAP = Collections.singletonMap(NAME, 0);
+    static final Map<TableColumn<?>,Integer> NAME_MAP = Map.of(NAME, 0);
 
     /**
      * Base type of all values in the column identified by this {@code ColumnTable} instance.

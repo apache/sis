@@ -865,7 +865,7 @@ class CoordinateOperationRegistry {
          */
         if (operation instanceof ConcatenatedOperation) {
             final List<? extends CoordinateOperation> c = ((ConcatenatedOperation) operation).getOperations();
-            final CoordinateOperation[] op = c.toArray(new CoordinateOperation[c.size()]);
+            final CoordinateOperation[] op = c.toArray(CoordinateOperation[]::new);
             switch (op.length) {
                 case 0: break;                              // Illegal, but we are paranoiac.
                 case 1: operation = op[0]; break;           // Useless ConcatenatedOperation.
@@ -1040,8 +1040,7 @@ class CoordinateOperationRegistry {
             case 0:  return null;
             case 1:  return operations.get(0);
             default: return factory.createConcatenatedOperation(derivedFrom(operation),
-                            operations.toArray(new CoordinateOperation[operations.size()]));
-
+                            operations.toArray(CoordinateOperation[]::new));
         }
     }
 

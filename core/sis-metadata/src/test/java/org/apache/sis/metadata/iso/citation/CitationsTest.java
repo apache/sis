@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Set;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
@@ -288,7 +287,7 @@ public final strictfp class CitationsTest extends TestCase {
         final Identifier ogc = new DefaultIdentifier("OGC", "06-042", null);
         final Identifier iso = new DefaultIdentifier("ISO", "19128", null);
         final DefaultCitation citation = new DefaultCitation("Web Map Server");
-        citation.setIdentifiers(Arrays.asList(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
+        citation.setIdentifiers(List.of(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
         assertTrue ("With full identifier",  Citations.identifierMatches(citation, ogc, ogc.getCode()));
         assertTrue ("With full identifier",  Citations.identifierMatches(citation, iso, iso.getCode()));
         assertFalse("With wrong code",       Citations.identifierMatches(citation, new DefaultIdentifier("ISO", "19115", null), "19115"));

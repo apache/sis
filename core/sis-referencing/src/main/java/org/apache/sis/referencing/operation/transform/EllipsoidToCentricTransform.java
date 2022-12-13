@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -842,8 +842,7 @@ next:   while (--numPts >= 0) {
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
             ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)");
-            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name),
-                    forward.getParameterDescriptors());
+            return new DefaultParameterDescriptorGroup(Map.of(ParameterDescriptorGroup.NAME_KEY, name), forward.getParameterDescriptors());
         }
 
         /**

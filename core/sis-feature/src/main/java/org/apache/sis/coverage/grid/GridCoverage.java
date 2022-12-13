@@ -110,7 +110,7 @@ public abstract class GridCoverage extends BandedCoverage {
         ArgumentChecks.ensureNonNull ("domain", domain);
         ArgumentChecks.ensureNonEmpty("ranges", ranges);
         gridGeometry = domain;
-        sampleDimensions = ranges.toArray(new SampleDimension[ranges.size()]);
+        sampleDimensions = ranges.toArray(SampleDimension[]::new);
         ArgumentChecks.ensureNonEmpty("range", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);

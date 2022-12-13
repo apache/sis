@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -67,7 +66,7 @@ public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
      * Implementation of test methods using a hard-coded XML string as a source.
      */
     private static void testFromString(final String xml) throws IOException {
-        assertEquals("application/vnd.iso.19139+xml", getMimeType(xml, Collections.emptyMap()));
+        assertEquals("application/vnd.iso.19139+xml", getMimeType(xml, Map.of()));
     }
 
     /**
@@ -78,7 +77,7 @@ public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
         assertEquals('<', in.read());
         assertEquals('?', in.read());
         final MimeTypeDetector detector = new MimeTypeDetector(
-                Collections.singletonMap(LegacyNamespaces.GMD, "application/vnd.iso.19139+xml"),
+                Map.of(LegacyNamespaces.GMD, "application/vnd.iso.19139+xml"),
                 mimeForRootElements)
         {
             @Override int read() throws IOException {
@@ -102,8 +101,8 @@ public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
             assertEquals('<', in.read());
             assertEquals('?', in.read());
             final MimeTypeDetector detector = new MimeTypeDetector(
-                    Collections.singletonMap(LegacyNamespaces.GMD, "application/vnd.iso.19139+xml"),
-                    Collections.emptyMap())
+                    Map.of(LegacyNamespaces.GMD, "application/vnd.iso.19139+xml"),
+                    Map.of())
             {
                 @Override int read() throws IOException {
                     return in.read();
@@ -124,7 +123,7 @@ public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
         final String type = getMimeType(
                 "<?xml version=\"1.0\" standalone=\"yes\"?>\n" +
                 "<MD_Metadata xmlns:xsi=\"" + Namespaces.XSI + "\">\n",
-                Collections.singletonMap("MD_Metadata", "application/vnd.iso.19115+xml"));
+                Map.of("MD_Metadata", "application/vnd.iso.19115+xml"));
         assertEquals("application/vnd.iso.19115+xml", type);
     }
 }

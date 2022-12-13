@@ -206,7 +206,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
                 }
             }
         }
-        return union.values().toArray(new GeneralParameterDescriptor[union.size()]);
+        return union.values().toArray(GeneralParameterDescriptor[]::new);
     }
 
     /**

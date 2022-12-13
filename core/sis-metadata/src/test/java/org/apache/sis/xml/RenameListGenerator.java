@@ -25,9 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Collections;
 import java.lang.reflect.Method;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlElement;
@@ -79,8 +76,10 @@ public final class RenameListGenerator {
     /**
      * Properties in those namespaces do not have older namespaces to map from.
      */
-    private static final Set<String> LEGACY_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.SRV)));
+    private static final Set<String> LEGACY_NAMESPACES = Set.of(
+            LegacyNamespaces.GMD,
+            LegacyNamespaces.GMI,
+            LegacyNamespaces.SRV);
 
     /**
      * The {@value} string used in JAXB annotations for default names or namespaces.

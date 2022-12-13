@@ -23,7 +23,7 @@
      Maven project configuration file
      http://maven.apache.org/
 
-     Apache SIS build requires Java 11 or higher, but compiled files can be executed on Java 8.
+     Apache SIS build requires Java 17 or higher, but compiled files can be executed on Java 11.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
      Build development snapshot:        mvn clean install
@@ -460,12 +460,6 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>javax</groupId>
-        <artifactId>javaee-api</artifactId>
-        <version>8.0.1</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
         <version>2.3.3</version>
@@ -486,7 +480,13 @@
       <dependency>
         <groupId>org.apache.derby</groupId>
         <artifactId>derby</artifactId>
-        <version>10.14.2.0</version>        <!-- 10.14 is the last series compatible with JDK 8. -->
+        <version>10.15.2.0</version>        <!-- 10.15 is the last series compatible with JDK 11. -->
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derbytools</artifactId>
+        <version>10.15.2.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -509,12 +509,6 @@
       </dependency>
 
       <!-- Optional dependencies -->
-      <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.core</artifactId>
-        <version>6.0.0</version>
-        <scope>provided</scope>
-      </dependency>
       <dependency>
         <groupId>edu.ucar</groupId>
         <artifactId>cdm-core</artifactId>
@@ -553,8 +547,8 @@
     <website.locale>en</website.locale>
 
     <!-- Following properties are branch-specific -->
-    <maven.compiler.source>8</maven.compiler.source>
-    <maven.compiler.target>8</maven.compiler.target>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
     <sis.plugin.version>${project.version}</sis.plugin.version>
     <sis.non-free.version>1.3</sis.non-free.version>                <!-- Used only if "non-free" profile is activated. -->
     <javafx.version>19</javafx.version>                             <!-- Used only if "javafx" profile is activated. -->
@@ -873,7 +867,7 @@
           <validateLinks>true</validateLinks>                   <!-- Validates content of package-list resources. -->
           <detectJavaApiLink>false</detectJavaApiLink>          <!-- Let us declare link to Java API. -->
           <links>
-            <link>https://docs.oracle.com/javase/8/docs/api</link>
+            <link>https://docs.oracle.com/en/java/javase/11/docs/api</link>
             <link>http://unitsofmeasurement.github.io/unit-api/site/apidocs</link>
             <link>http://www.geoapi.org/snapshot/javadoc</link>
           </links>

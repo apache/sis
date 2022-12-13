@@ -99,7 +99,6 @@ final class TransformingReader extends Transformer implements XMLEventReader {
      * This map is initialized only once and should not be modified after that point.
      */
     private static final Map<String, Map<String,String>> NAMESPACES = load(false, FILENAME, LEGACY_NAMESPACES, 260);
-    // TODO: use Set.copyOf(…) with JDK10.
 
     /**
      * Returns the namespace for the given ISO type, or {@code null} if unknown.
@@ -273,7 +272,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 if (namespaces != null) {
                     if (localNS != null) {
                         if (namespaces.isEmpty()) {
-                            namespaces = Collections.singletonList(localNS);
+                            namespaces = List.of(localNS);
                         } else {
                             namespaces.add(localNS);
                         }
@@ -318,6 +317,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
                 return NAMESPACES;
             }
         }
+        // Do not use `Map.of()` because we need to accept `Map.get(null)`.
         return Collections.emptyMap();
     }
 
@@ -386,7 +386,7 @@ final class TransformingReader extends Transformer implements XMLEventReader {
             final String oldURI, final String newURI, boolean changed)
     {
         if (!namespaces.hasNext()) {
-            return changed ? Collections.emptyList() : null;
+            return changed ? List.of() : null;
         }
         final List<Namespace> modified = new ArrayList<>();
         do {

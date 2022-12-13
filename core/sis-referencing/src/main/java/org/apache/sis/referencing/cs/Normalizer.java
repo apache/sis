@@ -38,7 +38,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.Units;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
 
@@ -364,7 +363,7 @@ final class Normalizer implements Comparable<Normalizer> {
          */
         final AbstractCS impl = castOrCopy(cs);
         final StringBuilder buffer = (StringBuilder) CharSequences.camelCaseToSentence(impl.getInterface().getSimpleName());
-        return impl.createForAxes(singletonMap(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, newAxes)), newAxes);
+        return impl.createForAxes(Map.of(AbstractCS.NAME_KEY, AxisDirections.appendTo(buffer, newAxes)), newAxes);
     }
 
     /**

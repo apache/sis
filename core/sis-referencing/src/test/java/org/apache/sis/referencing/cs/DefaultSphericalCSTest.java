@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.test.TestCase;
@@ -59,7 +59,7 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
                 AxisDirection.UP);
 
         assertEquals(new DefaultSphericalCS(
-                Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
+                Map.of(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
                 HardCodedAxes.SPHERICAL_LONGITUDE,
                 HardCodedAxes.SPHERICAL_LATITUDE,
                 HardCodedAxes.GEOCENTRIC_RADIUS), normalized);

@@ -134,7 +134,7 @@ import static org.apache.sis.referencing.CRS.findOperation;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  * @module
  */
@@ -1492,22 +1492,6 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Returns a grid geometry translated by the given amount of cells compared to this grid.
-     *
-     * @param  translation  translation to apply on each grid axis in order.
-     * @return a grid geometry whose coordinates and the "grid to CRS" transforms have been translated by given amounts.
-     *
-     * @since 1.1
-     *
-     * @deprecated Renamed {@link #shiftGrid(long...)} for making clearer that this method changes
-     *             grid coordinates without changing "real world" coordinates.
-     */
-    @Deprecated
-    public GridGeometry translate(final long... translation) {
-        return shiftGrid(translation);
-    }
-
-    /**
      * Returns a grid geometry with the given grid extent, which implies a new "real world" computation.
      * The "grid to CRS" transforms and the resolution stay the same than this {@code GridGeometry}.
      * The "real world" envelope is recomputed for the new grid extent using the "grid to CRS" transforms.
@@ -1567,19 +1551,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
-    }
-
-    /**
-     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
-     *
-     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
-     * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
-     *
-     * @deprecated Renamed {@link #selectDimensions(int...)} for clarity and consistency with {@link GridExtent}.
-     */
-    @Deprecated
-    public GridGeometry reduce(int... dimensions) {
-        return selectDimensions(dimensions);
     }
 
     /**

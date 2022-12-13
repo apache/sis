@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
-import java.util.Collections;
 import javax.measure.Unit;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -139,7 +138,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     public Set<String> getCodeSpaces() {
         final String authority = Citations.toCodeSpace(getAuthority());
-        return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
+        return (authority != null) ? Set.of(authority) : Set.of();
     }
 
     /**
@@ -1226,7 +1225,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     public Set<CoordinateOperation> createFromCoordinateReferenceSystemCodes(String sourceCRS, String targetCRS)
             throws NoSuchAuthorityCodeException, FactoryException
     {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**

@@ -26,7 +26,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assert.*;
@@ -54,7 +53,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
      * @return the association to use for testing purpose.
      */
     static DefaultAssociationRole twinTown(final boolean cyclic) {
-        final Map<String,?> properties = singletonMap(NAME_KEY, "twin town");
+        final Map<String,?> properties = Map.of(NAME_KEY, "twin town");
         if (cyclic) {
             final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
             final GenericName valueType = factory.createTypeName(null, "Twin town");
@@ -89,7 +88,7 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
     private static DefaultFeatureType createType(final Object name,
             final FeatureType parent, final FeatureAssociationRole... property)
     {
-        return new DefaultFeatureType(singletonMap(NAME_KEY, name),
+        return new DefaultFeatureType(Map.of(NAME_KEY, name),
                 false, new FeatureType[] {parent}, property);
     }
 
@@ -156,9 +155,9 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
         /*
          * Associations defined only by the FeatureType name.
          */
-        final DefaultAssociationRole toB = new DefaultAssociationRole(singletonMap(NAME_KEY, "toB"), nameOfB, 1, 1);
-        final DefaultAssociationRole toC = new DefaultAssociationRole(singletonMap(NAME_KEY, "toC"), nameOfC, 1, 1);
-        final DefaultAssociationRole toD = new DefaultAssociationRole(singletonMap(NAME_KEY, "toD"), nameOfD, 1, 1);
+        final var toB = new DefaultAssociationRole(Map.of(NAME_KEY, "toB"), nameOfB, 1, 1);
+        final var toC = new DefaultAssociationRole(Map.of(NAME_KEY, "toC"), nameOfC, 1, 1);
+        final var toD = new DefaultAssociationRole(Map.of(NAME_KEY, "toD"), nameOfD, 1, 1);
         final DefaultFeatureType typeA = createType(nameOfA, null, toB);
         final DefaultFeatureType typeB = createType(nameOfB, null, toC);
         final DefaultFeatureType typeC = createType(nameOfC, null, toD);
@@ -166,9 +165,9 @@ public final strictfp class DefaultAssociationRoleTest extends TestCase {
          * Association defined with real FeatureType instance, except for an association to itself.
          * Construction of this FeatureType shall cause the resolution of all above FeatureTypes.
          */
-        final DefaultAssociationRole toAr = new DefaultAssociationRole(singletonMap(NAME_KEY, "toA"),         typeA, 1, 1);
-        final DefaultAssociationRole toBr = new DefaultAssociationRole(singletonMap(NAME_KEY, toB.getName()), typeB, 1, 1);
-        final DefaultAssociationRole toCr = new DefaultAssociationRole(singletonMap(NAME_KEY, toC.getName()), typeC, 1, 1);
+        final var toAr = new DefaultAssociationRole(Map.of(NAME_KEY, "toA"),         typeA, 1, 1);
+        final var toBr = new DefaultAssociationRole(Map.of(NAME_KEY, toB.getName()), typeB, 1, 1);
+        final var toCr = new DefaultAssociationRole(Map.of(NAME_KEY, toC.getName()), typeC, 1, 1);
         final DefaultFeatureType typeD = createType(nameOfD, null, toAr, toBr, toCr, toD);
         /*
          * Verify the property given to the constructors. There is no reason for those properties

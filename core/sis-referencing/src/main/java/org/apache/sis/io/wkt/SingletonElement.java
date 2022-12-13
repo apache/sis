@@ -66,7 +66,7 @@ final class SingletonElement extends AbstractSet<Element> {
      */
     @Override
     public Iterator<Element> iterator() {
-        return (isEmpty() ? Collections.<Element>emptySet() : Collections.singleton(value)).iterator();
+        return isEmpty() ? Collections.emptyIterator() : Collections.singleton(value).iterator();
     }
 
     /**

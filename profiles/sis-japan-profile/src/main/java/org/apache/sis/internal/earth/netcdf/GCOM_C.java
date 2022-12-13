@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
 import java.util.function.Function;
@@ -147,23 +146,19 @@ public final class GCOM_C extends Convention {
      * the corner minimal and maximal coordinates is not guaranteed to encompass the whole data,
      * and may even contain no data at all.
      */
-    private static final Map<String,String> ATTRIBUTES;
-    static {
-        final Map<String,String> m = new HashMap<>(16);
-        m.put(AttributeNames.TITLE,               "Product_name");             // identification­Info / citation / title
-        m.put(AttributeNames.PRODUCT_VERSION,     "Product_version");          // identification­Info / citation / edition
-        m.put(AttributeNames.IDENTIFIER.TEXT,     "Product_file_name");        // identification­Info / citation / identifier / code
-        m.put(AttributeNames.DATE_CREATED,        "Processing_UT");            // identification­Info / citation / date
-        m.put(AttributeNames.CREATOR.INSTITUTION, "Processing_organization");  // identification­Info / citation / citedResponsibleParty
-        m.put(AttributeNames.SUMMARY,             "Dataset_description");      // identification­Info / abstract
-        m.put(AttributeNames.PLATFORM.TEXT,       "Satellite");                // acquisition­Information / platform / identifier
-        m.put(AttributeNames.INSTRUMENT.TEXT,     "Sensor");                   // acquisition­Information / platform / instrument / identifier
-        m.put(AttributeNames.PROCESSING_LEVEL,    "Product_level");            // content­Info / processing­Level­Code
-        m.put(AttributeNames.SOURCE,              "Input_files");              // data­Quality­Info / lineage / source / description
-        m.put(AttributeNames.TIME.MINIMUM,        "Scene_start_time");         // identification­Info / extent / temporal­Element / extent
-        m.put(AttributeNames.TIME.MAXIMUM,        "Scene_end_time");           // identification­Info / extent / temporal­Element / extent
-        ATTRIBUTES = m;
-    }
+    private static final Map<String,String> ATTRIBUTES = Map.ofEntries(
+        Map.entry(AttributeNames.TITLE,               "Product_name"),              // identification­Info / citation / title
+        Map.entry(AttributeNames.PRODUCT_VERSION,     "Product_version"),           // identification­Info / citation / edition
+        Map.entry(AttributeNames.IDENTIFIER.TEXT,     "Product_file_name"),         // identification­Info / citation / identifier / code
+        Map.entry(AttributeNames.DATE_CREATED,        "Processing_UT"),             // identification­Info / citation / date
+        Map.entry(AttributeNames.CREATOR.INSTITUTION, "Processing_organization"),   // identification­Info / citation / citedResponsibleParty
+        Map.entry(AttributeNames.SUMMARY,             "Dataset_description"),       // identification­Info / abstract
+        Map.entry(AttributeNames.PLATFORM.TEXT,       "Satellite"),                 // acquisition­Information / platform / identifier
+        Map.entry(AttributeNames.INSTRUMENT.TEXT,     "Sensor"),                    // acquisition­Information / platform / instrument / identifier
+        Map.entry(AttributeNames.PROCESSING_LEVEL,    "Product_level"),             // content­Info / processing­Level­Code
+        Map.entry(AttributeNames.SOURCE,              "Input_files"),               // data­Quality­Info / lineage / source / description
+        Map.entry(AttributeNames.TIME.MINIMUM,        "Scene_start_time"),          // identification­Info / extent / temporal­Element / extent
+        Map.entry(AttributeNames.TIME.MAXIMUM,        "Scene_end_time"));           // identification­Info / extent / temporal­Element / extent
 
     /**
      * Name of the group defining map projection parameters, localization grid, <i>etc</i>.
@@ -343,7 +338,7 @@ public final class GCOM_C extends Convention {
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
+        return Set.of(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
     }
 
     /**

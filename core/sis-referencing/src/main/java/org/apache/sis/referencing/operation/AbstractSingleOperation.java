@@ -393,7 +393,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         if (parameters != null) {
             final List<GeneralParameterValue> values = parameters.values();
             if (values != null) {      // Paranoiac check (should not be allowed).
-                return CC_OperationMethod.filterImplicit(values.toArray(new GeneralParameterValue[values.size()]));
+                return CC_OperationMethod.filterImplicit(values.toArray(GeneralParameterValue[]::new));
             }
         }
         return null;

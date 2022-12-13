@@ -32,10 +32,9 @@
  *     META-INF/services/org.apache.sis.util.ObjectConverter
  * }
  *
- * Applications deployed in a modularization framework like OSGi shall use only the
- * {@code META-INF} approach, because system converters are discarded every time the
- * classpath changes. Having the converters declared in {@code META-INF} ensure that
- * they will be reloaded when needed.
+ * Applications deployed in a container framework like OSGi shall use only the service loader,
+ * because system converters are discarded every time that the classpath changes.
+ * Having the converters declared in {@code META-INF} ensure that they will be reloaded when needed.
  *
  * <p>Alternatively, applications can also use their own {@code ConverterRegistry} instance.
  * Non-system instances do not scan for {@code META-INF} and do not discard their content on

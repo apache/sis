@@ -17,7 +17,7 @@
 package org.apache.sis.measure;
 
 import java.util.Set;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.format.UnitFormat;
@@ -120,7 +120,7 @@ public final strictfp class UnitServicesTest extends TestCase {
     @Test
     public void testGetAvailableFormatNames() {
         final ServiceProvider provider = ServiceProvider.current();
-        assertSetEquals(Arrays.asList("SYMBOL", "UCUM", "NAME"),
+        assertSetEquals(List.of("SYMBOL", "UCUM", "NAME"),
                 provider.getUnitFormatService().getAvailableFormatNames());
     }
 

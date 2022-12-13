@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
-import java.util.Collections;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import java.io.Closeable;
@@ -124,7 +123,7 @@ final class Store extends URIDataStore implements Filter {
      */
     private Map<String,?> properties() {
         if (listeners.hasListeners(WarningEvent.class)) {
-            return Collections.singletonMap(XML.WARNING_FILTER, this);
+            return Map.of(XML.WARNING_FILTER, this);
         }
         return null;
     }

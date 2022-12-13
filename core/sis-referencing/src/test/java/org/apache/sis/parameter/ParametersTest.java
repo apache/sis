@@ -16,9 +16,9 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDirection;
@@ -151,7 +151,7 @@ public final strictfp class ParametersTest extends TestCase {
          */
         final String subgroupName = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.getName().getCode();
         final DefaultParameterDescriptorGroup descriptor = new DefaultParameterDescriptorGroup(
-                Collections.singletonMap(DefaultParameterDescriptorGroup.NAME_KEY, "parent"), 1, 1,
+                Map.of(DefaultParameterDescriptorGroup.NAME_KEY, "parent"), 1, 1,
                 DefaultParameterDescriptorTest.createSimpleOptional("A parent parameter", String.class),
                 DefaultParameterDescriptorGroupTest.M1_M1_O1_O2);
         /*
@@ -199,7 +199,7 @@ public final strictfp class ParametersTest extends TestCase {
     public void testGetIntValue() {
         final ParameterDescriptor<Integer> descriptor = DefaultParameterDescriptorTest.create("My param", 5, 15, 10);
         final ParameterDescriptor<Integer> incomplete = DefaultParameterDescriptorTest.createSimpleOptional("My param", Integer.class);
-        final Parameters group = Parameters.castOrWrap(new DefaultParameterDescriptorGroup(Collections.singletonMap(
+        final Parameters group = Parameters.castOrWrap(new DefaultParameterDescriptorGroup(Map.of(
                 DefaultParameterDescriptorGroup.NAME_KEY, "My group"), 1, 1, incomplete).createValue());
         /*
          * Test when the ParameterValueGroup is empty. We test both with the "incomplete" descriptor,

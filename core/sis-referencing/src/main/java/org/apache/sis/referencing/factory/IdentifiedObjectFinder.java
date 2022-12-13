@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -339,7 +338,7 @@ public class IdentifiedObjectFinder {
                         candidate = createFromNames(object);
                     }
                     if (candidate != null) {
-                        result = Collections.singleton(candidate);
+                        result = Set.of(candidate);
                     }
                 }
                 /*
@@ -348,7 +347,7 @@ public class IdentifiedObjectFinder {
                  */
                 if (result == null) {
                     if (domain == Domain.DECLARATION) {
-                        result = Collections.emptySet();
+                        result = Set.of();
                     } else {
                         result = createFromCodes(object);
                     }

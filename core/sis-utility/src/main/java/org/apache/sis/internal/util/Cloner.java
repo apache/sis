@@ -22,6 +22,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.InaccessibleObjectException;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Errors;
 
@@ -31,7 +32,7 @@ import org.apache.sis.util.resources.Errors;
  * for the lack of public {@code clone()} method in the {@link Cloneable} interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -133,7 +134,7 @@ public final class Cloner {
         if (componentType != null) {
             return cloneArray(object, componentType);
         }
-        SecurityException security = null;
+        RuntimeException security = null;
         result = object;
         try {
             if (valueType != type) {
@@ -146,9 +147,8 @@ public final class Cloner {
                  * in order to report it in case of failure.
                  */
                 if (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) try {
-                    // TODO: use trySetAccessible() with JDK9.
                     method.setAccessible(true);
-                } catch (SecurityException e) {
+                } catch (SecurityException | InaccessibleObjectException e) {
                     security = e;
                 }
             }
