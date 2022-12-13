@@ -91,7 +91,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @deprecated Removed from ISO 19157:2013.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     @SuppressWarnings("serial")
     private InternationalString errorStatistic;
 
@@ -235,7 +235,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      * @deprecated Removed from ISO_19157:2013.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @XmlElement(name = "errorStatistic", namespace = LegacyNamespaces.GMD)
     public InternationalString getErrorStatistic()  {
         return FilterByVersion.LEGACY_METADATA.accept() ? errorStatistic : null;
@@ -248,7 +248,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @deprecated Removed from ISO_19157:2013.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setErrorStatistic(final InternationalString newValue) {
         checkWritePermission(errorStatistic);
         errorStatistic = newValue;

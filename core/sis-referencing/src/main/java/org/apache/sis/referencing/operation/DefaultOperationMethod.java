@@ -170,7 +170,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     private Integer sourceDimensions;
 
     /**
@@ -185,7 +185,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     private Integer targetDimensions;
 
     /**
@@ -264,7 +264,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed "source dimensions" and "target dimensions" attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     public DefaultOperationMethod(final Map<String,?> properties,
                                   final Integer sourceDimensions,
                                   final Integer targetDimensions,
@@ -476,7 +476,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @deprecated Not needed anymore since ISO 19111:2019 removed the
      *             "source dimensions" and "target dimensions" attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     public static OperationMethod redimension(OperationMethod method,
             final int sourceDimensions, final int targetDimensions)
     {
@@ -518,7 +518,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         return redimension(this, sourceDimensions, this.sourceDimensions,
                                  targetDimensions, this.targetDimensions);
@@ -601,7 +601,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @deprecated This attribute has been removed from ISO 19111:2019.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     @XmlElement(name = "sourceDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getSourceDimensions() {
@@ -619,7 +619,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @deprecated This attribute has been removed from ISO 19111:2019.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     @XmlElement(name = "targetDimensions")
     @XmlSchemaType(name = "positiveInteger")
     public Integer getTargetDimensions() {

@@ -43,7 +43,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @since   0.3
  * @module
  */
-@Deprecated
+@Deprecated(since="1.0")
 public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty, ResponsibleParty> {
     /**
      * Empty constructor for JAXB only.

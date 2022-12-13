@@ -88,7 +88,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @deprecated Removed from ISO 19157:2013.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     @SuppressWarnings("serial")
     private Lineage lineage;
 
@@ -247,7 +247,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      * @deprecated Removed from ISO 19157:2013.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @XmlElement(name = "lineage", namespace = LegacyNamespaces.GMD)
     public Lineage getLineage() {
         return FilterByVersion.LEGACY_METADATA.accept() ? lineage : null;
@@ -260,7 +260,7 @@ public class DefaultDataQuality extends ISOMetadata implements DataQuality {
      *
      * @deprecated Removed from ISO 19157:2013.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setLineage(final Lineage newValue) {
         checkWritePermission(lineage);
         lineage = newValue;

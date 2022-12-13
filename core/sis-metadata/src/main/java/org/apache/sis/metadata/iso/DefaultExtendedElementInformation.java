@@ -111,7 +111,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
     /**
      * Short form suitable for use in an implementation method such as XML or SGML.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     private String shortName;
 
     /**
@@ -119,7 +119,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * Non-null only if the {@linkplain #getDataType() data type}
      * is {@linkplain Datatype#CODE_LIST_ELEMENT code list element}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     private Integer domainCode;
 
     /**
@@ -314,7 +314,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @XmlElement(name = "shortName", namespace = LegacyNamespaces.GMD)
     public String getShortName()  {
         return FilterByVersion.LEGACY_METADATA.accept() ? shortName : null;
@@ -327,7 +327,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      *
      * @deprecated Removed as of ISO 19115:2014.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setShortName(final String newValue)  {
         checkWritePermission(shortName);
         shortName = newValue;
@@ -343,7 +343,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @XmlElement(name = "domainCode", namespace = LegacyNamespaces.GMD)
     public Integer getDomainCode() {
         return FilterByVersion.LEGACY_METADATA.accept() ? domainCode : null;
@@ -356,7 +356,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      *
      * @deprecated Removed as of ISO 19115:2014.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDomainCode(final Integer newValue) {
         checkWritePermission(domainCode);
         domainCode = newValue;
@@ -574,7 +574,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      * @return reason for creating the extended element.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getRationale")
     public Collection<InternationalString> getRationales() {
         return new AbstractSet<InternationalString>() {
@@ -607,7 +607,7 @@ public class DefaultExtendedElementInformation extends ISOMetadata implements Ex
      *
      * @param  newValues  the new rationales.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setRationales(final Collection<? extends InternationalString> newValues) {
         setRationale(LegacyPropertyAdapter.getSingleton(newValues, InternationalString.class,
                 null, DefaultExtendedElementInformation.class, "setRationales"));

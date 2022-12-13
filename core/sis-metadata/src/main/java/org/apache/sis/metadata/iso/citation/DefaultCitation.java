@@ -165,7 +165,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @deprecated Removed as of ISO 19115:2014.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     @SuppressWarnings("serial")
     private InternationalString collectiveTitle;
 
@@ -499,7 +499,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @XmlElement(name = "collectiveTitle", namespace = LegacyNamespaces.GMD)
     public InternationalString getCollectiveTitle() {
         return FilterByVersion.LEGACY_METADATA.accept() ? collectiveTitle : null;
@@ -513,7 +513,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @deprecated Removed as of ISO 19115:2014.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setCollectiveTitle(final InternationalString newValue) {
         checkWritePermission(collectiveTitle);
         collectiveTitle = newValue;

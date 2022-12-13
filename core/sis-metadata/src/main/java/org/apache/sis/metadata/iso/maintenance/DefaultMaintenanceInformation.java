@@ -245,7 +245,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *             was added to that code list.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMaintenanceDates")
     @XmlElement(name = "dateOfNextUpdate", namespace = LegacyNamespaces.GMD)
     public Date getDateOfNextUpdate() {
@@ -268,7 +268,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param  newValue  the new date of next update.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDateOfNextUpdate(final Date newValue) {
         checkWritePermission(valueIfDefined(maintenanceDates));
         Collection<CitationDate> dates = maintenanceDates;
@@ -354,7 +354,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *             that includes a spatial and temporal extent.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMaintenanceScopes")
     @XmlElement(name = "updateScope", namespace = LegacyNamespaces.GMD)
     public final Collection<ScopeCode> getUpdateScopes() {
@@ -389,7 +389,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMaintenanceScopes(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setUpdateScopes(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission(valueIfDefined(maintenanceScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getUpdateScopes()).setValues(newValues);
@@ -406,7 +406,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *             that includes a spatial and temporal extent.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMaintenanceScopes")
     @XmlElement(name = "updateScopeDescription", namespace = LegacyNamespaces.GMD)
     public final Collection<ScopeDescription> getUpdateScopeDescriptions() {
@@ -444,7 +444,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMaintenanceScopes(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setUpdateScopeDescriptions(final Collection<? extends ScopeDescription> newValues) {
         checkWritePermission(valueIfDefined(maintenanceScopes));
         ((LegacyPropertyAdapter<ScopeDescription,?>) getUpdateScopeDescriptions()).setValues(newValues);

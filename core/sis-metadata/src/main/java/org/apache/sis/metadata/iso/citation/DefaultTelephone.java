@@ -221,7 +221,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *
      * @deprecated This field will be removed after we removed the deprecated public methods.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     @SuppressWarnings("serial")
     private Collection<Telephone> owner;
 
@@ -277,7 +277,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *             with {@link TelephoneType#VOICE}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies({"getNumber", "getNumberType"})
     @XmlElement(name = "voice", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getVoices() {
@@ -297,7 +297,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
      *             with {@link TelephoneType#VOICE}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setVoices(final Collection<? extends String> newValues) {
         ((LegacyTelephones) getVoices()).setValues(newValues);
     }
@@ -313,7 +313,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *             with {@link TelephoneType#FACSIMILE}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies({"getNumber", "getNumberType"})
     @XmlElement(name = "facsimile", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getFacsimiles() {
@@ -333,7 +333,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * @deprecated As of ISO 19115:2014, replaced by a {@linkplain #setNumber(String) number}
      *             with {@link TelephoneType#FACSIMILE}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setFacsimiles(final Collection<? extends String> newValues) {
         ((LegacyTelephones) getFacsimiles()).setValues(newValues);
     }

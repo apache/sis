@@ -528,7 +528,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *             where the {@code Context} argument can be null.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
@@ -1483,7 +1483,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @deprecated Replaced by {@link #createParameterizedTransform(ParameterValueGroup, Context)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
             final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
             throws NoSuchIdentifierException, FactoryException

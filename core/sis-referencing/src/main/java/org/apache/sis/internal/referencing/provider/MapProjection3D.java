@@ -35,7 +35,7 @@ import org.opengis.util.FactoryException;
  *
  * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
  */
-@Deprecated
+@Deprecated(since="1.1")
 @XmlTransient
 final class MapProjection3D extends AbstractProvider {
     /**
@@ -48,7 +48,7 @@ final class MapProjection3D extends AbstractProvider {
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     private final MapProjection redimensioned;
 
     /**
@@ -68,7 +68,7 @@ final class MapProjection3D extends AbstractProvider {
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions == 2 && targetDimensions == 2) {
             return redimensioned;

@@ -215,7 +215,7 @@ public final class Affine extends AbstractProvider {
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         return getProvider(sourceDimensions, targetDimensions, false);
     }

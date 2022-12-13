@@ -877,7 +877,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS,
                                                final OperationMethod method)

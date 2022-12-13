@@ -99,7 +99,7 @@ final class Types {
      * @deprecated We are not sure yet if we will keep this field. Decision is pending acquisition of
      *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
      */
-    @Deprecated
+    @Deprecated(since="0.8")
     final FeatureNaming<FeatureType> names;
 
     /**

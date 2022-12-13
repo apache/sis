@@ -462,7 +462,7 @@ public final class Namespaces extends Static {
      *
      * @deprecated as of ISO 19115-3, splitted in many different namespaces.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public static final String GMD = LegacyNamespaces.GMD;
 
     /**
