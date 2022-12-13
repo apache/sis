@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
-import java.util.Arrays;
+import java.util.List;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.Version;
@@ -74,7 +74,7 @@ public final strictfp class DefaultExtentTest extends TestUsingFile {
          * intersection. That bounding box should be omitted.
          */
         bounds2.setBounds(8, 12, 33, 35);
-        e1.setGeographicElements(Arrays.asList(bounds1, bounds2));
+        e1.setGeographicElements(List.of(bounds1, bounds2));
         e2.setDescription(new SimpleInternationalString("Somewhere else"));
         e1.intersect(e2);
         assertTrue("isNil(description)", e1.getDescription() instanceof NilObject);

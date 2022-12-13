@@ -86,9 +86,7 @@ public class MarshallerPool {
     protected final JAXBContext context;
 
     /**
-     * {@code INTERNAL} if the JAXB implementation is the one bundled in the JDK,
-     * {@code ENDORSED} if the TAXB implementation is the endorsed JAXB (Glassfish), or
-     * {@code null} if unknown.
+     * The JAXB implementation, or {@code null} if unknown.
      */
     private final Implementation implementation;
 

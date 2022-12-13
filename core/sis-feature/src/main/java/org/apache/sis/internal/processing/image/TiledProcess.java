@@ -24,7 +24,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.internal.system.CommonExecutor;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -153,7 +152,7 @@ public abstract class TiledProcess<R> {
         final int height = data.getHeight();
         int  numTileX = Math.max(width  / MIN_TILE_SIZE, 1);
         int  numTileY = Math.max(height / MIN_TILE_SIZE, 1);
-        long numTiles = JDK9.multiplyFull(numTileX, numTileY);
+        long numTiles = Math.multiplyFull(numTileX, numTileY);
         if (numTiles > CommonExecutor.PARALLELISM) {
             final double r = Math.sqrt(CommonExecutor.PARALLELISM / (double) numTiles);     // Always < 1.
             if (numTileX >= numTileY) {

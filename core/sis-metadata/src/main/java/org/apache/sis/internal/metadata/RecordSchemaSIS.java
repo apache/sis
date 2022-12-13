@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.metadata;
 
+import java.util.Map;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
-import java.util.Collections;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Constants;
@@ -83,8 +83,7 @@ public final class RecordSchemaSIS extends DefaultRecordSchema implements Serial
      * @return a record type of the given name and field.
      */
     private static DefaultRecordType singleton(final short typeName, final InternationalString field, final Class<?> valueClass) {
-        return (DefaultRecordType) INSTANCE.createRecordType(
-                Resources.formatInternational(typeName), Collections.singletonMap(field, valueClass));
+        return (DefaultRecordType) INSTANCE.createRecordType(Resources.formatInternational(typeName), Map.of(field, valueClass));
     }
 
     /**

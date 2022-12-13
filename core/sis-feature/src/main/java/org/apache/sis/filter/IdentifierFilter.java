@@ -18,10 +18,11 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
-import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.feature.AttributeConvention;
+
+// Branch-dependent imports
+import org.apache.sis.feature.AbstractFeature;
 
 
 /**
@@ -73,7 +74,7 @@ final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
      */
     @Override
     public List<Expression<? super R, ?>> getExpressions() {
-        return Collections.singletonList(new LeafExpression.Literal<>(identifier));
+        return List.of(new LeafExpression.Literal<>(identifier));
     }
 
     /**
@@ -82,7 +83,7 @@ final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
      */
     @Override
     protected Collection<?> getChildren() {
-        return Collections.singleton(identifier);
+        return List.of(identifier);
     }
 
     /**

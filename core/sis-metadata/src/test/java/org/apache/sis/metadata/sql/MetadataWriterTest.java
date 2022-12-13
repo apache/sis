@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
-import java.util.Collections;
+import java.util.Set;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.metadata.citation.OnLineFunction;
@@ -198,7 +198,7 @@ public final strictfp class MetadataWriterTest extends TestCase {
     @SuppressWarnings("deprecation")
     private void readWriteDeprecated() throws MetadataStoreException {
         final DefaultTelephone tel = new DefaultTelephone();
-        tel.setVoices(Collections.singleton("01.02.03.04"));
+        tel.setVoices(Set.of("01.02.03.04"));
         assertEquals("01.02.03.04", source.add(tel));
 
         final Telephone check = source.lookup(Telephone.class, "01.02.03.04");

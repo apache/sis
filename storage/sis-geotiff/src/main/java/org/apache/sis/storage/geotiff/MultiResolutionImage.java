@@ -85,7 +85,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements Resource
      * from finest resolution to coarsest resolution. The full-resolution image shall be at index 0.
      */
     MultiResolutionImage(final List<ImageFileDirectory> overviews) {
-        levels = overviews.toArray(new ImageFileDirectory[overviews.size()]);
+        levels = overviews.toArray(ImageFileDirectory[]::new);
         resolutions = new double[levels.length][];
     }
 

@@ -491,9 +491,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * Tests the creation of many parameters for integer and floating point values.
      * Some on those values are cached (e.g. 0, 90, 360) because frequently used.
      * It should be transparent to the user.
-     * Test also unit conversions (degrees to radians in this case).
-     *
-     * @todo Tests parallel instantiation on JDK8.
+     * Tests also unit conversions (degrees to radians in this case).
      */
     @Test
     @DependsOnMethod({"testBoundedInteger", "testBoundedDouble"})

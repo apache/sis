@@ -17,7 +17,6 @@
 package org.apache.sis.filter;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Pattern;
 import org.apache.sis.util.ArgumentChecks;
@@ -172,8 +171,7 @@ final class LikeFilter<R> extends FilterNode<R> implements Optimization.OnFilter
      */
     @Override
     protected Collection<?> getChildren() {
-        // TODO: use List.of(…) in JDK9.
-        return Arrays.asList(expression, pattern);
+        return List.of(expression, pattern);
     }
 
     /**
@@ -181,8 +179,7 @@ final class LikeFilter<R> extends FilterNode<R> implements Optimization.OnFilter
      */
     @Override
     public List<Expression<? super R, ?>> getExpressions() {
-        // TODO: use List.of(…) in JDK9.
-        return Arrays.asList(expression, new LeafExpression.Literal<>(pattern));
+        return List.of(expression, new LeafExpression.Literal<>(pattern));
     }
 
     /**

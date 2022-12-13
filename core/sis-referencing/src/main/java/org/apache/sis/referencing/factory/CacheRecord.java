@@ -120,7 +120,7 @@ final class CacheRecord implements Comparable<CacheRecord> {
         }
         codeLength += 2;
         identityLength += 2;
-        final CacheRecord[] records = list.toArray(new CacheRecord[list.size()]);
+        final CacheRecord[] records = list.toArray(CacheRecord[]::new);
         Arrays.sort(records);
         if (out == null) {
             final Console c = System.console();

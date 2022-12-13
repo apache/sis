@@ -1053,8 +1053,8 @@ public abstract class Builder<B extends Builder<B>> {
             valueAlias = null;
             valueIds   = null;
         } else {
-            valueAlias = aliases    .toArray(new GenericName[aliases    .size()]);
-            valueIds   = identifiers.toArray(new ReferenceIdentifier[identifiers.size()]);
+            valueAlias = aliases    .toArray(GenericName[]::new);
+            valueIds   = identifiers.toArray(ReferenceIdentifier[]::new);
         }
         properties.put(IdentifiedObject.ALIAS_KEY,       valueAlias);
         properties.put(IdentifiedObject.IDENTIFIERS_KEY, valueIds);

@@ -268,6 +268,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @see #label(Unit, String)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Map<Unit<?>,String> unitToLabel;
 
     /**
@@ -278,6 +279,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @see #label(Unit, String)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Map<String,Unit<?>> labelToUnit;
 
     /**
@@ -311,8 +313,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     private UnitFormat() {
         locale      = Locale.ROOT;
         style       = Style.SYMBOL;
-        unitToLabel = Collections.emptyMap();
-        labelToUnit = Collections.emptyMap();
+        unitToLabel = Map.of();
+        labelToUnit = Map.of();
     }
 
     /**
@@ -716,7 +718,7 @@ appPow: if (unit == null) {
         } else {
             // Fallback for foreigner implementations (power restricted to integer).
             Map<? extends Unit<?>, Integer> c = unscaled.getBaseUnits();
-            if (c == null) c = Collections.singletonMap(unit, 1);
+            if (c == null) c = Map.of(unit, 1);
             components = c;
             for (final Map.Entry<? extends Unit<?>, Integer> e : c.entrySet()) {
                 final int power = e.getValue();
@@ -1634,7 +1636,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
 
     /**
      * Clones the given map, which can be either a {@link HashMap}
-     * or the instance returned by {@link Collections#emptyMap()}.
+     * or the instance returned by {@link Map#of()}.
      */
     private static Object clone(final Map<?,?> value) {
         if (value instanceof HashMap<?,?>) {

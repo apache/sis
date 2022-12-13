@@ -164,7 +164,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     static List<AbstractLocationType> snapshot(final Collection<? extends AbstractLocationType> types,
             final ReferencingByIdentifiers rs, final Map<AbstractLocationType, FinalLocationType> existing)
     {
-        final AbstractLocationType[] array = types.toArray(new AbstractLocationType[types.size()]);
+        final AbstractLocationType[] array = types.toArray(AbstractLocationType[]::new);
         for (int i=0; i < array.length; i++) {
             final AbstractLocationType source = array[i];
             ArgumentChecks.ensureNonNullElement("types", i, source);
@@ -175,6 +175,10 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
             array[i] = copy;
         }
         switch (array.length) {
+            /*
+             * Use `Collections` instead of `List.of(…)` for consistency with
+             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
+             */
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(array[0]);
             default: return UnmodifiableArrayList.wrap(array);
@@ -189,7 +193,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
         if (c instanceof UnmodifiableArrayList<?>) {
             return (List<InternationalString>) c;       // Unsafe cast okay because we allow only read operations.
         } else {
-            return UnmodifiableArrayList.wrap(c.toArray(new InternationalString[c.size()]));
+            return UnmodifiableArrayList.wrap(c.toArray(InternationalString[]::new));
         }
     }
 

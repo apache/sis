@@ -16,7 +16,7 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.util.Collections;
+import java.util.Map;
 import java.io.StringWriter;
 import javax.xml.transform.stream.StreamResult;
 import javafx.event.ActionEvent;
@@ -198,8 +198,8 @@ public class StandardMetadataTree extends MetadataTree {
                             content.put(DataFormats.XML, text);
                         } else if (source == copyAsLegacy) {                    // ISO 19139:2007.
                             final StringWriter output = new StringWriter();
-                            XML.marshal(obj, new StreamResult(output),
-                                    Collections.singletonMap(XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
+                            XML.marshal(obj, new StreamResult(output), Map.of(
+                                        XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
                             text = output.toString();
                             content.put(DataFormats.ISO_19139, text);
                         } else {

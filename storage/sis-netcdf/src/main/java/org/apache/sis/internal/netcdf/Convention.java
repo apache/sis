@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.function.Function;
@@ -374,7 +373,7 @@ public class Convention {
      * @see #defaultHorizontalCRS(boolean)
      */
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -395,7 +394,7 @@ public class Convention {
      */
     public Set<String> nameOfMappingNode(final Variable data) {
         final String mapping = data.getAttributeAsString(CF.GRID_MAPPING);
-        return (mapping != null) ? Collections.singleton(mapping) : Collections.emptySet();
+        return (mapping != null) ? Set.of(mapping) : Set.of();
     }
 
     /**

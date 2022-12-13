@@ -799,7 +799,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getAssociatedResources")
     @XmlElement(name = "aggregationInfo", namespace = LegacyNamespaces.GMD)
     public Collection<AggregateInformation> getAggregationInfo() {
@@ -830,7 +830,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setAssociatedResources(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
         checkWritePermission(associatedResources);
         /*

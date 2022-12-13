@@ -316,7 +316,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultMeasureReference#getNamesOfMeasure()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getMeasureReference")
     @XmlElement(name = "nameOfMeasure", namespace = LegacyNamespaces.GMD)
     public Collection<InternationalString> getNamesOfMeasure() {
@@ -340,7 +340,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultMeasureReference#setNamesOfMeasure(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
         if (!isNullOrEmpty(newValues)) {
             setMeasureReferenceProperty(DefaultMeasureReference::setNamesOfMeasure, newValues);
@@ -355,7 +355,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultMeasureReference#getMeasureIdentification()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getMeasureReference")
     @XmlElement(name = "measureIdentification", namespace = LegacyNamespaces.GMD)
     public Identifier getMeasureIdentification() {
@@ -369,7 +369,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultMeasureReference#setMeasureIdentification(Identifier)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setMeasureIdentification(final Identifier newValue)  {
         setMeasureReferenceProperty(DefaultMeasureReference::setMeasureIdentification, newValue);
     }
@@ -382,7 +382,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultMeasureReference#getMeasureDescription()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getMeasureReference")
     @XmlElement(name = "measureDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getMeasureDescription() {
@@ -396,7 +396,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultMeasureReference#setMeasureDescription(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setMeasureDescription(final InternationalString newValue)  {
         setMeasureReferenceProperty(DefaultMeasureReference::setMeasureDescription, newValue);
     }
@@ -460,7 +460,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationMethodType()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationMethodType", namespace = LegacyNamespaces.GMD)
     public EvaluationMethodType getEvaluationMethodType() {
@@ -474,7 +474,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationMethodType(EvaluationMethodType)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setEvaluationMethodType(final EvaluationMethodType newValue)  {
         setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationMethodType, newValue);
     }
@@ -487,7 +487,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationMethodDescription()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationMethodDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getEvaluationMethodDescription() {
@@ -501,7 +501,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationMethodDescription(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setEvaluationMethodDescription(final InternationalString newValue)  {
         setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationMethodDescription, newValue);
     }
@@ -514,7 +514,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationProcedure()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationProcedure", namespace = LegacyNamespaces.GMD)
     public Citation getEvaluationProcedure() {
@@ -528,7 +528,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationProcedure(Citation)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setEvaluationProcedure(final Citation newValue) {
         setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationProcedure, newValue);
     }
@@ -543,7 +543,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getDates()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Collection<Date> getDates() {
@@ -569,7 +569,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setDates(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setDates(final Collection<? extends Date> newValues) {
         if (!isNullOrEmpty(newValues)) {
             setEvaluationMethodProperty(DefaultEvaluationMethod::setDates, new DateToTemporal(newValues));

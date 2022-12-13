@@ -18,7 +18,6 @@ package org.apache.sis.internal.feature;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 
@@ -56,7 +55,7 @@ final class GeometryFactories {
      * The last registered library will be the default implementation.
      */
     private static Geometries<?> link(final Geometries<?> previous, final String name) {
-        final String classname = JDK9.getPackageName(GeometryFactories.class) + '.' + name + ".Factory";
+        final String classname = GeometryFactories.class.getPackageName() + '.' + name + ".Factory";
         final Geometries<?> factory;
         try {
             factory = (Geometries<?>) Class.forName(classname).getField("INSTANCE").get(null);

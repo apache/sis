@@ -18,9 +18,7 @@ package org.apache.sis.internal.feature;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.time.Instant;
-import org.opengis.util.LocalName;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.math.Vector;
 import org.apache.sis.feature.DefaultAttributeType;
@@ -56,9 +54,8 @@ public class MovingFeatures {
      */
     private static final DefaultAttributeType<Number> TIME_AS_NUMBERS;
     static {
-        final LocalName scope = Names.createLocalName("OGC", null, "MF");
-        final Map<String,Object> properties = Collections.singletonMap(
-                DefaultAttributeType.NAME_KEY, Names.createScopedName(scope, null, "datetimes"));
+        final var scope = Names.createLocalName("OGC", null, "MF");
+        final var properties = Map.of(DefaultAttributeType.NAME_KEY, Names.createScopedName(scope, null, "datetimes"));
         TIME_AS_INSTANTS = new DefaultAttributeType<>(properties, Instant.class, 0, Integer.MAX_VALUE, null);
         TIME_AS_NUMBERS  = new DefaultAttributeType<>(properties,  Number.class, 0, Integer.MAX_VALUE, null);
     }

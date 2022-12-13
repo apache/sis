@@ -757,7 +757,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 axis = parseAxis(list.size() < dimension ? MANDATORY : OPTIONAL, parent, type, defaultUnit);
             } while (axis != null);
             if (!isWKT1 || !ignoreAxes) {
-                axes = list.toArray(new CoordinateSystemAxis[list.size()]);
+                axes = list.toArray(CoordinateSystemAxis[]::new);
                 Arrays.sort(axes, this);                    // Take ORDER[n] elements in account.
             }
         }
@@ -2205,7 +2205,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         try {
             return new EllipsoidalHeightCombiner(factories).createCompoundCRS(
                             parseMetadataAndClose(element, name, null),
-                            components.toArray(new CoordinateReferenceSystem[components.size()]));
+                            components.toArray(CoordinateReferenceSystem[]::new));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -2256,8 +2256,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                         number, AxisDirection.OTHER, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
-            final CoordinateSystem derivedCS = new AbstractCS(
-                    singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes)), axes);
+            final Map<String,Object> axisName = singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes));
+            final CoordinateSystem derivedCS = new AbstractCS(axisName, axes);
             /*
              * Creates a derived CRS from the information found in a WKT 1 {@code FITTED_CS} element.
              * This coordinate system cannot be easily constructed from the information provided by

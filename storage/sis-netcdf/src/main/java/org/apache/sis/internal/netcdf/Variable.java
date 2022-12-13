@@ -599,7 +599,7 @@ public abstract class Variable extends Node {
          */
         boolean isIncomplete = false;
         final List<Dimension> fromVariable = getGridDimensions();
-        final Dimension[] dimensions = fromVariable.toArray(new Dimension[fromVariable.size()]);
+        final Dimension[] dimensions = fromVariable.toArray(Dimension[]::new);
         for (int i=0; i<dimensions.length; i++) {
             isIncomplete |= ((dimensions[i] = domain.remove(dimensions[i])) == null);
         }

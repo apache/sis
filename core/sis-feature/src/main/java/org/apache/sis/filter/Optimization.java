@@ -19,7 +19,6 @@ package org.apache.sis.filter;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
@@ -423,7 +422,7 @@ public class Optimization {
      */
     private static <R> List<Filter<? super R>> toAndOperands(final Filter<R> filter) {
         if (filter == null) {
-            return Collections.emptyList();
+            return List.of();
         }
         final Enum<?> type = filter.getOperatorType();
         if (type == LogicalOperatorName.AND) {
@@ -451,7 +450,7 @@ public class Optimization {
                 return result;
             }
         }
-        return Collections.singletonList(filter);
+        return List.of(filter);
     }
 
     /**

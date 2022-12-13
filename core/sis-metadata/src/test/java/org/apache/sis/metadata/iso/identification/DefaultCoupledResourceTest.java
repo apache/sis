@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Set;
 import org.opengis.util.ScopedName;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
@@ -28,7 +29,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 
@@ -48,9 +48,9 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
     static DefaultCoupledResource create(final NameFactory factory) {
         final DefaultOperationMetadata operation = new DefaultOperationMetadata();
         operation.setOperationName("Get Map");
-        operation.setDistributedComputingPlatforms(singleton(UnsupportedCodeList.valueOf("WEB_SERVICES")));
-        operation.setParameters(singleton((ParameterDescriptor<?>) ServiceParameterTest.create()));
-        operation.setConnectPoints(singleton(NilReason.MISSING.createNilObject(OnlineResource.class)));
+        operation.setDistributedComputingPlatforms(Set.of(UnsupportedCodeList.valueOf("WEB_SERVICES")));
+        operation.setParameters(Set.of((ParameterDescriptor<?>) ServiceParameterTest.create()));
+        operation.setConnectPoints(Set.of(NilReason.MISSING.createNilObject(OnlineResource.class)));
 
         final DefaultCoupledResource resource = new DefaultCoupledResource();
         resource.setScopedName((ScopedName) factory.createGenericName(null, "mySpace", "ABC-123"));
@@ -70,7 +70,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
          */
         resource.setOperation(new OperationName(operation.getOperationName()));
         assertNotSame("Before resolve", operation, resource.getOperation());
-        OperationName.resolve(singleton(operation), singleton(resource));
+        OperationName.resolve(Set.of(operation), Set.of(resource));
         assertSame("After resolve", operation, resource.getOperation());
         /*
          * If the name doesn't match, no replacement shall be done.
@@ -78,7 +78,7 @@ public final strictfp class DefaultCoupledResourceTest extends TestCase {
         final OperationName other = new OperationName("Other");
         resource.setOperation(other);
         assertSame("Before resolve", other, resource.getOperation());
-        OperationName.resolve(singleton(operation), singleton(resource));
+        OperationName.resolve(Set.of(operation), Set.of(resource));
         assertSame("After resolve", other, resource.getOperation());
     }
 }

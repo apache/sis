@@ -18,8 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
 import java.util.Locale;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
@@ -68,9 +66,9 @@ public final strictfp class InformationMapTest extends TestCase {
         final Map<String,ExtendedElementInformation> descriptions = MetadataStandard.ISO_19115.asInformationMap(
                 EnvironmentalRecord.class, KeyNamePolicy.UML_IDENTIFIER);
 
-        final Set<String> expected = new HashSet<>(Arrays.asList(
+        final Set<String> expected = Set.of(
             "averageAirTemperature", "maxAltitude", "maxRelativeHumidity", "meteorologicalConditions"
-        ));
+        );
         assertEquals(expected, descriptions.keySet());
     }
 

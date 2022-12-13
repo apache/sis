@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.util.List;
-import java.util.Arrays;
 import java.time.Instant;
 import java.net.URI;
 import java.io.UncheckedIOException;
@@ -272,9 +271,9 @@ public final strictfp class WriterTest extends TestCase {
         point1.setPropertyValue("ageofdgpsdata", 55.55);
         point1.setPropertyValue("dgpsid",        256);
         point1.setPropertyValue("fix",           Fix.NONE);
-        point1.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://first-address1.org")),
-                                                               new Link(new URI("http://first-address2.org")),
-                                                               new Link(new URI("http://first-address3.org"))));
+        point1.setPropertyValue("link",          List.of(new Link(new URI("http://first-address1.org")),
+                                                         new Link(new URI("http://first-address2.org")),
+                                                         new Link(new URI("http://first-address3.org"))));
         final AbstractFeature point3 = types.wayPoint.newInstance();
         point3.setPropertyValue("sis:geometry",  new Point(35, 30));
         point3.setPropertyValue("time",          Instant.parse("2010-01-30T00:00:00Z"));
@@ -294,11 +293,11 @@ public final strictfp class WriterTest extends TestCase {
         point3.setPropertyValue("ageofdgpsdata", 85.55);
         point3.setPropertyValue("dgpsid",        456);
         point3.setPropertyValue("fix",           Fix.THREE_DIMENSIONAL);
-        point3.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://third-address1.org")),
-                                                               new Link(new URI("http://third-address2.org"))));
+        point3.setPropertyValue("link",          List.of(new Link(new URI("http://third-address1.org")),
+                                                         new Link(new URI("http://third-address2.org"))));
         final AbstractFeature point2 = types.wayPoint.newInstance();
         point2.setPropertyValue("sis:geometry", new Point(25, 20));
-        final List<AbstractFeature> wayPoints = Arrays.asList(point1, point2, point3);
+        final List<AbstractFeature> wayPoints = List.of(point1, point2, point3);
         final List<AbstractFeature> features;
         switch (type) {
             case WAY_POINT: {
@@ -314,11 +313,11 @@ public final strictfp class WriterTest extends TestCase {
                 route1.setPropertyValue("type",   "Route type");
                 route1.setPropertyValue("number", 7);
                 route1.setPropertyValue("rtept",  wayPoints);
-                route1.setPropertyValue("link",   Arrays.asList(new Link(new URI("http://route-address1.org")),
-                                                                new Link(new URI("http://route-address2.org")),
-                                                                new Link(new URI("http://route-address3.org"))));
+                route1.setPropertyValue("link",   List.of(new Link(new URI("http://route-address1.org")),
+                                                          new Link(new URI("http://route-address2.org")),
+                                                          new Link(new URI("http://route-address3.org"))));
                 final AbstractFeature route2 = types.route.newInstance();
-                features = Arrays.asList(route1, route2);
+                features = List.of(route1, route2);
                 break;
             }
             case TRACK: {
@@ -333,12 +332,12 @@ public final strictfp class WriterTest extends TestCase {
                 track1.setPropertyValue("src",    "Track source");
                 track1.setPropertyValue("type",   "Track type");
                 track1.setPropertyValue("number", 7);
-                track1.setPropertyValue("trkseg", Arrays.asList(seg1, seg2));
-                track1.setPropertyValue("link",   Arrays.asList(new Link(new URI("http://track-address1.org")),
-                                                                new Link(new URI("http://track-address2.org")),
-                                                                new Link(new URI("http://track-address3.org"))));
+                track1.setPropertyValue("trkseg", List.of(seg1, seg2));
+                track1.setPropertyValue("link",   List.of(new Link(new URI("http://track-address1.org")),
+                                                          new Link(new URI("http://track-address2.org")),
+                                                          new Link(new URI("http://track-address3.org"))));
                 final AbstractFeature track2 = types.track.newInstance();
-                features = Arrays.asList(track1, track2);
+                features = List.of(track1, track2);
                 break;
             }
             default: throw new AssertionError(type);

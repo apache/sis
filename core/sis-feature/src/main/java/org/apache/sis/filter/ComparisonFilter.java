@@ -19,7 +19,6 @@ package org.apache.sis.filter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Calendar;
@@ -827,7 +826,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
         /** Returns the expression to be compared by this operator, together with boundaries. */
         @Override public List<Expression<? super R, ?>> getExpressions() {
-            return Arrays.asList(lower.expression1, lower.expression2, upper.expression2);
+            return List.of(lower.expression1, lower.expression2, upper.expression2);
         }
 
         /** Returns the expression to be compared. */

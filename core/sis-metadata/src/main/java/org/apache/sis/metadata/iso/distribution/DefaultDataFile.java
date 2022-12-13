@@ -108,7 +108,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @deprecated Removed in latest XSD schemas.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     @SuppressWarnings("serial")
     private Format fileFormat;
 
@@ -273,7 +273,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      * @deprecated Removed in latest XSD schemas.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @XmlElement(name = "fileFormat", namespace = LegacyNamespaces.GMX)
     public Format getFileFormat() {
         return FilterByVersion.LEGACY_METADATA.accept() ? fileFormat : null;
@@ -286,7 +286,7 @@ public class DefaultDataFile extends ISOMetadata implements DataFile {
      *
      * @deprecated Removed in latest XSD schemas.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setFileFormat(final Format newValue) {
         checkWritePermission(fileFormat);
         fileFormat = newValue;

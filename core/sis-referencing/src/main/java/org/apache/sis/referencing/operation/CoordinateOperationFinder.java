@@ -1231,7 +1231,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * Returns the given name in a singleton map.
      */
     private static Map<String,?> properties(final String name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

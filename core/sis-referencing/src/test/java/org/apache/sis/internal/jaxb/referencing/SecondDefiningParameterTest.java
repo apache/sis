@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
@@ -63,9 +63,10 @@ public final strictfp class SecondDefiningParameterTest extends TestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
-                DefaultEllipsoid.NAME_KEY, "Clarke 1866"), 6378206.4, 6356583.8, Units.METRE);
-        final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
+        final var ellipsoid = DefaultEllipsoid.createEllipsoid(
+                Map.of(DefaultEllipsoid.NAME_KEY, "Clarke 1866"),
+                6378206.4, 6356583.8, Units.METRE);
+        final var sdp = new SecondDefiningParameter(ellipsoid, false);
         assertXmlEquals(ELLIPSOID, marshal(sdp), "xmlns:*", "xsi:schemaLocation");
     }
 
@@ -89,9 +90,10 @@ public final strictfp class SecondDefiningParameterTest extends TestCase {
      */
     @Test
     public void testMarshallingSphere() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
-                DefaultEllipsoid.NAME_KEY, "Sphere"), 6371000, 6371000, Units.METRE);
-        final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
+        final var ellipsoid = DefaultEllipsoid.createEllipsoid(
+                Map.of(DefaultEllipsoid.NAME_KEY, "Sphere"),
+                6371000, 6371000, Units.METRE);
+        final var sdp = new SecondDefiningParameter(ellipsoid, false);
         assertXmlEquals(SPHERE, marshal(sdp), "xmlns:*", "xsi:schemaLocation");
     }
 

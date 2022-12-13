@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.Locale;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.sql.Connection;
@@ -362,7 +361,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
          */
         @Override
         public Set<String> getAuthorities() {
-            return (directory != null) ? super.getAuthorities() : Collections.emptySet();
+            return (directory != null) ? super.getAuthorities() : Set.of();
         }
 
         /**

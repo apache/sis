@@ -152,7 +152,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
         out.defaultWriteObject();
         final AbstractAttribute<?>[] characterizedBy;
         if (characteristics instanceof CharacteristicMap) {
-            characterizedBy = characteristics.values().toArray(new AbstractAttribute<?>[characteristics.size()]);
+            characterizedBy = characteristics.values().toArray(AbstractAttribute[]::new);
         } else {
             characterizedBy = null;
         }
@@ -357,7 +357,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
             if (!map.isEmpty()) {
                 if (!(map instanceof CharacteristicTypeMap)) {
                     final Collection<DefaultAttributeType<?>> types = map.values();
-                    map = CharacteristicTypeMap.create(type, types.toArray(new DefaultAttributeType<?>[types.size()]));
+                    map = CharacteristicTypeMap.create(type, types.toArray(DefaultAttributeType<?>[]::new));
                 }
                 return new CharacteristicMap(this, (CharacteristicTypeMap) map);
             }

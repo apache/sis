@@ -251,7 +251,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     @SuppressWarnings({"rawtypes", "unchecked"})
     final void setSubGrids(final Collection<DatumShiftGridFile<C,T>> children) {
         if (subgrids != null) throw new IllegalStateException();
-        subgrids = children.toArray(new DatumShiftGridFile[children.size()]);
+        subgrids = children.toArray(DatumShiftGridFile[]::new);
     }
 
     /**

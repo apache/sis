@@ -19,7 +19,6 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
@@ -137,7 +136,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -699,7 +698,7 @@ public final class CRS extends Static {
             if (AuthorityFactories.failure(e)) {
                 throw e;
             } else try {
-                return Collections.singletonList(factory.createOperation(sourceCRS, targetCRS, context));
+                return List.of(factory.createOperation(sourceCRS, targetCRS, context));
             } catch (FactoryException ex) {
                 ex.addSuppressed(e);
                 throw ex;
@@ -940,25 +939,7 @@ public final class CRS extends Static {
         }
         final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
-        return compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
-    }
-
-    /**
-     * Gets or creates a coordinate reference system with a subset of the dimensions of the given CRS.
-     *
-     * @param  crs         the CRS to reduce the dimensionality.
-     * @param  dimensions  the dimensions to retain.
-     * @return a coordinate reference system for the given dimensions.
-     * @throws FactoryException if the geodetic factory failed to create a compound CRS.
-     *
-     * @since 1.0
-     *
-     * @deprecated Renamed {@link #selectDimensions(CoordinateReferenceSystem, int...)} for clarity and consistency with
-     *             {@link org.apache.sis.coverage.grid.GridExtent} and {@link org.apache.sis.coverage.grid.GridGeometry}.
-     */
-    @Deprecated
-    public static CoordinateReferenceSystem reduce(final CoordinateReferenceSystem crs, final int... dimensions) throws FactoryException {
-        return selectDimensions(crs, dimensions);
+        return compound(components.toArray(CoordinateReferenceSystem[]::new));
     }
 
     /**
@@ -1292,7 +1273,7 @@ public final class CRS extends Static {
     public static List<SingleCRS> getSingleComponents(final CoordinateReferenceSystem crs) {
         final List<SingleCRS> singles;
         if (crs == null) {
-            singles = Collections.emptyList();
+            singles = List.of();
         } else if (crs instanceof CompoundCRS) {
             if (crs instanceof DefaultCompoundCRS) {
                 singles = ((DefaultCompoundCRS) crs).getSingleComponents();
@@ -1303,7 +1284,7 @@ public final class CRS extends Static {
             }
         } else {
             // Intentional CassCastException here if the crs is not a SingleCRS.
-            singles = Collections.singletonList((SingleCRS) crs);
+            singles = List.of((SingleCRS) crs);
         }
         return singles;
     }

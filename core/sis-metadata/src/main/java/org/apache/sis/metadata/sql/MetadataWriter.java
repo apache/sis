@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.sql.Statement;
@@ -697,11 +696,11 @@ public class MetadataWriter extends MetadataSource {
         String identifier = null;
         final Collection<? extends Identifier> identifiers;
         if (metadata instanceof Identifier) {
-            identifiers = Collections.singleton((Identifier) metadata);
+            identifiers = Set.of((Identifier) metadata);
         } else if (metadata instanceof IdentifiedObject) {
             identifiers = ((IdentifiedObject) metadata).getIdentifiers();
         } else {
-            identifiers = Collections.emptySet();
+            identifiers = Set.of();
         }
         for (final Identifier id : identifiers) {
             identifier = Strings.trimOrNull(id.getCode());

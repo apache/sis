@@ -334,7 +334,7 @@ walk:   for (final T search : path) {
             if (i >= ny) return y;
             if (x.get(i) != y.get(i)) {
                 if (i == 0) {
-                    prefix = Collections.emptyList();
+                    prefix = List.of();
                 } else {
                     prefix = x.subList(0, i);
                     assert   y.subList(0, i).equals(prefix);
@@ -354,7 +354,7 @@ walk:   for (final T search : path) {
             if (sy == 0) return oy;
             if (x.get(sx - 1) != y.get(sy - 1)) {
                 if (i == 0) {
-                    suffix = Collections.emptyList();
+                    suffix = List.of();
                 } else {
                     suffix = x.subList(sx, nx);
                     assert   y.subList(sy, ny).equals(suffix);

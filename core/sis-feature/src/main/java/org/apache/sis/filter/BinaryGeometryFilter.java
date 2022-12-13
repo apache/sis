@@ -17,7 +17,6 @@
 package org.apache.sis.filter;
 
 import java.util.List;
-import java.util.Arrays;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
@@ -161,7 +160,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Optimi
      */
     @Override
     public List<Expression<? super R, ?>> getExpressions() {
-        return Arrays.asList(original(expression1), original(expression2));     // TODO: use List.of(…) with JDK9.
+        return List.of(original(expression1), original(expression2));
     }
 
     /**

@@ -17,8 +17,6 @@
 package org.apache.sis.internal.map.coverage;
 
 import java.util.List;
-import java.util.Arrays;
-import java.util.Collections;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.PixelInCell;
@@ -110,10 +108,9 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
 
         /** Returns the preferred resolutions in units of CRS axes. */
         @Override public List<double[]> getResolutions() {
-            return Arrays.asList(
-                    new double[] {2, 3, 1},
-                    new double[] {4, 4, 3},
-                    new double[] {8, 9, 5});
+            return List.of(new double[] {2, 3, 1},
+                           new double[] {4, 4, 3},
+                           new double[] {8, 9, 5});
         }
 
         /** Returns a grid geometry with the resolution of finest level. */
@@ -129,8 +126,8 @@ public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
 
         /** Returns a dummy value (will not be used by this test). */
         @Override public GridCoverage read(final GridGeometry domain, final int... ranges) {
-            final SampleDimension band = new SampleDimension(Names.createLocalName(null, null, "dummy"), null, Collections.emptyList());
-            return new GridCoverage(domain, Collections.singletonList(band)) {
+            final SampleDimension band = new SampleDimension(Names.createLocalName(null, null, "dummy"), null, List.of());
+            return new GridCoverage(domain, List.of(band)) {
                 @Override public RenderedImage render(GridExtent sliceExtent) {
                     throw new UnsupportedOperationException();                      // Not needed by this test.
                 }

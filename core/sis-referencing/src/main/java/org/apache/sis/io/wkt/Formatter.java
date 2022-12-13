@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Date;
 import java.text.DateFormat;
@@ -858,7 +857,7 @@ public class Formatter implements Localized {
                 if (filterID) {
                     for (final ReferenceIdentifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
-                            identifiers = Collections.singleton(id);
+                            identifiers = Set.of(id);
                             break;
                         }
                     }
@@ -1760,7 +1759,7 @@ public class Formatter implements Localized {
      */
     private Warnings warnings() {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, false, Collections.emptyMap());
+            warnings = new Warnings(errorLocale, false, Map.of());
         }
         return warnings;
     }

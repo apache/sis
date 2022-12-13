@@ -50,7 +50,6 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.sql.feature.InfoStatements;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.math.Vector;
@@ -239,7 +238,7 @@ public final class RasterReader extends RasterFormat {
                  */
                 final int sampleSize  = band.getDataTypeSize();                 // In bits: 1, 2, 4, 8, 16, 32 or 64.
                 final int elementSize = DataBuffer.getDataTypeSize(dataType);   // Same as above except for 1, 2, 4.
-                final int length = Math.toIntExact(Numerics.ceilDiv(JDK9.multiplyFull(width, height) * sampleSize, elementSize));
+                final int length = Math.toIntExact(Numerics.ceilDiv(Math.multiplyFull(width, height) * sampleSize, elementSize));
                 final Object data;
                 switch (dataType & ~OPPOSITE_SIGN) {
                     case DataBuffer.TYPE_USHORT:

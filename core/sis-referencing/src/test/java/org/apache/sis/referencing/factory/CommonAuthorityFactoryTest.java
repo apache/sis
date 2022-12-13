@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.factory;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.awt.geom.AffineTransform;
@@ -84,19 +84,19 @@ public final strictfp class CommonAuthorityFactoryTest extends TestCase {
     public void testGetAuthorityCodes() throws FactoryException {
         assertTrue("getAuthorityCodes(Datum.class)",
                 factory.getAuthorityCodes(Datum.class).isEmpty());
-        assertSetEquals(Arrays.asList("CRS:1", "CRS:27", "CRS:83", "CRS:84", "CRS:88",
-                                      "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005",
-                                      "OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
+        assertSetEquals(List.of("CRS:1", "CRS:27", "CRS:83", "CRS:84", "CRS:88",
+                                "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005",
+                                "OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
                 factory.getAuthorityCodes(CoordinateReferenceSystem.class));
-        assertSetEquals(Arrays.asList("AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005"),
+        assertSetEquals(List.of("AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005"),
                 factory.getAuthorityCodes(ProjectedCRS.class));
-        assertSetEquals(Arrays.asList("CRS:27", "CRS:83", "CRS:84"),
+        assertSetEquals(List.of("CRS:27", "CRS:83", "CRS:84"),
                 factory.getAuthorityCodes(GeographicCRS.class));
-        assertSetEquals(Arrays.asList("CRS:88"),
+        assertSetEquals(List.of("CRS:88"),
                 factory.getAuthorityCodes(VerticalCRS.class));
-        assertSetEquals(Arrays.asList("OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
+        assertSetEquals(List.of("OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
                 factory.getAuthorityCodes(TemporalCRS.class));
-        assertSetEquals(Arrays.asList("CRS:1"),
+        assertSetEquals(List.of("CRS:1"),
                 factory.getAuthorityCodes(EngineeringCRS.class));
 
         final Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);

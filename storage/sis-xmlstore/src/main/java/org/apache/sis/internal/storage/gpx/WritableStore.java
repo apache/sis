@@ -147,7 +147,7 @@ public final class WritableStore extends Store implements WritableFeatureSet {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-411">SIS-411</a>
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public synchronized void write(final Metadata metadata, final Stream<? extends AbstractFeature> features) throws DataStoreException {
         try {
             /*

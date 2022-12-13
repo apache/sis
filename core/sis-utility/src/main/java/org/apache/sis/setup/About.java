@@ -56,7 +56,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.jdk9.JDK9;
 
 import static java.lang.System.getProperty;
 import static java.util.logging.Logger.getLogger;
@@ -351,7 +350,7 @@ fill:   for (int i=0; ; i++) {
                         nameKey = Vocabulary.Keys.Implementation;
                         value = "java.util.logging";
                         for (final Handler handler : getLogger("").getHandlers()) {
-                            final String c = JDK9.getPackageName(handler.getClass());
+                            final String c = handler.getClass().getPackageName();
                             if (!value.equals(c)) {
                                 value = c;
                                 break;

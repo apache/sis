@@ -18,7 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -63,7 +62,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     @SuppressWarnings({"unchecked", "rawtypes"})
     LogicalFilter(final Collection<? extends Filter<? super R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
-        operands = op.toArray(new Filter[op.size()]);
+        operands = op.toArray(Filter[]::new);
         if (operands.length < 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.TooFewArguments_2, 2, operands.length));
         }
@@ -246,7 +245,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
         /** Returns the singleton filter used by this operation. */
         @Override public List<Filter<? super R>> getOperands() {
-            return Collections.singletonList(operand);
+            return List.of(operand);
         }
 
         /** Evaluates this filter on the given object. */

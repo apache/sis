@@ -317,7 +317,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of ISO 19103 standard.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     public RecordSchema getContainer() {
         return container;
     }

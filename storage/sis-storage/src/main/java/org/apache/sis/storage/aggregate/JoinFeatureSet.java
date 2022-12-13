@@ -19,7 +19,6 @@ package org.apache.sis.storage.aggregate;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -232,22 +231,22 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          * Since we are going to need the type for any use of this JoinFeatureSet, better to create it now.
          */
         AbstractIdentifiedType[] properties = new AbstractIdentifiedType[] {
-            new DefaultAssociationRole(name(leftAlias),  leftType,  joinType.minimumOccurs(false), 1),
-            new DefaultAssociationRole(name(rightAlias), rightType, joinType.minimumOccurs(true),  1)
+            new DefaultAssociationRole(properties(leftAlias),  leftType,  joinType.minimumOccurs(false), 1),
+            new DefaultAssociationRole(properties(rightAlias), rightType, joinType.minimumOccurs(true),  1)
         };
         final String identifierDelimiter = Containers.property(featureInfo, "identifierDelimiter", String.class);
         if (identifierDelimiter != null && AttributeConvention.hasIdentifier(leftType)
                                         && AttributeConvention.hasIdentifier(rightType))
         {
             final AbstractOperation identifier = FeatureOperations.compound(
-                    name(AttributeConvention.IDENTIFIER_PROPERTY), identifierDelimiter,
+                    properties(AttributeConvention.IDENTIFIER_PROPERTY), identifierDelimiter,
                     Containers.property(featureInfo, "identifierPrefix", String.class),
                     Containers.property(featureInfo, "identifierSuffix", String.class), properties);
             properties = ArraysExt.insert(properties, 0, 1);
             properties[0] = identifier;
         }
         if (featureInfo == null) {
-            featureInfo = name(leftName.tip().toString() + '-' + rightName.tip());
+            featureInfo = properties(leftName.tip().toString() + '-' + rightName.tip());
         }
         type = new DefaultFeatureType(featureInfo, false, null, properties);
     }
@@ -256,8 +255,8 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * Creates a minimal {@code properties} map for feature type or property type constructors.
      * This minimalist map contain only the mandatory entry, which is the name.
      */
-    private static Map<String,?> name(final Object name) {
-        return Collections.singletonMap(DefaultFeatureType.NAME_KEY, name);
+    private static Map<String,?> properties(final Object name) {
+        return Map.of(DefaultFeatureType.NAME_KEY, name);
     }
 
     /**

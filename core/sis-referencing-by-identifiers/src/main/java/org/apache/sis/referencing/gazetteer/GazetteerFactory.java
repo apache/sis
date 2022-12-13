@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
+import java.util.List;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import org.apache.sis.internal.util.Constants;
@@ -58,7 +58,7 @@ public class GazetteerFactory extends AbstractFactory {
          * In current implementation of `sis-javafx` module, the order in this set determines the order
          * of menu items. So we want a "nice" order and a `Set` implementation that preserve it.
          */
-        return new LinkedHashSet<>(Arrays.asList(
+        return new LinkedHashSet<>(List.of(
                 MilitaryGridReferenceSystem.IDENTIFIER,
                 GeohashReferenceSystem.IDENTIFIER));
     }

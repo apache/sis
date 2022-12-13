@@ -24,18 +24,18 @@ import javax.xml.bind.JAXBContext;
  * This enumeration allows to set vendor-specific marshaller properties.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  * @module
  */
 enum Implementation {
     /**
-     * JAXB implementation bundled in the JDK.
+     * JAXB implementation provided by Jakarta Glassfish.
      */
-    INTERNAL("com.sun.xml.internal.bind.indentString"),
+    GLASSFISH("org.glassfish.jaxb.indentString"),
 
     /**
-     * JAXB implementation provided in a separated JAR, used for instance by Glassfish.
+     * JAXB implementation before JAXB moved to Jakarta.
      */
     ENDORSED("com.sun.xml.bind.indentString"),
 
@@ -45,17 +45,14 @@ enum Implementation {
     OTHER(null);
 
     /**
-     * The prefix of property names which are provided in external (endorsed) implementation of JAXB.
-     * This is slightly different than the prefix used by the implementation bundled with the JDK 6,
-     * which is {@code "com.sun.xml.internal.bind"}.
+     * The prefix of property names for {@link #ENDORSED} implementation.
      */
     private static final String ENDORSED_PREFIX = "com.sun.xml.bind.";
 
     /**
-     * The prefix of property names which are provided in internal implementation of JAXB
-     * (the one bundled with the JDK 6).
+     * The prefix of property names for {@link #GLASSFISH} implementation.
      */
-    private static final String INTERNAL_PREFIX = "com.sun.xml.internal.bind.";
+    private static final String GLASSFISH_PREFIX = "org.glassfish.jaxb.";
 
     /**
      * The JAXB property for setting the indentation string, or {@code null} if none.
@@ -70,22 +67,17 @@ enum Implementation {
     }
 
     /**
-     * Detects if we are using the endorsed JAXB implementation (the one provided in separated JAR files)
-     * or the one bundled in JDK. We use the JAXB context package name as a criterion:
-     *
-     * <ul>
-     *   <li>JAXB endorsed JAR uses    {@code "com.sun.xml.bind.*"}</li>
-     *   <li>JAXB bundled in JDK uses  {@code "com.sun.xml.internal.bind.*"}</li>
-     * </ul>
+     * Detects the JAXB implementation in use.
+     * This method uses the JAXB context package name as a criterion.
      *
      * @param  context  the JAXB context for which to detect the implementation.
-     * @return the implementation, or {@code OTHER} if unknown.
+     * @return the implementation, or {@link #OTHER} if unknown.
      */
     public static Implementation detect(final JAXBContext context) {
         if (context != null) {
             final String classname = context.getClass().getName();
-            if (classname.startsWith(INTERNAL_PREFIX)) {
-                return INTERNAL;
+            if (classname.startsWith(GLASSFISH_PREFIX)) {
+                return GLASSFISH;
             } else if (classname.startsWith(ENDORSED_PREFIX)) {
                 return ENDORSED;
             }
@@ -98,32 +90,11 @@ enum Implementation {
      * A value of {@code true} does not necessarily mean that the given property is supported,
      * but that the caller should either support the property or throw an exception.
      *
-     * <p>This method excludes the {@code "com.sun.xml.bind.*"} properties if the implementation
-     * is not {@link #ENDORSED} or {@link #INTERNAL}. We do not distinguish between the endorsed
-     * and internal namespaces since Apache SIS uses only the endorsed namespace and lets
-     * {@code org.apache.sis.xml.Pooled} do the conversion to internal namespace if needed.</p>
-     *
      * @param  key  the property key to test.
      * @return {@code false} if the given property should be silently ignored.
      */
     boolean filterProperty(final String key) {
-        // We user 'indentKey' as a sentinel value for identifying INTERNAL and ENDORSED cases.
+        // We user `indentKey` as a sentinel value for identifying a recognized implementation.
         return (indentKey != null) || !key.startsWith(ENDORSED_PREFIX);
-    }
-
-    /**
-     * Converts the given key from {@code "com.sun.xml.bind.*"} to {@code "com.sun.xml.internal.bind.*"} namespace.
-     * This method is invoked when the JAXB implementation is known to be the {@link #INTERNAL} one. We perform this
-     * conversion for allowing Apache SIS to ignore the difference between internal and endorsed JAXB.
-     *
-     * @param  key  the key that may potentially a endorsed JAXB key.
-     * @return the key as an internal JAXB key, or the given key unchanged if it is not an endorsed JAXB key.
-     */
-    static String toInternal(String key) {
-        if (key.startsWith(ENDORSED_PREFIX)) {
-            final StringBuilder buffer = new StringBuilder(key.length() + 10);
-            key = buffer.append(INTERNAL_PREFIX).append(key, ENDORSED_PREFIX.length(), key.length()).toString();
-        }
-        return key;
     }
 }

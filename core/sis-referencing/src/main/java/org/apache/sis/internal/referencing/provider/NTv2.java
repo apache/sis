@@ -367,7 +367,7 @@ public final class NTv2 extends AbstractProvider {
             } else {
                 numGrids = 1;
             }
-            overviewKeys = header.keySet().toArray(new String[header.size()]);
+            overviewKeys = header.keySet().toArray(String[]::new);
         }
 
         /**

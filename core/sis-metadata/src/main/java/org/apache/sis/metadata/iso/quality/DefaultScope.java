@@ -42,7 +42,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
  *             The latter is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.
  */
-@Deprecated
+@Deprecated(since="1.0")
 @XmlTransient
 public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.DefaultScope implements Scope {
     /**

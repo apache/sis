@@ -712,8 +712,7 @@ public class GridDerivation {
                         if (s > 1) {                                                 // Also for skipping NaN values.
                             final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
                             affine.setElement(i, i, s);
-                            affine.setElement(i, dimension, extent.getLow(i) - scaledExtent.getLow(i) * s);
-                            // TODO: use Math.fma with JDK9.
+                            affine.setElement(i, dimension, Math.fma(-s, scaledExtent.getLow(i), extent.getLow(i)));
                         }
                     }
                     toBase = MathTransforms.linear(affine);

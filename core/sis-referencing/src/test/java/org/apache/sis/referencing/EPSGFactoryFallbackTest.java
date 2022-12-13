@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing;
 
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
@@ -68,30 +68,30 @@ public final strictfp class EPSGFactoryFallbackTest extends TestCase {
      */
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
-        assertSetEquals(Arrays.asList(StandardDefinitions.GREENWICH),
+        assertSetEquals(List.of(StandardDefinitions.GREENWICH),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(PrimeMeridian.class));
-        assertSetEquals(Arrays.asList("7030", "7043", "7019", "7008", "7022", "7048"),
+        assertSetEquals(List.of("7030", "7043", "7019", "7008", "7022", "7048"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Ellipsoid.class));
-        assertSetEquals(Arrays.asList("6326", "6322", "6269", "6267", "6258", "6230", "6019", "6047", "5100", "5103"),
+        assertSetEquals(List.of("6326", "6322", "6269", "6267", "6258", "6230", "6019", "6047", "5100", "5103"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(Datum.class));
-        assertSetEquals(Arrays.asList("6422", "6423"),
+        assertSetEquals(List.of("6422", "6423"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(EllipsoidalCS.class));
-        assertSetEquals(Arrays.asList("6404"),
+        assertSetEquals(List.of("6404"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(SphericalCS.class));
-        assertSetEquals(Arrays.asList("6500", "4400", "1026", "1027"),
+        assertSetEquals(List.of("6500", "4400", "1026", "1027"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CartesianCS.class));
-        assertSetEquals(Arrays.asList("4978", "4984", "4936"),
+        assertSetEquals(List.of("4978", "4984", "4936"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeocentricCRS.class));
-        assertSetEquals(Arrays.asList("4326", "4322", "4019", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
+        assertSetEquals(List.of("4326", "4322", "4019", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeographicCRS.class));
-        assertSetEquals(Arrays.asList("5714", "5715", "5703"),
+        assertSetEquals(List.of("5714", "5715", "5703"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(VerticalCRS.class));
         /*
          * There is too many ProjectedCRS codes for enumerating all of them, so test only a sampling.
          */
         final Set<String> codes = EPSGFactoryFallback.INSTANCE.getAuthorityCodes(ProjectedCRS.class);
-        assertTrue(codes.containsAll(Arrays.asList("5041", "5042", "32601", "32660", "32701", "32760")));
-        assertTrue(Collections.disjoint(codes, Arrays.asList("7030", "6326", "4326", "4978", "32600", "32700", "5714")));
+        assertTrue(codes.containsAll(List.of("5041", "5042", "32601", "32660", "32701", "32760")));
+        assertTrue(Collections.disjoint(codes, List.of("7030", "6326", "4326", "4978", "32600", "32700", "5714")));
     }
 
     /**

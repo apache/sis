@@ -124,7 +124,7 @@ import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
  * {@link #setLocalCoordinates(double, double)} explicitly instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  * @module
  */
@@ -566,20 +566,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             if (n != null) items.add(1, n.valueChoices);
             setSampleValuesVisible(n != null);
         });
-    }
-
-    /**
-     * @deprecated Replaced by {@link #StatusBar(RecentReferenceSystems)} followed by {@link #track(MapCanvas)}.
-     *
-     * @param  systemChooser  the manager of reference systems chosen by user, or {@code null} if none.
-     * @param  toTrack        the canvas that this status bar is tracking.
-     */
-    @Deprecated
-    public StatusBar(final RecentReferenceSystems systemChooser, final MapCanvas... toTrack) {
-        this(systemChooser);
-        for (final MapCanvas canvas : toTrack) {
-            track(canvas);
-        }
     }
 
     /**
@@ -1300,41 +1286,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     }
 
     /**
-     * Returns the lowest value appended as "± <var>accuracy</var>" after the coordinate values.
-     * This is the last value specified to {@link #setLowestAccuracy(Quantity)}.
-     *
-     * @return the lowest accuracy to append after the coordinate values, or {@code null} if none.
-     *
-     * @see CoordinateFormat#getGroundAccuracy()
-     *
-     * @deprecated Replaced by {@link #lowestAccuracy}.
-     */
-    @Deprecated
-    public Quantity<Length> getLowestAccuracy() {
-        return lowestAccuracy.get();
-    }
-
-    /**
-     * Specifies an uncertainty to append as "± <var>accuracy</var>" after the coordinate values.
-     * If user has selected (e.g. by contextual menu) a CRS causing the use of a coordinate transformation,
-     * then the accuracy actually shown by {@code StatusBar} will be the greatest value between the accuracy
-     * specified to this method and the coordinate transformation accuracy.
-     *
-     * <p>Note that the "± <var>accuracy</var>" text may be shown or hidden depending on the zoom level.
-     * If pixels on screen are larger than the accuracy, then the accuracy text is hidden.</p>
-     *
-     * @param  accuracy  the lowest accuracy to append after the coordinate values, or {@code null} if none.
-     *
-     * @see CoordinateFormat#setGroundAccuracy(Quantity)
-     *
-     * @deprecated Replaced by {@link #lowestAccuracy}.
-     */
-    @Deprecated
-    public void setLowestAccuracy(final Quantity<Length> accuracy) {
-        lowestAccuracy.set(accuracy);
-    }
-
-    /**
      * Returns the coordinates given to the last call to {@link #setLocalCoordinates(double, double)},
      * or an empty value if those coordinates are not visible.
      *
@@ -1631,18 +1582,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @since 1.3
      */
     public Optional<String> getMessage() {
-        return Optional.ofNullable(message.getText());
-    }
-
-    /**
-     * Returns the error message currently shown.
-     *
-     * @return the current error message, or an empty value if none.
-     *
-     * @deprecated Renamed {@link #getMessage()}.
-     */
-    @Deprecated
-    public Optional<String> getErrorMessage() {
         return Optional.ofNullable(message.getText());
     }
 

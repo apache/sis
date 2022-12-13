@@ -18,7 +18,6 @@ package org.apache.sis.internal.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.util.ScopedName;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -113,7 +112,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Collections.singletonList(expression);
+        return List.of(expression);
     }
 
     /**

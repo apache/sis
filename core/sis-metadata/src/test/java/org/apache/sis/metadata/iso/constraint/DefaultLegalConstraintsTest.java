@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.constraint;
 
+import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
@@ -23,7 +24,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
@@ -84,7 +84,7 @@ public final strictfp class DefaultLegalConstraintsTest extends TestCase {
                 "</mco:MD_LegalConstraints>\n";
 
         final DefaultLegalConstraints c = new DefaultLegalConstraints();
-        c.setUseConstraints(singleton(Restriction.LICENSE));
+        c.setUseConstraints(Set.of(Restriction.LICENSE));
         assertXmlEquals(xml, marshal(c), "xmlns:*");
         DefaultLegalConstraints actual = unmarshal(DefaultLegalConstraints.class, xml);
         assertSame(Restriction.LICENSE, getSingleton(actual.getUseConstraints()));

@@ -237,7 +237,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @deprecated Replaced by {@code getLocalesAndCharsets().keySet()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     public Collection<Locale> getLanguages() {
@@ -251,7 +251,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setLanguages(final Collection<? extends Locale> newValues) {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
         setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
@@ -269,7 +269,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      * @deprecated Replaced by {@code getLocalesAndCharsets().values()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getLocalesAndCharsets")
     // @XmlElement at the end of this class.
     public Collection<CharacterSet> getCharacterSets() {
@@ -287,7 +287,7 @@ public class DefaultDataIdentification extends AbstractIdentification implements
      *
      * @deprecated Replaced by putting values in {@link #getLocalesAndCharsets()} map.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setCharacterSets(final Collection<? extends CharacterSet> newValues) {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
         Collection<Charset> c = null;

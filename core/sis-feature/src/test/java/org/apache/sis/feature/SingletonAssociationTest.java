@@ -16,11 +16,11 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -44,10 +44,10 @@ public final strictfp class SingletonAssociationTest extends TestCase {
      * and Le Mans, France in 836.” — source: Wikipedia</blockquote>
      */
     static AbstractAssociation twinTown() {
-        final AbstractFeature twinTown = DefaultFeatureTypeTest.city().newInstance();
+        final var twinTown = DefaultFeatureTypeTest.city().newInstance();
         twinTown.setPropertyValue("city", "Le Mans");
-        twinTown.setPropertyValue("population", 143240); // In 2011.
-        final AbstractAssociation association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown(false));
+        twinTown.setPropertyValue("population", 143240);        // In 2011.
+        final var association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown(false));
         association.setValue(twinTown);
         return association;
     }
@@ -57,10 +57,9 @@ public final strictfp class SingletonAssociationTest extends TestCase {
      */
     @Test
     public void testWrongValue() {
-        final AbstractAssociation    association  = twinTown();
-        final AbstractIdentifiedType population   = association.getRole().getValueType().getProperty("population");
-        final AbstractFeature        otherFeature = new DefaultFeatureType(
-                singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
+        final var association  = twinTown();
+        final var population   = association.getRole().getValueType().getProperty("population");
+        final var otherFeature = new DefaultFeatureType(Map.of(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
         try {
             association.setValue(otherFeature);
         } catch (IllegalArgumentException e) {

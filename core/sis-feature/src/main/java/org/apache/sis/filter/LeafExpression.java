@@ -67,7 +67,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
      */
     @Override
     public final List<Expression<? super R, ?>> getParameters() {
-        return Collections.emptyList();
+        return List.of();
     }
 
 
@@ -95,6 +95,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
 
         /** For {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations. */
         @Override protected Collection<?> getChildren() {
+            // Not `List.of(…)` because value may be null.
             return Collections.singleton(value);
         }
 

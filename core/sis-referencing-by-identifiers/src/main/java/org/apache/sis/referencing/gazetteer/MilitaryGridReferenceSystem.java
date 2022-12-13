@@ -79,7 +79,6 @@ import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
 import org.apache.sis.metadata.iso.citation.AbstractParty;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -1284,7 +1283,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public long estimateSize() {
-            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / JDK9.multiplyFull(step, step);
+            return (xEnd - (long) gridX) * Math.abs(yEnd - (long) yStart) / Math.multiplyFull(step, step);
         }
 
         /**

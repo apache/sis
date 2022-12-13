@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -105,7 +105,7 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
      */
     private static DefaultDerivedCRS createLongitudeRotation() {
         final DefaultConversion conversion = DefaultConversionTest.createLongitudeRotation(false);
-        return new DefaultDerivedCRS(Collections.singletonMap(DefaultDerivedCRS.NAME_KEY, conversion.getTargetCRS().getName()),
+        return new DefaultDerivedCRS(Map.of(DefaultDerivedCRS.NAME_KEY, conversion.getTargetCRS().getName()),
                 (SingleCRS) conversion.getSourceCRS(), conversion, HardCodedCS.GEODETIC_φλ);
     }
 

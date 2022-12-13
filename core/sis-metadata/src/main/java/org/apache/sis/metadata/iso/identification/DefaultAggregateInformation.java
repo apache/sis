@@ -148,7 +148,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      * @deprecated As of ISO 19115:2014, replaced by {@link #getName()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getName")
     @XmlElement(name = "aggregateDataSetName")
     public Citation getAggregateDataSetName() {
@@ -162,7 +162,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setName(Citation)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setAggregateDataSetName(final Citation newValue) {
         setName(newValue);
     }
@@ -175,7 +175,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      * @deprecated As of ISO 19115:2014, replaced by the first identifier of {@link #getAggregateDataSetName()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getName")
     @XmlElement(name = "aggregateDataSetIdentifier")
     public Identifier getAggregateDataSetIdentifier() {
@@ -205,7 +205,7 @@ public class DefaultAggregateInformation extends DefaultAssociatedResource imple
      *
      * @deprecated As of ISO 19115:2014, replaced by an identifier of {@link #getAggregateDataSetName()}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setAggregateDataSetIdentifier(final Identifier newValue) {
         checkWritePermission(super.getName());
         Citation name = getAggregateDataSetName();

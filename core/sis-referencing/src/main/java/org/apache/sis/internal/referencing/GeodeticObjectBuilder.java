@@ -18,7 +18,6 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Map;
 import java.util.Date;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import javax.measure.Unit;
@@ -49,7 +48,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -141,7 +139,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a map of properties containing only the name of the given object.
      */
     private static Map<String,Object> name(final IdentifiedObject template) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+        return Map.of(IdentifiedObject.NAME_KEY, template.getName());
     }
 
     /**
@@ -206,7 +204,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     {
         final DatumFactory factory = factories.getDatumFactory();
         final Ellipsoid ellipsoid = factory.createFlattenedSphere(
-                Collections.singletonMap(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
+                Map.of(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
         datum = factory.createGeodeticDatum(name(ellipsoid), ellipsoid, CommonCRS.WGS84.primeMeridian());
         return this;
     }
@@ -641,7 +639,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         }
         ArgumentChecks.ensureValidIndex(srcDim - repDim, firstDimension);
         if (source instanceof CompoundCRS) {
-            final CoordinateReferenceSystem[] components = CollectionsExt.toArray(((CompoundCRS) source).getComponents(), CoordinateReferenceSystem.class);
+            final var components = ((CompoundCRS) source).getComponents().toArray(CoordinateReferenceSystem[]::new);
             int lower = 0;
             for (int i=0; i<components.length; i++) {
                 final CoordinateReferenceSystem c = components[i];

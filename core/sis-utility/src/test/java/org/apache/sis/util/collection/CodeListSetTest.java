@@ -290,6 +290,6 @@ public final strictfp class CodeListSetTest extends TestCase {
          */
         assertTrue("Add the element to be retained.", clone.add(lastRemoved));
         assertTrue(c.retainAll(clone));
-        assertEquals(Collections.singleton(lastRemoved), c);
+        assertEquals(Set.of(lastRemoved), c);
     }
 }

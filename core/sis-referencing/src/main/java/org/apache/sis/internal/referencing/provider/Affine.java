@@ -18,7 +18,6 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
 import java.util.Arrays;
-import java.util.Collections;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -110,7 +109,7 @@ public final class Affine extends AbstractProvider {
     private static final Map<String,?> IDENTIFICATION_EPSG, IDENTIFICATION_OGC;
     static {
         final NamedIdentifier nameOGC = new NamedIdentifier(Citations.OGC, Constants.OGC, Constants.AFFINE, null, null);
-        IDENTIFICATION_OGC = Collections.singletonMap(NAME_KEY, nameOGC);
+        IDENTIFICATION_OGC  = Map.of(NAME_KEY, nameOGC);
         IDENTIFICATION_EPSG = EPSGName.properties(9624, NAME, nameOGC);
     }
 
@@ -216,7 +215,7 @@ public final class Affine extends AbstractProvider {
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     public OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         return getProvider(sourceDimensions, targetDimensions, false);
     }
@@ -295,8 +294,7 @@ public final class Affine extends AbstractProvider {
      * @since 0.8
      */
     public static ParameterValueGroup identity(int dimension) {
-        final ParameterValueGroup values = TensorParameters.WKT1.createValueGroup(
-                Collections.singletonMap(NAME_KEY, Constants.AFFINE));
+        final var values = TensorParameters.WKT1.createValueGroup(Map.of(NAME_KEY, Constants.AFFINE));
         values.parameter(Constants.NUM_COL).setValue(++dimension);
         values.parameter(Constants.NUM_ROW).setValue(  dimension);
         return values;

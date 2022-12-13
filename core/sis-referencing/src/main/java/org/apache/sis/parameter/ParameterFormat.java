@@ -439,8 +439,7 @@ public class ParameterFormat extends TabularFormat<Object> {
                     .getString(Errors.Keys.UnsupportedType_1, object.getClass()));
         }
         if (isSummary) {
-            final List<GeneralParameterDescriptor> parameters = descriptor.descriptors();
-            formatSummary(parameters.toArray(new IdentifiedObject[parameters.size()]), toAppendTo);
+            formatSummary(descriptor.descriptors().toArray(IdentifiedObject[]::new), toAppendTo);
         } else {
             format(name.getCode(), descriptor, values, toAppendTo);
         }

@@ -248,7 +248,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @deprecated As of ISO 19115:2014, replaced by {@code getName()} in {@link DefaultIndividual}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getParties")
     @XmlElement(name = "individualName")
     public String getIndividualName() {
@@ -268,7 +268,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      *
      * @deprecated As of ISO 19115:2014, replaced by {@code setName(InternationalString)} in {@link DefaultIndividual}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setIndividualName(final String newValue) {
         setName(DefaultIndividual.class, false, Types.toInternationalString(newValue), DefaultResponsibleParty::individual);
     }
@@ -293,7 +293,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @deprecated As of ISO 19115:2014, replaced by {@code getName()} in {@link DefaultOrganisation}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getParties")
     @XmlElement(name = "organisationName")
     public InternationalString getOrganisationName() {
@@ -312,7 +312,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      *
      * @deprecated As of ISO 19115:2014, replaced by {@code setName(InternationalString)} in {@link DefaultOrganisation}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setOrganisationName(final InternationalString newValue) {
         setName(DefaultOrganisation.class, false, newValue, DefaultResponsibleParty::organisation);
     }
@@ -338,7 +338,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @deprecated As of ISO 19115:2014, replaced by {@link DefaultIndividual#getPositionName()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getParties")
     @XmlElement(name = "positionName")
     public InternationalString getPositionName() {
@@ -357,7 +357,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link DefaultIndividual#setPositionName(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setPositionName(final InternationalString newValue) {
         setName(DefaultIndividual.class, true, newValue, DefaultResponsibleParty::position);
     }
@@ -380,7 +380,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      * @deprecated As of ISO 19115:2014, replaced by {@link AbstractParty#getContactInfo()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getParties")
     @XmlElement(name = "contactInfo")
     public Contact getContactInfo() {
@@ -410,7 +410,7 @@ public class DefaultResponsibleParty extends DefaultResponsibility implements Re
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link AbstractParty#setContactInfo(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setContactInfo(final Contact newValue) {
         final Collection<AbstractParty> parties = getParties();
         checkWritePermission(valueIfDefined(parties));

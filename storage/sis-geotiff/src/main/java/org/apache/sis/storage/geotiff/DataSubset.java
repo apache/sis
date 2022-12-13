@@ -45,7 +45,7 @@ import org.apache.sis.math.Vector;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
+import static java.lang.Math.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
 import static java.lang.Math.toIntExact;
 

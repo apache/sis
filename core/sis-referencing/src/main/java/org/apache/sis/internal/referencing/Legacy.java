@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.referencing.cs.AxisDirection;
@@ -27,7 +28,6 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
@@ -56,10 +56,10 @@ public final class Legacy {
      * the ISO 19111's ones (ISO names are "Geocentric X", "Geocentric Y" and "Geocentric Z"). This constant uses
      * the invalid names and directions for WKT 1 parsing/formatting purposes.
      */
-    private static final CartesianCS LEGACY = new DefaultCartesianCS(singletonMap(NAME_KEY, "Legacy geocentric"),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "X"), "X", AxisDirection.OTHER, Units.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  Units.METRE),
-            new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, Units.METRE));
+    private static final CartesianCS LEGACY = new DefaultCartesianCS(Map.of(NAME_KEY, "Legacy geocentric"),
+            new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "X"), "X", AxisDirection.OTHER, Units.METRE),
+            new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  Units.METRE),
+            new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, Units.METRE));
 
     /**
      * Do not allow instantiation of this class.

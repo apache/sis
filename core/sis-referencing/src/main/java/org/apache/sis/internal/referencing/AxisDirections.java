@@ -156,20 +156,16 @@ public final class AxisDirections extends Static {
 
     /**
      * Proposed abbreviations for some axis directions.
-     * This map shall be immutable after construction.
      */
-    private static final Map<AxisDirection,String> ABBREVIATIONS = new HashMap<>(12);
-    static {
-        final Map<AxisDirection,String> m = ABBREVIATIONS;
-        m.put(FUTURE,            "t");
-        m.put(COLUMN_POSITIVE,   "i");
-        m.put(ROW_POSITIVE,      "j");
-        m.put(DISPLAY_RIGHT,     "x");
-        m.put(DISPLAY_UP,        "y");
-        m.put(OTHER,             "z");      // Arbitrary abbreviation, may change in any future SIS version.
-        m.put(AWAY_FROM,         "r");
-        m.put(COUNTER_CLOCKWISE, "θ");
-    }
+    private static final Map<AxisDirection,String> ABBREVIATIONS = Map.of(
+            FUTURE,            "t",
+            COLUMN_POSITIVE,   "i",
+            ROW_POSITIVE,      "j",
+            DISPLAY_RIGHT,     "x",
+            DISPLAY_UP,        "y",
+            OTHER,             "z",     // Arbitrary abbreviation, may change in any future SIS version.
+            AWAY_FROM,         "r",
+            COUNTER_CLOCKWISE, "θ");
 
     /**
      * Do not allow instantiation of this class.

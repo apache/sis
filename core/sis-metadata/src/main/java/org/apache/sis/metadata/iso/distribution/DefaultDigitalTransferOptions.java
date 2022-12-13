@@ -283,7 +283,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * @deprecated As of ISO 19115:2014, replaced by {@link #getOffLines()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getOffLines")
     public Medium getOffLine() {
         return LegacyPropertyAdapter.getSingleton(getOffLines(), Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
@@ -296,7 +296,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setOffLines(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setOffLine(final Medium newValue) {
         setOffLines(CollectionsExt.singletonOrEmpty(newValue));
     }

@@ -30,7 +30,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
  *
  * @author  Rémi Marechal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  * @module
  */
@@ -83,13 +83,13 @@ final class ZIP extends CompressionChannel {
         int required = 0;
         try {
             int n;
-            while ((n = inflate(target)) == 0) {
+            while ((n = inflater.inflate(target)) == 0) {
                 if (inflater.needsInput()) {
                     if (++required >= input.buffer.capacity()) {
                         throw new BufferOverflowException();
                     }
                     input.ensureBufferContains(required);
-                    setInput(input.buffer);
+                    inflater.setInput(input.buffer);
                 } else if (inflater.finished()) {
                     return -1;
                 } else {
@@ -100,31 +100,6 @@ final class ZIP extends CompressionChannel {
             throw new IOException(e);
         }
         return target.position() - start;
-    }
-
-    /**
-     * Placeholder for {@code Inflater.inflate(ByteBuffer)}.
-     *
-     * @todo Remove after migration to JDK11.
-     */
-    private int inflate(final ByteBuffer target) throws DataFormatException {
-//      return inflater.inflate(target);        // JDK11
-        final int p = target.position();
-        final int n = inflater.inflate(target.array(), p, target.remaining());
-        target.position(p + n);
-        return n;
-    }
-
-    /**
-     * Placeholder for {@code Inflater.setInput(ByteBuffer)}.
-     *
-     * @todo Remove after migration to JDK11.
-     */
-    private void setInput(final ByteBuffer target) throws DataFormatException {
-//      inflater.setInput(target);        // JDK11
-        final byte[] b = new byte[target.remaining()];
-        target.get(b);
-        inflater.setInput(b);
     }
 
     /**

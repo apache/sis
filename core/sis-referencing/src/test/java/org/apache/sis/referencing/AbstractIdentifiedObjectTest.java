@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Locale;
-import java.util.Collections;
 import org.opengis.test.Validators;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.datum.AbstractDatum;
@@ -59,7 +58,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     private static Map<String,Object> properties(final Set<ReferenceIdentifier> identifiers) {
         final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("name",       "GRS 1980"));
-        assertNull(properties.put("identifiers", identifiers.toArray(new ReferenceIdentifier[identifiers.size()])));
+        assertNull(properties.put("identifiers", identifiers.toArray(ReferenceIdentifier[]::new)));
         assertNull(properties.put("codespace",  "EPSG"));
         assertNull(properties.put("version",    "8.3"));
         assertNull(properties.put("alias",      "International 1979"));
@@ -133,7 +132,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
      */
     @Test
     public void testWithoutIdentifier() {
-        final Set<ReferenceIdentifier> identifiers = Collections.emptySet();
+        final Set<ReferenceIdentifier> identifiers = Set.of();
         final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
         final ReferenceIdentifier      gmlId       = validate(object, identifiers, "GRS1980");
         assertNull("gmlId", gmlId);
@@ -153,7 +152,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @DependsOnMethod("testWithoutIdentifier")
     public void testWithSingleIdentifier() {
         final ReferenceIdentifier      identifier  = new ImmutableIdentifier(null, "EPSG", "7019");
-        final Set<ReferenceIdentifier> identifiers = Collections.singleton(identifier);
+        final Set<ReferenceIdentifier> identifiers = Set.of(identifier);
         final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
         final ReferenceIdentifier      gmlId       = validate(object, identifiers, "epsg-7019");
         assertNotNull("gmlId",                   gmlId);
@@ -188,7 +187,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @DependsOnMethod("testWithManyIdentifiers")
     public void testAsSubtype() {
         final ReferenceIdentifier      identifier  = new NamedIdentifier(EPSG, "7019");
-        final Set<ReferenceIdentifier> identifiers = Collections.singleton(identifier);
+        final Set<ReferenceIdentifier> identifiers = Set.of(identifier);
         final AbstractIdentifiedObject object      = new AbstractDatum(properties(identifiers));
         final ReferenceIdentifier      gmlId       = validate(object, identifiers, "epsg-datum-7019");
         assertNotNull("gmlId",                   gmlId);
@@ -234,7 +233,7 @@ public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
-        final Set<ReferenceIdentifier> identifiers = Collections.emptySet();
+        final Set<ReferenceIdentifier> identifiers = Set.of();
         final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
         final AbstractIdentifiedObject actual = assertSerializedEquals(object);
         assertNotSame(object, actual);

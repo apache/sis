@@ -33,7 +33,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * @deprecated Removed from latest ISO 19157 standard.
  */
-@Deprecated
+@Deprecated(since="1.3")
 @XmlType(name = "QE_Usability_Type", namespace = LegacyNamespaces.GMI)
 @XmlRootElement(name = "QE_Usability", namespace = LegacyNamespaces.GMI)
 public class DefaultUsability extends AbstractElement implements Usability {

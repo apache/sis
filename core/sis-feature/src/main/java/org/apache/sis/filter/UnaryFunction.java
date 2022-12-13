@@ -18,7 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.ArgumentChecks;
@@ -79,7 +78,7 @@ class UnaryFunction<R,V> extends Node {
      * @return a list of size 1 containing the singleton expression.
      */
     public final List<Expression<? super R, ?>> getExpressions() {
-        return Collections.singletonList(expression);
+        return List.of(expression);
     }
 
     /**

@@ -16,8 +16,7 @@
  */
 package org.apache.sis.storage.aggregate;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
@@ -62,8 +61,8 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
 
         final DefaultFeatureType ft = builder.build();
         final FeatureSet cfs = ConcatenatedFeatureSet.create(
-                new MemoryFeatureSet(null, ft, Arrays.asList(ft.newInstance(), ft.newInstance())),
-                new MemoryFeatureSet(null, ft, Arrays.asList(ft.newInstance())));
+                new MemoryFeatureSet(null, ft, List.of(ft.newInstance(), ft.newInstance())),
+                new MemoryFeatureSet(null, ft, List.of(ft.newInstance())));
 
         assertSame("getType()", ft, cfs.getType());
         assertEquals("features.count()", 3, cfs.features(false).count());
@@ -109,7 +108,7 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
         t1f2.setPropertyValue("value", 3);
         t1f2.setPropertyValue("label", "first-second");
 
-        final FeatureSet t1fs = new MemoryFeatureSet(null, t1, Arrays.asList(t1f1, t1f2));
+        final FeatureSet t1fs = new MemoryFeatureSet(null, t1, List.of(t1f1, t1f2));
 
         // Populate a feature set for second type.
         final AbstractFeature t2f1 = t2.newInstance();
@@ -120,7 +119,7 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
         t2f2.setPropertyValue("value", 4);
         t2f2.setPropertyValue("label", "second-second");
 
-        final FeatureSet t2fs = new MemoryFeatureSet(null, t2, Arrays.asList(t2f1, t2f2));
+        final FeatureSet t2fs = new MemoryFeatureSet(null, t2, List.of(t2f1, t2f2));
         /*
          * First, we'll test that total sum of value property is coherent with initialized features.
          * After that, we will ensure that we can get back the right labels for each subtype.
@@ -156,8 +155,8 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
         final DefaultFeatureType mockSuperType = builder.build();
         final DefaultFeatureType firstType  = builder.setSuperTypes(mockSuperType).setName("first").build();
         final DefaultFeatureType secondType = builder.clear().setName("second").build();
-        final FeatureSet fs1 = new MemoryFeatureSet(null, firstType,  Collections.emptyList());
-        final FeatureSet fs2 = new MemoryFeatureSet(null, secondType, Collections.emptyList());
+        final FeatureSet fs1 = new MemoryFeatureSet(null, firstType,  List.of());
+        final FeatureSet fs2 = new MemoryFeatureSet(null, secondType, List.of());
         try {
             FeatureSet concatenation = ConcatenatedFeatureSet.create(fs1, fs2);
             fail("Concatenation succeeded despite the lack of common type. Result is:\n" + concatenation);
@@ -183,7 +182,7 @@ public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
         }
         final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("mock");
         final DefaultFeatureType mockType = builder.build();
-        final FeatureSet fs1 = new MemoryFeatureSet(null, mockType, Collections.emptyList());
+        final FeatureSet fs1 = new MemoryFeatureSet(null, mockType, List.of());
         final FeatureSet set = ConcatenatedFeatureSet.create(fs1);
         assertSame("A concatenation has been created from a single type.", fs1, set);
     }

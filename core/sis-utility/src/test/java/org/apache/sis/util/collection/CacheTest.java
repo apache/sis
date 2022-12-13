@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -36,7 +37,6 @@ import org.apache.sis.test.Performance;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -92,10 +92,10 @@ public final strictfp class CacheTest extends TestCase {
         assertNull("No initial value expected.", handler.peek());
         handler.putAndUnlock(value);
 
-        assertEquals(1,              cache.size());
-        assertEquals(value,          cache.peek(key));
-        assertEquals(singleton(key), cache.keySet());
-        assertEquals(singleton(new SimpleEntry<>(key, value)), cache.entrySet());
+        assertEquals(1,           cache.size());
+        assertEquals(value,       cache.peek(key));
+        assertEquals(Set.of(key), cache.keySet());
+        assertEquals(Set.of(new SimpleEntry<>(key, value)), cache.entrySet());
     }
 
     /**

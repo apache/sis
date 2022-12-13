@@ -228,7 +228,7 @@ public class PathBuilder {
         switch (polylines.size()) {
             case 0:  return null;
             case 1:  return polylines.get(0);
-            default: return new MultiPolylines(polylines.toArray(new Polyline[polylines.size()]));
+            default: return new MultiPolylines(polylines.toArray(Polyline[]::new));
         }
     }
 

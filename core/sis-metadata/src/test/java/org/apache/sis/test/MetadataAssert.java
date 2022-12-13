@@ -28,7 +28,6 @@ import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.util.CollectionsExt;
 
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -124,7 +123,7 @@ public strictfp class MetadataAssert extends Assert {
         final DefaultScope scope = (DefaultScope) ((DefaultSource) source).getScope();
         assertNotNull("metadata.lineage.source.scope", scope);
         assertEquals("metadata.lineage.source.scope.level", ScopeCode.FEATURE_TYPE, scope.getLevel());
-        final Object[] actual = CollectionsExt.toArray(getSingleton(scope.getLevelDescription()).getFeatures(), Object.class);
+        final Object[] actual = getSingleton(scope.getLevelDescription()).getFeatures().toArray();
         for (int i=0; i<actual.length; i++) {
             actual[i] = actual[i].toString();
         }

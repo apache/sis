@@ -21,8 +21,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.identification.Identification;
@@ -69,7 +69,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
-        final Set<String> identifiers = new HashSet<>(Arrays.asList("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Set<String> identifiers = new HashSet<>(List.of("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
         final Path path = testDirectory();
         try (Store store = new Store(null, new StorageConnector(path), path, null)) {
             assertEquals("Wrong number of data stores.", 4, store.components().size());
@@ -90,7 +90,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
         final StoreProvider provider = new StoreProvider();
-        final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Set<String> identifiers = new HashSet<>(List.of("Sample 1", "Sample 2", "Sample 3", "data4"));
         final ParameterValueGroup params = StoreProvider.PARAMETERS.createValue();
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");

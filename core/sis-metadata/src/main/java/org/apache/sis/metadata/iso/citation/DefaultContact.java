@@ -245,7 +245,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getPhones()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getPhones")
     @XmlElement(name = "phone", namespace = LegacyNamespaces.GMD)
     public Telephone getPhone() {
@@ -288,7 +288,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setPhones(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setPhone(Telephone newValue) {
         Collection<Telephone> newValues = null;
         if (newValue != null) {
@@ -340,7 +340,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getAddresses()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getAddresses")
     @XmlElement(name = "address", namespace = LegacyNamespaces.GMD)
     public Address getAddress() {
@@ -358,7 +358,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setAddresses(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setAddress(final Address newValue) {
         setAddresses(CollectionsExt.singletonOrEmpty(newValue));
     }
@@ -396,7 +396,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getOnlineResources()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getOnlineResources")
     @XmlElement(name = "onlineResource", namespace = LegacyNamespaces.GMD)
     public OnlineResource getOnlineResource() {
@@ -414,7 +414,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setOnlineResources(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setOnlineResource(final OnlineResource newValue) {
         setOnlineResources(CollectionsExt.singletonOrEmpty(newValue));
     }

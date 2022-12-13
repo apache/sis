@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
@@ -84,6 +83,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @see #getRoot()
      * @see #setRoot(TreeTable.Node)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private TreeTable.Node root;
 
     /**
@@ -106,6 +106,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *
      * @see DefaultTreeTable.Node#columnIndices
      */
+    @SuppressWarnings("serial")
     final Map<TableColumn<?>,Integer> columnIndices;
 
     /**
@@ -154,7 +155,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     static Map<TableColumn<?>,Integer> createColumnIndices(final TableColumn<?>[] columns) {
         Map<TableColumn<?>,Integer> map;
         switch (columns.length) {
-            case 0:  map = Collections.emptyMap(); break;
+            case 0:  map = Map.of(); break;
             case 1:  map = null; break; // Will be created inside the loop (common case).
             default: map = new LinkedHashMap<>(hashMapCapacity(columns.length)); break;
         }
@@ -163,7 +164,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             ArgumentChecks.ensureNonNullElement("columns", i, column);
             final Integer pos = i;
             if (map == null) {
-                map = Collections.singletonMap(column, pos);
+                map = Map.of(column, pos);
             } else if (map.put(column, pos) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, column));
             }
@@ -180,7 +181,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *         {@link UnmodifiableArrayList#wrap(Object[])}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
-        return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);
+        return columnIndices.keySet().toArray(TableColumn<?>[]::new);
     }
 
     /**
@@ -392,12 +393,14 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @see #getParent()
          * @see #setParent(TreeTable.Node)
          */
+        @SuppressWarnings("serial")         // Not statically typed as Serializable.
         private TreeTable.Node parent;
 
         /**
          * The list of children, or {@code null} if none.
          * Created only when first needed.
          */
+        @SuppressWarnings("serial")
         private List<TreeTable.Node> children;
 
         /**
@@ -409,11 +412,13 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          *
          * @see DefaultTreeTable#columnIndices
          */
+        @SuppressWarnings("serial")
         final Map<TableColumn<?>,Integer> columnIndices;
 
         /**
          * The values, or {@code null} if not yet created.
          */
+        @SuppressWarnings("serial")
         private Object[] values;
 
         /**
@@ -433,7 +438,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
                 columnIndices = ((DefaultTreeTable) table).columnIndices;
             } else {
                 final List<TableColumn<?>> columns = table.getColumns();
-                columnIndices = createColumnIndices(columns.toArray(new TableColumn<?>[columns.size()]));
+                columnIndices = createColumnIndices(columns.toArray(TableColumn<?>[]::new));
             }
         }
 
@@ -535,8 +540,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * automatically updates the {@linkplain #getParent() parent} reference of any {@code Node}
          * instance added to or removed from the list.
          *
-         * <p>For leaf nodes, this method returns an unmodifiable
-         * {@linkplain Collections#emptyList() empty list}.</p>
+         * <p>For leaf nodes, this method returns an unmodifiable {@linkplain List#of() empty list}.</p>
          */
         /* NOTE: If a future version removes the "final" keyword, then search for calls to
          * this method where the return value is casted to TreeNodeList. Any unconditional
@@ -547,7 +551,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         public final List<TreeTable.Node> getChildren() {
             if (children == null) {
                 if (isLeaf()) {
-                    children = Collections.emptyList();
+                    children = List.of();
                 } else {
                     children = new Children(this);
                 }

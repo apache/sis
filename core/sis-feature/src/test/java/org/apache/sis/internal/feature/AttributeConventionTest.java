@@ -17,7 +17,6 @@
 package org.apache.sis.internal.feature;
 
 import java.util.Map;
-import java.util.Collections;
 import com.esri.core.geometry.Point;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -59,7 +58,7 @@ public final strictfp class AttributeConventionTest extends TestCase {
      */
     @Test
     public void testIsGeometryAttribute() {
-        final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
+        final Map<String,?> properties = Map.of(DefaultAttributeType.NAME_KEY, "geometry");
 
         assertFalse("AttributeType<Integer>", AttributeConvention.isGeometryAttribute(
                 new DefaultAttributeType<>(properties, Integer.class, 1, 1, null)));
@@ -74,7 +73,7 @@ public final strictfp class AttributeConventionTest extends TestCase {
      */
     @Test
     public void testGetCrsCharacteristic() {
-        final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geometry");
+        final Map<String,?> properties = Map.of(DefaultAttributeType.NAME_KEY, "geometry");
         DefaultAttributeType<Point> type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null);
         assertFalse("characterizedByCRS",  AttributeConvention.characterizedByCRS(type));
         assertNull("getCRSCharacteristic", AttributeConvention.getCRSCharacteristic(type.newInstance()));
@@ -83,7 +82,7 @@ public final strictfp class AttributeConventionTest extends TestCase {
          * the Coordinate Reference System of the "geometry" attribute. Then test again.
          */
         final DefaultAttributeType<CoordinateReferenceSystem> characteristic = new DefaultAttributeType<>(
-                Collections.singletonMap(DefaultAttributeType.NAME_KEY, AttributeConvention.CRS_CHARACTERISTIC),
+                Map.of(DefaultAttributeType.NAME_KEY, AttributeConvention.CRS_CHARACTERISTIC),
                 CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
         type = new DefaultAttributeType<>(properties, Point.class, 1, 1, null, characteristic);
@@ -93,10 +92,10 @@ public final strictfp class AttributeConventionTest extends TestCase {
         /*
          * Test again AttributeConvention.getCRSCharacteristic(…, PropertyType), but following link.
          */
-        final AbstractOperation link = FeatureOperations.link(Collections.singletonMap(DefaultAttributeType.NAME_KEY, "geom"), type);
-        final DefaultFeatureType feat = new DefaultFeatureType(Collections.singletonMap(DefaultAttributeType.NAME_KEY, "feat"), false, null, type, link);
-        assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(feat, link));
-        assertNull(                      AttributeConvention.getCRSCharacteristic(null, link));
+        final var link = FeatureOperations.link(Map.of(DefaultAttributeType.NAME_KEY, "geom"), type);
+        final var feature = new DefaultFeatureType(Map.of(DefaultAttributeType.NAME_KEY, "feat"), false, null, type, link);
+        assertEquals(HardCodedCRS.WGS84, AttributeConvention.getCRSCharacteristic(feature, link));
+        assertNull(AttributeConvention.getCRSCharacteristic(null, link));
     }
 
     /**
@@ -105,7 +104,7 @@ public final strictfp class AttributeConventionTest extends TestCase {
      */
     @Test
     public void testGetMaximalLengthCharacteristic() {
-        final Map<String,?> properties = Collections.singletonMap(DefaultAttributeType.NAME_KEY, "name");
+        final Map<String,?> properties = Map.of(DefaultAttributeType.NAME_KEY, "name");
         DefaultAttributeType<String> type = new DefaultAttributeType<>(properties, String.class, 1, 1, null);
         assertFalse("characterizedByMaximalLength",  AttributeConvention.characterizedByMaximalLength(type));
         assertNull("getMaximalLengthCharacteristic", AttributeConvention.getMaximalLengthCharacteristic(type.newInstance()));
@@ -114,7 +113,7 @@ public final strictfp class AttributeConventionTest extends TestCase {
          * the maximal length of the "name" attribute. Then test again.
          */
         final DefaultAttributeType<Integer> characteristic = new DefaultAttributeType<>(
-                Collections.singletonMap(DefaultAttributeType.NAME_KEY, AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC),
+                Map.of(DefaultAttributeType.NAME_KEY, AttributeConvention.MAXIMAL_LENGTH_CHARACTERISTIC),
                 Integer.class, 1, 1, 120);
 
         type = new DefaultAttributeType<>(properties, String.class, 1, 1, null, characteristic);

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -62,7 +62,7 @@ public final strictfp class DefaultPolarCSTest extends TestCase {
                 AxisDirection.SOUTH, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
         final DefaultPolarCS cs = new DefaultPolarCS(
-                Collections.singletonMap(DefaultPolarCS.NAME_KEY, "Polar"),
+                Map.of(DefaultPolarCS.NAME_KEY, "Polar"),
                 HardCodedAxes.BEARING,
                 radius);
 

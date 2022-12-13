@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.factory;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
@@ -80,7 +80,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
          * The intent is to force a full scan.
          */
         final CoordinateReferenceSystem search = new DefaultGeographicCRS(
-                Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
+                Map.of(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
                 CRS84.getDatum(), CRS84.getCoordinateSystem());
         assertEqualsIgnoreMetadata(CRS84, search);              // Required condition for next test.
 

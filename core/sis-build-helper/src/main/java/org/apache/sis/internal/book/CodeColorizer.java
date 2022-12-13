@@ -16,10 +16,7 @@
  */
 package org.apache.sis.internal.book;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.io.BufferedReader;
@@ -47,7 +44,7 @@ public final class CodeColorizer {
     /**
      * Lists of Java keywords.
      */
-    public static final Set<String> JAVA_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    public static final Set<String> JAVA_KEYWORDS = Set.of(
         "abstract", "continue", "for",        "new",        "switch",
         "assert",   "default",  "goto",       "package",    "synchronized",
         "boolean",  "do",       "if",         "private",    "this",
@@ -58,7 +55,7 @@ public final class CodeColorizer {
         "char",     "final",    "interface",  "static",     "void",
         "class",    "finally",  "long",       "strictfp",   "volatile",
         "const",    "float",    "native",     "super",      "while",
-        /* literals: */ "true", "false", "null")));
+        /* literals: */ "true", "false", "null");
 
     /**
      * Returns all nodes in the given list as an array. This method is used for getting a snapshot

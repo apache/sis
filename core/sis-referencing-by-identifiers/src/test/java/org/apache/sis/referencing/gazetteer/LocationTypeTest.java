@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
-import java.util.List;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -180,8 +179,7 @@ public final strictfp class LocationTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testInheritance")
     public void testSnapshot() {
-        final List<AbstractLocationType> snapshot = ModifiableLocationType.snapshot(null, create(true));
-        verify(snapshot.toArray(new AbstractLocationType[snapshot.size()]));
+        verify(ModifiableLocationType.snapshot(null, create(true)).toArray(AbstractLocationType[]::new));
     }
 
     /**

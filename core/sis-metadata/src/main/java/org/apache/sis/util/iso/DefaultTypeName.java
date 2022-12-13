@@ -128,7 +128,7 @@ import org.apache.sis.util.UnknownNameException;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultMemberName
  * @see DefaultNameFactory
@@ -260,21 +260,6 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      */
     public Optional<Type> toJavaType() {
         return Optional.ofNullable(javaType);
-    }
-
-    /**
-     * Returns the Java class associated to this type name.
-     *
-     * @deprecated Replaced by {@link #toJavaType()}.
-     *
-     * @return the Java class associated to this {@code TypeName},
-     *         or {@code null} if there is no mapping from this name to a Java class.
-     *
-     * @since 0.5
-     */
-    @Deprecated
-    public Class<?> toClass() {
-        return (javaType instanceof Class<?>) ? (Class<?>) javaType : null;
     }
 
     /**

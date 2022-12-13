@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.Collections;
 import java.io.IOException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -97,7 +96,7 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public Set<String> getDependencies() {
-        return Collections.singleton(referentName);
+        return Set.of(referentName);
     }
 
     /**

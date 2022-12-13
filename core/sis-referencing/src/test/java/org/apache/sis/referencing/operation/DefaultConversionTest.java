@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -85,19 +84,19 @@ public final strictfp class DefaultConversionTest extends TestCase {
     private static GeographicCRS createParisCRS(final boolean isSource, final EllipsoidalCS cs, final boolean useGreenwich) {
         DefaultGeodeticDatum datum = HardCodedDatum.NTF;
         if (useGreenwich) {
-            datum = new DefaultGeodeticDatum(Collections.singletonMap(DefaultGeodeticDatum.NAME_KEY, datum.getName()),
-                    datum.getEllipsoid(), HardCodedDatum.GREENWICH);
+            datum = new DefaultGeodeticDatum(Map.of(DefaultGeodeticDatum.NAME_KEY, datum.getName()),
+                                             datum.getEllipsoid(), HardCodedDatum.GREENWICH);
         }
-        return new DefaultGeographicCRS(Collections.singletonMap(GeographicCRS.NAME_KEY,
-                isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"), datum, cs);
+        return new DefaultGeographicCRS(Map.of(GeographicCRS.NAME_KEY, isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"),
+                                        datum, cs);
     }
 
     /**
      * Changes only the coordinate system of the given CRS, which is supposed geographic.
      */
     private static GeographicCRS changeCS(final CoordinateReferenceSystem crs, final EllipsoidalCS cs) {
-        return new DefaultGeographicCRS(Collections.singletonMap(DefaultGeographicCRS.NAME_KEY,
-                crs.getName()), ((GeodeticCRS) crs).getDatum(), cs);
+        return new DefaultGeographicCRS(Map.of(DefaultGeographicCRS.NAME_KEY, crs.getName()),
+                                        ((GeodeticCRS) crs).getDatum(), cs);
     }
 
     /**

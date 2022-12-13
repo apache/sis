@@ -327,9 +327,8 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             if ((x | y) < 0 || x >= scanlineStride) {
                 throw new IndexOutOfBoundsException();
             }
-            return c0 * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
-                   c1 * (y + getCellValue(1, x, y)) +
-                   c2;
+            return Math.fma(x + getCellValue(0, x, y), c0,
+                   Math.fma(y + getCellValue(1, x, y), c1, c2));
         }
 
         /**

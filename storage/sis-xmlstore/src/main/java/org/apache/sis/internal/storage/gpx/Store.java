@@ -203,7 +203,7 @@ public class Store extends StaxDataStore implements FeatureSet {
      * @deprecated We are not sure yet if we will keep this method. Decision is pending acquisition of
      *             more experience with the API proposed by {@link org.apache.sis.storage.FeatureSet}.
      */
-    @Deprecated
+    @Deprecated(since="0.8")
     public DefaultFeatureType getFeatureType(final String name) throws IllegalNameException {
         return types.names.get(this, name);
     }

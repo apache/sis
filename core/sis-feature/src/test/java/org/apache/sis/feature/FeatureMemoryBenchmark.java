@@ -19,10 +19,9 @@ package org.apache.sis.feature;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import org.apache.sis.internal.util.StandardDateFormat;
-
-import static java.util.Collections.singletonMap;
 
 
 /**
@@ -72,10 +71,10 @@ public final class FeatureMemoryBenchmark {
         features = new ArrayList<>(100000);
         this.isSimple = isSimple;
         if (useSIS) {
-            type = new DefaultFeatureType     (singletonMap("name", "City"), false, null,
-                    new DefaultAttributeType<>(singletonMap("name", "city"),     String.class, 1, 1, null),
-                    new DefaultAttributeType<>(singletonMap("name", "longitude"), Float.class, 1, 1, null),
-                    new DefaultAttributeType<>(singletonMap("name", "latitude"),  Float.class, 1, 1, null));
+            type = new DefaultFeatureType    (Map.of("name", "City"), false, null,
+                   new DefaultAttributeType<>(Map.of("name", "city"),     String.class, 1, 1, null),
+                   new DefaultAttributeType<>(Map.of("name", "longitude"), Float.class, 1, 1, null),
+                   new DefaultAttributeType<>(Map.of("name", "latitude"),  Float.class, 1, 1, null));
         } else {
             type = null;
         }

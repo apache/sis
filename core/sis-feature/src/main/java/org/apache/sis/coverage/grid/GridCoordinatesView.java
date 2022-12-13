@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -127,8 +126,8 @@ final class GridCoordinatesView {
          */
         if (object instanceof GridCoordinatesView) {
             final GridCoordinatesView that = (GridCoordinatesView) object;
-            return JDK9.equals(this.coordinates, this.offset, this.offset + this.getDimension(),
-                               that.coordinates, that.offset, that.offset + that.getDimension());
+            return Arrays.equals(this.coordinates, this.offset, this.offset + this.getDimension(),
+                                 that.coordinates, that.offset, that.offset + that.getDimension());
         }
         return false;
     }

@@ -16,10 +16,9 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -135,7 +134,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertNull("SECOND", Units.SECOND.getBaseUnits());
         assertTrue("UNITY",  Units.UNITY .getBaseUnits().isEmpty());
 
-        assertMapEquals(Collections.singletonMap(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
+        assertMapEquals(Map.of(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
 
         final Map<Unit<?>,Integer> expected = new HashMap<>(4);
         assertNull(expected.put(Units.KILOGRAM, 1));
@@ -310,7 +309,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         /*
          * Verify that the unit cannot be casted to an incompatible units.
          */
-        for (final Unit<Length> unit : Arrays.asList(Units.METRE, anonymous, otherName)) {
+        for (final Unit<Length> unit : List.of(Units.METRE, anonymous, otherName)) {
             try {
                 unit.asType(Time.class);
                 fail("Expected an exception for incompatible quantity types.");
@@ -338,7 +337,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertEquals("Should have a name since we invoked 'alternate'.", "strange", named.getSymbol());
         assertSame  ("Should prefer the named instance.", named, Units.METRE.asType(Strange.class));
         assertSame  ("Go back to the fundamental unit.",  Units.METRE, named.asType(Length.class));
-        for (final Unit<Strange> unit : Arrays.asList(strange, named)) {
+        for (final Unit<Strange> unit : List.of(strange, named)) {
             try {
                 unit.asType(Time.class);
                 fail("Expected an exception for incompatible quantity types.");

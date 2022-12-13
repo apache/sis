@@ -17,7 +17,6 @@
 package org.apache.sis.internal.util;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.AbstractMap;
@@ -30,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.function.Predicate;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -42,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link CollectionsExt} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -152,30 +150,15 @@ public final strictfp class CollectionsExtTest extends TestCase {
     }
 
     /**
-     * Tests {@link CollectionsExt#filter(Iterator, Predicate)}.
-     */
-    @Test
-    public void testFilter() {
-        final Iterator<Integer> it = CollectionsExt.filter(Arrays.asList(2, 5, 7, 4, 8).iterator(), (Integer n) -> (n & 1) == 0);
-        assertTrue  (   it.hasNext());
-        assertEquals(2, it.next().intValue());
-        assertEquals(4, it.next().intValue());
-        assertTrue  (   it.hasNext());
-        assertTrue  (   it.hasNext());
-        assertEquals(8, it.next().intValue());
-        assertFalse (   it.hasNext());
-    }
-
-    /**
      * Tests {@link CollectionsExt#identityEquals(Iterator, Iterator)}.
      */
     @Test
     public void testIdentityEquals() {
-        final List<String> c1 = Arrays.asList("A", "B", "C");
-        final List<String> c2 = Arrays.asList("A", "B");
+        final List<String> c1 = List.of("A", "B", "C");
+        final List<String> c2 = List.of("A", "B");
         assertFalse(CollectionsExt.identityEquals(c1.iterator(), c2.iterator()));
         assertFalse(CollectionsExt.identityEquals(c2.iterator(), c1.iterator()));
-        assertTrue(CollectionsExt.identityEquals(c1.iterator(), Arrays.asList("A", "B", "C").iterator()));
+        assertTrue(CollectionsExt.identityEquals(c1.iterator(), List.of("A", "B", "C").iterator()));
     }
 
     /**
@@ -186,7 +169,7 @@ public final strictfp class CollectionsExtTest extends TestCase {
     @Test
     public void testToArray() {
         final String[] expected = new String[] {"One", "Two", "Three"};
-        final String[] actual = CollectionsExt.toArray(Arrays.asList(expected), String.class);
+        final String[] actual = CollectionsExt.toArray(List.of(expected), String.class);
         assertArrayEquals(expected, actual);
     }
 }

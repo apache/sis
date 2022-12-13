@@ -103,7 +103,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @deprecated Replaced by {@link #resultContent}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     @SuppressWarnings("serial")
     private CoverageDescription resultContentDescription;
 
@@ -250,7 +250,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      * @deprecated Replaced by {@link #getResultContent()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @XmlElement(name = "resultContentDescription", namespace = LegacyNamespaces.GMI)
     public CoverageDescription getResultContentDescription() {
         return FilterByVersion.LEGACY_METADATA.accept() ? resultContentDescription : null;
@@ -264,7 +264,7 @@ public class DefaultCoverageResult extends AbstractResult implements CoverageRes
      *
      * @deprecated Replaced by {@link #setResultContent(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setResultContentDescription(final CoverageDescription newValue) {
         checkWritePermission(resultContentDescription);
         resultContentDescription = newValue;

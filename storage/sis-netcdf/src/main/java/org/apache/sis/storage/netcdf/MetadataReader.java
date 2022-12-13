@@ -27,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -80,7 +79,6 @@ import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 
@@ -225,7 +223,7 @@ final class MetadataReader extends MetadataBuilder {
      */
     static List<String> split(final String value) {
         if (value == null) {
-            return Collections.emptyList();
+            return List.of();
         }
         final List<String> items = new ArrayList<>();
         int start = 0;      // Index of the first character of the next item to add in the list.
@@ -400,7 +398,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private static Address createAddress(final String email) {
         if (email != null) {
             final DefaultAddress address = new DefaultAddress();
-            address.setElectronicMailAddresses(singleton(email));
+            address.setElectronicMailAddresses(Set.of(email));
             return address;
         }
         return null;
@@ -412,8 +410,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private static Contact createContact(final Address address, final OnlineResource url) {
         if (address != null || url != null) {
             final DefaultContact contact = new DefaultContact();
-            if (address != null) contact.setAddresses(singleton(address));
-            if (url     != null) contact.setOnlineResources(singleton(url));
+            if (address != null) contact.setAddresses(Set.of(address));
+            if (url     != null) contact.setOnlineResources(Set.of(url));
             return contact;
         }
         return null;
@@ -515,9 +513,11 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (DefaultIndividual) party, null);
                 if (party            == null) party = isOrganisation(keys) ? new DefaultOrganisation() : new DefaultIndividual();
-                if (contact          != null) party.setContactInfo(singleton(contact));
+                if (contact          != null) party.setContactInfo(Set.of(contact));
                 responsibility = new DefaultResponsibleParty(role);
-                ((DefaultResponsibleParty) responsibility).setParties(singleton(party));
+                if (party != null) {
+                    ((DefaultResponsibleParty) responsibility).setParties(Set.of(party));
+                }
             }
         }
         return responsibility;

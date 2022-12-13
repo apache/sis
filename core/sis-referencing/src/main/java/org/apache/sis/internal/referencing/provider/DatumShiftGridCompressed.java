@@ -212,8 +212,8 @@ final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T
             final double r01 = values[p00 + 1];                     // Naming convention: ryx (row index first, like matrix).
             final double r10 = values[p10    ];
             final double r11 = values[p10 + 1];
-            final double r0x = r00 + gridX * (dx = r01 - r00);      // TODO: use Math.fma on JDK9.
-            final double r1x = r10 + gridX * (dy = r11 - r10);      // Not really "dy" measurement yet, will become dy later.
+            final double r0x = Math.fma(gridX, dx = r01 - r00, r00);
+            final double r1x = Math.fma(gridX, dy = r11 - r10, r10);  // Not really "dy" measurement yet, will become dy later.
             vector[dim] = (gridY * (r1x - r0x) + r0x) * scale + averages[dim];
             if (derivative) {
                 if (skipX) {

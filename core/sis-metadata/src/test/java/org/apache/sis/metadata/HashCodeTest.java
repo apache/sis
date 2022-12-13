@@ -16,7 +16,8 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Arrays;
+import java.util.Set;
+import java.util.List;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Role;
@@ -36,7 +37,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 
@@ -73,9 +73,9 @@ public final strictfp class HashCodeTest extends TestCase {
         assertEquals("Metadata with a single value.", Integer.valueOf(baseCode + title.hashCode()), hash(instance));
 
         final InternationalString alternateTitle = new SimpleInternationalString("Another title");
-        instance.setAlternateTitles(singleton(alternateTitle));
+        instance.setAlternateTitles(Set.of(alternateTitle));
         assertEquals("Metadata with two values.",
-                     Integer.valueOf(baseCode + title.hashCode() + Arrays.asList(alternateTitle).hashCode()),
+                     Integer.valueOf(baseCode + title.hashCode() + List.of(alternateTitle).hashCode()),
                      hash(instance));
     }
 

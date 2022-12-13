@@ -18,7 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.util.Iterator;
-import java.util.Collections;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -387,7 +387,7 @@ final class XMLMetadata implements Filter {
                  * The `mergeMetadata` method applies heuristic rules for adding components.
                  */
                 metadata.mergeMetadata(XML.unmarshal(new StAXSource(reader),
-                        Collections.singletonMap(XML.WARNING_FILTER, this)),
+                        Map.of(XML.WARNING_FILTER, this)),
                         (listeners != null) ? listeners.getLocale() : null);
             }
             reader.close();     // No need to close the underlying input stream.

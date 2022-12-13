@@ -16,8 +16,8 @@
  */
 package org.apache.sis.io.wkt;
 
+import java.util.Map;
 import java.util.Locale;
-import java.util.Collections;
 import java.text.ParseException;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.measure.Units;
@@ -421,8 +421,9 @@ public final strictfp class WKTFormatTest extends TestCase {
      */
     @Test
     public void testWarnings() throws ParseException {
-        DefaultPrimeMeridian pm = new DefaultPrimeMeridian(Collections.singletonMap(
-                DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"), -10, Units.DEGREE);
+        DefaultPrimeMeridian pm = new DefaultPrimeMeridian(
+                Map.of(DefaultPrimeMeridian.NAME_KEY, "Invalid “$name” here"),
+                -10, Units.DEGREE);
         format = new WKTFormat(Locale.US, null);
         final String   wkt      = format.format(pm);
         final Warnings warnings = format.getWarnings();

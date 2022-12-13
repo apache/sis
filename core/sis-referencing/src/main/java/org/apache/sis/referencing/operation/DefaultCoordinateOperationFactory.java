@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.opengis.util.FactoryException;
@@ -41,7 +40,6 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.referencing.CRS;
@@ -97,10 +95,8 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     static final boolean USE_EPSG_FACTORY = true;
 
     /**
-     * The default properties, or an empty map if none. This map shall not change after construction in
-     * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
-     * in a unmodifiable map since {@code DefaultCoordinateOperationFactory} does not provide public
-     * access to it.
+     * The default properties, or an empty map if none. This map shall be immutable
+     * in order to allow usage without synchronization in multi-thread context.
      */
     private final Map<String,?> defaultProperties;
 
@@ -163,7 +159,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
         if (properties == null || properties.isEmpty()) {
-            properties = Collections.emptyMap();
+            properties = Map.of();
         } else {
             String key   = null;
             Object value = null;
@@ -181,7 +177,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                         .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
             properties.remove(ReferencingFactoryContainer.DATUM_FACTORY);
-            properties = CollectionsExt.compact(properties);
+            properties = Map.copyOf(properties);
         }
         defaultProperties = properties;
         if (factory != null) {
@@ -879,7 +875,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS,
                                                final OperationMethod method)

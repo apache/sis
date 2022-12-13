@@ -19,7 +19,6 @@ package org.apache.sis.internal.referencing;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.function.Supplier;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
@@ -41,8 +40,8 @@ import org.apache.sis.internal.metadata.NameToIdentifier;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
+import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.Containers;
 
@@ -52,7 +51,7 @@ import org.apache.sis.util.collection.Containers;
  * until first needed. Contains also utility methods related to coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  * @module
  */
@@ -179,7 +178,7 @@ public final class CoordinateOperations extends SystemListener {
             {
                 return CoordinateOperations.factory();
             }
-            properties = Collections.emptyMap();
+            properties = Map.of();
         }
         final HashMap<String,Object> p = new HashMap<>(properties);
         p.putIfAbsent(ReferencingFactoryContainer.CRS_FACTORY, crsFactory);
@@ -252,7 +251,7 @@ public final class CoordinateOperations extends SystemListener {
                 return wrapAroundChanges(source, target.getCoordinateSystem());
             }
         }
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -293,7 +292,7 @@ public final class CoordinateOperations extends SystemListener {
             indices[i] = dim;
             r &= ~(1L << dim);
         }
-        final Set<Integer> dimensions = JDK9.setOf(indices);
+        final Set<Integer> dimensions = CollectionsExt.immutableSet(true, indices);
         if (useCache) {
             synchronized (CACHE) {
                 final Set<Integer> existing = CACHE[(int) changes];

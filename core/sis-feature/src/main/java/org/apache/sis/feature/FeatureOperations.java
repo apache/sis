@@ -135,7 +135,7 @@ public final class FeatureOperations extends Static {
      *   AttributeType licensePlateNumber = ...;            // Attribute creation omitted for brevity
      *   FeatureType car = new DefaultFeatureType(...,      // Arguments omitted for brevity
      *           licensePlateNumber, model, owner,
-     *           FeatureOperations.link(singletonMap(NAME_KEY, "identifier"), licensePlateNumber);
+     *           FeatureOperations.link(Map.of(NAME_KEY, "identifier"), licensePlateNumber);
      * }
      * </div>
      *

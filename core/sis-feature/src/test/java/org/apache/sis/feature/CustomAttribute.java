@@ -16,14 +16,13 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Set;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDomainConsistency;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.referencing.NamedIdentifier;
-
-import static java.util.Collections.singleton;
 
 
 /**
@@ -81,8 +80,8 @@ final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
         final DefaultQuantitativeResult result  = new DefaultQuantitativeResult();
         result.setErrorStatistic(new SimpleInternationalString(ADDITIONAL_QUALITY_INFO));
         report.setMeasureIdentification(NamedIdentifier.castOrCopy(getName()));
-        report .setResults(singleton(result));
-        quality.setReports(singleton(report));
+        report .setResults(Set.of(result));
+        quality.setReports(Set.of(report));
         return quality;
     }
 }

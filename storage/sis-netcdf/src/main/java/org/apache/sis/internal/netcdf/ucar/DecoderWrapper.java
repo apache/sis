@@ -18,10 +18,10 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Set;
 import java.util.List;
 import java.util.Formatter;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
@@ -149,7 +149,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
          * enhancement shall NOT be enabled because it causes the use of integer types twice bigger than needed
          * (e.g. `int` instead of `short`).
          */
-        file = NetcdfDatasets.openDataset(url, Collections.singleton(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
+        file = NetcdfDatasets.openDataset(url, Set.of(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
         groups = new Group[1];
         initialize();
     }
@@ -493,7 +493,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @SuppressWarnings({"ReturnOfCollectionOrArrayField"})
     public Grid[] getGridCandidates() throws IOException {
         if (geometries == null) {
-            List<CoordinateSystem> systems = Collections.emptyList();
+            List<CoordinateSystem> systems = List.of();
             if (file instanceof NetcdfDataset) {
                 /*
                  * We take all coordinate systems as associated to a grid. As an alternative,

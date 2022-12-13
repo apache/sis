@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -30,7 +31,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singleton;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 
 
@@ -82,10 +82,10 @@ public final strictfp class PrunerTest extends TestCase {
         scale          = new DefaultRepresentativeFraction();
         extent         = new DefaultExtent();
         bbox           = new DefaultGeographicBoundingBox();
-        extent.setGeographicElements(singleton(bbox));
-        identification.setExtents(singleton(extent));
-        identification.setSpatialResolutions(singleton(new DefaultResolution(scale)));
-        metadata.setIdentificationInfo(singleton(identification));
+        extent.setGeographicElements(Set.of(bbox));
+        identification.setExtents(Set.of(extent));
+        identification.setSpatialResolutions(Set.of(new DefaultResolution(scale)));
+        metadata.setIdentificationInfo(Set.of(identification));
     }
 
     /**
@@ -152,7 +152,7 @@ public final strictfp class PrunerTest extends TestCase {
      * The cycle is between {@code platform.instrument} and {@code instrument.isMountedOn}.
      */
     private void createCyclicMetadata() {
-        metadata.setAcquisitionInformation(singleton(MetadataStandardTest.createCyclicMetadata()));
+        metadata.setAcquisitionInformation(Set.of(MetadataStandardTest.createCyclicMetadata()));
     }
 
     /**

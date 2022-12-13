@@ -29,7 +29,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -265,11 +264,13 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         }
         /*
          * Wraps in an unmodifiable list in case the caller is creating an unmodifiable metadata.
+         * Use `Collections` instead of `List.of(…)` for consistency with `UnmodifiableArrayList`
+         * which accepts `List.contains(null)`.
          */
         switch (merged.size()) {
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(merged.get(0));
-            default: return Containers.unmodifiableList(CollectionsExt.toArray(merged, Identifier.class));
+            default: return UnmodifiableArrayList.wrap(merged.toArray(Identifier[]::new));
         }
     }
 

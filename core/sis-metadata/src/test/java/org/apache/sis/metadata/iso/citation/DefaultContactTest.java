@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -88,7 +88,7 @@ public final strictfp class DefaultContactTest extends TestCase implements Filte
         final DefaultTelephone   tel4 = new DefaultTelephone("00.04", UnsupportedCodeList.VOICE);
         final DefaultTelephone[] tels = new DefaultTelephone[] {tel1, tel2, tel3, tel4};
         final DefaultContact  contact = new DefaultContact();
-        contact.setPhones(Arrays.asList(tel1, tel2, tel3, tel4));
+        contact.setPhones(List.of(tel1, tel2, tel3, tel4));
         assertArrayEquals("getPhones", tels, contact.getPhones().toArray());
         /*
          * Test the deprecated 'getPhone()' method. Invoking that method shall emit
@@ -149,8 +149,8 @@ public final strictfp class DefaultContactTest extends TestCase implements Filte
     private void testSetPhone(final boolean hideSIS) {
         init();
         final DefaultTelephone tel = new DefaultTelephone();
-        tel.setVoices(Arrays.asList("00.02", "00.04"));
-        tel.setFacsimiles(Arrays.asList("00.03"));
+        tel.setVoices(List.of("00.02", "00.04"));
+        tel.setFacsimiles(List.of("00.03"));
         final Telephone view;
         if (hideSIS) {
             view = new Telephone() {

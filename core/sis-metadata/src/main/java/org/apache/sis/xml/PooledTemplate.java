@@ -31,7 +31,7 @@ import org.apache.sis.util.resources.Errors;
  * redoing the conversion every time a new (un)marshaller is requested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -40,12 +40,9 @@ final class PooledTemplate extends Pooled {
      * Creates a new template.
      *
      * @param properties      the properties to be given to JAXB (un)marshallers, or {@code null} if none.
-     * @param implementation  {@link Implementation#INTERNAL} if the JAXB implementation is the one bundled in JDK 6, or
-     *                        {@link Implementation#ENDORSED} if this is the external implementation provided as a JAR
-     *                        file in the endorsed directory.
+     * @param implementation  the JAXB implementation used.
      */
     PooledTemplate(final Map<String,?> properties, final Implementation implementation) throws PropertyException {
-        super(implementation == Implementation.INTERNAL);
         if (properties != null) {
             for (final Map.Entry<String,?> entry : properties.entrySet()) {
                 final String key = entry.getKey();

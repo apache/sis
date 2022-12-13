@@ -256,7 +256,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#getTitle() getTitle()}</code>.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getFormatSpecificationCitation")
     @XmlElement(name = "specification", namespace = LegacyNamespaces.GMD)
     public InternationalString getSpecification() {
@@ -278,7 +278,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setTitle(InternationalString)
      * setTitle(InternationalString)}</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setSpecification(final InternationalString newValue) {
         checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) -> citation.setTitle(value), newValue);
@@ -294,7 +294,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * getAlternateTitles()}</code>. Note that citation alternate titles are often used for abbreviations.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getFormatSpecificationCitation")
     @XmlElement(name = "name", namespace = LegacyNamespaces.GMD)
     public InternationalString getName() {
@@ -317,7 +317,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setAlternateTitles(Collection)
      * setAlternateTitles(Collection)}</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setName(final InternationalString newValue) {
         checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) ->
@@ -334,7 +334,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * getEdition()}</code>.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getFormatSpecificationCitation")
     @XmlElement(name = "version", namespace = LegacyNamespaces.GMD)
     public InternationalString getVersion() {
@@ -356,7 +356,7 @@ public class DefaultFormat extends ISOMetadata implements Format {
      * <code>{@linkplain #getFormatSpecificationCitation()}.{@linkplain DefaultCitation#setEdition(InternationalString)
      * setEdition(InternationalString)}</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setVersion(final InternationalString newValue) {
         checkWritePermission(formatSpecificationCitation);
         setFormatSpecificationCitation((citation, value) -> citation.setEdition(value), newValue);

@@ -19,8 +19,6 @@ package org.apache.sis.referencing.factory;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -53,7 +51,6 @@ import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Messages;
@@ -249,13 +246,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  the default properties, or {@code null} if none.
      */
-    public GeodeticObjectFactory(Map<String,?> properties) {
-        if (properties == null || properties.isEmpty()) {
-            properties = Collections.emptyMap();
-        } else {
-            properties = CollectionsExt.compact(new HashMap<>(properties));
-        }
-        defaultProperties = properties;
+    public GeodeticObjectFactory(final Map<String,?> properties) {
+        defaultProperties = (properties != null) ? Map.copyOf(properties) : Map.of();
         pool = new WeakHashSet<>(AbstractIdentifiedObject.class);
         parser = new AtomicReference<>();
     }

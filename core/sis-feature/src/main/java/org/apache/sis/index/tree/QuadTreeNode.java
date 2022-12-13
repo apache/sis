@@ -91,7 +91,7 @@ final class QuadTreeNode extends PointTreeNode {
             case NE: child = ne; break;
             case SW: child = sw; break;
             case SE: child = se; break;
-            default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
+            default: throw new IndexOutOfBoundsException(quadrant);
         }
         return child;
     }
@@ -109,7 +109,7 @@ final class QuadTreeNode extends PointTreeNode {
             case NE: ne = child; break;
             case SW: sw = child; break;
             case SE: se = child; break;
-            default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
+            default: throw new IndexOutOfBoundsException(quadrant);
         }
     }
 

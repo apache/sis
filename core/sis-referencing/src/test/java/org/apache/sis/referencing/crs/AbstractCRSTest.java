@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.util.Map;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.AxesConvention;
@@ -23,7 +24,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import static org.apache.sis.test.Assert.*;
 
@@ -44,11 +44,11 @@ public final strictfp class AbstractCRSTest extends TestCase {
     @Test
     public void testForRightHandedConvention() {
         final AbstractCRS toTest, expected, actual;
-        toTest   =  new AbstractCRS(singletonMap(NAME_KEY, "My CRS"),
-                    new AbstractCS (singletonMap(NAME_KEY, "My strange CS"),
+        toTest   =  new AbstractCRS(Map.of(NAME_KEY, "My CRS"),
+                    new AbstractCS (Map.of(NAME_KEY, "My strange CS"),
                     HardCodedAxes.TIME, HardCodedAxes.ALTITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.GEODETIC_LONGITUDE));
-        expected =  new AbstractCRS(singletonMap(NAME_KEY, "My CRS"),
-                    new AbstractCS (singletonMap(NAME_KEY, "Coordinate system: East (°), North (°), Up (m), Future (d)."),
+        expected =  new AbstractCRS(Map.of(NAME_KEY, "My CRS"),
+                    new AbstractCS (Map.of(NAME_KEY, "Coordinate system: East (°), North (°), Up (m), Future (d)."),
                     HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME));
         actual   =  toTest.forConvention(AxesConvention.RIGHT_HANDED);
 

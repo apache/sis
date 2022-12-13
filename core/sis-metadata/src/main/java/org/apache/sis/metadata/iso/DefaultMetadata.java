@@ -530,7 +530,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   in order to include the codespace attribute.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMetadataIdentifier")
     @XmlElement(name = "fileIdentifier", namespace = LegacyNamespaces.GMD)
     public String getFileIdentifier() {
@@ -548,7 +548,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataIdentifier(Identifier)}
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setFileIdentifier(final String newValue) {
         // See "Note about deprecated methods implementation"
         DefaultIdentifier identifier = DefaultIdentifier.castOrCopy(super.getIdentifier());
@@ -618,7 +618,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0", forRemoval=true)
     @Dependencies("getLocalesAndCharsets")
     public Collection<Locale> getLanguages() {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
@@ -636,7 +636,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated Replaced by putting keys in {@link #getLocalesAndCharsets()} map.
      */
-    @Deprecated
+    @Deprecated(since="1.0", forRemoval=true)
     public void setLanguages(final Collection<Locale> newValues) {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
         setLocalesAndCharsets(LocaleAndCharset.setLanguages(getLocalesAndCharsets(), newValues));
@@ -650,7 +650,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "language", namespace = LegacyNamespaces.GMD)
     public Locale getLanguage() {
@@ -674,7 +674,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.put(newValue, …)</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setLanguage(final Locale newValue) {
         setLocalesAndCharsets(OtherLocales.setFirst(locales, new PT_Locale(newValue)));
     }
@@ -687,7 +687,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.keySet()</code>.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getLocalesAndCharsets")
     @XmlElement(name = "locale", namespace = LegacyNamespaces.GMD)
     @XmlJavaTypeAdapter(LocaleAdapter.Wrapped.class)
@@ -754,7 +754,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0", forRemoval=true)
     @Dependencies("getLocalesAndCharsets")
     public Collection<Charset> getCharacterSets() {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
@@ -770,7 +770,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated Replaced by putting values in {@link #getLocalesAndCharsets()} map.
      */
-    @Deprecated
+    @Deprecated(since="1.0", forRemoval=true)
     public void setCharacterSets(final Collection<? extends Charset> newValues) {
         // TODO: delete after SIS 1.0 release (method not needed by JAXB).
         setLocalesAndCharsets(LocaleAndCharset.setCharacterSets(getLocalesAndCharsets(), newValues));
@@ -784,7 +784,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.values()</code>.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getLocalesAndCharsets")
     // @XmlElement at the end of this class.
     public CharacterSet getCharacterSet() {
@@ -799,7 +799,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated Replaced by <code>{@linkplain #getLocalesAndCharsets()}.put(…, newValue)</code>.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setCharacterSet(final CharacterSet newValue) {
         setCharacterSets(CollectionsExt.singletonOrEmpty((newValue != null) ? newValue.toCharset() : null));
     }
@@ -839,7 +839,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getParentMetadata")
     @XmlElement(name = "parentIdentifier", namespace = LegacyNamespaces.GMD)
     public String getParentIdentifier() {
@@ -862,7 +862,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #getParentMetadata()}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setParentIdentifier(final String newValue) {
         checkWritePermission(parentMetadata);
         // See "Note about deprecated methods implementation"
@@ -921,7 +921,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   followed by {@link DefaultMetadataScope#getResourceScope()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMetadataScopes")
     @XmlElement(name = "hierarchyLevel", namespace = LegacyNamespaces.GMD)
     public final Collection<ScopeCode> getHierarchyLevels() {
@@ -953,7 +953,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
      *   and {@link DefaultMetadataScope#setResourceScope(ScopeCode)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setHierarchyLevels(final Collection<? extends ScopeCode> newValues) {
         checkWritePermission(ImplementationHelper.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<ScopeCode,?>) getHierarchyLevels()).setValues(newValues);
@@ -968,7 +968,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   followed by {@link DefaultMetadataScope#getName()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMetadataScopes")
     @XmlElement(name = "hierarchyLevelName", namespace = LegacyNamespaces.GMD)
     public final Collection<String> getHierarchyLevelNames() {
@@ -1001,7 +1001,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #setMetadataScopes(Collection)}
      *   and {@link DefaultMetadataScope#setName(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setHierarchyLevelNames(final Collection<? extends String> newValues) {
         checkWritePermission(ImplementationHelper.valueIfDefined(metadataScopes));
         ((LegacyPropertyAdapter<String,?>) getHierarchyLevelNames()).setValues(newValues);
@@ -1067,7 +1067,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getDateInfo()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getDateInfo")
     @XmlElement(name = "dateStamp", namespace = LegacyNamespaces.GMD)
     public Date getDateStamp() {
@@ -1091,7 +1091,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setDateInfo(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDateStamp(final Date newValue) {
         checkWritePermission(ImplementationHelper.valueIfDefined(dateInfo));
         Collection<CitationDate> newValues = dateInfo;      // See "Note about deprecated methods implementation"
@@ -1257,7 +1257,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   followed by {@link DefaultCitation#getTitle()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMetadataStandards")
     @XmlElement(name = "metadataStandardName", namespace = LegacyNamespaces.GMD)
     public String getMetadataStandardName() {
@@ -1272,7 +1272,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
      *   followed by {@link DefaultCitation#setTitle(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setMetadataStandardName(final String newValue) {
         setMetadataStandard(false, newValue);
     }
@@ -1286,7 +1286,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *   followed by {@link DefaultCitation#getEdition()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getMetadataStandards")
     @XmlElement(name = "metadataStandardVersion", namespace = LegacyNamespaces.GMD)
     public String getMetadataStandardVersion() {
@@ -1301,7 +1301,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @deprecated As of ISO 19115:2014, replaced by {@link #getMetadataStandards()}
      *   followed by {@link DefaultCitation#setEdition(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setMetadataStandardVersion(final String newValue) {
         setMetadataStandard(true, newValue);
     }
@@ -1339,7 +1339,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *    {@link DefaultDataIdentification#getCitation()} followed by {@link DefaultCitation#getOnlineResources()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getIdentificationInfo")
     @XmlElement(name = "dataSetURI", namespace = LegacyNamespaces.GMD)
     public String getDataSetUri() {
@@ -1381,7 +1381,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *    followed by {@link DefaultDataIdentification#getCitation()}
      *    followed by {@link DefaultCitation#setOnlineResources(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDataSetUri(final String newValue) throws URISyntaxException {
         final URI uri = (newValue != null) ? new URI(newValue) : null;
         Collection<Identification> info = identificationInfo;   // See "Note about deprecated methods implementation"

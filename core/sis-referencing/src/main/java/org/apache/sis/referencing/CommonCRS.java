@@ -75,7 +75,6 @@ import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -1869,7 +1868,7 @@ public enum CommonCRS {
          *   <tr><th>Unit:</th> <td>{@link Units#PIXEL}</td></tr>
          * </table></blockquote>
          */
-        GEODISPLAY(new DefaultEngineeringDatum(JDK9.mapOf(
+        GEODISPLAY(new DefaultEngineeringDatum(Map.of(
                 EngineeringDatum.NAME_KEY, "Computer display",
                 EngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left."))),
 
@@ -2009,7 +2008,7 @@ public enum CommonCRS {
      * Puts the given name in a map of properties to be given to object constructors.
      */
     private static Map<String,?> properties(final InternationalString name) {
-        return singletonMap(NAME_KEY, new NamedIdentifier(null, name));
+        return Map.of(NAME_KEY, new NamedIdentifier(null, name));
     }
 
     /**

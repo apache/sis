@@ -16,9 +16,8 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Collections;
+import java.util.List;
 import com.esri.core.geometry.Point;
 import com.esri.core.geometry.Polygon;
 import org.opengis.geometry.Envelope;
@@ -90,7 +89,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
      * Creates a map of identification properties containing only an entry for the given name.
      */
     private static Map<String,?> name(final Object name) {
-        return Collections.singletonMap(DefaultAttributeType.NAME_KEY, name);
+        return Map.of(DefaultAttributeType.NAME_KEY, name);
     }
 
     /**
@@ -107,7 +106,7 @@ public final strictfp class FeatureOperationsTest extends TestCase {
         assertInstanceOf("bounds", EnvelopeOperation.class, property);
         final EnvelopeOperation op = (EnvelopeOperation) property;
         assertSame("targetCRS", HardCodedCRS.WGS84, op.targetCRS);
-        assertSetEquals(Arrays.asList("classes", "climbing wall", "gymnasium"), op.getDependencies());
+        assertSetEquals(List.of("classes", "climbing wall", "gymnasium"), op.getDependencies());
     }
 
     /**

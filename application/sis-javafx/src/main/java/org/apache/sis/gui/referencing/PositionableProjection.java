@@ -173,7 +173,7 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
      */
     public static PositionableProjection[] values() {
         synchronized (VALUES) {
-            return VALUES.toArray(new PositionableProjection[VALUES.size()]);
+            return VALUES.toArray(PositionableProjection[]::new);
         }
     }
 

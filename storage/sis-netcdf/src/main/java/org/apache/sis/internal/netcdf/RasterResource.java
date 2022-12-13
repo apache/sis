@@ -54,7 +54,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.storage.StoreResource;
@@ -200,7 +199,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         identifier       = decoder.nameFactory.createLocalName(decoder.namespace, name);
         visibleBand      = decoder.convention().getVisibleBand();
         sampleDimensions = new SampleDimension[numBands];
-        data             = bands.toArray(new Variable[bands.size()]);
+        data             = bands.toArray(Variable[]::new);
         assert data.length == (bandDimension >= 0 ? 1 : sampleDimensions.length);
     }
 
@@ -706,7 +705,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                 sampleValues = new Buffer[bands.length];
                 for (int i=0; i<sampleValues.length; i++) {
                     if (i != 0) {
-                        values = JDK9.duplicate(values);
+                        values = values.duplicate();
                         final int p = values.limit();
                         values.position(p).limit(Math.addExact(p, stride));
                     }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
@@ -35,7 +36,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -68,10 +69,10 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * Creates a new GPX store provider.
      */
     public StoreProvider() {
-        super("GPX");
-        mimeForNameSpaces.put(Tags.NAMESPACE_V10, "application/gpx+xml");
-        mimeForNameSpaces.put(Tags.NAMESPACE_V11, "application/gpx+xml");
-        mimeForRootElements.put("gpx", "application/gpx+xml");
+        super("GPX",
+              Map.of(Tags.NAMESPACE_V10, "application/gpx+xml",
+                     Tags.NAMESPACE_V11, "application/gpx+xml"),
+              Map.of("gpx",              "application/gpx+xml"));
     }
 
     /**

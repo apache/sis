@@ -19,7 +19,6 @@ package org.apache.sis.gui.dataset;
 import java.awt.Desktop;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.nio.file.Path;
 import java.io.File;
 import java.net.URL;
@@ -151,7 +150,7 @@ final class PathAction implements EventHandler<ActionEvent> {
         } catch (DataStoreException e) {
             ResourceTree.unexpectedException("copy", e);
         } else if (file instanceof File) {
-            files = Collections.singletonList((File) file);
+            files = List.of((File) file);
         }
         /*
          * Put in the clipboard all information that we could get.

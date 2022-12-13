@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -190,6 +189,6 @@ final class VerticalInfo {
      * Convenience method for creating the map of properties to give to the factory method.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 }

@@ -170,7 +170,7 @@ import static java.util.logging.Logger.getLogger;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @version 1.3
+ * @version 1.4
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
@@ -528,7 +528,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *             where the {@code Context} argument can be null.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
@@ -621,29 +621,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Sets the source coordinate system and its associated ellipsoid to the given value.
-         *
-         * <div class="note"><b>Design note:</b>
-         * ellipsoidal coordinate systems and ellipsoids are associated indirectly, through a geodetic CRS.
-         * However, this method expects those two components to be given explicitly instead of inferring
-         * them from a {@code CoordinateReferenceSystem} for making clear that {@code MathTransformFactory}
-         * does not perform any {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
-         * datum} analysis. For coordinate operations that take datum changes in account (including change
-         * of prime meridian), see {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}.
-         * This policy helps to enforce a separation of concerns.</div>
-         *
-         * @param  cs         the coordinate system to set as the source, or {@code null}.
-         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
-         *
-         * @deprecated Replaced by {@link #setSource(GeodeticCRS)}.
-         */
-        @Deprecated
-        public void setSource(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
-            sourceCS = cs;
-            sourceEllipsoid = ellipsoid;
-        }
-
-        /**
          * Sets the source coordinate system and related ellipsoid to the components of given CRS.
          * The {@link Ellipsoid}, fetched from the geodetic datum, is often used together with an {@link EllipsoidalCS},
          * but not necessarily. The geodetic CRS may also be associated with a spherical or Cartesian coordinate system,
@@ -675,23 +652,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         public void setTarget(final CoordinateSystem cs) {
             targetCS = cs;
             targetEllipsoid = null;
-        }
-
-        /**
-         * Sets the target coordinate system and its associated ellipsoid to the given value.
-         *
-         * <div class="note"><b>Design note:</b>
-         * see {@link #setSource(EllipsoidalCS, Ellipsoid)}.</div>
-         *
-         * @param  cs         the coordinate system to set as the source, or {@code null}.
-         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
-         *
-         * @deprecated Replaced by {@link #setTarget(GeodeticCRS)}.
-         */
-        @Deprecated
-        public void setTarget(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
-            targetCS = cs;
-            targetEllipsoid = ellipsoid;
         }
 
         /**
@@ -1523,7 +1483,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @deprecated Replaced by {@link #createParameterizedTransform(ParameterValueGroup, Context)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
             final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
             throws NoSuchIdentifierException, FactoryException

@@ -22,7 +22,6 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Collections;
 import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -199,7 +198,7 @@ public class DefaultRecord implements Record, Serializable {
      */
     public Map<MemberName, Object> getFields() {
         if (values == null) {                         // Should never be null, except temporarily at XML unmarshalling time.
-            return Collections.emptyMap();
+            return Map.of();
         }
         return new AbstractMap<MemberName, Object>() {
             /** Returns the number of fields in the record. */

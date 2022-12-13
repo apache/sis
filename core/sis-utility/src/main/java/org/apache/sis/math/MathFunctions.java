@@ -25,13 +25,13 @@ import org.apache.sis.internal.util.DoubleDouble;
 
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
+import static java.lang.Math.multiplyFull;
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToIntBits;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.doubleToRawLongBits;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 

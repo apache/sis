@@ -28,7 +28,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.image.DataType;
 
 import static java.lang.Math.toIntExact;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
+import static java.lang.Math.multiplyFull;
 
 
 /**

@@ -261,7 +261,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getContentTypes()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getAttributeGroups")
     @XmlElement(name = "contentType", namespace = LegacyNamespaces.GMD)
     public CoverageContentType getContentType() {
@@ -296,7 +296,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setContentTypes(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setContentType(final CoverageContentType newValue) {
         checkWritePermission(valueIfDefined(attributeGroups));
         final Collection<CoverageContentType> newValues = CollectionsExt.singletonOrEmpty(newValue);
@@ -326,7 +326,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#getAttributes()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getAttributeGroups")
     @XmlElement(name = "dimension", namespace = LegacyNamespaces.GMD)
     public final Collection<RangeDimension> getDimensions() {
@@ -364,7 +364,7 @@ public class DefaultCoverageDescription extends AbstractContentInformation imple
      *
      * @deprecated As of ISO 19115:2014, moved to {@link DefaultAttributeGroup#setAttributes(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDimensions(final Collection<? extends RangeDimension> newValues) {
         checkWritePermission(valueIfDefined(attributeGroups));
         ((LegacyPropertyAdapter<RangeDimension,?>) getDimensions()).setValues(newValues);

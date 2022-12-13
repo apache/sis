@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
-import java.util.Collections;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -84,14 +83,14 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * The domain of source grid indices is the [0 … 1] range in all dimensions.
      */
     private GridCoverage createTestCoverage(final MathTransform gridToCRS) {
-        final GridGeometry grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
-                PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84);
+        final var grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
+                            PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84);
 
         final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
         final SampleDimension sd = new SampleDimension.Builder().setName("Some kind of height")
                 .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.METRE)
                 .build();
-        return createTestCoverage(grid, Collections.singletonList(sd));
+        return createTestCoverage(grid, List.of(sd));
     }
 
     /**

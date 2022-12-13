@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import javax.measure.Unit;
@@ -143,21 +142,17 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * @see #isHeuristicMatchForName(String)
      */
-    private static final Map<String,Object> ALIASES = new HashMap<>(12);
-    static {
-        final Boolean latitude  = Boolean.TRUE;
-        final Boolean longitude = Boolean.FALSE;
-        ALIASES.put("lat",                latitude);
-        ALIASES.put("latitude",           latitude);
-        ALIASES.put("geodetic latitude",  latitude);
-        ALIASES.put("lon",                longitude);
-        ALIASES.put("long",               longitude);
-        ALIASES.put("longitude",          longitude);
-        ALIASES.put("geodetic longitude", longitude);
-        /*
-         * Do not add aliases for "x" and "y" in this map. See ALIASES_XY for more information.
-         */
-    }
+    private static final Map<String,Object> ALIASES = Map.of(
+            "lat",                Boolean.TRUE,
+            "latitude",           Boolean.TRUE,
+            "geodetic latitude",  Boolean.TRUE,
+            "lon",                Boolean.FALSE,
+            "long",               Boolean.FALSE,
+            "longitude",          Boolean.FALSE,
+            "geodetic longitude", Boolean.FALSE);
+    /*
+     * Do not add aliases for "x" and "y" in this map. See ALIASES_XY for more information.
+     */
 
     /**
      * Aliases for the "x" and "y" abbreviations (special cases). "x" and "y" are sometimes used (especially in WKT)

@@ -70,9 +70,10 @@ public final class SystemRegistry extends ConverterRegistry {
         /*
          * Force reloading of META-INF/services files if the classpath changed,
          * since the set of reachable META-INF/services files may have changed.
-         * If any converters were registered by explicit calls to the 'register' method,
-         * then those converters are lost. This is of concern only for applications using
-         * a modularization framework like OSGi. See package javadoc for more information.
+         * If any converters were registered by explicit calls to the `register` method,
+         * then those converters are lost. This is of concern only for applications
+         * using a container framework such as Servlet or OSGi.
+         * See package javadoc for more information.
          */
         SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {

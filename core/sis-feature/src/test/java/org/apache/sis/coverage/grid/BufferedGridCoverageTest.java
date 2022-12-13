@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
@@ -82,7 +81,7 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
         final int nbTime = 3;
         final GridExtent extent = new GridExtent(null, null, new long[] {width, height, nbTime}, false);
         final GridGeometry domain = new GridGeometry(extent, PixelInCell.CELL_CENTER, MathTransforms.scale(2, 3, 5), null);
-        final SampleDimension band = new SampleDimension(Names.createLocalName(null, null, "Data"), null, Collections.emptyList());
+        final SampleDimension band = new SampleDimension(Names.createLocalName(null, null, "Data"), null, List.of());
         /*
          * Fill slices with all values set to 10, 11 and 12 at time t=0, 1 and 2 respectively.
          * All values are stored in a single bank.
@@ -94,7 +93,7 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
             Arrays.fill(buffer, i, i += sliceSize, t + 10);
         }
         final DataBufferInt data = new DataBufferInt(buffer, size);
-        final GridCoverage coverage = new BufferedGridCoverage(domain, Collections.singletonList(band), data);
+        final GridCoverage coverage = new BufferedGridCoverage(domain, List.of(band), data);
         /*
          * Verify a value in each temporal slice.
          */

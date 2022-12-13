@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -63,7 +63,7 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
                 AxisDirection.SOUTH, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
         final DefaultCylindricalCS cs = new DefaultCylindricalCS(
-                Collections.singletonMap(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),
+                Map.of(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),
                 HardCodedAxes.BEARING,
                 HardCodedAxes.Z,
                 radius);

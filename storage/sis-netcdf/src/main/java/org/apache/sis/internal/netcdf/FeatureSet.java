@@ -355,7 +355,7 @@ final class FeatureSet extends DiscreteSampling {
                 addFeatureSet(features, decoder, null, dimension, dimension, lock);
             }
         }
-        return features.toArray(new FeatureSet[features.size()]);
+        return features.toArray(FeatureSet[]::new);
     }
 
     /**

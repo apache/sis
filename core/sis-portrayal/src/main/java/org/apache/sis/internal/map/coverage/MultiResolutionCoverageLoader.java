@@ -34,7 +34,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
 
@@ -125,7 +124,7 @@ public class MultiResolutionCoverageLoader {
         this.resource  = resource;
         areaOfInterest = domain;
         readRanges     = range;
-        double[][] resolutions = CollectionsExt.toArray(resource.getResolutions(), double[].class);
+        double[][] resolutions = resource.getResolutions().toArray(double[][]::new);
         if (resolutions.length <= 1) {
             final GridGeometry gg = resource.getGridGeometry();
             if (resolutions.length != 0) {
@@ -238,7 +237,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                          */
                         e = 0;
                         for (int k=0; k<objDim; k++) {
-                            e += d.getElement(j,k) * m.getElement(k,i);     // TODO: use Math.fma(…) with JDK9.
+                            e = Math.fma(d.getElement(j,k), m.getElement(k,i), e);
                         }
                     }
                     sum += e * e;

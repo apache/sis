@@ -73,7 +73,7 @@ public final class AttributeConvention extends Static {
     /**
      * Scope of all names defined by SIS convention.
      */
-    private static final LocalName SCOPE;
+    private static final LocalName SCOPE = Names.createLocalName("Apache", null, "sis");
 
     /**
      * Conventional name for a property used as a unique identifier.
@@ -89,7 +89,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} is usually
      * {@link String}, {@link Integer}, {@link java.util.UUID} or other types commonly used as identifiers.</p>
      */
-    public static final ScopedName IDENTIFIER_PROPERTY;
+    public static final ScopedName IDENTIFIER_PROPERTY = Names.createScopedName(SCOPE, null, "identifier");
 
     /**
      * Conventional name for a property containing the geometric object to use by default.
@@ -106,11 +106,11 @@ public final class AttributeConvention extends Static {
      *
      * @see #isGeometryAttribute(AbstractIdentifiedType)
      */
-    public static final ScopedName GEOMETRY_PROPERTY;
+    public static final ScopedName GEOMETRY_PROPERTY = Names.createScopedName(SCOPE, null, "geometry");
 
     /**
-     * Conventional name for fetching the envelope encompassing all geometries in a feature. Most {@code FeatureType}s
-     * have at most one geometry, which is also the {@link #GEOMETRY_PROPERTY default geometry}.
+     * Conventional name for fetching the envelope encompassing all geometries in a feature.
+     * Most {@code FeatureType}s have at most one geometry, which is also the {@link #GEOMETRY_PROPERTY default geometry}.
      * But if several geometries exist, then the value for this synthetic property is the union of all geometries.
      *
      * <p>Properties of this name are usually
@@ -119,7 +119,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link org.opengis.geometry.Envelope}.</p>
      */
-    public static final ScopedName ENVELOPE_PROPERTY;
+    public static final ScopedName ENVELOPE_PROPERTY = Names.createScopedName(SCOPE, null, "envelope");
 
     /**
      * Conventional name for fetching the Coordinate Reference System (CRS) of a geometry or a coverage.
@@ -138,7 +138,7 @@ public final class AttributeConvention extends Static {
      *
      * @see #getCRSCharacteristic(Object)
      */
-    public static final ScopedName CRS_CHARACTERISTIC;
+    public static final ScopedName CRS_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "crs");
 
     /**
      * Conventional name for fetching the unit of measurement of a property.
@@ -154,7 +154,7 @@ public final class AttributeConvention extends Static {
      * <p>The {@linkplain org.apache.sis.feature.DefaultAttributeType#getValueClass() value class} should be
      * {@link javax.measure.Unit}.</p>
      */
-    public static final ScopedName UNIT_CHARACTERISTIC;
+    public static final ScopedName UNIT_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "unit");
 
     /**
      * Conventional name for fetching the maximal length of string values.
@@ -168,7 +168,7 @@ public final class AttributeConvention extends Static {
      *
      * @see #getMaximalLengthCharacteristic(Object)
      */
-    public static final ScopedName MAXIMAL_LENGTH_CHARACTERISTIC;
+    public static final ScopedName MAXIMAL_LENGTH_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "maximalLength");
 
     /**
      * Conventional name for fetching the enumeration of valid values.
@@ -177,17 +177,7 @@ public final class AttributeConvention extends Static {
      * {@linkplain org.apache.sis.feature.DefaultAttributeType#characteristics() characteristic} associated
      * to the attribute on which the restriction applies.
      */
-    public static final GenericName VALID_VALUES_CHARACTERISTIC;
-    static {
-        SCOPE                         = Names.createLocalName("Apache", null, "sis");
-        IDENTIFIER_PROPERTY           = Names.createScopedName(SCOPE, null, "identifier");
-        GEOMETRY_PROPERTY             = Names.createScopedName(SCOPE, null, "geometry");
-        ENVELOPE_PROPERTY             = Names.createScopedName(SCOPE, null, "envelope");
-        CRS_CHARACTERISTIC            = Names.createScopedName(SCOPE, null, "crs");
-        UNIT_CHARACTERISTIC           = Names.createScopedName(SCOPE, null, "unit");
-        MAXIMAL_LENGTH_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "maximalLength");
-        VALID_VALUES_CHARACTERISTIC   = Names.createScopedName(SCOPE, null, "validValues");
-    }
+    public static final GenericName VALID_VALUES_CHARACTERISTIC = Names.createScopedName(SCOPE, null, "validValues");
 
     /**
      * String representation of the {@link #IDENTIFIER_PROPERTY} name.

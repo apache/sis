@@ -46,7 +46,6 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
@@ -150,6 +149,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Code spaces of authority codes recognized by this factory.
      * This set is computed from the {@code "ID[…]"} elements found in WKT definitions.
+     * Code spaces are sorted with most frequently used space first.
      *
      * @see #getCodeSpaces()
      */
@@ -883,7 +883,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     public Set<String> getCodeSpaces() {
         lock.readLock().lock();
         try {
-            return JDK9.copyOf(codespaces);
+            return CollectionsExt.copyPreserveOrder(codespaces);
         } finally {
             lock.readLock().unlock();
         }
@@ -938,19 +938,13 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                      * Verify if an existing collection (assigned to another type) provides the same values.
                      * If we find one, share the same instance for reducing memory usage.
                      */
-                    boolean share = false;
                     for (final Set<String> other : codeCaches.values()) {
                         if (codes.equals(other)) {
                             codes = other;
-                            share = true;
                             break;
                         }
                     }
-                    if (!share) {
-                        // TODO: replace by Set.copyOf(Set) in JDK9 and remove the `share` flag
-                        // (not needed because Set.copyOf(Set) does the verification itself).
-                        codes = CollectionsExt.unmodifiableOrCopy(codes);
-                    }
+                    codes = Set.copyOf(codes);
                     codeCaches.put(type, codes);
                 }
             } finally {

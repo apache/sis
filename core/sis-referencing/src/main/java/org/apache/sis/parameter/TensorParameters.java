@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
@@ -125,7 +124,7 @@ import org.apache.sis.util.resources.Errors;
  * one can use the following code:
  *
  * {@preformat java
- *   Map<String,?> properties = Collections.singletonMap(ParameterValueGroup.NAME_KEY, "Affine");
+ *   Map<String,?> properties = Map.of(ParameterValueGroup.NAME_KEY, "Affine");
  *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
  * }
  *
@@ -496,7 +495,7 @@ public class TensorParameters<E> implements Serializable {
         final Citation authority = dimensions[0].getName().getAuthority();
         final String name = indicesToName(indices);
         return new DefaultParameterDescriptor<>(
-                Collections.singletonMap(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
+                Map.of(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
                 0, 1, elementType, null, null, getDefaultValue(indices));
     }
 

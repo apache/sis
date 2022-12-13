@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Collections;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
@@ -378,8 +377,8 @@ public final class XML extends Static {
      * The field name uses the uppercase convention because this field is almost constant:
      * this field is initially null, then created by {@link #getPool()} when first needed.
      * Once created the field value usually doesn't change. However, the field may be reset
-     * to {@code null} in an OSGi context when modules are loaded or unloaded, because the
-     * set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
+     * to {@code null} when modules are loaded or unloaded by a container such as OSGi,
+     * because the set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
      *
      * @see #getPool()
      */
@@ -409,8 +408,8 @@ public final class XML extends Static {
      * <div class="note"><b>Implementation note:</b>
      * Current implementation uses the double-check idiom. This is usually a deprecated practice
      * (the recommended alterative is to use static class initialization), but in this particular
-     * case the field may be reset to {@code null} if OSGi modules are loaded or unloaded, so static
-     * class initialization would be a little bit too rigid.</div>
+     * case the field may be reset to {@code null} if modules are loaded or unloaded by a container,
+     * so static class initialization would be a little bit too rigid.</div>
      */
     @SuppressWarnings("DoubleCheckedLocking")
     private static MarshallerPool getPool() throws JAXBException {
@@ -419,7 +418,7 @@ public final class XML extends Static {
             synchronized (XML.class) {
                 pool = POOL;                            // Double-check idiom: see javadoc.
                 if (pool == null) {
-                    POOL = pool = new MarshallerPool(Collections.singletonMap(LENIENT_UNMARSHAL, Boolean.TRUE));
+                    POOL = pool = new MarshallerPool(Map.of(LENIENT_UNMARSHAL, Boolean.TRUE));
                 }
             }
         }
@@ -522,7 +521,7 @@ public final class XML extends Static {
             }
         }
         /*
-         * STAX results are not handled by JAXB as of JDK 8. We have to handle those cases ourselves.
+         * STAX results are not handled by JAXB. We have to handle those cases ourselves.
          * This workaround should be removed if a future JDK version handles those cases.
          */
         if (output instanceof StAXResult) {
@@ -650,7 +649,7 @@ public final class XML extends Static {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
         final Object object;
         /*
-         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation as of JDK 8.
+         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation.
          * We have to handle those cases ourselves. This workaround should be removed if a future JDK version handles
          * those cases.
          */

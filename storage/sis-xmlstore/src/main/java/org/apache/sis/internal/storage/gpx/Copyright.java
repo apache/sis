@@ -17,7 +17,7 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.net.URI;
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -158,7 +158,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
     @Override
     public Collection<Restriction> getUseConstraints() {
         if (license != null) {
-            return Arrays.asList(Restriction.COPYRIGHT, Restriction.valueOf("LICENCE"));
+            return List.of(Restriction.COPYRIGHT, Restriction.valueOf("LICENCE"));
         } else {
             return Collections.singleton(Restriction.COPYRIGHT);
         }

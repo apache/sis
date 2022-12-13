@@ -33,7 +33,6 @@ import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Dimension;
@@ -796,7 +795,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 for (int j=upper; --j >= lower;) {
                     if (Byte.toUnsignedInt(chars[j]) > ' ') {
                         while (Byte.toUnsignedInt(chars[lower]) <= ' ') lower++;
-                        if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                        if (Arrays.equals(chars, lower, ++j, chars, plo, phi)) {
                             element = previous;
                         } else {
                             element  = new String(chars, lower, j - lower, encoding);

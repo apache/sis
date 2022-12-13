@@ -16,7 +16,6 @@
  */
 package org.apache.sis.feature;
 
-import java.util.Collections;
 import java.util.Map;
 import org.junit.Test;
 import org.apache.sis.internal.feature.AttributeConvention;
@@ -65,7 +64,7 @@ public final strictfp class StringJoinOperationTest extends TestCase {
      * Creates the identification map to be given to attribute, operation and feature constructors.
      */
     private static Map<String,?> name(final Object name) {
-        return Collections.singletonMap(AbstractIdentifiedType.NAME_KEY, name);
+        return Map.of(AbstractIdentifiedType.NAME_KEY, name);
     }
 
     /**

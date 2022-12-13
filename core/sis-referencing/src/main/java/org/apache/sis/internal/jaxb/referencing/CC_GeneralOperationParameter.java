@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.lang.reflect.Array;
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
@@ -293,7 +292,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
         if (isGroup) {
             final List<GeneralParameterDescriptor> descriptors = ((ParameterDescriptorGroup) provided).descriptors();
             return merge(DefaultParameterValueGroup.class, merged, merged, minimumOccurs, maximumOccurs,
-                    descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]),
+                    descriptors.toArray(GeneralParameterDescriptor[]::new),
                     (ParameterDescriptorGroup) complete, canSubstitute);
         } else {
             return create(merged, (ParameterDescriptor<?>) provided, (ParameterDescriptor<?>) complete);
@@ -466,7 +465,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                 c.remove(toNamedIdentifier(remove));
                 provided = c.values();
             }
-            complete = provided.toArray((T[]) Array.newInstance(componentType, provided.size()));
+            complete = CollectionsExt.toArray(provided, componentType);
             merged.put(key, complete);
         }
     }

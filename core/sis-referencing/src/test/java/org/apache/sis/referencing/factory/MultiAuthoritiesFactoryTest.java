@@ -16,8 +16,6 @@
  */
 package org.apache.sis.referencing.factory;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.opengis.referencing.IdentifiedObject;
@@ -114,9 +112,9 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final AuthorityFactoryMock mock2 = new AuthorityFactoryMock("MOCK2", null);
         final AuthorityFactoryMock mock3 = new AuthorityFactoryMock("MOCK3", null);
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(
-                Arrays.asList(mock1, mock2), null,
-                Arrays.asList(mock1, mock3), null);
-        assertSetEquals(Arrays.asList("MOCK1", "MOCK2", "MOCK3"), factory.getCodeSpaces());
+                List.of(mock1, mock2), null,
+                List.of(mock1, mock3), null);
+        assertSetEquals(List.of("MOCK1", "MOCK2", "MOCK3"), factory.getCodeSpaces());
     }
 
     /**
@@ -130,8 +128,8 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final AuthorityFactoryMock mock2 = new AuthorityFactoryMock("MOCK2", "1.2");
         final AuthorityFactoryMock mock3 = new AuthorityFactoryMock("MOCK1", "2.3");
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(
-                Arrays.asList(mock1, mock2, mock3), null,
-                Arrays.asList(mock1, mock3), null);
+                List.of(mock1, mock2, mock3), null,
+                List.of(mock1, mock3), null);
 
         assertSame("MOCK2", mock2, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock2", null));
         assertSame("MOCK1", mock1, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock1", null));
@@ -171,7 +169,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
         final AuthorityFactoryMock mock4 = new AuthorityFactoryMock("MOCK3", null);
         final AuthorityFactoryMock mock5 = new AuthorityFactoryMock("MOCK5", null);
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(
-                Arrays.asList(mock1, mock2, mock3, mock4, mock5), null, null, null);
+                List.of(mock1, mock2, mock3, mock4, mock5), null, null, null);
 
         assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", null));
         assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "2.3"));
@@ -200,7 +198,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAuthorityFactory")
     public void testCreateFromSimpleCodes() throws FactoryException {
-        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
         assertSame("Straight",      HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("MOCK:4326"));
@@ -230,7 +228,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromSimpleCodes")
     public void testCreateFromURNs() throws FactoryException {
-        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
         assertSame("Empty version", HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("urn:ogc:def:crs:MOCK::4326"));
@@ -259,7 +257,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromURNs")
     public void testCreateFromHTTPs() throws FactoryException {
-        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
         assertSame("HTTP",        HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createGeographicCRS("http://www.opengis.net/def/crs/mock/0/4326"));
@@ -287,7 +285,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromURNs")
     public void testCreateFromCombinedURNs() throws FactoryException {
-        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
         testCreateFromCombinedURIs(factory, "urn:ogc:def:crs, crs:MOCK::4326, crs:MOCK::5714");
         /*
@@ -326,7 +324,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromHTTPs")
     public void testCreateFromCombinedHTTPs() throws FactoryException {
-        final Set<AuthorityFactoryMock> mock = Collections.singleton(new AuthorityFactoryMock("MOCK", "2.3"));
+        final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
         testCreateFromCombinedURIs(factory, "http://www.opengis.net/def/crs-compound?"
                                         + "1=http://www.opengis.net/def/crs/MOCK/0/4326&"
@@ -366,7 +364,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
      */
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
-        final List<AuthorityFactoryMock> mock = Arrays.asList(
+        final List<AuthorityFactoryMock> mock = List.of(
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
@@ -389,7 +387,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
      */
     @Test
     public void testCreateFromCoordinateReferenceSystemCodes() throws FactoryException {
-        final List<AuthorityFactoryMock> mock = Arrays.asList(
+        final List<AuthorityFactoryMock> mock = List.of(
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, null, mock);
@@ -413,7 +411,7 @@ public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {
      */
     @Test
     public void testNewIdentifiedObjectFinder() throws FactoryException {
-        final List<AuthorityFactoryMock> mock = Arrays.asList(
+        final List<AuthorityFactoryMock> mock = List.of(
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
         final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, mock, null);

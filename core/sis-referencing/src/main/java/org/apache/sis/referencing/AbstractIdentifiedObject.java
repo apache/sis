@@ -1034,7 +1034,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <h4>Why there is no <code>setNames(…)</code> method</h4>
      * Some JAXB implementations never invoke setter method for collections. Instead, they invoke the getter and
      * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
-     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
+     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 do not).
      * It seems a more portable approach (at least for JAXB reference implementations) to design our class
      * without setter method, in order to have the same behavior on all supported JDK versions.
      *

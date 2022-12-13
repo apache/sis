@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -223,7 +222,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         } else if (lastName != null && lastName.getCode().equals(name)) {
             name = lastName;
         }
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**
@@ -513,7 +512,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (crs == null) {
                     missingValue(GeoKeys.GeographicType);
                 } else {
-                    crs = getCRSFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                    crs = getCRSFactory().createCompoundCRS(Map.of(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
             }
         }
@@ -535,7 +534,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Returns all remaining keys, sorted in increasing order.
      */
     private Short[] remainingKeys() {
-        final Short[] keys = geoKeys.keySet().toArray(new Short[geoKeys.size()]);
+        final Short[] keys = geoKeys.keySet().toArray(Short[]::new);
         Arrays.sort(keys);
         return keys;
     }

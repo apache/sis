@@ -85,6 +85,7 @@ public abstract class Node implements Serializable {
      * @see Expression#getFunctionName()
      */
     protected static <T> DefaultAttributeType<T> createType(final Class<T> type, final Object name) {
+        // We do not use `Map.of(…)` for letting the attribute type constructor do the null check.
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
                                           type, 1, 1, null, (DefaultAttributeType<?>[]) null);
     }

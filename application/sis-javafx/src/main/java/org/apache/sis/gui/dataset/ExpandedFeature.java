@@ -19,7 +19,9 @@ package org.apache.sis.gui.dataset;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+
+// Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
 
@@ -166,8 +168,8 @@ final class ExpandedFeature extends AbstractFeature {
         }
         final Object[] elements = values[i];
         return (index < elements.length)
-               ? Collections.singletonList(elements[index])
-               : Collections.emptyList();
+               ? List.of(elements[index])
+               : List.of();
     }
 
     /**
