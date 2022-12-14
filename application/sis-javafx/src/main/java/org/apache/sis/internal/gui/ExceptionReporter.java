@@ -293,7 +293,11 @@ public final class ExceptionReporter extends Widget {
             Platform.runLater(() -> show(owner, title, text, exception));
             return;
         }
-        String message = exception.getLocalizedMessage();
+        String message = null;
+        for (Throwable e = exception; e != null; e = e.getCause()) {
+            message = e.getLocalizedMessage();
+            if (message != null && !message.equalsIgnoreCase(text)) break;
+        }
         if (message == null) {
             message = Classes.getShortClassName(exception);
         }

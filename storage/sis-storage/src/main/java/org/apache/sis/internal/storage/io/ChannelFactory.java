@@ -230,8 +230,8 @@ public abstract class ChannelFactory {
                 try {
                     storage = uri.toURL();
                 } catch (MalformedURLException ioe) {
-                    ioe.addSuppressed(e);
-                    throw ioe;
+                    e.addSuppressed(ioe);
+                    throw e;
                 }
                 /*
                  * We have been able to convert to URL, but the given OpenOptions may not be used.

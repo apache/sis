@@ -99,6 +99,9 @@ public final class IOUtilities extends Static {
      *
      * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
      * @return the filename in the given path, or {@code null} if the given object is null or of unknown type.
+     *
+     * @see #extension(Object)
+     * @see #toString(Object)
      */
     public static String filename(final Object path) {
         return part(path, false);
@@ -176,6 +179,9 @@ public final class IOUtilities extends Static {
      *
      * @param  path  the path for which to return a string representation.
      * @return the string representation, or {@code null} if none.
+     *
+     * @see #filename(Object)
+     * @see #extension(Object)
      */
     public static String toString(final Object path) {
         /*

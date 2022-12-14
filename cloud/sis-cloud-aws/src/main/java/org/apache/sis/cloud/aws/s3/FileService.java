@@ -43,6 +43,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -74,7 +75,7 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
  * instead of the data to access, and can be a global configuration for the server.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  * @module
  */
@@ -290,7 +291,20 @@ public class FileService extends FileSystemProvider {
             // TODO: we may need a way to get password here.
             fs = fileSystems.computeIfAbsent(accessKey, (key) -> new ClientFileSystem(FileService.this, null, key, null, null));
         }
-        return new KeyPath(fs, uri.getHost(), new String[] {uri.getPath()}, true);
+        String host = uri.getHost();
+        if (host == null) {
+            /*
+             * The host is null if the authority contains characters that are invalid for a host name.
+             * For example if the host contains underscore character ('_'), then it is considered invalid.
+             * We could use the authority instead, but that authority may contain a user name, port number, etc.
+             * Current version do not try to parse that string.
+             */
+            host = uri.getAuthority();
+            if (host == null) host = uri.toString();
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.InvalidBucketName_1, host));
+        }
+        final String path = uri.getPath();
+        return new KeyPath(fs, host, (path != null) ? new String[] {path} : CharSequences.EMPTY_ARRAY, true);
     }
 
     /**
