@@ -961,8 +961,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
      *         text was null.
      *
-     * @todo To be replaced by {@link String#strip()} in JDK 11.
+     * @deprecated Replaced by {@link String#strip()} in JDK 11.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public static String trimWhitespaces(String text) {
         if (text != null) {
             final int length = text.length();

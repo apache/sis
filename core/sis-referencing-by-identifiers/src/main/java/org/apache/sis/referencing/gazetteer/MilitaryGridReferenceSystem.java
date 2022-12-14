@@ -612,9 +612,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @param  separator  the separator to insert between each component of the MGRS identifier.
          */
         public void setSeparator(final String separator) {
-            ArgumentChecks.ensureNonNull("separator", separator);
-            this.separator = separator;
-            trimmedSeparator = CharSequences.trimWhitespaces(separator);
+            trimmedSeparator = separator.strip();       // Implicit null check.
+            this.separator   = separator;
         }
 
         /**

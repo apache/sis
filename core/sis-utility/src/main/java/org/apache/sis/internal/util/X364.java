@@ -266,8 +266,7 @@ search: do {
      * @throws IllegalArgumentException if no code has been found for the given color name.
      */
     public static X364 forColorName(String color) throws IllegalArgumentException {
-        color = CharSequences.trimWhitespaces(color);
-        ArgumentChecks.ensureNonEmpty("color", color);
+        ArgumentChecks.ensureNonEmpty("color", color = color.strip());
         for (final X364 code : NAMED) {
             if (color.equalsIgnoreCase(code.color)) {
                 return code;

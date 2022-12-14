@@ -413,9 +413,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      */
     @Override
     public void label(final Unit<?> unit, String label) {
-        ArgumentChecks.ensureNonNull ("unit", unit);
-        label = CharSequences.trimWhitespaces(label);
-        ArgumentChecks.ensureNonEmpty("label", label);
+        ArgumentChecks.ensureNonNull("unit", unit);
+        ArgumentChecks.ensureNonEmpty("label", label = label.strip());
         for (int i=0; i < label.length();) {
             final int c = label.codePointAt(i);
             if (!AbstractUnit.isSymbolChar(c) && !Character.isSpaceChar(c)) {       // NOT Character.isWhitespace(int)

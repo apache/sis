@@ -28,10 +28,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import javax.measure.Unit;
 import javax.measure.format.ParserException;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
-
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
 /**
@@ -262,8 +261,8 @@ public class ValueConverter {
      * @see Locales#parse(String)
      */
     public Locale toLocale(final MarshalContext context, String value) throws IllformedLocaleException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return Locales.parse(value);
         } catch (IllformedLocaleException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
@@ -289,8 +288,8 @@ public class ValueConverter {
      * @since 0.5
      */
     public Charset toCharset(final MarshalContext context, String value) throws IllegalCharsetNameException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) {
+        value = Strings.trimOrNull(value);
+        if (value != null) {
             value = LegacyCodes.toIANA(value);
             try {
                 return Charset.forName(value);
@@ -324,8 +323,8 @@ public class ValueConverter {
      * @see Units#valueOf(String)
      */
     public Unit<?> toUnit(final MarshalContext context, String value) throws IllegalArgumentException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             /*
              * First, check for X-Paths like below:
              *
@@ -383,8 +382,8 @@ public class ValueConverter {
      * @see UUID#fromString(String)
      */
     public UUID toUUID(final MarshalContext context, String value) throws IllegalArgumentException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException e) {
             if (!exceptionOccured(context, value, String.class, UUID.class, e)) {
@@ -412,8 +411,8 @@ public class ValueConverter {
      * @see URI#URI(String)
      */
     public URI toURI(final MarshalContext context, String value) throws URISyntaxException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return new URI(value);
         } catch (URISyntaxException e) {
             if (!exceptionOccured(context, value, String.class, URI.class, e)) {
@@ -497,8 +496,8 @@ public class ValueConverter {
      * @see NilReason#valueOf(String)
      */
     public NilReason toNilReason(final MarshalContext context, String value) throws URISyntaxException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return NilReason.valueOf(value);
         } catch (URISyntaxException e) {
             if (!exceptionOccured(context, value, String.class, URI.class, e)) {

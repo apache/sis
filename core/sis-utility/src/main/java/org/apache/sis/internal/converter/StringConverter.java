@@ -27,11 +27,11 @@ import javax.measure.format.ParserException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.util.CodeLists;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Units;
 
 
@@ -127,8 +127,8 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      */
     @Override
     public final T apply(String source) throws UnconvertibleObjectException {
-        source = CharSequences.trimWhitespaces(source);
-        if (source == null || source.isEmpty()) {
+        source = Strings.trimOrNull(source);
+        if (source == null) {
             return null;
         }
         try {

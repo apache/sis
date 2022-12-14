@@ -524,10 +524,10 @@ public final class Numbers extends Static {
         for (int i=0; i<length; i++) {
             final char c = value.charAt(i);
             if (c == '.' || c == 'e' || c == 'E') {
-                return narrowestNumber(Double.parseDouble(value));
+                return narrowestNumber(Double.valueOf(value));
             }
         }
-        return narrowestNumber(Long.parseLong(value));
+        return narrowestNumber(Long.valueOf(value));
     }
 
     /**

@@ -227,7 +227,7 @@ public final class NilReason implements Serializable {
      *         values and cannot be parsed as a URI.
      */
     public static NilReason valueOf(String reason) throws URISyntaxException {
-        reason = CharSequences.trimWhitespaces(reason);
+        reason = reason.strip();
         int i = reason.indexOf(':');
         if (i < 0) {
             for (final NilReason candidate : PREDEFINED) {
