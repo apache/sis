@@ -60,7 +60,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -899,7 +899,8 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
-     * Moves to the given position in the stream, relative to the stream position at construction time.
+     * Moves to the given position in the stream. The given position is relative to
+     * the position that the stream had at {@code ChannelDataInput} construction time.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.

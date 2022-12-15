@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -40,6 +40,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.io.ChannelImageOutputStreamTest.class,
     org.apache.sis.internal.storage.io.HyperRectangleReaderTest.class,
     org.apache.sis.internal.storage.io.RewindableLineReaderTest.class,
+    org.apache.sis.internal.storage.io.FileCacheByteChannelTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
     org.apache.sis.internal.storage.RangeArgumentTest.class,
     org.apache.sis.internal.storage.MemoryGridResourceTest.class,

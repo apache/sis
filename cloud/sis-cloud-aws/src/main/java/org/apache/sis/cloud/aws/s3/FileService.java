@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.net.URI;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
@@ -455,20 +456,17 @@ public class FileService extends FileSystemProvider {
      * @throws UnsupportedOperationException if an unsupported option is specified.
      * @throws IOException if an I/O error occurs.
      */
-    public ResponseInputStream<GetObjectResponse> newInputStream(final Path path, final OpenOption... options) throws IOException {
+    @Override
+    public InputStream newInputStream(final Path path, final OpenOption... options) throws IOException {
+        ensureSupported(options);
         final KeyPath kp = toAbsolute(path, true);
-        for (final OpenOption opt: options) {
-            if (opt == StandardOpenOption.APPEND || opt == StandardOpenOption.WRITE) {
-                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, opt));
-            }
-        }
+        final ResponseInputStream<GetObjectResponse> stream;
         try {
-            final ResponseInputStream<GetObjectResponse> stream = kp.fs.client().getObject(
-                    GetObjectRequest.builder().bucket(kp.bucket).key(kp.key).build());
-            return stream;
+            stream = kp.fs.client().getObject(GetObjectRequest.builder().bucket(kp.bucket).key(kp.key).build());
         } catch (SdkException e) {
             throw failure(path, e);
         }
+        return stream;
     }
 
     /**
@@ -485,9 +483,19 @@ public class FileService extends FileSystemProvider {
     public SeekableByteChannel newByteChannel(final Path path, final Set<? extends OpenOption> options,
             final FileAttribute<?>... attributes) throws IOException
     {
-        final ResponseInputStream<GetObjectResponse> stream =
-                newInputStream(path, options.toArray(new OpenOption[options.size()]));
-        return new CachedByteChannel(stream);
+        ensureSupported(options.toArray(OpenOption[]::new));
+        return new CachedByteChannel(toAbsolute(path, true));
+    }
+
+    /**
+     * Ensures that the given array of options does not contain an unsupported option.
+     */
+    private static void ensureSupported(final OpenOption[] options) {
+        for (final OpenOption opt : options) {
+            if (opt == StandardOpenOption.APPEND || opt == StandardOpenOption.WRITE) {
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, opt));
+            }
+        }
     }
 
     /**
