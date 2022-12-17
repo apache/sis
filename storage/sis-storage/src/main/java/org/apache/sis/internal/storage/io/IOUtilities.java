@@ -59,7 +59,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -95,6 +95,7 @@ public final class IOUtilities extends Static {
      * instance. If the given argument is specialized type like {@code Path} or {@code File}, then this method uses
      * dedicated API like {@link Path#getFileName()}. Otherwise this method gets a string representation of the path
      * and returns the part after the last {@code '/'} or platform-dependent name separator character, if any.
+     * The returned string may be empty if the given path is empty or is the root directory.
      *
      * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
      * @return the filename in the given path, or {@code null} if the given object is null or of unknown type.
@@ -149,13 +150,15 @@ public final class IOUtilities extends Static {
              */
             end = name.length();
             do {
-                fromIndex = name.lastIndexOf('/', --end) + 1;
+                if (--end < 0) return "";               // `end` is temporarily inclusive in this loop.
+                fromIndex = name.lastIndexOf('/', end);
                 if (separator != '/') {
                     // Search for platform-specific character only if the object is neither a URL or a URI.
-                    fromIndex = Math.max(fromIndex, CharSequences.lastIndexOf(name, separator, fromIndex, end+1) + 1);
+                    fromIndex = Math.max(fromIndex, name.lastIndexOf(separator, end));
                 }
-            } while (fromIndex > end);
-            end++;
+            } while (fromIndex == end);                 // Continue if '/' is the last character.
+            fromIndex++;                                // Character after the '/' separator.
+            end++;                                      // Make exclusive.
         }
         if (extension) {
             fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, end) + 1;

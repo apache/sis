@@ -115,6 +115,26 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
     }
 
     /**
+     * Creates a new aggregate with the specified components, which will receive no further processing.
+     * This is invoked when the caller has not been able to group the slices in a multi-dimensional cube.
+     * The result stay an aggregate of heterogynous resources.
+     *
+     * @param listeners         listeners of the parent resource, or {@code null} if none.
+     * @param name              name of this aggregate, or {@code null} if none.
+     * @param components        the resources to uses as components of this aggregate.
+     * @param sampleDimensions  sample dimensions common to all grid coverage resources.
+     */
+    GroupAggregate(final StoreListeners listeners, final String name, final GridCoverageResource[] components,
+                   final List<SampleDimension> sampleDimensions)
+    {
+        super(listeners, true);
+        this.name = name;
+        this.components = components;
+        this.componentsAreLeaves = true;
+        this.sampleDimensions = sampleDimensions;
+    }
+
+    /**
      * Creates a new resource with the same data than given resource but a different merge strategy.
      *
      * @param  source      the resource to copy.

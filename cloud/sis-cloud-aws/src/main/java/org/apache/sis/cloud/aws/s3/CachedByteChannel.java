@@ -268,13 +268,13 @@ final class CachedByteChannel implements SeekableByteChannel {
             file.close();
         } catch (Throwable e) {
             try {
-                input.close();
+                input.abort();
             } catch (Throwable s) {
                 e.addSuppressed(s);
             }
             throw e;
         }
-        input.close();
+        input.abort();
     }
 
     /**
