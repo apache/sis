@@ -26,7 +26,7 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.3
  * @module
  */
@@ -67,6 +67,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.folder.StoreTest.class,
     org.apache.sis.storage.aggregate.JoinFeatureSetTest.class,
     org.apache.sis.storage.aggregate.ConcatenatedFeatureSetTest.class,
+    org.apache.sis.storage.aggregate.CoverageAggregatorTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
 public final strictfp class StorageTestSuite extends TestSuite {
