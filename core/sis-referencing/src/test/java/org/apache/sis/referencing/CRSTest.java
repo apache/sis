@@ -20,8 +20,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.sis.internal.system.Loggers;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -33,6 +33,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -216,6 +217,24 @@ public final strictfp class CRSTest extends TestCase {
                 + "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]");
         assertInstanceOf("GEOGCS", DefaultGeographicCRS.class, crs);
         assertEquals("GCS WGS 1984", crs.getName().getCode());
+    }
+
+    /**
+     * Verifies that parsing a WKT with an unknown operation method throws {@link NoSuchIdentifierException}.
+     *
+     * @throws FactoryException if an unexpected error occurred.
+     */
+    @Test
+    public void testFromInvalidWKT() throws FactoryException {
+        try {
+            CRS.fromWKT("PROJCS[\"Foo\", GEOGCS[\"Foo\", DATUM[\"Foo\", SPHEROID[\"Sphere\", 6371000, 0]], " +
+                        "UNIT[\"Degree\", 0.0174532925199433]], PROJECTION[\"I do not exist\"], " +
+                        "UNIT[\"MEtre\", 1]]");
+            fail("Expected NoSuchIdentifierException");
+        } catch (NoSuchIdentifierException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("I do not exist"));
+        }
     }
 
     /**
