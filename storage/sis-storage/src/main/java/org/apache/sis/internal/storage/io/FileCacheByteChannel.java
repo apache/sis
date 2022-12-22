@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.storage.io;
 
-import java.util.OptionalLong;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +41,7 @@ import org.apache.sis.util.collection.RangeSet;
  *
  * <ul>
  *   <li>Bytes read from the input stream are cached in a temporary file for making backward seeks possible.</li>
- *   <li>The number of bytes of interest {@linkplain #position(long, long) can be specified}.
+ *   <li>The number of bytes of interest {@linkplain #endOfInterest(long) can be specified}.
  *       It makes possible to specify the range of bytes to download with HTTP connections.</li>
  *   <li>This implementation is thread-safe.</li>
  *   <li>Current implementation is read-only.</li>
@@ -96,19 +95,19 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         /**
          * Creates information about a connection.
          *
-         * @param input         the input stream for reading the bytes.
-         * @param start         position of the first byte read by the input stream (inclusive).
-         * @param end           position of the last byte read by the input stream (inclusive).
-         * @param length        total length of the stream, or -1 is unknown.
-         * @param acceptRanges  whether connection can be created for ranges of bytes.
+         * @param input          the input stream for reading the bytes.
+         * @param start          position of the first byte read by the input stream (inclusive).
+         * @param end            position of the last byte read by the input stream (inclusive).
+         * @param contentLength  total length of the stream, or -1 if unknown.
+         * @param acceptRanges   whether connection can be created for ranges of bytes.
          *
          * @see #openConnection(long, long)
          */
-        public Connection(final InputStream input, final long start, final long end, final long length, final boolean acceptRanges) {
+        public Connection(final InputStream input, final long start, final long end, final long contentLength, final boolean acceptRanges) {
             this.input  = input;
             this.start  = start;
             this.end    = end;
-            this.length = length;
+            this.length = contentLength;
             this.acceptRanges = acceptRanges;
         }
 
@@ -119,12 +118,10 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          * @param  input          the input stream for reading the bytes.
          * @param  contentRange   value of "Content-Range" in HTTP header.
          * @param  acceptRanges   value of "Accept-Ranges" in HTTP header.
-         * @param  contentLength  total length of the stream.
+         * @param  contentLength  total length of the stream, or -1 if unknown.
          * @throws IllegalArgumentException if the start, end of length cannot be parsed.
          */
-        public Connection(final InputStream input, String contentRange, final Iterable<String> acceptRanges,
-                          final OptionalLong contentLength)
-        {
+        public Connection(final InputStream input, String contentRange, long contentLength, final Iterable<String> acceptRanges) {
             this.input = input;
             contentRange = contentRange.trim();
             int s = contentRange.indexOf(' ');
@@ -133,14 +130,11 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
             }
             int rs = contentRange.indexOf('-', ++s);                    // Index of range separator.
             int ls = contentRange.indexOf('/', Math.max(s, rs+1));      // Index of length separator.
-            if (contentLength.isPresent()) {
-                length = contentLength.getAsLong();
-            } else if (ls >= 0) {
-                String t = contentRange.substring(ls+1).trim();
-                length = t.equals("*") ? -1 : Long.parseLong(t);
-            } else {
-                length = -1;
+            if (contentLength < 0 && ls >= 0) {
+                final String t = contentRange.substring(ls+1).trim();
+                if (!t.equals("*")) contentLength = Long.parseLong(t);
             }
+            length = contentLength;
             if (ls < 0) ls = contentRange.length();
             if (rs < 0) rs = ls;
             start = Long.parseLong(contentRange.substring(s, rs).trim());
@@ -220,7 +214,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * Position after the last requested byte, or ≤ {@linkplain #position} if unknown.
      * It can be used for specifying the range of bytes to download from an HTTP connection.
      *
-     * @see #position(long, long)
+     * @see #endOfInterest(long)
      */
     private long endOfInterest;
 
@@ -335,19 +329,15 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     }
 
     /**
-     * Sets this channel's position together with the number of bytes to read.
+     * Specifies the position after the last byte which is expected to be read.
      * The number of bytes is only a hint and may be ignored, depending on subclasses.
      * Reading more bytes than specified is okay, only potentially less efficient.
+     * Values ≤ {@linkplain #position() position} means to read until the end of stream.
      *
-     * @param  newPosition  number of bytes from the beginning to the desired position.
-     * @param  count        expected number of bytes to read.
-     * @throws IOException if an I/O error occurs.
+     * @param  end  position after the last desired byte, or a value ≤ position for reading until the end of stream.
      */
-    final synchronized void position(final long newPosition, final long count) throws IOException {
-        ArgumentChecks.ensurePositive("newPosition", newPosition);
-        ArgumentChecks.ensureStrictlyPositive("count", count);
-        position = newPosition;
-        endOfInterest = newPosition + count;    // Overflow is okay here (will read until end of stream).
+    final synchronized void endOfInterest(final long end) {
+        endOfInterest = end;
     }
 
     /**
@@ -361,7 +351,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     private Connection openConnection() throws IOException {
         long end = endOfInterest;
         if (end > position) end--;      // Make inclusive.
-        else end = Long.MAX_VALUE;
+        else end = (length > 0) ? length-1 : Long.MAX_VALUE;
         var c = openConnection(position, end);
         file.position(c.start);
         if (c.length >= 0) {
@@ -631,7 +621,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * Returns a string representation for debugging purpose.
      */
     @Override
-    public String toString() {
+    public synchronized String toString() {
         return Strings.toString(getClass(), "filename", filename(), "position", position, "rangeCount", rangesOfAvailableBytes.size());
     }
 }

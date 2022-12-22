@@ -33,7 +33,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * <p>The {@link #close()} method shall be invoked when this channel is no longer used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  * @module
  */
@@ -83,6 +83,7 @@ abstract class CompressionChannel extends PixelChannel {
     public void setInputRegion(final long start, final long byteCount) throws IOException {
         endPosition = Math.addExact(start, byteCount);
         input.seek(start);
+        input.endOfInterest(endPosition);
     }
 
     /**

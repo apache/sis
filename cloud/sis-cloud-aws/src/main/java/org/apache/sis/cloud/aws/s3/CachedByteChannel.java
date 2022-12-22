@@ -17,7 +17,6 @@
 package org.apache.sis.cloud.aws.s3;
 
 import java.util.List;
-import java.util.OptionalLong;
 import java.io.IOException;
 import java.io.InputStream;
 import org.apache.sis.internal.storage.io.FileCacheByteChannel;
@@ -93,13 +92,15 @@ final class CachedByteChannel extends FileCacheByteChannel {
         } catch (SdkException e) {
             throw FileService.failure(path, e);
         }
-        final List<String> arl = (acceptRanges != null) ? List.of(acceptRanges) : List.of();
+        final List<String> rangeUnits = (acceptRanges != null) ? List.of(acceptRanges) : List.of();
+        final long length = (contentLength != null) ? contentLength : -1;
         if (contentRange == null) {
-            final long length = (contentLength != null) ? contentLength : -1;
-            return new Connection(stream, 0, (length < 0) ? Long.MAX_VALUE : length, length, Connection.acceptRanges(arl));
+            return new Connection(stream, 0, (length < 0) ? Long.MAX_VALUE : length, length, Connection.acceptRanges(rangeUnits));
+        } else try {
+            return new Connection(stream, contentRange, length, rangeUnits);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e);
         }
-        return new Connection(stream, contentRange, arl,
-                (contentLength != null) ? OptionalLong.of(contentLength) : OptionalLong.empty());
     }
 
     /**

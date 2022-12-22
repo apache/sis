@@ -155,7 +155,8 @@ public final strictfp class FileCacheByteChannelTest extends TestCase {
                     position = end;
                     end = t;
                 }
-                channel.position(position, end - position + 1);
+                channel.position(position);
+                channel.endOfInterest(end + 1);
             }
             channel.readInRandomRegion(buffer);
             while (buffer.hasRemaining()) {
@@ -174,24 +175,25 @@ public final strictfp class FileCacheByteChannelTest extends TestCase {
      */
     @Test
     public void testParseRange() {
+        final List<String> rangesUnit = List.of("bytes");
         FileCacheByteChannel.Connection c;
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000/100000", List.of("bytes"), OptionalLong.empty());
+        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000/100000", -1, rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals( 75000, c.end);
         assertEquals(100000, c.length);
 
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000", List.of("bytes"), OptionalLong.empty());
+        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000", -1, rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals( 75000, c.end);
         assertEquals(    -1, c.length);
 
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000/100000", List.of("bytes"), OptionalLong.empty());
+        c = new FileCacheByteChannel.Connection(null, "bytes 25000/100000", -1, rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals(100000, c.end);
         assertEquals(100000, c.length);
 
         // Not legal, but we test robustness.
-        c = new FileCacheByteChannel.Connection(null, "25000", List.of("bytes"), OptionalLong.empty());
+        c = new FileCacheByteChannel.Connection(null, "25000", -1, rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals(    -1, c.end);
         assertEquals(    -1, c.length);

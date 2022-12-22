@@ -916,9 +916,7 @@ public class ChannelDataInput extends ChannelData {
         } else if ((p < 0 || p - buffer.limit() >= SEEK_THRESHOLD) && channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
-             * but we can set the new position directly in the channel. Note
-             * that StorageConnector.rewind() needs the buffer content to be
-             * valid as a result of this seek, so we reload it immediately.
+             * but we can set the new position directly in the channel.
              */
             ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
@@ -949,6 +947,22 @@ public class ChannelDataInput extends ChannelData {
             throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
         clearBitOffset();
+    }
+
+    /**
+     * Specifies the position after the last byte which is expected to be read.
+     * The number of bytes is only a hint and may be ignored, depending on the channel.
+     * Reading more bytes than specified is okay, only potentially less efficient.
+     * Values ≤ {@linkplain #position() position} means to read until the end of stream.
+     *
+     * @param  position  position after the last desired byte,
+     *         or a value ≤ current position for reading until the end of stream.
+     */
+    public final void endOfInterest(final long position) {
+        if (channel instanceof FileCacheByteChannel) {
+            ((FileCacheByteChannel) channel).endOfInterest(position + channelOffset);
+            // Overflow is okay as value ≤ position means "read until end of stream".
+        }
     }
 
     /**
