@@ -26,12 +26,18 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.NonWritableChannelException;
 import org.apache.sis.internal.storage.Resources;
+import org.apache.sis.internal.system.DelayedExecutor;
+import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.RangeSet;
+import org.apache.sis.util.logging.Logging;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -71,6 +77,11 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * The unit of ranges used in HTTP connections.
      */
     protected static final String RANGES_UNIT = "bytes";
+
+    /**
+     * Number of nanoseconds to wait before to close an inactive connection.
+     */
+    private static final long TIMEOUT = 2 * 1000_000_000L;
 
     /**
      * Information about an input stream and its range of bytes.
@@ -453,6 +464,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         offset = skipInInput(offset);
         if (offset != 0) {
             count = readFromCache(dst);
+            usedConnection();
             if (count >= 0) {
                 return count;
             }
@@ -483,10 +495,11 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
                 buffer.limit(limit);
             }
             if (buffer != dst) {
-                dst.put(buffer.flip());     // Transfer temporary to destination buffer.
+                dst.put(buffer.flip());             // Transfer from temporary buffer to destination buffer.
             }
             position += count;
         }
+        usedConnection();
         return count;
     }
 
@@ -545,6 +558,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * @throws IOException if an I/O error occurred.
      */
     private long drainAndAbort() throws IOException {
+        assert Thread.holdsLock(this);
         long count = 0;
         final InputStream input = connection.input;
         for (int c; (c = input.available()) > 0;) {
@@ -608,11 +622,80 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     @Override
     public synchronized void close() throws IOException {
         final Connection c = connection;
-        connection = null;
-        transfer = null;
+        connection  = null;
+        transfer    = null;
+        idleHandler = null;
         try (file) {
             if (c != null && !abort(c.input)) {
                 c.input.close();
+            }
+        }
+    }
+
+    /**
+     * Notifies that the connection has been used and should not be closed before some timeout.
+     * This method may schedule a task to be executed in a background thread after the timeout.
+     * If the connection can not read sub-ranges of bytes, then this method does nothing because
+     * reopening a new connection would be costly.
+     */
+    private void usedConnection() {
+        assert Thread.holdsLock(this);
+        final Connection c = connection;
+        if (c != null && c.acceptRanges) {
+            final long lastReadTime = System.nanoTime();
+            if (idleHandler != null) {
+                idleHandler.lastReadTime = lastReadTime;
+            } else {
+                idleHandler = new IdleConnectionCloser(lastReadTime);
+                DelayedExecutor.schedule(idleHandler);
+            }
+        }
+    }
+
+    /**
+     * The task which has been scheduled for closing inactive connection, or {@code null} if none.
+     */
+    private IdleConnectionCloser idleHandler;
+
+    /**
+     * A task to execute when the connection is inactive for a time longer than the timeout.
+     * This is needed because the number of connections that we can create may be small (e.g. 50),
+     * and keeping an inactive connection in this channel may prevent other channels to work.
+     *
+     * @see #TIMEOUT
+     */
+    private final class IdleConnectionCloser extends DelayedRunnable {
+        /**
+         * Value of {@link System#nanoTime()} at the last time that {@link #read(ByteBuffer)} has been invoked.
+         */
+        long lastReadTime;
+
+        /**
+         * Creates a new task to be executed at the given time relative to {@link System#nanoTime()}.
+         */
+        IdleConnectionCloser(final long lastReadTime) {
+            super(lastReadTime + TIMEOUT);
+            this.lastReadTime = lastReadTime;
+        }
+
+        /**
+         * Invoked in a background thread after a delay for closing a possibly inactive connection.
+         * If this method confirms that the connection has been inactive for a time longer than the timeout,
+         * then the connection is closed. Otherwise a new task is scheduled for checking again later.
+         */
+        @Override public void run() {
+            synchronized (FileCacheByteChannel.this) {
+                idleHandler = null;
+                final Connection c = connection;
+                if (c != null && c.acceptRanges) {
+                    if (System.nanoTime() - lastReadTime < TIMEOUT) {
+                        idleHandler = new IdleConnectionCloser(lastReadTime);
+                    } else try {
+                        drainAndAbort();
+                    } catch (IOException e) {
+                        Logging.unexpectedException(getLogger(Modules.STORAGE), IdleConnectionCloser.class, "run", e);
+                    }
+                }
             }
         }
     }
