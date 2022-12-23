@@ -45,6 +45,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.storage.Resources;
 
 
@@ -671,6 +672,18 @@ public final class IOUtilities extends Static {
             }
         }
         return isWrite & (!isRead | truncate);
+    }
+
+    /**
+     * Returns {@code true} if the given protocol is "http" or "https".
+     * The comparison is case-insensitive.
+     *
+     * @param  protocol  the protocol to test.
+     * @return whether the given protocol is HTTP(S).
+     */
+    public static boolean isHTTP(final String protocol) {
+        return Constants.HTTP .equalsIgnoreCase(protocol)
+            || Constants.HTTPS.equalsIgnoreCase(protocol);
     }
 
     /**

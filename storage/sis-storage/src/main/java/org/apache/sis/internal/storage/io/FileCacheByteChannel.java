@@ -74,11 +74,6 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     static final int SKIP_THRESHOLD = 64 * 1024;
 
     /**
-     * The unit of ranges used in HTTP connections.
-     */
-    protected static final String RANGES_UNIT = "bytes";
-
-    /**
      * Number of nanoseconds to wait before to close an inactive connection.
      */
     private static final long TIMEOUT = 2 * 1000_000_000L;
@@ -88,6 +83,9 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * This is the return value of {@link #openConnection(long, long)}.
      */
     protected static final class Connection extends org.apache.sis.internal.jdk17.Record {
+        /** The unit of ranges used in HTTP connections. */
+        private static final String RANGES_UNIT = "bytes";
+
         /** The input stream for reading the bytes. */
         final InputStream input;
 
@@ -127,29 +125,35 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          * Example: "Content-Range: bytes 25000-75000/100000".
          *
          * @param  input          the input stream for reading the bytes.
-         * @param  contentRange   value of "Content-Range" in HTTP header.
+         * @param  contentRange   value of "Content-Range" in HTTP header, or {@code null} if none.
          * @param  acceptRanges   value of "Accept-Ranges" in HTTP header.
          * @param  contentLength  total length of the stream, or -1 if unknown.
-         * @throws IllegalArgumentException if the start, end of length cannot be parsed.
+         * @throws IllegalArgumentException if the start, end or length cannot be parsed.
          */
         public Connection(final InputStream input, String contentRange, long contentLength, final Iterable<String> acceptRanges) {
             this.input = input;
-            contentRange = contentRange.trim();
-            int s = contentRange.indexOf(' ');
-            if (s >= 0 && (s != RANGES_UNIT.length() || !contentRange.regionMatches(true, 0, RANGES_UNIT, 0, s))) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, contentRange));
+            if (contentRange == null) {
+                start  = 0;
+                end    = (contentLength > 0) ? contentLength - 1 : Long.MAX_VALUE;
+                length = contentLength;
+            } else {
+                contentRange = contentRange.trim();
+                int s = contentRange.indexOf(' ');
+                if (s >= 0 && (s != RANGES_UNIT.length() || !contentRange.regionMatches(true, 0, RANGES_UNIT, 0, s))) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, contentRange));
+                }
+                int rs = contentRange.indexOf('-', ++s);                    // Index of range separator.
+                int ls = contentRange.indexOf('/', Math.max(s, rs+1));      // Index of length separator.
+                if (contentLength < 0 && ls >= 0) {
+                    final String t = contentRange.substring(ls+1).trim();
+                    if (!t.equals("*")) contentLength = Long.parseLong(t);
+                }
+                length = contentLength;
+                if (ls < 0) ls = contentRange.length();
+                if (rs < 0) rs = ls;
+                start = Long.parseLong(contentRange.substring(s, rs).trim());
+                end = (rs < ls) ? Long.parseLong(contentRange.substring(rs+1, ls).trim()) : length;
             }
-            int rs = contentRange.indexOf('-', ++s);                    // Index of range separator.
-            int ls = contentRange.indexOf('/', Math.max(s, rs+1));      // Index of length separator.
-            if (contentLength < 0 && ls >= 0) {
-                final String t = contentRange.substring(ls+1).trim();
-                if (!t.equals("*")) contentLength = Long.parseLong(t);
-            }
-            length = contentLength;
-            if (ls < 0) ls = contentRange.length();
-            if (rs < 0) rs = ls;
-            start = Long.parseLong(contentRange.substring(s, rs).trim());
-            end = (rs < ls) ? Long.parseLong(contentRange.substring(rs+1, ls).trim()) : length;
             this.acceptRanges = acceptRanges(acceptRanges);
         }
 
@@ -159,7 +163,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          * @param  values  HTTP header value for "Accept-Ranges".
          * @return whether the values contains at least one "bytes" string.
          */
-        public static boolean acceptRanges(final Iterable<String> values) {
+        private static boolean acceptRanges(final Iterable<String> values) {
             for (final String t : values) {
                 if (ArraysExt.containsIgnoreCase((String[]) CharSequences.split(t, ','), RANGES_UNIT)) {
                     return true;
@@ -169,11 +173,32 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         }
 
         /**
+         * Formats the "Range" value to send in an HTTP header for the specified range of bytes.
+         * This is a helper method for {@link #openConnection(long, long)} implementations.
+         *
+         * @param  start  position of the first byte to read (inclusive).
+         * @param  end    position of the last byte to read with the returned stream (inclusive),
+         *                or {@link Long#MAX_VALUE} for end of stream.
+         * @return
+         */
+        public static String formatRange(final long start, final long end) {
+            final boolean hasEnd = (end > start) && (end != Long.MAX_VALUE);
+            if (start == 0 && !hasEnd) {
+                return null;
+            }
+            final StringBuilder range = new StringBuilder(RANGES_UNIT).append('=').append(start).append('-');
+            if (hasEnd) {
+                range.append(end);      // Inclusive.
+            }
+            return range.toString();
+        }
+
+        /**
          * Returns a string representation for debugging purposes.
          */
         @Override
         public String toString() {
-            return Strings.toString(getClass(), "start", start, "end", end);
+            return Strings.toString(getClass(), null, formatRange(start, end));
         }
     }
 

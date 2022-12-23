@@ -70,19 +70,15 @@ final class CachedByteChannel extends FileCacheByteChannel {
      * @return contains the input stream providing the bytes to read starting at the given start position.
      */
     @Override
-    protected Connection openConnection(long start, long end) throws IOException {
+    protected Connection openConnection(final long start, final long end) throws IOException {
         final ResponseInputStream<GetObjectResponse> stream;
         final String contentRange, acceptRanges;
         final Long contentLength;
         try {
             GetObjectRequest.Builder builder = GetObjectRequest.builder().bucket(path.bucket).key(path.key);
-            final boolean hasEnd = (end > start) && (end != Long.MAX_VALUE);
-            if (start != 0 || hasEnd) {
-                final StringBuilder range = new StringBuilder(RANGES_UNIT).append('=').append(start);
-                if (hasEnd) {
-                    range.append('-').append(end);      // Inclusive.
-                }
-                builder = builder.range(range.toString());
+            final String range = Connection.formatRange(start, end);
+            if (range != null) {
+                builder = builder.range(range);
             }
             stream = path.fs.client().getObject(builder.build());
             final GetObjectResponse response = stream.response();
@@ -94,9 +90,7 @@ final class CachedByteChannel extends FileCacheByteChannel {
         }
         final List<String> rangeUnits = (acceptRanges != null) ? List.of(acceptRanges) : List.of();
         final long length = (contentLength != null) ? contentLength : -1;
-        if (contentRange == null) {
-            return new Connection(stream, 0, (length < 0) ? Long.MAX_VALUE : length, length, Connection.acceptRanges(rangeUnits));
-        } else try {
+        try {
             return new Connection(stream, contentRange, length, rangeUnits);
         } catch (IllegalArgumentException e) {
             throw new IOException(e);

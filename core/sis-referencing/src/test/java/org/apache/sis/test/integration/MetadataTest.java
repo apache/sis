@@ -57,6 +57,7 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.Namespaces;
@@ -136,7 +137,7 @@ public final strictfp class MetadataTest extends TestCase {
         final Anchor country = new Anchor(URI.create("SDN:C320:2:FR"), "France"); // Non-public SIS class.
         {
             final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));
-            online.setProtocol("http");
+            online.setProtocol(Constants.HTTP);
             final DefaultContact contact = new DefaultContact(online);
             contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "IFREMER");
             contact.setPhones(List.of(
@@ -166,7 +167,7 @@ public final strictfp class MetadataTest extends TestCase {
                 @SuppressWarnings("deprecation")
                 final DefaultResponsibility originator = new DefaultResponsibleParty(Role.ORIGINATOR);
                 final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.com.univ-mrs.fr/LOB/"));
-                online.setProtocol("http");
+                online.setProtocol(Constants.HTTP);
                 final DefaultContact contact = new DefaultContact(online);
                 contact.setPhones(List.of(
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x5", TelephoneType.VOICE),

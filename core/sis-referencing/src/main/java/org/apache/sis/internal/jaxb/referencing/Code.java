@@ -176,7 +176,7 @@ public final class Code {
                     return new Code(identifier);
                 }
                 if (!isHTTP) {
-                    isHTTP = code.regionMatches(true, 0, Constants.HTTP, 0, 5);
+                    isHTTP = code.regionMatches(true, 0, Constants.HTTP + ':', 0, 5);
                     if (isHTTP) {
                         fallback = identifier;
                     } else if (!isEPSG) {
