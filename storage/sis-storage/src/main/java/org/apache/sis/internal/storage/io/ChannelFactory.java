@@ -226,7 +226,7 @@ public abstract class ChannelFactory {
                 throw new IOException(Resources.format(Resources.Keys.MissingSchemeInURI_1, uri));
             }
             if (IOUtilities.isHTTP(uri.getScheme())) {
-                return new ChannelFactory(false) {
+                return new ChannelFactory(true) {
                     @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
                         return new HttpByteChannel(filename, uri);
                     }

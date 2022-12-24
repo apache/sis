@@ -159,4 +159,14 @@ public enum Compression {
         }
         return UNKNOWN;
     }
+
+    /**
+     * Whether the decompression uses native library.
+     * In such case, the use of direct buffer may be more efficient.
+     *
+     * @return whether the compression may use a native library.
+     */
+    public final boolean useNativeLibrary() {
+        return this == DEFLATE;
+    }
 }
