@@ -95,7 +95,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         /** Position of the last byte read by the input stream (inclusive). */
         final long end;
 
-        /** Total length of the stream, or -1 is unknown. */
+        /** Number of bytes in the full stream, or -1 is unknown. */
         final long length;
 
         /** Whether connection can be created for ranges of bytes. */
@@ -104,56 +104,71 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         /**
          * Creates information about a connection.
          *
-         * @param input          the input stream for reading the bytes.
-         * @param start          position of the first byte read by the input stream (inclusive).
-         * @param end            position of the last byte read by the input stream (inclusive).
-         * @param contentLength  total length of the stream, or -1 if unknown.
-         * @param acceptRanges   whether connection can be created for ranges of bytes.
+         * @param input         the input stream for reading the bytes.
+         * @param start         position of the first byte read by the input stream (inclusive).
+         * @param end           position of the last byte read by the input stream (inclusive).
+         * @param length        length of the full stream (not the content length), or -1 if unknown.
+         * @param acceptRanges  whether connection can be created for ranges of bytes.
          *
          * @see #openConnection(long, long)
          */
-        public Connection(final InputStream input, final long start, final long end, final long contentLength, final boolean acceptRanges) {
+        public Connection(final InputStream input, final long start, final long end, final long length, final boolean acceptRanges) {
             this.input  = input;
             this.start  = start;
             this.end    = end;
-            this.length = contentLength;
+            this.length = length;
             this.acceptRanges = acceptRanges;
         }
 
         /**
-         * Creates information about a connection by parsing HTTP header.
-         * Example: "Content-Range: bytes 25000-75000/100000".
+         * Creates information about a connection by parsing HTTP header without content range.
+         * The "Content-Length" header value is useful to this class only if the connection was
+         * opened for the full file.
+         *
+         * @param  input          the input stream for reading the bytes.
+         * @param  contentLength  length of the response content, or -1 if unknown.
+         * @param  acceptRanges   value of "Accept-Ranges" in HTTP header.
+         * @throws IllegalArgumentException if the start, end or length cannot be parsed.
+         */
+        public Connection(final InputStream input, final long contentLength, final Iterable<String> acceptRanges) {
+            this.input  = input;
+            this.start  = 0;
+            this.end    = (contentLength > 0) ? contentLength - 1 : Long.MAX_VALUE;
+            this.length = contentLength;
+            this.acceptRanges = acceptRanges(acceptRanges);
+        }
+
+        /**
+         * Creates information about a connection by parsing HTTP header with content range.
+         * Note that the "Content-Length" header value is not useful when a range is specified
+         * because the content length is not the full length of the file.
+         *
+         * <p>Example of content range value: {@code "Content-Range: bytes 25000-75000/100000"}.</p>
          *
          * @param  input          the input stream for reading the bytes.
          * @param  contentRange   value of "Content-Range" in HTTP header, or {@code null} if none.
          * @param  acceptRanges   value of "Accept-Ranges" in HTTP header.
-         * @param  contentLength  total length of the stream, or -1 if unknown.
          * @throws IllegalArgumentException if the start, end or length cannot be parsed.
          */
-        public Connection(final InputStream input, String contentRange, long contentLength, final Iterable<String> acceptRanges) {
+        public Connection(final InputStream input, String contentRange, final Iterable<String> acceptRanges) {
             this.input = input;
-            if (contentRange == null) {
-                start  = 0;
-                end    = (contentLength > 0) ? contentLength - 1 : Long.MAX_VALUE;
-                length = contentLength;
-            } else {
-                contentRange = contentRange.trim();
-                int s = contentRange.indexOf(' ');
-                if (s >= 0 && (s != RANGES_UNIT.length() || !contentRange.regionMatches(true, 0, RANGES_UNIT, 0, s))) {
-                    throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, contentRange));
-                }
-                int rs = contentRange.indexOf('-', ++s);                    // Index of range separator.
-                int ls = contentRange.indexOf('/', Math.max(s, rs+1));      // Index of length separator.
-                if (contentLength < 0 && ls >= 0) {
-                    final String t = contentRange.substring(ls+1).trim();
-                    if (!t.equals("*")) contentLength = Long.parseLong(t);
-                }
-                length = contentLength;
-                if (ls < 0) ls = contentRange.length();
-                if (rs < 0) rs = ls;
-                start = Long.parseLong(contentRange.substring(s, rs).trim());
-                end = (rs < ls) ? Long.parseLong(contentRange.substring(rs+1, ls).trim()) : length;
+            long contentLength = -1;
+            contentRange = contentRange.trim();
+            int s = contentRange.indexOf(' ');
+            if (s >= 0 && (s != RANGES_UNIT.length() || !contentRange.regionMatches(true, 0, RANGES_UNIT, 0, s))) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, contentRange));
             }
+            int rs = contentRange.indexOf('-', ++s);                    // Index of range separator.
+            int ls = contentRange.indexOf('/', Math.max(s, rs+1));      // Index of length separator.
+            if (ls >= 0) {
+                final String t = contentRange.substring(ls+1).trim();
+                if (!t.equals("*")) contentLength = Long.parseLong(t);
+            }
+            length = contentLength;
+            if (ls < 0) ls = contentRange.length();
+            if (rs < 0) rs = ls;
+            start = Long.parseLong(contentRange.substring(s, rs).trim());
+            end = (rs < ls) ? Long.parseLong(contentRange.substring(rs+1, ls).trim()) : length;
             this.acceptRanges = acceptRanges(acceptRanges);
         }
 
@@ -260,9 +275,11 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     private final RangeSet<Long> rangesOfAvailableBytes;
 
     /**
-     * Number of bytes in the full stream, or 0 if not yet computed.
+     * Number of bytes in the full stream, or -1 if not yet computed.
+     * It will be set to {@link Connection#length} when a connection is established,
+     * and updated for every new connection in case the value change.
      */
-    private long length;
+    private long length = -1;
 
     /**
      * Creates a new channel which will cache bytes in a temporary file.
@@ -333,6 +350,14 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      */
     @Override
     public synchronized long size() throws IOException {
+        if (length < 0) {
+            if (connection == null) {
+                openConnection();
+            }
+            if (length < 0) {
+                throw new IOException(Errors.format(Errors.Keys.Uninitialized_1, "size"));
+            }
+        }
         return length;
     }
 
@@ -356,7 +381,11 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      */
     @Override
     public synchronized SeekableByteChannel position(final long newPosition) throws IOException {
-        ArgumentChecks.ensurePositive("newPosition", newPosition);
+        if (length > 0) {
+            ArgumentChecks.ensureBetween("newPosition", 0, length-1, newPosition);
+        } else {
+            ArgumentChecks.ensurePositive("newPosition", newPosition);
+        }
         position = newPosition;
         if (endOfInterest - newPosition < SKIP_THRESHOLD) {
             endOfInterest = 0;      // Read until end of stream.
@@ -414,6 +443,9 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * or when the number of bytes to skip is too small for being worth to create a new connection.
      * This method may skip less bytes than requested. The skipped bytes are saved in the cache.
      *
+     * <p>The {@link #position} field (the channel position) is not modified by this method.
+     * This method is invoked when input position needs to become equal to the channel position.</p>
+     *
      * @param  count  number of bytes to skip.
      * @return remaining number of bytes to skip after this method execution.
      * @throws IOException if an I/O error occurred.
@@ -434,9 +466,10 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
                     if (n != 0 || (n = input.read()) < 0) {     // Block until we get one byte.
                         break;                                  // End of stream, but maybe it was a sub-range.
                     }
-                    buffer.put((byte) n);
+                    buffer.put(0, (byte) n);                    // Do not increment buffer position.
                     n = 1;
                 }
+                assert buffer.position() == 0;
                 cache(buffer.limit(n));
                 count -= n;
             } while (count > 0);
@@ -470,10 +503,10 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          */
         Connection c = connection;
         long offset = position - file.position();
-        if (offset != 0 && c != null) {
+        if (c != null) {
             if ((offset < 0 || (c.acceptRanges && (offset >= SKIP_THRESHOLD || position > c.end)))) {
                 offset -= drainAndAbort();
-                c = connection;
+                c = connection;                 // May become null as a result of `drainAndAbort()`.
             }
         }
         /*
@@ -488,13 +521,14 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         }
         offset = skipInInput(offset);
         if (offset != 0) {
-            count = readFromCache(dst);
+            count = readFromCache(dst);         // In case `skipInInput(…)` has read more bytes than desired.
             usedConnection();
             if (count >= 0) {
                 return count;
             }
             throw new EOFException(Errors.format(Errors.Keys.ValueOutOfRange_4, "position", 0, length, position));
         }
+        assert file.position() == position;
         /*
          * Get a buffer that we can use with `InputStream.read(byte[])`.
          * It must be a buffer backed by a Java array.
@@ -507,29 +541,28 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
             buffer.clear().limit(dst.remaining());
         }
         /*
-         * Transfer bytes from the input stream to the buffer.
-         * The bytes are also copied to the temporary file.
+         * Transfer bytes from the input stream to the buffer. The bytes are also copied to the temporary file.
+         * We try to use `dst` instead of `buffer` in call to `cache(…)` because the former may be a direct buffer.
          */
-        final int limit = buffer.limit();
-        final int start = buffer.position();
-        count = c.input.read(buffer.array(), Math.addExact(buffer.arrayOffset(), start), buffer.remaining());
+        final ByteBuffer slice = dst.slice();
+        count = c.input.read(buffer.array(), Math.addExact(buffer.arrayOffset(), buffer.position()), buffer.remaining());
         if (count > 0) {
-            try {
-                cache(buffer.limit(start + count));
-            } finally {
-                buffer.limit(limit);
-            }
-            if (buffer != dst) {
-                dst.put(buffer.flip());             // Transfer from temporary buffer to destination buffer.
-            }
             position += count;
+            if (buffer != dst) {
+                dst.put(buffer.limit(count));               // Transfer from temporary buffer to destination buffer.
+            } else {
+                dst.position(dst.position() + count);
+            }
+            cache(slice.limit(count));
         }
         usedConnection();
         return count;
     }
 
     /**
-     * Attempts to read up to bytes from the cache.
+     * Attempts to read up to <i>r</i> bytes from the cache.
+     * This method does not use the connection (it may be null).
+     * The {@link #position} field is updated by the amount of bytes read.
      *
      * @param  dst  the buffer where to store the bytes that are read.
      * @return number of bytes read, or -1 if the cache does not contain the requested range of bytes.
@@ -547,10 +580,11 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         final int count;
         try {
             count = file.read(dst.limit(end), position);
-            position += count;
+            if (count >= 0) position += count;
         } finally {
             dst.limit(limit);
         }
+        assert dst.position() == start + count;
         return count;
     }
 

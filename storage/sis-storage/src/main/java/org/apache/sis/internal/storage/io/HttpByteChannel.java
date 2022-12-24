@@ -121,10 +121,27 @@ final class HttpByteChannel extends FileCacheByteChannel {
         range = headers.firstValue("Content-Range").orElse(null);
         final List<String> rangeUnits = headers.allValues("Accept-Ranges");
         try {
-            final long length = headers.firstValueAsLong("Content-Length").orElse(-1);
-            return new Connection(stream, range, length, rangeUnits);
+            if (range == null) {
+                final long length = headers.firstValueAsLong("Content-Length").orElse(-1);
+                return new Connection(stream, length, rangeUnits);
+            } else {
+                return new Connection(stream, range, rangeUnits);
+            }
         } catch (IllegalArgumentException e) {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Invoked when this channel is no longer interested in reading bytes from the specified stream.
+     *
+     * @param  input  the input stream to eventually close.
+     * @return whether the given input stream has been closed by this method.
+     * @throws IOException if an error occurred while closing the stream or preparing for next read operations.
+     */
+    @Override
+    protected boolean abort(final InputStream input) throws IOException {
+        input.close();
+        return true;
     }
 }

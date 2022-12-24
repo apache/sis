@@ -16,12 +16,13 @@
  */
 package org.apache.sis.internal.storage.io;
 
+import java.util.List;
 import java.util.Random;
 import java.util.OptionalLong;
+import java.util.function.IntFunction;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.util.List;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
@@ -92,11 +93,14 @@ public final strictfp class FileCacheByteChannelTest extends TestCase {
         @Override
         protected Connection openConnection(long start, long end) {
             assertTrue(end >= 0);
-            if (end >= length) end = length - 1;
-            start = Math.max(start - random.nextInt(40), 0);
-            end = Math.min(end + random.nextInt(40), length - 1);       // Inclusive.
+            if (end < length) end++;    // Exclusive (temporarily).
+            else end = length;          // Replace Long.MAX_VALUE.
+            do {
+                start = Math.max(start - random.nextInt(40), 0);
+                end = Math.min(end + random.nextInt(40), length);
+            } while (start >= end);
             var input = new ComputedInputStream(Math.toIntExact(start), Math.toIntExact(end), random);
-            return new Connection(input, start, end, length, true);
+            return new Connection(input, start, end-1, length, true);
         }
 
         /**
@@ -140,14 +144,36 @@ public final strictfp class FileCacheByteChannelTest extends TestCase {
      */
     @Test
     public void testRandomOperations() throws IOException {
+        testRandomOperations(ByteBuffer::allocate);
+    }
+
+    /**
+     * Tests random operations on a stream of computed values using a direct buffer.
+     * The code paths are slightly different compared to {@link #testRandomOperations()}.
+     *
+     * @throws IOException if an error occurred when reading or writing to the temporary file.
+     */
+    @Test
+    public void testWithDirectBuffer() throws IOException {
+        testRandomOperations(ByteBuffer::allocateDirect);
+    }
+
+    /**
+     * Implementation of {@link #testRandomOperations()} and {@link #testWithDirectBuffer()}.
+     *
+     * @param  allocator  the function to invoke for allocating a byte buffer.
+     * @throws IOException if an error occurred when reading or writing to the temporary file.
+     */
+    private void testRandomOperations(final IntFunction<ByteBuffer> allocator) throws IOException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final Implementation channel = new Implementation("test", random);
-        final ByteBuffer buffer = ByteBuffer.allocate(random.nextInt(1000) + 1000);
+        final ByteBuffer buffer = allocator.apply(random.nextInt(1000) + 1000);
         int position = 0;
-        for (int i=0; i<10000; i++) {
+        for (int i=0; i<5000; i++) {
             assertTrue(channel.isOpen());
             assertEquals(position, channel.position());
-            if (random.nextInt(4) == 0) {
+            final boolean seek = random.nextInt(4) == 0;
+            if (seek) {
                 position = random.nextInt(channel.length - 1);
                 int end  = random.nextInt(channel.length - 1);
                 if (position > end) {
@@ -160,7 +186,16 @@ public final strictfp class FileCacheByteChannelTest extends TestCase {
             }
             channel.readInRandomRegion(buffer);
             while (buffer.hasRemaining()) {
-                assertEquals(ComputedInputStream.valueAt(position++), buffer.get());
+                final byte expected = ComputedInputStream.valueAt(position++);
+                final byte actual = buffer.get();
+                if (expected != actual) {
+                    final var b = new StringBuilder(100).append("During iteration ").append(i)
+                            .append(": Wrong byte value at position ").append(position);
+                    if (seek) {
+                        b.append(" (after seek)");
+                    }
+                    fail(b.append(". Expected ").append(expected).append(" but got ").append(actual).append('.').toString());
+                }
             }
         }
         assertEquals(position, channel.position());
@@ -177,23 +212,23 @@ public final strictfp class FileCacheByteChannelTest extends TestCase {
     public void testParseRange() {
         final List<String> rangesUnit = List.of("bytes");
         FileCacheByteChannel.Connection c;
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000/100000", -1, rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000/100000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals( 75000, c.end);
         assertEquals(100000, c.length);
 
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000", -1, rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals( 75000, c.end);
         assertEquals(    -1, c.length);
 
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000/100000", -1, rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, "bytes 25000/100000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals(100000, c.end);
         assertEquals(100000, c.length);
 
         // Not legal, but we test robustness.
-        c = new FileCacheByteChannel.Connection(null, "25000", -1, rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, "25000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals(    -1, c.end);
         assertEquals(    -1, c.length);

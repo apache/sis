@@ -72,8 +72,6 @@ final class CachedByteChannel extends FileCacheByteChannel {
     @Override
     protected Connection openConnection(final long start, final long end) throws IOException {
         final ResponseInputStream<GetObjectResponse> stream;
-        final String contentRange, acceptRanges;
-        final Long contentLength;
         try {
             GetObjectRequest.Builder builder = GetObjectRequest.builder().bucket(path.bucket).key(path.key);
             final String range = Connection.formatRange(start, end);
@@ -82,18 +80,22 @@ final class CachedByteChannel extends FileCacheByteChannel {
             }
             stream = path.fs.client().getObject(builder.build());
             final GetObjectResponse response = stream.response();
-            contentLength = response.contentLength();
-            contentRange  = response.contentRange();
-            acceptRanges  = response.acceptRanges();
+            final String contentRange = response.contentRange();
+            final String acceptRanges = response.acceptRanges();
+            final List<String> rangeUnits = (acceptRanges != null) ? List.of(acceptRanges) : List.of();
+            try {
+                if (contentRange == null) {
+                    final Long contentLength = response.contentLength();
+                    final long length = (contentLength != null) ? contentLength : -1;
+                    return new Connection(stream, length, rangeUnits);
+                } else {
+                    return new Connection(stream, contentRange, rangeUnits);
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
         } catch (SdkException e) {
             throw FileService.failure(path, e);
-        }
-        final List<String> rangeUnits = (acceptRanges != null) ? List.of(acceptRanges) : List.of();
-        final long length = (contentLength != null) ? contentLength : -1;
-        try {
-            return new Connection(stream, contentRange, length, rangeUnits);
-        } catch (IllegalArgumentException e) {
-            throw new IOException(e);
         }
     }
 
