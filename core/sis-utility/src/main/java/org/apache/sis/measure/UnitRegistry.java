@@ -26,9 +26,14 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.Dimension;
 import javax.measure.spi.SystemOfUnits;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.system.Loggers;
+
+import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -37,7 +42,7 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * rather uses the static methods directly since we define all units in terms of SI.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -243,6 +248,24 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     @Override
     public <Q extends Quantity<Q>> Unit<Q> getUnit(final Class<Q> type) {
         return Units.get(type);
+    }
+
+    /**
+     * Returns a unit with the given string representation,
+     * or {@code null} if none is found in this unit system.
+     *
+     * @param  symbols  the string representation of a unit.
+     * @return the unit with the given string representation,
+     *         or {@code null} if the give symbols can not be parsed.
+     */
+    @Override
+    public Unit<?> getUnit(final String symbols) {
+        try {
+            return Units.valueOf(symbols);
+        } catch (MeasurementParseException e) {
+            Logging.ignorableException(getLogger(Loggers.MEASURE), UnitRegistry.class, "getUnit", e);
+            return null;
+        }
     }
 
     /**

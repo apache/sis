@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.regex.Pattern;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
@@ -262,10 +262,10 @@ public final class GCOM_W extends Convention {
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol cannot be parsed.
+     * @throws MeasurementParseException if the unit symbol cannot be parsed.
      */
     @Override
-    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+    public Unit<?> getUnitFallback(final Variable data) throws MeasurementParseException {
         final String symbol = data.getAttributeAsString("UNIT");
         if (symbol == null) {
             return super.getUnitFallback(data);

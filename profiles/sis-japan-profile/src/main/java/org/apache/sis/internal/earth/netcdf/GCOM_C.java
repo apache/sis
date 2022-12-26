@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import java.util.function.Function;
 import java.awt.Color;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -568,10 +568,10 @@ public final class GCOM_C extends Convention {
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol cannot be parsed.
+     * @throws MeasurementParseException if the unit symbol cannot be parsed.
      */
     @Override
-    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+    public Unit<?> getUnitFallback(final Variable data) throws MeasurementParseException {
         if ("Image_data".equals(data.getGroupName())) {
             final String symbol = data.getAttributeAsString("Unit");
             if (symbol != null && !symbol.equalsIgnoreCase("NA")) {

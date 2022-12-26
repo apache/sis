@@ -3,7 +3,7 @@ Welcome to Apache SIS <https://sis.apache.org>
 ==============================================
 
 SIS is a Java language library for developing geospatial applications.
-The library is an implementation of GeoAPI 3.0.1 interfaces and can be used
+The library is an implementation of GeoAPI 3.0.2 interfaces and can be used
 for desktop or server applications. Apache SIS provides data structures for
 geographic features and associated metadata along with methods to manipulate
 those data structures. The SIS metadata module forms the base of the library
@@ -57,7 +57,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Some Apache SIS subcomponents have dependencies subject to different
-license terms. All those dependencies except GeoAPI, JSR-363 and JAXB API
+license terms. All those dependencies except GeoAPI, JSR-385 and JAXB API
 are optional. Your use of those dependencies is subject to the terms and
 conditions of the licenses listed in the NOTICE file.
 

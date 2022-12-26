@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.Loggers;
@@ -388,7 +388,7 @@ abstract class AbstractParser implements Parser {
      * Parses the given unit name or symbol. Contrarily to other {@code parseFoo()} methods,
      * this method has no {@link ParsePosition} and expects the given string to be the full unit symbol.
      */
-    final Unit<?> parseUnit(final String text) throws ParserException {
+    final Unit<?> parseUnit(final String text) throws MeasurementParseException {
         if (unitFormat == null) {
             final Locale locale = symbols.getLocale();
             if (locale == Locale.ROOT) {
