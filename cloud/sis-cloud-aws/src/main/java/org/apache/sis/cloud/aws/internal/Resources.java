@@ -72,6 +72,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short FileSystemInitialized_2 = 4;
 
         /**
+         * Invalid bucket name in “{0}”.
+         */
+        public static final short InvalidBucketName_1 = 8;
+
+        /**
          * Missing {0,choice,0#public|1#secret} access key in “{1}” URI.
          */
         public static final short MissingAccessKey_2 = 5;

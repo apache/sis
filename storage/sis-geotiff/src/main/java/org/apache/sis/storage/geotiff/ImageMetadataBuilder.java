@@ -27,6 +27,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.measure.Units;
 
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+
 
 /**
  * A temporary object for building the metadata for a single GeoTIFF image.
@@ -39,7 +41,7 @@ import org.apache.sis.measure.Units;
  * discard them (which save a little bit of space) when no longer needed.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
  * @module
  */
@@ -98,10 +100,16 @@ final class ImageMetadataBuilder extends MetadataBuilder {
     @SuppressWarnings("fallthrough")
     Integer setThreshholding(final int value) {
         switch (value) {
-            default: return value;                              // Cause a warning to be reported by the caller.
-            case 2:  if ((cellWidth & cellHeight) >= 0) break;  // Exit if at least one value is positive, else fallthrough.
-            case 1:  // Fall through
-            case 3:  cellWidth = cellHeight = (short) -value; break;
+            default: return value;                      // Cause a warning to be reported by the caller.
+            case THRESHHOLDING_ORDERED_DITHER: {
+                if ((cellWidth & cellHeight) >= 0) break;
+                // Exit if at least one value is positive, else fallthrough.
+            }
+            case THRESHHOLDING_RANDOMIZED_DITHER:       // Fall through
+            case THRESHHOLDING_NONE:  {
+                cellWidth = cellHeight = (short) -value;
+                break;
+            }
         }
         return null;
     }

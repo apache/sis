@@ -26,6 +26,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
 import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -185,8 +186,9 @@ public final class Country extends GO_CharacterString {
         }
         if (country != null) {
             final CodeListUID identifier = country.identifier;
-            final String c = CharSequences.trimWhitespaces((identifier != null ? identifier : country).toString());
-            if (c != null && !c.isEmpty()) {
+            // Note: `CodeListUID.toString()` and `Country.toString()` may return null.
+            final String c = Strings.trimOrNull((identifier != null ? identifier : country).toString());
+            if (c != null) {
                 if (code == null) {
                     code = "";
                 }

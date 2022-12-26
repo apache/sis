@@ -541,10 +541,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public void setSeparator(final String separator) {
         checkWritePermission();
-        final String s = CharSequences.trimWhitespaces(separator.trim());
-        ensureNonEmpty("separator", s);
+        ensureNonEmpty("separator", trimmedSeparator = separator.trim().strip());
         this.separator = separator;
-        trimmedSeparator = s;
     }
 
     /**
@@ -766,7 +764,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
             if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
         }
         quote = String.valueOf(Character.toChars(quotes[1]));
-        trimmedSeparator = CharSequences.trimWhitespaces(separator.trim());
+        trimmedSeparator = separator.trim().strip();
         return this;
     }
 }

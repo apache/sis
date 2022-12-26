@@ -134,8 +134,8 @@ public final class Exceptions extends Static {
         StringBuilder buffer = null;
         Vocabulary resources = null;
         while (cause != null) {
-            final String message = CharSequences.trimWhitespaces(getLocalizedMessage(cause, locale));
-            if (message != null && !message.isEmpty()) {
+            String message = getLocalizedMessage(cause, locale);
+            if (message != null && !(message = message.strip()).isEmpty()) {
                 if (buffer == null) {
                     buffer = new StringBuilder(128);
                     if (header != null) {

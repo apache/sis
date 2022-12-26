@@ -28,7 +28,7 @@ import static java.util.logging.Logger.getLogger;
  * A thread executing short tasks after some (potentially zero nanosecond) delay.
  * This class should be reserved to internal SIS usage without user's code.
  * In practice some user code may be indirectly executed through SIS tasks invoking overrideable methods.
- * But all submitted tasks shall be very quick, since there is only one thread shared by everyone.
+ * But all submitted tasks shall be very quick, because there is only one thread shared by everyone.
  *
  * <p>The methods for use in this class are:</p>
  * <ul>

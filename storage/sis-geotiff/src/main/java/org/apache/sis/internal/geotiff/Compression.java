@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.geotiff;
 
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+
 
 /**
  * Possible values for {@link org.apache.sis.storage.geotiff.Tags#Compression}.
@@ -30,7 +32,7 @@ package org.apache.sis.internal.geotiff;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -43,7 +45,7 @@ public enum Compression {
      *   <li>Name in WCS response: "None"</li>
      * </ul>
      */
-    NONE(1),
+    NONE(COMPRESSION_NONE),
 
     /**
      * CCITT Group 3, 1-Dimensional Modified Huffman run length encoding.
@@ -52,7 +54,7 @@ public enum Compression {
      *   <li>Name in WCS response: "CCITTRLE"</li>
      * </ul>
      */
-    CCITTRLE(2),
+    CCITTRLE(COMPRESSION_CCITT_RLE),
 
     /**
      * PackBits compression, a simple byte-oriented run length scheme.
@@ -61,7 +63,7 @@ public enum Compression {
      *   <li>Name in WCS response: "PackBits"</li>
      * </ul>
      */
-    PACKBITS(32773),
+    PACKBITS(COMPRESSION_PACKBITS),
 
     // ---- End of baseline GeoTIFF. Remaining are extensions cited by OGC standard ----
 
@@ -72,7 +74,7 @@ public enum Compression {
      *   <li>Name in WCS response: "LZW"</li>
      * </ul>
      */
-    LZW(5),
+    LZW(COMPRESSION_LZW),
 
     /**
      * Deflate compression, like ZIP format. This is sometimes named {@code "ADOBE_DEFLATE"},
@@ -83,7 +85,7 @@ public enum Compression {
      *   <li>Other name:           "ADOBE_DEFLATE"</li>
      * </ul>
      */
-    DEFLATE(8),
+    DEFLATE(COMPRESSION_ZLIB),
 
     /**
      * JPEG compression.
@@ -93,12 +95,12 @@ public enum Compression {
      *   <li>Name of old JPEG:     "OJPEG" (code 6)</li>
      * </ul>
      */
-    JPEG(7),
+    JPEG(COMPRESSION_JPEG),
 
     // ---- Remaining are extension to both baseline and OGC standard ----
 
-    /** Unsupported. */ CCITTFAX3(3),
-    /** Unsupported. */ CCITTFAX4(4),
+    /** Unsupported. */ CCITTFAX3(COMPRESSION_CCITT_T_4),
+    /** Unsupported. */ CCITTFAX4(COMPRESSION_CCITT_T_6),
     /** Unsupported. */ NEXT(32766),
     /** Unsupported. */ CCITTRLEW(32771),
     /** Unsupported. */ THUNDERSCAN(32809),
@@ -139,14 +141,14 @@ public enum Compression {
      */
     public static Compression valueOf(final int code) {
         switch (code) {
-            case 1:     return NONE;
-            case 2:     return CCITTRLE;
-            case 5:     return LZW;
-            case 6:     // "old-style" JPEG, later overriden in Technical Notes 2.
-            case 7:     return JPEG;
-            case 8:
-            case 32946: return DEFLATE;
-            case 32773: return PACKBITS;
+            case 32946:                 // Fall through
+            case COMPRESSION_ZLIB:      return DEFLATE;
+            case COMPRESSION_OLD_JPEG:  // "old-style" JPEG, later overriden in Technical Notes 2.
+            case COMPRESSION_JPEG:      return JPEG;
+            case COMPRESSION_CCITT_RLE: return CCITTRLE;
+            case COMPRESSION_LZW:       return LZW;
+            case COMPRESSION_PACKBITS:  return PACKBITS;
+            case COMPRESSION_NONE:      return NONE;
             default: {
                 // Fallback for uncommon formats.
                 for (final Compression c : values()) {
@@ -156,5 +158,15 @@ public enum Compression {
             }
         }
         return UNKNOWN;
+    }
+
+    /**
+     * Whether the decompression uses native library.
+     * In such case, the use of direct buffer may be more efficient.
+     *
+     * @return whether the compression may use a native library.
+     */
+    public final boolean useNativeLibrary() {
+        return this == DEFLATE;
     }
 }

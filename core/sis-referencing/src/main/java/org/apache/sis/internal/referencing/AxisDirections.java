@@ -651,7 +651,7 @@ next:       for (int i=0; i <= limit; i++) {
      * @return the first axis direction having a name matching the given one, or {@code null} if none.
      */
     public static AxisDirection valueOf(String name) {
-        name = trimWhitespaces(name.replace('_', ' '));
+        name = name.replace('_', ' ').strip();
         final AxisDirection[] directions = AxisDirection.values();
         AxisDirection candidate = find(name, directions);
         if (candidate == null) {

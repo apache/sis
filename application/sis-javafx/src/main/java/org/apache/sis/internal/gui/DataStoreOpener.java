@@ -204,9 +204,12 @@ public final class DataStoreOpener extends Task<DataStore> {
         if (source instanceof StorageConnector) {
             return ((StorageConnector) source).getStorageName();
         }
-        String name = IOUtilities.filename(source);
+        String name = Strings.trimOrNull(IOUtilities.filename(source));
         if (name == null) {
-            name = Vocabulary.format(Vocabulary.Keys.Unknown);
+            name = Strings.trimOrNull(IOUtilities.toString(source));
+            if (name == null) {
+                name = Vocabulary.format(Vocabulary.Keys.Unknown);
+            }
         }
         return name;
     }

@@ -14,18 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.jdk17;
+
 
 /**
- * Utility classes for the implementation of GeoTIFF reader and writer.
- *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Placeholder for the {@code java.lang.Record} class introduced in Java 16.
+ * This is used for making transition easier when SIS will be ready to upgrade to Java 17.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @since   1.4
  * @version 1.4
- * @since   0.8
  * @module
  */
-package org.apache.sis.internal.geotiff;
+public abstract class Record {
+    /**
+     * Creates a new record.
+     */
+    protected Record() {
+    }
+}

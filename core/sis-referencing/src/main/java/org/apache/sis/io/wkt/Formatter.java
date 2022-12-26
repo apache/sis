@@ -1040,8 +1040,8 @@ public class Formatter implements Localized {
     private void appendOnNewLine(final String keyword, final InternationalString text, final ElementKind type) {
         ArgumentChecks.ensureNonNull("keyword", keyword);
         if (text != null) {
-            final String localized = CharSequences.trimWhitespaces(text.toString(locale));
-            if (localized != null && !localized.isEmpty()) {
+            String localized = text.toString(locale);
+            if (localized != null && !(localized = localized.strip()).isEmpty()) {
                 openElement(true, keyword);
                 quote(localized, type);
                 closeElement(true);

@@ -41,7 +41,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -201,8 +200,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public GeneralParameterDescriptor descriptor(String name) throws ParameterNotFoundException {
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
         return descriptors.descriptor(this, name, size());
     }
 
@@ -215,8 +213,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValue<?> parameter(String name) throws ParameterNotFoundException {
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
         IllegalArgumentException cause = null;
         int[] indices = null;
         try {

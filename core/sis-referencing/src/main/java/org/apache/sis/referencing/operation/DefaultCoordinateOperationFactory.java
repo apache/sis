@@ -54,7 +54,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Utilities;
@@ -277,8 +276,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @see DefaultMathTransformFactory#getOperationMethod(String)
      */
     public OperationMethod getOperationMethod(String name) throws FactoryException {
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
         final MathTransformFactory mtFactory = getMathTransformFactory();
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);

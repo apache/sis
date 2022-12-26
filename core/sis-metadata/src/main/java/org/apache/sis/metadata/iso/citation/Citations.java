@@ -508,7 +508,7 @@ public final class Citations extends Static {
      * @return a citation using the specified name, or {@code null} if the given title is null or empty.
      */
     public static Citation fromName(String identifier) {
-        if (identifier == null || ((identifier = CharSequences.trimWhitespaces(identifier)).isEmpty())) {
+        if (identifier == null || ((identifier = identifier.strip()).isEmpty())) {
             return null;
         }
         for (final CitationConstant citation : CITATIONS) {

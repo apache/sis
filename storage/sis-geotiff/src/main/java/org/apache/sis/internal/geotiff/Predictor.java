@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.geotiff;
 
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
+
 
 /**
  * Possible values for {@link org.apache.sis.storage.geotiff.Tags#Predictor}.
@@ -23,7 +25,7 @@ package org.apache.sis.internal.geotiff;
  * before an encoding scheme is applied.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  * @module
  */
@@ -56,8 +58,8 @@ public enum Predictor {
      */
     public static Predictor valueOf(final int code) {
         switch (code) {
-            case 1:  return NONE;
-            case 2:  return HORIZONTAL;
+            case PREDICTOR_NONE: return NONE;
+            case PREDICTOR_HORIZONTAL_DIFFERENCING: return HORIZONTAL;
             case 3:  return FLOAT;
             default: return UNKNOWN;
         }

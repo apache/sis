@@ -14,18 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.aggregate;
+
+import org.apache.sis.storage.Aggregate;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.test.TestCase;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
 
 /**
- * Utility classes for the implementation of GeoTIFF reader and writer.
- *
- * <STRONG>Do not use!</STRONG>
- *
- * This package is for internal use by SIS only. Classes in this package
- * may change in incompatible ways in any future version without notice.
+ * Tests {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
- * @since   0.8
+ * @version 1.3
+ * @since   1.3
  * @module
  */
-package org.apache.sis.internal.geotiff;
+public final strictfp class CoverageAggregatorTest extends TestCase {
+    /**
+     * Tests an empty aggregator.
+     *
+     * @throws DataStoreException if an error occurred.
+     */
+    @Test
+    public void testEmpty() throws DataStoreException {
+        final var aggregator = new CoverageAggregator(null);
+        assertTrue(((Aggregate) aggregator.build()).components().isEmpty());
+    }
+}

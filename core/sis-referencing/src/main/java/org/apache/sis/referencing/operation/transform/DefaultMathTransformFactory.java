@@ -81,7 +81,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -468,8 +467,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      */
     public OperationMethod getOperationMethod(String identifier) throws NoSuchIdentifierException {
-        identifier = CharSequences.trimWhitespaces(identifier);
-        ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        ArgumentChecks.ensureNonEmpty("identifier", identifier = identifier.strip());
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
             synchronized (methods) {

@@ -21,6 +21,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.ReferenceResolver;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gcx.Anchor;
@@ -118,8 +119,8 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
          * Substitute <gco:CharacterString> by <gcx:Anchor> if a linkage is found.
          */
         if (!(value instanceof Anchor)) {
-            final String key = CharSequences.trimWhitespaces(value.toString());
-            if (key != null && !key.isEmpty()) {
+            final String key = Strings.trimOrNull(value.toString());
+            if (key != null) {
                 final Context context = Context.current();
                 final XLink linkage = Context.resolver(context).anchor(context, value, key);
                 if (linkage != null) {
@@ -169,16 +170,15 @@ public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequ
      * @return the text value for the given character sequence, or {@code null}.
      */
     public static CharSequence value(final Context context, final Object object, String string) {
-        string = CharSequences.trimWhitespaces(string);
-        if (string == null || string.isEmpty()) {
-            return null;
-        }
-        final XLink linkage = Context.resolver(context).anchor(context, object, string);
-        if (linkage != null) {
-            if (linkage instanceof Anchor) {
-                return (Anchor) linkage;
-            } else {
-                return new Anchor(linkage, string);
+        string = Strings.trimOrNull(string);
+        if (string != null) {
+            final XLink linkage = Context.resolver(context).anchor(context, object, string);
+            if (linkage != null) {
+                if (linkage instanceof Anchor) {
+                    return (Anchor) linkage;
+                } else {
+                    return new Anchor(linkage, string);
+                }
             }
         }
         return string;

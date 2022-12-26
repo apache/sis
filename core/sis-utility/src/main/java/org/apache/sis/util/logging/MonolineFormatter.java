@@ -512,7 +512,7 @@ loop:   for (int i=0; ; i++) {
             sourceFormat = NO_SOURCE;
             return;
         }
-        format = CharSequences.trimWhitespaces(format).toLowerCase(Locale.US);
+        format = format.strip().toLowerCase(Locale.US);
         for (int i=0; i<FORMAT_LABELS.length; i++) {
             if (format.equals(FORMAT_LABELS[i])) {
                 sourceFormat = i;

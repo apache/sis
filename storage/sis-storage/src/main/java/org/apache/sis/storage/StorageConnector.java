@@ -100,7 +100,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -227,6 +227,8 @@ public class StorageConnector implements Serializable {
     /**
      * A name for the input/output object, or {@code null} if none.
      * This field is initialized only when first needed.
+     *
+     * @see #getStorageName()
      */
     private transient String name;
 
@@ -639,9 +641,12 @@ public class StorageConnector implements Serializable {
      */
     public String getStorageName() {
         if (name == null) {
-            name = IOUtilities.filename(storage);
+            name = Strings.trimOrNull(IOUtilities.filename(storage));
             if (name == null) {
-                name = Classes.getShortClassName(storage);
+                name = Strings.trimOrNull(IOUtilities.toString(storage));
+                if (name == null) {
+                    name = Classes.getShortClassName(storage);
+                }
             }
         }
         return name;

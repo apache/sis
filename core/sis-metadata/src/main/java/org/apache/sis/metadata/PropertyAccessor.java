@@ -510,8 +510,7 @@ class PropertyAccessor {
              * most of the time the key name will have exactly the expected case and using
              * directly the given String instance allow usage of its cached hash code value.
              */
-            final String key = CharSequences.trimWhitespaces(
-                    CharSequences.replace(name, " ", "").toString().toLowerCase(Locale.ROOT));
+            final String key = CharSequences.replace(name, " ", "").toString().toLowerCase(Locale.ROOT).strip();
             if (key == name || (index = mapping.get(key)) == null) { // Identity comparison is okay here.
                 if (!mandatory) {
                     return -1;

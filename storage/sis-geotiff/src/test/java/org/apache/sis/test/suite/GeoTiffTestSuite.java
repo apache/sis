@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-geotiff} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -34,6 +34,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.inflater.InflaterTest.class,
     org.apache.sis.internal.storage.inflater.CCITTRLETest.class,
     org.apache.sis.storage.geotiff.TypeTest.class,
+    org.apache.sis.storage.geotiff.TagsTest.class,
     org.apache.sis.storage.geotiff.GeoKeysTest.class,
     org.apache.sis.storage.geotiff.CRSBuilderTest.class,
     org.apache.sis.storage.geotiff.XMLMetadataTest.class,

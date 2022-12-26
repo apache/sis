@@ -64,7 +64,6 @@ import static java.util.logging.Logger.getLogger;
  *
  * @see InformationMap
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
- * @see <a href="https://issues.apache.org/jira/browse/SIS-80">SIS-80</a>
  *
  * @since 0.3
  * @module
@@ -134,7 +133,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     PropertyInformation(final Citation standard, final String property, final Method getter,
-            final Class<E> elementType, final ValueRange range)
+                        final Class<E> elementType, final ValueRange range)
     {
         super(standard, property, getter.isAnnotationPresent(Deprecated.class));
         parent = getter.getDeclaringClass();

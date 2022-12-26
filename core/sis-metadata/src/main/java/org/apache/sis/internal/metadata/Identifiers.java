@@ -21,6 +21,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.util.InternationalString;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -35,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * Methods working on {@link Identifier} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   1.2
+ * @since   1.4
  * @version 1.0
  * @module
  */
@@ -75,12 +76,11 @@ public final class Identifiers extends Static {
 
     /**
      * Returns a "unlocalized" string representation of the given international string, or {@code null} if none
-     * or if the string is deprecated. This method is used by {@link #getIdentifier(Citation, boolean)}, which
-     * is why we don't want the localized string.
+     * or if the string is deprecated or empty. This method is used by {@link #getIdentifier(Citation, boolean)},
+     * which is why we don't want the localized string.
      */
-    private static String toString(final InternationalString title) {
-        return (title != null && !isDeprecated(title))
-               ? CharSequences.trimWhitespaces(title.toString(Locale.ROOT)) : null;
+    private static String trimOrNull(final InternationalString title) {
+        return (title != null && !isDeprecated(title)) ? Strings.trimOrNull(title.toString(Locale.ROOT)) : null;
     }
 
     /**
@@ -117,8 +117,8 @@ public final class Identifiers extends Static {
             String codeSpace  = null;       // Code space of the identifier, or null if none.
             for (final Identifier id : CollectionsExt.nonNull(citation.getIdentifiers())) {
                 if (id != null && !isDeprecated(id)) {
-                    final String candidate = CharSequences.trimWhitespaces(id.getCode());
-                    if (candidate != null && !candidate.isEmpty()) {
+                    final String candidate = Strings.trimOrNull(id.getCode());
+                    if (candidate != null) {
                         /*
                          * For a non-empty identifier, verify if both the code and its codespace are valid
                          * Unicode identifiers. If a codespace exists, then the code does not need to begin
@@ -126,7 +126,7 @@ public final class Identifiers extends Static {
                          */
                         String cs = null;
                         if (id instanceof ReferenceIdentifier) {
-                            cs = CharSequences.trimWhitespaces(((ReferenceIdentifier) id).getCodeSpace());
+                            cs = Strings.trimOrNull(((ReferenceIdentifier) id).getCodeSpace());
                         }
                         if (cs == null || cs.isEmpty()) {
                             cs = null;
@@ -167,18 +167,14 @@ public final class Identifiers extends Static {
              * which are typically alternate titles.
              */
             if (identifier == null) {
-                identifier = toString(citation.getTitle());     // Whitepaces removed by toString(…).
+                identifier = trimOrNull(citation.getTitle());       // Whitepaces removed by trimOrNull(…).
                 if (identifier != null) {
-                    if (identifier.isEmpty()) {
-                        identifier = null;
-                    } else {
-                        isUnicode = CharSequences.isUnicodeIdentifier(identifier);
-                    }
+                    isUnicode = CharSequences.isUnicodeIdentifier(identifier);
                 }
                 if (!isUnicode) {
                     for (final InternationalString i18n : CollectionsExt.nonNull(citation.getAlternateTitles())) {
-                        final String candidate = toString(i18n);
-                        if (candidate != null && !candidate.isEmpty()) {
+                        final String candidate = trimOrNull(i18n);
+                        if (candidate != null) {
                             isUnicode = CharSequences.isUnicodeIdentifier(candidate);
                             if (identifier == null || isUnicode) {
                                 identifier = candidate;

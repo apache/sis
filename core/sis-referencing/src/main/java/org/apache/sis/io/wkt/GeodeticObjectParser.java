@@ -85,7 +85,6 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
@@ -1061,8 +1060,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 }
                 start = c;
             }
-            abbreviation = CharSequences.trimWhitespaces(name.substring(start + 1, end));
-            name = CharSequences.trimWhitespaces(name.substring(0, start));
+            abbreviation = name.substring(start + 1, end).strip();
+            name = name.substring(0, start).strip();
             if (name.isEmpty()) {
                 name = abbreviation;
             }

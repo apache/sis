@@ -107,8 +107,8 @@ public final class CodeLists implements CodeList.Filter {
      * @see org.apache.sis.util.iso.Types#forCodeName(Class, String, boolean)
      */
     public static <T extends CodeList<T>> T forName(final Class<T> codeType, String name, final boolean canCreate) {
-        name = CharSequences.trimWhitespaces(name);
-        if (name == null || name.isEmpty()) {
+        name = Strings.trimOrNull(name);
+        if (name == null) {
             return null;
         }
         return CodeList.valueOf(codeType, new CodeLists(name, canCreate));
@@ -125,8 +125,8 @@ public final class CodeLists implements CodeList.Filter {
      * @see org.apache.sis.util.iso.Types#forEnumName(Class, String)
      */
     public static <T extends Enum<T>> T forName(final Class<T> enumType, String name) {
-        name = CharSequences.trimWhitespaces(name);
-        if (name != null && !name.isEmpty()) try {
+        name = Strings.trimOrNull(name);
+        if (name != null) try {
             return Enum.valueOf(enumType, name);
         } catch (IllegalArgumentException e) {
             final T[] values = enumType.getEnumConstants();

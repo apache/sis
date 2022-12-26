@@ -23,6 +23,7 @@ import java.io.ObjectOutputStream;
 import java.io.ObjectStreamException;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Iterator;
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -101,7 +102,7 @@ import static org.apache.sis.util.Numbers.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @version 1.4
  *
  * @param <E>  the type of range elements.
  *
@@ -435,6 +436,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @param  upper  index after the last value to examine.
      */
     final int binarySearch(final E value, final int lower, final int upper) {
+        if (array == null || value == null) {
+            return -1;
+        }
         switch (elementCode) {
             case DOUBLE:    return Arrays.binarySearch((double[]) array, lower, upper, (Double)    value);
             case FLOAT:     return Arrays.binarySearch((float[])  array, lower, upper, (Float)     value);
@@ -526,7 +530,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                  * is not present neither in this set (i1 < 0) and if its insertion point is the
                  * same, then insert the new range in the space between two existing ranges.
                  */
-                if (i0 == ~i1) { // Includes the (i0 == length) case.
+                if (i0 == ~i1) {                // Includes the (i0 == length) case.
                     ensureOrdered(minValue, maxValue);
                     insertAt(i0, minValue, maxValue);
                     return true;
@@ -551,9 +555,9 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
          *   minValue:                       │ (insertion point i0 == 3)
          *   moving i0:                 ├────┘
          */
-        i0 &= ~1; // Equivalent to executing i0-- only when i0 is odd.
+        i0 &= ~1;                   // Equivalent to executing i0-- only when i0 is odd.
         if (i1 < 0) {
-            i1 = ~i1; // Really tild operator, not minus sign.
+            i1 = ~i1;               // Really tild operator, not minus sign.
             if ((i1 & 1) == 0) {
                 /*
                  * If the "insertion point" is outside any existing range, expand the previous
@@ -646,7 +650,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     public boolean remove(final E minValue, final E maxValue) throws IllegalArgumentException {
         ArgumentChecks.ensureNonNull("minValue", minValue);
         ArgumentChecks.ensureNonNull("maxValue", maxValue);
-        if (length == 0) return false; // Nothing to do if no data.
+        if (length == 0) return false;                      // Nothing to do if no data.
         ensureOrdered(minValue, maxValue);
 
         // Search insertion index.
@@ -1045,7 +1049,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                     if (lower < 0) {
                         lower = ~lower;
                     }
-                    lower &= ~1; // Force the index to even value.
+                    lower &= ~1;    // Force the index to even value.
                 }
                 if (maxValue != null) {
                     upper = binarySearch(maxValue, lower, upper);
@@ -1053,8 +1057,8 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
                         upper = ~upper;
                     }
                     /*
-                     * If 'upper' is even (i.e. is the index of a minimal value), keep that index
-                     * unchanged because this value is exclusive.  But if 'upper' is odd (i.e. is
+                     * If `upper` is even (i.e. is the index of a minimal value), keep that index
+                     * unchanged because this value is exclusive.  But if `upper` is odd (i.e. is
                      * the index of a maximal value), move to the minimal value of the next range.
                      */
                     upper = (upper + 1) & ~1;
@@ -1398,7 +1402,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
              * Found an insertion point. Make sure that the insertion
              * point is inside a range (i.e. before the maximum value).
              */
-            index = ~index; // Tild sign, not minus.
+            index = ~index;     // Tild sign, not minus.
             if ((index & 1) == 0) {
                 return -1;
             }
@@ -1406,8 +1410,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             // The value is equal to an excluded endpoint.
             return -1;
         }
-        index /= 2;             // Round toward 0 (odd index are maximum values).
-        return index;
+        return index >>> 1;     // Round toward 0 (odd index are maximum values).
     }
 
     /**
@@ -1417,15 +1420,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Widening conversions are performed as needed.
      *
      * @param  index  the range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return the minimum value for the range at the specified index, inclusive.
+     * @return the minimum value for the range at the specified index.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to {@code long}.
      */
-    public long getMinLong(int index) throws IndexOutOfBoundsException, ClassCastException {
-        if ((index *= 2) >= length) {
-            throw new IndexOutOfBoundsException();
-        }
-        return Array.getLong(array, index);
+    public long getMinLong(final int index) throws IndexOutOfBoundsException, ClassCastException {
+        return Array.getLong(array, Objects.checkIndex(index, length >>> 1) << 1);
     }
 
     /**
@@ -1435,17 +1435,14 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Widening conversions are performed as needed.
      *
      * @param  index  the range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return the minimum value for the range at the specified index, inclusive.
+     * @return the minimum value for the range at the specified index.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to numbers.
      *
      * @see org.apache.sis.measure.NumberRange#getMinDouble()
      */
-    public double getMinDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
-        if ((index *= 2) >= length) {
-            throw new IndexOutOfBoundsException();
-        }
-        return Array.getDouble(array, index);
+    public double getMinDouble(final int index) throws IndexOutOfBoundsException, ClassCastException {
+        return Array.getDouble(array, Objects.checkIndex(index, length >>> 1) << 1);
     }
 
     /**
@@ -1455,15 +1452,12 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Widening conversions are performed as needed.
      *
      * @param  index  the range index, from 0 inclusive to {@link #size() size} exclusive.
-     * @return the maximum value for the range at the specified index, inclusive.
+     * @return the maximum value for the range at the specified index.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to {@code long}.
      */
-    public long getMaxLong(int index) throws IndexOutOfBoundsException, ClassCastException {
-        if ((index *= 2) >= length) {
-            throw new IndexOutOfBoundsException();
-        }
-        return Array.getLong(array, index + 1);
+    public long getMaxLong(final int index) throws IndexOutOfBoundsException, ClassCastException {
+        return Array.getLong(array, (Objects.checkIndex(index, length >>> 1) << 1) | 1);
     }
 
     /**
@@ -1473,17 +1467,14 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * Widening conversions are performed as needed.
      *
      * @param  index  the range index, from 0 inclusive to {@link #size size} exclusive.
-     * @return the maximum value for the range at the specified index, exclusive.
+     * @return the maximum value for the range at the specified index.
      * @throws IndexOutOfBoundsException if {@code index} is out of bounds.
      * @throws ClassCastException if range elements are not convertible to numbers.
      *
      * @see org.apache.sis.measure.NumberRange#getMaxDouble()
      */
-    public double getMaxDouble(int index) throws IndexOutOfBoundsException, ClassCastException {
-        if ((index *= 2) >= length) {
-            throw new IndexOutOfBoundsException();
-        }
-        return Array.getDouble(array, index + 1);
+    public double getMaxDouble(final int index) throws IndexOutOfBoundsException, ClassCastException {
+        return Array.getDouble(array, (Objects.checkIndex(index, length >>> 1) << 1) | 1);
     }
 
     /**

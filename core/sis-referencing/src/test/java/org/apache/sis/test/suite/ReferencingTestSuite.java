@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  * @module
  */

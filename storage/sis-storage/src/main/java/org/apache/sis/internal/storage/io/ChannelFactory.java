@@ -69,7 +69,7 @@ import org.apache.sis.storage.event.StoreListeners;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -224,14 +224,24 @@ public abstract class ChannelFactory {
                  * so we are better to check now and provide a more appropriate exception for this method.
                  */
                 throw new IOException(Resources.format(Resources.Keys.MissingSchemeInURI_1, uri));
+            }
+            if (IOUtilities.isHTTP(uri.getScheme())) {
+                return new ChannelFactory(true) {
+                    @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
+                        return new HttpByteChannel(filename, uri);
+                    }
+                    @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
+                        return Channels.newChannel(uri.toURL().openConnection().getOutputStream());
+                    }
+                };
             } else try {
                 storage = Paths.get(uri);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 try {
                     storage = uri.toURL();
                 } catch (MalformedURLException ioe) {
-                    ioe.addSuppressed(e);
-                    throw ioe;
+                    e.addSuppressed(ioe);
+                    throw e;
                 }
                 /*
                  * We have been able to convert to URL, but the given OpenOptions may not be used.

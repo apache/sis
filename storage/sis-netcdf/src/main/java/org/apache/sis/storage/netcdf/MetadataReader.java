@@ -385,7 +385,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultOnlineResource resource = new DefaultOnlineResource(uri);
         final String protocol = uri.getScheme();
         resource.setProtocol(protocol);
-        if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+        if (IOUtilities.isHTTP(protocol)) {
             resource.setApplicationProfile("web browser");
         }
         resource.setFunction(OnLineFunction.INFORMATION);

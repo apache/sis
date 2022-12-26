@@ -212,7 +212,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
         }
         Comparable<?> candidate = parsed[index];
         if (candidate == null) {
-            final String value = CharSequences.trimWhitespaces(components[index]);
+            final String value = components[index].strip();
             try {
                 candidate = Integer.valueOf(value);
             } catch (NumberFormatException e) {

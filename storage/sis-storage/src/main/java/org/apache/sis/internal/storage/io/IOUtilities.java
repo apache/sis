@@ -45,6 +45,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.storage.Resources;
 
 
@@ -59,7 +60,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  * @module
  */
@@ -95,9 +96,13 @@ public final class IOUtilities extends Static {
      * instance. If the given argument is specialized type like {@code Path} or {@code File}, then this method uses
      * dedicated API like {@link Path#getFileName()}. Otherwise this method gets a string representation of the path
      * and returns the part after the last {@code '/'} or platform-dependent name separator character, if any.
+     * The returned string may be empty if the given path is empty or is the root directory.
      *
      * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
      * @return the filename in the given path, or {@code null} if the given object is null or of unknown type.
+     *
+     * @see #extension(Object)
+     * @see #toString(Object)
      */
     public static String filename(final Object path) {
         return part(path, false);
@@ -149,13 +154,15 @@ public final class IOUtilities extends Static {
              */
             end = name.length();
             do {
-                fromIndex = name.lastIndexOf('/', --end) + 1;
+                if (--end < 0) return "";               // `end` is temporarily inclusive in this loop.
+                fromIndex = name.lastIndexOf('/', end);
                 if (separator != '/') {
                     // Search for platform-specific character only if the object is neither a URL or a URI.
-                    fromIndex = Math.max(fromIndex, CharSequences.lastIndexOf(name, separator, fromIndex, end+1) + 1);
+                    fromIndex = Math.max(fromIndex, name.lastIndexOf(separator, end));
                 }
-            } while (fromIndex > end);
-            end++;
+            } while (fromIndex == end);                 // Continue if '/' is the last character.
+            fromIndex++;                                // Character after the '/' separator.
+            end++;                                      // Make exclusive.
         }
         if (extension) {
             fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, end) + 1;
@@ -173,6 +180,9 @@ public final class IOUtilities extends Static {
      *
      * @param  path  the path for which to return a string representation.
      * @return the string representation, or {@code null} if none.
+     *
+     * @see #filename(Object)
+     * @see #extension(Object)
      */
     public static String toString(final Object path) {
         /*
@@ -662,6 +672,18 @@ public final class IOUtilities extends Static {
             }
         }
         return isWrite & (!isRead | truncate);
+    }
+
+    /**
+     * Returns {@code true} if the given protocol is "http" or "https".
+     * The comparison is case-insensitive.
+     *
+     * @param  protocol  the protocol to test.
+     * @return whether the given protocol is HTTP(S).
+     */
+    public static boolean isHTTP(final String protocol) {
+        return Constants.HTTP .equalsIgnoreCase(protocol)
+            || Constants.HTTPS.equalsIgnoreCase(protocol);
     }
 
     /**
