@@ -24,7 +24,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValue;
@@ -285,7 +285,7 @@ class MathTransformParser extends AbstractParser {
         // If we cannot infer the base type, we have to rely on the name.
         try {
             return parseUnit(name);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             throw new UnparsableObjectException(errorLocale, Errors.Keys.UnknownUnit_1,
                     new Object[] {name}, element.offset).initCause(e);
         }

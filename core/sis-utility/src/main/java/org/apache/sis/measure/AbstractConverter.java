@@ -54,7 +54,7 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * Indicates if this converter is linear in JSR-363 sense (not the usual mathematical sense).
+     * Indicates if this converter is linear in JSR-385 sense (not the usual mathematical sense).
      * The default implementation returns {@code false} for convenience of non-linear conversions.
      * Subclasses should override if their conversions may be identity.
      */
@@ -109,8 +109,10 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      */
     static double scale(final UnitConverter converter) {
         if (converter != null && converter.isLinear() && converter.convert(0) == 0) {
-            // Above check for converter(0) is a paranoiac check since
-            // JSR-363 said that a "linear" converter has no offset.
+            /*
+             * Above check for `converter(0)` is a paranoiac check because
+             * JSR-385 said that a "linear" converter has no offset.
+             */
             return converter.convert(1);
         }
         return Double.NaN;

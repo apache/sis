@@ -31,7 +31,7 @@ import org.apache.sis.internal.util.Numerics;
 /**
  * Conversions between units that can be represented by a linear operation (scale or offset).
  * Note that the "linear" word in this class does not have the same meaning than the same word
- * in the {@link #isLinear()} method inherited from JSR-363.
+ * in the {@link #isLinear()} method inherited from JSR-385.
  *
  * <p><b>Implementation note:</b>
  * for performance reason we should create specialized subtypes for the case where there is only a scale to apply,
@@ -187,7 +187,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
 
     /**
      * Indicates if this converter is linear.
-     * JSR-363 defines a converter as linear if:
+     * JSR-385 defines a converter as linear if:
      *
      * <ul>
      *   <li>{@code convert(u + v) == convert(u) + convert(v)}</li>
@@ -354,8 +354,8 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
             otherDivisor = lc.divisor;
         } else if (converter.isLinear()) {
             /*
-             * Fallback for foreigner implementations. Note that 'otherOffset' should be restricted to zero
-             * according JSR-363 definition of 'isLinear()', but let be safe; maybe we are not the only one
+             * Fallback for foreigner implementations. Note that `otherOffset` should be restricted to zero
+             * according JSR-385 definition of `isLinear()`, but let be safe; maybe we are not the only one
              * to have a different interpretation about the meaning of "linear".
              */
             otherOffset  = converter.convert(0.0);

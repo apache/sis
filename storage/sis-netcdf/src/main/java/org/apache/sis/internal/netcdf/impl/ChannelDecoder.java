@@ -39,7 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -899,7 +899,7 @@ public final class ChannelDecoder extends Decoder {
                     dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
                 }
             }
-        } catch (IncommensurableException | ParserException | DateTimeException | ArithmeticException e) {
+        } catch (IncommensurableException | MeasurementParseException | DateTimeException | ArithmeticException e) {
             listeners.warning(e);
         }
         return dates;

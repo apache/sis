@@ -23,7 +23,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.file.InvalidPathException;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Numbers;
@@ -307,7 +307,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         @SuppressWarnings("unchecked")
         public Unit() {super((Class) javax.measure.Unit.class);}               // Instantiated by ServiceLoader.
 
-        @Override javax.measure.Unit<?> doConvert(String source) throws ParserException {
+        @Override javax.measure.Unit<?> doConvert(String source) throws MeasurementParseException {
             return Units.valueOf(source);
         }
     }

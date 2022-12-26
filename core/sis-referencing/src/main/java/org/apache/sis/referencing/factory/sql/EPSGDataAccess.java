@@ -45,7 +45,7 @@ import java.net.URISyntaxException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
@@ -2489,7 +2489,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         unit = Units.multiply(base, b, c);
                     } else try {
                         unit = Units.valueOf(getString(code, result, 5));           // Try parsing the unit symbol as a fallback.
-                    } catch (ParserException e) {
+                    } catch (MeasurementParseException e) {
                         throw new FactoryDataException(error().getString(Errors.Keys.UnknownUnit_1, code), e);
                     }
                 }

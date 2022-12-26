@@ -20,14 +20,16 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.text.NumberFormat;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.format.UnitFormat;
+import javax.measure.format.QuantityFormat;
 import javax.measure.spi.QuantityFactory;
 import javax.measure.spi.ServiceProvider;
 import javax.measure.spi.SystemOfUnits;
 import javax.measure.spi.SystemOfUnitsService;
-import javax.measure.spi.UnitFormatService;
+import javax.measure.spi.FormatService;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
@@ -42,15 +44,15 @@ import static java.util.logging.Logger.getLogger;
  * The central point from which all unit services (parsing, formatting, listing, <i>etc</i>) can be obtained.
  * Apache SIS does not use this class (SIS rather uses {@link Units} predefined constants and {@link UnitFormat}
  * directly since they are designed specifically for SIS needs).
- * This class is provided for allowing other applications to discover Apache SIS implementation of JSR-363
+ * This class is provided for allowing other applications to discover Apache SIS implementation of JSR-385
  * without direct dependency. A {@code UnitServices} instance can be obtained by call to {@link #current()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  * @module
  */
-public class UnitServices extends ServiceProvider implements SystemOfUnitsService, UnitFormatService {
+public class UnitServices extends ServiceProvider implements SystemOfUnitsService, FormatService {
     /**
      * All system of units known to this provider.
      * The last element in the array is the default system with all units known to SIS.
@@ -181,7 +183,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
         try {
             style = org.apache.sis.measure.UnitFormat.Style.valueOf(name);
         } catch (IllegalArgumentException e) {
-            // JSR-363 specification mandate that we return null.
+            // JSR-385 specification mandate that we return null.
             Logging.recoverableException(getLogger(Loggers.MEASURE), UnitServices.class, "getUnitFormat", e);
             return null;
         }
@@ -191,13 +193,59 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
     }
 
     /**
+     * Returns the unit format having the specified name or {@code null} if none.
+     * The variant is an optional argument for requesting e.g. ASCII-only format,
+     * or for choosing case-sensitive versus case-insensitive variants.
+     * In current implementation the variant argument is ignored.
+     *
+     * @param  name     the name of the desired format.
+     * @param  variant  indicates a variation of a unit format.
+     * @return the corresponding unit format, or {@code null} if none.
+     * @since  1.4
+     */
+    @Override
+    public UnitFormat getUnitFormat(final String name, final String variant) {
+        return getUnitFormat(name);
+    }
+
+    /**
+     * Returns a quantity format for the default locale.
+     *
+     * @return a {@link tech.uom.seshat.QuantityFormat} instance for quantities.
+     * @since  1.4
+     */
+    @Override
+    public QuantityFormat getQuantityFormat() {
+        return new org.apache.sis.measure.QuantityFormat(Locale.getDefault(Locale.Category.FORMAT));
+    }
+
+    /**
+     * Returns the quantity format having the specified name or {@code null} if none.
+     * The names accepted by this method are those documented in {@link #getUnitFormat(String)}.
+     *
+     * @param  name  the name of the format.
+     * @return the corresponding quantity format, or {@code null} if none.
+     * @since  1.4
+     */
+    @Override
+    public QuantityFormat getQuantityFormat(final String name) {
+        final UnitFormat unitFormat = getUnitFormat(name);
+        if (unitFormat instanceof org.apache.sis.measure.UnitFormat) {
+            return new org.apache.sis.measure.QuantityFormat(NumberFormat.getInstance(),
+                        (org.apache.sis.measure.UnitFormat) unitFormat);
+        }
+        return null;
+    }
+
+    /**
      * Returns a list of available format names. The default implementation returns the names
      * of all values in the {@link org.apache.sis.measure.UnitFormat.Style} enumeration.
      *
+     * @param  type  the type of formats (for units or for quantities).
      * @return list of available formats.
      */
     @Override
-    public Set<String> getAvailableFormatNames() {
+    public Set<String> getAvailableFormatNames(final FormatType type) {
         final Set<String> names = new HashSet<>(4);
         for (final Enum<?> e : org.apache.sis.measure.UnitFormat.Style.values()) {
             names.add(e.name());
@@ -213,13 +261,13 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      * <ul>
      *   <li>{@link #getUnitFormat()}</li>
      *   <li>{@link #getUnitFormat(String)}</li>
-     *   <li>{@link #getAvailableFormatNames()}</li>
+     *   <li>{@link #getAvailableFormatNames(FormatType)}</li>
      * </ul>
      *
      * @return the service to obtain a {@link UnitFormat}, or {@code null} if none.
      */
     @Override
-    public UnitFormatService getUnitFormatService() {
+    public FormatService getFormatService() {
         return this;
     }
 
@@ -239,29 +287,14 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
         QuantityFactory<Q> factory = Units.get(type);
         if (factory == null) {
             if (type != null) {
-                factory = new QuantityFactory<Q>() {
+                factory = new DefaultQuantityFactory<Q>() {
                     @Override
                     public Quantity<Q> create(final Number value, final Unit<Q> unit) {
                         return ScalarFallback.factory(AbstractConverter.doubleValue(value), unit, type);
                     }
-
-                    @Override
-                    public Unit<Q> getSystemUnit() {
-                        return null;
-                    }
                 };
             } else {
-                factory = new QuantityFactory<Q>() {
-                    @Override
-                    public Quantity<Q> create(final Number value, final Unit<Q> unit) {
-                        return new Scalar<>(AbstractConverter.doubleValue(value), unit);
-                    }
-
-                    @Override
-                    public Unit<Q> getSystemUnit() {
-                        return null;
-                    }
-                };
+                factory = new DefaultQuantityFactory<>();
             }
         }
         return factory;

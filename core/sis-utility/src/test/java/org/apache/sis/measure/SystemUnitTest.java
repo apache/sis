@@ -130,7 +130,7 @@ public final strictfp class SystemUnitTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("METRE",  Units.METRE .getBaseUnits());      // Null value as per JSR-363 specification.
+        assertNull("METRE",  Units.METRE .getBaseUnits());      // Null value as per JSR-385 specification.
         assertNull("SECOND", Units.SECOND.getBaseUnits());
         assertTrue("UNITY",  Units.UNITY .getBaseUnits().isEmpty());
 
@@ -199,7 +199,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertTrue (Units.RADIAN.isCompatible(Units.RADIAN));
         assertFalse(Units.RADIAN.isCompatible(Units.METRE ));
         assertFalse(Units.METRE .isCompatible(Units.RADIAN));
-        assertTrue (Units.UNITY .isCompatible(Units.RADIAN));   // Really true (not false) as per JSR-363 specification.
+        assertTrue (Units.UNITY .isCompatible(Units.RADIAN));   // Really true (not false) as per JSR-385 specification.
         assertTrue (Units.RADIAN.isCompatible(Units.UNITY ));
     }
 

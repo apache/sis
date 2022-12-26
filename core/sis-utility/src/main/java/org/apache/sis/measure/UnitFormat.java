@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import javax.measure.Dimension;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -1062,19 +1062,19 @@ appPow: if (unit == null) {
      *
      * @param  symbols  the unit symbols or URI to parse.
      * @return the unit parsed from the specified symbols.
-     * @throws ParserException if a problem occurred while parsing the given symbols.
+     * @throws MeasurementParseException if a problem occurred while parsing the given symbols.
      *
      * @see Units#valueOf(String)
      */
     @Override
-    public Unit<?> parse(final CharSequence symbols) throws ParserException {
+    public Unit<?> parse(final CharSequence symbols) throws MeasurementParseException {
         final Position position = new Position();
         Unit<?> unit = parse(symbols, position);
         final int length = symbols.length();
         int unrecognized;
         while ((unrecognized = CharSequences.skipLeadingWhitespaces(symbols, position.getIndex(), length)) < length) {
             if (position.finished || !Character.isLetter(Character.codePointAt(symbols, unrecognized))) {
-                throw new ParserException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
+                throw new MeasurementParseException(Errors.format(Errors.Keys.UnexpectedCharactersAfter_2,
                         CharSequences.trimWhitespaces(symbols, 0, unrecognized),
                         CharSequences.trimWhitespaces(symbols, unrecognized, length)),
                         symbols, unrecognized);
@@ -1096,16 +1096,16 @@ appPow: if (unit == null) {
      * Exponent after symbol can be decimal digits as in “m2” or a superscript as in “m²”.</p>
      *
      * <p>Note that contrarily to {@link #parseObject(String, ParsePosition)}, this method never return {@code null}.
-     * If an error occurs at parsing time, an unchecked {@link ParserException} is thrown.</p>
+     * If an error occurs at parsing time, an unchecked {@link MeasurementParseException} is thrown.</p>
      *
      * @param  symbols  the unit symbols to parse.
      * @param  position on input, index of the first character to parse.
      *                  On output, index after the last parsed character.
      * @return the unit parsed from the specified symbols.
-     * @throws ParserException if a problem occurred while parsing the given symbols.
+     * @throws MeasurementParseException if a problem occurred while parsing the given symbols.
      */
     @SuppressWarnings({"null", "fallthrough"})
-    public Unit<?> parse(CharSequence symbols, final ParsePosition position) throws ParserException {
+    public Unit<?> parse(CharSequence symbols, final ParsePosition position) throws MeasurementParseException {
         ArgumentChecks.ensureNonNull("symbols",  symbols);
         ArgumentChecks.ensureNonNull("position", position);
         /*
@@ -1129,7 +1129,8 @@ appPow: if (unit == null) {
                 } catch (NumberFormatException e) {
                     failure = e;
                 }
-                throw (ParserException) new ParserException(Errors.format(Errors.Keys.UnknownUnit_1,
+                throw (MeasurementParseException) new MeasurementParseException(
+                        Errors.format(Errors.Keys.UnknownUnit_1,
                         Constants.EPSG + Constants.DEFAULT_SEPARATOR + code), symbols,
                         start + Math.max(0, symbols.toString().lastIndexOf(code))).initCause(failure);
             }
@@ -1228,8 +1229,8 @@ scan:   for (int n; i < end; i += n) {
                     final Unit<?> term = parse(symbols, sub);
                     i = CharSequences.skipLeadingWhitespaces(symbols, sub.getIndex(), end);
                     if (i >= end || Character.codePointAt(symbols, i) != Style.CLOSE) {
-                        throw new ParserException(Errors.format(Errors.Keys.NonEquilibratedParenthesis_2,
-                               symbols.subSequence(start, i), Style.CLOSE), symbols, start);
+                        throw new MeasurementParseException(Errors.format(Errors.Keys.NonEquilibratedParenthesis_2,
+                                    symbols.subSequence(start, i), Style.CLOSE), symbols, start);
                     }
                     unit = operation.apply(unit, term, pos);
                     operation.code = Operation.IMPLICIT;    // Default operation if there is no × or / symbol after parenthesis.
@@ -1374,7 +1375,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                             }
                         }
                     }
-                    throw new ParserException(Errors.format(Errors.Keys.NotAnInteger_1, term), symbols, position);
+                    throw new MeasurementParseException(Errors.format(Errors.Keys.NotAnInteger_1, term), symbols, position);
                 }
                 default: throw new AssertionError(code);
             }
@@ -1407,11 +1408,11 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
      * @param  upper      index after the last character to parse in the {@code symbols} string.
      * @param  operation  the operation to be applied (e.g. the term to be parsed is a multiplier or divisor of another unit).
      * @return the parsed unit symbol (never {@code null}).
-     * @throws ParserException if a problem occurred while parsing the given symbols.
+     * @throws MeasurementParseException if a problem occurred while parsing the given symbols.
      */
     @SuppressWarnings("fallthrough")
     private Unit<?> parseTerm(final CharSequence symbols, final int lower, final int upper, final Operation operation)
-            throws ParserException
+            throws MeasurementParseException
     {
         final String uom = CharSequences.trimWhitespaces(symbols, lower, upper).toString();
         /*
@@ -1453,7 +1454,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                             }
                             multiplier = parseMultiplicationFactor(uom);
                         } catch (NumberFormatException e) {
-                            throw (ParserException) new ParserException(Errors.format(
+                            throw (MeasurementParseException) new MeasurementParseException(Errors.format(
                                     Errors.Keys.UnknownUnit_1, uom), symbols, lower).initCause(e);
                         }
                         if (operation.code == Operation.IMPLICIT) {
@@ -1489,7 +1490,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                                     power = new Fraction(uom.substring(i));
                                 } catch (NumberFormatException e) {
                                     // Should never happen unless the number is larger than `int` capacity.
-                                    throw (ParserException) new ParserException(Errors.format(
+                                    throw (MeasurementParseException) new MeasurementParseException(Errors.format(
                                             Errors.Keys.UnknownUnit_1, uom), symbols, lower+i).initCause(e);
                                 }
                                 break;
@@ -1543,7 +1544,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
                     if (CharSequences.regionMatches(symbols, lower, UNITY, true)) {
                         return Units.UNITY;
                     }
-                    throw new ParserException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, lower);
+                    throw new MeasurementParseException(Errors.format(Errors.Keys.UnknownUnit_1, uom), symbols, lower);
                 }
             }
         }
@@ -1580,8 +1581,9 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     }
 
     /**
-     * Parses text from a string to produce a unit. The default implementation delegates to {@link #parse(CharSequence)}
-     * and wraps the {@link ParserException} into a {@link ParseException} for compatibility with {@code java.text} API.
+     * Parses text from a string to produce a unit. The default implementation delegates
+     * to {@link #parse(CharSequence)} and wraps the {@link MeasurementParseException}
+     * into a {@link ParseException} for compatibility with {@code java.text} API.
      *
      * @param  source  the text, part of which should be parsed.
      * @return a unit parsed from the string.
@@ -1591,7 +1593,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     public Object parseObject(final String source) throws ParseException {
         try {
             return parse(source);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), e.getPosition()).initCause(e);
         }
     }
@@ -1599,7 +1601,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     /**
      * Parses text from a string to produce a unit, or returns {@code null} if the parsing failed.
      * The default implementation delegates to {@link #parse(CharSequence, ParsePosition)} and catches
-     * the {@link ParserException}.
+     * the {@link MeasurementParseException}.
      *
      * @param  source  the text, part of which should be parsed.
      * @param  pos     index and error index information as described above.
@@ -1609,7 +1611,7 @@ search:     while ((i = CharSequences.skipTrailingWhitespaces(symbols, start, i)
     public Object parseObject(final String source, final ParsePosition pos) {
         try {
             return parse(source, pos);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             pos.setErrorIndex(e.getPosition());
             return null;
         }
