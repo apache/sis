@@ -17,10 +17,10 @@
 package org.apache.sis.measure;
 
 import java.util.Set;
-import java.util.List;
 import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.format.UnitFormat;
+import javax.measure.spi.FormatService;
 import javax.measure.spi.ServiceProvider;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * Test {@link UnitServices}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  * @module
  */
@@ -115,13 +115,14 @@ public final strictfp class UnitServicesTest extends TestCase {
     }
 
     /**
-     * Tests {@link UnitServices#getAvailableFormatNames()}.
+     * Tests {@link UnitServices#getAvailableFormatNames(UnitServices.FormatType)}.
      */
     @Test
     public void testGetAvailableFormatNames() {
         final ServiceProvider provider = ServiceProvider.current();
-        assertSetEquals(List.of("SYMBOL", "UCUM", "NAME"),
-                provider.getUnitFormatService().getAvailableFormatNames());
+        final FormatService service = provider.getFormatService();
+        final Set<String> formats = service.getAvailableFormatNames(FormatService.FormatType.UNIT_FORMAT);
+        assertSetEquals(Set.of("SYMBOL", "UCUM", "NAME"), formats);
     }
 
     /**
@@ -130,7 +131,7 @@ public final strictfp class UnitServicesTest extends TestCase {
     @Test
     public void testGetUnitFormat() {
         final ServiceProvider provider = ServiceProvider.current();
-        final UnitFormat f = provider.getUnitFormatService().getUnitFormat("name");
+        final UnitFormat f = provider.getFormatService().getUnitFormat("name");
         ((org.apache.sis.measure.UnitFormat) f).setLocale(Locale.US);
         assertEquals("CUBIC_METRE", "cubic meter", f.format(Units.CUBIC_METRE));
     }

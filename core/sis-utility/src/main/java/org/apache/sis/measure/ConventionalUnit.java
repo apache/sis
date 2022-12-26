@@ -21,6 +21,7 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.Dimension;
 import javax.measure.UnitConverter;
+import javax.measure.MeasurementException;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
 import org.apache.sis.util.resources.Errors;
@@ -35,7 +36,7 @@ import org.apache.sis.math.Fraction;
  * A unit of measure which is related to a base or derived unit through a conversion formula.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
@@ -59,6 +60,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
      * The conversion from this unit to the {@linkplain #target} unit.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final UnitConverter toTarget;
 
     /**
@@ -371,17 +373,17 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     }
 
     /**
-     * Unsupported operation for conventional units, as required by JSR-363 specification.
+     * Unsupported operation for conventional units, as required by JSR-385 specification.
      *
      * @param  symbol  the new symbol for the alternate unit.
      * @return the alternate unit.
-     * @throws UnsupportedOperationException always thrown since this unit is not an unscaled standard unit.
+     * @throws MeasurementException always thrown because this unit is not an unscaled standard unit.
      *
      * @see SystemUnit#alternate(String)
      */
     @Override
     public Unit<Q> alternate(final String symbol) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.NonSystemUnit_1, this));
+        throw new MeasurementException(Errors.format(Errors.Keys.NonSystemUnit_1, this));
     }
 
     /**

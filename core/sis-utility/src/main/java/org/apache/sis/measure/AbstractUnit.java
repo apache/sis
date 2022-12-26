@@ -23,10 +23,11 @@ import java.util.MissingResourceException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import javax.measure.Unit;
+import javax.measure.Prefix;
 import javax.measure.Quantity;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
@@ -57,7 +58,7 @@ import static java.util.logging.Logger.getLogger;
  * All unit instances shall be immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
@@ -348,8 +349,18 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     @Override
     public final boolean isCompatible(final Unit<?> that) {
-        ArgumentChecks.ensureNonNull("that", that);
         return getDimension().equals(that.getDimension());
+    }
+
+    /**
+     * Indicates if this unit is equal to the given unit, ignoring unit symbol.
+     *
+     * @param  that the other unit to compare for equivalence.
+     * @return {@code true} if the given unit is equivalent to this unit.
+     */
+    @Override
+    public final boolean isEquivalentTo(final Unit<Q> that) {
+        return getConverterTo(that).isIdentity();
     }
 
     /**
@@ -357,6 +368,75 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     final String incompatible(final Unit<?> that) {
         return Errors.format(Errors.Keys.IncompatibleUnits_2, this, that);
+    }
+
+    /**
+     * Returns a new unit equals to this unit prefixed by the specified {@code prefix}.
+     *
+     * @param  prefix  the prefix to apply on this unit.
+     * @return the unit with the given prefix applied.
+     */
+    @Override
+    public final Unit<Q> prefix(final Prefix prefix) {
+        final Number base = prefix.getValue();
+        final int exponent = prefix.getExponent();
+        if (exponent == 1) {
+            return multiply(base);
+        }
+        double value = AbstractConverter.doubleValue(base);
+        if (value == 10) {
+            value = MathFunctions.pow10(exponent);      // Avoid rounding errors for some values.
+        } else {
+            value = Math.pow(value, exponent);
+        }
+        return multiply(value);
+    }
+
+    /**
+     * Returns the result of setting the origin of the scale of measurement to the given value.
+     *
+     * @param  offset  the value to add when converting from the new unit to this unit.
+     * @return this unit offset by the specified value, or {@code this} if the given offset is zero.
+     */
+    @Override
+    public final Unit<Q> shift(final Number offset) {
+        if (offset instanceof Fraction) {
+            final Fraction f = (Fraction) offset;
+            return transform(LinearConverter.offset(f.numerator, f.denominator));
+        }
+        return shift(AbstractConverter.doubleValue(offset));
+    }
+
+    /**
+     * Returns the result of multiplying this unit by the specified factor.
+     * For example {@code KILOMETRE = METRE.multiply(1000)} returns a unit where 1 km is equal to 1000 m.
+     *
+     * @param  multiplier  the scale factor when converting from the new unit to this unit.
+     * @return this unit scaled by the specified multiplier.
+     */
+    @Override
+    public final Unit<Q> multiply(final Number multiplier) {
+        if (multiplier instanceof Fraction) {
+            final Fraction f = (Fraction) multiplier;
+            return transform(LinearConverter.scale(f.numerator, f.denominator));
+        }
+        return multiply(AbstractConverter.doubleValue(multiplier));
+    }
+
+    /**
+     * Returns the result of dividing this unit by an approximate divisor.
+     * For example {@code GRAM = KILOGRAM.divide(1000)} returns a unit where 1 g is equal to 0.001 kg.
+     *
+     * @param  divisor  the inverse of the scale factor when converting from the new unit to this unit.
+     * @return this unit divided by the specified divisor.
+     */
+    @Override
+    public final Unit<Q> divide(final Number divisor) {
+        if (divisor instanceof Fraction) {
+            final Fraction f = (Fraction) divisor;
+            return transform(LinearConverter.scale(f.denominator, f.numerator));
+        }
+        return divide(AbstractConverter.doubleValue(divisor));
     }
 
     /**

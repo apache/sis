@@ -21,11 +21,13 @@ import java.text.Format;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
+import java.io.IOException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.FinalFieldSetter;
 
@@ -36,7 +38,7 @@ import static java.util.logging.Logger.getLogger;
  * Parses and formats numbers with units of measurement.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see NumberFormat
  * @see UnitFormat
@@ -44,7 +46,7 @@ import static java.util.logging.Logger.getLogger;
  * @since 1.1
  * @module
  */
-public class QuantityFormat extends Format {
+public class QuantityFormat extends Format implements javax.measure.format.QuantityFormat {
     /**
      * For cross-version compatibility.
      */
@@ -91,6 +93,50 @@ public class QuantityFormat extends Format {
     }
 
     /**
+     * Returns whether this format depends on a {@code Locale} to perform its tasks.
+     * This is {@code true} in this {@code QuantityFormat} implementation.
+     *
+     * @return whether this format depends on the locale, which is true in this implementation.
+     * @since  1.4
+     */
+    @Override
+    public boolean isLocaleSensitive() {
+        return true;
+    }
+
+    /**
+     * Formats the specified quantity.
+     * The default implementation delegates to {@link #format(Object, StringBuffer, FieldPosition)}.
+     *
+     * @param  quantity  the quantity to format.
+     * @return the string representation of the given quantity.
+     * @since  1.4
+     */
+    @Override
+    public String format(final Quantity<?> quantity) {
+        return format(quantity, new StringBuffer(), null).toString();
+    }
+
+    /**
+     * Formats the specified quantity in the given destination.
+     * The default implementation delegates to {@link #format(Object, StringBuffer, FieldPosition)}.
+     *
+     * @param  quantity    the quantity to format.
+     * @param  toAppendTo  where to format the quantity.
+     * @return the given {@code toAppendTo} argument, for method calls chaining.
+     * @throws IOException if an I/O exception occurred.
+     * @since  1.4
+     */
+    @Override
+    public Appendable format(final Quantity<?> quantity, final Appendable toAppendTo) throws IOException {
+        if (toAppendTo instanceof StringBuffer) {
+            return format(quantity, (StringBuffer) toAppendTo, null);
+        } else {
+            return toAppendTo.append(format(quantity, new StringBuffer(), null));
+        }
+    }
+
+    /**
      * Formats the specified quantity in the given buffer.
      * The given object shall be a {@link Quantity} instance.
      *
@@ -106,6 +152,62 @@ public class QuantityFormat extends Format {
         toAppendTo = numberFormat.format(q.getValue(), toAppendTo, pos).append(SEPARATOR);   // Narrow no-break space.
         toAppendTo = unitFormat.format(q.getUnit(), toAppendTo, pos);
         return toAppendTo;
+    }
+
+    /**
+     * Parses the specified text to produce a {@link Quantity}.
+     *
+     * @param  source  the text to parse.
+     * @return the quantity parsed from the specified text.
+     * @throws MeasurementParseException if the given text can not be parsed.
+     * @since  1.4
+     */
+    @Override
+    public Quantity<?> parse(final CharSequence source) throws MeasurementParseException {
+        return parse(source, new ParsePosition(0));
+    }
+
+    /**
+     * Parses a portion of the specified {@code CharSequence} from the specified position to produce a {@link Quantity}.
+     * If parsing succeeds, then the index of the {@code pos} argument is updated to the index after the last character used.
+     *
+     * @param  source  the text, part of which should be parsed.
+     * @param  pos     index and error index information.
+     * @return the quantity parsed from the specified character sub-sequence.
+     * @throws MeasurementParseException if the given text can not be parsed.
+     * @since  1.4
+     */
+    @Override
+    public Quantity<?> parse(final CharSequence source, final ParsePosition pos) throws MeasurementParseException {
+        final int start = pos.getIndex();
+        final int shift;
+        final String text;
+        if (start == 0 || source instanceof String) {
+            shift = 0;
+            text  = source.toString();
+        } else {
+            shift = start;
+            text  = source.subSequence(start, source.length()).toString();
+            pos.setIndex(0);
+        }
+        try {
+            final Number value = numberFormat.parse(text, pos);
+            if (value != null) {
+                final Unit<?> unit = unitFormat.parse(text, pos);
+                if (unit != null) {
+                    return Quantities.create(value.doubleValue(), unit);
+                }
+            }
+        } finally {
+            if (shift != 0) {
+                pos.setIndex(pos.getIndex() + shift);
+                final int i = pos.getErrorIndex();
+                if (i >= 0) {
+                    pos.setErrorIndex(i + shift);
+                }
+            }
+        }
+        throw new MeasurementParseException(Errors.format(Errors.Keys.CanNotParse_1, source), source, pos.getErrorIndex());
     }
 
     /**
@@ -125,7 +227,7 @@ public class QuantityFormat extends Format {
                 if (unit != null) {
                     return Quantities.create(value.doubleValue(), unit);
                 }
-            } catch (ParserException e) {
+            } catch (MeasurementParseException e) {
                 Logging.ignorableException(getLogger(Loggers.MEASURE), QuantityFormat.class, "parseObject", e);
             }
             pos.setIndex(start);        // By `Format.parseObject(…)` method contract.

@@ -37,7 +37,7 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import javax.measure.Quantity;
 import javax.measure.quantity.Time;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import javax.measure.IncommensurableException;
 
 import org.opengis.metadata.Identifier;
@@ -641,7 +641,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (verify == null) {
             try {
                 verify = parseUnit(name);
-            } catch (ParserException e) {
+            } catch (MeasurementParseException e) {
                 log(new LogRecord(Level.FINE, e.toString()));
             }
             if (verify != null) try {

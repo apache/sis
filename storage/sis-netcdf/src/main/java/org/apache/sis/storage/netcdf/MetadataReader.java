@@ -31,7 +31,7 @@ import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 
 import org.opengis.util.CodeList;
 import org.opengis.util.NameFactory;
@@ -728,7 +728,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     final String symbol = res.substring(s+1).trim();
                     if (!symbol.isEmpty()) try {
                         units = Units.valueOf(symbol);
-                    } catch (ParserException e) {
+                    } catch (MeasurementParseException e) {
                         warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
                     }
                 }
@@ -819,7 +819,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     final UnitConverter c = Units.valueOf(symbol).getConverterToAny(targetUnit);
                     min = c.convert(min);
                     max = c.convert(max);
-                } catch (ParserException | IncommensurableException e) {
+                } catch (MeasurementParseException | IncommensurableException e) {
                     warning(e);
                 }
                 boolean reverse = false;

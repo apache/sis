@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.format.DateTimeParseException;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
@@ -416,7 +416,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
      * This method is called by {@link #getUnit()}.
      *
-     * @throws ParserException if the given symbol cannot be parsed.
+     * @throws MeasurementParseException if the given symbol cannot be parsed.
      */
     @Override
     protected Unit<?> parseUnit(String symbols) {
@@ -443,7 +443,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final Unit<?> unit;
         try {
             unit = Units.valueOf(symbols);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             if (dateError != null) {
                 e.addSuppressed(dateError);
             }

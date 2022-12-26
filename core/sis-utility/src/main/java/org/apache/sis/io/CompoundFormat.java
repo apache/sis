@@ -407,7 +407,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
                  * We tried the given class directly. If it didn't worked, try the interfaces before
                  * to try the parent class. The reason is that we may have for example:
                  *
-                 *     interface Length extends Quantity;                   // From JSR-363.
+                 *     interface Length extends Quantity;                   // From JSR-385.
                  *
                  *     class MyLength extends Number implements Length;
                  *

@@ -23,7 +23,7 @@ import java.text.ParsePosition;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
 import org.apache.sis.test.DependsOn;
@@ -193,7 +193,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         try {
             f.parse("mFoo");
             fail("“mFoo” should not be assigned to unit anymore.");
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("mFoo"));
         }
@@ -393,7 +393,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         try {
             f.parse("degree foo");
             fail("Should not accept unknown unit.");
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("degree"));
             assertTrue(message, message.contains("foo"));
@@ -402,7 +402,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         try {
             f.parse("mètre cube");
             fail("Should not accept localized unit unless requested.");
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("mètre"));
             assertTrue(message, message.contains("cube"));
@@ -485,7 +485,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         try {
             f.parse("ka");
             fail("Should not accept prefix in ConventionalUnit.");
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("ka"));
         }
@@ -519,7 +519,7 @@ public final strictfp class UnitFormatTest extends TestCase {
         try {
             f.parse("degree minute");
             fail("Should not accept unknown sentence even if each individual word is known.");
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             final String message = e.getMessage();
             assertTrue(message, message.contains("degree"));
             assertTrue(message, message.contains("minute"));

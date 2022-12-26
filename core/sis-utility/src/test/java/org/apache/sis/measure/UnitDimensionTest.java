@@ -140,7 +140,7 @@ public final strictfp class UnitDimensionTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("LENGTH",        LENGTH       .getBaseDimensions());     // Null value as per JSR-363 specification.
+        assertNull("LENGTH",        LENGTH       .getBaseDimensions());     // Null value as per JSR-385 specification.
         assertNull("TIME",          TIME         .getBaseDimensions());
         assertTrue("DIMENSIONLESS", DIMENSIONLESS.getBaseDimensions().isEmpty());
         assertMapEquals(Map.of(LENGTH, 3), VOLUME.getBaseDimensions());
@@ -165,7 +165,7 @@ public final strictfp class UnitDimensionTest extends TestCase {
         verifyEqualsAndHashCode("Derived dimensions", false, Units.NEWTON, Units.JOULE);
         verifyEqualsAndHashCode("Dimensionsless",     true,  Units.UNITY,  Units.UNITY);
         verifyEqualsAndHashCode("Dimensionsless",     true,  Units.DEGREE, Units.DEGREE);
-        verifyEqualsAndHashCode("Dimensionsless",     true,  Units.UNITY,  Units.DEGREE);    // Really true (not false) as per JSR-363 specification.
+        verifyEqualsAndHashCode("Dimensionsless",     true,  Units.UNITY,  Units.DEGREE);    // Really true (not false) as per JSR-385 specification.
         verifyEqualsAndHashCode("Mixed types",        false, Units.METRE,  Units.UNITY);
         verifyEqualsAndHashCode("Mixed types",        false, Units.METRE,  Units.NEWTON);
     }

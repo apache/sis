@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
@@ -356,7 +356,7 @@ public class ValueConverter {
                 }
             }
             return Units.valueOf(value);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             if (!exceptionOccured(context, value, String.class, Unit.class, e)) {
                 throw e;
             }
