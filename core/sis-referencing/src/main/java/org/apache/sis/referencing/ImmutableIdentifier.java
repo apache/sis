@@ -32,13 +32,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
 
 
@@ -123,6 +123,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @see #getAuthority()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Citation authority;
 
     /**
@@ -152,6 +153,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     /**
      * Natural language description of the meaning of the code value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final InternationalString description;
 
     /**
@@ -266,8 +268,8 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        code        = trimWhitespaces(  property (properties, CODE_KEY,    String.class));
-        version     = trimWhitespaces(  property (properties, VERSION_KEY, String.class));
+        code        = Strings.trimOrNull(property(properties, CODE_KEY,    String.class));
+        version     = Strings.trimOrNull(property(properties, VERSION_KEY, String.class));
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);
         /*
          * Map String authority to one of the predefined constants (typically EPSG or OGC).
@@ -290,7 +292,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
         if (value == null) {
             codeSpace = Citations.toCodeSpace(authority);
         } else if (value instanceof String) {
-            codeSpace = trimWhitespaces((String) value);
+            codeSpace = Strings.trimOrNull((String) value);
         } else {
             throw illegalPropertyType(properties, CODESPACE_KEY, value);
         }
@@ -302,9 +304,10 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      */
     private void validate(final Map<String,?> properties) {
         if (code == null || code.isEmpty()) {
+            boolean missing = (code == null) || (properties != null && properties.get(CODE_KEY) == null);
             throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString((code == null) ? Errors.Keys.MissingValueForProperty_1
-                                              : Errors.Keys.EmptyProperty_1, CODE_KEY));
+                    .getString(missing ? Errors.Keys.MissingValueForProperty_1
+                                       : Errors.Keys.EmptyProperty_1, CODE_KEY));
         }
     }
 

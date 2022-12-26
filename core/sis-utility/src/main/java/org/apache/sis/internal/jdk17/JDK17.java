@@ -16,6 +16,9 @@
  */
 package org.apache.sis.internal.jdk17;
 
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.stream.Stream;
@@ -60,6 +63,22 @@ public final class JDK17 {
     public static void get(final ByteBuffer b, final int index, final byte[] dst, final int offset, final int length) {
         for (int i=0; i<length; i++) {
             dst[offset + i] = b.get(index + i);
+        }
+    }
+
+    /**
+     * Place holder for {@link InputStream#skipNBytes(long)} method added in JDK12.
+     */
+    public static void skipNBytes(final InputStream s, long n) throws IOException {
+        while (n > 0) {
+            long c = s.skip(n);
+            if (c <= 0) {
+                if (c < 0 || s.read() < 0) {
+                    throw new EOFException();
+                }
+                c = 1;
+            }
+            n -= c;
         }
     }
 

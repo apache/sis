@@ -329,7 +329,7 @@ public final class DefinitionURI {
                  * in addition to "ogc" in URN.
                  */
                 case 0: {
-                    if (regionMatches("http", uri, lower, upper)) {
+                    if (regionMatches(Constants.HTTP, uri, lower, upper)) {
                         result = new DefinitionURI();
                         result.isHTTP = true;
                         if (codeForGML(null, null, uri, ++upper, result) != null) {
@@ -651,7 +651,7 @@ public final class DefinitionURI {
         if (isGML) {
             final String path = PATHS.get(type);
             if (path != null) {
-                return Constants.HTTP + path + authority + ".xml#" + code;
+                return Constants.HTTP + ':' + path + authority + ".xml#" + code;
             }
         }
         final StringBuilder buffer = new StringBuilder(40);
@@ -671,7 +671,7 @@ public final class DefinitionURI {
      */
     private void appendStringTo(final StringBuilder buffer, char separator) {
         if (isHTTP) {
-            buffer.append(Constants.HTTP + "//").append(DOMAIN).append("/def");
+            buffer.append(Constants.HTTP + "://").append(DOMAIN).append("/def");
             separator = '/';
         }
         int n = 4;

@@ -21,6 +21,7 @@ import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -444,7 +445,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
              */
             if (replacement != element) {
                 if (array == arguments) {
-                    array = array.clone();                  // Protect the user-provided array from change.
+                    array = Arrays.copyOf(array, array.length, Object[].class);
                 }
                 array[i] = replacement;
             }

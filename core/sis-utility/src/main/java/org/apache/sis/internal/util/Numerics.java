@@ -29,6 +29,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.math.Fraction;
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
@@ -326,6 +327,25 @@ public final class Numerics extends Static {
         if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
         if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
         return (int) value;
+    }
+
+    /**
+     * Returns the given fraction as a {@link Fraction} instance if possible,
+     * or as a {@link Double} approximation otherwise.
+     *
+     * @param  numerator    numerator of the fraction to return.
+     * @param  denominator  denominator of the fraction to return.
+     * @return the fraction as a {@link Fraction} or {@link Double} object.
+     */
+    public static Number fraction(long numerator, long denominator) {
+        final int simplify = Math.min(Long.numberOfTrailingZeros(numerator), Long.numberOfTrailingZeros(denominator));
+        final int num = (int) (numerator   >>= simplify);
+        final int den = (int) (denominator >>= simplify);
+        if (num == numerator && den == denominator) {
+            return new Fraction(num, den).unique();
+        } else {
+            return valueOf(numerator / (double) denominator);
+        }
     }
 
     /**

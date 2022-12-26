@@ -74,8 +74,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
 
 /**
  * Tests {@link EPSGFactory}.
- * More tests are provided by the {@code GIGS2000} series
- * in the {@code org.apache.sis.referencing.factory} package.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov

@@ -39,7 +39,6 @@ import org.apache.sis.measure.ElevationAngle;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
@@ -104,8 +103,8 @@ public final class CoordinateSystems extends Static {
      * @throws IllegalArgumentException if the given name is not a known axis direction.
      */
     public static AxisDirection parseAxisDirection(String name) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("name", name);
-        name = CharSequences.trimWhitespaces(name);
+        ArgumentChecks.ensureNonEmpty("name", name);
+        name = name.strip();
         AxisDirection candidate = AxisDirections.valueOf(name);
         if (candidate != null) {
             return candidate;

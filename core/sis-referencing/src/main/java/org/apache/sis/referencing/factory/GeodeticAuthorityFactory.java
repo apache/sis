@@ -1289,7 +1289,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                 }
             }
         }
-        return CharSequences.trimWhitespaces(code);
+        return code.strip();
     }
 
     /**

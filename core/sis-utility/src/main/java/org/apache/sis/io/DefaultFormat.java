@@ -111,7 +111,7 @@ final class DefaultFormat extends Format {
      */
     @Override
     public Object parseObject(String source) throws ParseException {
-        source = CharSequences.trimWhitespaces(source);
+        source = source.strip();
         try {
             return valueOf(source);
         } catch (NumberFormatException cause) {

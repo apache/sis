@@ -327,7 +327,8 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Moves to the given position in the stream, relative to the stream position at construction time.
+     * Moves to the given position in the stream. The given position is relative to
+     * the position that the stream had at {@code ChannelData} construction time.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.

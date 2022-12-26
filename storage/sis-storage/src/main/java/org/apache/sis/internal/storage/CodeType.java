@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 
 
@@ -94,10 +95,10 @@ public enum CodeType {
     private static final Map<String,CodeType> FOR_PROTOCOL;
     static {
         FOR_PROTOCOL = new HashMap<>();
-        FOR_PROTOCOL.put("urn",   CodeType.URN);
-        FOR_PROTOCOL.put("http",  CodeType.HTTP_OGC);   // Will actually need verification.
-        FOR_PROTOCOL.put("https", CodeType.HTTP_OGC);   // Will actually need verification.
-        FOR_PROTOCOL.put("shttp", CodeType.HTTP_OGC);   // Not widely used but nevertheless exist.
+        FOR_PROTOCOL.put("urn",           CodeType.URN);
+        FOR_PROTOCOL.put(Constants.HTTP,  CodeType.HTTP_OGC);   // Will actually need verification.
+        FOR_PROTOCOL.put(Constants.HTTPS, CodeType.HTTP_OGC);   // Will actually need verification.
+        FOR_PROTOCOL.put("shttp",         CodeType.HTTP_OGC);   // Not widely used but nevertheless exist.
         for (final String p : new String[] {"cvs", "dav", "file", "ftp", "git", "jar", "nfs", "sftp", "ssh", "svn"}) {
             if (FOR_PROTOCOL.put(p, CodeType.URL) != null) {
                 throw new AssertionError(p);

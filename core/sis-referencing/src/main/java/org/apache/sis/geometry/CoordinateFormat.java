@@ -457,7 +457,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     public void setSeparator(final String separator) {
         ArgumentChecks.ensureNonEmpty("separator", separator);
         this.separator = separator;
-        parseSeparator = CharSequences.trimWhitespaces(separator);
+        parseSeparator = separator.strip();
     }
 
     /**
@@ -1852,6 +1852,6 @@ checkDirection: if (direction != null) {
      * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        parseSeparator = CharSequences.trimWhitespaces(separator);
+        parseSeparator = separator.strip();
     }
 }

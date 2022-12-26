@@ -101,12 +101,12 @@ public final class Strings extends Static {
      */
     public static String trimOrNull(String text) {
         if (text != null) {
-            text = CharSequences.trimWhitespaces(text.trim());
-            if (text.isEmpty()) {
-                return null;
+            text = text.trim().strip();
+            if (!text.isEmpty()) {
+                return text;
             }
         }
-        return text;
+        return null;
     }
 
     /**

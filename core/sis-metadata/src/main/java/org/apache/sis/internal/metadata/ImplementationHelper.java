@@ -25,7 +25,6 @@ import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Strings;
@@ -287,8 +286,8 @@ public final class ImplementationHelper extends Static {
      * @since 0.7
      */
     public static void setObjectID(final IdentifiedObject object, String id) {
-        id = CharSequences.trimWhitespaces(id);
-        if (id != null && !id.isEmpty()) {
+        id = Strings.trimOrNull(id);
+        if (id != null) {
             object.getIdentifierMap().putSpecialized(IdentifierSpace.ID, id);
             final Context context = Context.current();
             if (!Context.setObjectForID(context, object, id)) {

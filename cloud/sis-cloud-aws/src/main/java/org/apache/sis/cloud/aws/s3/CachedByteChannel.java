@@ -16,272 +16,102 @@
  */
 package org.apache.sis.cloud.aws.s3;
 
-import java.io.EOFException;
+import java.util.List;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.nio.channels.FileChannel;
-import java.nio.channels.SeekableByteChannel;
-import org.apache.sis.internal.util.Strings;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
-import software.amazon.awssdk.core.ResponseInputStream;
+import java.io.InputStream;
+import org.apache.sis.internal.storage.io.FileCacheByteChannel;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.core.exception.SdkException;
+import software.amazon.awssdk.http.Abortable;
 
 
 /**
  * A seekable byte channel which copies S3 data to a temporary file for caching purposes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  * @module
  */
-final class CachedByteChannel implements SeekableByteChannel {
+final class CachedByteChannel extends FileCacheByteChannel {
     /**
-     * Size of the transfer buffer, in number of bytes.
+     * Path to the S3 file to open.
      */
-    private static final int BUFFER_SIZE = 8192;
+    private final KeyPath path;
 
     /**
-     * The input stream from which to read data.
-     */
-    private final ResponseInputStream<GetObjectResponse> input;
-
-    /**
-     * The file where data are copied.
-     */
-    private final FileChannel file;
-
-    /**
-     * A temporary buffer for transferring data when we
-     * cannot write directly in the destination buffer.
-     */
-    private ByteBuffer transfer;
-
-    /**
-     * Current position of this channel.
-     */
-    private long position;
-
-    /**
-     * Number of bytes in the temporary file.
+     * Creates a new channel for the S3 file identified by the given path.
+     * The connection will be opened when first needed.
      *
-     * In current implementation this value shall be identical to {@code file.position()}.
-     * However, in a future implementation it will become different if we allow some parts
-     * of the file to be without data (sparse file), with data fetched using HTTP ranges.
+     * @param  path  path to the S3 file to open.
+     * @throws IOException if the temporary file can not be created.
      */
-    private long validLength;
-
-    /**
-     * Creates a new channel.
-     */
-    CachedByteChannel(final ResponseInputStream<GetObjectResponse> stream) throws IOException {
-        input = stream;
-        file = FileChannel.open(Files.createTempFile("S3-", null),
-                StandardOpenOption.READ, StandardOpenOption.WRITE,
-                StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.DELETE_ON_CLOSE);
+    CachedByteChannel(final KeyPath path) throws IOException {
+        super("S3-");
+        this.path = path;
     }
 
     /**
-     * Attempts to read up to <i>r</i> bytes from the channel,
-     * where <i>r</i> is the number of bytes remaining in the buffer.
-     * Bytes are written in the given buffer starting at the current position.
-     * Upon return, the buffer position is advanced by the number of bytes read.
+     * Returns the filename to use in error messages.
+     */
+    @Override
+    protected String filename() {
+        return path.getFileName().toString();
+    }
+
+    /**
+     * Creates an input stream which provides the bytes to read starting at the specified position.
      *
-     * @return number of bytes read, or -1 if end of file.
+     * @param  start  position of the first byte to read (inclusive).
+     * @param  end    position of the last byte to read with the returned stream (inclusive),
+     *                or {@link Long#MAX_VALUE} for end of stream.
+     * @return contains the input stream providing the bytes to read starting at the given start position.
      */
     @Override
-    public synchronized int read(final ByteBuffer dst) throws IOException {
-        /*
-         * If the channel position is before the end of cached data (i.e. a backward seek has been done before),
-         * use those data without downloading more data from the input stream. Maybe available data are enough.
-         */
-        if (position < validLength) {
-            final int limit = dst.limit();
-            final int start = dst.position();
-            final int end   = (int) Math.min(limit, start + (validLength - position));
-            final int count;
-            dst.limit(end);
-            try {
-                count = file.read(dst, position);
-                position += count;
-            } finally {
-                dst.limit(limit);
-            }
-            return count;
-        }
-        /*
-         * At this point we need to download data from the input stream.
-         * Get a buffer that we can use with `InputStream.read(byte[])`.
-         * It must be a buffer backed by a Java array.
-         */
-        final ByteBuffer buffer;
-        if (dst.hasArray()) {
-            buffer = dst;
-        } else {
-            if (transfer == null) {
-                transfer = ByteBuffer.allocate(BUFFER_SIZE);
-            }
-            buffer = transfer;
-            buffer.clear();
-            buffer.limit(dst.remaining());
-        }
-        /*
-         * Transfer bytes from the input stream to the buffer.
-         * The bytes are also copied to the temporary file.
-         */
-        final int limit = buffer.limit();
-        final int start = buffer.position();
-        final int count = input.read(buffer.array(), buffer.arrayOffset() + start, limit - start);
-        if (count > 0) {
-            buffer.limit(start + count);
-            try {
-                cache(buffer);
-            } finally {
-                buffer.limit(limit);
-            }
-            /*
-             * If we used a temporary buffer, transfer to the destination buffer.
-             */
-            if (buffer != dst) {
-                buffer.flip();
-                dst.put(buffer);
-            }
-            position += count;
-        }
-        return count;
-    }
-
-    /**
-     * Writes fully the given buffer in the cache {@linkplain #file}.
-     * The data to write starts at current buffer position and stops at the buffer limit.
-     */
-    private void cache(final ByteBuffer buffer) throws IOException {
-        do {
-            if (file.write(buffer) == 0) {
-                // Should never happen, but check anyway as a safety against never-ending loop.
-                throw new IOException();
-            }
-            validLength = file.position();
-        } while (buffer.hasRemaining());
-    }
-
-    /**
-     * Attempts to write up to <i>r</i> bytes to the channel,
-     * where <i>r</i> is the number of bytes remaining in the buffer.
-     * Bytes are read from the given buffer starting at the current position.
-     * Upon return, the buffer position is advanced by the number of bytes written.
-     */
-    @Override
-    public int write(final ByteBuffer src) throws IOException {
-        throw new IOException("Not supported yet.");
-    }
-
-    /**
-     * Returns this channel's position.
-     */
-    @Override
-    public synchronized long position() {
-        return position;
-    }
-
-    /**
-     * Sets this channel's position.
-     *
-     * @param  newPosition  number of bytes from the beginning to the desired position.
-     * @return {@code this} for method call chaining.
-     * @throws IOException if an I/O error occurs.
-     */
-    @Override
-    public synchronized SeekableByteChannel position(final long newPosition) throws IOException {
-        ArgumentChecks.ensurePositive("newPosition", newPosition);
-        long remaining = newPosition - validLength;
-        if (remaining > 0) {
-            if (transfer == null) {
-                transfer = ByteBuffer.allocate(BUFFER_SIZE);
-            }
-            final ByteBuffer buffer = transfer;
-            do {
-                buffer.clear();
-                if (remaining < BUFFER_SIZE) {
-                    buffer.limit((int) remaining);
-                }
-                final int count = input.read(buffer.array(), 0, buffer.limit());
-                if (count <= 0) {
-                    final Long size = input.response().contentLength();
-                    throw new EOFException(Errors.format(Errors.Keys.ValueOutOfRange_4, "newPosition", 0, size, newPosition));
-                }
-                buffer.limit(count);
-                cache(buffer);
-                remaining -= count;
-            } while (remaining > 0);
-        }
-        position = newPosition;
-        return this;
-    }
-
-    /**
-     * Returns the size of the S3 file.
-     *
-     * @return number of bytes in the file.
-     * @throws IOException if the information is not available.
-     */
-    @Override
-    public long size() throws IOException {
-        final Long size = input.response().contentLength();
-        if (size != null) return size;
-        throw new IOException();
-    }
-
-    /**
-     * Truncates the file to the given size.
-     *
-     * @param  size  the new size in bytes.
-     * @throws IOException if the operation is not supported.
-     */
-    @Override
-    public SeekableByteChannel truncate(long size) throws IOException {
-        throw new IOException("Not supported yet.");
-    }
-
-    /**
-     * Tells whether this channel is open.
-     *
-     * @return {@code true} if this channel is open.
-     */
-    @Override
-    public boolean isOpen() {       // No synchronization, rely on `FileChannel` thread safety instead.
-        return file.isOpen();
-    }
-
-    /**
-     * Closes this channel and releases resources.
-     *
-     * @throws IOException if an error occurred while closing the channel.
-     */
-    @Override
-    public synchronized void close() throws IOException {
-        transfer = null;
+    protected Connection openConnection(final long start, final long end) throws IOException {
+        final ResponseInputStream<GetObjectResponse> stream;
         try {
-            file.close();
-        } catch (Throwable e) {
-            try {
-                input.close();
-            } catch (Throwable s) {
-                e.addSuppressed(s);
+            GetObjectRequest.Builder builder = GetObjectRequest.builder().bucket(path.bucket).key(path.key);
+            final String range = Connection.formatRange(start, end);
+            if (range != null) {
+                builder = builder.range(range);
             }
-            throw e;
+            stream = path.fs.client().getObject(builder.build());
+            final GetObjectResponse response = stream.response();
+            final String contentRange = response.contentRange();
+            final String acceptRanges = response.acceptRanges();
+            final List<String> rangeUnits = (acceptRanges != null) ? List.of(acceptRanges) : List.of();
+            try {
+                if (contentRange == null) {
+                    final Long contentLength = response.contentLength();
+                    final long length = (contentLength != null) ? contentLength : -1;
+                    return new Connection(stream, length, rangeUnits);
+                } else {
+                    return new Connection(stream, contentRange, rangeUnits);
+                }
+            } catch (IllegalArgumentException e) {
+                throw new IOException(e);
+            }
+        } catch (SdkException e) {
+            throw FileService.failure(path, e);
         }
-        input.close();
     }
 
     /**
-     * Returns a string representation for debugging purpose.
+     * Invoked when this channel is no longer interested in reading bytes from the specified stream.
+     *
+     * @param  input  the input stream to eventually close.
+     * @return whether the given input stream has been closed by this method.
      */
     @Override
-    public String toString() {
-        return Strings.toString(getClass(), "position", position, "validLength", validLength);
+    protected boolean abort(final InputStream input) throws IOException {
+        if (input instanceof Abortable) {
+            ((Abortable) input).abort();
+            return true;
+        } else {
+            return super.abort(input);
+        }
     }
 }

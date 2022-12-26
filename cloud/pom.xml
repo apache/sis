@@ -92,8 +92,8 @@
        =========================================================== -->
   <dependencies>
     <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
+      <groupId>org.apache.sis.storage</groupId>
+      <artifactId>sis-storage</artifactId>
       <version>${project.version}</version>
     </dependency>
 
