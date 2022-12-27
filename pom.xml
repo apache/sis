@@ -23,7 +23,7 @@
      Maven project configuration file
      http://maven.apache.org/
 
-     Apache SIS build requires Java 17 or higher, but compiled files can be executed on Java 11.
+     Apache SIS build requires Java 18 or higher, but compiled files can be executed on Java 11.
      Setting the SIS_DATA environment variable before build is optional but recommended.
 
      Build development snapshot:        mvn clean install
@@ -58,7 +58,7 @@
   <description>
     Apache Spatial Information System (SIS) is a free software, Java language library for developing geospatial applications.
     SIS provides data structures for geographic features and associated metadata along with methods to manipulate those data structures.
-    The library is an implementation of GeoAPI 3.0.1 interfaces and can be used for desktop or server applications.
+    The library is an implementation of GeoAPI 3.0.2 interfaces and can be used for desktop or server applications.
     The SIS metadata module forms the base of the library and enables the creation of metadata objects which comply with the ISO 19115 international standard.
     The SIS referencing module enable the construction of geodetic data structures for geospatial referencing as defined by ISO 19111 standard,
     along with the associated operations which enable the transformation of coordinates between different reference systems.
@@ -625,7 +625,7 @@
             <configuration>
               <rules>
                 <requireJavaVersion>
-                  <version>17</version>
+                  <version>18</version>
                 </requireJavaVersion>
               </rules>
             </configuration>
