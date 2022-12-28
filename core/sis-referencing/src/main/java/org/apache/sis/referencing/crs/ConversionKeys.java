@@ -31,7 +31,6 @@ import org.apache.sis.math.FunctionProperty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 final class ConversionKeys implements ObjectConverter<String,String> {
     /**

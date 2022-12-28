@@ -55,7 +55,6 @@ import org.apache.sis.internal.feature.Geometries;
  * @see org.apache.sis.internal.sql.postgis.RasterGetter
  *
  * @since 1.1
- * @module
  */
 final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     /**

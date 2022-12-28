@@ -37,20 +37,20 @@ import org.opengis.feature.AttributeType;
  * per line. For example, iteration over the following file will produce 4 {@code Feature} instances, even if there is
  * actually only three distinct instances because the feature "a" is splitted on 2 lines:
  *
- * {@preformat text
+ * {@snippet lang="csv" :
  *    a,  10, 150, 11.0 2.0 12.0 3.0
  *    b,  10, 190, 10.0 2.0 11.0 3.0
  *    a, 150, 190, 12.0 3.0 10.0 3.0
  *    c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0
- * }
+ *    }
  *
- * <b>Multi-threading:</b> {@code Iter} is not thread-safe.
- * However, many {@code Iter} instances can be used concurrently for the same {@link Store} instance.
+ * <h2>Multi-threading</h2>
+ * {@code FeatureIterator} is not thread-safe.
+ * However, many {@code FeatureIterator} instances can be used concurrently for the same {@link Store} instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 class FeatureIterator implements Spliterator<Feature> {
     /**

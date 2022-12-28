@@ -76,7 +76,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @see DefaultResolution#getEquivalentScale()
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")
@@ -264,9 +263,9 @@ public class DefaultRepresentativeFraction extends Number implements Representat
      * Returns {@code true} if no scale is defined.
      * The following relationship shall hold:
      *
-     * {@preformat java
-     *   assert isEmpty() == Double.isNaN(doubleValue());
-     * }
+     * {@snippet lang="java" :
+     *     assert isEmpty() == Double.isNaN(doubleValue());
+     *     }
      *
      * @return {@code true} if no scale is defined.
      *

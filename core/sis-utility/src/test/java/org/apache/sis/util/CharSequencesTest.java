@@ -34,13 +34,12 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({
     ArraysExtTest.class,
     CharactersTest.class
 })
-public final strictfp class CharSequencesTest extends TestCase {
+public final class CharSequencesTest extends TestCase {
     /**
      * Tests {@link CharSequences#spaces(int)}.
      */

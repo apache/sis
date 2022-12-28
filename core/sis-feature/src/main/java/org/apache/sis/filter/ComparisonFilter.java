@@ -72,7 +72,6 @@ import org.opengis.filter.BetweenComparisonOperator;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         implements BinaryComparisonOperator<R>, Optimization.OnFilter<R>

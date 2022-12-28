@@ -55,7 +55,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class Relation extends TableReference {
     /**

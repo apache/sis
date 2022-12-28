@@ -29,7 +29,6 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public class SQLBuilder extends Syntax {
     /**
@@ -293,9 +292,9 @@ public class SQLBuilder extends Syntax {
      * Returns a SQL statement for adding a column in a table.
      * The returned statement is of the form:
      *
-     * {@preformat sql
-     *   ALTER TABLE "schema"."table" ADD COLUMN "column" type
-     * }
+     * {@snippet lang="sql" :
+     *     ALTER TABLE "schema"."table" ADD COLUMN "column" type
+     *     }
      *
      * where {@code type} is some SQL keyword like {@code INTEGER} or {@code VARCHAR}
      * depending on the {@code type} argument.
@@ -325,10 +324,10 @@ public class SQLBuilder extends Syntax {
      * Returns a SQL statement for creating a foreigner key constraint.
      * The returned statement is of the form:
      *
-     * {@preformat sql
-     *   ALTER TABLE "schema"."table" ADD CONSTRAINT "table_column_fkey" FOREIGN KEY("column")
-     *   REFERENCES "schema"."target" (primaryKey) ON UPDATE CASCADE ON DELETE RESTRICT
-     * }
+     * {@snippet lang="sql" :
+     *     ALTER TABLE "schema"."table" ADD CONSTRAINT "table_column_fkey" FOREIGN KEY("column")
+     *     REFERENCES "schema"."target" (primaryKey) ON UPDATE CASCADE ON DELETE RESTRICT
+     *     }
      *
      * Note that the primary key is <strong>not</strong> quoted on intent.
      * If quoted are desired, then they must be added explicitly before to call this method.

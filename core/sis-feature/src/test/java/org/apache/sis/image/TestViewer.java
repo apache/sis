@@ -48,9 +48,8 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-final strictfp class TestViewer {
+final class TestViewer {
     /**
      * The global image viewer where to collect all test images.
      */
@@ -153,7 +152,7 @@ final strictfp class TestViewer {
      * A panel showing an image. Created by {@link #addImage(RenderedImage, String)}.
      */
     @SuppressWarnings("serial")
-    private static final strictfp class ImagePanel extends JPanel {
+    private static final class ImagePanel extends JPanel {
         /** The image to show. */
         private final RenderedImage image;
 

@@ -33,7 +33,6 @@ import java.awt.geom.AffineTransform;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class DecimatedShape extends ShapeWrapper {
     /**

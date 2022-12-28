@@ -31,7 +31,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class MD_MediumNameCode extends CodeListAdapter<MD_MediumNameCode, MediumName> {
     /**

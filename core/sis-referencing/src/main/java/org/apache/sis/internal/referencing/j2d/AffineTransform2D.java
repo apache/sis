@@ -49,7 +49,6 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 public class AffineTransform2D extends ImmutableAffineTransform
         implements LinearTransform2D, LenientComparable, Parameterized

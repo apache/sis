@@ -38,9 +38,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
-public final strictfp class DefaultEngineeringCRSTest extends TestCase {
+public final class DefaultEngineeringCRSTest extends TestCase {
     /**
      * Creates an engineering CRS using a two-dimensional Cartesian coordinate system.
      */

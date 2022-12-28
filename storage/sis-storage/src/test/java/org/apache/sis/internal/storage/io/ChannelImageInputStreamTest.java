@@ -37,10 +37,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 @DependsOn(ChannelDataInputTest.class)
-public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestCase {
+public final class ChannelImageInputStreamTest extends ChannelDataTestCase {
     /**
      * The implementation to test.
      */

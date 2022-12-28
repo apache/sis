@@ -30,7 +30,6 @@ import org.apache.sis.util.Classes;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class ObjectPair {
     /**

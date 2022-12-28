@@ -41,11 +41,10 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(DefaultParameterDescriptorTest.class)
-public final strictfp class DefaultParameterValueTest extends TestCase {
+public final class DefaultParameterValueTest extends TestCase {
     /**
      * Small tolerance factor for floating point comparisons resulting from some calculation.
      */
@@ -56,7 +55,7 @@ public final strictfp class DefaultParameterValueTest extends TestCase {
      * This allows {@link DefaultParameterValueTest} methods to verify the conversion result.
      */
     @SuppressWarnings({"serial", "CloneableImplementsClone"})
-    private static final strictfp class Watcher<T> extends DefaultParameterValue<T> {
+    private static final class Watcher<T> extends DefaultParameterValue<T> {
         /** The value converted by {@link Verifier}. */
         T convertedValue;
 

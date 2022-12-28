@@ -34,7 +34,6 @@ import org.apache.sis.util.CharSequences;
  * @see IndexedResourceBundle#getKeyConstants()
  *
  * @since 0.8
- * @module
  */
 public class KeyConstants {
     /**

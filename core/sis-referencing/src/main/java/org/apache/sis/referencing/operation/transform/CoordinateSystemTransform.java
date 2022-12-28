@@ -48,7 +48,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
     /**

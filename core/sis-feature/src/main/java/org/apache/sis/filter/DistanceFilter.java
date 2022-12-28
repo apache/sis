@@ -49,7 +49,6 @@ import org.opengis.filter.DistanceOperatorName;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements DistanceOperator<R> {
     /**

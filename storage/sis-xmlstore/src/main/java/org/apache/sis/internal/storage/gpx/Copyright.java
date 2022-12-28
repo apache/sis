@@ -62,7 +62,6 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public final class Copyright implements LegalConstraints, Responsibility, Party, Citation, CitationDate {
     /**

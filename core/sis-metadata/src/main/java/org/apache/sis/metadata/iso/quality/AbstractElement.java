@@ -75,7 +75,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
     "standaloneQualityReportDetails",

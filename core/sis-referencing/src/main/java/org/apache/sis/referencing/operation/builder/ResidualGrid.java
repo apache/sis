@@ -45,7 +45,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
@@ -301,7 +300,6 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.0
-     * @module
      */
     private final class Data extends FormattableObject implements Matrix, Function<int[],Number> {
         /** Coefficients from the denormalization matrix for the row corresponding to this dimension. */

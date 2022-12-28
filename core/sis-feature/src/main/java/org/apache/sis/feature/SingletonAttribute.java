@@ -45,7 +45,6 @@ import org.opengis.feature.AttributeType;
  * @see DefaultAttributeType
  *
  * @since 0.5
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")       // Nothing to add compared to subclass.
 final class SingletonAttribute<V> extends AbstractAttribute<V> implements Cloneable {

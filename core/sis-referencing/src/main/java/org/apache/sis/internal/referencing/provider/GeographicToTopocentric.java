@@ -39,7 +39,6 @@ import org.apache.sis.parameter.Parameters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class GeographicToTopocentric extends AbstractProvider {
     /**

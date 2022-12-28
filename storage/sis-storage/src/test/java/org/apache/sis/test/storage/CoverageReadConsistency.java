@@ -64,9 +64,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public strictfp class CoverageReadConsistency extends TestCase {
+public class CoverageReadConsistency extends TestCase {
     /**
      * A constant for identifying the codes working on two dimensional slices.
      */

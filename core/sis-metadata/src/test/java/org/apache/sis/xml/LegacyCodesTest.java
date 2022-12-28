@@ -29,9 +29,8 @@ import static org.apache.sis.xml.LegacyCodes.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-public final strictfp class LegacyCodesTest extends TestCase {
+public final class LegacyCodesTest extends TestCase {
     /**
      * Tests {@link LegacyCodes#fromIANA(String)}.
      */

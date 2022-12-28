@@ -36,11 +36,10 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({DefaultLocalNameTest.class, DefaultScopedNameTest.class})
-public final strictfp class DefaultNameFactoryTest extends NameTest {
+public final class DefaultNameFactoryTest extends NameTest {
     /**
      * The factory to test.
      */

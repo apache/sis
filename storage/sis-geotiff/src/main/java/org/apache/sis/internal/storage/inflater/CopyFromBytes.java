@@ -40,7 +40,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 abstract class CopyFromBytes extends Inflater {
     /**

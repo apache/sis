@@ -30,7 +30,6 @@ import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class CD_PrimeMeridian extends PropertyType<CD_PrimeMeridian, PrimeMeridian> {
     /**

@@ -36,7 +36,6 @@ import org.apache.sis.internal.shapefile.jdbc.sql.SQLInvalidStatementException;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class DBFStatement extends AbstractStatement {
     /** Connection this statement is relying on. */

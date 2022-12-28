@@ -112,19 +112,19 @@ import org.opengis.geometry.Geometry;
  * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
  * Reference System (CRS) codes</a> page for the complete list of EPSG codes):
  *
- * {@preformat java
- *   CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
- *   CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
- *   CoordinateOperation operation = CRS.findOperation(source, target, null);
- *   if (CRS.getLinearAccuracy(operation) > 100) {
- *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
- *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
- *   }
- *   MathTransform mt = operation.getMathTransform();
- *   DirectPosition position = new DirectPosition2D(20, 30);            // 20°N 30°E   (watch out axis order!)
- *   position = mt.transform(position, position);
- *   System.out.println(position);
- * }
+ * {@snippet lang="java" :
+ *     CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
+ *     CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
+ *     CoordinateOperation operation = CRS.findOperation(source, target, null);
+ *     if (CRS.getLinearAccuracy(operation) > 100) {
+ *         // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
+ *         // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
+ *     }
+ *     MathTransform mt = operation.getMathTransform();
+ *     DirectPosition position = new DirectPosition2D(20, 30);            // 20°N 30°E   (watch out axis order!)
+ *     position = mt.transform(position, position);
+ *     System.out.println(position);
+ *     }
  *
  * <h2>Note on kinds of CRS</h2>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
@@ -143,7 +143,6 @@ import org.opengis.geometry.Geometry;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final class CRS extends Static {
     /**
@@ -261,10 +260,11 @@ public final class CRS extends Static {
      * The default {@linkplain org.apache.sis.io.wkt Apache SIS parser} understands both
      * version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162) of the WKT format.
      *
-     * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
+     * <h4>Example</h4>
+     * Below is a slightly simplified WKT 2 string for a Mercator projection.
      * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
      *     BaseGeodCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
@@ -280,9 +280,9 @@ public final class CRS extends Static {
      *       Axis["northing (N)", north],
      *       LengthUnit["metre", 1],
      *     Id["EPSG",5641]]
-     * }
-     * </div>
+     *   }
      *
+     * <h4>Logging</h4>
      * If the parsing produced warnings, they will be reported in a logger named {@code "org.apache.sis.io.wkt"}.
      * In particular, this method verifies if the description provided by the WKT matches the description provided
      * by the authority ({@code "EPSG:5641"} in above example) and reports discrepancies.
@@ -1430,9 +1430,7 @@ check:  while (lower != 0 || upper != dimension) {
      * implementation with a public no-argument constructor, and declaring the fully-qualified name of that class
      * in a file at the following location:</p>
      *
-     * {@preformat text
-     *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
-     * }
+     * <pre class="text">META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory</pre>
      *
      * @param  authority  the authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}

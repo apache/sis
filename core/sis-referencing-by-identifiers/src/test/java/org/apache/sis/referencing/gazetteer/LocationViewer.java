@@ -52,7 +52,6 @@ import org.opengis.referencing.gazetteer.Location;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @Debug
 @SuppressWarnings("serial")

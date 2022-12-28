@@ -62,7 +62,6 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * @see DefaultRecordSchema
  *
  * @since 0.5
- * @module
  */
 public class DefaultRecord implements Record, Serializable {
     /**
@@ -438,14 +437,14 @@ public class DefaultRecord implements Record, Serializable {
      * A record can be anything, but usages that we have seen so far write a character
      * sequence or a code list. Examples:
      *
-     * {@preformat xml
-     *    <gco:Record>Alphanumeric values: Product is alphanumeric.</gco:Record>
-     *    <gco:Record>Alphanumeric Text: Message contains alphanumeric text.</gco:Record>
-     *    <gco:Record>Part A: Reflectivity presented as a tabular listing of alphanumerics.</gco:Record>
-     *    <gco:Record>
-     *      <gmd:CodeListValue codelist="someURL#DataQualityAssessment" codeListValue="intermediate">intermediate</gmd:CodeListValue>
-     *    </gco:Record>
-     * }
+     * {@snippet lang="xml" :
+     *   <gco:Record>Alphanumeric values: Product is alphanumeric.</gco:Record>
+     *   <gco:Record>Alphanumeric Text: Message contains alphanumeric text.</gco:Record>
+     *   <gco:Record>Part A: Reflectivity presented as a tabular listing of alphanumerics.</gco:Record>
+     *   <gco:Record>
+     *     <gmd:CodeListValue codelist="someURL#DataQualityAssessment" codeListValue="intermediate">intermediate</gmd:CodeListValue>
+     *   </gco:Record>
+     *   }
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */

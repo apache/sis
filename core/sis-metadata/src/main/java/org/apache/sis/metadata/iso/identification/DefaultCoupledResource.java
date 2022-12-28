@@ -54,7 +54,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "SV_CoupledResource_Type", namespace = Namespaces.SRV, propOrder = {
     "scopedName",               // ISO 19115-3:2016 way to write scoped name

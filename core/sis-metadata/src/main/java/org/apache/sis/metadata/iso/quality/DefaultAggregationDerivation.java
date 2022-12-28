@@ -38,7 +38,6 @@ import org.opengis.metadata.quality.AggregationDerivation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "DQ_AggregationDerivation_Type")
 @XmlRootElement(name = "DQ_AggregationDerivation")

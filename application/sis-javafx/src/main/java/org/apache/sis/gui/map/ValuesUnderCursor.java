@@ -41,7 +41,6 @@ import org.apache.sis.internal.gui.BackgroundThreads;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class ValuesUnderCursor {
     /**
@@ -159,7 +158,6 @@ public abstract class ValuesUnderCursor {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   1.3
-     * @module
      */
     protected abstract static class Formatter implements Runnable {
         /**

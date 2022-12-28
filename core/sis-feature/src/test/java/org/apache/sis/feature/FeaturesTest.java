@@ -34,10 +34,9 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @author  Johann Sorel (Geomatys)
  * @version 0.7
  * @since   0.5
- * @module
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class FeaturesTest extends TestCase {
+public final class FeaturesTest extends TestCase {
     /**
      * Tests {@link Features#cast(AttributeType, Class)}.
      */

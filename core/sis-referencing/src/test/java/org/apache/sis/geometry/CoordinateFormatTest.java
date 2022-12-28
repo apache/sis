@@ -47,9 +47,8 @@ import static org.junit.Assert.*;
  * @see org.apache.sis.measure.AngleFormatTest
  *
  * @since 0.8
- * @module
  */
-public final strictfp class CoordinateFormatTest extends TestCase {
+public final class CoordinateFormatTest extends TestCase {
     /**
      * Compares coordinate values from the given positions.
      */

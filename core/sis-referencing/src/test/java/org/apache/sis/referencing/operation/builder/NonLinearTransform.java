@@ -26,9 +26,8 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-final strictfp class NonLinearTransform extends AbstractMathTransform2D {
+final class NonLinearTransform extends AbstractMathTransform2D {
     /**
      * Creates a new instance of this class.
      */

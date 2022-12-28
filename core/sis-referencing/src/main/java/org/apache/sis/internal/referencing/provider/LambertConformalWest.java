@@ -39,7 +39,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @XmlTransient
 public final class LambertConformalWest extends AbstractLambert {

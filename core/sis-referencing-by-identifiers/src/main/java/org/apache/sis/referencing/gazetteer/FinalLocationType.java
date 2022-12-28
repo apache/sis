@@ -43,7 +43,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class FinalLocationType extends AbstractLocationType implements Serializable {
     /**

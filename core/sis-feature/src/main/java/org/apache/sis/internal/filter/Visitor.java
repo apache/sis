@@ -56,7 +56,6 @@ import org.opengis.filter.ComparisonOperatorName;
  * @param  <A>  type of the accumulator object where actions will write their results.
  *
  * @since 1.1
- * @module
  */
 public abstract class Visitor<R,A> {
     /**

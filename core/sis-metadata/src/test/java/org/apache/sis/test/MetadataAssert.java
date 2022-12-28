@@ -44,9 +44,8 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
-public strictfp class MetadataAssert extends Assert {
+public class MetadataAssert extends Assert {
     /**
      * For subclass constructor only.
      */
@@ -164,9 +163,9 @@ public strictfp class MetadataAssert extends Assert {
      * <p>For example, in order to ignore the namespace, type and schema location declaration,
      * the following strings can be given to the {@code ignoredAttributes} argument:</p>
      *
-     * {@preformat text
+     * {@snippet :
      *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
-     * }
+     *   }
      *
      * @param  expected           the expected XML document.
      * @param  actual             the XML document to compare.

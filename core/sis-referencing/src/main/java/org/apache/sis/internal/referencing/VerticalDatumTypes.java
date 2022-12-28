@@ -41,7 +41,6 @@ import org.apache.sis.util.Characters;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     /**

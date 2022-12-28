@@ -30,7 +30,6 @@ import java.util.NoSuchElementException;
  * @see MetadataStandard#asNameMap(Class, KeyNamePolicy, KeyNamePolicy)
  *
  * @since 0.3
- * @module
  */
 final class NameMap extends PropertyMap<String> {
     /**

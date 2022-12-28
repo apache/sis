@@ -77,7 +77,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final class Citations extends Static {
     /**
@@ -125,7 +124,7 @@ public final class Citations extends Static {
      * "OGP" identifier as "IOGP" (see the special case in fromName(String) method). This is also a way to share
      * the same citation instance in GML like below:</p>
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
      * }
      *
@@ -159,7 +158,7 @@ public final class Citations extends Static {
      * But in the particular case of GML, both {@code "EPSG"} and {@code "IOGP"} appear in different locations.
      * For example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
      * }
      *

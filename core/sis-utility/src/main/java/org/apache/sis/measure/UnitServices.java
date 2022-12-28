@@ -50,7 +50,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 public class UnitServices extends ServiceProvider implements SystemOfUnitsService, FormatService {
     /**
@@ -211,7 +210,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
     /**
      * Returns a quantity format for the default locale.
      *
-     * @return a {@link tech.uom.seshat.QuantityFormat} instance for quantities.
+     * @return a {@link org.apache.sis.measure.QuantityFormat} instance for quantities.
      * @since  1.4
      */
     @Override

@@ -36,9 +36,8 @@ import static org.apache.sis.internal.util.Constants.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
-public final strictfp class MapProjectionTest extends TestCase {
+public final class MapProjectionTest extends TestCase {
     /**
      * Verifies {@link MapProjection#SEMI_MAJOR} and {@link MapProjection#SEMI_MINOR} parameter descriptors.
      */

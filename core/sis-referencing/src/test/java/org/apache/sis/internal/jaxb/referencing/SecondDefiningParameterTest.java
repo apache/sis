@@ -32,9 +32,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
-public final strictfp class SecondDefiningParameterTest extends TestCase {
+public final class SecondDefiningParameterTest extends TestCase {
     /**
      * XML of an ellipsoid defined by semi-major and semi-minor axes.
      * The numerical values used for this test is the ones of Clarke 1866 (EPSG:7008).

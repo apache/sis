@@ -39,10 +39,9 @@ import static org.junit.Assume.assumeNotNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 @DependsOn(WKTParserTest.class)
-public final strictfp class ComparisonWithEPSG extends TestCase {
+public final class ComparisonWithEPSG extends TestCase {
     /**
      * Creates the factory to use for all tests in this class.
      *

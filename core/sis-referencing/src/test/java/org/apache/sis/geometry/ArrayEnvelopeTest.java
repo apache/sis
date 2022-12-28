@@ -32,10 +32,9 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Michael Hausegger
  * @version 1.0
  * @since   0.8
- * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
-public final strictfp class ArrayEnvelopeTest extends TestCase {
+public final class ArrayEnvelopeTest extends TestCase {
     /**
      * Tests {@link ArrayEnvelope#isEmpty()}.
      */

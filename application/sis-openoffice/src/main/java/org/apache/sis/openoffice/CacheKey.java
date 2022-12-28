@@ -30,7 +30,6 @@ import org.apache.sis.util.collection.Cache;
  * @param <T>  the type of cached values.
  *
  * @since 0.8
- * @module
  */
 final class CacheKey<T> {
     /**
@@ -85,17 +84,19 @@ final class CacheKey<T> {
      * Notifies the cache that a value will be computed for this key.
      * This method must be followed by a {@code try} … {@code finally} block as below:
      *
-     * {@preformat java
-     *     T value = key.peek();
-     *     if (value == null) {
-     *         final Cache.Handler<T> handler = key.lock();
-     *         try {
-     *             value = handler.peek();
-     *             if (value == null) {
-     *                 value = createMyObject(key);
+     * {@snippet lang="java" :
+     *     private void compute() {
+     *         T value = key.peek();
+     *         if (value == null) {
+     *             final Cache.Handler<T> handler = key.lock();
+     *             try {
+     *                 value = handler.peek();
+     *                 if (value == null) {
+     *                     value = createMyObject(key);
+     *                 }
+     *             } finally {
+     *                 handler.putAndUnlock(value);
      *             }
-     *         } finally {
-     *             handler.putAndUnlock(value);
      *         }
      *     }
      * }

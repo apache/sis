@@ -36,7 +36,6 @@ import org.apache.sis.util.Static;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final class TransformationAccuracy extends Static {
     /**

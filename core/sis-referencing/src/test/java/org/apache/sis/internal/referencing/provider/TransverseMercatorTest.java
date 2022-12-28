@@ -33,9 +33,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
-public final strictfp class TransverseMercatorTest extends TestCase {
+public final class TransverseMercatorTest extends TestCase {
     /**
      * Tests {@link TransverseMercator.Zoner#zone(double, double)},
      * including the special cases for Norway and Svalbard.

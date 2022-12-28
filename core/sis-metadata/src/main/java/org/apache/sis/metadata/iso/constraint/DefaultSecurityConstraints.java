@@ -45,7 +45,6 @@ import org.opengis.metadata.constraint.SecurityConstraints;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_SecurityConstraints_Type", propOrder = {
     "classification",

@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class DataTypeTest extends TestCase {
+public final class DataTypeTest extends TestCase {
     /**
      * Verifies the relationship between the enumeration ordinal value and the netCDF numerical code.
      */

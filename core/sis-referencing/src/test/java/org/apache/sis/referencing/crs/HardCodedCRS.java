@@ -42,9 +42,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class HardCodedCRS {
+public final class HardCodedCRS {
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
      * This CRS uses (<var>latitude</var>, <var>longitude</var>) coordinates with latitude values

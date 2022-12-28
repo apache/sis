@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class LoaderTest extends TestCase {
+public final class LoaderTest extends TestCase {
     /**
      * Tests the {@link Loader#getCandidateLocales(String, Locale)} method
      * for {@link Locale#US}.

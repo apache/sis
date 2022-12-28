@@ -43,10 +43,9 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(ParameterBuilderTest.class)
-public final strictfp class ParameterFormatTest extends TestCase {
+public final class ParameterFormatTest extends TestCase {
     /**
      * The parameter descriptors used for all tests in this class.
      */

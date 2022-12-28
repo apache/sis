@@ -63,7 +63,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Cédric Briançon (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({
@@ -71,7 +70,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class
 })
-public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest {
+public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.
      */

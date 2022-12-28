@@ -36,7 +36,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class PolylineBuffer {
     /**
@@ -106,9 +105,9 @@ final class PolylineBuffer {
      * <p>This method is typically invoked in the following pattern (but this is not mandatory).
      * An important aspect is that {@code this} and {@code other} should be on perpendicular axes:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     interpolateOnBottomSide(polylinesOnTop[x].attach(polylineOnLeft));
-     * }
+     *     }
      *
      * @return {@code this} for method calls chaining.
      */

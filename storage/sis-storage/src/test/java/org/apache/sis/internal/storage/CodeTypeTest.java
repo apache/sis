@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class CodeTypeTest  extends TestCase {
+public final class CodeTypeTest  extends TestCase {
     /**
      * The expected value.
      */

@@ -77,7 +77,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**

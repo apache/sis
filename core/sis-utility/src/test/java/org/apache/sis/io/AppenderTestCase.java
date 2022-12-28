@@ -31,7 +31,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public abstract class AppenderTestCase extends TestCase {
     /**
@@ -42,9 +41,9 @@ public abstract class AppenderTestCase extends TestCase {
     /**
      * The appender to test. Subclasses should initialize this field as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   appender = MyAppender(appender);
-     * }
+     *   }
      */
     Appendable appender;
 

@@ -22,6 +22,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 package org.apache.sis.storage.gps;

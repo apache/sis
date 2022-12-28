@@ -36,9 +36,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class HardCodedDatum {
+public final class HardCodedDatum {
     /**
      * Greenwich meridian (EPSG:8901), with angular measurements in decimal degrees.
      */

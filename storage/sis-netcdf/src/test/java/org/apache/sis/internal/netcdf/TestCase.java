@@ -44,9 +44,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
-public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
+public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
      * method when the decoder shall search only in global attributes.

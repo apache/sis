@@ -66,7 +66,6 @@ import static java.util.logging.Logger.getLogger;
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  *
  * @since 0.3
- * @module
  */
 final class PropertyInformation<E> extends SimpleIdentifier           // Implementing Identifier is part of SIS public API.
         implements ExtendedElementInformation, CheckedContainer<E>

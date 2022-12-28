@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
-public final strictfp class AxisTest extends TestCase {
+public final class AxisTest extends TestCase {
     /**
      * Tests {@link Axis#direction(String)}.
      */

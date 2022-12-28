@@ -130,7 +130,6 @@ import static java.util.logging.Logger.getLogger;
  * @see AbstractMathTransform#getContextualParameters()
  *
  * @since 0.6
- * @module
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
@@ -143,7 +142,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @see ContextualParameters#getMatrix(MatrixRole)
      *
      * @since 0.7
-     * @module
      */
     public enum MatrixRole {
         /**
@@ -617,9 +615,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      * Before the call to {@link #completeTransform completeTransform(…)},
      * this method can be used for setting parameter values like below:
      *
-     * {@preformat java
-     *   parameter("Scale factor").setValue(0.9996);   // Scale factor of Universal Transverse Mercator (UTM) projections.
-     * }
+     * {@snippet lang="java" :
+     *     parameter("Scale factor").setValue(0.9996);   // Scale factor of Universal Transverse Mercator (UTM) projections.
+     *     }
      *
      * After the call to {@code completeTransform(…)}, the returned parameters are read-only.
      *

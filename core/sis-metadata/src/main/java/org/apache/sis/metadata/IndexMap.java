@@ -30,7 +30,6 @@ import java.util.NoSuchElementException;
  * @see MetadataStandard#asIndexMap(Class, KeyNamePolicy)
  *
  * @since 0.8
- * @module
  */
 final class IndexMap extends PropertyMap<Integer> {
     /**

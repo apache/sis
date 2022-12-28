@@ -62,9 +62,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @see DocumentComparator
  *
  * @since 0.3
- * @module
  */
-public abstract strictfp class TestCase extends org.apache.sis.test.TestCase {
+public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**
      * Miscellaneous version constants used for ISO standards.
      */

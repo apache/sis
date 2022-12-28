@@ -102,7 +102,6 @@ import org.apache.sis.setup.OptionKey;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public class StorageConnector implements Serializable {
     /**

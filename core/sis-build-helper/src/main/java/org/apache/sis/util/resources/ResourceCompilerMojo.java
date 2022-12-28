@@ -44,7 +44,6 @@ import static org.apache.sis.util.resources.IndexedResourceCompiler.PROPERTIES_E
  * @author  Olivier Nouguier (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 @Mojo(name = "compile-resources", defaultPhase = LifecyclePhase.GENERATE_RESOURCES)
 public class ResourceCompilerMojo extends AbstractMojo implements FilenameFilter {

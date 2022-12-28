@@ -48,7 +48,6 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 final class CharacteristicTypeMap extends AbstractMap<String,AttributeType<?>> {
     /**

@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
-public final strictfp class LazySetTest extends TestCase {
+public final class LazySetTest extends TestCase {
     /**
      * The test data.
      */

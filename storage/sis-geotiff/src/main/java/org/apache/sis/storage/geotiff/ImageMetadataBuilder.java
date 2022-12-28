@@ -43,7 +43,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.2
- * @module
  */
 final class ImageMetadataBuilder extends MetadataBuilder {
     /**

@@ -42,7 +42,6 @@ import org.opengis.filter.capability.TemporalCapabilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class Capabilities implements FilterCapabilities, Conformance, IdCapabilities, ScalarCapabilities {
     /**

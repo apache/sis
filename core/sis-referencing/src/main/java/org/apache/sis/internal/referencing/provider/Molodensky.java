@@ -60,7 +60,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 public final class Molodensky extends GeocentricAffineBetweenGeographic {

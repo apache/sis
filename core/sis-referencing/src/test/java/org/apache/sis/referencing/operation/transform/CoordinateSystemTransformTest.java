@@ -46,13 +46,12 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @DependsOn({
     SphericalToCartesianTest.class,
     CartesianToSphericalTest.class
 })
-public final strictfp class CoordinateSystemTransformTest extends TransformTestCase {
+public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * A right-handed spherical coordinate system.
      */

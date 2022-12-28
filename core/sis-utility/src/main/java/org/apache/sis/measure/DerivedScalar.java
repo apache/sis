@@ -40,7 +40,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 1.0
- * @module
  */
 class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     /**
@@ -99,10 +98,10 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
      * The unit of measurement shall be the same than the system unit of this quantity.
      * Implementation in subclasses should be like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assert newUnit == getSystemUnit() : newUnit;
      *     return new MyDerivedScalar(this, newValue);
-     * }
+     *     }
      */
     @Override
     Quantity<Q> create(double newValue, Unit<Q> newUnit) {

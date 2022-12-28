@@ -57,7 +57,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 final class PooledUnmarshaller extends Pooled implements Unmarshaller {
     /**

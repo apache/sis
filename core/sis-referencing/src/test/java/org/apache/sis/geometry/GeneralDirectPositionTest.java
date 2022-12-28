@@ -33,10 +33,9 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(AbstractDirectPositionTest.class)
-public final strictfp class GeneralDirectPositionTest extends TestCase {
+public final class GeneralDirectPositionTest extends TestCase {
     /**
      * Tests the {@link GeneralDirectPosition#normalize()} method.
      */

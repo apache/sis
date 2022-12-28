@@ -85,7 +85,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 @DefaultProperty("content")
 public class MetadataTree extends TreeTableView<TreeTable.Node> {

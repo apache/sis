@@ -27,7 +27,6 @@ package org.apache.sis.coverage;
  * @see org.opengis.geometry.MismatchedDimensionException
  *
  * @since 1.0
- * @module
  */
 public class MismatchedCoverageRangeException extends IllegalArgumentException {
     /**

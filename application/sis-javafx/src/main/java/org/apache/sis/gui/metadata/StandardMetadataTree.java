@@ -66,7 +66,6 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class StandardMetadataTree extends MetadataTree {
     /**

@@ -29,7 +29,6 @@ import java.io.IOException;
  * @see InputStreamAdapter
  *
  * @since 0.8
- * @module
  */
 final class OutputStreamAdapter extends OutputStream implements Markable {
     /**

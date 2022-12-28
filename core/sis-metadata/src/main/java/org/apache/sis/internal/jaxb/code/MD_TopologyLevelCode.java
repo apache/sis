@@ -31,7 +31,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class MD_TopologyLevelCode extends CodeListAdapter<MD_TopologyLevelCode, TopologyLevel> {
     /**

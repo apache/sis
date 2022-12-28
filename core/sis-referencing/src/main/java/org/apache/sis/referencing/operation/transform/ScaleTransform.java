@@ -39,7 +39,6 @@ import org.apache.sis.util.ArraysExt;
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
  * @since 0.7
- * @module
  */
 final class ScaleTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**

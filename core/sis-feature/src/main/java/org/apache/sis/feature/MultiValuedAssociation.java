@@ -49,7 +49,6 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see DefaultAssociationRole
  *
  * @since 0.5
- * @module
  */
 final class MultiValuedAssociation extends AbstractAssociation {
     /**

@@ -33,7 +33,6 @@ import java.util.Map;
  * @see <a href="http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf">ESRI Shapefile Specification</a>
  *
  * @since 0.5
- * @module
  */
 public enum ShapeTypeEnum  {
 

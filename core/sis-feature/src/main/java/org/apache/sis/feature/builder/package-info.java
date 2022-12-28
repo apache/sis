@@ -24,7 +24,7 @@
  * The following example creates a feature type for a capital, as a special kind of city,
  * named "Utopia" by default:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     FeatureTypeBuilder builder;
  *
  *     // Create a feature type for a city, which contains a name and a population.
@@ -37,11 +37,11 @@
  *     builder = new FeatureTypeBuilder().setName("Capital").setSuperTypes(city);
  *     builder.addAttribute(String.class).setName("parliament");
  *     FeatureType capital = builder.build();
- * }
+ *     }
  *
  * A call to {@code System.out.println(capital)} prints the following table:
  *
- * {@preformat text
+ * <pre class="text">
  *   Capital ⇾ City
  *   ┌────────────┬─────────┬──────────────┬───────────────┐
  *   │ Name       │ Type    │ Multiplicity │ Default value │
@@ -49,8 +49,7 @@
  *   │ name       │ String  │   [1 … 1]    │ Utopia        │
  *   │ population │ Integer │   [1 … 1]    │               │
  *   │ parliament │ String  │   [1 … 1]    │               │
- *   └────────────┴─────────┴──────────────┴───────────────┘
- * }
+ *   └────────────┴─────────┴──────────────┴───────────────┘</pre>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -60,6 +59,5 @@
  * @see org.apache.sis.feature.DefaultFeatureType
  *
  * @since 0.8
- * @module
  */
 package org.apache.sis.feature.builder;

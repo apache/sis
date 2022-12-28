@@ -33,9 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class LocationFormatTest extends TestCase {
+public final class LocationFormatTest extends TestCase {
     /**
      * Tests formatting of an instance having only geographic coordinates.
      */

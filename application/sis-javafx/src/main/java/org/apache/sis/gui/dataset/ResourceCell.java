@@ -52,7 +52,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see ResourceItem
  *
  * @since 1.3
- * @module
  */
 final class ResourceCell extends TreeCell<Resource> {
     /**

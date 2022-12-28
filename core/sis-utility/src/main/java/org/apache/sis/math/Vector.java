@@ -54,11 +54,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * Vectors can be a view over a subsection of the given array, or can provide a view of the elements in reverse order,
  * <i>etc</i>. The example below creates a view over a subsection:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     float[] array = new float[100];
  *     Vector v = Vector.create(array, false).subList(20, 40)
  *     // At this point, v.doubleValue(0) is equivalent to (double) array[20].
- * }
+ *     }
  *
  * <h2>Usage</h2>
  * The methods that are most often used after {@code Vector} creation are {@link #size()} and {@link #doubleValue(int)}
@@ -96,7 +96,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * @see org.apache.sis.util.collection.IntegerList
  *
  * @since 0.8
- * @module
  */
 public abstract class Vector extends AbstractList<Number> implements RandomAccess {
     /**
@@ -599,37 +598,37 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * than the number of consecutive <var>y</var> values before the <var>z</var> values, the number of consecutive <var>z</var>
      * values before the next values, and so on until the end of the vector.</p>
      *
-     * <div class="note"><b>Examples:</b>
-     * in the following vector, each value is repeated 3 times. So the array returned by this method would be {@code {4}},
+     * <h4>Examples</h4>
+     * In the following vector, each value is repeated 3 times. So the array returned by this method would be {@code {4}},
      * meaning that the first number appears 4 times, followed by a new number appearing 4 times, followed by a new number
      * appearing 4 times, and so on until the end of the vector.
      *
-     * {@preformat text
+     * <pre class="text">
      *    10, 10, 10, 10,
      *    12, 12, 12, 12,
-     *    15, 15, 15, 15
-     * }</div>
+     *    15, 15, 15, 15</pre>
      *
+     * <h4>Repetitions of repetitions</h4>
      * For the next level (the second integer in the returned array), this method represents above repetitions by single entities
      * then reapplies the same repetition detection. This method processes has if the (<var>x</var>, <var>x</var>, …, <var>x</var>,
      * <var>y</var>, <var>y</var>, …, <var>y</var>, <var>z</var>, <var>z</var>, …, <var>z</var>, …) vector was replaced by a new
      * (<b>x</b>, <b>y</b>, <b>z</b>, …) vector, then the same detection algorithm was applied recursively.
      *
-     * <div class="note"><b>Examples:</b>
-     * in the following vector, each value is repeated 2 times, then the sequence of 12 values is itself repeated 2 times.
+     * <h5>Examples</h5>
+     * In the following vector, each value is repeated 2 times, then the sequence of 12 values is itself repeated 2 times.
      * So the array returned by this method would be {@code {3,4}}, meaning that the first number appears 3 times, followed
      * by a new number appearing 3 times, <i>etc.</i> until we counted 4 groups of 3 numbers. Then the whole sequence is
      * repeated until the end of the vector.
      *
-     * {@preformat text
+     * <pre class="text">
      *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18,
      *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18,
-     *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18
-     * }</div>
+     *    10, 10, 10,  12, 12, 12,  15, 15, 15,  18, 18, 18</pre>
      *
-     * <p>This method is useful for analyzing the localization grid provided by some files (for example in netCDF format).
+     * <h4>Use cases</h4>
+     * This method is useful for analyzing the localization grid provided by some files (for example in netCDF format).
      * Those grids sometimes have constant longitude for the same column index, or constant latitude for the same row index.
-     * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.</p>
+     * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.
      *
      * @param  candidates  probable values, or {@code null} or an empty array if unknown. If non-empty, those values will be used
      *         for narrowing the search, which may improve performances. There is no guarantee that the values returned by this

@@ -74,30 +74,29 @@ import org.opengis.feature.Operation;
  *
  * The following example creates a city named "Utopia" by default:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     FeatureTypeBuilder builder;
- *
+
  *     // Create a feature type for a city, which contains a name and a population.
  *     builder = new FeatureTypeBuilder() .setName("City");
  *     builder.addAttribute(String.class) .setName("name").setDefaultValue("Utopia");
  *     builder.addAttribute(Integer.class).setName("population");
  *     FeatureType city = builder.build();
- * }
+ *     }
  *
  * A call to {@code System.out.println(city)} prints the following table:
  *
- * {@preformat text
+ * <pre class="text">
  *   City
  *   ┌────────────┬─────────┬──────────────┬───────────────┐
  *   │ Name       │ Type    │ Multiplicity │ Default value │
  *   ├────────────┼─────────┼──────────────┼───────────────┤
  *   │ name       │ String  │   [1 … 1]    │ Utopia        │
  *   │ population │ Integer │   [1 … 1]    │               │
- *   └────────────┴─────────┴──────────────┴───────────────┘
- * }
+ *   └────────────┴─────────┴──────────────┴───────────────┘</pre>
  *
- * <p>{@code FeatureTypeBuilder} instances should be short lived.
- * After the {@code FeatureType} has been created, the builder should be discarded.</p>
+ * {@code FeatureTypeBuilder} instances should be short lived.
+ * After the {@code FeatureType} has been created, the builder should be discarded.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -107,7 +106,6 @@ import org.opengis.feature.Operation;
  * @see org.apache.sis.parameter.ParameterBuilder
  *
  * @since 0.8
- * @module
  */
 public class FeatureTypeBuilder extends TypeBuilder {
     /**
@@ -452,13 +450,13 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * {@link #setName(CharSequence...)} methods; the result of all previous calls stay unmodified.
      * Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
      *     FeatureType city = builder.build();
-     *
+
      *     System.out.println(city.getName());                              // Prints "City"
      *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
-     * }
+     *     }
      *
      * There is different conventions about the use of name spaces. ISO 19109 suggests that the namespace of all
      * {@code AttributeType} names is the name of the enclosing {@code FeatureType}, but this is not mandatory.
@@ -663,10 +661,10 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * The default attribute name is the name of the given type, but callers should invoke one
      * of the {@code AttributeTypeBuilder.setName(…)} methods on the returned instance with a better name.
      *
-     * <p>Usage example:</p>
-     * {@preformat java
+     * <h4>Usage example</h4>
+     * {@snippet lang="java" :
      *     builder.addAttribute(String.class).setName("City").setDefaultValue("Metropolis");
-     * }
+     *     }
      *
      * The value class cannot be {@code Feature.class} since features shall be handled
      * as {@linkplain #addAssociation(FeatureType) associations} instead of attributes.
@@ -730,11 +728,11 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * The Coordinate Reference System (CRS) uses (<var>longitude</var>, <var>latitude</var>) axes on the WGS 84 datum.
      * Finally that new attribute is declared the feature <em>default</em> geometry:
      *
-     * {@preformat java
-     *   builder.addAttribute(GeometryType.POINT).setName("MyPoint")
-     *          .setCRS(CommonCRS.WGS84.normalizedGeographic())
-     *          .addRole(AttributeRole.DEFAULT_GEOMETRY);
-     * }
+     * {@snippet lang="java" :
+     *     builder.addAttribute(GeometryType.POINT).setName("MyPoint")
+     *            .setCRS(CommonCRS.WGS84.normalizedGeographic())
+     *            .addRole(AttributeRole.DEFAULT_GEOMETRY);
+     *     }
      *
      * If the library in use is JTS or ESRI instead of Java2D,
      * then the {@code Point} class of those libraries will be used instead of {@code Point2D}.

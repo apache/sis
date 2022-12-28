@@ -64,7 +64,6 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.internal.jaxb.lan.PT_FreeText
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "CharacterString_PropertyType")
 @XmlSeeAlso({

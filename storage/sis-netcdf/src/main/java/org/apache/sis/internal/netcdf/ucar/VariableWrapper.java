@@ -63,7 +63,6 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 final class VariableWrapper extends org.apache.sis.internal.netcdf.Variable {
     /**

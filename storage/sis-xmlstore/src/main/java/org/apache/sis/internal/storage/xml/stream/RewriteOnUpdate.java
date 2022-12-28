@@ -55,7 +55,6 @@ import org.opengis.feature.Feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public abstract class RewriteOnUpdate implements AutoCloseable {
     /**

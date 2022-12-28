@@ -76,7 +76,6 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  * @see ObliqueMercator
  *
  * @since 0.6
- * @module
  */
 public class TransverseMercator extends NormalizedProjection {
     /**
@@ -747,7 +746,6 @@ public class TransverseMercator extends NormalizedProjection {
      * @author  Rueben Schulz (UBC)
      * @version 0.6
      * @since   0.6
-     * @module
      */
     private static final class Spherical extends TransverseMercator {
         /**

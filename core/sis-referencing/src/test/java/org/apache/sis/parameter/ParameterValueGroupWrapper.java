@@ -31,9 +31,8 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
-final strictfp class ParameterValueGroupWrapper implements ParameterValueGroup {
+final class ParameterValueGroupWrapper implements ParameterValueGroup {
     /**
      * The implementation to hide.
      */

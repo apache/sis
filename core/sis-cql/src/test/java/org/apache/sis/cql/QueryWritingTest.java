@@ -25,7 +25,7 @@ import org.opengis.filter.SortOrder;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final strictfp class QueryWritingTest extends CQLTestCase {
+public final class QueryWritingTest extends CQLTestCase {
 
     @Test
     public void testWrite() throws CQLException {

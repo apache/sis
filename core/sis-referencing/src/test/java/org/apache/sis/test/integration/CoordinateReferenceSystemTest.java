@@ -39,7 +39,6 @@ import static org.junit.Assume.assumeNotNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,
@@ -47,7 +46,7 @@ import static org.junit.Assume.assumeNotNull;
     org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
     org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class
 })
-public final strictfp class CoordinateReferenceSystemTest extends TestCase {
+public final class CoordinateReferenceSystemTest extends TestCase {
     /**
      * Tests creation from codes in the
      * {@code "urn:ogc:def:type, type₁:authority₁:version₁:code₁, type₂:authority₂:version₂:code₂"} form.

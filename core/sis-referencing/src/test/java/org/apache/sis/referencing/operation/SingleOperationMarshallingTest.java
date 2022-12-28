@@ -56,14 +56,13 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @DependsOn({
     DefaultOperationMethodTest.class,
     CC_OperationParameterGroupTest.class,
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
-public final strictfp class SingleOperationMarshallingTest extends TestCase {
+public final class SingleOperationMarshallingTest extends TestCase {
     /**
      * Creates the test operation method.
      */

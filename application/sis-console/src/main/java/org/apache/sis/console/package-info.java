@@ -24,21 +24,21 @@
  * has been {@linkplain org.apache.sis.internal.system.Supervisor#ENABLED compiled with MBeans enabled}
  * and that the remote Java Virtual Machine has been started with the following options:
  *
- * {@preformat shell
+ * {@snippet lang="shell" :
  *   java -Dcom.sun.management.jmxremote.port=1099 \
  *        -Dcom.sun.management.jmxremote.authenticate=false \
  *        -Dcom.sun.management.jmxremote.ssl=false \
  *        -Dcom.sun.management.jmxremote.local.only=true \
  *        <other options>
- * }
+ *   }
  *
  * If the port number is different than {@value java.rmi.registry.Registry#REGISTRY_PORT}, then it must be specified
  * to the {@code sis} subcommand after the host name. For example if the port number has been set to 9999, then the
  * {@code about} sub-command shall be invoked as below:
  *
- * {@preformat shell
+ * {@snippet lang="shell" :
  *   java org.apache.sis.console.Command about localhost:1099
- * }
+ *   }
  *
  * The {@code com.sun.management.jmxremote.local.only} property is recommended if the remote JVM is another
  * JVM instance running on the local machine. Otherwise this property can be omitted for debugging purpose.
@@ -49,6 +49,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 package org.apache.sis.console;

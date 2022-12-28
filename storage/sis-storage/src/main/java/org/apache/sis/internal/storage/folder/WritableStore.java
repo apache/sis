@@ -49,7 +49,6 @@ import org.apache.sis.storage.ReadOnlyStorageException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 final class WritableStore extends Store implements WritableAggregate {
     /**

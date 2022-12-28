@@ -31,7 +31,6 @@ import org.apache.sis.internal.shapefile.AutoChecker;
  * @param <InvalidFormatException> Invalid format Exception to throw in case of trouble.
  * @param <FNFException> File not found Exception to throw in case of missing file.
  * @since   0.5
- * @module
  */
 public abstract class CommonByteReader<InvalidFormatException extends Exception, FNFException extends Exception> extends AutoChecker implements AutoCloseable  {
     /** The File. */

@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 class IndexedResourceCompiler implements FilenameFilter, Comparator<Object> {
     /**

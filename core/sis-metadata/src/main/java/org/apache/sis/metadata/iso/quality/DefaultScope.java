@@ -42,7 +42,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Touraïvane (IRD)
  * @version 1.1
  * @since   0.3
- * @module
  *
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
  *             The latter is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.

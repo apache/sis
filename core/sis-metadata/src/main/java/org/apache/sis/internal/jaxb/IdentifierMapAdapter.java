@@ -86,7 +86,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @see org.apache.sis.xml.IdentifiedObject
  *
  * @since 0.3
- * @module
  */
 public class IdentifierMapAdapter extends AbstractMap<Citation,String> implements IdentifierMap, Serializable {
     /**
@@ -420,7 +419,6 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.3
-     * @module
      */
     @SuppressWarnings("serial")                 // Not intended to be serialized.
     private static final class Iter extends HashMap<Citation,Boolean> implements Iterator<Entry<Citation,String>> {

@@ -38,7 +38,6 @@ import org.opengis.metadata.citation.Citation;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public enum Capability {
     /**

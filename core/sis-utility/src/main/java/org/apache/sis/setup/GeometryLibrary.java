@@ -34,7 +34,6 @@ import org.opengis.metadata.acquisition.GeometryType;
  * @see org.apache.sis.feature.builder.FeatureTypeBuilder#addAttribute(GeometryType)
  *
  * @since 0.8
- * @module
  */
 public enum GeometryLibrary {
     /**

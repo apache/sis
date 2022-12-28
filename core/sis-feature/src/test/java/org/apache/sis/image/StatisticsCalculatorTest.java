@@ -42,9 +42,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public final strictfp class StatisticsCalculatorTest extends TestCase {
+public final class StatisticsCalculatorTest extends TestCase {
     /**
      * Size of the artificial tiles. Should be small enough so we can have many of them.
      * Width and height should be different in order to increase the chance to see bugs

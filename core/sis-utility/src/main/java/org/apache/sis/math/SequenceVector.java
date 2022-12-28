@@ -32,7 +32,6 @@ import org.apache.sis.internal.util.Numerics;
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 abstract class SequenceVector extends Vector implements Serializable {
     /**

@@ -39,13 +39,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
     DefaultCoordinateSystemAxisTest.class
 })
-public final strictfp class NormalizerTest extends TestCase {
+public final class NormalizerTest extends TestCase {
     /**
      * Tests {@link Normalizer#sort(CoordinateSystemAxis[], int)}
      * with axes of an ellipsoidal coordinate system.

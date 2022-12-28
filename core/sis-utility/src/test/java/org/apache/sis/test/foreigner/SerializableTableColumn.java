@@ -31,10 +31,9 @@ import org.apache.sis.util.collection.TableColumn;
  * @param <V>  base type of all values in the column identified by this instance.
  *
  * @since 0.3
- * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class SerializableTableColumn<V> extends TableColumn<V> implements Serializable {
+public final class SerializableTableColumn<V> extends TableColumn<V> implements Serializable {
     /**
      * A constant for column of latitudes as floating point value.
      */

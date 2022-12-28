@@ -34,9 +34,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class LocalizedParseExceptionTest extends TestCase {
+public final class LocalizedParseExceptionTest extends TestCase {
     /**
      * Tests the {@link LocalizedParseException} constructor using the default string.
      * This method also tests {@link Exceptions#getLocalizedMessage(Throwable, Locale)}

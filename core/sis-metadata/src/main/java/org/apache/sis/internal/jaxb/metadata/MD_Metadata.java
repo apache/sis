@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {
     /**

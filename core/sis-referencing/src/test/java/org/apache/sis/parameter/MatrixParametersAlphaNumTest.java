@@ -29,10 +29,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn(MatrixParametersTest.class)
-public final strictfp class MatrixParametersAlphaNumTest extends MatrixParametersTest {
+public final class MatrixParametersAlphaNumTest extends MatrixParametersTest {
     /**
      * The expected parameter identifiers for the matrix elements, or 0 if none.
      * Note that the EPSG database contains A3 and B3 parameters, but they are

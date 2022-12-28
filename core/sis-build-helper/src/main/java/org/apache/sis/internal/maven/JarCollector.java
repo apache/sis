@@ -49,7 +49,6 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @Mojo(name = "collect-jars",
       defaultPhase = LifecyclePhase.PACKAGE,

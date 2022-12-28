@@ -62,7 +62,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see AbstractAssociation
  *
  * @since 0.5
- * @module
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**
@@ -146,26 +145,25 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * This constructor can be used when creating a cyclic graph of {@link DefaultFeatureType} instances.
      * In such cases, at least one association needs to be created while its {@code FeatureType} is not yet available.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following establishes a bidirectional association between feature types <var>A</var> and <var>B</var>:
      *
-     * {@preformat java
-     *   String    namespace = "My model";
-     *   GenericName nameOfA = Names.createTypeName(namespace, ":", "Feature type A");
-     *   GenericName nameOfB = Names.createTypeName(namespace, ":", "Feature type B");
-     *   FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
-     *       new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
-     *       // More properties if desired.
-     *   );
-     *   FeatureType typeB = new DefaultFeatureType(nameOfB, false, null,
-     *       new DefaultAssociationRole(Names.createLocalName("Association to A"), featureA),
-     *       // More properties if desired.
-     *   );
-     * }
+     * {@snippet lang="java" :
+     *     String    namespace = "My model";
+     *     GenericName nameOfA = Names.createTypeName(namespace, ":", "Feature type A");
+     *     GenericName nameOfB = Names.createTypeName(namespace, ":", "Feature type B");
+     *     FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
+     *         new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
+     *         // More properties if desired.
+     *     );
+     *     FeatureType typeB = new DefaultFeatureType(nameOfB, false, null,
+     *         new DefaultAssociationRole(Names.createLocalName("Association to A"), featureA),
+     *         // More properties if desired.
+     *     );
+     *     }
      *
      * After the above code completed, the {@linkplain #getValueType() value type} of <cite>"association to B"</cite>
      * has been automatically set to the {@code typeB} instance.
-     * </div>
      *
      * Callers shall make sure that the feature types graph will not contain more than one feature of the given name.
      * If more than one {@code FeatureType} instance of the given name is found at resolution time, the selected one

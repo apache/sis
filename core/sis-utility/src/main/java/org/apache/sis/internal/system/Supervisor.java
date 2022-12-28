@@ -53,7 +53,6 @@ import org.apache.sis.util.collection.TreeTable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 public final class Supervisor extends StandardMBean implements SupervisorMBean {
     /**

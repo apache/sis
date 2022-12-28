@@ -33,7 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.sql.postgis.PostgresTest.class,
     org.apache.sis.storage.sql.SQLStoreTest.class
 })
-public final strictfp class SQLTestSuite extends TestSuite {
+public final class SQLTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

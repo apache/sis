@@ -41,9 +41,8 @@ import org.locationtech.jts.geom.LinearRing;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class FilterWritingTest extends CQLTestCase {
+public final class FilterWritingTest extends CQLTestCase {
 
     private final Geometry baseGeometry = GF.createPolygon(
                 GF.createLinearRing(

@@ -30,7 +30,6 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class CD_ParametricDatum extends PropertyType<CD_ParametricDatum, ParametricDatum> {
     /**

@@ -30,9 +30,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class HardCodedCS {
+public final class HardCodedCS {
     /**
      * A two-dimensional ellipsoidal CS with
      * <var>{@linkplain HardCodedAxes#GEODETIC_LATITUDE geodetic latitude}</var>,

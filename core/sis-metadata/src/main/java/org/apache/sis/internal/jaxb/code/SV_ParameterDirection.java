@@ -30,7 +30,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final class SV_ParameterDirection extends EnumAdapter<SV_ParameterDirection, ParameterDirection> {
     /**

@@ -34,7 +34,6 @@ import ucar.nc2.constants.CF;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public enum AxisType {
     /**

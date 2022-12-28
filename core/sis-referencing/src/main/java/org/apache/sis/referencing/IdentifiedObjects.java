@@ -66,7 +66,6 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @see org.apache.sis.geometry.Envelopes
  *
  * @since 0.4
- * @module
  */
 public final class IdentifiedObjects extends Static {
     /**
@@ -431,9 +430,9 @@ public final class IdentifiedObjects extends Static {
      * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
      * one can use the following pattern instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     String urn = toURN(object.getClass(), getIdentifier(object, authority));
-     * }
+     *     }
      *
      * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
@@ -542,9 +541,9 @@ public final class IdentifiedObjects extends Static {
      * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
      * one can use the following pattern instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     String code = toString(getIdentifier(object, Citations.EPSG));
-     * }
+     *     }
      *
      * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
@@ -587,30 +586,30 @@ public final class IdentifiedObjects extends Static {
      * Creates a finder which can be used for looking up unidentified objects.
      * This method is an alternative to {@code lookup(…)} methods when more control are desired.
      *
-     * <div class="note"><b>Example 1: be lenient regarding axis order</b><br>
+     * <h4>Example 1: be lenient regarding axis order</h4>
      * By default, {@code lookup(…)} methods require that objects in the dataset have their axes in the
      * same order than the given object. For relaxing this condition, one can use the following Java code.
      * This example assumes that at most one object from the dataset will match the given object.
      * If more than one object may match, then the call to {@code findSingleton(…)} should be replaced
      * by {@code find(…)}.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
      *     finder.setIgnoringAxes(true);
      *     IdentifiedObject found = finder.findSingleton(object);
-     * }</div>
+     *     }
      *
-     * <div class="note"><b>Example 2: extend the search to deprecated definitions</b><br>
+     * <h4>Example 2: extend the search to deprecated definitions</h4>
      * By default, {@code lookup(…)} methods exclude deprecated objects from the search.
      * To search also among deprecated objects, one can use the following Java code:
      * This example does not use the {@code findSingleton(…)} convenience method on the assumption
      * that the search may find both deprecated and non-deprecated objects.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
      *     finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
      *     Set<IdentifiedObject> found = finder.find(object);
-     * }</div>
+     *     }
      *
      * @param  authority  the authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for searching among the objects created by all authorities.

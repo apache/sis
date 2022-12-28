@@ -41,9 +41,8 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultVerticalDatumTest extends TestCase {
+public final class DefaultVerticalDatumTest extends TestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */

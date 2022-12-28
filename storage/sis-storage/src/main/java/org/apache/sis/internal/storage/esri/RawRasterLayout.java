@@ -27,7 +27,6 @@ import java.awt.image.PixelInterleavedSampleModel;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 enum RawRasterLayout {
     /**

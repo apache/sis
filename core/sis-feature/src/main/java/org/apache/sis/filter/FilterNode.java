@@ -38,7 +38,6 @@ import org.opengis.filter.Filter;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class FilterNode<R> extends Node implements Filter<R> {
     /**

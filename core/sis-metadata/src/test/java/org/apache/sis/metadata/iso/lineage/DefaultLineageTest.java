@@ -37,9 +37,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class DefaultLineageTest extends TestCase {
+public final class DefaultLineageTest extends TestCase {
     /**
      * Create a lineage to marshal. If {@code extension} is {@code false}, then this method uses
      * only properties defined in ISO 19115-1. If {@code extension} is {@code true}, then this

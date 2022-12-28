@@ -31,7 +31,6 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class CodeFilter implements Predicate<Code> {
     /**

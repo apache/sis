@@ -108,7 +108,6 @@ import static java.util.logging.Logger.getLogger;
  * @see GeneralDirectPosition
  *
  * @since 0.8
- * @module
  */
 public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     /**

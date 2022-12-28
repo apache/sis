@@ -45,9 +45,8 @@ import org.opengis.feature.Property;
  * @author  Marc le Bihan
  * @version 0.8
  * @since   0.5
- * @module
  */
-public abstract strictfp class FeatureTestCase extends TestCase {
+public abstract class FeatureTestCase extends TestCase {
     /**
      * The feature being tested.
      */

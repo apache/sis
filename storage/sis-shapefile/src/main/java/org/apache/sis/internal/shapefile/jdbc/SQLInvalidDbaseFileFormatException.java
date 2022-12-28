@@ -25,7 +25,6 @@ import java.sql.SQLNonTransientException;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class SQLInvalidDbaseFileFormatException extends SQLNonTransientException {
     /** Serial UID. */

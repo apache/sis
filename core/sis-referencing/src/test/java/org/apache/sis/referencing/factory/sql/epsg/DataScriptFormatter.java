@@ -48,7 +48,6 @@ import org.apache.sis.test.sql.TestDatabase;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final class DataScriptFormatter extends ScriptRunner {
     /**

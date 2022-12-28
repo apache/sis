@@ -46,10 +46,9 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.1
- * @module
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
-public final strictfp class GeohashReferenceSystemTest extends TestCase {
+public final class GeohashReferenceSystemTest extends TestCase {
     /**
      * Tolerance factor for floating point comparison.
      */

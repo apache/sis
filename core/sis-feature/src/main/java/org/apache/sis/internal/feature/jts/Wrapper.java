@@ -75,7 +75,6 @@ import org.opengis.filter.DistanceOperatorName;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class Wrapper extends GeometryWrapper<Geometry> {
     /**

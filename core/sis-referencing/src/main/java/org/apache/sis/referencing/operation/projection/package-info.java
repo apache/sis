@@ -165,6 +165,5 @@
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6
- * @module
  */
 package org.apache.sis.referencing.operation.projection;

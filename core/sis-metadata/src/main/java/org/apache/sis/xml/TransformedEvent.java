@@ -40,7 +40,6 @@ import javax.xml.namespace.QName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
     /**

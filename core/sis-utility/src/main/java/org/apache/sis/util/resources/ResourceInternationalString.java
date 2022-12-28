@@ -41,7 +41,6 @@ import org.apache.sis.util.AbstractInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**

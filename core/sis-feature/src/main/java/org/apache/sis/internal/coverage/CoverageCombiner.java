@@ -70,7 +70,6 @@ import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
  * @see ImageCombiner
  *
  * @since 1.2
- * @module
  */
 public final class CoverageCombiner {
     /**

@@ -37,7 +37,6 @@ import org.apache.sis.util.Characters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public abstract class FirstKeywordPeek {
     /**

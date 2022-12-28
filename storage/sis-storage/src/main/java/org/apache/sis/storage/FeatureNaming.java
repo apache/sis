@@ -39,23 +39,22 @@ import org.apache.sis.internal.storage.Resources;
  * as given by {@link GenericName#toString()}, or a shortened name when there is no ambiguity.
  * Note that search is case sensitive.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * a data store may contain a {@code FeatureType} named {@code "foo:bar"}.
  * If that feature type has been binded like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     FeatureNaming<FeatureType> binding = new FeatureNaming<>();
  *     FeatureType myFooBar = ...;                                  // Some type named "foo:bar" for this example.
  *     binding.add(null, myFooBar.getName(), myFooBar);
- * }
+ *     }
  *
  * Then the two following lines return the same instance:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     assert binding.get(null, "foo:bar") == myFooBar;
  *     assert binding.get(null,     "bar") == myFooBar;    // Allowed only if there is no ambiguity.
- * }
- * </div>
+ *     }
  *
  * Note that contrarily to the standard {@link java.util.Map#get(Object)} method contract, the {@link #get get(…)}
  * method defined in this class throws an exception instead of returning {@code null} if no unambiguous mapping
@@ -96,7 +95,6 @@ import org.apache.sis.internal.storage.Resources;
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
  *
  * @since 0.8
- * @module
  */
 public class FeatureNaming<E> {
     /**

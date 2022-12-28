@@ -30,7 +30,6 @@ import java.io.ObjectStreamException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class GlobalNameSpace extends DefaultNameSpace {
     /**

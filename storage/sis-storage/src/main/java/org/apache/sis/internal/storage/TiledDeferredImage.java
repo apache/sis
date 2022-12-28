@@ -31,7 +31,6 @@ import org.apache.sis.internal.coverage.j2d.BatchComputedImage;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class TiledDeferredImage extends BatchComputedImage {
     /**

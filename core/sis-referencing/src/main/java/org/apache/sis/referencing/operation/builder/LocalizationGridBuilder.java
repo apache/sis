@@ -91,7 +91,6 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * @see DatumShiftGrid
  *
  * @since 0.8
- * @module
  */
 public class LocalizationGridBuilder extends TransformBuilder {
     /**
@@ -353,13 +352,12 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * The {@code coordinateToGrid} transform for the above formulas can be represented by the following matrix:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                      ┐
      *   │ 1/Δx      0   -x₀/Δx │
      *   │    0   1/Δy   -y₀/Δy │
      *   │    0      0        1 │
-     *   └                      ┘
-     * }
+     *   └                      ┘</pre>
      *
      * If this method is never invoked, then the default conversion is identity.
      * If a {@linkplain #setDesiredPrecision(double) desired precision} has been specified before this method call,
@@ -546,16 +544,15 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * and are almost constant when increasing row indices. In such case, the recommended direction is 1 for comparing each
      * value with the value in previous row, since that value should be closer than the value in previous column.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * for a grid of (<var>longitude</var>, <var>latitude</var>) values in decimal degrees where longitude values
      * vary (increase or decrease) with increasing column indices and latitude values vary (increase or decrease)
      * with increasing row indices, the the following method should be invoked for protecting the grid against
      * discontinuities on anti-meridian:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     grid.resolveWraparoundAxis(0, 1, 360);
-     * }
-     * </div>
+     *     }
      *
      * @param  dimension  the dimension to process.
      *                    This is 0 for longitude dimension in a (<var>longitudes</var>, <var>latitudes</var>) grid.

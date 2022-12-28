@@ -72,7 +72,6 @@ import org.apache.sis.internal.metadata.Dependencies;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {
     "languages",                // Legacy ISO 19115:2003

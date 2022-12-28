@@ -51,15 +51,14 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(TreeNodeChildrenTest.class)
-public final strictfp class TreeNodeTest extends TestCase {
+public final class TreeNodeTest extends TestCase {
     /**
      * Creates a metadata hierarchy to be used for the tests.
      * This method creates the following metadata:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *     ├─Title…………………………………………………………………………………………… Some title
      *     ├─Alternate title (1 of 2)………………………………………… First alternate title
@@ -78,8 +77,7 @@ public final strictfp class TreeNodeTest extends TestCase {
      *     │      └─Role…………………………………………………………………………… Point of contact
      *     ├─Presentation form (1 of 2)…………………………………… Map digital
      *     ├─Presentation form (2 of 2)…………………………………… map hardcopy
-     *     └─Other citation details……………………………………………… Some other details
-     * }
+     *     └─Other citation details……………………………………………… Some other details</pre>
      */
     static DefaultCitation metadataWithHierarchy() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();

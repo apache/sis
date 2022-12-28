@@ -56,7 +56,6 @@ import org.apache.sis.xml.NilReason;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class AbstractResource implements Resource {
     /**

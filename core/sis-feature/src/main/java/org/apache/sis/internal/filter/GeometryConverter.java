@@ -51,7 +51,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @see org.apache.sis.filter.ConvertFunction
  *
  * @since 1.1
- * @module
  */
 final class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper<G>> {
     /**

@@ -30,10 +30,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractCRSTest.class)
-public final strictfp class SubTypesTest extends TestCase {
+public final class SubTypesTest extends TestCase {
     /**
      * Tests the {@link SubTypes#BY_TYPE} comparator.
      */

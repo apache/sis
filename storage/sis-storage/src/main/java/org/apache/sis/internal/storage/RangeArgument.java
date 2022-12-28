@@ -40,7 +40,6 @@ import org.apache.sis.util.Localized;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public final class RangeArgument {
     /**
@@ -217,14 +216,14 @@ public final class RangeArgument {
      * The subsampling results from calls to {@link #insertBandDimension(GridExtent, int)} and
      * {@link #insertSubsampling(int[], int)} methods.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     areaOfInterest = rangeIndices.insertBandDimension(areaOfInterest, bandDimension);
      *     subsampling    = rangeIndices.insertSubsampling  (subsampling,    bandDimension);
      *     data = myReadMethod(areaOfInterest, subsampling);
      *     for (int i=0; i<numBands; i++) {
      *         int bandIndexInTheDataWeJustRead = rangeIndices.getSubsampledIndex(i);
      *     }
-     * }
+     *     }
      *
      * If the {@code insertXXX(…)} methods have never been invoked, then this method is equivalent to {@link #getSourceIndex(int)}.
      *

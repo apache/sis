@@ -36,7 +36,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**

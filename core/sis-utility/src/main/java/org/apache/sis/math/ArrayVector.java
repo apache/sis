@@ -46,7 +46,6 @@ import org.apache.sis.measure.NumberRange;
  * @param <E>  the base type of elements in the vector.
  *
  * @since 0.8
- * @module
  */
 abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {
     /**

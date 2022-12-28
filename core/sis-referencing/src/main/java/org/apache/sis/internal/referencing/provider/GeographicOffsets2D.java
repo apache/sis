@@ -32,7 +32,6 @@ import org.apache.sis.parameter.Parameters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @XmlTransient
 public final class GeographicOffsets2D extends GeographicOffsets {

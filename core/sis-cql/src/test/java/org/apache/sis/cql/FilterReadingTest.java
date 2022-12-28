@@ -58,9 +58,8 @@ import org.opengis.filter.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class FilterReadingTest extends CQLTestCase {
+public final class FilterReadingTest extends CQLTestCase {
 
     private static final double DELTA = 0.00000001;
 

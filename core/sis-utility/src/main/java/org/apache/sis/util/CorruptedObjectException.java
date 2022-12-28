@@ -60,7 +60,6 @@ import org.opengis.referencing.IdentifiedObject;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public class CorruptedObjectException extends RuntimeException {
     /**

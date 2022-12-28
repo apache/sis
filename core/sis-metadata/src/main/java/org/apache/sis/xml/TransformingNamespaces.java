@@ -34,7 +34,6 @@ import javax.xml.XMLConstants;
  * @see <a href="http://issues.apache.org/jira/browse/SIS-152">SIS-152</a>
  *
  * @since 0.4
- * @module
  */
 class TransformingNamespaces implements NamespaceContext {
     /**

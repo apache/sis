@@ -35,7 +35,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public interface SchemaModifier {
     /**

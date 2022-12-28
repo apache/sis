@@ -43,7 +43,6 @@ import org.apache.sis.util.resources.Errors;
  * @see SampleModel#createSubsetSampleModel(int[])
  *
  * @since 1.1
- * @module
  */
 public final class SampleModelFactory {
     /**

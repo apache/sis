@@ -175,7 +175,6 @@ import static java.util.logging.Logger.getLogger;
  * @see AbstractMathTransform
  *
  * @since 0.6
- * @module
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*
@@ -257,9 +256,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
      * The {@link OperationMethod} implementations shall be listed in the following file:
      *
-     * {@preformat text
-     *     META-INF/services/org.opengis.referencing.operation.OperationMethod
-     * }
+     * <pre class="text">META-INF/services/org.opengis.referencing.operation.OperationMethod</pre>
      *
      * {@code DefaultMathTransformFactory} parses the above-cited files in all JAR files in order to find all available
      * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
@@ -304,13 +301,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *   <li>All {@code OperationMethod} instances shall be thread-safe.</li>
      *   <li>The {@code Iterable} itself does not need to be thread-safe since all usages will be synchronized as below:
      *
-     *       {@preformat java
+     *       {@snippet lang="java" :
      *           synchronized (methods) {
      *               for (OperationMethod method : methods) {
      *                   // Use the method here.
      *               }
      *           }
-     *       }
+     *           }
      *   </li>
      * </ul>
      *
@@ -559,7 +556,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.7
-     * @module
      */
     @SuppressWarnings("serial")         // Fields are not statically typed as Serializable.
     public static class Context implements Serializable {
@@ -1164,12 +1160,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
      * Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
      *     group.parameter("semi_major").setValue(6378137.000);
      *     group.parameter("semi_minor").setValue(6356752.314);
      *     MathTransform mt = factory.createParameterizedTransform(group, null);
-     * }
+     *     }
      *
      * Sometimes the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
      * but rather inferred from the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
@@ -1624,10 +1620,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * The resulting transform will have the following dimensions:
      *
-     * {@preformat java
-     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
-     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
-     * }
+     * {@snippet lang="java" :
+     *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
+     *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
+     *     }
      *
      * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
      * @param  subTransform             transform to use for affected coordinates.

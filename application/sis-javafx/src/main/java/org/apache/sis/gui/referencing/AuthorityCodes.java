@@ -61,7 +61,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class AuthorityCodes extends ObservableListBase<Code>
         implements Callback<TableColumn.CellDataFeatures<Code,String>, ObservableValue<String>>

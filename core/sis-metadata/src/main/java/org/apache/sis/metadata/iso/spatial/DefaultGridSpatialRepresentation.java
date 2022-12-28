@@ -57,7 +57,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_GridSpatialRepresentation_Type", propOrder = {
     "numberOfDimensions",

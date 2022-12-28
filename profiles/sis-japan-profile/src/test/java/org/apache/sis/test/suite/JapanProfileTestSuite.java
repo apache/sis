@@ -27,12 +27,11 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.profile.japan.JapanProfileTest.class
 })
-public final strictfp class JapanProfileTestSuite extends TestSuite {
+public final class JapanProfileTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

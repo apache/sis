@@ -28,7 +28,6 @@ import java.nio.channels.ClosedChannelException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class NullChannel implements ReadableByteChannel {
     /**

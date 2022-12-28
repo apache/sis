@@ -39,13 +39,12 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
 })
-public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
+public final class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
      * Validates the {@link HardCodedAxes} constants.
      */

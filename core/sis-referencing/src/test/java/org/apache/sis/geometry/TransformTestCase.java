@@ -53,10 +53,9 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  *
  * @since 0.8
- * @module
  */
 @DependsOn(CurveExtremumTest.class)
-public abstract strictfp class TransformTestCase<G> extends TestCase {
+public abstract class TransformTestCase<G> extends TestCase {
     /**
      * Creates an envelope or rectangle for the given CRS and coordinate values.
      */

@@ -88,7 +88,6 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 final class Normalizer implements Comparable<Normalizer> {
     /**

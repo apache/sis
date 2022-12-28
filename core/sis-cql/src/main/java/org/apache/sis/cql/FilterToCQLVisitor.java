@@ -61,7 +61,6 @@ import org.locationtech.jts.io.WKTWriter;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
 

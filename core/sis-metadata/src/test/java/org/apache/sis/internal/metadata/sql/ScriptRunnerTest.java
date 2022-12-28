@@ -32,9 +32,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
-public final strictfp class ScriptRunnerTest extends TestCase {
+public final class ScriptRunnerTest extends TestCase {
     /**
      * Tests {@link ScriptRunner} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link ScriptRunner} argument.

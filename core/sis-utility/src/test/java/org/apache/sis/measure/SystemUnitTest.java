@@ -41,10 +41,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(UnitDimensionTest.class)
-public final strictfp class SystemUnitTest extends TestCase {
+public final class SystemUnitTest extends TestCase {
     /**
      * Verifies the {@link SystemUnit#related} array content of all system units declared in {@link Units}.
      * This tests verify that the array has been fully populated and that the converter of all units are

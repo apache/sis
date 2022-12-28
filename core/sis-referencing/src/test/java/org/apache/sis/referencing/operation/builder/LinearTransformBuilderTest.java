@@ -43,9 +43,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
-public final strictfp class LinearTransformBuilderTest extends TestCase {
+public final class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests a very simple case where an exact answer is expected.
      *

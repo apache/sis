@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
-public final strictfp class TypeTest extends TestCase {
+public final class TypeTest extends TestCase {
     /**
      * Verifies that all enumeration values override either {@link Type#readLong(ChannelDataInput, long)}
      * or {@link Type#readDouble(ChannelDataInput, long)}.Failing to do so may cause stack overflow.

@@ -51,7 +51,6 @@ import org.opengis.filter.SortBy;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     /**

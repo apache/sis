@@ -32,10 +32,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(LinearConverterTest.class)
-public final strictfp class PrefixesTest extends TestCase {
+public final class PrefixesTest extends TestCase {
     /**
      * Ensures that the characters in the {@link Prefixes#PREFIXES} array are in strictly increasing order,
      * and that {@link Prefixes#POWERS} has the same length.

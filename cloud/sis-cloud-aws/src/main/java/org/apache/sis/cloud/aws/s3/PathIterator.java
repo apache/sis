@@ -36,7 +36,6 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class PathIterator implements DirectoryStream<Path>, Iterator<Path> {
     /**

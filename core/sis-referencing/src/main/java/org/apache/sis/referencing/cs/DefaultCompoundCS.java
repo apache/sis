@@ -53,7 +53,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @XmlTransient
 public class DefaultCompoundCS extends AbstractCS {

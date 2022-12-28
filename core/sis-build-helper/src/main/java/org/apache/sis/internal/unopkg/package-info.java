@@ -38,7 +38,7 @@
  * </ul>
  *
  * <h2>Maven project file</h2>
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <dependencies>
  *     <!-- Put all your project dependencies here, including transitive dependencies. -->
  *   </dependencies>
@@ -83,6 +83,5 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 package org.apache.sis.internal.unopkg;

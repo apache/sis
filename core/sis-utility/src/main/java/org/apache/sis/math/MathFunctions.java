@@ -68,7 +68,6 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @see org.apache.sis.util.Numbers
  *
  * @since 0.3
- * @module
  */
 public final class MathFunctions extends Static {
     /**
@@ -82,9 +81,9 @@ public final class MathFunctions extends Static {
      * The logarithm of 2 in base 10, which is approximated by {@value}.
      * This constant is useful for converting a power of 2 to a power of 10 as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   double exp10 = exp2 * LOG10_2;
-     * }
+     *   }
      *
      * @see Math#log10(double)
      * @see #getExponent(double)
@@ -222,9 +221,8 @@ public final class MathFunctions extends Static {
     /**
      * Returns the magnitude of the given vector. This is defined by:
      *
-     * {@preformat math
-     *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
-     * }
+     * <pre class="math">
+     *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)</pre>
      *
      * If the given vector contains a NaN value, then the result is NaN.
      *
@@ -509,9 +507,9 @@ public final class MathFunctions extends Static {
      * This method returns {@code false} for the negative zero ({@code -0.0}).
      * This method is equivalent to the following code, but potentially faster:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return (value == 0) && isPositive(value);
-     * }
+     *   }
      *
      * @param  value  the value to test.
      * @return {@code true} if the given value is +0.0 (not -0.0).
@@ -554,9 +552,9 @@ public final class MathFunctions extends Static {
      * This method returns {@code false} for the positive zero ({@code +0.0}).
      * This method is equivalent to the following code, but potentially faster:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return (value == 0) && isNegative(value);
-     * }
+     *   }
      *
      * @param  value  the value to test.
      * @return {@code true} if the given value is -0.0 (not +0.0).

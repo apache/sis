@@ -101,7 +101,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
  * @since 0.3
- * @module
  */
 public abstract class CompoundFormat<T> extends Format implements Localized {
     /**

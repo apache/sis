@@ -32,9 +32,8 @@ import org.opengis.util.LocalName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class FeatureNamingTest extends TestCase {
+public final class FeatureNamingTest extends TestCase {
     /**
      * Name for the tests.
      */

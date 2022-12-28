@@ -33,7 +33,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see <a href="http://geotiff.maptools.org/proj_list/lambert_conic_conformal_1sp.html">GeoTIFF parameters for Lambert Conic Conformal 1SP</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class LambertConformal1SP extends AbstractLambert {

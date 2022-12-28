@@ -35,9 +35,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
-public final strictfp class EnumMarshallingTest extends TestCase {
+public final class EnumMarshallingTest extends TestCase {
     /**
      * Tests (un)marshalling of an enumeration.
      *

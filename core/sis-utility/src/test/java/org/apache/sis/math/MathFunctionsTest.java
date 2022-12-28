@@ -37,13 +37,12 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn({
     org.apache.sis.util.ArraysExtTest.class,
     org.apache.sis.internal.util.NumericsTest.class
 })
-public final strictfp class MathFunctionsTest extends TestCase {
+public final class MathFunctionsTest extends TestCase {
     /**
      * Small number for floating point comparisons.
      */

@@ -30,7 +30,6 @@ import org.apache.sis.internal.gui.Styles;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class Code {
     /**

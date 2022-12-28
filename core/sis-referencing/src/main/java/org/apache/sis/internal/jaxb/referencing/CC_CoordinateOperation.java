@@ -31,7 +31,6 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class CC_CoordinateOperation extends PropertyType<CC_CoordinateOperation, CoordinateOperation> {
     /**

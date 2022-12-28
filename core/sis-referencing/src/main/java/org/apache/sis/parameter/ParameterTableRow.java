@@ -54,7 +54,6 @@ import static org.apache.sis.internal.util.Constants.DEFAULT_SEPARATOR;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 final class ParameterTableRow {
     /**

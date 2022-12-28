@@ -37,7 +37,6 @@ import org.apache.sis.internal.util.Constants;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @XmlTransient
 class GeographicRedimension extends GeodeticOperation {

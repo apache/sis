@@ -49,7 +49,6 @@ import org.apache.sis.measure.Units;
  * @see NorthPoleRotation
  *
  * @since 1.2
- * @module
  */
 @XmlTransient
 public final class SouthPoleRotation extends AbstractProvider {

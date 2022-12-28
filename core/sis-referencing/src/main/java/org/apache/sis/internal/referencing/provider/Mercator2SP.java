@@ -36,7 +36,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see <a href="http://geotiff.maptools.org/proj_list/mercator_2sp.html">GeoTIFF parameters for Mercator 2SP</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class Mercator2SP extends AbstractMercator {

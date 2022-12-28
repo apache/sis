@@ -28,7 +28,6 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class CS_AxisDirection extends CodeListAdapter<AxisDirection> {
     /**

@@ -34,13 +34,12 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({
     MetadataReaderTest.class,
     NetcdfStoreProviderTest.class
 })
-public final strictfp class NetcdfStoreTest extends TestCase {
+public final class NetcdfStoreTest extends TestCase {
     /**
      * Returns a new netCDF store to test.
      *

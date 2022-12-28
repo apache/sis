@@ -37,14 +37,13 @@ import static org.apache.sis.test.Assert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn({
     UnitFormatTest.class,
     SexagesimalConverterTest.class,
     org.apache.sis.internal.util.DefinitionURITest.class
 })
-public final strictfp class UnitsTest extends TestCase {
+public final class UnitsTest extends TestCase {
     /**
      * Verifies that the {@link Units#initialized} flag has been set.
      */

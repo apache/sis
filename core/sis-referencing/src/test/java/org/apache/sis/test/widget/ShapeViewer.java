@@ -32,10 +32,9 @@ import javax.swing.JPanel;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @SuppressWarnings("serial")
-final strictfp class ShapeViewer extends JPanel {
+final class ShapeViewer extends JPanel {
     /**
      * Margin to keep on each side of the window.
      */

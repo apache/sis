@@ -74,7 +74,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public class ResourceTree extends TreeView<Resource> {
     /**

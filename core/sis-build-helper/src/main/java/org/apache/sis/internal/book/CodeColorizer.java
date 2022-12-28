@@ -38,7 +38,6 @@ import org.w3c.dom.NodeList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 public final class CodeColorizer {
     /**

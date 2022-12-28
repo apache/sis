@@ -30,7 +30,6 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 final class Filenames {
     /**

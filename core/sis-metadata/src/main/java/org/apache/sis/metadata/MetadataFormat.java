@@ -30,7 +30,6 @@ import org.apache.sis.io.TableAppender;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @SuppressWarnings({"CloneableImplementsClone", "serial"})       // Not intended to be cloned or serialized.
 final class MetadataFormat extends TreeTableFormat {

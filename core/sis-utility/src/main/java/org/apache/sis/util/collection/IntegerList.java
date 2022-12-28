@@ -48,7 +48,6 @@ import org.apache.sis.internal.util.Numerics;
  * @see org.apache.sis.math.Vector
  *
  * @since 0.7
- * @module
  */
 public class IntegerList extends AbstractList<Integer> implements RandomAccess, Serializable, Cloneable {
     /**

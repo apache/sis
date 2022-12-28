@@ -52,7 +52,6 @@ package org.apache.sis.util;
  * @see javax.imageio.ImageWriter#dispose()
  *
  * @since 0.3
- * @module
  */
 public interface Disposable {
     /**

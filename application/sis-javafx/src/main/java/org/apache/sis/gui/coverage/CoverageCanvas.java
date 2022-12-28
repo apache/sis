@@ -96,7 +96,6 @@ import static java.util.logging.Logger.getLogger;
  * @see CoverageExplorer
  *
  * @since 1.1
- * @module
  */
 @DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {
@@ -1160,9 +1159,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Other methods should generally not invoke this method directly,
      * and use the following code instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     runAfterRendering(this::clear);
-     * }
+     *     }
      *
      * @see #runAfterRendering(Runnable)
      */

@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class XLinkTest extends TestCase {
+public final class XLinkTest extends TestCase {
     /**
      * Tests the automatic {@link XLink#getType()} detection.
      *

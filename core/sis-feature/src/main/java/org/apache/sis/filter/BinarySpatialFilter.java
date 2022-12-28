@@ -44,7 +44,6 @@ import org.opengis.filter.BinarySpatialOperator;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 final class BinarySpatialFilter<R,G> extends BinaryGeometryFilter<R,G> implements BinarySpatialOperator<R> {
     /**

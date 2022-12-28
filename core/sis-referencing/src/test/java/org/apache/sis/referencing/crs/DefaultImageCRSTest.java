@@ -41,9 +41,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
-public final strictfp class DefaultImageCRSTest extends TestCase {
+public final class DefaultImageCRSTest extends TestCase {
     /**
      * Creates an image CRS using a two-dimensional affine or Cartesian coordinate system.
      *

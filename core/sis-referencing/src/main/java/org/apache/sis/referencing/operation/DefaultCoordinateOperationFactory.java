@@ -84,7 +84,6 @@ import org.apache.sis.util.Utilities;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
     /**
@@ -836,9 +835,9 @@ next:   for (int i=components.size(); --i >= 0;) {
      * CoordinateOperationContext) createOperation(…)} when no operation was found in the cache.
      * The default implementation is straightforward:
      *
-     * {@preformat java
-     *   return new CoordinateOperationFinder(registry, this, context);
-     * }
+     * {@snippet lang="java" :
+     *     return new CoordinateOperationFinder(registry, this, context);
+     *     }
      *
      * Subclasses can override this method is they want to modify the way coordinate operations are inferred.
      *

@@ -39,7 +39,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <T>  the base type of converted objects.
  *
  * @since 0.3
- * @module
  */
 abstract class SystemConverter<S,T> extends ClassPair<S,T> implements ObjectConverter<S,T> {
     /**

@@ -37,10 +37,9 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @DependsOn(AffineTest.class)
-public final strictfp class GeographicOffsetsTest extends TransformTestCase {
+public final class GeographicOffsetsTest extends TransformTestCase {
     /**
      * Tests {@code GeographicOffsets2D.createMathTransform(…)}.
      * This test uses the sample point given in §2.4.4.3 of EPSG guide (April 2015).

@@ -30,9 +30,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public final strictfp class DataTypeTest extends TestCase {
+public final class DataTypeTest extends TestCase {
     /**
      * Verifies that {@link DataType} ordinal values match {@link DataBuffer} constant values.
      */

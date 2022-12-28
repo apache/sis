@@ -43,10 +43,9 @@ import static org.apache.sis.test.ReferencingAssert.assertWktEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
-public final strictfp class AbstractReferenceSystemTest extends TestCase {
+public final class AbstractReferenceSystemTest extends TestCase {
     /**
      * Tests {@link AbstractReferenceSystem}.
      */

@@ -46,7 +46,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-462">SIS-462</a>
  *
  * @since 0.5
- * @module
  */
 final class LooselyDefinedMethod {
     /**

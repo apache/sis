@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public class SV_OperationMetadata extends PropertyType<SV_OperationMetadata, OperationMetadata> {
     /**

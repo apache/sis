@@ -42,7 +42,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public class DirectPosition1D extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -91,9 +90,9 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * <cite>Well Known Text</cite> (WKT) format. The given string is typically a {@code POINT}
      * element like below:
      *
-     * {@preformat wkt
-     *     POINT(6)
-     * }
+     * {@snippet lang="wkt" :
+     *   POINT(6)
+     *   }
      *
      * @param  wkt  the {@code POINT} or other kind of element to parse.
      * @throws IllegalArgumentException if the given string cannot be parsed.
@@ -212,9 +211,9 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
      * The output is like below:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POINT(coordinate)
-     * }
+     *   }
      *
      * The string returned by this method can be {@linkplain #DirectPosition1D(CharSequence) parsed}
      * by the {@code DirectPosition1D} constructor.

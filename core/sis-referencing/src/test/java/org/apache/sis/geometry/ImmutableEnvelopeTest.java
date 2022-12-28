@@ -33,10 +33,9 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(ArrayEnvelopeTest.class)
-public final strictfp class ImmutableEnvelopeTest extends TestCase {
+public final class ImmutableEnvelopeTest extends TestCase {
     /**
      * Tests {@code ImmutableEnvelope} serialization.
      */

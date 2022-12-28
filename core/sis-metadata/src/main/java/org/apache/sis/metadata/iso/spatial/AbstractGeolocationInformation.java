@@ -44,7 +44,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractMI_GeolocationInformation_Type")
 @XmlRootElement(name = "AbstractMI_GeolocationInformation")

@@ -28,7 +28,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class InstantList extends AbstractList<Instant> implements CheckedContainer<Instant> {
     /**

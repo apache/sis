@@ -37,10 +37,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 @DependsOn(AbstractMetadataTest.class)
-public final strictfp class ModifiableMetadataTest extends TestCase {
+public final class ModifiableMetadataTest extends TestCase {
     /**
      * An arbitrary metadata on which to perform the tests.
      */

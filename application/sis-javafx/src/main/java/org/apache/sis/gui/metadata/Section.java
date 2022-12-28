@@ -50,7 +50,6 @@ import org.apache.sis.internal.gui.Styles;
  * @param <T> the type of information object (e.g. {@link org.opengis.metadata.identification.Identification}).
  *
  * @since 1.1
- * @module
  */
 abstract class Section<T> extends GridPane implements EventHandler<ActionEvent> {
     /**

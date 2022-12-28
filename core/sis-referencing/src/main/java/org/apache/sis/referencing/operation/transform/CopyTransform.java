@@ -37,7 +37,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 final class CopyTransform extends AbstractLinearTransform {
     /**

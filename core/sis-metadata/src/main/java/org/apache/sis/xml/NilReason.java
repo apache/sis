@@ -59,7 +59,6 @@ import org.apache.sis.internal.jaxb.PrimitiveTypeProperties;
  * @see NilObject
  *
  * @since 0.3
- * @module
  */
 public final class NilReason implements Serializable {
     /**

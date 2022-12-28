@@ -29,14 +29,14 @@
  *
  * Example of moving features CSV file (adapted from OGC specification):
  *
- * {@preformat text
- *   &#64;stboundedby, urn:x-ogc:def:crs:EPSG::4326, 2D, 9.23 50.23, 9.27 50.31, 2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec
- *   &#64;columns,mfidref,trajectory,state,xsd:token,”type code”,xsd:integer
+ * {@snippet lang="csv" :
+ *   @stboundedby, urn:x-ogc:def:crs:EPSG::4326, 2D, 9.23 50.23, 9.27 50.31, 2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec
+ *   @columns,mfidref,trajectory,state,xsd:token,”type code”,xsd:integer
  *   a,  10, 150, 11.0 2.0 12.0 3.0, walking, 1
  *   b,  10, 190, 10.0 2.0 11.0 3.0, walking, 2
  *   a, 150, 190, 12.0 3.0 10.0 3.0, walking, 2
  *   c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1
- * }
+ *   }
  *
  * <h2>Departures from OGC specification</h2>
  * Current implementation is not strictly compliant with the Moving Features specification.
@@ -55,6 +55,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 package org.apache.sis.internal.storage.csv;

@@ -49,7 +49,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     /**
@@ -82,9 +81,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * {@link #metadata} object. This is given at construction time and shall be the
      * same than the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
-     * }
+     *     }
      */
     final PropertyAccessor accessor;
 
@@ -102,20 +101,18 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * If a property has the same name than the parent property that contains it,
      * we write its value in that parent property. For example, instead of:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *    └─Date
      *       ├─Date………………… 2012/01/01
-     *       └─Date type…… Creation
-     * }
+     *       └─Date type…… Creation</pre>
      *
      * We simplify as:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *    └─Date………………………… 2012/01/01
-     *       └─Date type…… Creation
-     * }
+     *       └─Date type…… Creation</pre>
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */

@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class SwingAssertions {
+public final class SwingAssertions {
     /**
      * Do not allow instantiation of this class.
      */

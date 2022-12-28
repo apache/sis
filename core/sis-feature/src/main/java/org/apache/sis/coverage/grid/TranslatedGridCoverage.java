@@ -29,7 +29,6 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class TranslatedGridCoverage extends DerivedGridCoverage {
     /**

@@ -47,7 +47,6 @@ package org.apache.sis.util;
  * @see Utilities#deepEquals(Object, Object, ComparisonMode)
  *
  * @since 0.3
- * @module
  */
 public enum ComparisonMode {
     /**
@@ -162,9 +161,9 @@ public enum ComparisonMode {
      * objects are not equal and assertions are enabled. The exception message and stack trace help
      * to locate which attributes are not equal. This mode is typically used in assertions like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assert Utilities.deepEquals(object1, object2, ComparisonMode.DEBUG);
-     * }
+     *     }
      *
      * Note that a comparison in {@code DEBUG} mode may still return {@code false} without
      * throwing an exception, since not all corner cases are tested. The exception is only

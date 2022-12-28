@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 public final class MD_MetadataScope extends PropertyType<MD_MetadataScope, MetadataScope> {
     /**

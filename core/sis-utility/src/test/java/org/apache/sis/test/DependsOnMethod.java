@@ -32,7 +32,6 @@ import java.lang.annotation.Target;
  * @author  Stephen Connolly
  * @version 0.3
  * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
- * @module
  */
 @Inherited
 @Documented

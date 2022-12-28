@@ -32,10 +32,9 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class GeodeticDatumMock extends IdentifiedObjectMock implements GeodeticDatum, Ellipsoid {
+public final class GeodeticDatumMock extends IdentifiedObjectMock implements GeodeticDatum, Ellipsoid {
     /**
      * The "GRS 1980" datum. This is very similar to {@link #WGS84}.
      * Can be used for testing tiny differences between two datum.

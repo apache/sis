@@ -66,7 +66,6 @@ import static org.apache.sis.internal.maven.Filenames.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @Mojo(name = "dist", defaultPhase = LifecyclePhase.INSTALL, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public final class Assembler extends AbstractMojo implements FilenameFilter {

@@ -40,9 +40,8 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-strictfp class MathTransformFactoryBase implements MathTransformFactory {
+class MathTransformFactoryBase implements MathTransformFactory {
     /**
      * The message for all exception.
      */

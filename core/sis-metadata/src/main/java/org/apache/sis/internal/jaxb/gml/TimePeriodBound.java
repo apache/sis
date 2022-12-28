@@ -33,7 +33,6 @@ import org.opengis.temporal.Instant;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @XmlTransient
 public abstract class TimePeriodBound {
@@ -63,12 +62,12 @@ public abstract class TimePeriodBound {
      * The begin or end position in a {@link TimePeriod}, expressed in the GML 3 way.
      * Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:TimePeriod>
      *     <gml:beginPosition>1992-01-01T01:00:00.000+01:00</gml:beginPosition>
      *     <gml:endPosition>2007-12-31T01:00:00.000+01:00</gml:endPosition>
      *   </gml:TimePeriod>
-     * }
+     *   }
      */
     public static final class GML3 extends TimePeriodBound {
         /**
@@ -123,7 +122,7 @@ public abstract class TimePeriodBound {
      * element inside a GML 2 {@link TimePeriod} in GML 2. This is not used for GML 3.
      * Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:TimePeriod>
      *     <gml:begin>
      *       <gml:TimeInstant gml:id="begin">
@@ -136,7 +135,7 @@ public abstract class TimePeriodBound {
      *       </gml:TimeInstant>
      *     </gml:end>
      *   </gml:TimePeriod>
-     * }
+     *   }
      */
     //@XmlType(name = "TimeInstantPropertyType") // TODO: Omitted for now for allowing external modules to define their own type.
     public static final class GML2 extends TimePeriodBound {

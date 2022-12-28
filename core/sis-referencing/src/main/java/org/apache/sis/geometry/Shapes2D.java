@@ -53,7 +53,6 @@ import org.apache.sis.util.Static;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public final class Shapes2D extends Static {
     /**

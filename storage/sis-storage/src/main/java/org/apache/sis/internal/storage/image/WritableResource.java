@@ -34,7 +34,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class WritableResource extends WorldFileResource implements WritableGridCoverageResource {
     /**

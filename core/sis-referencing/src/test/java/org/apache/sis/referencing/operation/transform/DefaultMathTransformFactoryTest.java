@@ -59,13 +59,12 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn({
     org.apache.sis.internal.referencing.provider.ProvidersTest.class,
     OperationMethodSetTest.class
 })
-public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
+public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Returns the factory to use for the tests.
      *

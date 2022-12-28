@@ -49,9 +49,8 @@ import org.opengis.filter.SortProperty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
-public final strictfp class FeatureQueryTest extends TestCase {
+public final class FeatureQueryTest extends TestCase {
     /**
      * An arbitrary number of features, all of the same type.
      */

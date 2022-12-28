@@ -66,7 +66,6 @@ import org.apache.sis.internal.util.Constants;
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  *
  * @since 0.4
- * @module
  */
 @XmlTransient
 public abstract class FormattableObject {
@@ -228,11 +227,10 @@ public abstract class FormattableObject {
      * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then this method shall write the content starting at the insertion point shown below:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   GeodeticCRS[ ]
      *               ↑
-     *       (insertion point)
-     * }
+     *       (insertion point)</pre>
      *
      * <h4>Formatting non-standard WKT</h4>
      * If the implementation cannot represent this object without violating some WKT constraints,

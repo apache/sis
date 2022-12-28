@@ -74,7 +74,6 @@ import org.apache.sis.util.collection.TreeTable;
  * @see MetadataStandard
  *
  * @since 0.3
- * @module
  */
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {
@@ -177,11 +176,13 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * such collection.
      *
      * <h4>Default implementation</h4>
-     * The default implementation is equivalent to the following method call:
+     * The default implementation is equivalent to the following:
      *
-     * {@preformat java
-     *   return getStandard().asValueMap(this, null, KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
-     * }
+     * {@snippet lang="java" :
+     *     return getStandard().asValueMap(this, null,
+     *             KeyNamePolicy.JAVABEANS_PROPERTY,
+     *             ValueExistencePolicy.NON_EMPTY);
+     *     }
      *
      * @return a view of this metadata object as a map.
      *
@@ -238,23 +239,23 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * to have their {@code IDENTIFIER} set before any other operation. For example, the following code
      * adds a title to a citation:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     TreeTable.Node node = ...;                               // The node for a DefaultCitation.
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");
      *     // Nothing else to do - the child node has been added.
-     * }
+     *     }
      *
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
      *
      * <h4>Default implementation</h4>
-     * The default implementation is equivalent to the following method call:
+     * The default implementation is equivalent to the following:
      *
-     * {@preformat java
-     *   return getStandard().asTreeTable(this, null, ValueExistencePolicy.COMPACT);
-     * }
+     * {@snippet lang="java" :
+     *     return getStandard().asTreeTable(this, null, ValueExistencePolicy.COMPACT);
+     *     }
      *
      * @return a tree table representation of the specified metadata.
      *
@@ -283,7 +284,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Performs a {@linkplain ComparisonMode#STRICT strict} comparison of this metadata with
      * the given object. This method is implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public final boolean equals(final Object object) {
      *         return equals(object, ComparisonMode.STRICT);
      *     }
@@ -323,9 +324,9 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Returns a string representation of this metadata.
      * The default implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return asTreeTable().toString();
-     * }
+     *     }
      *
      * Note that this make extensive use of Unicode characters
      * and is better rendered with a monospaced font.

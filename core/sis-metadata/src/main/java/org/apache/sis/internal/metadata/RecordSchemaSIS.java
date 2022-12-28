@@ -33,7 +33,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @SuppressWarnings("serial")  // serialVersionUID not needed because of writeReplace().
 public final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {

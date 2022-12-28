@@ -58,7 +58,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @XmlTransient
 public final class Affine extends AbstractProvider {

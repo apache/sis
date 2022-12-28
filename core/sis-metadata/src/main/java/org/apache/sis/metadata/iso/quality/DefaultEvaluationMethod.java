@@ -57,7 +57,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "DQ_EvaluationMethod_Type", propOrder = {
     "evaluationMethodType",

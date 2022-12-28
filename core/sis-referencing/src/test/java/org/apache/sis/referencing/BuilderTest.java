@@ -42,10 +42,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
-public final strictfp class BuilderTest extends TestCase {
+public final class BuilderTest extends TestCase {
     /**
      * Tests {@link Builder#verifyParameterizedType(Class)}.
      */

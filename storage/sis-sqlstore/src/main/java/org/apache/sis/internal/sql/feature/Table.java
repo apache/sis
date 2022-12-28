@@ -59,7 +59,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class Table extends AbstractFeatureSet {
     /**

@@ -27,7 +27,6 @@ import org.apache.sis.geometry.AbstractDirectPosition;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public abstract class DirectPositionView extends AbstractDirectPosition {
     /**

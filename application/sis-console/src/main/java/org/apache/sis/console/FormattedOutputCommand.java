@@ -57,7 +57,6 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 abstract class FormattedOutputCommand extends CommandRunner {
     /**

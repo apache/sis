@@ -41,7 +41,6 @@ import org.opengis.referencing.cs.VerticalCS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 final class SubTypes {
     /**

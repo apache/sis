@@ -42,7 +42,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 public class ProjectionException extends TransformException {
     /**

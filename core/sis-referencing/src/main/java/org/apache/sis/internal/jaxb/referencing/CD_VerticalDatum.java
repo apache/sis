@@ -30,7 +30,6 @@ import org.apache.sis.referencing.datum.DefaultVerticalDatum;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class CD_VerticalDatum extends PropertyType<CD_VerticalDatum, VerticalDatum> {
     /**

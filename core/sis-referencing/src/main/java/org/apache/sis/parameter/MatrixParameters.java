@@ -53,7 +53,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 class MatrixParameters extends TensorParameters<Double> {
     /**

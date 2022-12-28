@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class KeyPathMatcherTest extends TestCase {
+public final class KeyPathMatcherTest extends TestCase {
     /**
      * Tests a pattern using "glob" syntax.
      */

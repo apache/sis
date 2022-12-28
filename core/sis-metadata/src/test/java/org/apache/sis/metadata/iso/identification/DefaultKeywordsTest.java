@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class DefaultKeywordsTest extends TestCase {
+public final class DefaultKeywordsTest extends TestCase {
     /**
      * Tests {@link DefaultKeywords#DefaultKeywords(CharSequence[])}.
      */

@@ -56,7 +56,6 @@ import static java.lang.Math.abs;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ResamplingGrid extends AbstractMathTransform2D {
     /**

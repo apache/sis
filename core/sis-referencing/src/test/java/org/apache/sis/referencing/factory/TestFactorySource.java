@@ -37,18 +37,18 @@ import static org.opengis.test.Assert.*;
  * This is the common class used by all tests that need a full EPSG geodetic dataset to be installed.
  * Use this class as below:
  *
- * {@preformat java
- *     &#64;BeforeClass
+ * {@snippet lang="java" :
+ *     @BeforeClass
  *     public static void createFactory() throws FactoryException {
  *         TestFactorySource.createFactory();
  *     }
  *
- *     &#64;AfterClass
+ *     @AfterClass
  *     public static void close() throws FactoryException {
  *         TestFactorySource.close();
  *     }
  *
- *     &#64;Test
+ *     @Test
  *     public void testFoo() {
  *         assumeNotNull(TestFactorySource.factory);
  *         // Test can happen now.
@@ -58,9 +58,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
-public final strictfp class TestFactorySource {
+public final class TestFactorySource {
     /**
      * Whether to use PostgreSQL instead of Derby for the tests. This field should be {@code false};
      * the {@code true} value is used only for temporarily debugging of PostgreSQL-specific features.

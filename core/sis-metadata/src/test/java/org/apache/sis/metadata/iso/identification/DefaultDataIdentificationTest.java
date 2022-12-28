@@ -44,7 +44,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn({
     org.apache.sis.metadata.ValueMapTest.class,
@@ -53,7 +52,7 @@ import static org.apache.sis.test.MetadataAssert.*;
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     DefaultKeywordsTest.class
 })
-public final strictfp class DefaultDataIdentificationTest extends TestCase {
+public final class DefaultDataIdentificationTest extends TestCase {
     /**
      * Creates the instance to test.
      */

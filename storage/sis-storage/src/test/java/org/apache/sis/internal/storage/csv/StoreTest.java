@@ -51,9 +51,8 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * {@code true} if testing a moving feature, or {@code false} (the default) if testing a static feature.
      */
@@ -135,12 +134,12 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Tests reading the data as a moving features. In the following data:
      *
-     * {@preformat text
+     * {@snippet lang="csv" :
      *     a,  10, 150, 11.0 2.0 12.0 3.0, walking, 1
      *     b,  10, 190, 10.0 2.0 11.0 3.0, walking, 2
      *     a, 150, 190, 12.0 3.0 10.0 3.0
      *     c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1
-     * }
+     *     }
      *
      * the two rows for the "a" features shall be merged in a single trajectory.
      *

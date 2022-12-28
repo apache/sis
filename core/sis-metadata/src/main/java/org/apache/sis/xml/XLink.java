@@ -80,7 +80,6 @@ import static java.util.logging.Logger.getLogger;
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
  *
  * @since 0.3
- * @module
  */
 @XmlTransient
 public class XLink implements Serializable {
@@ -212,7 +211,6 @@ public class XLink implements Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see XLink#getType()
      */
@@ -535,7 +533,6 @@ public class XLink implements Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see XLink#getShow()
      */
@@ -610,7 +607,6 @@ public class XLink implements Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see XLink#getActuate()
      */
@@ -831,9 +827,7 @@ public class XLink implements Serializable {
      * Returns a string representation of this object. The default implementation returns the
      * simple class name followed by non-null attributes, as in the example below:
      *
-     * {@preformat text
-     *     XLink[type="locator", href="urn:ogc:def:method:EPSG::4326"]
-     * }
+     * <pre class="text">XLink[type="locator", href="urn:ogc:def:method:EPSG::4326"]</pre>
      */
     @Override
     public String toString() {

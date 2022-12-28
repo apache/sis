@@ -31,9 +31,8 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
-abstract strictfp class ChannelDataTestCase extends TestCase {
+abstract class ChannelDataTestCase extends TestCase {
     /**
      * The maximal length of the arrays to be read or written from/to the channel, in bytes.
      * This size may be smaller or greater than the buffer capacity, but a greater size is

@@ -70,9 +70,8 @@ import org.opengis.metadata.Identifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
-public strictfp class CoordinateOperationMethods extends HTMLGenerator {
+public class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *

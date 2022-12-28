@@ -77,7 +77,6 @@ import static java.util.logging.Logger.getLogger;
  * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
  *
  * @since 1.1
- * @module
  */
 public class WraparoundTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -300,9 +299,9 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * It provides a single method to override if a different wraparound strategy is desired.
      * The default implementation is:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Math.IEEEremainder(x, period);
-     * }
+     *     }
      *
      * Subclasses may override this method for applying wraparound only under some conditions,
      * in order to reduce discontinuities.

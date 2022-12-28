@@ -37,13 +37,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn({
     DefaultAttributeTypeTest.class,
     PropertySingletonTest.class
 })
-public final strictfp class SingletonAttributeTest extends TestCase {
+public final class SingletonAttributeTest extends TestCase {
     /**
      * Creates an attribute for the city name.
      * This attribute has a default value.

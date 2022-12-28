@@ -35,7 +35,6 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 final class AuthalicMercator extends AuthalicConversion {
     /**

@@ -34,14 +34,13 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn({
     AbstractCRSTest.class,
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
 })
-public final strictfp class DefaultGeodeticCRSTest extends TestCase {
+public final class DefaultGeodeticCRSTest extends TestCase {
     /**
      * An XML file in this package containing a geodetic CRS definition.
      */

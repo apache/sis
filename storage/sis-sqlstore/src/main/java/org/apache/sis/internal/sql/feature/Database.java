@@ -98,7 +98,6 @@ import org.apache.sis.util.Debug;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class Database<G> extends Syntax  {
     /**

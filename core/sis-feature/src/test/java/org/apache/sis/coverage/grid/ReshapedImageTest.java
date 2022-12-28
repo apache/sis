@@ -36,10 +36,9 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(org.apache.sis.image.PlanarImageTest.class)
-public final strictfp class ReshapedImageTest extends TestCase {
+public final class ReshapedImageTest extends TestCase {
     /**
      * Size of tiles used in this test.
      */

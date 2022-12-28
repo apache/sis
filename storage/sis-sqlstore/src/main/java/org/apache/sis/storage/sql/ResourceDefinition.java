@@ -34,7 +34,6 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class ResourceDefinition {
     /**

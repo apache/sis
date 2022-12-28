@@ -44,14 +44,13 @@ import org.opengis.feature.FeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
-public final strictfp class MetadataBuilderTest extends TestCase {
+public final class MetadataBuilderTest extends TestCase {
     /**
      * Tests {@link MetadataBuilder#parseLegalNotice(String)}.
      * The expected result of this parsing is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Metadata
      *     └─Identification info
      *         └─Resource constraints
@@ -64,8 +63,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
      *                 └─Cited responsible party
      *                     ├─Party
      *                     │   └─Name…………………………… John Smith
-     *                     └─Role……………………………………… Owner
-     * }
+     *                     └─Role……………………………………… Owner</pre>
      */
     @Test
     public void testParseLegalNotice() {

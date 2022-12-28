@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
  *
  * <p>The following schema fragment specifies the expected content contained within this class.</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <complexType name="FRA_DataIdentification_Type">
  *     <complexContent>
  *       <extension base="{http://www.isotc211.org/2005/gmd}MD_DataIdentification_Type">
@@ -41,13 +41,12 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
  *       </extension>
  *     </complexContent>
  *   </complexType>
- * }
+ *   }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "FRA_DataIdentification_Type")
 @XmlRootElement(name = "FRA_DataIdentification")

@@ -32,14 +32,11 @@ import static java.util.logging.Logger.getLogger;
  * Invoked when a new database is created or when the data source changed.
  * This listener is registered in the following file:
  *
- * {@preformat text
- *   META-INF/services/org.apache.sis.internal.metadata.sql.Initializer
- * }
+ * <pre class="text">META-INF/services/org.apache.sis.internal.metadata.sql.Initializer</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class DatabaseListener extends Initializer {
     /**

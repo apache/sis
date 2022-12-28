@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-final strictfp class GridResourceMock extends AbstractGridCoverageResource {
+final class GridResourceMock extends AbstractGridCoverageResource {
     /**
      * Grid geometry of this resource, specified at construction time.
      */

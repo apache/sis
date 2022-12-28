@@ -32,10 +32,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class AboutCommandTest extends TestCase {
+public final class AboutCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *

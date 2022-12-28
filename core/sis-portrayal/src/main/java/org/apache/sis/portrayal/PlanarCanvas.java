@@ -43,7 +43,6 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class PlanarCanvas extends Canvas {
     /**

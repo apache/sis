@@ -34,7 +34,6 @@ import org.opengis.geometry.MismatchedDimensionException;
  * @see org.apache.sis.referencing.operation.MismatchedDatumException
  *
  * @since 0.4
- * @module
  */
 public class MismatchedMatrixSizeException extends MismatchedDimensionException {
     /**

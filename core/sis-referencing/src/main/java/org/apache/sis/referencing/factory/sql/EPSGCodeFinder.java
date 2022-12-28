@@ -65,7 +65,6 @@ import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
     /**
@@ -161,10 +160,10 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      * A condition to put in a SQL {@code WHERE} clause. SQL query will be one of the forms shown below,
      * where {@code <column>} and {@code <values>} are {@link #column} and {@link #values} respectively.
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     SELECT <codeColumn> FROM <table> WHERE <column> IN (<values>)
      *     SELECT <codeColumn> FROM <table> WHERE <column> >= <value - ε> AND <column> <= <value + ε>
-     * }
+     *     }
      *
      * The latter form is used if {@code <filters>} is a floating point value.
      * Otherwise, {@code <filters>} are typically EPSG codes of dependencies.
@@ -521,9 +520,9 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      * Appends to the given buffer the SQL statement for filtering datum names using a pattern created by
      * {@link #toDatumPattern(String, StringBuilder)}. This method append a SQL fragment like below:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     (LOWER(<column>) LIKE '<pattern>' OR …)
-     * }
+     *     }
      *
      * This method assumes that {@code namePatterns} contains at least one element.
      *

@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <E>  the type of elements that the collection would have if it was non-empty.
  *
  * @since 0.3
- * @module
  */
 public final class ExcludedSet<E> extends AbstractSet<E> implements Serializable {
     /**

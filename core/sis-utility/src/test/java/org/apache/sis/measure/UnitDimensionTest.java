@@ -35,9 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class UnitDimensionTest extends TestCase {
+public final class UnitDimensionTest extends TestCase {
     /**
      * The dimension declared by the base {@link Units} constant.
      * We should not create our own instance for avoiding to pollute the {@link UnitDimension} cache.

@@ -42,7 +42,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "CI_Address_Type", propOrder = {
     "deliveryPoints",

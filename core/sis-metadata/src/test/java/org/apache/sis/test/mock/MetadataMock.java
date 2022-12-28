@@ -41,10 +41,9 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
-public final strictfp class MetadataMock extends SimpleMetadata {
+public final class MetadataMock extends SimpleMetadata {
     /**
      * The language used for documenting metadata.
      */

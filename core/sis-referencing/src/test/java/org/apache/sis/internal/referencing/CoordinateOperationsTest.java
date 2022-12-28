@@ -38,9 +38,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class CoordinateOperationsTest extends TestCase {
+public final class CoordinateOperationsTest extends TestCase {
     /**
      * Tests {@link CoordinateOperations#isWrapAround(CoordinateSystemAxis)}.
      */

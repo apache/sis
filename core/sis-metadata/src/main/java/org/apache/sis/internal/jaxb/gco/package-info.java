@@ -19,9 +19,9 @@
  * Miscellaneous objects and adapters defined in the {@code "gco"} namespace.
  * For example, a {@link java.lang.String} value has to be marshalled this way:
  *
- * {@preformat text
- *     <gco:CharacterString>my text</gco:CharacterString>
- * }
+ * {@snippet lang="xml" :
+ *   <gco:CharacterString>my text</gco:CharacterString>
+ *   }
  *
  * In the above example, {@code gco} is the prefix for the {@code http://www.isotc211.org/2005/gco}
  * namespace URL.
@@ -65,7 +65,7 @@
  *
  * <p>Those two kinds of types are marshalled as below:</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <MD_MetaData>
  *     <property uuidref="…">
  *       <Foo_Type uuid="…">
@@ -73,7 +73,7 @@
  *       </Foo_Type>
  *     </property>
  *   </MD_MetaData>
- * }
+ *   }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -83,7 +83,6 @@
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
     @XmlNs(prefix = "gco",   namespaceURI = Namespaces.GCO),

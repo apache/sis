@@ -49,7 +49,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlTransient
 abstract class RecordDefinition {                                       // Intentionally not Serializable.

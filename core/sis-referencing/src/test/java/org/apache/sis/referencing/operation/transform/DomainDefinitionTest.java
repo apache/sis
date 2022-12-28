@@ -32,9 +32,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
-public final strictfp class DomainDefinitionTest extends TestCase {
+public final class DomainDefinitionTest extends TestCase {
     /**
      * Tests domain transformation when the domain is provided by a step in a chain of transforms.
      *

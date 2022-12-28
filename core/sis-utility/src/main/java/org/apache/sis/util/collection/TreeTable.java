@@ -29,7 +29,7 @@ import java.util.List;
  * <p>Below is an example of what a two-columns {@code TreeTable} instance may look like
  * when {@linkplain TreeTableFormat formatted as a text}:</p>
  *
- * {@preformat text
+ * <pre class="text">
  *   Citation
  *     ├─Title…………………………………………………………… Open Geospatial Consortium
  *     ├─Presentation Forms………………………… document digital
@@ -41,20 +41,19 @@ import java.util.List;
  *     │           ├─Linkage……………………… https://www.ogc.org/
  *     │           └─Function…………………… information
  *     └─Identifiers
- *         └─Code…………………………………………………… OGC
- * }
+ *         └─Code…………………………………………………… OGC</pre>
  *
- * <p>In many cases, the columns are known in advance as hard-coded static constants.
+ * In many cases, the columns are known in advance as hard-coded static constants.
  * Those column constants are typically documented close to the class producing the
  * {@code TreeTable} instance. Using directly those static constants provides type
- * safety, as in the following example:</p>
+ * safety, as in the following example:
  *
- * {@preformat java
- *     TreeTable table = ...; // Put here a TreeTable instance.
+ * {@snippet lang="java" :
+ *     TreeTable table = ...;                   // Put here a TreeTable instance.
  *     TreeTable.Node node = table.getRoot();
  *     CharSequence   name = node.getValue(TableColumn.NAME);
  *     Class<?>       type = node.getValue(TableColumn.TYPE);
- * }
+ *     }
  *
  * In the above example, the type of value returned by the {@link Node#getValue(TableColumn)}
  * method is determined by the column constant. However, this approach is possible only when
@@ -65,7 +64,6 @@ import java.util.List;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public interface TreeTable {
     /**
@@ -120,7 +118,6 @@ public interface TreeTable {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.8
      * @since   0.3
-     * @module
      */
     public interface Node {
         /**
@@ -154,10 +151,10 @@ public interface TreeTable {
          * i.e. any modification to the returned collection are reflected immediately in the tree.
          * This allows addition or removal of child nodes as below:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     TreeTable.Node newNode = new ...; // Create a new node here.
          *     parent.getChildren().add(newNode);
-         * }
+         *     }
          *
          * The collection is often a {@link List}, but not necessarily. For some implementations like the
          * {@linkplain org.apache.sis.metadata.AbstractMetadata#asTreeTable() metadata tree table view},
@@ -292,8 +289,8 @@ public interface TreeTable {
          * implementations having a content fully determined by the wrapped {@linkplain #getUserObject() user
          * object} need only the following implementation:</p>
          *
-         * {@preformat java
-         *     &#64;Override
+         * {@snippet lang="java" :
+         *     @Override
          *     public boolean equals(Object obj) {
          *         return (obj instanceof MyNode) && ((MyNode) obj).getUserObject() == getUserObject();
          *     }
@@ -319,13 +316,13 @@ public interface TreeTable {
          * {@linkplain #getChildren() children}) is fully generated from the {@linkplain #getUserObject() user
          * object}, then the {@code equals(…)} and {@code hashCode()} methods may be implemented like below:
          *
-         * {@preformat java
-         *     &#64;Override
+         * {@snippet lang="java" :
+         *     @Override
          *     public boolean equals(Object obj) {
          *         return (obj instanceof MyNode) && ((MyNode) obj).getUserObject() == getUserObject();
          *     }
          *
-         *     &#64;Override
+         *     @Override
          *     public int hashCode() {
          *         return System.identityHashCode(getUserObject());
          *     }

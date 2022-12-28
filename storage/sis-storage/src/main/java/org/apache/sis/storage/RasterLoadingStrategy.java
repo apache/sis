@@ -41,7 +41,6 @@ import org.apache.sis.coverage.grid.GridCoverage;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public enum RasterLoadingStrategy {
     /**

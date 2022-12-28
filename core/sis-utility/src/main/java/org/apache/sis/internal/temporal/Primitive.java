@@ -30,7 +30,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 class Primitive implements TemporalGeometricPrimitive, ReferenceIdentifier {
     /**

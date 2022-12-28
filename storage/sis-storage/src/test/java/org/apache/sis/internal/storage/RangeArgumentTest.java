@@ -36,9 +36,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
-public final strictfp class RangeArgumentTest extends TestCase implements Localized {
+public final class RangeArgumentTest extends TestCase implements Localized {
     /**
      * A resource performing no operation.
      */

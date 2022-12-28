@@ -70,7 +70,6 @@ import org.apache.sis.util.Version;
  * @see NetcdfStore
  *
  * @since 0.3
- * @module
  */
 @StoreMetadata(formatName    = NetcdfStoreProvider.NAME,
                fileSuffixes  = "nc",

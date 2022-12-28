@@ -29,7 +29,6 @@ import javafx.beans.property.SimpleObjectProperty;
  * @param <T> the type of the wrapped object.
  *
  * @since 1.1
- * @module
  */
 public final class NonNullObjectProperty<T> extends SimpleObjectProperty<T> {
     /**

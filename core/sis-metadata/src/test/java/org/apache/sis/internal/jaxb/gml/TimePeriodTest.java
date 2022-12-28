@@ -48,9 +48,8 @@ import org.opengis.temporal.Instant;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
-public final strictfp class TimePeriodTest extends TestCase {
+public final class TimePeriodTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */

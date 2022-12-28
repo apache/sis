@@ -102,7 +102,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
  * @since 0.7
- * @module
  */
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
         extends GeodeticAuthorityFactory implements AutoCloseable
@@ -1785,7 +1784,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.2
      * @since   0.7
-     * @module
      */
     private static final class Finder extends IdentifiedObjectFinder {
         /**
@@ -1819,14 +1817,14 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * The {@link #release()} method must be invoked in a {@code finally} block after the call to {@code acquire}.
          * The pattern must be as below (note that the call to {@code acquire()} is inside the {@code try} block):
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     try {
          *         acquire();
          *         (finder or proxy).doSomeStuff();
          *     } finally {
          *         release();
          *     }
-         * }
+         *     }
          */
         private void acquire() throws FactoryException {
             assert Thread.holdsLock(this);

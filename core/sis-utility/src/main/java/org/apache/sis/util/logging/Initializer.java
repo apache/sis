@@ -74,7 +74,6 @@ import java.nio.file.Paths;
  * @see FileHandler
  *
  * @since 1.3
- * @module
  */
 public class Initializer {
     /*

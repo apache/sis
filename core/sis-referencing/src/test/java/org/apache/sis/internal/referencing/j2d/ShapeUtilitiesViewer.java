@@ -42,10 +42,9 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class ShapeUtilitiesViewer extends JPanel {
+public final class ShapeUtilitiesViewer extends JPanel {
     /**
      * The {@link ShapeUtilities} methods to test.
      */

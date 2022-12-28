@@ -73,7 +73,6 @@ import static org.apache.sis.math.MathFunctions.isNegative;
  * @see AngleFormat
  *
  * @since 0.3
- * @module
  */
 public class Angle implements Comparable<Angle>, Formattable, Serializable {
     /**

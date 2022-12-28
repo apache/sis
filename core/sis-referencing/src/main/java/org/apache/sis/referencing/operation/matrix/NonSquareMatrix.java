@@ -29,7 +29,6 @@ import org.apache.sis.internal.referencing.Resources;
  * @see Matrices#createDiagonal(int, int)
  *
  * @since 0.4
- * @module
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**
@@ -135,15 +134,14 @@ final class NonSquareMatrix extends GeneralMatrix {
      * then insert NaN in place of the omitted dimensions. In the matrix below, we can see that (x,y) are
      * independent of (z,t) because the 3th and 4th columns contains only 0 elements:</p>
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌               ┐ -1        ┌                  ┐
      *   │ 2  0  0  0  8 │           │ 0.5  0     -4.00 │
      *   │ 0  4  0  0  5 │     =     │ 0    0.25  -1.25 │
      *   │ 0  0  0  0  1 │           │ 0    0       NaN │
      *   └               ┘           │ 0    0       NaN │
      *                               │ 0    0      1    │
-     *                               └                  ┘
-     * }
+     *                               └                  ┘</pre>
      *
      * There is an issue about whether the full row shall contain NaN, or only the last element (the translation
      * term) as in the above example.  The current implementation inserts a NaN value in the translation term and

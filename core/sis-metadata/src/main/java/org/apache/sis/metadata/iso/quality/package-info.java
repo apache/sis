@@ -42,7 +42,6 @@
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlSchema(location="https://schemas.isotc211.org/19157/-2/mdq/1.0/mdq.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDQ,

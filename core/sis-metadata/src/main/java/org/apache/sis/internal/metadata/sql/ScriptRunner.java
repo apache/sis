@@ -53,7 +53,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public class ScriptRunner implements AutoCloseable {
     /**
@@ -120,10 +119,10 @@ public class ScriptRunner implements AutoCloseable {
      * {@code true} if the database supports enums.
      * Example:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     CREATE TYPE metadata."CI_DateTypeCode" AS ENUM ('creation', 'publication');
      *     CREATE CAST (VARCHAR AS metadata."CI_DateTypeCode") WITH INOUT AS ASSIGNMENT;
-     * }
+     *     }
      *
      * <p>Notes per database product:</p>
      * <ul>
@@ -151,9 +150,9 @@ public class ScriptRunner implements AutoCloseable {
      * Read-only permissions are typically granted to {@link #PUBLIC}.
      * Example:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     GRANT USAGE ON SCHEMA metadata TO PUBLIC;
-     * }
+     *     }
      *
      * @see #statementsToSkip
      */
@@ -164,9 +163,9 @@ public class ScriptRunner implements AutoCloseable {
      * Read-only permissions are typically granted to {@link #PUBLIC}.
      * Example:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     GRANT SELECT ON TABLE epsg_coordinatereferencesystem TO PUBLIC;
-     * }
+     *     }
      *
      * @see #statementsToSkip
      */
@@ -176,9 +175,9 @@ public class ScriptRunner implements AutoCloseable {
      * {@code true} if the database supports the {@code COMMENT} statement.
      * Example:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     COMMENT ON SCHEMA metadata IS 'ISO 19115 metadata';
-     * }
+     *     }
      *
      * @see #statementsToSkip
      */

@@ -40,7 +40,6 @@ import org.apache.sis.internal.xml.StreamWriterDelegate;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 final class OutputFactory extends Static {
     /**

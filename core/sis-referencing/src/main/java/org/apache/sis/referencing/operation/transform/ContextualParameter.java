@@ -48,7 +48,6 @@ import org.apache.sis.parameter.DefaultParameterValue;
  * @param <T>  the type of the value stored in this parameter.
  *
  * @since 0.7
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")                           // No additional fields compared to parent.
 final class ContextualParameter<T> extends DefaultParameterValue<T> {

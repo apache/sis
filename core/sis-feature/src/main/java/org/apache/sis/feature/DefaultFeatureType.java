@@ -106,7 +106,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see org.apache.sis.storage.FeatureNaming
  *
  * @since 0.5
- * @module
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**

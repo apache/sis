@@ -51,7 +51,6 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractDQ_Result_Type", propOrder = {
     "resultScope",

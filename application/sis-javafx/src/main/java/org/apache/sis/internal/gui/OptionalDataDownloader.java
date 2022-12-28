@@ -36,7 +36,6 @@ import org.apache.sis.setup.OptionalInstallations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 @Fallback
 public final class OptionalDataDownloader extends OptionalInstallations {

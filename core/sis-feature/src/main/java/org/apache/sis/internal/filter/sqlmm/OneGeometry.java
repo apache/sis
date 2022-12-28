@@ -37,7 +37,6 @@ import org.opengis.filter.Expression;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class OneGeometry<R,G> extends SpatialFunction<R> {
     /**

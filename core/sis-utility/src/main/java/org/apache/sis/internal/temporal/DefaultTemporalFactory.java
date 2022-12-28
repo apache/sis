@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class DefaultTemporalFactory implements TemporalFactory {
     /** The unique instance of this factory. */

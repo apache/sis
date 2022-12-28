@@ -68,9 +68,9 @@ import static org.apache.sis.util.collection.Containers.property;
  * If there is no code space, then the {@linkplain #getAuthority() authority} abbreviation is used as a fallback.
  * Example:
  *
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   AUTHORITY["EPSG", "4326"]
- * }
+ *   }
  *
  * </li><li><b><cite>Well Known Text</cite> (WKT) version 2</b><br>
  * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
@@ -79,15 +79,15 @@ import static org.apache.sis.util.collection.Containers.property;
  * (the URN syntax is described in the next item below).
  * Example:
  *
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   ID["EPSG", 4326, URI["urn:ogc:def:crs:EPSG::4326"]]
- * }
+ *   }
  *
  * </li><li><b>XML in referencing objects</b><br>
  * The <cite>Definition identifier URNs in OGC namespace</cite> paper defines a syntax for identifiers commonly
  * found in Geographic Markup Language (GML) documents. Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
@@ -109,7 +109,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
  * @since 1.0
- * @module
  */
 @TitleProperty(name = "code")
 public class ImmutableIdentifier extends FormattableObject implements ReferenceIdentifier, Serializable {

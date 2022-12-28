@@ -49,7 +49,6 @@ import static java.lang.Math.abs;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-478">SIS-478</a>
  *
  * @since 1.1
- * @module
  */
 @SuppressWarnings({"CloneableImplementsClone", "serial"})
 final class Inverter extends Matrix2 {

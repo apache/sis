@@ -48,7 +48,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultParameterDescriptorTest.class,
@@ -56,7 +55,7 @@ import org.opengis.referencing.ReferenceIdentifier;
     DefaultParameterValueTest.class,
     DefaultParameterValueGroupTest.class
 })
-public final strictfp class ParametersTest extends TestCase {
+public final class ParametersTest extends TestCase {
     /**
      * Tests the {@link Parameters#cast(ParameterDescriptor, Class)} and
      * {@link Parameters#cast(ParameterValue, Class)} methods.

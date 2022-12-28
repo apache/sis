@@ -38,10 +38,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(TransverseMercatorTest.class)
-public final strictfp class ZonedGridSystemTest extends MapProjectionTestCase {
+public final class ZonedGridSystemTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link ZonedGridSystem}.
      *

@@ -62,7 +62,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 public abstract class GeocentricAffine extends GeodeticOperation {

@@ -53,11 +53,11 @@ import org.apache.sis.xml.IdentifierSpace;
  * In the current SIS library, there is different places where identifiers are filtered on the
  * basis of this class, as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     if (identifier.getAuthority() instanceof NonMarshalledAuthority<?>) {
  *         // Omit that identifier.
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -67,7 +67,6 @@ import org.apache.sis.xml.IdentifierSpace;
  * @see IdentifierSpace
  *
  * @since 0.3
- * @module
  */
 public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<T> {
     /**

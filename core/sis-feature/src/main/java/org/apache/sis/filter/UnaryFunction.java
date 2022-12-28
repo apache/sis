@@ -42,7 +42,6 @@ import org.opengis.filter.NullOperator;
  * @param  <V>  the type of value computed by the expression.
  *
  * @since 1.1
- * @module
  */
 class UnaryFunction<R,V> extends Node {
     /**

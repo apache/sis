@@ -27,7 +27,6 @@ import org.apache.sis.internal.filter.sqlmm.SQLMM;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class FunctionNames extends Static {
     /** Value of {@link org.opengis.filter.NullOperator#getOperatorType()}. */

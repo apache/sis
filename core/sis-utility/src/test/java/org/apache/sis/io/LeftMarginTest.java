@@ -32,10 +32,9 @@ import static org.junit.Assert.*;
  * @see LineAppender#onLineBegin(boolean)
  *
  * @since 0.3
- * @module
  */
 @DependsOn(LineAppenderTest.class)
-public final strictfp class LeftMarginTest extends LineAppenderTest {
+public final class LeftMarginTest extends LineAppenderTest {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */

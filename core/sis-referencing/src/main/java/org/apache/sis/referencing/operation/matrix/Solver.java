@@ -35,7 +35,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
     /**
@@ -160,7 +159,7 @@ final class Solver implements Matrix {                          // Not Cloneable
      * <p>This method does <strong>not</strong> checks the matrix size.
      * Check for matrix size shall be performed by the caller like below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     final int size = X.getNumRow();
      *     if (X.getNumCol() != size) {
      *         throw new NoninvertibleMatrixException("Matrix must be square.");
@@ -168,7 +167,7 @@ final class Solver implements Matrix {                          // Not Cloneable
      *     if (Y.getNumRow() != size) {
      *         throw new MismatchedMatrixSizeException("Matrix row dimensions must agree.");
      *     }
-     * }
+     *     }
      *
      * @param  X          the matrix to invert, which must be square.
      * @param  Y          the desired result of {@code X} × <var>U</var>.
@@ -304,12 +303,12 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
      * <p>This method does <strong>not</strong> checks the matrix size.
      * It is caller's responsibility to ensure that the following hold:</p>
      *
-     * {@preformat java
-     *   X.getNumRow() == size;
-     *   X.getNumCol() == size;
-     *   Y.getNumRow() == size;
-     *   Y.getNumCol() == innerSize;
-     * }
+     * {@snippet lang="java" :
+     *     assert X.getNumRow() == size;
+     *     assert X.getNumCol() == size;
+     *     assert Y.getNumRow() == size;
+     *     assert Y.getNumCol() == innerSize;
+     *     }
      *
      * @param  LU         elements of the {@code X} matrix to invert, including error terms.
      * @param  Y          the desired result of {@code X} × <var>U</var>.

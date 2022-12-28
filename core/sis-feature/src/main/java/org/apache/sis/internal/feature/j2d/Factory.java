@@ -44,7 +44,6 @@ import org.apache.sis.util.UnsupportedImplementationException;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public final class Factory extends Geometries<Shape> {
     /**

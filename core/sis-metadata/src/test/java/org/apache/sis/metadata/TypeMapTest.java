@@ -49,10 +49,9 @@ import static java.util.AbstractMap.SimpleEntry;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class TypeMapTest extends TestCase {
+public final class TypeMapTest extends TestCase {
     /**
      * Tests {@code TypeMap.entrySet()} for an exact match (including iteration order).
      * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.

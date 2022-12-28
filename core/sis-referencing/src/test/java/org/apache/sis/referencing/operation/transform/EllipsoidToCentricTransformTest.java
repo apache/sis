@@ -48,13 +48,12 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn({
     CoordinateDomainTest.class,
     ContextualParametersTest.class
 })
-public final strictfp class EllipsoidToCentricTransformTest extends MathTransformTestCase {
+public final class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
      * Convenience method for creating an instance from an ellipsoid.
      */

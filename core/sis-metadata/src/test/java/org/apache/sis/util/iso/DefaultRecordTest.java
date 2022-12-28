@@ -38,10 +38,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(DefaultRecordSchemaTest.class)
-public final strictfp class DefaultRecordTest extends TestCase {
+public final class DefaultRecordTest extends TestCase {
     /**
      * The record type to be shared by all tests.
      */

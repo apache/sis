@@ -29,7 +29,6 @@ import javax.xml.bind.annotation.XmlValue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class SC_DerivedCRSType {
     /**

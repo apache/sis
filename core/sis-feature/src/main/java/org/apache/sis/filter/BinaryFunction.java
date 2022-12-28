@@ -46,7 +46,6 @@ import org.opengis.filter.Expression;
  * @param  <V2>  the type of value computed by the second expression.
  *
  * @since 1.1
- * @module
  */
 abstract class BinaryFunction<R,V1,V2> extends Node {
     /**

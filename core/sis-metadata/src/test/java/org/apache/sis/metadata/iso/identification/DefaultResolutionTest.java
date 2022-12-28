@@ -39,10 +39,9 @@ import static org.apache.sis.internal.jaxb.gml.MeasureTest.UOM_URL;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
-public final strictfp class DefaultResolutionTest extends TestCase {
+public final class DefaultResolutionTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
@@ -107,13 +106,13 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      * Tests XML (un)marshalling of a resolution element. This test creates a {@link DefaultResolution}
      * instance which is expected to be marshalled as below (ignoring namespace declarations):
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <mri:MD_Resolution>
      *     <mri:distance>
      *       <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
      *     </mri:distance>
      *   </mri:MD_Resolution>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurred while marshalling the element.
      */
@@ -138,13 +137,13 @@ public final strictfp class DefaultResolutionTest extends TestCase {
      * This test creates a {@link DefaultResolution} instance which is expected to be marshalled as below
      * (ignoring namespace declarations):
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:MD_Resolution>
      *     <gmd:distance>
      *       <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
      *     </gmd:distance>
      *   </gmd:MD_Resolution>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurred while marshalling the element.
      */

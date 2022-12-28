@@ -49,7 +49,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class MapLayers extends MapItem {
     /**

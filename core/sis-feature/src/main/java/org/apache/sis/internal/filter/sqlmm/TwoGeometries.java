@@ -43,7 +43,6 @@ import org.opengis.filter.ValueReference;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class TwoGeometries<R,G> extends SpatialFunction<R> {
     /**

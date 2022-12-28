@@ -42,9 +42,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class FormattedCharacterIteratorTest extends TestCase {
+public final class FormattedCharacterIteratorTest extends TestCase {
     /**
      * The string used for testing purpose in this class.
      */

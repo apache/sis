@@ -41,9 +41,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
-public final strictfp class IntegerListTest extends TestCase {
+public final class IntegerListTest extends TestCase {
     /**
      * The list of integers being tested.
      */

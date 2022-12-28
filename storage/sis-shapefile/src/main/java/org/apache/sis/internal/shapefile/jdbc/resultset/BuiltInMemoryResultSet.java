@@ -29,7 +29,6 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public abstract class BuiltInMemoryResultSet extends DBFResultSet {
     /**

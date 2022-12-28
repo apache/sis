@@ -40,7 +40,6 @@ import org.apache.sis.util.Emptiable;
  * @param <N>  the new type.
  *
  * @since 0.5
- * @module
  */
 public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
     /**

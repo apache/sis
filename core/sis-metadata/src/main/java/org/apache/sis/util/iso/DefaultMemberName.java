@@ -50,7 +50,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultRecordType
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MemberName_Type")
 @XmlRootElement(name = "MemberName")

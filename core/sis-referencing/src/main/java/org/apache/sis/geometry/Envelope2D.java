@@ -103,7 +103,6 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  *
  * @since 0.3
- * @module
  */
 public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiable, Cloneable {
     /**
@@ -1182,9 +1181,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}".
      * Example:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   BOX(-90 -180, 90 180)
-     * }
+     *   }
      *
      * @see Envelopes#toString(Envelope)
      */

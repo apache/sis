@@ -65,7 +65,6 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 public final class StandardDateFormat extends DateFormat {
     /**

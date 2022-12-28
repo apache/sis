@@ -39,13 +39,12 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 @DependsOn({
     DenseFeatureTest.class,
     CharacteristicMapTest.class
 })
-public final strictfp class FeatureFormatTest extends TestCase {
+public final class FeatureFormatTest extends TestCase {
     /**
      * Creates the formatter instance to be used for the tests.
      */

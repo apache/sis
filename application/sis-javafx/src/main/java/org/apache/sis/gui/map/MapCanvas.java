@@ -132,7 +132,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class MapCanvas extends PlanarCanvas {
     /**
@@ -998,7 +997,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Returns the {@linkplain #getInterimTransform(boolean) interim transform} if at least one listener
      * is registered, or {@code null} otherwise. This method should be used with the following pattern:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     AffineTransform2D interim = getInterimTransformForListeners();
      *     transform.something(…);
      *     if (interim != null) {
@@ -1055,7 +1054,6 @@ public abstract class MapCanvas extends PlanarCanvas {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.1
-     * @module
      */
     protected abstract static class Renderer {
         /**
@@ -1573,9 +1571,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Other methods should generally not invoke this method directly,
      * and use the following code instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     runAfterRendering(this::clear);
-     * }
+     *     }
      *
      * @see #reset()
      * @see #runAfterRendering(Runnable)

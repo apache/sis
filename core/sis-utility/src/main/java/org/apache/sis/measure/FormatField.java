@@ -26,7 +26,6 @@ import java.text.Format;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 class FormatField extends Format.Field {
     /**

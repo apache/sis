@@ -34,14 +34,13 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.BuilderTest.class,
     DefaultParameterDescriptorTest.class,
     DefaultParameterValueTest.class
 })
-public final strictfp class ParameterBuilderTest extends TestCase {
+public final class ParameterBuilderTest extends TestCase {
     /**
      * Tests various {@code create(…)} methods.
      */

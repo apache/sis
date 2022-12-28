@@ -30,7 +30,6 @@ package org.apache.sis.util;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 public class UnknownNameException extends IllegalArgumentException {
     /**

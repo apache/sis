@@ -58,7 +58,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class CoverageQuery extends Query implements Cloneable, Serializable {
     /**

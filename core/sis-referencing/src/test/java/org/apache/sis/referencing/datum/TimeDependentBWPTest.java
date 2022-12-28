@@ -37,10 +37,9 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(BursaWolfParametersTest.class)
-public final strictfp class TimeDependentBWPTest extends TestCase {
+public final class TimeDependentBWPTest extends TestCase {
     /**
      * Creates a {@code TimeDependentBWP} using the example given in the EPSG database for operation method EPSG:1053.
      * The target datum given by the EPG example is actually GDA94, but it is coincident with WGS84 to within 1 metre.

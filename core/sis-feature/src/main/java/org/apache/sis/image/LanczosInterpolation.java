@@ -36,7 +36,6 @@ import java.nio.DoubleBuffer;
  * @see <a href="https://en.wikipedia.org/wiki/Lanczos_resampling">Lanczos resampling on Wikipedia</a>
  *
  * @since 1.1
- * @module
  */
 final class LanczosInterpolation extends Interpolation {
     /**

@@ -56,7 +56,6 @@ import org.opengis.referencing.cs.AxisDirection;
  * @see org.apache.sis.geometry.CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public final class Latitude extends Angle {
     /**

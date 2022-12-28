@@ -32,21 +32,21 @@ import org.opengis.metadata.Identifier;
  * <h2>Marshalling</h2>
  * Identifiers are typically marshalled as below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:identifier codeSpace="EPSG">4326</gml:identifier>
  * }
  *
  * If the {@code Identifier} to marshal contains a {@linkplain Identifier#getVersion() version},
  * then this adapter concatenates the version to the codespace in a "URI-like" way like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:identifier codeSpace="EPSG:8.3">4326</gml:identifier>
  * }
  *
  * <h2>Unmarshalling</h2>
  * Some data producers put a URN instead of a simple code value, as in the example below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
@@ -59,7 +59,6 @@ import org.opengis.metadata.Identifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.4
- * @module
  */
 public final class RS_Identifier extends XmlAdapter<Code, Identifier> {
     /**

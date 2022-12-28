@@ -31,7 +31,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 @SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
 final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {

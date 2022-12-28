@@ -77,7 +77,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 public final class ServicesForMetadata extends ReferencingServices {
     /**

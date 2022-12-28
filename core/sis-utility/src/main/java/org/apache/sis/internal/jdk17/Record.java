@@ -24,7 +24,6 @@ package org.apache.sis.internal.jdk17;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.4
  * @version 1.4
- * @module
  */
 public abstract class Record {
     /**

@@ -31,13 +31,12 @@ import static org.apache.sis.referencing.cs.HardCodedCS.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultCartesianCSTest.class,
     DefaultEllipsoidalCSTest.class
 })
-public final strictfp class HardCodedCSTest extends TestCase {
+public final class HardCodedCSTest extends TestCase {
     /**
      * Validates constants.
      */

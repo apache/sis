@@ -36,9 +36,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.4
- * @module
  */
-public final strictfp class FileCacheByteChannelTest extends TestCase {
+public final class FileCacheByteChannelTest extends TestCase {
     /**
      * The implementation used for testing purpose.
      */

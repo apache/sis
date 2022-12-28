@@ -45,13 +45,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn({
     DefaultTransformationTest.class,
     SingleOperationMarshallingTest.class
 })
-public final strictfp class DefaultConcatenatedOperationTest extends TestCase {
+public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

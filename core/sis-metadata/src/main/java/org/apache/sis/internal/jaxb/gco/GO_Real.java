@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.XmlType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "Real_PropertyType")
 public class GO_Real extends PropertyType<GO_Real, Double> {

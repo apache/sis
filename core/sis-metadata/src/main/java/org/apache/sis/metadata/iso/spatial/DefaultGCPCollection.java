@@ -54,7 +54,6 @@ import org.apache.sis.metadata.TitleProperty;
  * @see DefaultGCP
  *
  * @since 0.3
- * @module
  */
 @TitleProperty(name = "collectionName")
 @XmlType(name = "MI_GCPCollection_Type", propOrder = {

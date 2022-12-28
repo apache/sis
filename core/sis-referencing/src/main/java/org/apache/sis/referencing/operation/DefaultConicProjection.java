@@ -39,7 +39,6 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * @see <a href="https://mathworld.wolfram.com/ConicProjection.html">Conic projection on MathWorld</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 final class DefaultConicProjection extends DefaultProjection implements ConicProjection {

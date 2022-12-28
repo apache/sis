@@ -42,6 +42,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 package org.apache.sis.math;

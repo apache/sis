@@ -49,13 +49,12 @@ import static org.apache.sis.test.Assert.*;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
  *
  * @since 0.8
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class
 })
-public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
+public final class EllipsoidalHeightCombinerTest extends TestCase {
     /**
      * Creates an instance to be tested.
      */

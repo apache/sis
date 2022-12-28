@@ -40,10 +40,9 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(DefaultFeatureTypeTest.class)
-public final strictfp class DefaultAssociationRoleTest extends TestCase {
+public final class DefaultAssociationRoleTest extends TestCase {
     /**
      * Creates an association to a twin town. We arbitrarily fix the maximum number
      * of occurrences to 1, even if in reality some cities have many twin towns.

@@ -34,9 +34,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class FreeTextMarshallingTest extends TestCase {
+public final class FreeTextMarshallingTest extends TestCase {
     /**
      * Returns the expected string.
      */

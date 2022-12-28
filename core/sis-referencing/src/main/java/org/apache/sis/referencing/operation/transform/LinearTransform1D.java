@@ -52,7 +52,6 @@ import static java.lang.Double.doubleToRawLongBits;
  * @see ExponentialTransform1D
  *
  * @since 0.5
- * @module
  */
 class LinearTransform1D extends AbstractMathTransform1D implements LinearTransform, Serializable {
     /**

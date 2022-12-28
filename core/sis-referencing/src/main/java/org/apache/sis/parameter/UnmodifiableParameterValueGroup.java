@@ -46,7 +46,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 class UnmodifiableParameterValueGroup extends Parameters implements LenientComparable, Serializable {
     /**

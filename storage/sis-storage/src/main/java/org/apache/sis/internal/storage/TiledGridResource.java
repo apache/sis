@@ -53,7 +53,6 @@ import static org.apache.sis.internal.storage.TiledGridCoverage.Y_DIMENSION;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**

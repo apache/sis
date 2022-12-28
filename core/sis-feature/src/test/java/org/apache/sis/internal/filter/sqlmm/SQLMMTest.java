@@ -45,9 +45,8 @@ import org.opengis.filter.FilterFactory;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
-public final strictfp class SQLMMTest extends TestCase {
+public final class SQLMMTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

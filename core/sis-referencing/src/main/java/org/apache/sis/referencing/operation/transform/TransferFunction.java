@@ -63,7 +63,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  * @see org.apache.sis.coverage.SampleDimension#getTransferFunction()
  *
  * @since 0.5
- * @module
  */
 public class TransferFunction implements Cloneable, Serializable {
     /**

@@ -66,7 +66,6 @@ import org.apache.sis.internal.util.TemporalUtilities;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {

@@ -40,12 +40,11 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn({
     ChannelDecoderTest.class
 })
-public final strictfp class NetcdfStoreProviderTest extends TestCase {
+public final class NetcdfStoreProviderTest extends TestCase {
     /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic netCDF file.

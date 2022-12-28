@@ -45,20 +45,19 @@ import org.opengis.feature.Feature;
  * This reader is itself a spliterator over all features found in the XML file.
  * Usage:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Consumer<Feature> consumer = ...;
  *     try (Reader reader = new Reader(dataStore)) {
  *         final Version  version  = reader.initialize(true);
  *         final Metadata metadata = reader.getMetadata();
  *         reader.forEachRemaining(consumer);
  *     }
- * }
+ *     }
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 final class Reader extends StaxStreamReader {
     /**

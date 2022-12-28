@@ -38,7 +38,6 @@ import static org.apache.sis.internal.referencing.provider.AbstractProvider.buil
  * @see <a href="http://geotiff.maptools.org/proj_list/orthographic.html">GeoTIFF parameters for Orthographic</a>
  *
  * @since 1.1
- * @module
  */
 @XmlTransient
 public class Orthographic extends MapProjection {

@@ -34,7 +34,6 @@ import javafx.geometry.Pos;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class GridRowSkin extends CellSkinBase<GridRow> {
     /**

@@ -40,7 +40,6 @@ import org.apache.sis.internal.util.LocalizedParseException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 final class DefaultFormat extends Format {
     /**

@@ -54,6 +54,5 @@
  * @see <a href="https://sdk.amazonaws.com/java/api/latest/index.html">AWS SDK for Java</a>
  *
  * @since 1.2
- * @module
  */
 package org.apache.sis.cloud.aws.s3;

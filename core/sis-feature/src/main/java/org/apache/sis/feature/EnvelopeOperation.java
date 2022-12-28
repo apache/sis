@@ -73,7 +73,6 @@ import org.opengis.feature.PropertyType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 final class EnvelopeOperation extends AbstractOperation {
     /**

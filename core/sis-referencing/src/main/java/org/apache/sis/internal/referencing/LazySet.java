@@ -49,7 +49,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @param <E>  the type of elements in the set.
  *
  * @since 0.6
- * @module
  */
 public class LazySet<E> extends SetOfUnknownSize<E> {
     /**

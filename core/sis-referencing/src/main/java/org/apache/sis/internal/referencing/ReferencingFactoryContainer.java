@@ -51,7 +51,6 @@ import org.apache.sis.util.resources.Errors;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
  *
  * @since 1.0
- * @module
  */
 public class ReferencingFactoryContainer {
     /**

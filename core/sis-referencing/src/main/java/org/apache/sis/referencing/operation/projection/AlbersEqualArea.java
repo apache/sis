@@ -52,7 +52,6 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public class AlbersEqualArea extends AuthalicConversion {
     /**
@@ -292,7 +291,6 @@ public class AlbersEqualArea extends AuthalicConversion {
      * @author  Rémi Maréchal (Geomatys)
      * @version 1.1
      * @since   0.8
-     * @module
      */
     static final class Spherical extends AlbersEqualArea {
         /**

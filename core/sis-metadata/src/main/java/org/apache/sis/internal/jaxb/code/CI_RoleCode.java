@@ -33,7 +33,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class CI_RoleCode extends CodeListAdapter<CI_RoleCode, Role> {
     /**

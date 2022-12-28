@@ -61,7 +61,6 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://www.ngs.noaa.gov/cgi-bin/nadcon.prl">NADCON on-line computation</a>
  *
  * @since 0.7
- * @module
  */
 @XmlTransient
 public final class NADCON extends AbstractProvider {
@@ -224,7 +223,6 @@ public final class NADCON extends AbstractProvider {
      * @author  Rueben Schulz (UBC)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     private static final class Loader extends DatumShiftGridLoader {
         /**

@@ -66,7 +66,6 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @see ObliqueStereographic
  *
  * @since 0.6
- * @module
  */
 public class PolarStereographic extends ConformalProjection {
     /**
@@ -390,7 +389,6 @@ public class PolarStereographic extends ConformalProjection {
      * @author  Rueben Schulz (UBC)
      * @version 0.6
      * @since   0.6
-     * @module
      */
     static final class Spherical extends PolarStereographic {
         /**

@@ -47,29 +47,29 @@ import org.opengis.feature.Feature;
  * the following example:</p>
  *
  * <p>Example:</p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class UserObjectWriter extends StaxStreamWriter {
  *         UserObjectWriter(StaxDataStore owner, Metadata metadata) throws ... {
  *             super(owner);
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public void writeStartDocument() throws Exception {
  *             super.writeStartDocument();
  *             // Write header (typically metadata) here.
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public void write(Feature f) throws Exception {
  *             // Actual STAX write operations.
  *             writer.writeStartElement(…);
  *         }
  *     }
- * }
+ *     }
  *
  * Writers can be used like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     try (UserObjectWriter writer = new UserObjectWriter(dataStore, metadata)) {
  *         writer.writeStartDocument();
  *         writer.write(feature1);
@@ -78,7 +78,7 @@ import org.opengis.feature.Feature;
  *         // etc.
  *         writer.writeEndDocument();
  *     }
- * }
+ *     }
  *
  * <h2>Multi-threading</h2>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
@@ -88,7 +88,6 @@ import org.opengis.feature.Feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<Feature> {
     /**
@@ -130,8 +129,8 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * the features. The overwritten method shall begin by a call to {@code super.writeStartDocument()}.
      * Example:</p>
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public void writeStartDocument() throws Exception {
      *         super.writeStartDocument();
      *         writer.setDefaultNamespace(namespace);

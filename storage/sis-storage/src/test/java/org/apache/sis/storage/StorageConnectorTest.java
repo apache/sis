@@ -49,10 +49,9 @@ import static org.opengis.test.Assert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class)
-public final strictfp class StorageConnectorTest extends TestCase {
+public final class StorageConnectorTest extends TestCase {
     /**
      * Name of the test file, in the same directory than this {@code StorageConnectorTest} file.
      */

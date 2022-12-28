@@ -68,7 +68,6 @@ import static org.junit.Assume.assumeTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 @DependsOn({
     DefaultConversionTest.class,
@@ -76,14 +75,14 @@ import static org.junit.Assume.assumeTrue;
     DefaultPassThroughOperationTest.class,
     DefaultConcatenatedOperationTest.class
 })
-public final strictfp class CoordinateOperationRegistryTest extends MathTransformTestCase {
+public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assertEquals(expected, actual, STRICT);
-     * }
+     *     }
      */
     private static final double STRICT = 0;
 

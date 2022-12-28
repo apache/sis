@@ -44,9 +44,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultBrowseGraphicTest extends TestCase {
+public final class DefaultBrowseGraphicTest extends TestCase {
     /**
      * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
      */

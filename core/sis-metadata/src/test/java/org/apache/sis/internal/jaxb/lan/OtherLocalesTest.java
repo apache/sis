@@ -34,9 +34,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
-public final strictfp class OtherLocalesTest extends TestCase {
+public final class OtherLocalesTest extends TestCase {
     /**
      * Returns the locales in an array. Character sets are ignored.
      */

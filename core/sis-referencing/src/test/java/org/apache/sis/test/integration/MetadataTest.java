@@ -90,12 +90,11 @@ import static org.apache.sis.test.Assert.*;
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  *
  * @since 0.5
- * @module
  */
 @DependsOn({
     MetadataVerticalTest.class
 })
-public final strictfp class MetadataTest extends TestCase {
+public final class MetadataTest extends TestCase {
     /**
      * The resource file which contains an XML representation of a {@link Metadata} object.
      */

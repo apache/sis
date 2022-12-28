@@ -151,7 +151,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
  * @since 0.7
- * @module
  */
 public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory

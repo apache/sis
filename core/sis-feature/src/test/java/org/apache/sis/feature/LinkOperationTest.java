@@ -30,13 +30,12 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     AbstractOperationTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class LinkOperationTest extends TestCase {
+public final class LinkOperationTest extends TestCase {
     /**
      * Creates a simple feature type with a link operation.
      * The feature contains the following properties:

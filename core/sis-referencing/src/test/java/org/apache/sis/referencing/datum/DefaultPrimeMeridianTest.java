@@ -43,10 +43,9 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
-public final strictfp class DefaultPrimeMeridianTest extends TestCase {
+public final class DefaultPrimeMeridianTest extends TestCase {
     /**
      * An XML file in this package containing a prime meridian definition.
      */

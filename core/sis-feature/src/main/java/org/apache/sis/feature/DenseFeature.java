@@ -43,7 +43,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 final class DenseFeature extends AbstractFeature implements Cloneable {
     /**

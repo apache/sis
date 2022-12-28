@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.Matrix;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 public interface ExtendedPrecisionMatrix extends Matrix {
     /**

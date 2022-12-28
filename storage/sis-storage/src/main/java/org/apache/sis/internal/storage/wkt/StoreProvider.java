@@ -36,7 +36,6 @@ import org.apache.sis.util.Version;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "prj",

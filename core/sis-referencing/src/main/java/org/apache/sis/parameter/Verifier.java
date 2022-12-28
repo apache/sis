@@ -49,7 +49,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 final class Verifier {
     /**

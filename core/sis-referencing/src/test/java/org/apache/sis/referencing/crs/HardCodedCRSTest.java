@@ -31,13 +31,12 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.cs.HardCodedCSTest.class,
     DefaultGeographicCRSTest.class
 })
-public final strictfp class HardCodedCRSTest extends TestCase {
+public final class HardCodedCRSTest extends TestCase {
     /**
      * Validates constants.
      *

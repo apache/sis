@@ -39,9 +39,8 @@ import static org.junit.Assert.assertTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class SatelliteTrackingTest extends MapProjectionTestCase {
+public final class SatelliteTrackingTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link SatelliteTracking} concatenated with the (de)normalization matrices.
      * The new instance is stored in the inherited {@link #transform} field.

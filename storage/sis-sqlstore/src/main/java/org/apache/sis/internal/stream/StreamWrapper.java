@@ -53,7 +53,6 @@ import java.util.stream.Collector;
  * @param  <T>  the type of objects contained in the stream, as specified in {@link Stream} interface.
  *
  * @since 1.1
- * @module
  *
  * @todo Add the methods that are new in JDK16.
  */

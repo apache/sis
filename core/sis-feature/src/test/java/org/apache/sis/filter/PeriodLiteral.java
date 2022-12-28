@@ -40,10 +40,9 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")
-final strictfp class PeriodLiteral implements Period, Literal<Feature,Period>, Serializable {
+final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializable {
     /**
      * Period beginning and ending, in milliseconds since Java epoch.
      */

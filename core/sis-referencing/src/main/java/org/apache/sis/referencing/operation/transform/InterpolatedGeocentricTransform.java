@@ -83,7 +83,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see InterpolatedMolodenskyTransform
  *
  * @since 0.7
- * @module
  */
 public class InterpolatedGeocentricTransform extends DatumShiftTransform {
     /**
@@ -405,15 +404,15 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * Computes the derivative by concatenating the "geographic to geocentric" and "geocentric to geographic" matrix,
      * with the {@linkplain #scale} factor between them.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Note</h4>
      * we could improve a little bit the precision by computing the derivative in the interpolation grid:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     grid.derivativeInCell(grid.normalizedToGridX(λ), grid.normalizedToGridY(φ));
-     * }
+     *     }
      *
      * But this is a little bit complicated (need to convert to normalized units and divide by the grid
-     * cell size) for a very small difference. For now we neglect that part.</div>
+     * cell size) for a very small difference. For now we neglect that part.
      *
      * @param  m1  the derivative computed by the "geographic to geocentric" conversion.
      * @param  m2  the derivative computed by the "geocentric to geographic" conversion.
@@ -457,7 +456,6 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     static class Inverse extends InterpolatedGeocentricTransform {
         /**

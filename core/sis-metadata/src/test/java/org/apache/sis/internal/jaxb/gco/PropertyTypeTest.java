@@ -36,10 +36,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class)
-public final strictfp class PropertyTypeTest extends TestCase {
+public final class PropertyTypeTest extends TestCase {
     /**
      * The pseudo-metadata object to wrap for testing purpose.
      */

@@ -30,9 +30,8 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class AffineTransforms2DTest extends TestCase {
+public final class AffineTransforms2DTest extends TestCase {
     /**
      * Tolerance value for comparisons.
      */

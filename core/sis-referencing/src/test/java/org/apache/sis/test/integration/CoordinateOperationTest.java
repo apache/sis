@@ -53,7 +53,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Michael Arneson (OSDU)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,
@@ -62,7 +61,7 @@ import static org.apache.sis.test.Assert.*;
     org.apache.sis.referencing.operation.DefaultCoordinateOperationFactoryTest.class,
     org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class
 })
-public final strictfp class CoordinateOperationTest extends MathTransformTestCase {
+public final class CoordinateOperationTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
      */

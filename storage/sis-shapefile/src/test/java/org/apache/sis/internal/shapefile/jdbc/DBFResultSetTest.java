@@ -35,7 +35,6 @@ import org.junit.Test;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class DBFResultSetTest extends AbstractTestBaseForInternalJDBC {
     /**

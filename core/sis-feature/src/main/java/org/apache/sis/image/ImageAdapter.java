@@ -47,7 +47,6 @@ import org.apache.sis.util.Disposable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 abstract class ImageAdapter extends PlanarImage {
     /**

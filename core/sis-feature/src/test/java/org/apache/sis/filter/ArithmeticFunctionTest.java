@@ -33,9 +33,8 @@ import org.opengis.filter.FilterFactory;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class ArithmeticFunctionTest extends TestCase {
+public final class ArithmeticFunctionTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

@@ -33,7 +33,6 @@ import org.apache.sis.internal.referencing.j2d.AbstractShape;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 abstract class ShapeWrapper extends AbstractShape implements Serializable {
     /**

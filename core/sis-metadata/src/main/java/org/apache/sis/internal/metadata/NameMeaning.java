@@ -46,7 +46,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  *
  * @since 0.5
- * @module
  */
 public final class NameMeaning extends Static {
     /**

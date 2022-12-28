@@ -25,7 +25,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.2
  * @version 1.2
- * @module
  */
 public final class HexFormat {
     private static final HexFormat INSTANCE = new HexFormat();

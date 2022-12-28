@@ -30,7 +30,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 final class IdentifierMapEntry extends AbstractMap.SimpleEntry<Citation,String> implements Identifier {
     /**

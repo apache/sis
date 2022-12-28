@@ -30,7 +30,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class CI_Citation extends PropertyType<CI_Citation, Citation> {
     /**

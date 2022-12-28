@@ -31,30 +31,28 @@ import java.lang.annotation.Documented;
  * This annotation is used in {@linkplain MetadataStandard#asTreeTable metadata tree views} for producing briefer trees,
  * especially when there is redundant node names.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * the {@code Citation} type contains a {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitation#getDates() date}
  * property which itself contains another {@linkplain org.apache.sis.metadata.iso.citation.DefaultCitationDate#getDate()
  * date} property. They form a tree like below:
  *
- * {@preformat text
+ * <pre class="text">
  *   Citation
  *    ├─Title……………………… My document
  *    └─Date
  *       ├─Date………………… 2012/01/01
- *       └─Date type…… Creation
- * }
+ *       └─Date type…… Creation</pre>
  *
  * With <code>&#64;TitleProperty(name="title")</code> on {@code DefaultCitation} implementation class and
  * <code>&#64;TitleProperty(name="date")</code> on {@code DefaultCitationDate} class,
  * Apache SIS can produce a more compact tree table view should be as below:
  *
- * {@preformat text
+ * <pre class="text">
  *   Citation……………………… My document
  *    └─Date………………………… 2012/01/01
- *       └─Date type…… Creation
- * }
- * </div>
+ *       └─Date type…… Creation</pre>
  *
+ * <h2>Condition</h2>
  * The property referenced by this annotation should be the main property if possible, but not necessarily
  * since it may be only a label. However, the property shall be a singleton ([0…1] or [1…1] multiplicity)
  * and cannot be another metadata object.
@@ -62,7 +60,6 @@ import java.lang.annotation.Documented;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  *
  * @see ValueExistencePolicy#COMPACT
  */

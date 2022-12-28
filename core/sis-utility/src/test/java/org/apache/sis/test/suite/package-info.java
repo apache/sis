@@ -23,6 +23,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 package org.apache.sis.test.suite;

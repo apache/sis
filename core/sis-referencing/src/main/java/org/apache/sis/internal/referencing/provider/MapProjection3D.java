@@ -31,7 +31,6 @@ import org.opengis.util.FactoryException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  *
  * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
  */

@@ -34,10 +34,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(LocationTypeTest.class)
-public final strictfp class ReferencingByIdentifiersTest extends TestCase {
+public final class ReferencingByIdentifiersTest extends TestCase {
     /**
      * Creates the example given in annex B of ISO 19112:2003.
      *

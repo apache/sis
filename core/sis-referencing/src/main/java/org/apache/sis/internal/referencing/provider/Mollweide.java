@@ -37,7 +37,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @see <a href="http://geotiff.maptools.org/proj_list/mollweide.html">GeoTIFF parameters for Mollweide</a>
  *
  * @since 1.0
- * @module
  */
 @XmlTransient
 public final class Mollweide extends MapProjection {

@@ -34,7 +34,6 @@ import org.apache.sis.referencing.operation.builder.LocalizationGridBuilder;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class GridCacheValue {
 

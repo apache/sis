@@ -45,10 +45,9 @@ import org.opengis.test.CalculationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class TransverseMercatorTest extends MapProjectionTestCase {
+public final class TransverseMercatorTest extends MapProjectionTestCase {
     /**
      * Distance from central meridian, in degrees, at which errors are considered too important.
      * This threshold is determined by comparisons of computed values against values provided by

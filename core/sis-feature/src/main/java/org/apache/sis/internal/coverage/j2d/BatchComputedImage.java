@@ -41,7 +41,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class BatchComputedImage extends ComputedImage {
     /**

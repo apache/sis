@@ -32,7 +32,6 @@ import javax.measure.Unit;
  * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 0.8
- * @module
  */
 @SuppressWarnings("serial")
 final class ScalarFallback<Q extends Quantity<Q>> extends Scalar<Q> implements InvocationHandler {

@@ -38,7 +38,6 @@ import org.opengis.filter.ResourceId;
  * @param  <R>  the type of resources used as inputs.
  *
  * @since 1.1
- * @module
  */
 final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements ResourceId<R> {
     /**

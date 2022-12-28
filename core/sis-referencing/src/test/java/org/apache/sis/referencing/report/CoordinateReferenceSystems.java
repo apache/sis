@@ -77,9 +77,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
-public final strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
+public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * The titles of some sections where to group CRS. By default CRS are grouped by datum names.
      * But if a name is listed in this map, then that alternative name will be used for grouping purpose.
@@ -621,10 +620,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * We use only the part of the name prior some keywords (e.g. {@code "zone"}).
      * For example if the following codes:
      *
-     * {@preformat text
+     * <pre class="text">
      *    EPSG:32609    WGS 84 / UTM zone 9N
-     *    EPSG:32610    WGS 84 / UTM zone 10N
-     * }
+     *    EPSG:32610    WGS 84 / UTM zone 10N</pre>
      *
      * We compare only the "WGS 84 / UTM" string, then the code. This is a reasonably easy way to keep a more
      * natural ordering ("9" sorted before "10", "UTM North" projections kept together and same for South).

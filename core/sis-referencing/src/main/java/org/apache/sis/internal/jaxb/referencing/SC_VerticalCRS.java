@@ -32,7 +32,6 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_VerticalCRS implements AdapterReplacement {
     /**

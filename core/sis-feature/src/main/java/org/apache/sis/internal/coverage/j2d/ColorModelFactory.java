@@ -50,7 +50,6 @@ import org.apache.sis.util.Debug;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   1.0
- * @module
  */
 public final class ColorModelFactory {
     /**
@@ -655,9 +654,9 @@ public final class ColorModelFactory {
      * Returns a bit count for an {@link IndexColorModel} mapping {@code mapSize} colors.
      * It is guaranteed that the following relation is hold:
      *
-     * {@preformat java
-     *     (1 << getBitCount(mapSize)) >= mapSize
-     * }
+     * {@snippet lang="java" :
+     *     assert (1 << getBitCount(mapSize)) >= mapSize;
+     *     }
      *
      * @param  mapSize  the number of colors in the map.
      * @return the number of bits to use.

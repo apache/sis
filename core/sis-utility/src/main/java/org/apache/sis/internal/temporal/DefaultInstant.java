@@ -28,7 +28,6 @@ import org.opengis.temporal.TemporalPosition;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class DefaultInstant extends Primitive implements Instant {
     /** The date in milliseconds since epoch. */

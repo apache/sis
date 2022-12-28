@@ -33,7 +33,6 @@ import java.util.Iterator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class TemporalToDate extends AbstractCollection<Date> {
     /**

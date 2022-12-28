@@ -53,7 +53,6 @@ import org.opengis.filter.ValueReference;
  * @see AssociationValue
  *
  * @since 1.1
- * @module
  */
 abstract class PropertyValue<V> extends LeafExpression<Feature,V>
         implements ValueReference<Feature,V>, Optimization.OnExpression<Feature,V>

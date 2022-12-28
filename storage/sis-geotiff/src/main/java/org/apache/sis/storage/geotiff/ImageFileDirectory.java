@@ -80,7 +80,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * @see <a href="http://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a>
  *
  * @since 0.8
- * @module
  */
 final class ImageFileDirectory extends DataCube {
     /**
@@ -166,11 +165,11 @@ final class ImageFileDirectory extends DataCube {
      * <p>Assuming integer arithmetic, the number of tiles in an image can be computed as below
      * (these computed values are not TIFF fields):</p>
      *
-     * {@preformat math
-     *   tilesAcross   = (imageWidth  + tileWidth  - 1) / tileWidth
-     *   tilesDown     = (imageHeight + tileHeight - 1) / tileHeight
-     *   tilesPerImage = tilesAcross * tilesDown
-     * }
+     * {@snippet lang="java" :
+     *   tilesAcross   = (imageWidth  + tileWidth  - 1) / tileWidth;
+     *   tilesDown     = (imageHeight + tileHeight - 1) / tileHeight;
+     *   tilesPerImage = tilesAcross * tilesDown;
+     *   }
      *
      * Note that {@link #imageWidth} can be less than {@code tileWidth} and/or {@link #imageHeight} can be less
      * than {@code tileHeight}. Such case means that the tiles are too large or that the tiled image is too small,

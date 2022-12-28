@@ -33,9 +33,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
-public final strictfp class StringAdapterTest extends TestCase {
+public final class StringAdapterTest extends TestCase {
     /**
      * Tests {@link StringAdapter#toString(CharSequence)} for the trivial cases.
      */

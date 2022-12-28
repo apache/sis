@@ -38,7 +38,7 @@ import static org.opengis.test.Assert.*;
  * @since   1.1
  */
 @RunWith(JUnit4.class)
-public final strictfp class ParameterizedTransformTest extends org.opengis.test.referencing.ParameterizedTransformTest {
+public final class ParameterizedTransformTest extends org.opengis.test.referencing.ParameterizedTransformTest {
     /**
      * Creates a new test suite using the singleton factory instance.
      */

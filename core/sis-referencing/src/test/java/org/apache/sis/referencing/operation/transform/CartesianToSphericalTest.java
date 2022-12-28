@@ -33,10 +33,9 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn(SphericalToCartesianTest.class)
-public final strictfp class CartesianToSphericalTest extends TransformTestCase {
+public final class CartesianToSphericalTest extends TransformTestCase {
     /**
      * Tests coordinate conversions.
      *

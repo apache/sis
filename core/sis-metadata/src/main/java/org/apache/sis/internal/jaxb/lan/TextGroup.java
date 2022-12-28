@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlElement;
  * languages. SIS uses the ISO 19139:2007 compliant form for marshalling, but accepts both forms
  * during unmarshalling. More specifically, the name suggests that the format should be:</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
  *   <lan:PT_FreeText>
  *     <lan:textGroup>
@@ -50,7 +50,7 @@ import javax.xml.bind.annotation.XmlElement;
  *
  * But the actual official format is:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gco:CharacterString>Apache SIS, projet OpenSource</gco:CharacterString>
  *   <lan:PT_FreeText>
  *     <lan:textGroup>
@@ -73,7 +73,6 @@ import javax.xml.bind.annotation.XmlElement;
  * @see LocalisedCharacterString
  *
  * @since 0.3
- * @module
  */
 final class TextGroup {
     /**
@@ -113,11 +112,10 @@ final class TextGroup {
      * Returns a string representation of this text group for debugging purpose.
      * Example:
      *
-     * {@preformat text
+     * <pre class="text">
      *   TextGroup
      *   ├─ LocalisedCharacterString[#locale-eng, “A text”]
-     *   └─ LocalisedCharacterString[#locale-fra, “Un texte”]
-     * }
+     *   └─ LocalisedCharacterString[#locale-fra, “Un texte”]</pre>
      *
      * @see LocalisedCharacterString#toString()
      */

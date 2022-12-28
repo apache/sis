@@ -33,7 +33,6 @@ import org.opengis.referencing.ReferenceSystem;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public final class ReferencingTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**

@@ -62,7 +62,6 @@ import org.apache.sis.internal.storage.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class AbstractGridCoverageResource extends AbstractResource implements GridCoverageResource {
     /**

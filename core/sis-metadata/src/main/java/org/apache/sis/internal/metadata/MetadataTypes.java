@@ -46,7 +46,6 @@ import org.opengis.metadata.spatial.Georeferenceable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class MetadataTypes extends TypeRegistration implements UnaryOperator<Object> {
     /**

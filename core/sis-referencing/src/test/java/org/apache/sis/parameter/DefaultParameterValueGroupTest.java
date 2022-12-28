@@ -45,13 +45,12 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultParameterDescriptorGroupTest.class,
     DefaultParameterValueTest.class
 })
-public final strictfp class DefaultParameterValueGroupTest extends TestCase {
+public final class DefaultParameterValueGroupTest extends TestCase {
     /**
      * The descriptors of parameters to be tested by this class.
      * The default descriptors are:

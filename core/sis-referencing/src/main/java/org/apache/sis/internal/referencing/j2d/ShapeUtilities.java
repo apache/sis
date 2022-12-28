@@ -37,7 +37,6 @@ import static java.lang.Double.isInfinite;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
 public final class ShapeUtilities extends Static {
     /**

@@ -33,9 +33,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
-final strictfp class TransformResultComparator implements MathTransform {
+final class TransformResultComparator implements MathTransform {
     /**
      * The transform to be used as the reference.
      */

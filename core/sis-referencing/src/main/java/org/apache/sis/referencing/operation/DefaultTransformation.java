@@ -52,7 +52,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see DefaultConversion
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "TransformationType")
 @XmlRootElement(name = "Transformation")

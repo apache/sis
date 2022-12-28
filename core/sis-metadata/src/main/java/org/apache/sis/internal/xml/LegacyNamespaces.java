@@ -31,7 +31,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @see org.apache.sis.xml.Namespaces
  *
  * @since 0.4
- * @module
  */
 public final class LegacyNamespaces {
     /**

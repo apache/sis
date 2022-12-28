@@ -39,7 +39,6 @@ import org.opengis.feature.PropertyType;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 final class LinkOperation extends AbstractOperation {
     /**

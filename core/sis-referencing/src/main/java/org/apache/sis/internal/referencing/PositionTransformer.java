@@ -57,7 +57,7 @@ import org.apache.sis.util.Utilities;
  * For example, suppose that {@code MyClass} needs to perform its internal working in some particular CRS,
  * but we want robust API accepting whatever CRS the client uses. {@code MyClass} can be written as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class MyClass {
  *         private static final CoordinateReferenceSystem PUBLIC_CRS = ...
  *         private static final CoordinateReferenceSystem INTERNAL_CRS = ...
@@ -74,14 +74,13 @@ import org.apache.sis.util.Utilities;
  *             return myPosition.inverseTransform(PUBLIC_CRS);
  *         }
  *     }
- * }
+ *     }
  *
  * This class is not thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})         // Not intended to be serialized and nothing to clone.
 public final class PositionTransformer extends GeneralDirectPosition {

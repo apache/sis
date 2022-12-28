@@ -231,11 +231,9 @@ div.preformat {
 }
 
 /*
- * Output of {@preformat} inline tag.
+ * Preformatted blocks.
  */
-pre.code-sample {
-  margin-left:   40px;
-  margin-right:  40px;
+pre.text, pre.math {
   margin-top:    12px;
   margin-bottom: 12px;
 }

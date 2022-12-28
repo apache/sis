@@ -35,10 +35,9 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @SuppressWarnings("serial")
-final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
+final class CustomAttribute<V> extends AbstractAttribute<V> {
     /**
      * A quality information that this attribute will report in addition to the default ones.
      */

@@ -69,7 +69,6 @@ import org.apache.sis.internal.storage.StoreResource;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
     /**
@@ -130,9 +129,9 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * except if bands are stored as one variable dimension ({@link #bandDimension} ≥ 0) in which case the length shall be exactly 1.
      * Accesses to this array need to take in account that the length may be only 1. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Variable v = data[bandDimension >= 0 ? 0 : index];
-     * }
+     *     }
      */
     private final Variable[] data;
 

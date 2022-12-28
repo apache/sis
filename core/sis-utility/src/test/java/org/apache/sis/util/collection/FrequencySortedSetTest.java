@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class FrequencySortedSetTest extends TestCase {
+public final class FrequencySortedSetTest extends TestCase {
     /**
      * A simple case with only two elements, the first one being omitted.
      */

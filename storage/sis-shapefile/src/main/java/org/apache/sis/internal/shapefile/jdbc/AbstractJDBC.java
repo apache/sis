@@ -28,7 +28,6 @@ import org.apache.sis.internal.shapefile.AutoChecker;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public abstract class AbstractJDBC extends AutoChecker implements Wrapper {
     /**

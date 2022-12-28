@@ -30,7 +30,6 @@ import org.opengis.referencing.operation.MathTransform;
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class GeoKeys {
     /**

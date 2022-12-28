@@ -34,10 +34,9 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(NilReasonMarshallingTest.class)
-public final strictfp class UUIDMarshallingTest extends TestCase {
+public final class UUIDMarshallingTest extends TestCase {
     /**
      * A random UUID for the tests in this class.
      */
@@ -97,7 +96,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      * The element of interest for this test is the {@code "uuid"} attribute value
      * in the {@code <cit:CI_Series>} element of the following XML fragment:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:title>
      *       <gco:CharacterString>My data</gco:CharacterString>
@@ -110,7 +109,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      *       </cit:CI_Series>
      *     </cit:series>
      *   </cit:CI_Citation>
-     * }
+     *   }
      *
      * On an implementation note, the {@code uuid} and other attributes of the {@code <cit:CI_Series>}
      * elements are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.
@@ -148,7 +147,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      * <p>The element of interest for this test is the {@code "uuidref"} part
      * in the {@code <cit:series>} property of the following XML fragment:</p>
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:title>
      *       <gco:CharacterString>My data</gco:CharacterString>
@@ -161,7 +160,7 @@ public final strictfp class UUIDMarshallingTest extends TestCase {
      *       </cit:CI_Series>
      *     </cit:series>
      *   </cit:CI_Citation>
-     * }
+     *   }
      *
      * On an implementation note, the {@code uuidref}, {@code xlink:href} and other attributes of the
      * {@code <cit:series>} element are handled by {@link org.apache.sis.internal.jaxb.gco.PropertyType}.

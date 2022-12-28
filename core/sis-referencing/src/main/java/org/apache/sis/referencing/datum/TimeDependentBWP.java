@@ -60,7 +60,6 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")                   // Fields in this class do not need cloning.
 public class TimeDependentBWP extends BursaWolfParameters {

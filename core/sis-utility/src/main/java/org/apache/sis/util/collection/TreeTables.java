@@ -47,23 +47,21 @@ import org.apache.sis.util.ArgumentChecks;
  * <caption>Example of tree depth reduction</caption>
  * <tr><th>Before</th><th class="sep">After</th></tr>
  * <tr><td>
- * {@preformat text
+ * <pre class="text">
  *   root
  *     ├─users
  *     │   └─alice
  *     │       ├─data
  *     │       │   └─mercator
  *     │       └─document
- *     └─lib
- * }
+ *     └─lib</pre>
  * </td><td class="sep">
- * {@preformat text
+ * <pre class="text">
  *   root
  *     ├─users/alice
  *     │   ├─data/mercator
  *     │   └─document
- *     └─lib
- * }
+ *     └─lib</pre>
  * </td></tr></table>
  * There is no predefined method for this task because there is too many parameters that
  * developers may want to customize (columns to merge, conditions for accepting the merge,
@@ -72,7 +70,8 @@ import org.apache.sis.util.ArgumentChecks;
  * has no value (for avoiding data lost when the node is discarded) and use the system file
  * separator as name separator:
  *
- * {@preformat java
+ * {@snippet lang="java" :
+ * class MyClass {
  *     final TableColumn columnToProtect = TableColumn.VALUE;
  *     final TableColumn columnToConcatenate = TableColumn.NAME;
  *
@@ -97,6 +96,7 @@ import org.apache.sis.util.ArgumentChecks;
  *         return node;
  *     }
  * }
+ * }
  *
  * @author  Martin Desruisseaux
  * @version 0.3
@@ -104,7 +104,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see TreeTable
  *
  * @since 0.3
- * @module
  */
 public final class TreeTables extends Static {
     /**
@@ -125,12 +124,11 @@ public final class TreeTables extends Static {
      * finds or creates the nodes for the following tree, where {@code "from"} is the
      * node given in argument to this method:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   from
      *     └─users
      *         └─alice
-     *             └─data
-     * }
+     *             └─data</pre>
      *
      * @param  from    the root node from which to start the search.
      * @param  column  the column containing the file name.

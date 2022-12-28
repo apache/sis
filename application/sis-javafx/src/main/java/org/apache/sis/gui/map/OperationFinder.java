@@ -47,7 +47,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 abstract class OperationFinder extends Task<MathTransform> {
     /**

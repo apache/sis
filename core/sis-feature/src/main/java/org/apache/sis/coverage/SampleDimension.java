@@ -82,7 +82,6 @@ import org.apache.sis.util.Debug;
  * @see org.opengis.metadata.content.SampleDimension
  *
  * @since 1.0
- * @module
  */
 public class SampleDimension implements Serializable {
     /**
@@ -546,7 +545,6 @@ public class SampleDimension implements Serializable {
      * @author  Alexis Manin (Geomatys)
      * @version 1.2
      * @since   1.0
-     * @module
      */
     public static class Builder {
         /**

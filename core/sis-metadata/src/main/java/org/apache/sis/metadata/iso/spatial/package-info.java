@@ -86,7 +86,6 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/msr/1.0/msr.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MSR,

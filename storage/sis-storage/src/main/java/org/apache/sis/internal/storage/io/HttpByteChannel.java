@@ -36,7 +36,6 @@ import java.util.List;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.4
- * @module
  */
 final class HttpByteChannel extends FileCacheByteChannel {
     /**

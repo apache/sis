@@ -47,13 +47,12 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @DependsOn({
     MetadataSourceTest.class,
     IdentifierGeneratorTest.class
 })
-public final strictfp class MetadataWriterTest extends TestCase {
+public final class MetadataWriterTest extends TestCase {
     /**
      * The data source providing connections to the database.
      */
@@ -130,21 +129,20 @@ public final strictfp class MetadataWriterTest extends TestCase {
      * Reads known entries in the database.
      * Expected entry is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *     ├─Title………………………………………………………… EPSG Geodetic Parameter Dataset
      *     ├─Identifier
      *     │   └─Code………………………………………………… EPSG
      *     ├─Cited responsible party
      *     │   ├─Party
-     *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
+     *     │   │   ├─Name……………………………………… International Association of Oil &amp; Gas Producers
      *     │   │   └─Contact info
      *     │   │       └─Online resource
      *     │   │           ├─Linkage………… https://epsg.org/
      *     │   │           └─Function……… Information
      *     │   └─Role………………………………………………… Principal investigator
-     *     └─Presentation form………………………… Table digital
-     * }
+     *     └─Presentation form………………………… Table digital</pre>
      *
      * @throws MetadataStoreException if an error occurred while reading the database.
      */
@@ -195,11 +193,10 @@ public final strictfp class MetadataWriterTest extends TestCase {
      * Read and write a metadata object containing deprecated properties.
      * The metadata tested by this method is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Telephone
      *     ├─Number………………… 01.02.03.04
-     *     └─Number type…… Voice
-     * }
+     *     └─Number type…… Voice</pre>
      *
      * The metadata should be stored in columns named {@code "number"} and {@code "numberType"} even if we
      * constructed the metadata using the deprecated {@code "voice"} property. Conversely, at reading time

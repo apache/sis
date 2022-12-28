@@ -41,7 +41,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
     /**

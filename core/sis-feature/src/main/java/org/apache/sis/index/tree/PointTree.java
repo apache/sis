@@ -78,7 +78,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @param  <E>  the type of elements stored in this tree.
  *
  * @since 1.1
- * @module
  */
 public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
     /**

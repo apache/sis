@@ -100,7 +100,6 @@ import org.locationtech.jts.geom.Polygon;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class SEPortrayer {
     /**

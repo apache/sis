@@ -27,7 +27,6 @@ import java.awt.Shape;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class AbstractShape implements Shape {
     /**

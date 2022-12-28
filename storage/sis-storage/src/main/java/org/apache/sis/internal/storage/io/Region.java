@@ -43,7 +43,6 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 public final class Region {
     /**

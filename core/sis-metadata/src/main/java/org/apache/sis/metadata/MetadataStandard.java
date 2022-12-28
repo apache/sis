@@ -95,7 +95,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * @see AbstractMetadata
  *
  * @since 0.3
- * @module
  */
 public class MetadataStandard implements Serializable {
     /**
@@ -687,16 +686,15 @@ public class MetadataStandard implements Serializable {
      * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
      * sentences} (usually in English).
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):
      *
-     * {@preformat java
-     *   MetadataStandard standard = MetadataStandard.ISO_19115;
-     *   Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
-     *   String value = names.get("alternateTitle");
-     *   System.out.println(value);                   // alternateTitles
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     MetadataStandard standard = MetadataStandard.ISO_19115;
+     *     Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
+     *     String value = names.get("alternateTitle");
+     *     System.out.println(value);                   // alternateTitles
+     *     }
      *
      * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
      * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the
@@ -725,16 +723,15 @@ public class MetadataStandard implements Serializable {
      * {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
      * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * the following code prints the {@link org.opengis.util.InternationalString} class name:
      *
-     * {@preformat java
-     *   MetadataStandard  standard = MetadataStandard.ISO_19115;
-     *   Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
-     *   Class<?> value = types.get("alternateTitle");
-     *   System.out.println(value);                       // class org.opengis.util.InternationalString
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     MetadataStandard  standard = MetadataStandard.ISO_19115;
+     *     Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
+     *     Class<?> value = types.get("alternateTitle");
+     *     System.out.println(value);                       // class org.opengis.util.InternationalString
+     *     }
      *
      * @param  type         the interface or implementation class of a metadata.
      * @param  keyPolicy    determines the string representation of map keys.
@@ -939,13 +936,13 @@ public class MetadataStandard implements Serializable {
      * to have their {@code IDENTIFIER} set before any other operation. For example, the following code
      * adds a title to a citation:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     TreeTable.Node node = ...;                               // The node for a DefaultCitation.
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");
      *     // Nothing else to do - the child node has been added.
-     * }
+     *     }
      *
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.

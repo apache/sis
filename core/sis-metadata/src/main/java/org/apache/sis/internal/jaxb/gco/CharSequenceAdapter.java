@@ -48,7 +48,6 @@ import org.apache.sis.internal.jaxb.lan.PT_FreeText;
  * @see InternationalStringAdapter
  *
  * @since 0.3
- * @module
  */
 public class CharSequenceAdapter extends XmlAdapter<GO_CharacterString, CharSequence> {
     /**

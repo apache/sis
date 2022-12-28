@@ -33,7 +33,6 @@ import java.io.IOException;
  * @see javax.imageio.stream.ImageInputStream#reset()
  *
  * @since 0.8
- * @module
  */
 public class InvalidSeekException extends IOException {
     /**

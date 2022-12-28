@@ -43,9 +43,8 @@ import org.opengis.feature.FeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class ConcatenatedFeatureSetTest extends TestCase {
+public final class ConcatenatedFeatureSetTest extends TestCase {
     /**
      * Tests the concatenation of two feature sets having the same feature type.
      *

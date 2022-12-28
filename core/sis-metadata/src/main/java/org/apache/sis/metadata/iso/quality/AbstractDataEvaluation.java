@@ -42,7 +42,6 @@ import org.opengis.metadata.quality.SampleBasedInspection;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "AbstractDQ_DataEvaluation_Type")
 @XmlRootElement(name = "AbstractDQ_DataEvaluation")

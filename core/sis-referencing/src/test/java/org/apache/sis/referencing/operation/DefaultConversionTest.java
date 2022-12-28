@@ -58,12 +58,11 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     DefaultTransformationTest.class     // Because similar to DefaultConversion but simpler.
 })
-public final strictfp class DefaultConversionTest extends TestCase {
+public final class DefaultConversionTest extends TestCase {
     /**
      * The rotation from a CRS using the Paris prime meridian to a CRS using the Greenwich prime meridian,
      * in degrees. The definitive value is 2.5969213 grads.
