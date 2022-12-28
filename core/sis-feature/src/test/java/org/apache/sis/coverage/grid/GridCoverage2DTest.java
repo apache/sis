@@ -55,7 +55,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @version 1.2
  * @since   1.1
  */
-public strictfp class GridCoverage2DTest extends TestCase {
+public class GridCoverage2DTest extends TestCase {
     /**
      * Width and height of the grid tested in this class.
      */

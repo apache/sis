@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class GeoKeysTest extends TestCase {
+public final class GeoKeysTest extends TestCase {
     /**
      * Tests {@link GeoKeys#name(short)}.
      */

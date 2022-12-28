@@ -45,7 +45,7 @@ import static org.apache.sis.test.ReferencingAssert.assertWktEquals;
  * @since   0.4
  */
 @DependsOn(AbstractIdentifiedObjectTest.class)
-public final strictfp class AbstractReferenceSystemTest extends TestCase {
+public final class AbstractReferenceSystemTest extends TestCase {
     /**
      * Tests {@link AbstractReferenceSystem}.
      */

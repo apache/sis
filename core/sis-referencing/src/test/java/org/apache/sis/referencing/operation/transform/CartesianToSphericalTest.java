@@ -35,7 +35,7 @@ import org.junit.Test;
  * @since   0.7
  */
 @DependsOn(SphericalToCartesianTest.class)
-public final strictfp class CartesianToSphericalTest extends TransformTestCase {
+public final class CartesianToSphericalTest extends TransformTestCase {
     /**
      * Tests coordinate conversions.
      *

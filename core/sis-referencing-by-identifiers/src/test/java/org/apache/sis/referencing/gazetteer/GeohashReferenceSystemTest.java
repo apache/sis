@@ -48,7 +48,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @since   0.1
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
-public final strictfp class GeohashReferenceSystemTest extends TestCase {
+public final class GeohashReferenceSystemTest extends TestCase {
     /**
      * Tolerance factor for floating point comparison.
      */

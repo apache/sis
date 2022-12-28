@@ -49,7 +49,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn({
     org.apache.sis.referencing.CommonCRSTest.class
 })
-public final strictfp class ServicesForMetadataTest extends TestCase {
+public final class ServicesForMetadataTest extends TestCase {
     /**
      * Tests {@link org.apache.sis.metadata.iso.extent.Extents#centroid(GeographicBoundingBox)}.
      *

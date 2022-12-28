@@ -37,7 +37,7 @@ import static java.lang.StrictMath.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class CassiniSoldnerTest extends MapProjectionTestCase {
+public final class CassiniSoldnerTest extends MapProjectionTestCase {
     /**
      * Returns the operation method for the projection tested in this class.
      *

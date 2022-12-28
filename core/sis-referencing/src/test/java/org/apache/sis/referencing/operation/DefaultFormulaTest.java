@@ -30,7 +30,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class DefaultFormulaTest extends TestCase {
+public final class DefaultFormulaTest extends TestCase {
     /**
      * Tests {@link DefaultFormula#toWKT()}.
      */

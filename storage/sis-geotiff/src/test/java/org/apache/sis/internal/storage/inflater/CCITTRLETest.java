@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class CCITTRLETest extends TestCase {
+public final class CCITTRLETest extends TestCase {
     /**
      * Step between 2 "Make-up codes" values.
      */

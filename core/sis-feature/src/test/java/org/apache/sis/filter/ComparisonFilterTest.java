@@ -40,7 +40,7 @@ import org.opengis.filter.BetweenComparisonOperator;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class ComparisonFilterTest extends TestCase {
+public final class ComparisonFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

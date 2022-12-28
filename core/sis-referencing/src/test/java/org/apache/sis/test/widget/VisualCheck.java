@@ -32,7 +32,7 @@ import org.apache.sis.test.TestConfiguration;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class VisualCheck {
+public final class VisualCheck {
     /**
      * Whether to show widgets.
      */

@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   0.3
  */
-public final strictfp class ChannelDataInputTest extends ChannelDataTestCase {
+public final class ChannelDataInputTest extends ChannelDataTestCase {
     /**
      * The implementation to test.
      */

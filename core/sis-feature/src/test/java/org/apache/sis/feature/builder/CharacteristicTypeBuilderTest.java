@@ -35,7 +35,7 @@ import org.opengis.feature.AttributeType;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
+public final class CharacteristicTypeBuilderTest extends TestCase {
     /**
      * Tests {@link CharacteristicTypeBuilder#setValueClass(Class)}.
      * This implies the replacement of the builder by a new instance.

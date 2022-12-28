@@ -45,7 +45,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class PropertyInformationTest extends TestCase {
+public final class PropertyInformationTest extends TestCase {
     /**
      * Creates a property information instance for the given method of the {@link Citation} interface.
      *

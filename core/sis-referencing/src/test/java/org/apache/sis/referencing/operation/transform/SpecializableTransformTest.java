@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class SpecializableTransformTest extends MathTransformTestCase {
+public final class SpecializableTransformTest extends MathTransformTestCase {
     /**
      * Creates a transform scaling the coordinate values by 10, then applying the given translation.
      */

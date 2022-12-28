@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.Context;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class ReferenceResolverMock extends ReferenceResolver {
+public final class ReferenceResolverMock extends ReferenceResolver {
     /**
      * Creates a new reference resolver.
      */

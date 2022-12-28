@@ -40,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.3
  */
 @DependsOn(VariableTest.class)
-public strictfp class GridTest extends TestCase {
+public class GridTest extends TestCase {
     /**
      * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is used as a target dimension
      * for the {@code gridToCRS} transform. The UCAR library and Apache SIS implementation have different behavior

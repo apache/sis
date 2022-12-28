@@ -35,7 +35,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @since   0.3
  */
 @DependsOn(ArrayEnvelopeTest.class)
-public final strictfp class ImmutableEnvelopeTest extends TestCase {
+public final class ImmutableEnvelopeTest extends TestCase {
     /**
      * Tests {@code ImmutableEnvelope} serialization.
      */

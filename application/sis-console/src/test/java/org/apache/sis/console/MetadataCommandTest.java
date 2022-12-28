@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class MetadataCommandTest extends TestCase {
+public final class MetadataCommandTest extends TestCase {
     /**
      * Tests the sub-command on a netCDF file.
      *

@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class ImageLayoutTest extends TestCase {
+public final class ImageLayoutTest extends TestCase {
     /**
      * Tests {@link ImageLayout#suggestTileSize(int, int, boolean)}.
      */

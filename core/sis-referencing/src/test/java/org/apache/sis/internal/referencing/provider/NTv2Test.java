@@ -57,7 +57,7 @@ import static org.apache.sis.internal.referencing.provider.DatumShiftGridLoader.
  * @since 0.7
  */
 @DependsOn(DatumShiftGridFileTest.class)
-public final strictfp class NTv2Test extends DatumShiftTestCase {
+public final class NTv2Test extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.
      * The amount of data in this test file is less than 0.14% of the original file.

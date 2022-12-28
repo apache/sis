@@ -59,7 +59,7 @@ import static org.opengis.test.Assert.*;
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.internal.referencing.provider.TransverseMercatorTest.class
 })
-public final strictfp class StandardDefinitionsTest extends TestCase {
+public final class StandardDefinitionsTest extends TestCase {
     /**
      * Verifies value of the {@link StandardDefinitions#GREENWICH} code.
      * This method is for ensuring consistency between hard-coded constants.

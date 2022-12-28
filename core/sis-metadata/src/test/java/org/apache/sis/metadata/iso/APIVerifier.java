@@ -52,7 +52,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class APIVerifier extends TestCase {
+public final class APIVerifier extends TestCase {
     /**
      * The method being verified.
      * This is used in case of errors for providing information about the problematic method.

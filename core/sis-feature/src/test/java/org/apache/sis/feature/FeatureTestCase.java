@@ -46,7 +46,7 @@ import org.opengis.feature.Property;
  * @version 0.8
  * @since   0.5
  */
-public abstract strictfp class FeatureTestCase extends TestCase {
+public abstract class FeatureTestCase extends TestCase {
     /**
      * The feature being tested.
      */

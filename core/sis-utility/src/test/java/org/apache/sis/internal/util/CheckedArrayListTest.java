@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @since   0.4
  */
-public final strictfp class CheckedArrayListTest extends TestCase {
+public final class CheckedArrayListTest extends TestCase {
     /**
      * Tests {@link CheckedArrayList#add(Object)}.
      */

@@ -41,7 +41,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.4
  */
 @DependsOn(SolverTest.class)
-public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
+public final class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns, initialized by {@link #prepareNewMatrixSize(Random)}.
      */

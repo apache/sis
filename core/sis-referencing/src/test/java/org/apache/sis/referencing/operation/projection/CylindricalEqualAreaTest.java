@@ -37,7 +37,7 @@ import static java.lang.Double.NaN;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCase {
+public final class CylindricalEqualAreaTest extends MapProjectionTestCase {
     /**
      * Tests the derivatives at a few points. This method compares the derivatives computed by
      * the projection with an estimation of derivatives computed by the finite differences method.

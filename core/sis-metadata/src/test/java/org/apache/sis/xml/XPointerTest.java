@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.2
  */
-public final strictfp class XPointerTest extends TestCase {
+public final class XPointerTest extends TestCase {
     /**
      * Tests {@link XPointer#UOM}.
      */

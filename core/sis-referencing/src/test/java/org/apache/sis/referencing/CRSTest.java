@@ -64,7 +64,7 @@ import static org.apache.sis.test.Assert.*;
     CommonCRSTest.class,
     AuthorityFactoriesTest.class
 })
-public final strictfp class CRSTest extends TestCase {
+public final class CRSTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).

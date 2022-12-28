@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.1
  * @since   0.4
  */
-public final strictfp class SymbolsTest extends TestCase {
+public final class SymbolsTest extends TestCase {
     /**
      * Tests the {@link Symbols#containsElement(CharSequence, String)} method.
      */

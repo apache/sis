@@ -32,7 +32,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @version 0.4
  * @since   0.4
  */
-final strictfp class ParameterValueGroupWrapper implements ParameterValueGroup {
+final class ParameterValueGroupWrapper implements ParameterValueGroup {
     /**
      * The implementation to hide.
      */

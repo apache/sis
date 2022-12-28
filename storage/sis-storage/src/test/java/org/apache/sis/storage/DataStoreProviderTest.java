@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @since   1.2
  */
 @DependsOn(StorageConnectorTest.class)
-public final strictfp class DataStoreProviderTest extends TestCase {
+public final class DataStoreProviderTest extends TestCase {
     /**
      * A dummy provider instance to test. Only the
      * {@link DataStoreProvider#probeContent(StorageConnector, Class, Prober)} method is useful on this instance.

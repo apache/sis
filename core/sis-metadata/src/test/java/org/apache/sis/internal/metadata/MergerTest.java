@@ -47,7 +47,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.8
  */
-public final strictfp class MergerTest extends TestCase {
+public final class MergerTest extends TestCase {
     /**
      * Creates a metadata sample with 3 content information of different kind.
      */

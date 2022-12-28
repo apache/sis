@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
-public final strictfp class WeakHashSetTest extends TestCase {
+public final class WeakHashSetTest extends TestCase {
     /**
      * The size of the test sets to be created.
      */

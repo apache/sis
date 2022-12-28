@@ -44,7 +44,7 @@ import static org.opengis.test.Assert.*;
 @DependsOn({
     ChannelDecoderTest.class
 })
-public final strictfp class NetcdfStoreProviderTest extends TestCase {
+public final class NetcdfStoreProviderTest extends TestCase {
     /**
      * Tests {@link NetcdfStoreProvider#probeContent(StorageConnector)} for an input stream which shall
      * be recognized as a classic netCDF file.

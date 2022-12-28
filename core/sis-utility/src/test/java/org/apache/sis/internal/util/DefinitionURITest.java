@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.4
  */
-public final strictfp class DefinitionURITest extends TestCase {
+public final class DefinitionURITest extends TestCase {
     /**
      * Tests {@link DefinitionURI#parse(String)} on strings that should not be recognized as URN.
      */

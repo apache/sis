@@ -62,7 +62,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     CC_OperationParameterGroupTest.class,
     org.apache.sis.parameter.ParameterMarshallingTest.class
 })
-public final strictfp class SingleOperationMarshallingTest extends TestCase {
+public final class SingleOperationMarshallingTest extends TestCase {
     /**
      * Creates the test operation method.
      */

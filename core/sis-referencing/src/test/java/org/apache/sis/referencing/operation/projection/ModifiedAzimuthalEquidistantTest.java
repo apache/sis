@@ -31,7 +31,7 @@ import org.junit.Test;
  * @since   1.1
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistantTest {
+public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistantTest {
     /**
      * Returns the method to be tested.
      */

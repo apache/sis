@@ -56,7 +56,7 @@ import org.apache.sis.util.StringBuilders;
  * @version 1.3
  * @since   1.0
  */
-public final strictfp class SchemaCompliance extends SchemaInformation {
+public final class SchemaCompliance extends SchemaInformation {
     /**
      * The prefix of XML type names for properties. In ISO/OGC schemas, this prefix does not appear
      * in the definition of class types but may appear in the definition of property types.

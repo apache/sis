@@ -45,7 +45,7 @@ import org.opengis.filter.LogicalOperator;
  * @version 1.2
  * @since   1.1
  */
-public final strictfp class LogicalFilterTest extends TestCase {
+public final class LogicalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

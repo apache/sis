@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.0
  */
-public final strictfp class StoreListenersTest extends TestCase implements StoreListener<WarningEvent> {
+public final class StoreListenersTest extends TestCase implements StoreListener<WarningEvent> {
     /**
      * Dummy data store used for firing events.
      */

@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.6
  */
-public final strictfp class ElementTest extends TestCase {
+public final class ElementTest extends TestCase {
     /**
      * A dummy parser to be given to the {@link Element} constructor.
      */

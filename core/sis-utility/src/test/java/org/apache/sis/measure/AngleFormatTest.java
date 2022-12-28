@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.*;
   FormattedCharacterIteratorTest.class,
   org.apache.sis.math.MathFunctionsTest.class
 })
-public final strictfp class AngleFormatTest extends TestCase {
+public final class AngleFormatTest extends TestCase {
     /**
      * Tests a pattern with illegal usage of D, M and S symbols.
      */

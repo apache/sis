@@ -33,7 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.profile.fra.DataIdentificationTest.class,
     org.apache.sis.profile.france.FrenchProfileTest.class
 })
-public final strictfp class FrenchProfileTestSuite extends TestSuite {
+public final class FrenchProfileTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

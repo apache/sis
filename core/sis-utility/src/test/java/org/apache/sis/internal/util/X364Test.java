@@ -33,7 +33,7 @@ import static org.apache.sis.internal.util.X364.*;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)
-public final strictfp class X364Test extends TestCase {
+public final class X364Test extends TestCase {
     /**
      * Tests {@link X364#forColorName(String)}.
      */

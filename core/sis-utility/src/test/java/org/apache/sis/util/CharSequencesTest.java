@@ -39,7 +39,7 @@ import static org.apache.sis.util.CharSequences.*;
     ArraysExtTest.class,
     CharactersTest.class
 })
-public final strictfp class CharSequencesTest extends TestCase {
+public final class CharSequencesTest extends TestCase {
     /**
      * Tests {@link CharSequences#spaces(int)}.
      */

@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.2
  * @since   0.3
  */
-public final strictfp class StatisticsTest extends TestCase {
+public final class StatisticsTest extends TestCase {
     /**
      * For floating point comparisons.
      */

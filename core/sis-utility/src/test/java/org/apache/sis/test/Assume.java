@@ -28,7 +28,7 @@ import org.apache.sis.internal.system.DataDirectory;
  * @version 0.7
  * @since   0.7
  */
-public final strictfp class Assume extends org.junit.Assume {
+public final class Assume extends org.junit.Assume {
     /**
      * Do not allow instantiation.
      */

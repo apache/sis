@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  */
 @DependsOn(CylindricalEqualAreaTest.class)
-public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
+public final class AlbersEqualAreaTest extends MapProjectionTestCase {
     /**
      * Returns whether the given projection is the spherical implementation.
      */

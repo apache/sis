@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.4
  * @since   0.3
  */
-public final strictfp class NilReasonTest extends TestCase {
+public final class NilReasonTest extends TestCase {
     /**
      * Tests the {@link NilReason#valueOf(String)} method on constants.
      *

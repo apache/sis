@@ -39,7 +39,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.geotiff.XMLMetadataTest.class,
     org.apache.sis.storage.geotiff.SelfConsistencyTest.class
 })
-public final strictfp class GeoTiffTestSuite extends TestSuite {
+public final class GeoTiffTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

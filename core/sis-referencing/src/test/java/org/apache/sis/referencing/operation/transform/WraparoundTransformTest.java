@@ -40,7 +40,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class WraparoundTransformTest extends TestCase {
+public final class WraparoundTransformTest extends TestCase {
     /**
      * Tests {@link WraparoundTransform#inverse()}.
      *

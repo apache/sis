@@ -50,7 +50,7 @@ import org.opengis.filter.SortProperty;
  * @version 1.3
  * @since   1.0
  */
-public final strictfp class FeatureQueryTest extends TestCase {
+public final class FeatureQueryTest extends TestCase {
     /**
      * An arbitrary number of features, all of the same type.
      */

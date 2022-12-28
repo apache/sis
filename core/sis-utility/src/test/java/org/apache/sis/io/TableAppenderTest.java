@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
   org.apache.sis.util.CharSequencesTest.class,
   org.apache.sis.internal.util.X364Test.class,
   LineAppenderTest.class})
-public final strictfp class TableAppenderTest extends AppenderTestCase {
+public final class TableAppenderTest extends AppenderTestCase {
     /**
      * The table appender to test. May not be same instance than {@link #appender},
      * because the super-class will wraps it in a {@link SingleCharAppendable} in

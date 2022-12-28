@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.*;
     org.apache.sis.referencing.cs.HardCodedCSTest.class,
     DefaultGeographicCRSTest.class
 })
-public final strictfp class HardCodedCRSTest extends TestCase {
+public final class HardCodedCRSTest extends TestCase {
     /**
      * Validates constants.
      *

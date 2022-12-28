@@ -47,7 +47,7 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
     DefaultParameterValueTest.class,
     ParametersTest.class
 })
-public strictfp class TensorParametersTest extends TestCase {
+public class TensorParametersTest extends TestCase {
     /**
      * The parameters to use for testing purpose. Mostly identical to {@link TensorParameters#WKT1},
      * except that it is not an instance of the {@link MatrixParameters} subclass. Those parameters

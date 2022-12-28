@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(TestRunner.class)
 @DependsOn(GeodeticObjectParserTest.class)
-public final strictfp class WKTParserTest extends CRSParserTest {
+public final class WKTParserTest extends CRSParserTest {
     /**
      * Whether the test should replace the curly quotation marks “ and ” by the straight quotation mark ".
      * The ISO 19162 specification uses only straight quotation marks, but SIS supports both.

@@ -69,7 +69,7 @@ import static org.junit.Assume.assumeTrue;
  * @since   0.7
  */
 @DependsOn(EPSGFactoryTest.class)
-public final strictfp class EPSGInstallerTest extends TestCase {
+public final class EPSGInstallerTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of tests.
      * This rule is used by tests that verifies the log message content.

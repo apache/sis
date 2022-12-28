@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class DefaultEvaluationMethodTest extends TestCase {
+public final class DefaultEvaluationMethodTest extends TestCase {
     /**
      * Tests the {@link DefaultEvaluationMethod#getDates()} list,
      * which is backed by a custom implementation.

@@ -44,7 +44,7 @@ import org.opengis.feature.PropertyType;
     DenseFeatureTest.class,
     CharacteristicMapTest.class
 })
-public final strictfp class FeatureFormatTest extends TestCase {
+public final class FeatureFormatTest extends TestCase {
     /**
      * Creates the formatter instance to be used for the tests.
      */

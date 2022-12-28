@@ -36,7 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class,
     org.apache.sis.referencing.gazetteer.GazetteerFactoryTest.class
 })
-public final strictfp class ReferencingByIdentifiersTestSuite extends TestSuite {
+public final class ReferencingByIdentifiersTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

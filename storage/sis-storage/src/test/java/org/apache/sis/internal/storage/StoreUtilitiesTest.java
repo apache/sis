@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class StoreUtilitiesTest extends TestCase {
+public final class StoreUtilitiesTest extends TestCase {
     /**
      * Tests {@link StoreUtilities#basedOnASCII(Charset)}.
      */

@@ -29,7 +29,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.6
  * @since   0.3
  */
-public final strictfp class AssertTest extends TestCase {
+public final class AssertTest extends TestCase {
     /**
      * Tests the {@link org.apache.sis.test.Assert#assertMultilinesEquals(CharSequence, CharSequence)} method.
      */

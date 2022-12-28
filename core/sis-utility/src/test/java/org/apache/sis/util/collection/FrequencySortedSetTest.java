@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class FrequencySortedSetTest extends TestCase {
+public final class FrequencySortedSetTest extends TestCase {
     /**
      * A simple case with only two elements, the first one being omitted.
      */

@@ -79,7 +79,7 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  *
  * @since 0.3
  */
-public strictfp class DocumentComparator {
+public class DocumentComparator {
     /**
      * Commonly used prefixes for namespaces. Used as shorthands for calls to
      * {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}.

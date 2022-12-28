@@ -29,7 +29,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class AbstractDirectPositionTest extends TestCase {
+public final class AbstractDirectPositionTest extends TestCase {
     /**
      * Tests {@link AbstractDirectPosition#parse(CharSequence)}.
      */

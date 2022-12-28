@@ -29,7 +29,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.6
  */
-public final strictfp class EnumAdapterTest extends TestCase {
+public final class EnumAdapterTest extends TestCase {
     /**
      * Tests the {@link EnumAdapter#name(String)} method.
      */

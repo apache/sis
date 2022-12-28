@@ -43,7 +43,7 @@ import static org.apache.sis.test.Assert.assertSetEquals;
  * @since   1.1
  */
 @DependsOn(PointTreeNodeTest.class)
-public final strictfp class PointTreeTest extends TestCase {
+public final class PointTreeTest extends TestCase {
     /**
      * Bounds of the region where to create points. Intentionally use asymmetric bounds
      * for increasing the chances to detect bugs in node region computations.

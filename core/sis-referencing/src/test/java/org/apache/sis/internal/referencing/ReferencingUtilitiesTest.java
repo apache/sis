@@ -41,7 +41,7 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.*;
  * @version 1.0
  * @since   0.4
  */
-public final strictfp class ReferencingUtilitiesTest extends TestCase {
+public final class ReferencingUtilitiesTest extends TestCase {
     /**
      * Tests {@link ReferencingUtilities#getGreenwichLongitude(PrimeMeridian, Unit)}.
      */

@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  */
 @DependsOn(org.apache.sis.referencing.CRSTest.class)
-public final strictfp class DefinitionVerifierTest extends TestCase {
+public final class DefinitionVerifierTest extends TestCase {
     /**
      * Tests with a CRS which is conform to the authoritative definition.
      *

@@ -46,7 +46,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class DefaultQuantitativeResultTest extends TestCase {
+public final class DefaultQuantitativeResultTest extends TestCase {
     /**
      * Tests {@link DefaultQuantitativeResult#isEmpty()}. The {@code isEmpty()} method needs a special check
      * for the deprecated {@code "errorStatistic"} property because, contrarily to other deprecated properties,

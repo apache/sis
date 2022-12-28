@@ -64,7 +64,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     CoordinateOperationRegistryTest.class,
     CoordinateOperationFinderTest.class
 })
-public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
+public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:

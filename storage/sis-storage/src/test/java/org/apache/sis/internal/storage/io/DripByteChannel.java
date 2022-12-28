@@ -34,7 +34,7 @@ import static java.lang.StrictMath.min;
  * @version 0.4
  * @since   0.4
  */
-public final strictfp class DripByteChannel implements ReadableByteChannel {
+public final class DripByteChannel implements ReadableByteChannel {
     /**
      * The data to provide.
      */

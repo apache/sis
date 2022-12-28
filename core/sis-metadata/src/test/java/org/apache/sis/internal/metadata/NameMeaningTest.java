@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.5 (derived from 0.4)
  */
-public final strictfp class NameMeaningTest extends TestCase {
+public final class NameMeaningTest extends TestCase {
     /**
      * Tests {@link NameMeaning#toObjectType(Class)}.
      */

@@ -30,7 +30,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class WraparoundApplicatorTest extends TestCase {
+public final class WraparoundApplicatorTest extends TestCase {
     /**
      * Tests {@link WraparoundApplicator#range(CoordinateSystem, int)}.
      */

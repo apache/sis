@@ -37,7 +37,7 @@ import org.opengis.feature.AttributeType;
  * @since   0.5
  */
 @SuppressWarnings("serial")
-final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
+final class CustomAttribute<V> extends AbstractAttribute<V> {
     /**
      * A quality information that this attribute will report in addition to the default ones.
      */

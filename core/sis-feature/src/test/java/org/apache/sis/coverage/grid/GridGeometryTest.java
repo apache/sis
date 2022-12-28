@@ -49,7 +49,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   1.0
  */
 @DependsOn(GridExtentTest.class)
-public final strictfp class GridGeometryTest extends TestCase {
+public final class GridGeometryTest extends TestCase {
     /**
      * Verifies grid extent coordinates.
      */

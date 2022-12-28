@@ -40,7 +40,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class BandSelectImageTest extends TestCase {
+public final class BandSelectImageTest extends TestCase {
     /**
      * Arbitrary size for the test image.
      */

@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
  * @since 0.6
  */
 @DependsOn(org.apache.sis.parameter.DefaultParameterDescriptorTest.class)
-public final strictfp class CC_GeneralOperationParameterTest extends TestCase {
+public final class CC_GeneralOperationParameterTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testGroupMergeBecauseExtraParameter()}.
      * This rule is used by test methods for verifying that the log message contains the expected information.

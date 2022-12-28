@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public strictfp class ResourceCompilerMojoTest {
+public class ResourceCompilerMojoTest {
     /**
      * Tests {@link ResourceCompilerMojo#filterLanguages(File[])}.
      */

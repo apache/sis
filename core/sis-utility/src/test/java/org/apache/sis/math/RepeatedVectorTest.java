@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class RepeatedVectorTest extends TestCase {
+public final class RepeatedVectorTest extends TestCase {
     /**
      * Tests the case where values in a grid are repeated horizontally.
      */

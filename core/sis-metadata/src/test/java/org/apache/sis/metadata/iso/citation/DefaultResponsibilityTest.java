@@ -34,7 +34,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 1.1
  * @since   0.5
  */
-public final strictfp class DefaultResponsibilityTest extends TestCase {
+public final class DefaultResponsibilityTest extends TestCase {
     /**
      * Tests marshalling with replacement of {@link DefaultResponsibility} by {@link DefaultResponsibleParty}.
      *

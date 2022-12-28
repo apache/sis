@@ -36,7 +36,7 @@ import static java.util.Locale.*;
  * @version 1.3
  * @since   0.3
  */
-public final strictfp class ImplementationHelperTest extends TestCase {
+public final class ImplementationHelperTest extends TestCase {
     /**
      * Tests {@link ImplementationHelper#toMilliseconds(Date)}.
      */

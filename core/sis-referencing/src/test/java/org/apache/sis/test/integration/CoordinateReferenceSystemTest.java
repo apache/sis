@@ -46,7 +46,7 @@ import static org.junit.Assume.assumeNotNull;
     org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
     org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class
 })
-public final strictfp class CoordinateReferenceSystemTest extends TestCase {
+public final class CoordinateReferenceSystemTest extends TestCase {
     /**
      * Tests creation from codes in the
      * {@code "urn:ogc:def:type, type₁:authority₁:version₁:code₁, type₂:authority₂:version₂:code₂"} form.

@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   1.1
  */
 @DependsOn(org.apache.sis.internal.processing.isoline.IsolinesTest.class)
-public final strictfp class ImageProcessorTest extends TestCase {
+public final class ImageProcessorTest extends TestCase {
     /**
      * Tests {@link ImageProcessor#isolines(RenderedImage, double[][], MathTransform)}.
      */

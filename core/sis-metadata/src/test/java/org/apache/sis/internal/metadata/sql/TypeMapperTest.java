@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class TypeMapperTest extends TestCase {
+public final class TypeMapperTest extends TestCase {
     /**
      * Tests {@link TypeMapper#toJavaType(int)}.
      */

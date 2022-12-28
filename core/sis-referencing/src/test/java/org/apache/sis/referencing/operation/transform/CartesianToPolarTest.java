@@ -35,7 +35,7 @@ import org.junit.Test;
  * @since   0.7
  */
 @DependsOn(PolarToCartesianTest.class)
-public final strictfp class CartesianToPolarTest extends TransformTestCase {
+public final class CartesianToPolarTest extends TransformTestCase {
     /**
      * Tests coordinate conversions in the polar case.
      *

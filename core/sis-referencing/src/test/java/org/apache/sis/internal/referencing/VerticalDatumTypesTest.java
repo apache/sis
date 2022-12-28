@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.4
  */
-public final strictfp class VerticalDatumTypesTest extends TestCase {
+public final class VerticalDatumTypesTest extends TestCase {
     /**
      * Tests the {@link VerticalDatumTypes#fromLegacy(int)} method.
      */

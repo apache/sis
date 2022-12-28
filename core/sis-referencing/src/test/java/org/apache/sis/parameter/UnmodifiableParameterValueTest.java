@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @since   0.6
  */
 @DependsOn(DefaultParameterValueTest.class)
-public final strictfp class UnmodifiableParameterValueTest extends TestCase {
+public final class UnmodifiableParameterValueTest extends TestCase {
     /**
      * Creates an {@link UnmodifiableParameterValue} implementation for the given parameter
      * and asserts that we got a new instance equivalent to the original one.

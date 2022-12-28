@@ -33,7 +33,7 @@ import org.opengis.util.LocalName;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class FeatureNamingTest extends TestCase {
+public final class FeatureNamingTest extends TestCase {
     /**
      * Name for the tests.
      */

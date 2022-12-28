@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @since   0.6
  */
-public final strictfp class LoggersTest extends TestCase {
+public final class LoggersTest extends TestCase {
     /**
      * Verifies some logger names.
      */

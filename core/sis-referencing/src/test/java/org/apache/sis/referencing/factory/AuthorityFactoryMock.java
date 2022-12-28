@@ -53,7 +53,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.7
  */
-public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
+public final class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, AutoCloseable
 {
     /**

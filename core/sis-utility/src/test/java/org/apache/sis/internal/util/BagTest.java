@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class BagTest extends TestCase {
+public final class BagTest extends TestCase {
     /**
      * Creates an instance initialized to the given values.
      */

@@ -33,7 +33,7 @@ import org.opengis.metadata.spatial.DimensionNameType;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class GridSliceSelectorApp extends Application {
+public final class GridSliceSelectorApp extends Application {
     /**
      * Starts the test application.
      *

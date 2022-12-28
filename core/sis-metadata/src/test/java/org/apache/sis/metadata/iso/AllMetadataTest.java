@@ -37,7 +37,7 @@ import org.junit.Test;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
-public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
+public final class AllMetadataTest extends PropertyConsistencyCheck {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).

@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.8
  */
-public final strictfp class LinearConverterTest extends TestCase {
+public final class LinearConverterTest extends TestCase {
     /**
      * Asserts that the given converter is a linear converter with the given scale factor and no offset.
      * The scale factor is given by the ratio of the given numerator and denominator.

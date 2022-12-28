@@ -53,7 +53,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.3
  */
 @DependsOn(TreeNodeChildrenTest.class)
-public final strictfp class TreeNodeTest extends TestCase {
+public final class TreeNodeTest extends TestCase {
     /**
      * Creates a metadata hierarchy to be used for the tests.
      * This method creates the following metadata:

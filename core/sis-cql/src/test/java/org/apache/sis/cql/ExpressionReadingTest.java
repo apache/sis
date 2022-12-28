@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class ExpressionReadingTest extends CQLTestCase {
+public final class ExpressionReadingTest extends CQLTestCase {
     @Test
     public void testValueReference1() throws CQLException {
         final String cql = "geom";

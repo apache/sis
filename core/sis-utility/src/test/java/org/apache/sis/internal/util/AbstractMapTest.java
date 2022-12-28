@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class AbstractMapTest extends TestCase {
+public final class AbstractMapTest extends TestCase {
     /**
      * A dummy implementation of {@link AbstractMap} which will contain the English words
      * for numbers 1 to 4 inclusive. This implementation does not check argument validity

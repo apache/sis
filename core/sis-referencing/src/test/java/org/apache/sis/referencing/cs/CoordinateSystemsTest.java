@@ -54,7 +54,7 @@ import static org.apache.sis.test.Assert.*;
     DirectionAlongMeridianTest.class,
     NormalizerTest.class
 })
-public final strictfp class CoordinateSystemsTest extends TestCase {
+public final class CoordinateSystemsTest extends TestCase {
     /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.
      */

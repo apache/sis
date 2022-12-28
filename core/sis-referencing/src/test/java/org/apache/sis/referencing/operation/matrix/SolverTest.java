@@ -51,7 +51,7 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * @since   0.4
  */
 @DependsOn(GeneralMatrixTest.class) // See class javadoc
-public final strictfp class SolverTest extends TestCase {
+public final class SolverTest extends TestCase {
     /**
      * The tolerance threshold for this test case, which is {@value}. This value needs to be higher then the
      * {@link MatrixTestCase#TOLERANCE} one because of the increased complexity of {@link Solver} operations.

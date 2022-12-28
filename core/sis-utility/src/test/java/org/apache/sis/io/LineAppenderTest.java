@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
   org.apache.sis.util.CharSequencesTest.class,
   org.apache.sis.internal.util.X364Test.class
 })
-public strictfp class LineAppenderTest extends AppenderTestCase {
+public class LineAppenderTest extends AppenderTestCase {
     /**
      * Creates a new test. Subclasses shall override the {@link #createLineAppender()} method
      * in order to create the instance to test.

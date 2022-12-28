@@ -47,7 +47,7 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
     IdentifiedObjectsTest.class, NamedIdentifierTest.class,
     org.apache.sis.internal.jaxb.referencing.CodeTest.class
 })
-public final strictfp class AbstractIdentifiedObjectTest extends TestCase {
+public final class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Creates a map of properties to be given to the {@link AbstractIdentifiedObject} constructor.
      * The values in the map are consistent with the values expected by the {@link #validate} method.

@@ -57,7 +57,7 @@ import static org.opengis.test.Assert.*;
     org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class,
     org.apache.sis.referencing.datum.BursaWolfParametersTest.class
 })
-public final strictfp class GeocentricTranslationTest extends MathTransformTestCase {
+public final class GeocentricTranslationTest extends MathTransformTestCase {
     /**
      * Geocentric translation parameters for transforming a point in the North Sea from WGS84 to ED50.
      * They are the parameters to use for transformation of the point given by {@link #samplePoint(int)}.

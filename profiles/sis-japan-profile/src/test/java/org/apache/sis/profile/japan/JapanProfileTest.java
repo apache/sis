@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class JapanProfileTest extends TestCase {
+public final class JapanProfileTest extends TestCase {
     /**
      * Verifies that GCOM-C and GCOM-W conventions are registered.
      */

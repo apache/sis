@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.6
  */
-abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
+abstract class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Axis length of WGS84 ellipsoid.
      */

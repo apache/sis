@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.8
  */
 @DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
-public final strictfp class LocalizationGridBuilderTest extends TransformTestCase {
+public final class LocalizationGridBuilderTest extends TransformTestCase {
     /**
      * For floating-point comparisons.
      */

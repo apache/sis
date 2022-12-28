@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 1.4
  * @since   0.3
  */
-public final strictfp class IOUtilitiesTest extends TestCase {
+public final class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#filename(Object)}.
      *

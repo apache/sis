@@ -39,7 +39,7 @@ import org.opengis.test.ToleranceModifier;
  * @since   0.5
  */
 @DependsOn(ExponentialTransform1DTest.class)
-public final strictfp class LogarithmicTransform1DTest extends MathTransformTestCase {
+public final class LogarithmicTransform1DTest extends MathTransformTestCase {
     /**
      * Arbitrary parameter of the logarithmic transform to be tested.
      */

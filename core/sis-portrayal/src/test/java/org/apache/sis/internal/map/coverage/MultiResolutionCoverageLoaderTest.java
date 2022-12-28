@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
+public final class MultiResolutionCoverageLoaderTest extends TestCase {
     /**
      * The loader being tested.
      */

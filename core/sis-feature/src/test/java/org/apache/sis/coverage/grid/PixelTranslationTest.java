@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class PixelTranslationTest extends TestCase {
+public final class PixelTranslationTest extends TestCase {
     /**
      * Returns a transform from center to corner with the given number of dimensions.
      */

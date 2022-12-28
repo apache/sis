@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class CoordinateOperationsTest extends TestCase {
+public final class CoordinateOperationsTest extends TestCase {
     /**
      * Tests {@link CoordinateOperations#isWrapAround(CoordinateSystemAxis)}.
      */

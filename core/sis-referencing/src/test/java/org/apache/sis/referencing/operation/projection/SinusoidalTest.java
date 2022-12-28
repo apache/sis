@@ -32,7 +32,7 @@ import org.junit.Test;
  * @since   1.0
  */
 @DependsOn(MeridianArcTest.class)
-public final strictfp class SinusoidalTest extends MapProjectionTestCase {
+public final class SinusoidalTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Sinusoidal} concatenated with the (de)normalization matrices.
      * The new instance is stored in the inherited {@link #transform} field.

@@ -41,7 +41,7 @@ import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
  * @version 1.2
  * @since   1.1
  */
-public final strictfp class ImageUtilitiesTest extends TestCase {
+public final class ImageUtilitiesTest extends TestCase {
     /**
      * Verifies that {@link ImageUtilities#SUGGESTED_TILE_CACHE_SIZE} is strictly positive.
      */

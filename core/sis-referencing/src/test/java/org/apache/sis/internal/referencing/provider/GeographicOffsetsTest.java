@@ -39,7 +39,7 @@ import org.junit.Test;
  * @since   0.7
  */
 @DependsOn(AffineTest.class)
-public final strictfp class GeographicOffsetsTest extends TransformTestCase {
+public final class GeographicOffsetsTest extends TransformTestCase {
     /**
      * Tests {@code GeographicOffsets2D.createMathTransform(…)}.
      * This test uses the sample point given in §2.4.4.3 of EPSG guide (April 2015).

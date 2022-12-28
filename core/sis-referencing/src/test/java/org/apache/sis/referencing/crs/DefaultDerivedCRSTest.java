@@ -51,7 +51,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.
     DefaultConversionTest.class
 })
-public final strictfp class DefaultDerivedCRSTest extends TestCase {
+public final class DefaultDerivedCRSTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

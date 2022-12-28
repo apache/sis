@@ -50,7 +50,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
     DefaultParameterDescriptorGroupTest.class,
     DefaultParameterValueTest.class
 })
-public final strictfp class DefaultParameterValueGroupTest extends TestCase {
+public final class DefaultParameterValueGroupTest extends TestCase {
     /**
      * The descriptors of parameters to be tested by this class.
      * The default descriptors are:

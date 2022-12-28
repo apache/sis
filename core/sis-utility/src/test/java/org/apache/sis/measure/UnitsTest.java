@@ -43,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
     SexagesimalConverterTest.class,
     org.apache.sis.internal.util.DefinitionURITest.class
 })
-public final strictfp class UnitsTest extends TestCase {
+public final class UnitsTest extends TestCase {
     /**
      * Verifies that the {@link Units#initialized} flag has been set.
      */

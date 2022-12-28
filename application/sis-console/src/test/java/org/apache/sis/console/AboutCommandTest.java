@@ -34,7 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.3
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class AboutCommandTest extends TestCase {
+public final class AboutCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *

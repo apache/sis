@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.3
  */
-public final strictfp class AxisTest extends TestCase {
+public final class AxisTest extends TestCase {
     /**
      * Tests {@link Axis#direction(String)}.
      */

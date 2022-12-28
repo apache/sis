@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.6
  */
 @DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
-public final strictfp class AffineTest extends TestCase {
+public final class AffineTest extends TestCase {
     /**
      * Verifies that {@link Affine#getOperationType()} is {@link SingleOperation}.
      * The {@code Affine} class cannot return one of the above, because we do not

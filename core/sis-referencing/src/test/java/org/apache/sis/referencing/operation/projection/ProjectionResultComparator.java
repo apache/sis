@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
  * @since   0.6
  */
 @SuppressWarnings("serial")
-final strictfp class ProjectionResultComparator extends NormalizedProjection {
+final class ProjectionResultComparator extends NormalizedProjection {
     /**
      * Maximum difference allowed when comparing the result of an reverse projections, in radians.
      * A value of 1E-11 radians is approximately 5 centimetres.

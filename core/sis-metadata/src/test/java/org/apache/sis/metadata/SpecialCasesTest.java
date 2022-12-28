@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.4
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class SpecialCasesTest extends TestCase {
+public final class SpecialCasesTest extends TestCase {
     /**
      * The accessor instance to be tested.
      */

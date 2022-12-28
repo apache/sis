@@ -47,7 +47,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class TypesTest extends TestCase {
+public final class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#toInternationalString(Map, String)} method.
      */

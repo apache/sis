@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
-public final strictfp class InformationMapTest extends TestCase {
+public final class InformationMapTest extends TestCase {
     /**
      * Tests {@link InformationMap#get(Object)} on a few specific properties of the {@link Citation} type.
      * This test duplicates {@link PropertyInformationTest}, but is done here again as an integration test.

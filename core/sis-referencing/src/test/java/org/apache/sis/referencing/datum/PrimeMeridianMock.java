@@ -31,7 +31,7 @@ import org.apache.sis.measure.Units;
  * @since   0.4
  */
 @SuppressWarnings("serial")
-final strictfp class PrimeMeridianMock extends IdentifiedObjectMock implements PrimeMeridian {
+final class PrimeMeridianMock extends IdentifiedObjectMock implements PrimeMeridian {
     /**
      * A mock for the Greenwich prime meridian.
      */

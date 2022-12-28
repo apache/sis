@@ -41,7 +41,7 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @version 1.0
  * @since   0.8
  */
-public final strictfp class MetadataFallbackVerifier {
+public final class MetadataFallbackVerifier {
     /**
      * Identifier for which {@link MetadataFallback} does not provide hard-coded values.
      */

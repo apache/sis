@@ -53,7 +53,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultParameterValueTest.class,
     DefaultParameterValueGroupTest.class
 })
-public final strictfp class ParameterMarshallingTest extends TestCase {
+public final class ParameterMarshallingTest extends TestCase {
     /**
      * Creates a parameter value for marshalling test.
      */

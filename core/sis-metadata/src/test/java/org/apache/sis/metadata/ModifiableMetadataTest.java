@@ -39,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   1.0
  */
 @DependsOn(AbstractMetadataTest.class)
-public final strictfp class ModifiableMetadataTest extends TestCase {
+public final class ModifiableMetadataTest extends TestCase {
     /**
      * An arbitrary metadata on which to perform the tests.
      */

@@ -43,7 +43,7 @@ import org.apache.sis.xml.Namespaces;
  * @since   0.4
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
-public final strictfp class MetadataMock extends SimpleMetadata {
+public final class MetadataMock extends SimpleMetadata {
     /**
      * The language used for documenting metadata.
      */

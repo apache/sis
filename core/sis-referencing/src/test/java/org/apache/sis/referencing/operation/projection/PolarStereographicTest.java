@@ -44,7 +44,7 @@ import static java.lang.StrictMath.*;
  * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class PolarStereographicTest extends MapProjectionTestCase {
+public final class PolarStereographicTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link PolarStereographic}.
      */

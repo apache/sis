@@ -50,7 +50,7 @@ import org.opengis.feature.PropertyType;
  * @since   0.7
  */
 @DependsOn({LinkOperationTest.class, EnvelopeOperationTest.class})
-public final strictfp class FeatureOperationsTest extends TestCase {
+public final class FeatureOperationsTest extends TestCase {
     /**
      * Creates a feature type with an envelope operation.
      * The feature contains the following properties:

@@ -30,7 +30,7 @@ import org.apache.sis.storage.DataStoreException;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class FeatureSetTest extends org.apache.sis.internal.netcdf.FeatureSetTest {
+public final class FeatureSetTest extends org.apache.sis.internal.netcdf.FeatureSetTest {
     /**
      * Creates a new decoder for the specified dataset.
      *

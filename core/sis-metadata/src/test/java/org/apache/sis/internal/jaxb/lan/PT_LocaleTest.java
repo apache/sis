@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.4
  */
-public final strictfp class PT_LocaleTest extends TestUsingFile {
+public final class PT_LocaleTest extends TestUsingFile {
     /**
      * An XML file containing localized strings.
      */

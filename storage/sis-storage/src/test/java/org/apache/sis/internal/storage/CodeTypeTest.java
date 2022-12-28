@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class CodeTypeTest  extends TestCase {
+public final class CodeTypeTest  extends TestCase {
     /**
      * The expected value.
      */

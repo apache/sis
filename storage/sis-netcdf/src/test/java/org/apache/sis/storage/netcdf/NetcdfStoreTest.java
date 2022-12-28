@@ -39,7 +39,7 @@ import static org.opengis.test.Assert.*;
     MetadataReaderTest.class,
     NetcdfStoreProviderTest.class
 })
-public final strictfp class NetcdfStoreTest extends TestCase {
+public final class NetcdfStoreTest extends TestCase {
     /**
      * Returns a new netCDF store to test.
      *

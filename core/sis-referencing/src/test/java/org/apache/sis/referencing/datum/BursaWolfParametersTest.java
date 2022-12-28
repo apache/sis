@@ -39,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.7
  * @since   0.4
  */
-public final strictfp class BursaWolfParametersTest extends TestCase {
+public final class BursaWolfParametersTest extends TestCase {
     /**
      * The conversion factor from arc-seconds to radians.
      */

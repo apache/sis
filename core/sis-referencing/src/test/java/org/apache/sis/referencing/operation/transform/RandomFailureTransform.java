@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-final strictfp class RandomFailureTransform extends PseudoTransform {
+final class RandomFailureTransform extends PseudoTransform {
     /**
      * The random number generator for determining if a transform should fail.
      */

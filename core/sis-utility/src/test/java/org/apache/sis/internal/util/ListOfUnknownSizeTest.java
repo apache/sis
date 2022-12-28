@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class ListOfUnknownSizeTest extends TestCase {
+public final class ListOfUnknownSizeTest extends TestCase {
     /**
      * Tests {@link ListOfUnknownSize#listIterator()}.
      */

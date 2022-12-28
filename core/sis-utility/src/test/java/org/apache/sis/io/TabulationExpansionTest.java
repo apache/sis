@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since 0.3
  */
 @DependsOn(LineAppenderTest.class)
-public final strictfp class TabulationExpansionTest extends LineAppenderTest {
+public final class TabulationExpansionTest extends LineAppenderTest {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */

@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.5
  */
-public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
+public class ChannelDataOutputTest extends ChannelDataTestCase {
     /**
      * The {@link DataOutput} implementation to test. This implementation will write data to
      * {@link #testedStreamBackingArray}. The content of that array will be compared to

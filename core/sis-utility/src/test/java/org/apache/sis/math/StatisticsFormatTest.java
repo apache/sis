@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class StatisticsFormatTest extends TestCase {
+public final class StatisticsFormatTest extends TestCase {
     /**
      * Tests the formatting of {@code Statistics} without column headers.
      * We instantiate the {@link StatisticsFormat} directly in order to fix the locale

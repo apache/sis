@@ -50,7 +50,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class
 })
-public final strictfp class DefaultTransformationTest extends TestCase {
+public final class DefaultTransformationTest extends TestCase {
     /**
      * Creates a geocentric CRS using the given datum.
      */

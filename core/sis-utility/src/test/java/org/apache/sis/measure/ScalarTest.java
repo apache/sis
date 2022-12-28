@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.8
  */
 @DependsOn(UnitsTest.class)
-public final strictfp class ScalarTest extends TestCase {
+public final class ScalarTest extends TestCase {
     /**
      * Tests {@link Scalar#add(Quantity)} and {@link Scalar#subtract(Quantity)}.
      * Those tests depend on proper working of {@link Scalar#create(double, Unit)}.

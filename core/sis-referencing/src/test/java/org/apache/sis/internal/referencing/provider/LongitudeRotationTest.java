@@ -37,7 +37,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.6
  */
 @DependsOn(AffineTest.class)
-public final strictfp class LongitudeRotationTest extends TestCase {
+public final class LongitudeRotationTest extends TestCase {
     /**
      * Tests {@code LongitudeRotation.createMathTransform(…)}.
      */

@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class GeodeticObjectBuilderTest extends TestCase {
+public final class GeodeticObjectBuilderTest extends TestCase {
     /**
      * Tests {@link GeodeticObjectBuilder#changeConversion(String, BiConsumer)}.
      *

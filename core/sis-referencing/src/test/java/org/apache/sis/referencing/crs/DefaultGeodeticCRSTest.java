@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
     org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
     org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
 })
-public final strictfp class DefaultGeodeticCRSTest extends TestCase {
+public final class DefaultGeodeticCRSTest extends TestCase {
     /**
      * An XML file in this package containing a geodetic CRS definition.
      */

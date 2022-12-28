@@ -70,7 +70,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class
 })
-public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest {
+public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.
      */

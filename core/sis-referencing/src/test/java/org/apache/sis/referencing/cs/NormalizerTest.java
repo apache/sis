@@ -44,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DirectionAlongMeridianTest.class,
     DefaultCoordinateSystemAxisTest.class
 })
-public final strictfp class NormalizerTest extends TestCase {
+public final class NormalizerTest extends TestCase {
     /**
      * Tests {@link Normalizer#sort(CoordinateSystemAxis[], int)}
      * with axes of an ellipsoidal coordinate system.

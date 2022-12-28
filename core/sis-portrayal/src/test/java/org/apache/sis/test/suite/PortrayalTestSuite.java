@@ -33,7 +33,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.map.SEPortrayerTest.class,
     org.apache.sis.internal.map.coverage.MultiResolutionCoverageLoaderTest.class
 })
-public final strictfp class PortrayalTestSuite extends TestSuite {
+public final class PortrayalTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

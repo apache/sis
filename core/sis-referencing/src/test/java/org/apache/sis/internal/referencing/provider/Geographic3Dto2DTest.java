@@ -38,7 +38,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.7
  */
 @DependsOn(AffineTest.class)
-public final strictfp class Geographic3Dto2DTest extends TestCase {
+public final class Geographic3Dto2DTest extends TestCase {
     /**
      * Tests {@code Geographic3Dto2D.createMathTransform(…)}.
      *

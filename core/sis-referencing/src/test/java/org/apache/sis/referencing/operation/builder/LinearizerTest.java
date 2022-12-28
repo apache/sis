@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @since   1.1
  */
 @DependsOn(LocalizationGridBuilderTest.class)
-public final strictfp class LinearizerTest extends TestCase {
+public final class LinearizerTest extends TestCase {
     /**
      * Tests {@link LinearTransformBuilder#approximate(MathTransform, Envelope)} on a transform created by
      * {@link LocalizationGridBuilder}. We verify that the {@link Linearizer#approximate(MathTransform,

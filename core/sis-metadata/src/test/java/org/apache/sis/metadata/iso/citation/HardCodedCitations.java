@@ -39,7 +39,7 @@ import org.apache.sis.util.Static;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class HardCodedCitations extends Static {
+public final class HardCodedCitations extends Static {
     /**
      * The ISO 19111 standard.
      */

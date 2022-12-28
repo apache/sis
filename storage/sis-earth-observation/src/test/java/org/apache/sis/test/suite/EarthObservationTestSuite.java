@@ -33,7 +33,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.landsat.MetadataReaderTest.class,
     org.apache.sis.storage.landsat.LandsatStoreProviderTest.class
 })
-public final strictfp class EarthObservationTestSuite extends TestSuite {
+public final class EarthObservationTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

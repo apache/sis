@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class SwingAssertions {
+public final class SwingAssertions {
     /**
      * Do not allow instantiation of this class.
      */

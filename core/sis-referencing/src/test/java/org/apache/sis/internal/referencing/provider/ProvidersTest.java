@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
     LongitudeRotationTest.class,
     MapProjectionTest.class
 })
-public final strictfp class ProvidersTest extends TestCase {
+public final class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.
      */

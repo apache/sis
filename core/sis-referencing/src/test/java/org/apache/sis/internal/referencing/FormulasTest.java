@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.4
  */
-public final strictfp class FormulasTest extends TestCase {
+public final class FormulasTest extends TestCase {
     /**
      * Verifies the {@link Formulas#LONGITUDE_MAX} constant.
      */

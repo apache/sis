@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class ValueColorMapperApp extends Application {
+public final class ValueColorMapperApp extends Application {
     /**
      * Starts the test application.
      *

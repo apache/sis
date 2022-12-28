@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.4
  * @since   0.4
  */
-public final strictfp class ColorsTest extends TestCase {
+public final class ColorsTest extends TestCase {
     /**
      * Tests {@link Colors#getName(ElementKind)}.
      */

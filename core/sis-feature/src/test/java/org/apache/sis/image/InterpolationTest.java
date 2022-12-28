@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class InterpolationTest extends TestCase {
+public final class InterpolationTest extends TestCase {
     /**
      * Minimal pixel X and Y coordinates used in this test, inclusive.
      */

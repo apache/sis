@@ -36,7 +36,7 @@ import org.junit.runners.Suite;
     org.apache.sis.cql.QueryReadingTest.class,
     org.apache.sis.cql.QueryWritingTest.class,
 })
-public final strictfp class CQLTestSuite extends TestSuite {
+public final class CQLTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

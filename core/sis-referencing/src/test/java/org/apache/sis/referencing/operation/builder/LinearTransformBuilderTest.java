@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.1
  * @since   0.5
  */
-public final strictfp class LinearTransformBuilderTest extends TestCase {
+public final class LinearTransformBuilderTest extends TestCase {
     /**
      * Tests a very simple case where an exact answer is expected.
      *

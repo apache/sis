@@ -59,7 +59,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.operation.DefaultConversionTest.class
 })
-public final strictfp class DefaultProjectedCRSTest extends TestCase {
+public final class DefaultProjectedCRSTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
      * This rule is used by the test methods for verifying that the logged messages contain the expected information.

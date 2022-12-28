@@ -41,7 +41,7 @@ import static org.apache.sis.util.collection.TableColumn.*;
     DefaultTreeTableTest.class,
     org.apache.sis.io.TableAppenderTest.class
 })
-public final strictfp class TreeTableFormatTest extends TestCase {
+public final class TreeTableFormatTest extends TestCase {
     /**
      * Tests the formatting as a tree, with control on the indentation.
      */

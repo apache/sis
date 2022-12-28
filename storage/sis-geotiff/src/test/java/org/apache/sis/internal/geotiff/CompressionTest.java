@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.8
  */
-public final strictfp class CompressionTest extends TestCase {
+public final class CompressionTest extends TestCase {
     /**
      * Tests {@link Compression#valueOf(long)}.
      */

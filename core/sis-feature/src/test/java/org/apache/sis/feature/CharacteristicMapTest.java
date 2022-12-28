@@ -38,7 +38,7 @@ import org.opengis.feature.Attribute;
  * @since   0.5
  */
 @DependsOn(CharacteristicTypeMapTest.class)
-public final strictfp class CharacteristicMapTest extends TestCase {
+public final class CharacteristicMapTest extends TestCase {
     /**
      * Creates an attribute for a temperature measurement of 20°C with a ±0.1°C accuracy.
      *

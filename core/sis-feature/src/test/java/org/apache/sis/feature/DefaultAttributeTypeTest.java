@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class DefaultAttributeTypeTest extends TestCase {
+public final class DefaultAttributeTypeTest extends TestCase {
     /**
      * Creates an attribute type for city name.
      *

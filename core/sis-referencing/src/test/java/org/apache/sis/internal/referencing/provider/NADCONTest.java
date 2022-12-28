@@ -43,7 +43,7 @@ import static org.opengis.test.Assert.*;
  * @version 0.8
  * @since   0.7
  */
-public final strictfp class NADCONTest extends DatumShiftTestCase {
+public final class NADCONTest extends DatumShiftTestCase {
     /**
      * Returns the sample point for a step in the transformation from NAD27 to NAD83.
      * The sample point is the coordinate of Meades Ranch station, which was the point

@@ -35,7 +35,7 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
  * @version 1.0
  * @since   0.5
  */
-public strictfp class CoordinateDomain {
+public class CoordinateDomain {
     /*
      * Note: this class is not declared as an enum yet because moving ARTICLE_CIRCLE and HEIGHT constants
      *       after the enum declarations causes an "illegal forward reference" compiler error.

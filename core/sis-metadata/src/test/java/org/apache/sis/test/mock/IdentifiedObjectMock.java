@@ -41,7 +41,7 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  */
 @SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")
-public strictfp class IdentifiedObjectMock implements IdentifiedObject, Identifier, Serializable {
+public class IdentifiedObjectMock implements IdentifiedObject, Identifier, Serializable {
     /**
      * The object name to be returned by {@link #getCode()}.
      */

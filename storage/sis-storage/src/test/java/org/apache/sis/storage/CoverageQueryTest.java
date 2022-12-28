@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class CoverageQueryTest extends TestCase {
+public final class CoverageQueryTest extends TestCase {
     /**
      * The coordinate reference system used by the tests.
      */

@@ -30,7 +30,7 @@ import org.apache.sis.test.DependsOnMethod;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class ArrayConverterTest extends TestCase {
+public final class ArrayConverterTest extends TestCase {
     /**
      * Creates an array converter from {@link Integer} to {@link Double}.
      * The types need to be specified because we want to test wrapper and primitive types.

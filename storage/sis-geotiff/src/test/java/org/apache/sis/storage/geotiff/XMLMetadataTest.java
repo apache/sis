@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class XMLMetadataTest extends TestCase {
+public final class XMLMetadataTest extends TestCase {
     /**
      * A GDAL metadata. The format is specific to the GDAL project.
      */

@@ -36,7 +36,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @since 0.5
  */
-final strictfp class ByteArrayChannel implements SeekableByteChannel {
+final class ByteArrayChannel implements SeekableByteChannel {
     /**
      * Bytes array where to write the data.
      * The length of this array is the capacity.

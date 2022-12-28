@@ -43,7 +43,7 @@ import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
  * @since   0.3
  */
 @DependsOn(ConverterRegistryTest.class)
-public final strictfp class SystemRegistryTest extends TestCase {
+public final class SystemRegistryTest extends TestCase {
     /**
      * Tests the creation of {@link StringConverter}.
      */

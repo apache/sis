@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
-public final strictfp class XLinkMarshallingTest extends TestCase {
+public final class XLinkMarshallingTest extends TestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.
      */

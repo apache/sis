@@ -33,7 +33,7 @@ import org.junit.Test;
  * @since   1.1
  */
 @DependsOn(NormalizedProjectionTest.class)
-public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {
+public class AzimuthalEquidistantTest extends MapProjectionTestCase {
     /**
      * Returns the method to be tested.
      */

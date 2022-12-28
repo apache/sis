@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  * @since   0.5
  */
 @DependsOn(DefaultNameFactoryTest.class)
-public final strictfp class NamesTest extends TestCase {
+public final class NamesTest extends TestCase {
     /**
      * Tests {@link Names#createScopedName(GenericName, String, CharSequence)}.
      */

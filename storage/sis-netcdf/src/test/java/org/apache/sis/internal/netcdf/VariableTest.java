@@ -43,7 +43,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.3
  */
 @DependsOn(DecoderTest.class)
-public strictfp class VariableTest extends TestCase {
+public class VariableTest extends TestCase {
     /**
      * Expected number of columns per variables for the {@code expected} argument
      * given to the {@link #assertBasicPropertiesEqual(Object[], Variable[])} method.

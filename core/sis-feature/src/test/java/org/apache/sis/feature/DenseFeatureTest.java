@@ -32,7 +32,7 @@ import org.apache.sis.test.DependsOn;
     SingletonAttributeTest.class,
     PropertySingletonTest.class
 })
-public final strictfp class DenseFeatureTest extends FeatureTestCase {
+public final class DenseFeatureTest extends FeatureTestCase {
     /**
      * Creates a new feature for the given type.
      */

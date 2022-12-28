@@ -54,7 +54,7 @@ import org.opengis.feature.Feature;
  * @since   0.8
  */
 @DependsOn({MetadataTest.class, ReaderTest.class})
-public final strictfp class WriterTest extends TestCase {
+public final class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */

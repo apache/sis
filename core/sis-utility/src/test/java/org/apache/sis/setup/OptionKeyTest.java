@@ -33,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class OptionKeyTest extends TestCase {
+public final class OptionKeyTest extends TestCase {
     /**
      * A custom subclass of {@link OptionKey} for testing the ability to create custom option.
      * This subclass implements {@link CheckedContainer} for ensuring that the {@code OptionKey}

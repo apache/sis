@@ -75,7 +75,7 @@ import junit.framework.AssertionFailedError;
  * @version 1.3
  * @since   0.3
  */
-public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
+public abstract class AnnotationConsistencyCheck extends TestCase {
     /**
      * The {@value} string used in JAXB annotations for default names or namespaces.
      */

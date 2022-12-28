@@ -43,7 +43,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
 @DependsOn({
     DefaultGeodeticCRSTest.class
 })
-public final strictfp class DefaultGeocentricCRSTest extends TestCase {
+public final class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#RIGHT_HANDED}.

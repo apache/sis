@@ -37,7 +37,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.8
  */
 @DependsOn(UnitsTest.class)
-public final strictfp class UnitServicesTest extends TestCase {
+public final class UnitServicesTest extends TestCase {
     /**
      * Tests the default system of units.
      */

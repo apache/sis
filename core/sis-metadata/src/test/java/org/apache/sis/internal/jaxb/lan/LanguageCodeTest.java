@@ -52,7 +52,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @version 1.1
  * @since   0.3
  */
-public final strictfp class LanguageCodeTest extends TestCase {
+public final class LanguageCodeTest extends TestCase {
     /**
      * XML fragment using the {@code <gco:CharacterString>} construct.
      */

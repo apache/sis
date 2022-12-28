@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @since   0.6
  */
-public final strictfp class AxisNamesTest extends TestCase {
+public final class AxisNamesTest extends TestCase {
     /**
      * Tests {@link AxisNames#toCamelCase(String)}.
      */

@@ -54,7 +54,7 @@ import static org.apache.sis.test.Assert.*;
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(org.apache.sis.measure.AngleTest.class)
-public final strictfp class StringConverterTest extends TestCase {
+public final class StringConverterTest extends TestCase {
     /**
      * Asserts that conversion of the given {@code source} value produces
      * the given {@code target} value, and tests the inverse conversion.

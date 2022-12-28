@@ -40,7 +40,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.4
  */
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
-public final strictfp class FormatterTest extends TestCase {
+public final class FormatterTest extends TestCase {
     /**
      * Verifies the ANSI escape sequences hard-coded in {@link Formatter}.
      */

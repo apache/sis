@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     DefaultAttributeTypeTest.class,
     PropertySingletonTest.class
 })
-public final strictfp class SingletonAttributeTest extends TestCase {
+public final class SingletonAttributeTest extends TestCase {
     /**
      * Creates an attribute for the city name.
      * This attribute has a default value.

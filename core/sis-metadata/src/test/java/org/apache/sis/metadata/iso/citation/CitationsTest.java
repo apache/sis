@@ -48,7 +48,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.6
  */
 @DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
-public final strictfp class CitationsTest extends TestCase {
+public final class CitationsTest extends TestCase {
     /**
      * Verifies that {@link Citations#values()} is complete by comparing with the list
      * of constants given by reflection.

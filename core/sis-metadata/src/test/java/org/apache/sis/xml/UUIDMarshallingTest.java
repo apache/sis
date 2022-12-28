@@ -36,7 +36,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.3
  */
 @DependsOn(NilReasonMarshallingTest.class)
-public final strictfp class UUIDMarshallingTest extends TestCase {
+public final class UUIDMarshallingTest extends TestCase {
     /**
      * A random UUID for the tests in this class.
      */

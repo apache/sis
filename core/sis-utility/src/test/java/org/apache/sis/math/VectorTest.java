@@ -31,7 +31,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.2
  * @since   0.8
  */
-public final strictfp class VectorTest extends TestCase {
+public final class VectorTest extends TestCase {
     /**
      * The tested vector.
      */

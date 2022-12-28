@@ -143,7 +143,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.citation.CitationsTest.class,
     org.apache.sis.metadata.xml.SchemaComplianceTest.class
 })
-public final strictfp class MetadataTestSuite extends TestSuite {
+public final class MetadataTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

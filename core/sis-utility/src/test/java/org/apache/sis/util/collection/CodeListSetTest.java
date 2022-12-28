@@ -39,7 +39,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class CodeListSetTest extends TestCase {
+public final class CodeListSetTest extends TestCase {
     /**
      * Creates a new set filled with up to 4 axis directions.
      * The directions are (NORTH, EAST, UP, FUTURE) in that order.

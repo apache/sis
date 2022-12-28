@@ -47,7 +47,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.measure.RangeTest.class)
-public final strictfp class RangeSetTest extends TestCase {
+public final class RangeSetTest extends TestCase {
     /**
      * Tolerance factor for comparison of floating point numbers.
      * Actually we expect exact matches, because {@link RangeSet} does not perform any calculation

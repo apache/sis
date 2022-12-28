@@ -31,7 +31,7 @@ import org.apache.sis.test.DependsOn;
  * @since   0.3
  */
 @DependsOn(WordWrapTest.class)
-public final strictfp class WordWrapWithLineSeparatorTest extends WordWrapTest {
+public final class WordWrapWithLineSeparatorTest extends WordWrapTest {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */

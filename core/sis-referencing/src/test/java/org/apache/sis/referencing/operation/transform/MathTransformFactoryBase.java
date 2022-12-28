@@ -41,7 +41,7 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  * @version 0.5
  * @since   0.5
  */
-strictfp class MathTransformFactoryBase implements MathTransformFactory {
+class MathTransformFactoryBase implements MathTransformFactory {
     /**
      * The message for all exception.
      */

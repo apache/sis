@@ -41,7 +41,7 @@ import static org.junit.Assume.assumeTrue;
  * @since   0.7
  */
 @DependsOn(AuthorityFactoryProxyTest.class)
-public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
+public final class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
      * The timeout used for this test.
      */
@@ -64,7 +64,7 @@ public final strictfp class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
      * A concurrent factory which creates new instances of {@link AuthorityFactoryMock}.
      */
-    private static final strictfp class Mock extends ConcurrentAuthorityFactory<AuthorityFactoryMock> {
+    private static final class Mock extends ConcurrentAuthorityFactory<AuthorityFactoryMock> {
         /** All factories created by this mock, including any factories having been disposed. */
         private final Queue<AuthorityFactoryMock> allDAOs = new ConcurrentLinkedQueue<>();
 

@@ -31,7 +31,7 @@ import static java.lang.StrictMath.*;
  * @version 1.1
  * @since   0.4
  */
-public final strictfp class AffineTransforms2DTest extends TestCase {
+public final class AffineTransforms2DTest extends TestCase {
     /**
      * Tolerance value for comparisons.
      */

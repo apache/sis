@@ -45,7 +45,7 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * @version 1.1
  * @since   0.8
  */
-public strictfp class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {
+public class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */

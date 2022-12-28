@@ -40,7 +40,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class ConformalProjectionTest extends TransformTestCase {
+public final class ConformalProjectionTest extends TransformTestCase {
     /**
      * Natural logarithm of the pseudo-infinity as returned by Mercator formulas in the spherical
      * case, truncated to nearest integer. This is not a real infinity because there is no exact

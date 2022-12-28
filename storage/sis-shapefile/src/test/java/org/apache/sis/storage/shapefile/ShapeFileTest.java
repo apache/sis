@@ -38,7 +38,7 @@ import org.opengis.feature.Feature;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class ShapeFileTest extends TestCase {
+public final class ShapeFileTest extends TestCase {
     /**
      * Returns URI path to a resource.
      * @param name Resource name.

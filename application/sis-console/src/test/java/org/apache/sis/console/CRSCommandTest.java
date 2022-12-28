@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class CRSCommandTest extends TestCase {
+public final class CRSCommandTest extends TestCase {
     /**
      * The Well Known Text for EPSG:4326 as a regular expression.
      * This string uses the native line separator. Consequently, test cases comparing

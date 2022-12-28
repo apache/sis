@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
 })
-public final strictfp class OperationMethodSetTest extends TestCase {
+public final class OperationMethodSetTest extends TestCase {
     /**
      * Creates a new two-dimensional operation method for an operation of the given name.
      *

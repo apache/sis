@@ -53,7 +53,7 @@ import static org.apache.sis.test.Assert.*;
     CoordinateDomainTest.class,
     ContextualParametersTest.class
 })
-public final strictfp class EllipsoidToCentricTransformTest extends MathTransformTestCase {
+public final class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
      * Convenience method for creating an instance from an ellipsoid.
      */

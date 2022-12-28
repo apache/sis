@@ -69,7 +69,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
 })
-public strictfp class MetadataVerticalTest extends TestCase {
+public class MetadataVerticalTest extends TestCase {
     /**
      * The resource file which contains an XML representation
      * of a {@link Metadata} object with a {@link VerticalCRS}.

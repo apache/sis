@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
  *
  * @since 0.8
  */
-public final strictfp class CoordinateFormatTest extends TestCase {
+public final class CoordinateFormatTest extends TestCase {
     /**
      * Compares coordinate values from the given positions.
      */

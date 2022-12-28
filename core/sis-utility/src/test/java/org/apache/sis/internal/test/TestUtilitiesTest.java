@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class TestUtilitiesTest extends TestCase {
+public final class TestUtilitiesTest extends TestCase {
     /**
      * Tests {@link org.apache.sis.test.TestUtilities#toTreeStructure(CharSequence)}.
      */

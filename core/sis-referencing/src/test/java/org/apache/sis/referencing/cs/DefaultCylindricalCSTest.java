@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.7
  */
 @DependsOn(DefaultPolarCSTest.class)
-public final strictfp class DefaultCylindricalCSTest extends TestCase {
+public final class DefaultCylindricalCSTest extends TestCase {
     /**
      * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)}
      * with a change from clockwise to counterclockwise axis orientation.

@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class MultiplicityTest extends TestUsingFile {
+public final class MultiplicityTest extends TestUsingFile {
     /**
      * An XML file containing multiplicity declarations.
      */

@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.6
  */
-public final strictfp class WKTKeywordsTest extends TestCase {
+public final class WKTKeywordsTest extends TestCase {
     /**
      * Ensures that all constants are equal to the name of the field that declare it.
      * The intent is to avoid misleading constant names when reading code.

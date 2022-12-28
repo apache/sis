@@ -33,7 +33,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   1.0
  */
 @DependsOn(EnvelopesTest.class)
-public final strictfp class EnvelopeReducerTest extends TestCase {
+public final class EnvelopeReducerTest extends TestCase {
     /**
      * The envelopes on which to perform an operation.
      */

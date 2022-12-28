@@ -54,7 +54,7 @@ import org.opengis.feature.Feature;
  * @since 1.3
  */
 @DependsOn(WriterTest.class)
-public final strictfp class UpdaterTest extends TestCase {
+public final class UpdaterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */

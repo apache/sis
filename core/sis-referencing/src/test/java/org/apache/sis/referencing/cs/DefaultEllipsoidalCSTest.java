@@ -40,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  */
 @DependsOn(AbstractCSTest.class)
-public final strictfp class DefaultEllipsoidalCSTest extends TestCase {
+public final class DefaultEllipsoidalCSTest extends TestCase {
     /**
      * An XML file in this package containing an ellipsoidal coordinate system definition.
      */

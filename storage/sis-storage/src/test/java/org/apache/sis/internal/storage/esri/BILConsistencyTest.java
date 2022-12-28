@@ -34,7 +34,7 @@ import static org.junit.Assert.assertNotNull;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class BILConsistencyTest extends CoverageReadConsistency {
+public final class BILConsistencyTest extends CoverageReadConsistency {
     /**
      * The store used for the test, opened only once.
      */

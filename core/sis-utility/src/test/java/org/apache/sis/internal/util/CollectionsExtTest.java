@@ -43,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.4
  * @since   0.3
  */
-public final strictfp class CollectionsExtTest extends TestCase {
+public final class CollectionsExtTest extends TestCase {
     /**
      * Tests {@link CollectionsExt#nonNullArraySet(String, Object, Object[])}.
      */

@@ -38,7 +38,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * @version 1.3
  * @since   0.5
  */
-public final strictfp class DefaultTemporalCRSTest extends TestCase {
+public final class DefaultTemporalCRSTest extends TestCase {
     /**
      * Tests WKT 1 pseudo-formatting.
      * This is not part of OGC 01-009 standard.

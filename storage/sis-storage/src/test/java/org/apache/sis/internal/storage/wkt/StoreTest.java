@@ -40,7 +40,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.7
  */
 @DependsOn(StoreProviderTest.class)
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * The WKT to parse. This WKT uses US-ASCII characters only.
      */

@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.1
  */
-public strictfp final class GeometryGetterTest extends TestCase {
+public final class GeometryGetterTest extends TestCase {
     /**
      * The factory to use for creating geometric objects.
      */

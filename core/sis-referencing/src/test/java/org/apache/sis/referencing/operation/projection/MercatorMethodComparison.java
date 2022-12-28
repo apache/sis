@@ -57,7 +57,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  * @version 1.0
  * @since   0.6
  */
-public final class MercatorMethodComparison {   // No 'strictfp' keyword here since we want to compare with Mercator class.
+public final class MercatorMethodComparison {
     /**
      * Where to print the outputs of this class.
      */

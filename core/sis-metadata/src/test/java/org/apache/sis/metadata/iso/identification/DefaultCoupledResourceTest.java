@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @since   0.5
  */
 @DependsOn(ServiceParameterTest.class)
-public final strictfp class DefaultCoupledResourceTest extends TestCase {
+public final class DefaultCoupledResourceTest extends TestCase {
     /**
      * Creates the resource to use for testing purpose.
      */

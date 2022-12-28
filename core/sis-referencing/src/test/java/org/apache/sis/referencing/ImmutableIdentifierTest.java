@@ -43,7 +43,7 @@ import static org.opengis.metadata.Identifier.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class ImmutableIdentifierTest extends TestCase {
+public final class ImmutableIdentifierTest extends TestCase {
     /**
      * Returns the properties map to be used in argument to test methods.
      */

@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.4
  * @since   1.4
  */
-public final strictfp class FileCacheByteChannelTest extends TestCase {
+public final class FileCacheByteChannelTest extends TestCase {
     /**
      * The implementation used for testing purpose.
      */

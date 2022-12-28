@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.7
  */
-public final strictfp class IntegerListTest extends TestCase {
+public final class IntegerListTest extends TestCase {
     /**
      * The list of integers being tested.
      */

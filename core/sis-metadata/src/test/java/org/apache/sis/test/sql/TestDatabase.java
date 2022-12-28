@@ -65,7 +65,7 @@ import static org.junit.Assume.assumeTrue;
  * @version 1.2
  * @since   0.7
  */
-public strictfp class TestDatabase implements AutoCloseable {
+public class TestDatabase implements AutoCloseable {
     /**
      * Data source for connection to an alternative database for testing purpose.
      * If {@code null}, an in-memory Derby database will be used.

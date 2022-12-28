@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
     AbstractOperationTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class LinkOperationTest extends TestCase {
+public final class LinkOperationTest extends TestCase {
     /**
      * Creates a simple feature type with a link operation.
      * The feature contains the following properties:

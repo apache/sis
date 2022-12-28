@@ -43,7 +43,7 @@ import org.opengis.feature.IdentifiedType;
  * @version 0.7
  * @since   0.7
  */
-public final strictfp class AttributeConventionTest extends TestCase {
+public final class AttributeConventionTest extends TestCase {
     /**
      * Tests {@link AttributeConvention#contains(GenericName)} method.
      */

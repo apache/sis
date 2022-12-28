@@ -63,7 +63,7 @@ import org.opengis.filter.BinarySpatialOperator;
  *
  * @since 1.1
  */
-public abstract strictfp class BinarySpatialFilterTestCase<G> extends TestCase {
+public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     /**
      * The factory to use for testing purpose.
      */

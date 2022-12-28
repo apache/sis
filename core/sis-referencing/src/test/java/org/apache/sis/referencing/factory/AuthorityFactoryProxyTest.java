@@ -48,7 +48,7 @@ import static org.junit.Assert.*;
  * @since   0.7
  */
 @DependsOn(CommonAuthorityFactoryTest.class)
-public final strictfp class AuthorityFactoryProxyTest extends TestCase {
+public final class AuthorityFactoryProxyTest extends TestCase {
     /**
      * Ensures that the most specific interfaces appear first in the list of proxies.
      */

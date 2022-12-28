@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class TransformingNamespacesTest extends TestCase implements NamespaceContext {
+public final class TransformingNamespacesTest extends TestCase implements NamespaceContext {
     /**
      * All prefixes declared in this test.
      */

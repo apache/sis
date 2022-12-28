@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(DerivedSetTest.class)
-public final strictfp class DerivedMapTest extends TestCase implements ObjectConverter<Integer,Integer> {
+public final class DerivedMapTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**
      * The value to replace by {@code null}.
      */

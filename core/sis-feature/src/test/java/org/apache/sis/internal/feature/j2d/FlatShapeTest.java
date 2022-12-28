@@ -31,7 +31,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class FlatShapeTest extends TestCase {
+public final class FlatShapeTest extends TestCase {
     /**
      * Tests {@link Polyline} using {@link Path2D} as a reference implementation.
      */

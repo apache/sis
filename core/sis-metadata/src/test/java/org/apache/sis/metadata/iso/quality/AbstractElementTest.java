@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.3
  */
-public final strictfp class AbstractElementTest extends TestCase {
+public final class AbstractElementTest extends TestCase {
     /**
      * Tests {@link Element#getDates()}.
      */

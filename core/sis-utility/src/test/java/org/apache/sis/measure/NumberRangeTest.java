@@ -39,7 +39,7 @@ import org.opengis.referencing.operation.TransformException;
     RangeTest.class,
     org.apache.sis.util.NumbersTest.class
 })
-public final strictfp class NumberRangeTest extends TestCase {
+public final class NumberRangeTest extends TestCase {
     /**
      * Tests {@link NumberRange#isCacheable(Number)}.
      */

@@ -38,7 +38,7 @@ import org.opengis.test.dataset.TestData;
  * @since   0.3
  */
 @DependsOn({VariableInfoTest.class, GridTest.class})
-public final strictfp class GridInfoTest extends GridTest {
+public final class GridInfoTest extends GridTest {
     /**
      * Creates a new test.
      */

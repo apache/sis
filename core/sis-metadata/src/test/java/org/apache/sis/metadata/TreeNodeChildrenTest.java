@@ -55,7 +55,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class TreeNodeChildrenTest extends TestCase {
+public final class TreeNodeChildrenTest extends TestCase {
     /**
      * Creates a shallow metadata object without collections.
      *

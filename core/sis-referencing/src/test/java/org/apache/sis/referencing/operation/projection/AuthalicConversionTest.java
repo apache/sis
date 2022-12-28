@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
  * @since   1.0
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class AuthalicConversionTest extends MapProjectionTestCase {
+public final class AuthalicConversionTest extends MapProjectionTestCase {
     /**
      * Creates the projection to be tested.
      *

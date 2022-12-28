@@ -46,7 +46,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 1.1
  * @since   0.3
  */
-public final strictfp class CodeListMarshallingTest extends TestCase {
+public final class CodeListMarshallingTest extends TestCase {
     /**
      * Returns a XML string to use for testing purpose.
      * Note that responsible party exists only in legacy ISO 19115:2003 model.

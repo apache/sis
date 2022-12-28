@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class ArraysExtTest extends TestCase {
+public final class ArraysExtTest extends TestCase {
     /**
      * Tests {@link ArraysExt#removeDuplicated(Object[])}.
      */

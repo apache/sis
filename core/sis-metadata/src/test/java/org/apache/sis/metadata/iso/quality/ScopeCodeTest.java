@@ -36,7 +36,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  *
  * @since 1.1
  */
-public final strictfp class ScopeCodeTest extends TestCase {
+public final class ScopeCodeTest extends TestCase {
     /**
      * The XML fragment used for testing.
      */

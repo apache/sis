@@ -29,7 +29,7 @@ import org.opengis.util.GenericName;
  * @version 0.6
  * @since   0.4
  */
-final strictfp class BuilderMock extends Builder<BuilderMock> {
+final class BuilderMock extends Builder<BuilderMock> {
     /**
      * Creates a new builder.
      */

@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @SuppressWarnings("UnnecessaryBoxing")
-public final strictfp class NumericsTest extends TestCase {
+public final class NumericsTest extends TestCase {
     /**
      * Verifies the value of {@link Numerics#LONG_SHIFT} and {@link Numerics#INT_SHIFT}.
      */

@@ -70,7 +70,7 @@ import static org.apache.sis.test.Assert.*;
     ContextualParametersTest.class,
     EllipsoidToCentricTransformTest.class   // Used as a reference implementation
 })
-public final strictfp class MolodenskyTransformTest extends MathTransformTestCase {
+public final class MolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
      */

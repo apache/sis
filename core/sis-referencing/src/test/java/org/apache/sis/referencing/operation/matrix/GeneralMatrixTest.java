@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.4
  */
-public final strictfp class GeneralMatrixTest extends MatrixTestCase {
+public final class GeneralMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns.
      */

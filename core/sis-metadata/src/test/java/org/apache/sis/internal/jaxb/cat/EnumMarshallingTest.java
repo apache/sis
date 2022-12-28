@@ -37,7 +37,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 1.0
  * @since   0.5
  */
-public final strictfp class EnumMarshallingTest extends TestCase {
+public final class EnumMarshallingTest extends TestCase {
     /**
      * Tests (un)marshalling of an enumeration.
      *

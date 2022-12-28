@@ -71,7 +71,7 @@ import org.opengis.metadata.Identifier;
  * @version 1.3
  * @since   0.6
  */
-public strictfp class CoordinateOperationMethods extends HTMLGenerator {
+public class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *

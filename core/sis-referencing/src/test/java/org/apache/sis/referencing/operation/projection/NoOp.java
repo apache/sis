@@ -37,7 +37,7 @@ import org.apache.sis.util.Workaround;
  * @since   0.6
  */
 @SuppressWarnings("serial")
-final strictfp class NoOp extends ConformalProjection {
+final class NoOp extends ConformalProjection {
     /**
      * Creates a new "no-operation".
      *

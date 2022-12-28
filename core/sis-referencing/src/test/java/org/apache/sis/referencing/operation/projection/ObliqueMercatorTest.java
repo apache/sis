@@ -42,7 +42,7 @@ import static java.lang.StrictMath.*;
  * @since   1.0
  */
 @DependsOn(MercatorTest.class)
-public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
+public final class ObliqueMercatorTest extends MapProjectionTestCase {
     /**
      * Returns a new instance of {@link ObliqueMercator}.
      *

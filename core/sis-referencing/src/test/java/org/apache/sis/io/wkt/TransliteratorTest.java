@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   0.6
  */
-public final strictfp class TransliteratorTest extends TestCase {
+public final class TransliteratorTest extends TestCase {
     /**
      * Verify the value of the {@link Transliterator#SPACES} constant.
      */

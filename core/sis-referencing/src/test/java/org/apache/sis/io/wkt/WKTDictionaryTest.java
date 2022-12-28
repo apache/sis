@@ -53,7 +53,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   1.1
  */
 @DependsOn(WKTFormatTest.class)
-public final strictfp class WKTDictionaryTest extends TestCase {
+public final class WKTDictionaryTest extends TestCase {
     /**
      * Tests {@link WKTDictionary#addDefinitions(Stream)}. The CRS used in this test are a subset of the
      * ones used by {@link #testLoad()}. One of them is intentionally malformed for testing error index.

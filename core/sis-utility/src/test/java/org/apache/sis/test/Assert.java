@@ -47,7 +47,7 @@ import org.apache.sis.util.Classes;
  * @version 1.0
  * @since   0.3
  */
-public strictfp class Assert extends org.opengis.test.Assert {
+public class Assert extends org.opengis.test.Assert {
     /**
      * For subclass constructor only.
      */

@@ -42,7 +42,7 @@ import org.opengis.temporal.TemporalGeometricPrimitive;
  * @since   1.1
  */
 @SuppressWarnings("serial")
-final strictfp class PeriodLiteral implements Period, Literal<Feature,Period>, Serializable {
+final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializable {
     /**
      * Period beginning and ending, in milliseconds since Java epoch.
      */

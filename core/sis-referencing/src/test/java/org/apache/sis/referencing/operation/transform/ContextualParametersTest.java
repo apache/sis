@@ -42,7 +42,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.6
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
-public final strictfp class ContextualParametersTest extends TestCase {
+public final class ContextualParametersTest extends TestCase {
     /**
      * Creates an instance to use for testing purpose.
      */

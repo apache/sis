@@ -65,7 +65,7 @@ import static org.junit.Assume.assumeTrue;
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.io.wkt.WKTFormatTest.class
 })
-public final strictfp class ConsistencyTest extends TestCase {
+public final class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.
      */

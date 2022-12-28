@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.1
  */
-public final strictfp class ColorizerTest extends TestCase {
+public final class ColorizerTest extends TestCase {
     /**
      * Tests the creation of an index color model using {@link Colorizer#Colorizer(Collection)}.
      *

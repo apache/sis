@@ -51,7 +51,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 1.3
  * @since   1.0
  */
-public final strictfp class GridExtentTest extends TestCase {
+public final class GridExtentTest extends TestCase {
     /**
      * Creates a three-dimensional grid extent to be shared by different tests.
      */

@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   0.8
  */
-public final strictfp class CodesTest extends TestCase {
+public final class CodesTest extends TestCase {
     /**
      * The unit of measurement of the vertical axis.
      */

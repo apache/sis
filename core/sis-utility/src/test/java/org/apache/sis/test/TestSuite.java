@@ -45,7 +45,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @RunWith(Suite.class)
-public abstract strictfp class TestSuite {
+public abstract class TestSuite {
     /**
      * The default set of base classes that all test cases are expected to extends.
      * This is the default argument value for {@link #verifyTestList(Class)} method.

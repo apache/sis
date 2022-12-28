@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * @since   0.3
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
-public final strictfp class DefaultExtentTest extends TestUsingFile {
+public final class DefaultExtentTest extends TestUsingFile {
     /**
      * An XML file containing extent information.
      */

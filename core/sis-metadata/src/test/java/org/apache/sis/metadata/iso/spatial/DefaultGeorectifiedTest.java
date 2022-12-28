@@ -35,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class DefaultGeorectifiedTest extends TestCase {
+public final class DefaultGeorectifiedTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).

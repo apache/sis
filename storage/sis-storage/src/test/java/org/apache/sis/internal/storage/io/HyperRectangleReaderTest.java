@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * @since   0.7
  */
 @DependsOn(ChannelDataInputTest.class)
-public final strictfp class HyperRectangleReaderTest extends TestCase {
+public final class HyperRectangleReaderTest extends TestCase {
     /**
      * The hyper-cube dimensions.
      */

@@ -52,7 +52,7 @@ import org.opengis.feature.AttributeType;
  * @version 1.0
  * @since   0.7
  */
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * {@code true} if testing a moving feature, or {@code false} (the default) if testing a static feature.
      */

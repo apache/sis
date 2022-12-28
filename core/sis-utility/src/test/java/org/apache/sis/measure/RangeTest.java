@@ -33,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.1
  * @since   0.3
  */
-public final strictfp class RangeTest extends TestCase {
+public final class RangeTest extends TestCase {
     /**
      * Tests the creation of {@link Range} objects under normal conditions.
      */

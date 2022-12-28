@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class LinearlyDerivedVectorTest extends TestCase {
+public final class LinearlyDerivedVectorTest extends TestCase {
     /**
      * Tests creation of a vector and a few methods that haven been overridden.
      */

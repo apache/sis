@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.1
  */
-public final strictfp class GUIUtilitiesTest extends TestCase {
+public final class GUIUtilitiesTest extends TestCase {
     /**
      * Tests {@link GUIUtilities#appendPathSorted(TreeItem, Comparable...)}
      * and   {@link GUIUtilities#removePathSorted(TreeItem, Comparable...)}.

@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.0
  */
-public abstract strictfp class GeometriesTestCase extends TestCase {
+public abstract class GeometriesTestCase extends TestCase {
     /**
      * The factory to test.
      */

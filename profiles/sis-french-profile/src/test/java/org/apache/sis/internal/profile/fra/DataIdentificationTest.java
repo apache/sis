@@ -31,7 +31,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 1.0
  * @since   0.4
  */
-public final strictfp class DataIdentificationTest extends TestCase {
+public final class DataIdentificationTest extends TestCase {
     /**
      * Tests marshalling and unmarshalling of a XML fragment.
      *

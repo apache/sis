@@ -40,7 +40,7 @@ import org.opengis.filter.TemporalOperatorName;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class TemporalFilterTest extends TestCase {
+public final class TemporalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

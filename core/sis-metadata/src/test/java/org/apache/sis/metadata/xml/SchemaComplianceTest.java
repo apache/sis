@@ -38,7 +38,7 @@ import static org.junit.Assume.*;
  * @version 1.1
  * @since   1.0
  */
-public final strictfp class SchemaComplianceTest extends TestCase {
+public final class SchemaComplianceTest extends TestCase {
     /**
      * Verifies compliance with metadata schemas.
      *

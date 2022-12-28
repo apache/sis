@@ -64,7 +64,7 @@ import static org.opengis.test.Assert.*;
     org.apache.sis.internal.referencing.provider.ProvidersTest.class,
     OperationMethodSetTest.class
 })
-public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
+public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Returns the factory to use for the tests.
      *

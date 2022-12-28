@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * @since   0.8
  */
 @DependsOn(TypesTest.class)
-public final strictfp class MetadataTest extends TestCase {
+public final class MetadataTest extends TestCase {
     /**
      * Tests the {@link Metadata#equals(Object)} and {@link Metadata#hashCode()}.
      *

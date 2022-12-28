@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @since   0.6
  */
-public final strictfp class LazySetTest extends TestCase {
+public final class LazySetTest extends TestCase {
     /**
      * The test data.
      */

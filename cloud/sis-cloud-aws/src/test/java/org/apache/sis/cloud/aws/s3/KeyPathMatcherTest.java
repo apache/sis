@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class KeyPathMatcherTest extends TestCase {
+public final class KeyPathMatcherTest extends TestCase {
     /**
      * Tests a pattern using "glob" syntax.
      */

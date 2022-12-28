@@ -52,7 +52,7 @@ import org.opengis.metadata.citation.Responsibility;
     MetadataSourceTest.class,
     IdentifierGeneratorTest.class
 })
-public final strictfp class MetadataWriterTest extends TestCase {
+public final class MetadataWriterTest extends TestCase {
     /**
      * The data source providing connections to the database.
      */

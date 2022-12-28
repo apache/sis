@@ -28,7 +28,7 @@ import org.junit.Test;
  * @version 1.3
  * @since   1.1
  */
-public final strictfp class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilterTestCase<Shape> {
+public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilterTestCase<Shape> {
     /**
      * Creates a new test.
      */

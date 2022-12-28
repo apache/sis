@@ -31,7 +31,7 @@ import static org.apache.sis.util.StringBuilders.*;
  * @version 0.8
  * @since   0.3
  */
-public final strictfp class StringBuildersTest extends TestCase {
+public final class StringBuildersTest extends TestCase {
     /**
      * Tests the {@link StringBuilders#replace(StringBuilder, String, String)} method.
      */

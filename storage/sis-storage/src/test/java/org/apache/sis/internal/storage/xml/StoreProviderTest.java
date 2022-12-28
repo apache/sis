@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
-public final strictfp class StoreProviderTest extends TestCase {
+public final class StoreProviderTest extends TestCase {
     /**
      * Tests {@link StoreProvider#probeContent(StorageConnector)} method from a {@link java.io.Reader} object.
      *

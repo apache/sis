@@ -51,7 +51,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.internal.storage.io.ChannelImageInputStreamTest.class)
-public final strictfp class StorageConnectorTest extends TestCase {
+public final class StorageConnectorTest extends TestCase {
     /**
      * Name of the test file, in the same directory than this {@code StorageConnectorTest} file.
      */

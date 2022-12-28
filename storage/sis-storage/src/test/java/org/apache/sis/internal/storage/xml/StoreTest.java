@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * The metadata to unmarshal.
      */

@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     InitializerTest.class
 })
-public final strictfp class NormalizedProjectionTest extends TransformTestCase {
+public final class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
      */

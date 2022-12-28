@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class XLinkTest extends TestCase {
+public final class XLinkTest extends TestCase {
     /**
      * Tests the automatic {@link XLink#getType()} detection.
      *

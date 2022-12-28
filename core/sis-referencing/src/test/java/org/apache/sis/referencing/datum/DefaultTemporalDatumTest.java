@@ -38,7 +38,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * @version 0.8
  * @since   0.4
  */
-public final strictfp class DefaultTemporalDatumTest extends TestCase {
+public final class DefaultTemporalDatumTest extends TestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */

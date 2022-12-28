@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 0.8
  * @since   0.7
  */
-public final strictfp class DataScriptFormatterTest extends TestCase {
+public final class DataScriptFormatterTest extends TestCase {
     /**
      * Tests the {@link DataScriptFormatter#removeLF(StringBuilder)} method.
      */

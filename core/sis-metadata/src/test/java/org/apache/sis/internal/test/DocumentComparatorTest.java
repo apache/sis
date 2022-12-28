@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @since   0.3
  */
-public final strictfp class DocumentComparatorTest extends TestCase {
+public final class DocumentComparatorTest extends TestCase {
     /**
      * Tests the {@link DocumentComparator#ignoredAttributes} and {@link DocumentComparator#ignoredNodes} sets.
      *

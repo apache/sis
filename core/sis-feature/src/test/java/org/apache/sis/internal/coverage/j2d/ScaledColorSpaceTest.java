@@ -39,7 +39,7 @@ import static java.lang.StrictMath.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class ScaledColorSpaceTest extends ImageTestCase {
+public final class ScaledColorSpaceTest extends ImageTestCase {
     /**
      * The minimal and maximal values to renderer.
      */

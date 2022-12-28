@@ -42,7 +42,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @version 1.1
  * @since   1.0
  */
-public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest {
+public final class BufferedGridCoverageTest extends GridCoverage2DTest {
     /**
      * Creates a {@link GridCoverage} instance to test with fixed sample values.
      * The coverage returned by this method shall contain the following values:

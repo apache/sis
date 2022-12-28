@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  */
 @DependsOn(AbstractCRSTest.class)
-public final strictfp class SubTypesTest extends TestCase {
+public final class SubTypesTest extends TestCase {
     /**
      * Tests the {@link SubTypes#BY_TYPE} comparator.
      */

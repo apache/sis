@@ -36,7 +36,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 1.0
  * @since   0.4
  */
-public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
+public final class DefaultRepresentativeFractionTest extends TestCase {
     /**
      * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
      */

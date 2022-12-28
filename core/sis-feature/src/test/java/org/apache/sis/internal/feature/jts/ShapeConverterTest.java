@@ -48,7 +48,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class ShapeConverterTest extends TestCase {
+public final class ShapeConverterTest extends TestCase {
     /**
      * The geometry factory used by the tests.
      */

@@ -45,7 +45,7 @@ import static org.apache.sis.internal.referencing.AxisDirections.COUNTER_CLOCKWI
  * @since   0.4
  */
 @DependsOn(AxesMapperTest.class)
-public final strictfp class AxisDirectionsTest extends TestCase {
+public final class AxisDirectionsTest extends TestCase {
     /**
      * Tests {@link AxisDirections#absolute(AxisDirection)}.
      */

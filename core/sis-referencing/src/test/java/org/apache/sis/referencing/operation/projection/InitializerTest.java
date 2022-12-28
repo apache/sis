@@ -38,7 +38,7 @@ import static org.opengis.test.Assert.*;
  * @version 0.7
  * @since   0.7
  */
-public final strictfp class InitializerTest extends TestCase{
+public final class InitializerTest extends TestCase{
     /**
      * Tests the {@link Initializer#radiusOfConformalSphere(double)} method.
      * This test computes the Radius of Conformal Sphere using the values given by the

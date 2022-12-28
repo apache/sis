@@ -53,7 +53,7 @@ import static org.junit.Assert.*;
  * @since 0.6
  */
 @DependsOn(CC_GeneralOperationParameterTest.class)
-public final strictfp class CC_OperationParameterGroupTest extends TestCase {
+public final class CC_OperationParameterGroupTest extends TestCase {
     /**
      * The remark to associate to the "Latitude of natural origin" parameter.
      * Should be different than the comment stored in {@link Mercator1SP} in

@@ -55,7 +55,7 @@ import org.opengis.metadata.Identifier;
     DefaultParameterValueTest.class,
     DefaultParameterValueGroupTest.class
 })
-public final strictfp class ParametersTest extends TestCase {
+public final class ParametersTest extends TestCase {
     /**
      * Tests the {@link Parameters#cast(ParameterDescriptor, Class)} and
      * {@link Parameters#cast(ParameterValue, Class)} methods.

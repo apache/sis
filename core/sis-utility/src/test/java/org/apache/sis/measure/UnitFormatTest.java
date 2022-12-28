@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  * @since   0.8
  */
 @DependsOn({SystemUnitTest.class, ConventionalUnitTest.class})
-public final strictfp class UnitFormatTest extends TestCase {
+public final class UnitFormatTest extends TestCase {
     /**
      * Verifies all constants defined in {@link Units} class. This method verifies:
      *

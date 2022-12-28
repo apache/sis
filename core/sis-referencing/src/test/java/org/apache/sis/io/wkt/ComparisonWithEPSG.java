@@ -41,7 +41,7 @@ import static org.junit.Assume.assumeNotNull;
  * @since   1.0
  */
 @DependsOn(WKTParserTest.class)
-public final strictfp class ComparisonWithEPSG extends TestCase {
+public final class ComparisonWithEPSG extends TestCase {
     /**
      * Creates the factory to use for all tests in this class.
      *

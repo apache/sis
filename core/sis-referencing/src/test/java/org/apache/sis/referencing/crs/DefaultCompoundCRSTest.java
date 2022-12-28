@@ -51,7 +51,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DefaultGeographicCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultCompoundCRSTest extends TestCase {
+public final class DefaultCompoundCRSTest extends TestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
      */

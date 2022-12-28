@@ -31,7 +31,7 @@ import static org.apache.sis.util.Characters.*;
  * @version 1.1
  * @since   0.3
  */
-public final strictfp class CharactersTest extends TestCase {
+public final class CharactersTest extends TestCase {
     /**
      * Tests the value of {@link Characters#LINE_SEPARATOR}
      * and {@link Characters#PARAGRAPH_SEPARATOR} constant value.

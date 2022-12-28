@@ -44,7 +44,7 @@ import static org.apache.sis.xml.IdentifierSpace.*;
  * @since   0.7
  */
 @DependsOn(IdentifierMapAdapterTest.class)
-public final strictfp class ModifiableIdentifierMapTest extends TestCase {
+public final class ModifiableIdentifierMapTest extends TestCase {
     /**
      * The HREF string to replace by {@link XLink#toString()}.
      */

@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.internal.gui.GUIUtilitiesTest.class
 })
-public final strictfp class ApplicationTestSuite extends TestSuite {
+public final class ApplicationTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

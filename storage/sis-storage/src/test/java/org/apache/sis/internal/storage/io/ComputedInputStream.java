@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 1.4
  * @since   1.4
  */
-final strictfp class ComputedInputStream extends InputStream {
+final class ComputedInputStream extends InputStream {
     /**
      * Number of bytes in this stream.
      */

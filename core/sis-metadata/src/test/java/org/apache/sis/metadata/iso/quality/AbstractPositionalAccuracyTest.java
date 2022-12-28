@@ -40,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.3
  */
 @DependsOn(FreeTextMarshallingTest.class)
-public final strictfp class AbstractPositionalAccuracyTest extends TestUsingFile {
+public final class AbstractPositionalAccuracyTest extends TestUsingFile {
     /**
      * An XML file containing quality information.
      */

@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class MarshallerPoolTest extends TestCase {
+public final class MarshallerPoolTest extends TestCase {
     /**
      * Tests a marshaller which is acquired, then released.
      * The marshaller should be reset to its initial state

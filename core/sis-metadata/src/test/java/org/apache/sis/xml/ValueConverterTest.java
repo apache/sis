@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  */
 @DependsOn(LegacyCodesTest.class)
-public final strictfp class ValueConverterTest extends TestCase {
+public final class ValueConverterTest extends TestCase {
     /**
      * Tests {@link ValueConverter#toLanguageCode(MarshalContext, Locale)}.
      * The results should be ISO 639-2 codes (3 letters language codes).

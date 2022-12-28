@@ -43,7 +43,7 @@ import static java.lang.StrictMath.toRadians;
  * @since   0.8
  */
 @DependsOn(MolodenskyTransformTest.class)
-public final strictfp class AbridgedMolodenskyTransformTest extends MathTransformTestCase {
+public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
      */

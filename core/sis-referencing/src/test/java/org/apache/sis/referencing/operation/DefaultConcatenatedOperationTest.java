@@ -50,7 +50,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     DefaultTransformationTest.class,
     SingleOperationMarshallingTest.class
 })
-public final strictfp class DefaultConcatenatedOperationTest extends TestCase {
+public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */

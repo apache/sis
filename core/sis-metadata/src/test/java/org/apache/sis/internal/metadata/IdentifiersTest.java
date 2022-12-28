@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @since  1.0
  * @versio 1.0
  */
-public final strictfp class IdentifiersTest extends TestCase {
+public final class IdentifiersTest extends TestCase {
     /**
      * Creates a citation with the given title and the given identifiers.
      */

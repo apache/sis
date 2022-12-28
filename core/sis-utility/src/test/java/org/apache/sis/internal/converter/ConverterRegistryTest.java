@@ -48,7 +48,7 @@ import static org.apache.sis.test.Assert.*;
     StringConverterTest.class, FallbackConverterTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class
 })
-public final strictfp class ConverterRegistryTest extends TestCase {
+public final class ConverterRegistryTest extends TestCase {
     /**
      * The registry being tested.
      */

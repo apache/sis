@@ -50,7 +50,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  */
 @DependsOn({DefaultGeographicBoundingBoxTest.class, DefaultExtentTest.class})
-public final strictfp class ExtentsTest extends TestCase {
+public final class ExtentsTest extends TestCase {
     /**
      * One minute of angle, in degrees.
      */

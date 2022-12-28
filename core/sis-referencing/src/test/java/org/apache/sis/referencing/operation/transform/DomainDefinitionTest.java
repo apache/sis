@@ -33,7 +33,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class DomainDefinitionTest extends TestCase {
+public final class DomainDefinitionTest extends TestCase {
     /**
      * Tests domain transformation when the domain is provided by a step in a chain of transforms.
      *

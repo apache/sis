@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(AngleFormatTest.class)
-public final strictfp class AngleTest extends TestCase {
+public final class AngleTest extends TestCase {
     /**
      * Tests the {@link Angle#toString()} method.
      */

@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class DerivedSetTest extends TestCase implements ObjectConverter<Integer,Integer> {
+public final class DerivedSetTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**
      * The value to replace by {@code null}.
      */

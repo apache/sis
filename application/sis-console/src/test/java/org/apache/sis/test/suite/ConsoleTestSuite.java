@@ -36,7 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.console.MetadataCommandTest.class,
     org.apache.sis.console.CRSCommandTest.class
 })
-public final strictfp class ConsoleTestSuite extends TestSuite {
+public final class ConsoleTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

@@ -42,7 +42,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.6
  */
 @DependsOn(org.apache.sis.referencing.operation.transform.MathTransformsTest.class)
-public final strictfp class MathTransformParserTest extends TestCase {
+public final class MathTransformParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */

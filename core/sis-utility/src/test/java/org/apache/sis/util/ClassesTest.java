@@ -70,7 +70,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
  * @version 1.3
  * @since   0.3
  */
-public final strictfp class ClassesTest extends TestCase {
+public final class ClassesTest extends TestCase {
     /**
      * Tests {@link Classes#changeArrayDimension(Class, int)}.
      */

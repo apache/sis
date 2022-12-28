@@ -56,7 +56,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class TestUtilities extends Static {
+public final class TestUtilities extends Static {
     /**
      * Width of the separator to print to {@link TestCase#out}, in number of characters.
      */

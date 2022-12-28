@@ -50,7 +50,7 @@ import org.opengis.filter.MatchAction;
  * @version 1.1
  * @since   1.0
  */
-public final strictfp class JoinFeatureSetTest extends TestCase {
+public final class JoinFeatureSetTest extends TestCase {
     /**
      * The set of features to be joined together.
      */

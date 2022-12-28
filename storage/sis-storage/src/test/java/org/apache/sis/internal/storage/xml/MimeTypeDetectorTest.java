@@ -37,7 +37,7 @@ import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
  * @version 1.0
  * @since   0.4
  */
-public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
+public final class MimeTypeDetectorTest extends TestUsingFile {
     /**
      * Tests a pseudo-XML file in the default namespace, read from a hard-coded string.
      *

@@ -38,7 +38,7 @@ import org.opengis.filter.capability.ScalarCapabilities;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class CapabilitiesTest extends TestCase {
+public final class CapabilitiesTest extends TestCase {
     /**
      * Creates a new test case.
      */

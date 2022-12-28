@@ -32,7 +32,7 @@ import org.opengis.referencing.cs.RangeMeaning;
  * @since   0.6
  */
 @SuppressWarnings("serial")
-public strictfp class CoordinateSystemAxisMock extends IdentifiedObjectMock
+public class CoordinateSystemAxisMock extends IdentifiedObjectMock
         implements CoordinateSystemAxis, CoordinateSystem
 {
     /**

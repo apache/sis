@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since   1.0
  */
 @DependsOn(LinearConverterTest.class)
-public final strictfp class PrefixesTest extends TestCase {
+public final class PrefixesTest extends TestCase {
     /**
      * Ensures that the characters in the {@link Prefixes#PREFIXES} array are in strictly increasing order,
      * and that {@link Prefixes#POWERS} has the same length.

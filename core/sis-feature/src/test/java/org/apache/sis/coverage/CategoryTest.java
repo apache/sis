@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class CategoryTest extends TestCase {
+public final class CategoryTest extends TestCase {
     /**
      * Small tolerance value for comparisons.
      */

@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class DefaultCitationDateTest extends TestCase {
+public final class DefaultCitationDateTest extends TestCase {
     /**
      * Tests the copy constructor.
      */

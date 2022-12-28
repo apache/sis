@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public strictfp class DatumShiftGridFileTest extends TestCase {
+public class DatumShiftGridFileTest extends TestCase {
     /**
      * Size of the grid created for testing purpose.
      */

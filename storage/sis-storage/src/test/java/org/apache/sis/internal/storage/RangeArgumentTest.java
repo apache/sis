@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.0
  */
-public final strictfp class RangeArgumentTest extends TestCase implements Localized {
+public final class RangeArgumentTest extends TestCase implements Localized {
     /**
      * A resource performing no operation.
      */

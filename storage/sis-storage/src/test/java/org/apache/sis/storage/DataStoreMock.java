@@ -29,7 +29,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * @version 1.3
  * @since   0.8
  */
-public final strictfp class DataStoreMock extends DataStore {
+public final class DataStoreMock extends DataStore {
     /**
      * The display name.
      */

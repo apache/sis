@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class ShapePropertiesTest extends TestCase {
+public final class ShapePropertiesTest extends TestCase {
     /**
      * Tests with a line segment.
      */

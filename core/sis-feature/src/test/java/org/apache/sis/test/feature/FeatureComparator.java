@@ -51,7 +51,7 @@ import org.opengis.feature.Operation;
  * @version 1.1
  * @since   1.1
  */
-public strictfp class FeatureComparator {
+public class FeatureComparator {
     /**
      * The expected feature, or {@code null} if comparing only feature type.
      */

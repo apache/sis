@@ -33,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class PropertySingletonTest extends TestCase {
+public final class PropertySingletonTest extends TestCase {
     /**
      * The instance to test.
      */

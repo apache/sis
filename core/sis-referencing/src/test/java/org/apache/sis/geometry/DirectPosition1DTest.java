@@ -33,7 +33,7 @@ import static org.opengis.test.Validators.*;
  * @since   0.3
  */
 @DependsOn(GeneralDirectPositionTest.class)
-public final strictfp class DirectPosition1DTest extends TestCase {
+public final class DirectPosition1DTest extends TestCase {
     /**
      * Tests the {@link DirectPosition1D#toString()} method.
      */

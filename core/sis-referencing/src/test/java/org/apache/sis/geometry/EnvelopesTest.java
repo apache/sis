@@ -61,7 +61,7 @@ import static org.opengis.test.Validators.validate;
     GeneralEnvelopeTest.class,
     CurveExtremumTest.class
 })
-public final strictfp class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
+public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     /**
      * Creates an envelope for the given CRS and coordinate values.
      */

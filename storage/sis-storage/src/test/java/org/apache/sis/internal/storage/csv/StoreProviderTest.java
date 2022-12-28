@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.8
  */
-public final strictfp class StoreProviderTest extends TestCase {
+public final class StoreProviderTest extends TestCase {
     /**
      * Tests {@link StoreProvider#probeContent(StorageConnector)} method.
      *

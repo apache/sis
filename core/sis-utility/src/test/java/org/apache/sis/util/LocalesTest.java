@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(ArraysExtTest.class)
-public final strictfp class LocalesTest extends TestCase {
+public final class LocalesTest extends TestCase {
     /**
      * Tests the {@link Locales#getAvailableLanguages()} method.
      */

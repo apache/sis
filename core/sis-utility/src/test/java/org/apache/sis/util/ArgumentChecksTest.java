@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
-public final strictfp class ArgumentChecksTest extends TestCase {
+public final class ArgumentChecksTest extends TestCase {
     /**
      * Tests {@link ArgumentChecks#ensureNonNullElement(String, int, Object)}.
      */

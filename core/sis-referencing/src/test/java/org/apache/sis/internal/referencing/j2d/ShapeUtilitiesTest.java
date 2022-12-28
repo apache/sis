@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.2
  * @since   0.5
  */
-public final strictfp class ShapeUtilitiesTest extends TestCase {
+public final class ShapeUtilitiesTest extends TestCase {
     /**
      * Tolerance factor for the tests in this class.
      */

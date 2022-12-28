@@ -42,7 +42,7 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
     org.apache.sis.util.ArraysExtTest.class,
     org.apache.sis.internal.util.NumericsTest.class
 })
-public final strictfp class MathFunctionsTest extends TestCase {
+public final class MathFunctionsTest extends TestCase {
     /**
      * Small number for floating point comparisons.
      */

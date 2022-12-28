@@ -68,7 +68,7 @@ import static org.opengis.test.Assert.*;
  * @since   1.1
  */
 @DependsOn({RasterReaderTest.class, RasterWriterTest.class})
-public final strictfp class PostgresTest extends TestCase {
+public final class PostgresTest extends TestCase {
     /**
      * Tests {@link Postgres#parseVersion(String)}.
      */

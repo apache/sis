@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.6
  * @since   0.3
  */
-public final strictfp class VersionTest extends TestCase {
+public final class VersionTest extends TestCase {
     /**
      * Tests a numeric-only version.
      */

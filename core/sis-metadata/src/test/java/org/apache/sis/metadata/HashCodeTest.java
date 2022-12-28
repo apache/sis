@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
  * @since   1.0
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class HashCodeTest extends TestCase {
+public final class HashCodeTest extends TestCase {
     /**
      * Computes the hash code value of the given object.
      */

@@ -60,7 +60,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @since   0.8
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
-public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
+public final class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Verifies the metadata.
      */

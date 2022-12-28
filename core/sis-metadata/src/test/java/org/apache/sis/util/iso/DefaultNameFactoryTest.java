@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  */
 @RunWith(TestRunner.class)
 @DependsOn({DefaultLocalNameTest.class, DefaultScopedNameTest.class})
-public final strictfp class DefaultNameFactoryTest extends NameTest {
+public final class DefaultNameFactoryTest extends NameTest {
     /**
      * The factory to test.
      */

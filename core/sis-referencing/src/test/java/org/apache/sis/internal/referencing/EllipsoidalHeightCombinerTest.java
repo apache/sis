@@ -54,7 +54,7 @@ import static org.apache.sis.test.Assert.*;
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class
 })
-public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
+public final class EllipsoidalHeightCombinerTest extends TestCase {
     /**
      * Creates an instance to be tested.
      */

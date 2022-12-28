@@ -35,7 +35,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.8
  */
 @DependsOn(ScalarTest.class)
-public final strictfp class QuantitiesTest extends TestCase {
+public final class QuantitiesTest extends TestCase {
     /**
      * Tests {@link Quantities#create(double, String)}.
      */

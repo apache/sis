@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class HelpCommandTest extends TestCase {
+public final class HelpCommandTest extends TestCase {
     /**
      * Tests the sub-command without option.
      *

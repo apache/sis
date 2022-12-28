@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.3
  */
-public final strictfp class SexagesimalConverterTest extends TestCase {
+public final class SexagesimalConverterTest extends TestCase {
     /**
      * Tolerance value for the comparisons of floating point numbers.
      */

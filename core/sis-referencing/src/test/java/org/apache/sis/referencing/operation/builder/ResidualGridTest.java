@@ -34,7 +34,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.1
  * @since   1.0
  */
-public final strictfp class ResidualGridTest extends TestCase {
+public final class ResidualGridTest extends TestCase {
     /**
      * The grid to test.
      */

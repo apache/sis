@@ -60,7 +60,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.6
  */
-public final strictfp class LoggingWatcher extends TestWatcher implements Filter {
+public final class LoggingWatcher extends TestWatcher implements Filter {
     /**
      * The logged messages.
      */

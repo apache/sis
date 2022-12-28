@@ -57,7 +57,7 @@ import static java.lang.StrictMath.*;
  * @version 1.0
  * @since   0.3
  */
-public strictfp class ReferencingAssert extends MetadataAssert {
+public class ReferencingAssert extends MetadataAssert {
     /**
      * The formatter to be used by {@link #assertWktEquals(String, Object)}.
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}

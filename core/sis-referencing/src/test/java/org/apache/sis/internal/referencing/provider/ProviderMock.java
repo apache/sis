@@ -39,7 +39,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * @since   0.6
  */
 @SuppressWarnings("serial")
-abstract strictfp class ProviderMock extends AbstractProvider {
+abstract class ProviderMock extends AbstractProvider {
     /**
      * Creates a new mock provider.
      */

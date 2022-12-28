@@ -75,7 +75,7 @@ import static org.junit.Assume.assumeTrue;
     DefaultPassThroughOperationTest.class,
     DefaultConcatenatedOperationTest.class
 })
-public final strictfp class CoordinateOperationRegistryTest extends MathTransformTestCase {
+public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:

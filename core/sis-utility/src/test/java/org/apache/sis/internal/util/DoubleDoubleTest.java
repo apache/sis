@@ -41,7 +41,7 @@ import static java.lang.StrictMath.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
-public final strictfp class DoubleDoubleTest extends TestCase {
+public final class DoubleDoubleTest extends TestCase {
     /**
      * Number of time to repeat arithmetic tests.
      */

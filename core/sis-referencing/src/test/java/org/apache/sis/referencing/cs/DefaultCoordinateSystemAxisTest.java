@@ -44,7 +44,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
     DirectionAlongMeridianTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
 })
-public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
+public final class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
      * Validates the {@link HardCodedAxes} constants.
      */

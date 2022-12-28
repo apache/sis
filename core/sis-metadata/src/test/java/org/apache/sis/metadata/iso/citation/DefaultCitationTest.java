@@ -61,7 +61,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class DefaultCitationTest extends TestUsingFile {
+public final class DefaultCitationTest extends TestUsingFile {
     /**
      * An XML file containing a citation.
      */

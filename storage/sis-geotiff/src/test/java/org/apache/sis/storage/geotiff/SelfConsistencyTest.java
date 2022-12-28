@@ -46,7 +46,7 @@ import static org.junit.Assume.assumeNotNull;
  * @version 1.3
  * @since   1.1
  */
-public final strictfp class SelfConsistencyTest extends CoverageReadConsistency {
+public final class SelfConsistencyTest extends CoverageReadConsistency {
     /**
      * The file used for the test, opened only once.
      */

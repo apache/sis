@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
     SphericalToCartesianTest.class,
     CartesianToSphericalTest.class
 })
-public final strictfp class CoordinateSystemTransformTest extends TransformTestCase {
+public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * A right-handed spherical coordinate system.
      */

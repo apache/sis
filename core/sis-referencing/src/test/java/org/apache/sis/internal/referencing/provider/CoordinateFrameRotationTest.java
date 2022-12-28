@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     PositionVector7ParamTest.class
 })
-public final strictfp class CoordinateFrameRotationTest extends MathTransformTestCase {
+public final class CoordinateFrameRotationTest extends MathTransformTestCase {
     /**
      * Creates the transformation from WGS 72 to WGS 84.
      */

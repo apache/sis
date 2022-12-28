@@ -42,7 +42,7 @@ import org.locationtech.jts.geom.LinearRing;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class FilterWritingTest extends CQLTestCase {
+public final class FilterWritingTest extends CQLTestCase {
 
     private final Geometry baseGeometry = GF.createPolygon(
                 GF.createLinearRing(

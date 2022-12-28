@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.4
  * @since   0.4
  */
-public final strictfp class ConventionTest extends TestCase {
+public final class ConventionTest extends TestCase {
     /**
      * Tests {@link Convention#getNameAuthority()}.
      */

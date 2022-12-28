@@ -45,7 +45,7 @@ import org.opengis.feature.PropertyType;
     DenseFeatureTest.class,
     SparseFeatureTest.class
 })
-public final strictfp class AbstractFeatureTest extends FeatureTestCase {
+public final class AbstractFeatureTest extends FeatureTestCase {
     /**
      * A feature implementation on top of {@link AbstractFeature}. This class has more code than strictly necessary
      * since we need to reproduce some of the verifications performed by the Apache SIS supported implementations

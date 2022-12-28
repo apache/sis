@@ -29,7 +29,7 @@ import org.junit.Test;
  * @version 1.3
  * @since   1.1
  */
-public final strictfp class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilterTestCase<Geometry> {
+public final class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**
      * Creates a new test.
      */

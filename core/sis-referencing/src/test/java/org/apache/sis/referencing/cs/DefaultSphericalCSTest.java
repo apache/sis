@@ -34,7 +34,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.4
  */
 @DependsOn(AbstractCSTest.class)
-public final strictfp class DefaultSphericalCSTest extends TestCase {
+public final class DefaultSphericalCSTest extends TestCase {
     /**
      * Tests a spherical CRS conforms to EPSG:8.9:6404 definition.
      * Expected axes are:

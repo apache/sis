@@ -48,7 +48,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
     org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.class
 })
-public final strictfp class DefaultOperationMethodTest extends TestCase {
+public final class DefaultOperationMethodTest extends TestCase {
     /**
      * Creates a new two-dimensional operation method for an operation of the given name and identifier.
      *

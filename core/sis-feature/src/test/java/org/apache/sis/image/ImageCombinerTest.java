@@ -38,7 +38,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @since   1.1
  */
 @DependsOn(ResampledImageTest.class)
-public final strictfp class ImageCombinerTest extends ImageTestCase {
+public final class ImageCombinerTest extends ImageTestCase {
     /**
      * The image to add to the {@link ImageCombiner}.
      */

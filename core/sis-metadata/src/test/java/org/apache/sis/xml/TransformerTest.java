@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class TransformerTest extends TestCase {
+public final class TransformerTest extends TestCase {
     /**
      * Tests {@link Transformer#load(boolean, String, Set, int)}.
      */

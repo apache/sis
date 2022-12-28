@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class MonolineFormatterTest extends TestCase {
+public final class MonolineFormatterTest extends TestCase {
     /**
      * The formatter to be tested.
      */

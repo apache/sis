@@ -51,7 +51,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since 0.3
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class ValueMapTest extends TestCase {
+public final class ValueMapTest extends TestCase {
     /**
      * The citation instance created by {@link #createCitation()}.
      */

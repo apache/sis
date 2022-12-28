@@ -43,7 +43,7 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * @version 1.3
  * @since   0.3
  */
-public final strictfp class XmlUtilitiesTest extends TestCase {
+public final class XmlUtilitiesTest extends TestCase {
     /**
      * Tests the {@link XmlUtilities#toXML(Context, Date)} method.
      * This test arbitrarily uses the CET timezone.

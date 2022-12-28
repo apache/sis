@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.6
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class AbstractOperationTest extends TestCase {
+public final class AbstractOperationTest extends TestCase {
     /**
      * Returns an operation that found new cities.
      */

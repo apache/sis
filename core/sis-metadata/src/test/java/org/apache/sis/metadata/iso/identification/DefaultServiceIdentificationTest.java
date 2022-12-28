@@ -50,7 +50,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class
 })
-public final strictfp class DefaultServiceIdentificationTest extends TestUsingFile {
+public final class DefaultServiceIdentificationTest extends TestUsingFile {
     /**
      * An XML file containing a service identification.
      */

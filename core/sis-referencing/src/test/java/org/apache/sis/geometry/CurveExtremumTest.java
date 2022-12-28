@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class CurveExtremumTest extends TestCase {
+public final class CurveExtremumTest extends TestCase {
     /**
      * Tolerance factor for the tests in this class.
      */

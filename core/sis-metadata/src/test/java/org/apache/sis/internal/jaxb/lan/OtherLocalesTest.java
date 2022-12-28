@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   0.5
  */
-public final strictfp class OtherLocalesTest extends TestCase {
+public final class OtherLocalesTest extends TestCase {
     /**
      * Returns the locales in an array. Character sets are ignored.
      */

@@ -46,7 +46,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
-public final strictfp class DefaultParameterDescriptorTest extends TestCase {
+public final class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates the map of properties to be given to {@link DefaultParameterDescriptor} constructor.
      *

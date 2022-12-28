@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   0.4
  */
-public final strictfp class XPathTest extends TestCase {
+public final class XPathTest extends TestCase {
     /**
      * Tests {@link XPath#split(String)}.
      */

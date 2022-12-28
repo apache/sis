@@ -32,7 +32,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class SampleRangeFormatTest extends TestCase {
+public final class SampleRangeFormatTest extends TestCase {
     /**
      * Creates a band for temperature data.
      */

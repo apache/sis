@@ -27,7 +27,7 @@ import org.locationtech.jts.geom.Geometry;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class BinarySpatialFilterUsingJTS_Test extends BinarySpatialFilterTestCase<Geometry> {
+public final class BinarySpatialFilterUsingJTS_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**
      * Creates a new test.
      */

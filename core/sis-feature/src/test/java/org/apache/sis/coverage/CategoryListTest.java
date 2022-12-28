@@ -41,7 +41,7 @@ import static org.junit.Assert.*;
  * @since   1.0
  */
 @DependsOn(CategoryTest.class)
-public final strictfp class CategoryListTest extends TestCase {
+public final class CategoryListTest extends TestCase {
     /**
      * Asserts that the specified categories are sorted.
      * This method ignores {@code NaN} values.

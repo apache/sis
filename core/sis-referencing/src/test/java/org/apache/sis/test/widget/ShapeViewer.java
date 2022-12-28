@@ -34,7 +34,7 @@ import javax.swing.JPanel;
  * @since   1.0
  */
 @SuppressWarnings("serial")
-final strictfp class ShapeViewer extends JPanel {
+final class ShapeViewer extends JPanel {
     /**
      * Margin to keep on each side of the window.
      */

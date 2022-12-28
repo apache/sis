@@ -47,7 +47,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
  * @since   0.3
  */
 @DependsOn(ArrayEnvelopeTest.class)
-public strictfp class GeneralEnvelopeTest extends TestCase {
+public class GeneralEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for floating point comparisons.
      */

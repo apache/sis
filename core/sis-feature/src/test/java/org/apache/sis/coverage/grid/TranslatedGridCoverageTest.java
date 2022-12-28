@@ -37,7 +37,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class TranslatedGridCoverageTest extends TestCase {
+public final class TranslatedGridCoverageTest extends TestCase {
     /**
      * Creates a test coverage with grid coordinates starting at (-20, -10).
      * Envelope is BOX(-80 -20, -72 -16).

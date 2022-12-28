@@ -31,7 +31,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 0.4
  * @since   0.4
  */
-public final strictfp class DefaultVerticalCRSTest extends TestCase {
+public final class DefaultVerticalCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting.
      */

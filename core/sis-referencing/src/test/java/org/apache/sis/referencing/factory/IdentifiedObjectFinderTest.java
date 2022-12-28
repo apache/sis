@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.7
  */
 @DependsOn({CommonAuthorityFactoryTest.class, AuthorityFactoryProxyTest.class})
-public final strictfp class IdentifiedObjectFinderTest extends TestCase {
+public final class IdentifiedObjectFinderTest extends TestCase {
     /**
      * The factory to use for the test.
      */
@@ -108,7 +108,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
     /**
      * An authority factory to be used by {@link IdentifiedObjectFinderTest#testFindOnCachingInstance()}.
      */
-    private static final strictfp class Cached extends ConcurrentAuthorityFactory<GeodeticAuthorityFactory>
+    private static final class Cached extends ConcurrentAuthorityFactory<GeodeticAuthorityFactory>
             implements CRSAuthorityFactory
     {
         private final GeodeticAuthorityFactory factory;

@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * @version 1.3
  * @since   1.3
  */
-public final strictfp class CoverageAggregatorTest extends TestCase {
+public final class CoverageAggregatorTest extends TestCase {
     /**
      * Tests an empty aggregator.
      *

@@ -50,7 +50,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @since   0.3
  */
 @DependsOn(DefaultNameFactoryTest.class)
-public final strictfp class NameMarshallingTest extends TestCase {
+public final class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      *

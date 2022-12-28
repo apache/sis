@@ -35,7 +35,7 @@ import org.opengis.feature.Property;
  * @since   0.6
  */
 @SuppressWarnings("serial")
-final strictfp class NoOperation extends AbstractOperation {
+final class NoOperation extends AbstractOperation {
     /**
      * A description of the input parameters.
      */

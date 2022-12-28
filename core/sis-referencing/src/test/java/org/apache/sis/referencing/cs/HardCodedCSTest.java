@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.cs.HardCodedCS.*;
     DefaultCartesianCSTest.class,
     DefaultEllipsoidalCSTest.class
 })
-public final strictfp class HardCodedCSTest extends TestCase {
+public final class HardCodedCSTest extends TestCase {
     /**
      * Validates constants.
      */

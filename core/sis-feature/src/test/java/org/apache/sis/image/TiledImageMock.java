@@ -52,7 +52,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.8
  */
-public final strictfp class TiledImageMock extends PlanarImage implements WritableRenderedImage {
+public final class TiledImageMock extends PlanarImage implements WritableRenderedImage {
     /**
      * Inverse of the probability that a tile has failure.
      * This is used only if {@link #failRandomly(Random, boolean)} is invoked.

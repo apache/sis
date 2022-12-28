@@ -59,7 +59,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.0
  * @since   0.8
  */
-public final strictfp class TestFactorySource {
+public final class TestFactorySource {
     /**
      * Whether to use PostgreSQL instead of Derby for the tests. This field should be {@code false};
      * the {@code true} value is used only for temporarily debugging of PostgreSQL-specific features.

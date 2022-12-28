@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class KeyPathTest extends TestCase {
+public final class KeyPathTest extends TestCase {
     /**
      * A URI to use for testing purpose.
      */

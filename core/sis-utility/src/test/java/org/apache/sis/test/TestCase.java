@@ -53,7 +53,7 @@ import org.junit.runner.RunWith;
  * @since   0.3
  */
 @RunWith(TestRunner.class)
-public abstract strictfp class TestCase {
+public abstract class TestCase {
     /**
      * A flag for code that are pending future SIS development before to be enabled.
      * This flag is always set to {@code false}. It shall be used as below:

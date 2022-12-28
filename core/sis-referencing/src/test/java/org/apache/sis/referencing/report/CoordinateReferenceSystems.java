@@ -78,7 +78,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.7
  */
-public final strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
+public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * The titles of some sections where to group CRS. By default CRS are grouped by datum names.
      * But if a name is listed in this map, then that alternative name will be used for grouping purpose.

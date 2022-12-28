@@ -52,7 +52,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
     GeneralMatrixTest.class,
     NonSquareMatrixTest.class
 })
-public final strictfp class MatricesTest extends TestCase {
+public final class MatricesTest extends TestCase {
     /**
      * Tests {@link Matrices#create(int, int, Number[])}.
      */

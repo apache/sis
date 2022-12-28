@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
-public final strictfp class DefaultCompoundCSTest extends TestCase {
+public final class DefaultCompoundCSTest extends TestCase {
     /**
      * Tests {@link DefaultCompoundCS} construction.
      */

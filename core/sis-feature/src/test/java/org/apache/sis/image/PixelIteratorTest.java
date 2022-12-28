@@ -53,7 +53,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.0
  */
-public strictfp class PixelIteratorTest extends TestCase {
+public class PixelIteratorTest extends TestCase {
     /**
      * The pixel iterator being tested.
      * This field is initialized by a call to one of the {@code createPixelIterator(…)} methods.

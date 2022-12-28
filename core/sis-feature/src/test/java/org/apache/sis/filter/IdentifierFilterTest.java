@@ -38,7 +38,7 @@ import org.opengis.filter.FilterFactory;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class IdentifierFilterTest extends TestCase {
+public final class IdentifierFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

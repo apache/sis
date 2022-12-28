@@ -42,7 +42,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @version 0.4
  * @since   0.4
  */
-public final strictfp class DefaultVerticalDatumTest extends TestCase {
+public final class DefaultVerticalDatumTest extends TestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */

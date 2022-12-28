@@ -42,7 +42,7 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  * @since   0.3
  */
 @DependsOn(HashCodeTest.class)
-public final strictfp class PrunerTest extends TestCase {
+public final class PrunerTest extends TestCase {
     /**
      * The root metadata object being tested.
      */

@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
  * @version 1.2
  * @since   1.0
  */
-public final strictfp class JTSTest extends TestCase {
+public final class JTSTest extends TestCase {
     /**
      * Tests {@link JTS#getCoordinateReferenceSystem(Geometry)}.
      *

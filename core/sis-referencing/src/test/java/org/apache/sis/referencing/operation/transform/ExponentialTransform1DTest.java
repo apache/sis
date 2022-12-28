@@ -45,7 +45,7 @@ import org.opengis.test.ToleranceModifiers;
     CoordinateDomainTest.class,
     LinearTransformTest.class
 })
-public final strictfp class ExponentialTransform1DTest extends MathTransformTestCase {
+public final class ExponentialTransform1DTest extends MathTransformTestCase {
     /**
      * Arbitrary parameter of the exponential transform to be tested.
      */

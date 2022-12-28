@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @version 0.6
  * @since   0.4
  */
-public final strictfp class NamedIdentifierTest extends TestCase {
+public final class NamedIdentifierTest extends TestCase {
     /**
      * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, String, CharSequence, String, InternationalString)}
      * constructor.

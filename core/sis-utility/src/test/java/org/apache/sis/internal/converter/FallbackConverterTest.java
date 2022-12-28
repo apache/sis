@@ -39,7 +39,7 @@ import static org.apache.sis.test.Assert.*;
  */
 @DependsOn({StringConverterTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class})
-public final strictfp class FallbackConverterTest extends TestCase {
+public final class FallbackConverterTest extends TestCase {
     /**
      * Conversions that are expected to be supported.
      * Greater values imply all conversions identified by lower values.

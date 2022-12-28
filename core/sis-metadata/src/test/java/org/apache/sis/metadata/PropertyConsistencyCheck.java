@@ -53,7 +53,7 @@ import org.junit.Test;
  * @since   0.3
  */
 @DependsOn(PropertyAccessorTest.class)
-public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
+public abstract class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.
      */

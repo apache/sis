@@ -37,7 +37,7 @@ import org.apache.sis.measure.Units;
  * @version 1.2
  * @since   1.1
  */
-public final strictfp class CoverageStylingApp extends Application {
+public final class CoverageStylingApp extends Application {
     /**
      * Starts the test application.
      *

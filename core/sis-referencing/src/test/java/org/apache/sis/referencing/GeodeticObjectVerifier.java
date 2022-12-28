@@ -47,7 +47,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @todo Move this class to GeoAPI.
  */
-public final strictfp class GeodeticObjectVerifier {
+public final class GeodeticObjectVerifier {
     /**
      * The tolerance threshold for strict comparisons of floating point values.
      */

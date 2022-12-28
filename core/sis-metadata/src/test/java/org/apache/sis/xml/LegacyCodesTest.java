@@ -30,7 +30,7 @@ import static org.apache.sis.xml.LegacyCodes.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class LegacyCodesTest extends TestCase {
+public final class LegacyCodesTest extends TestCase {
     /**
      * Tests {@link LegacyCodes#fromIANA(String)}.
      */

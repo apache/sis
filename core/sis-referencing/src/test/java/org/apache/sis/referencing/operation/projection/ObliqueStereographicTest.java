@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
     InitializerTest.class,
     NormalizedProjectionTest.class
 })
-public final strictfp class ObliqueStereographicTest extends MapProjectionTestCase {
+public final class ObliqueStereographicTest extends MapProjectionTestCase {
     /**
      * Parameter values provided by the IOGP Report 373-07-02 –
      * <cite>Coordinate conversions and transformation including formulas</cite>

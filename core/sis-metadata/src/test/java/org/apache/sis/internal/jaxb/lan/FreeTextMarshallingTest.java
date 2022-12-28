@@ -35,7 +35,7 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @version 1.0
  * @since   0.3
  */
-public final strictfp class FreeTextMarshallingTest extends TestCase {
+public final class FreeTextMarshallingTest extends TestCase {
     /**
      * Returns the expected string.
      */

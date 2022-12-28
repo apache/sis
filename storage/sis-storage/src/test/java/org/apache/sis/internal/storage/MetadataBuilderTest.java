@@ -45,7 +45,7 @@ import org.opengis.feature.FeatureType;
  * @version 1.2
  * @since   0.8
  */
-public final strictfp class MetadataBuilderTest extends TestCase {
+public final class MetadataBuilderTest extends TestCase {
     /**
      * Tests {@link MetadataBuilder#parseLegalNotice(String)}.
      * The expected result of this parsing is:

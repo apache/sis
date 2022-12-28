@@ -39,7 +39,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 1.3
  * @since   0.6
  */
-public final strictfp class DefaultEngineeringCRSTest extends TestCase {
+public final class DefaultEngineeringCRSTest extends TestCase {
     /**
      * Creates an engineering CRS using a two-dimensional Cartesian coordinate system.
      */

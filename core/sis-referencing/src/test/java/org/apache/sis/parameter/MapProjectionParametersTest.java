@@ -44,7 +44,7 @@ import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL_2;
  * @since   0.6
  */
 @DependsOn(ParametersTest.class)
-public final strictfp class MapProjectionParametersTest extends TestCase {
+public final class MapProjectionParametersTest extends TestCase {
     /**
      * Creates a map projection descriptor with semi-major/minor axis lengths
      * and the given amount of standard parallels.

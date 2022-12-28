@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @version 0.6
  * @since   0.4
  */
-public final strictfp class CodeTest extends TestCase {
+public final class CodeTest extends TestCase {
     /**
      * Tests the {@link Code#Code(Identifier)} constructor with {@code "EPSG:4326"} identifier.
      * This test intentionally uses an identifier with the {@code IOGP} authority instead of

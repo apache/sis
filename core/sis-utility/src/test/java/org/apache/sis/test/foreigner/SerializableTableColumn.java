@@ -33,7 +33,7 @@ import org.apache.sis.util.collection.TableColumn;
  * @since 0.3
  */
 @SuppressWarnings("serial")
-public final strictfp class SerializableTableColumn<V> extends TableColumn<V> implements Serializable {
+public final class SerializableTableColumn<V> extends TableColumn<V> implements Serializable {
     /**
      * A constant for column of latitudes as floating point value.
      */

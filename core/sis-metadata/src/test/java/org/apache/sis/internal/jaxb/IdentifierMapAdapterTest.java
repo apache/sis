@@ -35,7 +35,7 @@ import static org.apache.sis.xml.IdentifierSpace.*;
  * @version 0.7
  * @since   0.3
  */
-public strictfp class IdentifierMapAdapterTest extends TestCase {
+public class IdentifierMapAdapterTest extends TestCase {
     /**
      * Tests serialization.
      */

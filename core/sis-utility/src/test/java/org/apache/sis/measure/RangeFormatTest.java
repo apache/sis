@@ -46,7 +46,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @since   0.3
  */
 @DependsOn(MeasurementRangeTest.class)
-public final strictfp class RangeFormatTest extends TestCase {
+public final class RangeFormatTest extends TestCase {
     /**
      * The format being tested.
      */

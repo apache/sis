@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class LocalizedParseExceptionTest extends TestCase {
+public final class LocalizedParseExceptionTest extends TestCase {
     /**
      * Tests the {@link LocalizedParseException} constructor using the default string.
      * This method also tests {@link Exceptions#getLocalizedMessage(Throwable, Locale)}

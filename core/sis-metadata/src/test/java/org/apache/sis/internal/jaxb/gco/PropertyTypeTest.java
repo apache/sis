@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.internal.jaxb.IdentifierMapAdapterTest.class)
-public final strictfp class PropertyTypeTest extends TestCase {
+public final class PropertyTypeTest extends TestCase {
     /**
      * The pseudo-metadata object to wrap for testing purpose.
      */

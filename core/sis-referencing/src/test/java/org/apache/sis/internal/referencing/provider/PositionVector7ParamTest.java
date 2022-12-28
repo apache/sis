@@ -44,7 +44,7 @@ import static org.junit.Assert.*;
 @DependsOn({
     GeocentricTranslationTest.class
 })
-public final strictfp class PositionVector7ParamTest extends MathTransformTestCase {
+public final class PositionVector7ParamTest extends MathTransformTestCase {
     /**
      * Returns the sample point for a step in the example given by the EPSG guidance note.
      *

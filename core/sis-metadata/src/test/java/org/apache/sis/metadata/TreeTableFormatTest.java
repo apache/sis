@@ -47,7 +47,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.3
  */
 @DependsOn(TreeTableViewTest.class)
-public final strictfp class TreeTableFormatTest extends TestCase {
+public final class TreeTableFormatTest extends TestCase {
     /**
      * The formatter to use.
      */

@@ -36,7 +36,7 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @since   0.5
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class FeaturesTest extends TestCase {
+public final class FeaturesTest extends TestCase {
     /**
      * Tests {@link Features#cast(AttributeType, Class)}.
      */

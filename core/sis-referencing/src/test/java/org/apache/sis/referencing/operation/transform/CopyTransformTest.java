@@ -40,7 +40,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     CoordinateDomainTest.class,
     ProjectiveTransformTest.class
 })
-public final strictfp class CopyTransformTest extends MathTransformTestCase {
+public final class CopyTransformTest extends MathTransformTestCase {
     /**
      * Generates random coordinates with approximately 5% of NaN values in the array.
      */

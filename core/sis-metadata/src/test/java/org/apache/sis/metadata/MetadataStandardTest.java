@@ -67,7 +67,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     NameMapTest.class,
     TypeMapTest.class,
     ValueMapTest.class})
-public final strictfp class MetadataStandardTest extends TestCase {
+public final class MetadataStandardTest extends TestCase {
     /**
      * The standard being tested.
      */

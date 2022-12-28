@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.5
  */
 @DependsOn(DefaultRecordSchemaTest.class)
-public final strictfp class DefaultRecordTest extends TestCase {
+public final class DefaultRecordTest extends TestCase {
     /**
      * The record type to be shared by all tests.
      */

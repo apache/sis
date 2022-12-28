@@ -37,7 +37,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @version 1.2
  * @since   1.0
  */
-public final strictfp class WraparoundAdjustmentTest extends TestCase {
+public final class WraparoundAdjustmentTest extends TestCase {
     /**
      * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope crossing the anti-meridian.

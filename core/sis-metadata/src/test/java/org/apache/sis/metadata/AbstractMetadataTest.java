@@ -32,7 +32,7 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  * @since   0.3
  */
 @DependsOn(MetadataStandardTest.class)
-public final strictfp class AbstractMetadataTest extends TestCase {
+public final class AbstractMetadataTest extends TestCase {
     /**
      * Tests the {@link AbstractMetadata#hashCode()} method on an object having cyclic associations.
      * This is the same test than {@link MetadataStandardTest#testHashCodeOnCyclicMetadata()}, with

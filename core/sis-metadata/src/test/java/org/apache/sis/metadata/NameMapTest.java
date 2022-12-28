@@ -39,7 +39,7 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
  * @since   0.3
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class NameMapTest extends TestCase {
+public final class NameMapTest extends TestCase {
     /**
      * Tests {@code NameMap.entrySet()} for an exact match (including iteration order).
      * The properties used in this test are listed in {@link PropertyAccessorTest#testConstructor()}.

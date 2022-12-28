@@ -56,7 +56,7 @@ import org.opengis.filter.SortOrder;
  * @version 1.2
  * @since   1.1
  */
-public final strictfp class SQLStoreTest extends TestCase {
+public final class SQLStoreTest extends TestCase {
     /**
      * The schema where will be stored the features to test.
      */

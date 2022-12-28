@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.7
  */
-public final strictfp class MolodenskyTest extends TestCase {
+public final class MolodenskyTest extends TestCase {
     /**
      * Tests {@link Molodensky#redimension(int, int)}.
      */

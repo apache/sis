@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.4
  * @since   0.4
  */
-public final strictfp class FrenchProfileTest extends TestCase {
+public final class FrenchProfileTest extends TestCase {
     /**
      * Tests {@link FrenchProfile#toAFNOR(Object)} with {@link Constraints},
      * {@link LegalConstraints} and  {@link SecurityConstraints} objects.

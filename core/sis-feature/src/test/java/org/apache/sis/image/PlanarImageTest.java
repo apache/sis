@@ -34,7 +34,7 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class PlanarImageTest extends TestCase {
+public final class PlanarImageTest extends TestCase {
     /**
      * Size of tiles in this test. The width should be different than the height
      * for increasing the chances to detect errors in index calculations.

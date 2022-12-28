@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class TableInfoTest extends TestCase {
+public final class TableInfoTest extends TestCase {
     /**
      * Tests {@link TableInfo#tableMatches(String, String)}.
      */

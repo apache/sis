@@ -36,7 +36,7 @@ import static org.junit.Assume.assumeFalse;
  * @version 0.8
  * @since   0.8
  */
-public abstract strictfp class DatumShiftTestCase extends TestCase {
+public abstract class DatumShiftTestCase extends TestCase {
     /**
      * For subclass constructors only.
      */

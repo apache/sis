@@ -38,7 +38,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class
 })
-public final strictfp class DefaultEllipsoidTest extends TestCase {
+public final class DefaultEllipsoidTest extends TestCase {
     /**
      * An XML file in this package containing an ellipsoid definition.
      */

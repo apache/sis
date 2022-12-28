@@ -36,7 +36,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since   0.8
  */
 @DependsOn(CurveExtremumTest.class)
-public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> {
+public final class Shapes2DTest extends TransformTestCase<Rectangle2D> {
     /**
      * Creates a rectangle for the given CRS and coordinate values.
      */

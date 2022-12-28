@@ -38,7 +38,7 @@ import org.apache.sis.util.iso.Names;
  * @since   0.5
  */
 @DependsOn(DefaultAttributeTypeTest.class)
-public final strictfp class CharacteristicTypeMapTest extends TestCase {
+public final class CharacteristicTypeMapTest extends TestCase {
     /**
      * Creates an attribute type for a temperature measurement in °C with a ±0.1°C accuracy.
      *

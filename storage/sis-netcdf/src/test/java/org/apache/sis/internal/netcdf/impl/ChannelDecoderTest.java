@@ -38,7 +38,7 @@ import org.opengis.test.dataset.TestData;
  * @since   0.3
  */
 @DependsOn(DecoderTest.class)
-public final strictfp class ChannelDecoderTest extends DecoderTest {
+public final class ChannelDecoderTest extends DecoderTest {
     /**
      * Creates a new decoder for the specified dataset.
      *

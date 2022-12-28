@@ -40,7 +40,7 @@ import static org.junit.Assert.*;
     DefaultParameterDescriptorTest.class,
     DefaultParameterValueTest.class
 })
-public final strictfp class ParameterBuilderTest extends TestCase {
+public final class ParameterBuilderTest extends TestCase {
     /**
      * Tests various {@code create(…)} methods.
      */

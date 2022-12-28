@@ -34,7 +34,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
  * @version 0.8
  * @since   0.3
  */
-public final strictfp class DefaultLocalNameTest extends TestCase {
+public final class DefaultLocalNameTest extends TestCase {
     /**
      * Tests the creation of a local name in the global namespace.
      * The fully qualified name is {@code "EPSG"}.

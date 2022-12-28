@@ -44,7 +44,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     DirectionAlongMeridianTest.class,
     AbstractCSTest.class
 })
-public final strictfp class DefaultCartesianCSTest extends TestCase {
+public final class DefaultCartesianCSTest extends TestCase {
     /**
      * An XML file in this package containing a Cartesian coordinate system definition.
      */

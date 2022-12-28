@@ -45,7 +45,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @version 1.0
  * @since   0.4
  */
-public strictfp class MetadataAssert extends Assert {
+public class MetadataAssert extends Assert {
     /**
      * For subclass constructor only.
      */

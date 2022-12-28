@@ -52,7 +52,7 @@ import static org.apache.sis.test.MetadataAssert.*;
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     DefaultKeywordsTest.class
 })
-public final strictfp class DefaultDataIdentificationTest extends TestCase {
+public final class DefaultDataIdentificationTest extends TestCase {
     /**
      * Creates the instance to test.
      */

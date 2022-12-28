@@ -62,7 +62,7 @@ import static org.apache.sis.test.TestUtilities.*;
   org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
   StandardDefinitionsTest.class
 })
-public final strictfp class CommonCRSTest extends TestCase {
+public final class CommonCRSTest extends TestCase {
     /**
      * Length of a day in milliseconds.
      */

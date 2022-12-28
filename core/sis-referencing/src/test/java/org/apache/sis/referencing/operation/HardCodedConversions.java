@@ -40,7 +40,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  * @version 1.1
  * @since   0.8
  */
-public final strictfp class HardCodedConversions {
+public final class HardCodedConversions {
     /**
      * A defining conversion for a <cite>Mercator (variant A)</cite> (also known as "1SP") projection
      * with a scale factor of 1.

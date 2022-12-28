@@ -45,7 +45,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class MaskedImageTest extends TestCase {
+public final class MaskedImageTest extends TestCase {
     /**
      * The image width and height in pixels.
      */

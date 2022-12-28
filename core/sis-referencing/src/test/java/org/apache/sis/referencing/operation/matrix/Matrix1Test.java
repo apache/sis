@@ -32,7 +32,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix1.SIZE;
  * @since   0.4
  */
 @DependsOn(SolverTest.class)
-public final strictfp class Matrix1Test extends MatrixTestCase {
+public final class Matrix1Test extends MatrixTestCase {
     /**
      * Returns the size of the matrix of interest for this test class.
      */

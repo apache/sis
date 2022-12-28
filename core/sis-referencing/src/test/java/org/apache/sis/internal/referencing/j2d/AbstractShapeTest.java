@@ -31,7 +31,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class AbstractShapeTest extends TestCase {
+public final class AbstractShapeTest extends TestCase {
     /**
      * Tests {@link ShapeUtilities#isFloat(Object)}.
      */

@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @SuppressWarnings("serial")
-public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
+public final class LargeCodeList  extends CodeList<LargeCodeList> {
     /**
      * List of all enumerations of this type.
      */

@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   1.1
  */
 @DependsOn(RangeArgumentTest.class)
-public final strictfp class MemoryGridResourceTest extends TestCase {
+public final class MemoryGridResourceTest extends TestCase {
     /**
      * Arbitrary size for the grid to test.
      */

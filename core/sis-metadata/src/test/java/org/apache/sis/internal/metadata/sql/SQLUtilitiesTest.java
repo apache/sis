@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   0.7
  */
-public final strictfp class SQLUtilitiesTest extends TestCase {
+public final class SQLUtilitiesTest extends TestCase {
     /**
      * Tests {@link SQLUtilities#toLikePattern(String, int, int, boolean, boolean, StringBuilder)}.
      */

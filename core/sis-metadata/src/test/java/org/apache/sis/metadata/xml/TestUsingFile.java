@@ -28,7 +28,7 @@ import org.apache.sis.test.xml.TestCase;
  * @version 1.0
  * @since   1.0
  */
-public abstract strictfp class TestUsingFile extends TestCase {
+public abstract class TestUsingFile extends TestCase {
     /**
      * The sub-directory of XML files encoded according the ISO 19115-3:2016 schema.
      */

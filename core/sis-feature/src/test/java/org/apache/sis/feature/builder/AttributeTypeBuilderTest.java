@@ -50,7 +50,7 @@ import org.opengis.feature.PropertyType;
  * @since   0.8
  */
 @DependsOn(CharacteristicTypeBuilderTest.class)
-public final strictfp class AttributeTypeBuilderTest extends TestCase {
+public final class AttributeTypeBuilderTest extends TestCase {
     /**
      * Tests with the minimum number of parameters.
      */

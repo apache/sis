@@ -33,7 +33,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class DefaultBandTest extends TestCase {
+public final class DefaultBandTest extends TestCase {
     /**
      * The XML fragment used for testing.
      */

@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class SimpleIdentifierTest extends TestCase {
+public final class SimpleIdentifierTest extends TestCase {
     /**
      * Tests {@link SimpleIdentifier#toString()}.
      */

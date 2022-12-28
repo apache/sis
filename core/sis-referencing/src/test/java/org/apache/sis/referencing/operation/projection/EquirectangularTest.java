@@ -41,7 +41,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * @version 0.8
  * @since   0.6
  */
-public final strictfp class EquirectangularTest extends MapProjectionTestCase {
+public final class EquirectangularTest extends MapProjectionTestCase {
     /**
      * Initializes a simple Equirectangular projection on sphere. This method is different than the
      * {@code createNormalizedProjection(boolean)} method in all other test classes, because it does

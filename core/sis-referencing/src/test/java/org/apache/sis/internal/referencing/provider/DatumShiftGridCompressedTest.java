@@ -30,7 +30,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.0
  * @since   1.0
  */
-public final strictfp class DatumShiftGridCompressedTest extends DatumShiftGridFileTest {
+public final class DatumShiftGridCompressedTest extends DatumShiftGridFileTest {
     /**
      * Creates a new grid using an affine transform as a reference.
      *

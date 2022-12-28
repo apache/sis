@@ -55,7 +55,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @since 0.8
  */
 @DependsOn(CurveExtremumTest.class)
-public abstract strictfp class TransformTestCase<G> extends TestCase {
+public abstract class TransformTestCase<G> extends TestCase {
     /**
      * Creates an envelope or rectangle for the given CRS and coordinate values.
      */

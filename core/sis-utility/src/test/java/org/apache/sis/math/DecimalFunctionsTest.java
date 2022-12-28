@@ -37,7 +37,7 @@ import static org.apache.sis.math.DecimalFunctions.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.internal.util.NumericsTest.class)
-public final strictfp class DecimalFunctionsTest extends TestCase {
+public final class DecimalFunctionsTest extends TestCase {
     /**
      * Verifies the values of {@link DecimalFunctions#EXPONENT_FOR_ZERO}.
      */

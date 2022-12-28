@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
 @Suite.SuiteClasses({
     org.apache.sis.profile.japan.JapanProfileTest.class
 })
-public final strictfp class JapanProfileTestSuite extends TestSuite {
+public final class JapanProfileTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

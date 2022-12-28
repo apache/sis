@@ -70,7 +70,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.aggregate.CoverageAggregatorTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
-public final strictfp class StorageTestSuite extends TestSuite {
+public final class StorageTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

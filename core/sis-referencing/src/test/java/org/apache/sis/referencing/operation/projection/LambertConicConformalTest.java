@@ -52,7 +52,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.6
  */
 @DependsOn(ConformalProjectionTest.class)
-public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {
+public final class LambertConicConformalTest extends MapProjectionTestCase {
     /**
      * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
      *

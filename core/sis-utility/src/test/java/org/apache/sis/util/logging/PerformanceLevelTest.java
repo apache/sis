@@ -32,7 +32,7 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  * @version 1.3
  * @since   0.3
  */
-public final strictfp class PerformanceLevelTest extends TestCase {
+public final class PerformanceLevelTest extends TestCase {
     /**
      * Ensures that the duration are conform to the documentation.
      */

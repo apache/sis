@@ -48,7 +48,7 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
  * @since   0.4
  */
 @DependsOn(MatrixParametersTest.class)
-public final strictfp class TensorValuesTest extends TestCase {
+public final class TensorValuesTest extends TestCase {
     /**
      * The name of the parameter group created in this test class.
      */

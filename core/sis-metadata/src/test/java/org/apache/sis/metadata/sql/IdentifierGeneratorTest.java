@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 1.0
  * @since   0.8
  */
-public final strictfp class IdentifierGeneratorTest extends TestCase {
+public final class IdentifierGeneratorTest extends TestCase {
     /**
      * The name of the table to be created for testing purpose.
      */

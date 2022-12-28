@@ -55,7 +55,7 @@ import org.opengis.test.referencing.AffineTransformTest;
  */
 @RunWith(TestRunner.class)
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
-public strictfp class ProjectiveTransformTest extends AffineTransformTest {
+public class ProjectiveTransformTest extends AffineTransformTest {
     /**
      * Tolerance factor for strict comparisons.
      */

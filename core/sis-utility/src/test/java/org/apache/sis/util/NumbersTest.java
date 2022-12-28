@@ -33,7 +33,7 @@ import static org.apache.sis.util.Numbers.*;
  * @version 1.2
  * @since   0.3
  */
-public final strictfp class NumbersTest extends TestCase {
+public final class NumbersTest extends TestCase {
     /**
      * Tests {@link Numbers#isInteger(Class)}.
      */

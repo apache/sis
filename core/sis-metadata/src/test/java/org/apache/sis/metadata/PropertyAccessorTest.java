@@ -84,7 +84,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  */
 @SuppressWarnings("OverlyStrongTypeCast")
 @DependsOn(PropertyInformationTest.class)
-public final strictfp class PropertyAccessorTest extends TestCase {
+public final class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */

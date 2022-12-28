@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @version 0.7
  * @since   0.3
  */
-public final strictfp class StringAdapterTest extends TestCase {
+public final class StringAdapterTest extends TestCase {
     /**
      * Tests {@link StringAdapter#toString(CharSequence)} for the trivial cases.
      */

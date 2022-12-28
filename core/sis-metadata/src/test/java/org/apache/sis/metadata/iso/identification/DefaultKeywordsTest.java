@@ -30,7 +30,7 @@ import static org.junit.Assert.*;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class DefaultKeywordsTest extends TestCase {
+public final class DefaultKeywordsTest extends TestCase {
     /**
      * Tests {@link DefaultKeywords#DefaultKeywords(CharSequence[])}.
      */

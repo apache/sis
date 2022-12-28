@@ -71,7 +71,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @since   1.1
  */
 @DependsOn(org.apache.sis.image.ResampledImageTest.class)
-public final strictfp class ResampledGridCoverageTest extends TestCase {
+public final class ResampledGridCoverageTest extends TestCase {
     /**
      * The random number generator used for generating some grid coverage values.
      * Created only if needed.

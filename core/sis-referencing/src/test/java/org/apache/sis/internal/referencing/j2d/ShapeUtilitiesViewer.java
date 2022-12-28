@@ -44,7 +44,7 @@ import org.apache.sis.util.CharSequences;
  * @since   0.5
  */
 @SuppressWarnings("serial")
-public final strictfp class ShapeUtilitiesViewer extends JPanel {
+public final class ShapeUtilitiesViewer extends JPanel {
     /**
      * The {@link ShapeUtilities} methods to test.
      */

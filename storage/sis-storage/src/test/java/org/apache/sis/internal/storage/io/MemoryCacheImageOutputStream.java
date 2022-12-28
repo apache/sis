@@ -31,7 +31,7 @@ import org.apache.sis.util.Workaround;
  * @since   0.5
  */
 @Workaround(library = "JDK", version = "1.8")
-final strictfp class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {
+final class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {
     /**
      * Creates a new instance which will write the data in the given stream.
      */

@@ -286,7 +286,7 @@ import org.junit.BeforeClass;
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class
 })
-public final strictfp class ReferencingTestSuite extends TestSuite {
+public final class ReferencingTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

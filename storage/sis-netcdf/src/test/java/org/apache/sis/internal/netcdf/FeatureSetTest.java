@@ -54,7 +54,7 @@ import org.opengis.test.dataset.TestData;
  * @since   1.1
  */
 @DependsOn(VariableTest.class)
-public strictfp class FeatureSetTest extends TestCase {
+public class FeatureSetTest extends TestCase {
     /**
      * Type of the features read from the netCDF file.
      */

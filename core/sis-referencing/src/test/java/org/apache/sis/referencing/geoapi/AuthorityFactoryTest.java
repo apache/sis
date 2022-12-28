@@ -35,7 +35,7 @@ import org.junit.Ignore;
  * @since   1.1
  */
 @RunWith(JUnit4.class)
-public final strictfp class AuthorityFactoryTest extends org.opengis.test.referencing.AuthorityFactoryTest {
+public final class AuthorityFactoryTest extends org.opengis.test.referencing.AuthorityFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.
      *

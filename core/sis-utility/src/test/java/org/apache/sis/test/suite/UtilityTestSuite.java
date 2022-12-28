@@ -131,7 +131,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.SystemRegistryTest.class,
     org.apache.sis.internal.converter.NumberConverterTest.class         // Shall be after SystemRegistryTest.
 })
-public final strictfp class UtilityTestSuite extends TestSuite {
+public final class UtilityTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

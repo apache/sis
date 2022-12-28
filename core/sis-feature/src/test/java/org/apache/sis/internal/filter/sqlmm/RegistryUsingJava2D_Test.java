@@ -29,7 +29,7 @@ import org.junit.Test;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class RegistryUsingJava2D_Test extends RegistryTestCase<Shape> {
+public final class RegistryUsingJava2D_Test extends RegistryTestCase<Shape> {
     /**
      * Creates a new test.
      */

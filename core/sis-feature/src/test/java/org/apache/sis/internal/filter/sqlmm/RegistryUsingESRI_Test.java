@@ -29,7 +29,7 @@ import org.junit.Test;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
+public final class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
     /**
      * Creates a new test.
      */

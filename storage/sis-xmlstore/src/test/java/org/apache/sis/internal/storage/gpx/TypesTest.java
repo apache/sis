@@ -38,7 +38,7 @@ import org.opengis.feature.PropertyType;
  * @version 0.8
  * @since   0.8
  */
-public final strictfp class TypesTest extends TestCase {
+public final class TypesTest extends TestCase {
     /**
      * Verifies that all designations and definitions can be read from the resources.
      *

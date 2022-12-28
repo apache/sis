@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class PositionalAccuracyConstantTest extends TestCase {
+public final class PositionalAccuracyConstantTest extends TestCase {
     /**
      * Tests {@link PositionalAccuracyConstant} constants.
      */

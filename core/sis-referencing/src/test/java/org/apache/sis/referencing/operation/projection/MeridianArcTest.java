@@ -39,7 +39,7 @@ import static org.junit.Assert.assertEquals;
  * @since   1.0
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class MeridianArcTest extends MapProjectionTestCase {
+public final class MeridianArcTest extends MapProjectionTestCase {
     /**
      * Threshold for comparison of floating point values.
      */

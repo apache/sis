@@ -39,7 +39,7 @@ import static org.opengis.test.Assert.*;
  * @since   1.0
  */
 @DependsOn(AbstractMathTransformTest.class)
-public final strictfp class TranslationTransformTest extends MathTransformTestCase {
+public final class TranslationTransformTest extends MathTransformTestCase {
     /**
      * Sets the {@link #transform} field to the {@link TranslationTransform} instance to test.
      *

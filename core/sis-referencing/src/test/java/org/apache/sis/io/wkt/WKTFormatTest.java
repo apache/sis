@@ -40,7 +40,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.5
  */
 @DependsOn(GeodeticObjectParserTest.class)
-public final strictfp class WKTFormatTest extends TestCase {
+public final class WKTFormatTest extends TestCase {
     /**
      * The instance to use for the test, or {@code null} if none.
      */

@@ -41,7 +41,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.5
  */
 @DependsOn(ProjectiveTransformTest.class)
-public final strictfp class ConcatenatedTransformTest extends MathTransformTestCase {
+public final class ConcatenatedTransformTest extends MathTransformTestCase {
     /**
      * Tolerance factor for strict equalities.
      */

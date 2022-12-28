@@ -37,7 +37,7 @@ import org.junit.Test;
  * @version 0.7
  * @since   0.7
  */
-public final strictfp class PolarToCartesianTest extends TransformTestCase {
+public final class PolarToCartesianTest extends TransformTestCase {
     /**
      * Returns coordinate tuples in polar or cylindrical coordinates and their equivalent in Cartesian coordinates.
      */

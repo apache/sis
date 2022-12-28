@@ -40,7 +40,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.5
  */
 @DependsOn(TypeNamesTest.class)
-public final strictfp class DefaultRecordTypeTest extends TestCase {
+public final class DefaultRecordTypeTest extends TestCase {
     /** Value of {@link DefaultRecordType#getContainer()}.  */ private DefaultRecordSchema container;
     /** Value of {@link DefaultRecordType#getTypeName()}.   */ private DefaultTypeName     recordTypeName;
     /** Value of {@link DefaultRecordType#getMembers()}.    */ private DefaultMemberName   fieldName;

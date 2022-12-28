@@ -35,7 +35,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.0
  * @since   0.7
  */
-public final strictfp class LinearInterpolator1DTest extends TransformTestCase {
+public final class LinearInterpolator1DTest extends TransformTestCase {
     /**
      * The values of the <i>y=f(x)</i> function to test.
      */

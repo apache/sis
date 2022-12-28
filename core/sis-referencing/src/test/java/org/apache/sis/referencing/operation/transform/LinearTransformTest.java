@@ -39,7 +39,7 @@ import static org.opengis.test.Assert.*;
  */
 @RunWith(TestRunner.class)
 @DependsOn(ProjectiveTransformTest.class)
-public final strictfp class LinearTransformTest extends ProjectiveTransformTest {
+public final class LinearTransformTest extends ProjectiveTransformTest {
     /**
      * Creates a new test suite.
      */

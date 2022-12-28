@@ -47,7 +47,7 @@ import org.junit.Test;
     GeocentricTranslationTest.class,
     FranceGeocentricInterpolationTest.class
 })
-public strictfp class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
+public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
      * Creates the <cite>"France geocentric interpolation"</cite> transform,
      * including the normalization and denormalization parts.

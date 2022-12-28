@@ -33,7 +33,7 @@ import org.apache.sis.test.DependsOnMethod;
  * @version 1.2
  * @since   1.2
  */
-public final strictfp class PoleRotationTest extends MathTransformTestCase {
+public final class PoleRotationTest extends MathTransformTestCase {
     /**
      * Returns the transform factory to use for testing purpose.
      * This mock supports only the "affine" and "concatenate" operations.

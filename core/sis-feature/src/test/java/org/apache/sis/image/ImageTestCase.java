@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNotNull;
  * @version 1.0
  * @since   1.0
  */
-public abstract strictfp class ImageTestCase extends TestCase {
+public abstract class ImageTestCase extends TestCase {
     /**
      * Small value for comparisons of sample values. Since most grid coverage implementations in
      * Apache SIS store real values as {@code float} numbers, this {@code SAMPLE_TOLERANCE} value

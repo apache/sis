@@ -36,7 +36,7 @@ import static java.lang.StrictMath.*;
  * @since   1.1
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class OrthographicTest extends MapProjectionTestCase {
+public final class OrthographicTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Orthographic} using spherical formulas.
      *

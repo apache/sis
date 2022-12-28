@@ -47,7 +47,7 @@ import static java.lang.StrictMath.*;
  * @version 1.3
  * @since   0.5
  */
-strictfp class PseudoTransform extends AbstractMathTransform {
+class PseudoTransform extends AbstractMathTransform {
     /**
      * The source and target dimensions.
      */

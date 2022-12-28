@@ -36,7 +36,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.cs.AbstractCSTest.class)
-public final strictfp class AbstractCRSTest extends TestCase {
+public final class AbstractCRSTest extends TestCase {
     /**
      * Tests {@link AbstractCRS#forConvention(AxesConvention)} with {@link AxesConvention#RIGHT_HANDED}.
      */

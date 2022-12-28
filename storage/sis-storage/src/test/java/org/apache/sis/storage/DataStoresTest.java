@@ -44,7 +44,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.4
  */
 @DependsOn(StoreTest.class)
-public final strictfp class DataStoresTest extends TestCase {
+public final class DataStoresTest extends TestCase {
     /**
      * Tests {@link DataStores#probeContentType(Object)}.
      *

@@ -61,7 +61,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.7
  */
 @DependsOn(org.apache.sis.referencing.CommonCRSTest.class)
-public final strictfp class CommonAuthorityFactoryTest extends TestCase {
+public final class CommonAuthorityFactoryTest extends TestCase {
     /**
      * The factory to test.
      */

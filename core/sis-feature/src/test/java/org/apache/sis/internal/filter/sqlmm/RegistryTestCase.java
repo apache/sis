@@ -65,7 +65,7 @@ import org.opengis.filter.ValueReference;
  *
  * @since 1.1
  */
-public abstract strictfp class RegistryTestCase<G> extends TestCase {
+public abstract class RegistryTestCase<G> extends TestCase {
     /**
      * Name of property value used in test feature instances.
      */

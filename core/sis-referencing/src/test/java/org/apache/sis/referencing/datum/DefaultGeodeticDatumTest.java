@@ -54,7 +54,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
     DefaultEllipsoidTest.class,
     BursaWolfParametersTest.class
 })
-public final strictfp class DefaultGeodeticDatumTest extends TestCase {
+public final class DefaultGeodeticDatumTest extends TestCase {
     /**
      * An XML file in this package containing a geodetic datum definition.
      */

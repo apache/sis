@@ -47,7 +47,7 @@ import org.opengis.test.CalculationType;
  * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class TransverseMercatorTest extends MapProjectionTestCase {
+public final class TransverseMercatorTest extends MapProjectionTestCase {
     /**
      * Distance from central meridian, in degrees, at which errors are considered too important.
      * This threshold is determined by comparisons of computed values against values provided by

@@ -39,7 +39,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * @version 0.6
  * @since   0.6
  */
-public final strictfp class MathTransformFactoryMock implements MathTransformFactory {
+public final class MathTransformFactoryMock implements MathTransformFactory {
     /**
      * The operation method.
      */

@@ -35,7 +35,7 @@ import org.apache.sis.internal.gui.BackgroundThreads;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class GridViewApp extends Application {
+public final class GridViewApp extends Application {
     /**
      * Size of the artificial tiles. Should be small enough so we can have many of them.
      * Width and height should be different in order to increase the chance to see bugs

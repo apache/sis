@@ -37,7 +37,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
  * @version 1.0
  * @since   0.3
  */
-public strictfp class DecoderTest extends TestCase {
+public class DecoderTest extends TestCase {
     /**
      * Tests {@link Decoder#stringValue(String)} with global attributes.
      *

@@ -32,7 +32,7 @@ import org.junit.BeforeClass;
     org.apache.sis.openoffice.TransformerTest.class,
     org.apache.sis.openoffice.ReferencingFunctionsTest.class
 })
-public final strictfp class OpenOfficeTestSuite extends TestSuite {
+public final class OpenOfficeTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

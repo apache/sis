@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
  * @since   0.7
  */
 @DependsOn(UnmodifiableParameterValueTest.class)
-public final strictfp class UnmodifiableParameterValueGroupTest extends TestCase {
+public final class UnmodifiableParameterValueGroupTest extends TestCase {
     /**
      * Tests creation of an {@link UnmodifiableParameterValueGroup} and verify the values.
      */

@@ -39,7 +39,7 @@ import static org.junit.Assert.*;
  * @since   0.3
  */
 @DependsOn(ChannelDataInputTest.class)
-public final strictfp class ChannelImageInputStreamTest extends ChannelDataTestCase {
+public final class ChannelImageInputStreamTest extends ChannelDataTestCase {
     /**
      * The implementation to test.
      */

@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @since   0.5
  */
 @DependsOn(ChannelDataOutputTest.class)
-public final strictfp class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
+public final class ChannelImageOutputStreamTest extends ChannelDataOutputTest {
     /**
      * Initializes all non-final fields before to execute a test.
      */

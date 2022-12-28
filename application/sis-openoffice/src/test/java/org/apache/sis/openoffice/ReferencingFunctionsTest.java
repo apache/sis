@@ -37,7 +37,7 @@ import static org.junit.Assume.assumeFalse;
  * @since   0.8
  */
 @DependsOn(TransformerTest.class)
-public final strictfp class ReferencingFunctionsTest extends TestCase {
+public final class ReferencingFunctionsTest extends TestCase {
     /**
      * The instance to use for testing purpose.
      */

@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
     DefaultRecordTypeTest.class,
     NamesTest.class
 })
-public final strictfp class DefaultRecordSchemaTest extends TestCase {
+public final class DefaultRecordSchemaTest extends TestCase {
     /**
      * Tests {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}.
      */

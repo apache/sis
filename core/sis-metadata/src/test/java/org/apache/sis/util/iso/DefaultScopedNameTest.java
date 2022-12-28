@@ -38,7 +38,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.3
  */
 @DependsOn(DefaultLocalNameTest.class)
-public final strictfp class DefaultScopedNameTest extends TestCase {
+public final class DefaultScopedNameTest extends TestCase {
     /**
      * Tests the creation of a scoped name in a new namespace.
      * The fully qualified name is {@code "urn:ogc:def:crs:epsg:4326"}.

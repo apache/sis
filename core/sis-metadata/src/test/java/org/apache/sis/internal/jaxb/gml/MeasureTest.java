@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   0.3
  */
-public final strictfp class MeasureTest extends TestCase {
+public final class MeasureTest extends TestCase {
     /**
      * The URL used in {@code uom} attribute of XML elements which contains a measurements.
      * Example:

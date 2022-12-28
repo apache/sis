@@ -44,7 +44,7 @@ import static org.opengis.test.Assert.*;
  * @since   0.5
  */
 @DependsOn(org.apache.sis.referencing.operation.matrix.MatricesTest.class)
-public final strictfp class MathTransformsTest extends TestCase {
+public final class MathTransformsTest extends TestCase {
     /**
      * Creates a dummy transform for testing purpose.
      * The transform has the following properties:

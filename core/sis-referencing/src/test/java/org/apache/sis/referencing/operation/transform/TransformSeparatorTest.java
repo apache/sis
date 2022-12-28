@@ -52,7 +52,7 @@ import static org.opengis.test.Assert.*;
     PassThroughTransformTest.class,
     ConcatenatedTransformTest.class
 })
-public final strictfp class TransformSeparatorTest extends TestCase {
+public final class TransformSeparatorTest extends TestCase {
     /**
      * Verifies the argument checks performed by the {@code add} methods.
      */

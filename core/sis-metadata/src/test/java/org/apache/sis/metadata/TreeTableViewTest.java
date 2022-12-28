@@ -41,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.formatMetadata;
  * @since   0.3
  */
 @DependsOn(TreeNodeTest.class)
-public final strictfp class TreeTableViewTest extends TestCase {
+public final class TreeTableViewTest extends TestCase {
     /**
      * Creates a table to be tested for the given value policy.
      */

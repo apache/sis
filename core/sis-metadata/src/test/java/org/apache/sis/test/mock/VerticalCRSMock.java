@@ -37,7 +37,7 @@ import org.apache.sis.measure.Units;
  * @since   0.4
  */
 @SuppressWarnings("serial")
-public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
+public final class VerticalCRSMock extends IdentifiedObjectMock
         implements VerticalCRS, VerticalDatum, VerticalCS, CoordinateSystemAxis
 {
     /**

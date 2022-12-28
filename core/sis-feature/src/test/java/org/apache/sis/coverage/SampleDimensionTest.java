@@ -38,7 +38,7 @@ import static org.opengis.test.Assert.*;
  * @version 1.1
  * @since   1.0
  */
-public final strictfp class SampleDimensionTest extends TestCase {
+public final class SampleDimensionTest extends TestCase {
     /**
      * Tests a sample dimension having only qualitative categories.
      * Expected value:

@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  * @since   1.0
  */
 @SuppressWarnings("serial")                             // Not intended to be serialized.
-final strictfp class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
+final class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * Number of source and target dimensions of the grid.
      */

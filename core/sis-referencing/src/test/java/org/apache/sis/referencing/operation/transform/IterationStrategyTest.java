@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @version 0.5
  * @since   0.5
  */
-public final strictfp class IterationStrategyTest extends TestCase {
+public final class IterationStrategyTest extends TestCase {
     /**
      * Maximum number of dimension tested. The referencing module should be able to handle high
      * numbers, but we stick to low one in order to avoid making the test to long to execute.

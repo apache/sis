@@ -44,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     DefaultGeodeticCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultGeographicCRSTest extends TestCase {
+public final class DefaultGeographicCRSTest extends TestCase {
     /**
      * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#POSITIVE_RANGE}.

@@ -54,7 +54,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @since   0.3
  */
 @DependsOn(org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class)
-public final strictfp class DefaultMetadataTest extends TestCase {
+public final class DefaultMetadataTest extends TestCase {
     /**
      * Tests unmarshalling of a metadata having a collection that contains no element.
      * This was used to cause a {@code NullPointerException} prior SIS-139 fix.

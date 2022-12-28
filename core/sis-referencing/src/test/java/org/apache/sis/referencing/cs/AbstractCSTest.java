@@ -42,7 +42,7 @@ import static org.apache.sis.test.Assert.*;
     DefaultCoordinateSystemAxisTest.class,
     NormalizerTest.class
 })
-public final strictfp class AbstractCSTest extends TestCase {
+public final class AbstractCSTest extends TestCase {
     /**
      * Gets a coordinate system for the given axes convention and compare against the expected values.
      *

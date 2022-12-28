@@ -36,7 +36,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @version 0.3
  * @since   0.3
  */
-public final strictfp class CommandRunnerTest extends TestCase {
+public final class CommandRunnerTest extends TestCase {
     /**
      * A dummy sub-command for testing purpose.
      */
