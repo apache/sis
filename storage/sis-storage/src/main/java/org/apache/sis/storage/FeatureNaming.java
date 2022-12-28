@@ -95,7 +95,6 @@ import org.apache.sis.internal.storage.Resources;
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo
  *
  * @since 0.8
- * @module
  */
 public class FeatureNaming<E> {
     /**

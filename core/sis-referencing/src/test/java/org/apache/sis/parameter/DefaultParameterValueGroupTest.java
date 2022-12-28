@@ -45,7 +45,6 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultParameterDescriptorGroupTest.class,

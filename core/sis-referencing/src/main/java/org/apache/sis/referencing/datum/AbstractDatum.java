@@ -70,7 +70,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "AbstractDatumType", propOrder = {
     "domainOfValidity",

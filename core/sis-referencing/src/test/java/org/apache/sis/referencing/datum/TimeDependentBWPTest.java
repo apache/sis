@@ -37,7 +37,6 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(BursaWolfParametersTest.class)
 public final strictfp class TimeDependentBWPTest extends TestCase {

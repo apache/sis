@@ -45,7 +45,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public final strictfp class CodeListMarshallingTest extends TestCase {
     /**

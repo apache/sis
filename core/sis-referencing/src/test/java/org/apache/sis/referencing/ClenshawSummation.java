@@ -58,7 +58,6 @@ import org.apache.sis.util.StringBuilders;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class ClenshawSummation {
     /**

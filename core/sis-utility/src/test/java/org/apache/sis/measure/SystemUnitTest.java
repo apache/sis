@@ -41,7 +41,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(UnitDimensionTest.class)
 public final strictfp class SystemUnitTest extends TestCase {

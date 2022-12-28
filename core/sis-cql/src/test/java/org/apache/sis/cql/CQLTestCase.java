@@ -29,7 +29,6 @@ import org.opengis.feature.Feature;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 abstract strictfp class CQLTestCase extends TestCase {
     /**

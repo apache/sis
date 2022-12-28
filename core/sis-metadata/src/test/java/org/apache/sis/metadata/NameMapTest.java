@@ -37,7 +37,6 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(PropertyAccessorTest.class)
 public final strictfp class NameMapTest extends TestCase {

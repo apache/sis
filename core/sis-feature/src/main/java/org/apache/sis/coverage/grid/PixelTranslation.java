@@ -72,7 +72,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @see PixelOrientation
  *
  * @since 1.0
- * @module
  */
 public final class PixelTranslation extends Static implements Serializable {
     /**

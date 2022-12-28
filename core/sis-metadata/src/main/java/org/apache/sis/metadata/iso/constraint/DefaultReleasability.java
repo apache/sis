@@ -42,7 +42,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.5
- * @module
  */
 @XmlType(name = "MD_Releasability_Type", propOrder = {
     "addressees",

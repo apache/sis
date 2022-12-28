@@ -32,7 +32,6 @@ import org.apache.sis.gui.Widget;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 abstract class TabularWidget extends Widget {
     /**

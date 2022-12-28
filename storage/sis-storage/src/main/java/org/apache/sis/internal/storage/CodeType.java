@@ -32,7 +32,6 @@ import org.apache.sis.internal.util.DefinitionURI;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public enum CodeType {
     /**

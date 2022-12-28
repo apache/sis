@@ -24,6 +24,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.1
- * @module
  */
 package org.apache.sis.gui.map;

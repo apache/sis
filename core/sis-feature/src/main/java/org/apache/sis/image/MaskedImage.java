@@ -48,7 +48,6 @@ import static org.apache.sis.internal.util.Numerics.LONG_SHIFT;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class MaskedImage extends SourceAlignedImage {
     /**

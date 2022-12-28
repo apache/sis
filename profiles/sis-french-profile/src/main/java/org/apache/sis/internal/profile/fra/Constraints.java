@@ -48,7 +48,6 @@ import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "FRA_Constraints_Type")
 @XmlRootElement(name= "FRA_Constraints")

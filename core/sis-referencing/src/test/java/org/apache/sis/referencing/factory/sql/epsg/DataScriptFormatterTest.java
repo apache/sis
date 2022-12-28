@@ -28,7 +28,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 public final strictfp class DataScriptFormatterTest extends TestCase {
     /**

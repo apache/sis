@@ -78,7 +78,6 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.2
- * @module
  */
 public class FileService extends FileSystemProvider {
     /**

@@ -69,7 +69,6 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 @DependsOn(org.apache.sis.image.ResampledImageTest.class)
 public final strictfp class ResampledGridCoverageTest extends TestCase {

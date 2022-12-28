@@ -35,7 +35,6 @@ import static org.opengis.test.Assert.assertAxisDirectionsEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final strictfp class GeodeticObjectBuilderTest extends TestCase {
     /**

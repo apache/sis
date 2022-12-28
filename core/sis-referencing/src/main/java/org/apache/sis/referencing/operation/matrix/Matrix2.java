@@ -38,7 +38,6 @@ import org.apache.sis.internal.util.Numerics;
  * @see Matrix4
  *
  * @since 0.4
- * @module
  */
 public class Matrix2 extends MatrixSIS {
     /**

@@ -52,7 +52,6 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
  * @since   0.3
- * @module
  */
 abstract class Pooled {
     /**

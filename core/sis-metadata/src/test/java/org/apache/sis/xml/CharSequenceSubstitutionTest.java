@@ -41,7 +41,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final strictfp class CharSequenceSubstitutionTest extends TestCase {
     /**

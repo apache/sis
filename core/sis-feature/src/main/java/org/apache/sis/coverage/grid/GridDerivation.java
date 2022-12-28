@@ -85,7 +85,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @see GridGeometry#selectDimensions(int[])
  *
  * @since 1.0
- * @module
  */
 public class GridDerivation {
     /**

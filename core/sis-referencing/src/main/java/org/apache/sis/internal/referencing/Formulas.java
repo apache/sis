@@ -35,7 +35,6 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 public final class Formulas extends Static {
     /**

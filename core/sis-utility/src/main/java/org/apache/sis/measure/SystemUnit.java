@@ -48,7 +48,6 @@ import org.apache.sis.math.Fraction;
  * @param <Q>  the kind of quantity to be measured using this units.
  *
  * @since 0.8
- * @module
  */
 final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements QuantityFactory<Q> {
     /**

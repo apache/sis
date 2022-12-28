@@ -47,7 +47,6 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class Analyzer {
     /**

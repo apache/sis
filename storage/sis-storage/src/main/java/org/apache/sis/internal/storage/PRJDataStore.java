@@ -68,7 +68,6 @@ import org.apache.sis.util.Classes;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 public abstract class PRJDataStore extends URIDataStore {
     /**
@@ -459,7 +458,6 @@ public abstract class PRJDataStore extends URIDataStore {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.2
      * @since   1.2
-     * @module
      */
     public abstract static class Provider extends URIDataStore.Provider {
         /**

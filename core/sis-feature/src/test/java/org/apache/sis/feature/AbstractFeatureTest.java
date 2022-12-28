@@ -40,7 +40,6 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @DependsOn({
     DenseFeatureTest.class,

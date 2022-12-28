@@ -32,7 +32,6 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Result> {
     /**

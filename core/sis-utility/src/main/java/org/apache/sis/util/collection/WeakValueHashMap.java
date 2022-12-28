@@ -82,7 +82,6 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * @see Cache
  *
  * @since 0.3
- * @module
  */
 public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     /**
@@ -616,7 +615,6 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private final class EntrySet extends AbstractSet<Map.Entry<K,V>> {
         /**

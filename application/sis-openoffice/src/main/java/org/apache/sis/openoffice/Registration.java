@@ -33,7 +33,6 @@ import com.sun.star.registry.XRegistryKey;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public final class Registration {
     /**

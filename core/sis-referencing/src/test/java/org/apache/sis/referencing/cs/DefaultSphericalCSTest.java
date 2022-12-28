@@ -32,7 +32,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultSphericalCSTest extends TestCase {

@@ -49,6 +49,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 package org.apache.sis.console;

@@ -51,7 +51,6 @@ import org.junit.runner.RunWith;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 @RunWith(TestRunner.class)
 public abstract strictfp class TestCase {

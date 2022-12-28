@@ -41,7 +41,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @see org.apache.sis.referencing.AbstractIdentifiedObject
  *
  * @since 0.5
- * @module
  */
 public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparable, Serializable {
     /**

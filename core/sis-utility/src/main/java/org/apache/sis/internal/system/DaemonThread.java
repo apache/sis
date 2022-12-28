@@ -41,7 +41,6 @@ import java.util.ArrayList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 abstract class DaemonThread extends Thread {
     /**

@@ -59,7 +59,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @DependsOn(org.apache.sis.referencing.CommonCRSTest.class)
 public final strictfp class CommonAuthorityFactoryTest extends TestCase {

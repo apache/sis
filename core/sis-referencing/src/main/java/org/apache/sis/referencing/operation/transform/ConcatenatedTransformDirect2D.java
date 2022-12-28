@@ -31,7 +31,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ConcatenatedTransformDirect2D extends ConcatenatedTransformDirect implements MathTransform2D {
     /**

@@ -44,7 +44,6 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public strictfp class MetadataAssert extends Assert {
     /**

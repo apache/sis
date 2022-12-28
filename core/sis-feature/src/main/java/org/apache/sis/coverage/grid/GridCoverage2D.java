@@ -95,7 +95,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class GridCoverage2D extends GridCoverage {
     /**

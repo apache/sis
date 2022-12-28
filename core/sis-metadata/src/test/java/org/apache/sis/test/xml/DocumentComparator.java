@@ -78,7 +78,6 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
  *
  * @since 0.3
- * @module
  */
 public strictfp class DocumentComparator {
     /**

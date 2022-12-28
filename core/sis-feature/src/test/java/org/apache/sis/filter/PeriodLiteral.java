@@ -40,7 +40,6 @@ import org.opengis.temporal.TemporalGeometricPrimitive;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")
 final strictfp class PeriodLiteral implements Period, Literal<Feature,Period>, Serializable {

@@ -45,7 +45,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn(ArrayEnvelopeTest.class)
 public strictfp class GeneralEnvelopeTest extends TestCase {

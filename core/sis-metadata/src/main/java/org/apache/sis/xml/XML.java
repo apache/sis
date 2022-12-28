@@ -87,7 +87,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public final class XML extends Static {
     /**

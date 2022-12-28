@@ -62,7 +62,6 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * @see DefaultRecordSchema
  *
  * @since 0.5
- * @module
  */
 public class DefaultRecord implements Record, Serializable {
     /**

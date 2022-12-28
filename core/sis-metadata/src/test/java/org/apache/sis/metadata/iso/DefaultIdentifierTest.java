@@ -33,7 +33,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)
 public final strictfp class DefaultIdentifierTest extends TestCase {

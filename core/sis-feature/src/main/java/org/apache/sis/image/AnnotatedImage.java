@@ -59,7 +59,6 @@ import org.apache.sis.internal.util.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 abstract class AnnotatedImage extends ImageAdapter {
     /**

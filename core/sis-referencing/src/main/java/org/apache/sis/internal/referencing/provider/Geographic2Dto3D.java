@@ -45,7 +45,6 @@ import org.apache.sis.parameter.Parameters;
  * @see Geographic3Dto2D
  *
  * @since 0.7
- * @module
  */
 @XmlTransient
 public final class Geographic2Dto3D extends GeographicRedimension {

@@ -42,7 +42,6 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class PolarStereographicTest extends MapProjectionTestCase {

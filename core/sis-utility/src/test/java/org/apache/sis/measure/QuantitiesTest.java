@@ -33,7 +33,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 @DependsOn(ScalarTest.class)
 public final strictfp class QuantitiesTest extends TestCase {

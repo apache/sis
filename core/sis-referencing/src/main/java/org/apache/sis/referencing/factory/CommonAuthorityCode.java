@@ -29,7 +29,6 @@ import org.apache.sis.internal.referencing.Resources;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 final class CommonAuthorityCode {
     /**

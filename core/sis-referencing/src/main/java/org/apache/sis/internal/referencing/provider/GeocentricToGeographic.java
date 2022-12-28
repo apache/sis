@@ -39,7 +39,6 @@ import org.apache.sis.parameter.Parameters;
  * @see GeographicToGeocentric
  *
  * @since 0.7
- * @module
  */
 public final class GeocentricToGeographic extends GeodeticOperation {
     /**

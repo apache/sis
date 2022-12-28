@@ -39,7 +39,6 @@ import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(PlanarImageTest.class)
 public final strictfp class ComputedImageTest extends TestCase {

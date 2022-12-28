@@ -51,7 +51,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 final class ST_Point<R,G> extends FunctionWithSRID<R> {
     /**

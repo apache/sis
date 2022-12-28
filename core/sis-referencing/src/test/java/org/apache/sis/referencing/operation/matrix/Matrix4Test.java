@@ -31,7 +31,6 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn(SolverTest.class)
 public final strictfp class Matrix4Test extends MatrixTestCase {

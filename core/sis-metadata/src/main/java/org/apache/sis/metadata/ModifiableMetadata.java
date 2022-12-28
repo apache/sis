@@ -89,7 +89,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @XmlTransient
 public abstract class ModifiableMetadata extends AbstractMetadata {
@@ -155,7 +154,6 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @see ModifiableMetadata#state()
      *
      * @since 1.0
-     * @module
      */
     public enum State {
         /**

@@ -44,7 +44,6 @@ import org.opengis.metadata.quality.CompletenessCommission;
  * @author  Touraïvane (IRD)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractDQ_Completeness_Type")
 @XmlRootElement(name = "AbstractDQ_Completeness")

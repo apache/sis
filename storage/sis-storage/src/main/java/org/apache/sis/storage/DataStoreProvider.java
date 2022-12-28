@@ -67,7 +67,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public abstract class DataStoreProvider {
     /**

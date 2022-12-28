@@ -95,7 +95,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * @see AbstractMetadata
  *
  * @since 0.3
- * @module
  */
 public class MetadataStandard implements Serializable {
     /**

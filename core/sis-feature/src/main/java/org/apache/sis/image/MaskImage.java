@@ -41,7 +41,6 @@ import static java.util.logging.Logger.getLogger;
  * @see ResampledImage#MASK_KEY
  *
  * @since 1.1
- * @module
  */
 final class MaskImage extends SourceAlignedImage {
     /**

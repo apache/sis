@@ -39,7 +39,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 @DependsOn(StorageConnectorTest.class)
 public final strictfp class DataStoreProviderTest extends TestCase {

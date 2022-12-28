@@ -37,7 +37,6 @@ import static org.junit.Assert.*;
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final strictfp class ShapeAdapterTest extends TestCase {
     /**

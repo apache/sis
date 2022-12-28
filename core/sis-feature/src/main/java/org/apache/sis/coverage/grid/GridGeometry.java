@@ -136,7 +136,6 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   1.0
- * @module
  */
 public class GridGeometry implements LenientComparable, Serializable {
     /**

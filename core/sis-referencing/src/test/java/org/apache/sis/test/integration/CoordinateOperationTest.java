@@ -53,7 +53,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Michael Arneson (OSDU)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,

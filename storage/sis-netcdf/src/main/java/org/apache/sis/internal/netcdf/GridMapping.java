@@ -89,7 +89,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
  *
  * @since 1.0
- * @module
  */
 final class GridMapping {
     /**

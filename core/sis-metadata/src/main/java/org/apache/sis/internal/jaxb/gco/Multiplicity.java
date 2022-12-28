@@ -49,7 +49,6 @@ import org.apache.sis.measure.NumberRange;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @XmlType(name = "Multiplicity_Type")
 public final class Multiplicity {

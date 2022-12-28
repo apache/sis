@@ -51,7 +51,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")                         // Not intended to be serialized.
 public final class BackgroundThreads extends AtomicInteger implements ThreadFactory {

@@ -59,7 +59,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
     CommonCRSTest.class,

@@ -44,7 +44,6 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 final class OperationMethodSet extends SetOfUnknownSize<OperationMethod> {
     /**

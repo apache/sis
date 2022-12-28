@@ -74,7 +74,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see WKTFormat#getWarnings()
  *
  * @since 0.6
- * @module
  */
 public final class Warnings implements Localized, Serializable {
     /**

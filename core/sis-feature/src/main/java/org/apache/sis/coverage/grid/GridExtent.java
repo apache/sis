@@ -94,7 +94,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   1.0
- * @module
  */
 public class GridExtent implements GridEnvelope, LenientComparable, Serializable {
     /**

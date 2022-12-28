@@ -43,7 +43,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final strictfp class StatisticsTest extends TestCase {
     /**

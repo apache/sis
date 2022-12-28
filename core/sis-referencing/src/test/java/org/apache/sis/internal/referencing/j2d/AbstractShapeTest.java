@@ -30,7 +30,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final strictfp class AbstractShapeTest extends TestCase {
     /**

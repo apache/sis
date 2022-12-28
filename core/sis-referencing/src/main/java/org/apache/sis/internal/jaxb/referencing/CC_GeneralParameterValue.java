@@ -33,7 +33,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public final class CC_GeneralParameterValue extends PropertyType<CC_GeneralParameterValue, GeneralParameterValue> {
     /**

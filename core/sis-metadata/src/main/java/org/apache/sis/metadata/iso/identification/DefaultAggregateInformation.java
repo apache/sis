@@ -65,7 +65,6 @@ import org.apache.sis.internal.jaxb.code.DS_InitiativeTypeCode;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  *
  * @deprecated As of ISO 19115:2014, replaced by {@link DefaultAssociatedResource}.
  */

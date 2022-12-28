@@ -34,7 +34,6 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
     /**

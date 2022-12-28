@@ -51,7 +51,6 @@ import org.apache.sis.internal.system.Modules;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class SystemRegistry extends ConverterRegistry {
     /**

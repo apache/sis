@@ -48,7 +48,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @see org.apache.sis.feature.DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 @TitleProperty(name = "featureTypeName")
 @XmlType(name = "MD_FeatureTypeInfo_Type", propOrder = {

@@ -58,7 +58,6 @@ import static org.apache.sis.internal.referencing.provider.Polyconic.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public class Polyconic extends MeridianArcBased {
     /**
@@ -278,7 +277,6 @@ public class Polyconic extends MeridianArcBased {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   1.0
-     * @module
      */
     private static final class Spherical extends Polyconic {
         /**

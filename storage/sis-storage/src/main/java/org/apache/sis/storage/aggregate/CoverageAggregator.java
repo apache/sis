@@ -91,7 +91,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class CoverageAggregator extends Group<GroupBySample> {
     /**

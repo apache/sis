@@ -74,7 +74,6 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
  *
  * @since 0.7
- * @module
  */
 public class InterpolatedTransform extends DatumShiftTransform {
     /**
@@ -438,7 +437,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     static class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**

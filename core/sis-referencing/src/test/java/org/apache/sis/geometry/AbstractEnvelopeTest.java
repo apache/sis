@@ -37,7 +37,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)
 public final strictfp class AbstractEnvelopeTest extends TestCase {

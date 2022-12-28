@@ -40,7 +40,6 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 public final strictfp class EquirectangularTest extends MapProjectionTestCase {
     /**

@@ -36,7 +36,6 @@ import static org.apache.sis.internal.util.Numerics.MAX_INTEGER_CONVERTIBLE_TO_F
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public enum DataType {
     /*

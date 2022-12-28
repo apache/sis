@@ -38,7 +38,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public final strictfp class DefaultEngineeringCRSTest extends TestCase {
     /**

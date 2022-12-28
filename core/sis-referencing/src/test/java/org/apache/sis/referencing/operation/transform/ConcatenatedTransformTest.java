@@ -39,7 +39,6 @@ import static org.opengis.test.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @DependsOn(ProjectiveTransformTest.class)
 public final strictfp class ConcatenatedTransformTest extends MathTransformTestCase {

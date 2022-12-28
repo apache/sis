@@ -113,7 +113,6 @@ import org.opengis.util.ControlledVocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public class MetadataWriter extends MetadataSource {
     /**

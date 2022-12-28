@@ -45,7 +45,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.measure.RangeTest.class)
 public final strictfp class RangeSetTest extends TestCase {

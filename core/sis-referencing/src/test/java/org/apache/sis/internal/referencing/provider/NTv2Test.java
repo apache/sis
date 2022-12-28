@@ -55,7 +55,6 @@ import static org.apache.sis.internal.referencing.provider.DatumShiftGridLoader.
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  *
  * @since 0.7
- * @module
  */
 @DependsOn(DatumShiftGridFileTest.class)
 public final strictfp class NTv2Test extends DatumShiftTestCase {

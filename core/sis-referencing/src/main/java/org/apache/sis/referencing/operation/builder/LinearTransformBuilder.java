@@ -97,7 +97,6 @@ import org.apache.sis.util.Classes;
  * @see Plane
  *
  * @since 0.5
- * @module
  */
 public class LinearTransformBuilder extends TransformBuilder {
     /**

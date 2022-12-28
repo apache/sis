@@ -39,7 +39,6 @@ import static org.junit.Assume.assumeNotNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,

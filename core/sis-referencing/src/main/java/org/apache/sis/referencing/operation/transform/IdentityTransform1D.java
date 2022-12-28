@@ -24,7 +24,6 @@ package org.apache.sis.referencing.operation.transform;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class IdentityTransform1D extends LinearTransform1D {
     /**

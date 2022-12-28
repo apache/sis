@@ -47,7 +47,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @param <BoundType> The code list being adapted.
  *
  * @since 0.3
- * @module
  */
 public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueType,BoundType>,
         BoundType extends CodeList<BoundType>> extends XmlAdapter<ValueType,BoundType>

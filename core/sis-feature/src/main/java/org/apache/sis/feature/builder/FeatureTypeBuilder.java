@@ -106,7 +106,6 @@ import org.opengis.feature.Operation;
  * @see org.apache.sis.parameter.ParameterBuilder
  *
  * @since 0.8
- * @module
  */
 public class FeatureTypeBuilder extends TypeBuilder {
     /**

@@ -88,7 +88,6 @@ import org.apache.sis.util.Numbers;
  * @see org.apache.sis.util.collection.RangeSet
  *
  * @since 0.3
- * @module
  */
 public class Range<E extends Comparable<? super E>> implements CheckedContainer<E>, Formattable, Emptiable, Serializable {
     /**

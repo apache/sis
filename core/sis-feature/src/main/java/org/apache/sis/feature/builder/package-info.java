@@ -59,6 +59,5 @@
  * @see org.apache.sis.feature.DefaultFeatureType
  *
  * @since 0.8
- * @module
  */
 package org.apache.sis.feature.builder;

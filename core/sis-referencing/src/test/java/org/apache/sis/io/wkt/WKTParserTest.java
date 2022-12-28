@@ -39,7 +39,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn(GeodeticObjectParserTest.class)

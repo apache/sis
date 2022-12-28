@@ -33,7 +33,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final strictfp class StoreProviderTest extends TestCase {

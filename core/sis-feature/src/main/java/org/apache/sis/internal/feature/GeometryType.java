@@ -28,7 +28,6 @@ import java.util.Locale;
  * @see Geometries#getGeometryClass(GeometryType)
  *
  * @since 1.1
- * @module
  */
 public enum GeometryType {
     /**

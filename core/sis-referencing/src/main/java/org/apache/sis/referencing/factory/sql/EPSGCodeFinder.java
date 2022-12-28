@@ -65,7 +65,6 @@ import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
     /**

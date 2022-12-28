@@ -35,7 +35,6 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @version 0.8
  * @since   0.8
- * @module
  */
 public class IllegalNameException extends NoSuchDataException {
     /**

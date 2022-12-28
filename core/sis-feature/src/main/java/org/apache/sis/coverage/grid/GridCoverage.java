@@ -60,7 +60,6 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
@@ -350,7 +349,6 @@ public abstract class GridCoverage extends BandedCoverage {
      * @see GridCoverage#evaluator()
      *
      * @since 1.3
-     * @module
      */
     public interface Evaluator extends BandedCoverage.Evaluator {
         /**

@@ -44,7 +44,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  *
  * @todo Move this class to GeoAPI.
  */

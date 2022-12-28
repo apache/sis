@@ -30,7 +30,6 @@ import org.apache.sis.util.collection.Cache;
  * @param <T>  the type of cached values.
  *
  * @since 0.8
- * @module
  */
 final class CacheKey<T> {
     /**

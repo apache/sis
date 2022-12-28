@@ -60,7 +60,6 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * @param <E>  the type of elements in this set.
  *
  * @since 0.3
- * @module
  */
 class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {
     /**

@@ -44,7 +44,6 @@ import org.apache.sis.util.CharSequences;
  * @see DataStores#probeContentType(Object)
  *
  * @since 0.4
- * @module
  */
 final class MimeTypeCommand extends CommandRunner {
     /**

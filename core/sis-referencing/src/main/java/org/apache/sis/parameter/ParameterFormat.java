@@ -109,7 +109,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 public class ParameterFormat extends TabularFormat<Object> {
     /**
@@ -137,7 +136,6 @@ public class ParameterFormat extends TabularFormat<Object> {
      *
      * @version 0.4
      * @since   0.4
-     * @module
      */
     public enum ContentLevel {
         /**

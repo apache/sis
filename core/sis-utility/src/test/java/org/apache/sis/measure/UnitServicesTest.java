@@ -35,7 +35,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 @DependsOn(UnitsTest.class)
 public final strictfp class UnitServicesTest extends TestCase {

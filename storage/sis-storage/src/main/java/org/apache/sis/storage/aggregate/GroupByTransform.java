@@ -40,7 +40,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class GroupByTransform extends Group<GridSlice> {
     /**

@@ -47,7 +47,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  *
  * @since 0.5
- * @module
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**

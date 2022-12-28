@@ -137,7 +137,6 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * @param <V>  the type of value objects.
  *
  * @since 0.3
- * @module
  */
 public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
@@ -992,7 +991,6 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     public interface Handler<V> {
         /**

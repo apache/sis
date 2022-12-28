@@ -31,7 +31,6 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
 public strictfp class AzimuthalEquidistantTest extends MapProjectionTestCase {

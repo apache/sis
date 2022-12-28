@@ -40,7 +40,6 @@ import static java.lang.StrictMath.*;
  * @author  Emmanuel Giasson (Thales)
  * @version 1.2
  * @since   1.0
- * @module
  */
 @DependsOn(MercatorTest.class)
 public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {

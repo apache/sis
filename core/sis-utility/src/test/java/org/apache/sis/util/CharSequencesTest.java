@@ -34,7 +34,6 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({
     ArraysExtTest.class,

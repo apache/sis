@@ -28,7 +28,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 public interface Parameterized {
     /**

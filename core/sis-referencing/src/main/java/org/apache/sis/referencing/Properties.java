@@ -45,7 +45,6 @@ import org.apache.sis.util.Deprecable;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 final class Properties extends AbstractMap<String,Object> implements Serializable {
     /**

@@ -55,7 +55,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @see DefaultLocalName
  *
  * @since 0.3
- * @module
  */
 
 /*

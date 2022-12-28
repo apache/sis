@@ -91,7 +91,6 @@ import org.apache.sis.xml.Namespaces;
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
  * @since 0.3
- * @module
  */
 @TitleProperty(name = "code")
 @XmlType(name = "MD_Identifier_Type", namespace = Namespaces.MCC, propOrder = {

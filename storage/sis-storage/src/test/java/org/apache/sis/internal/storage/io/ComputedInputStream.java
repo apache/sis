@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.4
- * @module
  */
 final strictfp class ComputedInputStream extends InputStream {
     /**

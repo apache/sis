@@ -30,7 +30,6 @@ import java.lang.reflect.InvocationHandler;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class ResultSetMock implements InvocationHandler {
     /**

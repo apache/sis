@@ -101,7 +101,6 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GCO, xmlns = {
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO)

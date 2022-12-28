@@ -40,7 +40,6 @@ import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 final class PropertiesConverter extends SurjectiveConverter<String,String> {
     /**

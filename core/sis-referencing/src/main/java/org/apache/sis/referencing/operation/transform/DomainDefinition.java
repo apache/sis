@@ -63,7 +63,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
  *
  * @since 1.3
- * @module
  */
 public class DomainDefinition {
     /**

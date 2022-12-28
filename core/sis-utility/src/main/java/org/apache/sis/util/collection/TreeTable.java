@@ -64,7 +64,6 @@ import java.util.List;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public interface TreeTable {
     /**
@@ -119,7 +118,6 @@ public interface TreeTable {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.8
      * @since   0.3
-     * @module
      */
     public interface Node {
         /**

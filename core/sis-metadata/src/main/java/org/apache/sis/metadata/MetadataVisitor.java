@@ -38,7 +38,6 @@ import org.apache.sis.util.Exceptions;
  * @param  <R>  the type of result of walking in the metadata.
  *
  * @since 1.0
- * @module
  */
 abstract class MetadataVisitor<R> {
     /**

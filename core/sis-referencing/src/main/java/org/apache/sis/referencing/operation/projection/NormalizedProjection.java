@@ -136,7 +136,6 @@ import static java.util.logging.Logger.getLogger;
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6
- * @module
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**
@@ -256,7 +255,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
      *
      * @since 0.6
-     * @module
      */
     protected enum ParameterRole {
         /**
@@ -830,7 +828,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.6
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**

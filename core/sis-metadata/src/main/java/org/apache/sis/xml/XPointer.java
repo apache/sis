@@ -26,7 +26,6 @@ import static org.apache.sis.internal.util.DefinitionURI.regionMatches;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 enum XPointer {
     /**

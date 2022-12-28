@@ -53,7 +53,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final class PerformanceLevel extends Level {
     /**

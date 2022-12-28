@@ -33,7 +33,6 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrEmpty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 public final class SimpleExtent implements Extent {
     /**

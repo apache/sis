@@ -31,7 +31,6 @@ import org.apache.sis.util.resources.Messages;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 public abstract class OptionalDependency extends SystemListener {
     /**

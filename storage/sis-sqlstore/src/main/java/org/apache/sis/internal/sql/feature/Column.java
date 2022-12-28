@@ -53,7 +53,6 @@ import org.apache.sis.util.Localized;
  * @see DatabaseMetaData#getColumns(String, String, String, String)
  *
  * @since 1.1
- * @module
  */
 public final class Column {
     /**

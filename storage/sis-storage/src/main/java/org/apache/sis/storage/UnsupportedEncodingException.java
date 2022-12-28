@@ -24,7 +24,6 @@ package org.apache.sis.storage;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class UnsupportedEncodingException extends DataStoreContentException {
     /**

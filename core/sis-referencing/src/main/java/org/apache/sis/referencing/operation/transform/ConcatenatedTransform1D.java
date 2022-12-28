@@ -30,7 +30,6 @@ import org.apache.sis.geometry.DirectPosition1D;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ConcatenatedTransform1D extends ConcatenatedTransform implements MathTransform1D {
     /**

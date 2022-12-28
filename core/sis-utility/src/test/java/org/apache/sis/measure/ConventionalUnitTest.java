@@ -36,7 +36,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @DependsOn({SystemUnitTest.class, LinearConverterTest.class, PrefixesTest.class})
 public final strictfp class ConventionalUnitTest extends TestCase {

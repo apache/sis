@@ -39,7 +39,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final strictfp class StoreTest extends TestCase {

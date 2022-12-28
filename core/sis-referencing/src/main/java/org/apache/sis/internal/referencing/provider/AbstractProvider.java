@@ -52,7 +52,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @XmlTransient
 public abstract class AbstractProvider extends DefaultOperationMethod implements MathTransformProvider {

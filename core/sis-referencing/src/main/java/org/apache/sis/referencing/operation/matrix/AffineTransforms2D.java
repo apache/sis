@@ -45,7 +45,6 @@ import static java.awt.geom.AffineTransform.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 public final class AffineTransforms2D extends Static {
     /**

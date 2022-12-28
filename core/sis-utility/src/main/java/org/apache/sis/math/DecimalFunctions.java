@@ -52,7 +52,6 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @see Math#log10(double)
  *
  * @since 0.4
- * @module
  */
 public final class DecimalFunctions extends Static {
     /**

@@ -34,7 +34,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(CurveExtremumTest.class)
 public final strictfp class Shapes2DTest extends TransformTestCase<Rectangle2D> {

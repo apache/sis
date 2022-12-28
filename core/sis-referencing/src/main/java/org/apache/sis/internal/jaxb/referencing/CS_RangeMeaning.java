@@ -28,7 +28,6 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class CS_RangeMeaning extends CodeListAdapter<RangeMeaning> {
     /**

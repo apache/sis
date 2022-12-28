@@ -85,7 +85,6 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public class PixelIterator {
     /**
@@ -1177,7 +1176,6 @@ public class PixelIterator {
      * @param  <T>  the type of buffer which can be used for transferring data.
      *
      * @since 0.8
-     * @module
      */
     public abstract static class Window<T extends Buffer> {
         /**

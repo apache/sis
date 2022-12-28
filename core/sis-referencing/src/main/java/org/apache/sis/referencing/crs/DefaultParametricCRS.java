@@ -59,7 +59,6 @@ import org.opengis.referencing.datum.ParametricDatum;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCRS(String)
  *
  * @since 0.7
- * @module
  */
 @XmlType(name = "ParametricCRSType", propOrder = {
     "coordinateSystem",

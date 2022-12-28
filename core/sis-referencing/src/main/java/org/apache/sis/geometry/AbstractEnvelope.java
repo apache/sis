@@ -119,7 +119,6 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @XmlTransient
 public abstract class AbstractEnvelope extends FormattableObject implements Envelope, Emptiable {
@@ -1286,7 +1285,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {
         private static final long serialVersionUID = -4868610696294317932L;

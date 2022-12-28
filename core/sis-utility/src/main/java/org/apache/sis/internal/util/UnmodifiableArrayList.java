@@ -60,7 +60,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @param <E>  the type of elements in the list.
  *
  * @since 0.3
- * @module
  */
 public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, CheckedContainer<E>, Serializable {
     /**

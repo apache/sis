@@ -73,7 +73,6 @@ import org.apache.sis.util.CharSequences;
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 public final class GCOM_W extends Convention {
     /**

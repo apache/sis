@@ -59,7 +59,6 @@ import org.locationtech.jts.io.WKTReader;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 public final class Factory extends Geometries<Geometry> {
     /**

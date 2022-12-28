@@ -87,7 +87,6 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),

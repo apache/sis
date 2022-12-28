@@ -57,7 +57,6 @@ import org.opengis.filter.capability.FilterCapabilities;
  * @param  <T>  base class of temporal objects.
  *
  * @since 1.1
- * @module
  */
 public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implements FilterFactory<R,G,T> {
     /**

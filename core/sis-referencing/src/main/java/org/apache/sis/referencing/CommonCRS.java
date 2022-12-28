@@ -150,7 +150,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
  * @since 0.4
- * @module
  */
 @SuppressWarnings("DoubleCheckedLocking")
 public enum CommonCRS {
@@ -1220,7 +1219,6 @@ public enum CommonCRS {
      * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
      *
      * @since 0.4
-     * @module
      */
     public enum Vertical {
         /**
@@ -1525,7 +1523,6 @@ public enum CommonCRS {
      * @see Engineering#TIME
      *
      * @since 0.4
-     * @module
      */
     public enum Temporal {
         /**
@@ -1850,7 +1847,6 @@ public enum CommonCRS {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.1
-     * @module
      */
     public enum Engineering {
         /**

@@ -61,7 +61,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultNameFactory
  *
  * @since 0.3
- * @module
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**

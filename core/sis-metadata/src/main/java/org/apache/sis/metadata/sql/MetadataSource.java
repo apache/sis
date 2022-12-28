@@ -112,7 +112,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public class MetadataSource implements AutoCloseable {
     /**

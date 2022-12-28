@@ -47,7 +47,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 public abstract strictfp class MatrixTestCase extends TestCase {
     /**

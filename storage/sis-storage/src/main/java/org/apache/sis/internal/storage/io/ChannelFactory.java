@@ -71,7 +71,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 public abstract class ChannelFactory {
     /**

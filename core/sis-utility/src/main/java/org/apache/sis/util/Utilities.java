@@ -32,7 +32,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final class Utilities extends Static {
     /**

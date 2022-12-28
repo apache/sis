@@ -40,7 +40,6 @@ import org.apache.sis.util.Localized;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public abstract class Widget implements Localized {
     /**

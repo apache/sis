@@ -47,7 +47,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 final class SparseFeature extends AbstractFeature implements Cloneable {
     /**

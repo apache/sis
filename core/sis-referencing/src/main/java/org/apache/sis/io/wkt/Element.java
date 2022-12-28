@@ -59,7 +59,6 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 final class Element {
     /**

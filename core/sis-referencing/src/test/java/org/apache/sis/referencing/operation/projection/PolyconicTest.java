@@ -32,7 +32,6 @@ import org.junit.Test;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(MeridianArcTest.class)
 public final strictfp class PolyconicTest extends MapProjectionTestCase {

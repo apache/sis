@@ -71,7 +71,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @see DataStores#open(Object)
  *
  * @since 0.3
- * @module
  */
 public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**

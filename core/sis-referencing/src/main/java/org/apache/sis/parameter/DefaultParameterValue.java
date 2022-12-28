@@ -126,7 +126,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterValueGroup
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",

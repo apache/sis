@@ -41,7 +41,6 @@ import static org.opengis.referencing.IdentifiedObject.*;
  * @author  Johann Sorel (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
 public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase {

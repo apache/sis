@@ -38,7 +38,6 @@ import org.apache.sis.xml.IdentifiedObject;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 @XmlTransient
 public abstract class GMLAdapter {

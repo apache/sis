@@ -60,7 +60,6 @@ import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
 public abstract class AbstractMathTransform2D extends AbstractMathTransform implements MathTransform2D {
     /**
@@ -356,7 +355,6 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.5
-     * @module
      */
     protected abstract static class Inverse extends AbstractMathTransform.Inverse implements MathTransform2D {
         /**

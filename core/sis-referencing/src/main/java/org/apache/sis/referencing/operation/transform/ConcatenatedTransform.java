@@ -67,7 +67,6 @@ import static java.util.logging.Logger.getLogger;
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  *
  * @since 0.5
- * @module
  */
 class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
     /**

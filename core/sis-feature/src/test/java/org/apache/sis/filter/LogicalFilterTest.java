@@ -44,7 +44,6 @@ import org.opengis.filter.LogicalOperator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public final strictfp class LogicalFilterTest extends TestCase {
     /**

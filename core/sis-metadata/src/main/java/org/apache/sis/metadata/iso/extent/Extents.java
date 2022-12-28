@@ -89,7 +89,6 @@ import org.opengis.geometry.Geometry;
  * @see org.apache.sis.geometry.Envelopes
  *
  * @since 0.3
- * @module
  */
 public final class Extents extends Static {
     /**

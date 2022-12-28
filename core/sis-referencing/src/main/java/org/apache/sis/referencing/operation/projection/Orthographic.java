@@ -49,7 +49,6 @@ import static org.apache.sis.internal.referencing.provider.Orthographic.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class Orthographic extends NormalizedProjection {
     /**

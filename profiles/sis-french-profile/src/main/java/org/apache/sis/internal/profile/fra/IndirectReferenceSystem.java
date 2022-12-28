@@ -41,7 +41,6 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "FRA_IndirectReferenceSystem_Type")
 @XmlRootElement(name= "FRA_IndirectReferenceSystem")

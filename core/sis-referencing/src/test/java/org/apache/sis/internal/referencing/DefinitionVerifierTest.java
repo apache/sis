@@ -40,7 +40,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @DependsOn(org.apache.sis.referencing.CRSTest.class)
 public final strictfp class DefinitionVerifierTest extends TestCase {

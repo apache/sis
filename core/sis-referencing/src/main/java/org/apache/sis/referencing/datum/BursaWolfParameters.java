@@ -129,7 +129,6 @@ import java.util.Objects;
  * @see <a href="https://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
  *
  * @since 0.4
- * @module
  */
 public class BursaWolfParameters extends FormattableObject implements Cloneable, Serializable {
     /**

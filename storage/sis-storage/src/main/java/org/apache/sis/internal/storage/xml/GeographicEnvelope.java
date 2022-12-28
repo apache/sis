@@ -45,7 +45,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @XmlTransient
 public abstract class GeographicEnvelope extends AbstractEnvelope implements GeographicBoundingBox, Extent {

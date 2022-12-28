@@ -65,7 +65,6 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  *
  * @version 1.1
  * @since   1.0
- * @module
  */
 public strictfp class GeodeticCalculatorTest extends TestCase {
     /**

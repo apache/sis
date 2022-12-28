@@ -96,7 +96,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * @see org.apache.sis.util.collection.IntegerList
  *
  * @since 0.8
- * @module
  */
 public abstract class Vector extends AbstractList<Number> implements RandomAccess {
     /**

@@ -31,7 +31,6 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class StoreTypeDetector extends FileTypeDetector {
     /**

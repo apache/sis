@@ -68,7 +68,6 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public class LambertConicConformal extends ConformalProjection {
     /**
@@ -535,7 +534,6 @@ public class LambertConicConformal extends ConformalProjection {
      * @author  Rueben Schulz (UBC)
      * @version 1.1
      * @since   0.6
-     * @module
      */
     static final class Spherical extends LambertConicConformal {
         /**

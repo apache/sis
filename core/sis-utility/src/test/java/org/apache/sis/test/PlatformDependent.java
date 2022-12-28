@@ -31,7 +31,6 @@ import java.lang.annotation.Target;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @Documented
 @Target(ElementType.METHOD)

@@ -68,7 +68,6 @@ import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 public abstract class Initializer {
     /**

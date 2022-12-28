@@ -65,7 +65,6 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @see <a href="https://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public class GeohashReferenceSystem extends ReferencingByIdentifiers {
@@ -239,7 +238,6 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.8
-     * @module
      */
     public class Coder extends ReferencingByIdentifiers.Coder {
         /**

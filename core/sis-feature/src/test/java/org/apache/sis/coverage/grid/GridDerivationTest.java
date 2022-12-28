@@ -58,7 +58,6 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 @DependsOn(GridGeometryTest.class)
 public final strictfp class GridDerivationTest extends TestCase {

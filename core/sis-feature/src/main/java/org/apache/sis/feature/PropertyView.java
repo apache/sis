@@ -52,7 +52,6 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @param <V> the type of property values.
  *
  * @since 0.8
- * @module
  */
 abstract class PropertyView<V> extends Field<V> implements Property, Serializable {
     /**

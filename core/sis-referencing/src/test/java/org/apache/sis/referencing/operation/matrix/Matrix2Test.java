@@ -30,7 +30,6 @@ import static org.apache.sis.referencing.operation.matrix.Matrix2.SIZE;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn(SolverTest.class)
 public final strictfp class Matrix2Test extends MatrixTestCase {

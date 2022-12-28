@@ -87,7 +87,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
@@ -1079,7 +1078,6 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.5
-     * @module
      */
     protected abstract static class Inverse extends AbstractMathTransform {
         /**

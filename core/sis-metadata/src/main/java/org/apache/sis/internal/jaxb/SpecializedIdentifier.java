@@ -45,7 +45,6 @@ import org.opengis.metadata.Identifier;
  * @param <T>  the value type, typically {@link XLink}, {@link UUID} or {@link String}.
  *
  * @since 0.3
- * @module
  */
 public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Serializable {
     /**

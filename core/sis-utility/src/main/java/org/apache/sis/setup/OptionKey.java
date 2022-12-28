@@ -68,7 +68,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <T>  the type of option values.
  *
  * @since 0.3
- * @module
  */
 public class OptionKey<T> implements Serializable {
     /**

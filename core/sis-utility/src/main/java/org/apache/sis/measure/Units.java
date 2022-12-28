@@ -79,7 +79,6 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final class Units extends Static {
     /**

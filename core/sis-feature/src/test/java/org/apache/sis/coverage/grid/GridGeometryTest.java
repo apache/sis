@@ -47,7 +47,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 @DependsOn(GridExtentTest.class)
 public final strictfp class GridGeometryTest extends TestCase {

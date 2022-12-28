@@ -31,7 +31,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(EnvelopesTest.class)
 public final strictfp class EnvelopeReducerTest extends TestCase {

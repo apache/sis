@@ -59,7 +59,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @DependsOn({
     CoordinateOperationRegistryTest.class,

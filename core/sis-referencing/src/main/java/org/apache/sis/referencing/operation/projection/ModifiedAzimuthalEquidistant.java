@@ -50,7 +50,6 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * @see AzimuthalEquidistant
  *
  * @since 1.1
- * @module
  */
 public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     /**

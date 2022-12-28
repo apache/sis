@@ -33,7 +33,6 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @Workaround(library="JDK", version="1.8")
 public final class Providers extends LazySet<OperationMethod> {

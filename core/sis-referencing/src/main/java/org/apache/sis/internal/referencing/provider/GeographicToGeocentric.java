@@ -46,7 +46,6 @@ import org.apache.sis.internal.util.Constants;
  * @see GeocentricToGeographic
  *
  * @since 0.7
- * @module
  */
 public final class GeographicToGeocentric extends GeodeticOperation {
     /**

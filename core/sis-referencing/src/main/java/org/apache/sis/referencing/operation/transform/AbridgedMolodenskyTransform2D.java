@@ -35,7 +35,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class AbridgedMolodenskyTransform2D extends MolodenskyTransform2D {
     /**

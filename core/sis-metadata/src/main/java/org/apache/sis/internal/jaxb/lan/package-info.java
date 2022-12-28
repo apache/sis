@@ -26,7 +26,6 @@
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.LAN, xmlns = {
     @XmlNs(prefix = "lan", namespaceURI = Namespaces.LAN),      // Language localization

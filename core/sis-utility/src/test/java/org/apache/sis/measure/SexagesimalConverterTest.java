@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final strictfp class SexagesimalConverterTest extends TestCase {
     /**

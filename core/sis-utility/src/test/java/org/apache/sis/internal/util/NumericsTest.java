@@ -37,7 +37,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 public final strictfp class NumericsTest extends TestCase {

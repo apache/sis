@@ -38,7 +38,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 public final strictfp class BursaWolfParametersTest extends TestCase {
     /**

@@ -34,7 +34,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @see TextGroup
  *
  * @since 0.3
- * @module
  */
 final class LocalisedCharacterString {
     /**

@@ -43,7 +43,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @RunWith(Suite.class)
 public abstract strictfp class TestSuite {

@@ -34,7 +34,6 @@ import org.opengis.feature.FeatureType;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public interface FeatureSet extends DataSet {
     /**

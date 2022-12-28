@@ -54,7 +54,6 @@ import org.apache.sis.xml.ReferenceResolver;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class Context extends MarshalContext {
     /**

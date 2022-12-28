@@ -44,7 +44,6 @@ import static org.opengis.test.Assert.*;
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  *
  * @since 0.7
- * @module
  */
 public final strictfp class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
     /**

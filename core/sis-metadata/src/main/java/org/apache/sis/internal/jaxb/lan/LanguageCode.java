@@ -55,7 +55,6 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "LanguageCode_PropertyType")
 public final class LanguageCode extends GO_CharacterString {

@@ -34,7 +34,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(NilReasonMarshallingTest.class)
 public final strictfp class UUIDMarshallingTest extends TestCase {

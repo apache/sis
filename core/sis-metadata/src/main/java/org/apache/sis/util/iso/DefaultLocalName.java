@@ -61,7 +61,6 @@ import org.apache.sis.xml.Namespaces;
  * @see DefaultScopedName
  *
  * @since 0.3
- * @module
  */
 
 /*

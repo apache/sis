@@ -40,7 +40,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @see FeatureTypeBuilder#addAssociation(GenericName)
  *
  * @since 0.8
- * @module
  */
 public final class AssociationRoleBuilder extends PropertyTypeBuilder {
     /**

@@ -38,7 +38,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 @StoreMetadata(formatName    = WorldFileStoreProvider.NAME,
                fileSuffixes  = {"jpeg", "jpg", "png", "gif", "bmp"},    // Non-exhaustive list, intentionally excluding TIFF.

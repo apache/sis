@@ -21,6 +21,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 package org.apache.sis.internal.storage.wkt;

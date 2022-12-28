@@ -34,7 +34,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
 public final strictfp class LocalizationGridBuilderTest extends TransformTestCase {

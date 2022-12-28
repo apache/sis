@@ -29,7 +29,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeographic {

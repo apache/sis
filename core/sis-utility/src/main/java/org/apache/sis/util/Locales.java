@@ -50,7 +50,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Cullen Rombach (Image Matters)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class Locales extends Static {
     /**

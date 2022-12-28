@@ -56,7 +56,6 @@ import org.apache.sis.internal.system.Modules;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-525">SIS-525</a>
  *
  * @since 1.0
- * @module
  */
 public final class FinalFieldSetter {
     /**

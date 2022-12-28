@@ -67,7 +67,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @see LocaleAdapter
  *
  * @since 0.3
- * @module
  */
 public final class PT_Locale {
     /**

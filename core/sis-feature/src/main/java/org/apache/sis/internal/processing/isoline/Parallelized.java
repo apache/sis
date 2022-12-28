@@ -30,7 +30,6 @@ import org.apache.sis.internal.processing.image.TiledProcess;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class Parallelized extends TiledProcess<Isolines[]> {
     /**

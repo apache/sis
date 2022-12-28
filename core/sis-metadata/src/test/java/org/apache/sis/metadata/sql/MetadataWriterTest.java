@@ -47,7 +47,6 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @DependsOn({
     MetadataSourceTest.class,

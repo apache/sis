@@ -36,7 +36,6 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(ResampledImageTest.class)
 public final strictfp class ImageCombinerTest extends ImageTestCase {

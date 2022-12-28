@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final strictfp class JapanProfileTest extends TestCase {
     /**

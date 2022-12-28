@@ -78,7 +78,6 @@ import static java.util.logging.Logger.getLogger;
  * @see java.awt.image.AffineTransformOp
  *
  * @since 1.1
- * @module
  */
 public class ResampledImage extends ComputedImage {
     /**

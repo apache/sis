@@ -67,7 +67,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**

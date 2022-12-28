@@ -56,7 +56,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 final class PolarToCartesian extends CoordinateSystemTransform implements Serializable {
     /**

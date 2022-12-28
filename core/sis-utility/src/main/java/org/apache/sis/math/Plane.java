@@ -53,7 +53,6 @@ import static java.lang.Math.ulp;
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  *
  * @since 0.5
- * @module
  */
 public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     /**

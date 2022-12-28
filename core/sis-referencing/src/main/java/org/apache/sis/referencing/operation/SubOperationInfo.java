@@ -38,7 +38,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * @see CoordinateOperationFinder#createOperationStep(CoordinateReferenceSystem, List, CoordinateReferenceSystem, List)
  *
  * @since 0.7
- * @module
  */
 final class SubOperationInfo {
     /**

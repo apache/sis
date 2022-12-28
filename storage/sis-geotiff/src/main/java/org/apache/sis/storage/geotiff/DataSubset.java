@@ -68,7 +68,6 @@ import static java.lang.Math.toIntExact;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 class DataSubset extends TiledGridCoverage implements Localized {
     /**

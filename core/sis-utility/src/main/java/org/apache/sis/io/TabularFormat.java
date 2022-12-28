@@ -68,7 +68,6 @@ import org.apache.sis.util.resources.Errors;
  * @see TableAppender
  *
  * @since 0.3
- * @module
  */
 public abstract class TabularFormat<T> extends CompoundFormat<T> {
     /**

@@ -39,7 +39,6 @@ import org.apache.sis.util.Utilities;
  * @see Envelopes#intersect(Envelope...)
  *
  * @since 1.0
- * @module
  */
 class EnvelopeReducer {
     /**

@@ -44,7 +44,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final strictfp class PropertyInformationTest extends TestCase {
     /**

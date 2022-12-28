@@ -76,7 +76,6 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * @see java.util.WeakHashMap
  *
  * @since 0.3
- * @module
  */
 public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E> {
     /**

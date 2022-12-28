@@ -39,7 +39,6 @@ import org.apache.sis.storage.Query;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 class SingleImageStore extends WorldFileStore implements GridCoverageResource {
     /**

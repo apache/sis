@@ -26,6 +26,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 package org.apache.sis.internal.coverage;

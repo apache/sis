@@ -69,7 +69,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * @see AbstractLocation
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {
@@ -277,7 +276,6 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   1.3
-     * @module
      */
     public abstract static class Coder {
         /**

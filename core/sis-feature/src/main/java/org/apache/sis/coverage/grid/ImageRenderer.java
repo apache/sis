@@ -103,7 +103,6 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * @see GridCoverage#render(GridExtent)
  *
  * @since 1.0
- * @module
  */
 public class ImageRenderer {
     /**

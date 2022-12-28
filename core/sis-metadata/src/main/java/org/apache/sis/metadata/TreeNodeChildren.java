@@ -49,7 +49,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     /**

@@ -67,7 +67,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public class DirectPosition2D extends Point2D.Double implements DirectPosition, Cloneable {
     /**

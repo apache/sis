@@ -31,7 +31,6 @@ import static org.opengis.test.Validators.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)
 public final strictfp class DirectPosition1DTest extends TestCase {

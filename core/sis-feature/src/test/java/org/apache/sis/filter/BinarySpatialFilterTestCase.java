@@ -62,7 +62,6 @@ import org.opengis.filter.BinarySpatialOperator;
  * @param  <G> root class of geometry implementation.
  *
  * @since 1.1
- * @module
  */
 public abstract strictfp class BinarySpatialFilterTestCase<G> extends TestCase {
     /**

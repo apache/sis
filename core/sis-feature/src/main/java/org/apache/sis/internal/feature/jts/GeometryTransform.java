@@ -42,7 +42,6 @@ import org.apache.sis.util.Classes;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public abstract class GeometryTransform {
     /**

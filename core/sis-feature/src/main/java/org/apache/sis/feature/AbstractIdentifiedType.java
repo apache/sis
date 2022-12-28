@@ -40,7 +40,6 @@ import org.opengis.feature.IdentifiedType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Serializable {
     /**

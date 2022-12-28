@@ -77,7 +77,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class Optimization {
     /**

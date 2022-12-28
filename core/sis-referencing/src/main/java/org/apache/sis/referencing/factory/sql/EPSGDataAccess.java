@@ -163,7 +163,6 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
  * @since 0.7
- * @module
  */
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable

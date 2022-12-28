@@ -45,7 +45,6 @@ import org.apache.sis.util.collection.RangeSet;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**

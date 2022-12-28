@@ -98,7 +98,6 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -116,7 +115,6 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     public enum TargetType {
         /**
@@ -780,7 +778,6 @@ next:   while (--numPts >= 0) {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**

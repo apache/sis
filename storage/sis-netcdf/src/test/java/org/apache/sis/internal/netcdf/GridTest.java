@@ -38,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn(VariableTest.class)
 public strictfp class GridTest extends TestCase {

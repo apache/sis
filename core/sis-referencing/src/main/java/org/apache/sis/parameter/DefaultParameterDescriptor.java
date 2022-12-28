@@ -75,7 +75,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  * @see DefaultParameterDescriptorGroup
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "OperationParameterType")
 @XmlRootElement(name = "OperationParameter")

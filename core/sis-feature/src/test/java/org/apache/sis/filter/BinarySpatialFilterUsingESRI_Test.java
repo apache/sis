@@ -28,7 +28,6 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public final strictfp class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilterTestCase<Geometry> {
     /**

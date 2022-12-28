@@ -111,7 +111,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * @see ReferencingByIdentifiers
  *
  * @since 0.8
- * @module
  */
 public class ModifiableLocationType extends AbstractLocationType {      // Not Serializable on intent.
     /**

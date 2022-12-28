@@ -37,7 +37,6 @@ import java.util.Locale;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public enum Fix {
     /**

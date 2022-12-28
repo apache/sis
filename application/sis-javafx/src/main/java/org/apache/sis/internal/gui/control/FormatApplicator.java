@@ -48,7 +48,6 @@ import org.apache.sis.util.CharSequences;
  * @param  <T>  the type of objects expected and returned by {@link #format}.
  *
  * @since 1.1
- * @module
  */
 final class FormatApplicator<T> extends StringConverter<T>
         implements EventHandler<ActionEvent>, ChangeListener<Boolean>

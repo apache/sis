@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -45,7 +44,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.8
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**

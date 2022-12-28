@@ -37,7 +37,6 @@ import org.apache.sis.geometry.DirectPosition2D;
  * @see MathTransforms#bidimensional(MathTransform)
  *
  * @since 1.1
- * @module
  */
 final class TransformAdapter2D extends AbstractMathTransform2D implements Serializable {
     /**

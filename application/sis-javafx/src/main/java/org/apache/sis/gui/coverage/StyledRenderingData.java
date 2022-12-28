@@ -39,7 +39,6 @@ import org.apache.sis.internal.map.coverage.RenderingData;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class StyledRenderingData extends RenderingData {
     /**

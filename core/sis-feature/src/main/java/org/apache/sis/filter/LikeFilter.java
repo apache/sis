@@ -37,7 +37,6 @@ import org.opengis.filter.LikeOperator;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Optimization.OnFilter<R> {
     /**

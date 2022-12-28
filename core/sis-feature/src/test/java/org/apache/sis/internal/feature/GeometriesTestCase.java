@@ -41,7 +41,6 @@ import static org.junit.Assert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public abstract strictfp class GeometriesTestCase extends TestCase {
     /**

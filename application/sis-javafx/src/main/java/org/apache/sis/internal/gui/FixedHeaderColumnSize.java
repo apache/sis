@@ -29,7 +29,6 @@ import javafx.scene.control.TableColumn;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class FixedHeaderColumnSize<E> implements Callback<TableView.ResizeFeatures<E>, Boolean> {
     /**

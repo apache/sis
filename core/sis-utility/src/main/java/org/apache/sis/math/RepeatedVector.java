@@ -55,7 +55,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 final class RepeatedVector extends Vector implements Serializable {
     /**

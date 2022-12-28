@@ -38,7 +38,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
 @DependsOn(GeodeticObjectParserTest.class)
 public final strictfp class WKTFormatTest extends TestCase {

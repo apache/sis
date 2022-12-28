@@ -60,7 +60,6 @@ import org.opengis.metadata.quality.ValueStructure;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @SuppressWarnings("rawtypes")   // For the omission of <T> in Parameter<T> - see javadoc.
 @XmlType(name = "DQM_Parameter_Type", namespace = Namespaces.DQM, propOrder = {

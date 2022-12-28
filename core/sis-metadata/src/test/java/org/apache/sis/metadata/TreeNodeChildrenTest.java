@@ -53,7 +53,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(PropertyAccessorTest.class)
 public final strictfp class TreeNodeChildrenTest extends TestCase {

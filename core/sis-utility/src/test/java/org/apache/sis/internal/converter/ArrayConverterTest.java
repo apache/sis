@@ -29,7 +29,6 @@ import org.apache.sis.test.DependsOnMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final strictfp class ArrayConverterTest extends TestCase {
     /**

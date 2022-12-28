@@ -36,7 +36,6 @@ import static org.apache.sis.test.TestUtilities.*;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({
   FormattedCharacterIteratorTest.class,

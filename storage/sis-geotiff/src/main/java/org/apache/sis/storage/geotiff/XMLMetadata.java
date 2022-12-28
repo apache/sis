@@ -69,7 +69,6 @@ import static org.apache.sis.internal.util.TemporalUtilities.toDate;
  * @see <a href="https://www.dgiwg.org/dgiwg-standards">DGIWG Standards</a>
  *
  * @since 1.2
- * @module
  */
 final class XMLMetadata implements Filter {
     /**

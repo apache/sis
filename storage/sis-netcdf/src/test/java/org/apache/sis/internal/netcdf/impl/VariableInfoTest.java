@@ -32,7 +32,6 @@ import org.opengis.test.dataset.TestData;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({ChannelDecoderTest.class, VariableTest.class})
 public final strictfp class VariableInfoTest extends VariableTest {

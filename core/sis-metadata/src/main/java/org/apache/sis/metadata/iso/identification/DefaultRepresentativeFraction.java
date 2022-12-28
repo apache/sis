@@ -76,7 +76,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @see DefaultResolution#getEquivalentScale()
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MD_RepresentativeFraction_Type")
 @XmlRootElement(name = "MD_RepresentativeFraction")

@@ -48,7 +48,6 @@ import org.apache.sis.util.logging.Logging;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     /**

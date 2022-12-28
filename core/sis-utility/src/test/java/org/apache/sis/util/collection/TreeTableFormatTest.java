@@ -36,7 +36,6 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn({
     DefaultTreeTableTest.class,

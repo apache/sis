@@ -58,7 +58,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <E>  the type of tensor element values.
  *
  * @since 0.4
- * @module
  */
 @XmlTransient
 final class TensorValues<E> extends AbstractParameterDescriptor

@@ -36,7 +36,6 @@ import org.apache.sis.internal.util.Numerics;
  *             or {@link javax.measure.quantity.Length}).
  *
  * @since 0.7
- * @module
  */
 final class DatumShiftGridCompressed<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**

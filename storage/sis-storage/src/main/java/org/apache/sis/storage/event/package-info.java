@@ -37,6 +37,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.4
  * @version 1.0
- * @module
  */
 package org.apache.sis.storage.event;

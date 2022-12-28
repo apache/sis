@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.gui.GUIUtilitiesTest.class

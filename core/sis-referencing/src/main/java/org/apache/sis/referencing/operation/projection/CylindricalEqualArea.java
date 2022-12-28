@@ -61,7 +61,6 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public class CylindricalEqualArea extends AuthalicConversion {
     /**
@@ -312,7 +311,6 @@ public class CylindricalEqualArea extends AuthalicConversion {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     private static final class Spherical extends CylindricalEqualArea {
         /**

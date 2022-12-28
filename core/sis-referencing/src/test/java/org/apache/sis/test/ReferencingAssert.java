@@ -56,7 +56,6 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public strictfp class ReferencingAssert extends MetadataAssert {
     /**

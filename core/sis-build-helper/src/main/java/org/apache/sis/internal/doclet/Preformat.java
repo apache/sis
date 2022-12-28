@@ -34,7 +34,6 @@ import org.apache.sis.internal.book.CodeColorizer;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class Preformat extends Taglet {
     /**

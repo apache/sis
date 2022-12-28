@@ -74,7 +74,6 @@ import org.apache.sis.util.collection.TreeTable;
  * @see MetadataStandard
  *
  * @since 0.3
- * @module
  */
 @XmlTransient
 public abstract class AbstractMetadata implements LenientComparable, Emptiable {

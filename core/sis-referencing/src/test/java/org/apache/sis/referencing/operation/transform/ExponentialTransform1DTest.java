@@ -40,7 +40,6 @@ import org.opengis.test.ToleranceModifiers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn({
     CoordinateDomainTest.class,

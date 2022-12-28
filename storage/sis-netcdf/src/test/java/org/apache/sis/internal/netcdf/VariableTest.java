@@ -41,7 +41,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn(DecoderTest.class)
 public strictfp class VariableTest extends TestCase {

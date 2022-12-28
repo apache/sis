@@ -35,7 +35,6 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
 public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {

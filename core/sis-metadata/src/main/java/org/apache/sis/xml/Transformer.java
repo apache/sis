@@ -88,7 +88,6 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * @see javax.xml.transform.Transformer
  *
  * @since 1.0
- * @module
  */
 abstract class Transformer {
     /**

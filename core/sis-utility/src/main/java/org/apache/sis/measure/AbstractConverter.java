@@ -29,7 +29,6 @@ import org.apache.sis.math.DecimalFunctions;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 abstract class AbstractConverter implements UnitConverter, Serializable {
     /**

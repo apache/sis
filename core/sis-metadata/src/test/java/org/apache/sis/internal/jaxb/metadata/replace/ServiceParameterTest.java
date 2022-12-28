@@ -35,7 +35,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.3
  * @since   0.5
- * @module
  */
 public final strictfp class ServiceParameterTest extends TestCase {
     /**

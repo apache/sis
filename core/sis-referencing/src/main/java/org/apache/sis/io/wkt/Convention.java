@@ -55,7 +55,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see WKTFormat#setConvention(Convention)
  *
  * @since 0.4
- * @module
  */
 public enum Convention {
     /**

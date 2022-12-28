@@ -35,7 +35,6 @@ import java.util.Iterator;
  * @param <E>  ignored.
  *
  * @since 1.0
- * @module
  */
 final class InfiniteSet<E> extends AbstractSet<E> {
     /**

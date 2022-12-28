@@ -43,7 +43,6 @@ import org.apache.sis.xml.NilReason;
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
  * @since 0.3
- * @module
  */
 public enum ValueExistencePolicy {
     /**

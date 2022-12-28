@@ -36,7 +36,6 @@ import java.util.function.Consumer;
  * @param  <E>  type of elements in this list.
  *
  * @since 1.2
- * @module
  */
 final class DerivedList<S,E> extends AbstractList<E> {
     /**

@@ -42,7 +42,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class SyncWindowList extends TabularWidget implements ListChangeListener<WindowHandler> {
     /**

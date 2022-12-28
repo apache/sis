@@ -41,7 +41,6 @@ import org.opengis.filter.SpatialOperatorName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class PointWrapper extends GeometryWithCRS<Shape> {
     /**

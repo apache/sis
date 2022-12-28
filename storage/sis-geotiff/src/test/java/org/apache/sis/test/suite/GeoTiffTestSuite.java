@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.geotiff.CompressionTest.class,

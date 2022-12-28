@@ -43,7 +43,6 @@ import static org.apache.sis.internal.referencing.AxisDirections.COUNTER_CLOCKWI
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.4
- * @module
  */
 @DependsOn(AxesMapperTest.class)
 public final strictfp class AxisDirectionsTest extends TestCase {

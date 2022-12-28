@@ -41,7 +41,6 @@ import static org.apache.sis.internal.converter.SystemRegistry.INSTANCE;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 @DependsOn(ConverterRegistryTest.class)
 public final strictfp class SystemRegistryTest extends TestCase {

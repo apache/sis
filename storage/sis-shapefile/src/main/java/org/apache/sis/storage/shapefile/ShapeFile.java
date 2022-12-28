@@ -37,7 +37,6 @@ import org.apache.sis.internal.shapefile.jdbc.DBase3FieldDescriptor;
  * @see <a href="http://ulisse.elettra.trieste.it/services/doc/dbase/DBFstruct.htm">dBASE III File Structure</a>
  *
  * @since 0.5
- * @module
  */
 public class ShapeFile {
     /** Shapefile. */

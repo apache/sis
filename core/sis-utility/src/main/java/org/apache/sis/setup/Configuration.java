@@ -47,7 +47,6 @@ import org.apache.sis.internal.util.MetadataServices;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class Configuration {
     /**

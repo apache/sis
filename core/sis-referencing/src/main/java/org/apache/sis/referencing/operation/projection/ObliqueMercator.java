@@ -64,7 +64,6 @@ import static org.apache.sis.internal.referencing.provider.ObliqueMercatorCenter
  * @see TransverseMercator
  *
  * @since 1.0
- * @module
  */
 public class ObliqueMercator extends ConformalProjection {
     /**

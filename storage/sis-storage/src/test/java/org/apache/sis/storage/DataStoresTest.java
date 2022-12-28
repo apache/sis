@@ -42,7 +42,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @DependsOn(StoreTest.class)
 public final strictfp class DataStoresTest extends TestCase {

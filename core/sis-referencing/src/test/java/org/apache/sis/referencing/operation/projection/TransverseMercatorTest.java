@@ -45,7 +45,6 @@ import org.opengis.test.CalculationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class TransverseMercatorTest extends MapProjectionTestCase {

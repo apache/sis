@@ -94,7 +94,6 @@ import org.opengis.feature.Operation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {
     /**

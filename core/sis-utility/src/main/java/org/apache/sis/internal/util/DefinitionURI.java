@@ -111,7 +111,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>
  *
  * @since 0.4
- * @module
  */
 public final class DefinitionURI {
     /**

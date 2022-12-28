@@ -35,7 +35,6 @@ import static org.apache.sis.referencing.IdentifiedObjects.getIdentifier;
  * @see <a href="http://geotiff.maptools.org/proj_list/oblique_mercator.html">GeoTIFF parameters for Oblique Mercator</a>
  *
  * @since 1.0
- * @module
  */
 @XmlTransient
 public final class ObliqueMercatorCenter extends ObliqueMercator {

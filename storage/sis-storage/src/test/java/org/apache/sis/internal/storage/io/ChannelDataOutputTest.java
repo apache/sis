@@ -39,7 +39,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 public strictfp class ChannelDataOutputTest extends ChannelDataTestCase {
     /**

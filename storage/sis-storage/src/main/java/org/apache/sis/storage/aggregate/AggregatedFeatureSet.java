@@ -47,7 +47,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 abstract class AggregatedFeatureSet extends AbstractFeatureSet {
     /**

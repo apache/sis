@@ -35,7 +35,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.5
- * @module
  */
 @DependsOn({
     CoordinateDomainTest.class,

@@ -50,7 +50,6 @@ import javax.measure.Unit;
  * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
  *
  * @since 0.6
- * @module
  */
 public interface AxisFilter {
     /**

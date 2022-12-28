@@ -28,6 +28,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.4
- * @module
  */
 package org.apache.sis.internal.storage.xml;

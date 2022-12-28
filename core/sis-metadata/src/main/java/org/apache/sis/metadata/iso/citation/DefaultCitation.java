@@ -73,7 +73,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "title")
 @XmlType(name = "CI_Citation_Type", propOrder = {

@@ -38,7 +38,6 @@ import org.apache.sis.storage.ProbeResult;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 abstract class MimeTypeDetector {
     /**

@@ -27,6 +27,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 package org.apache.sis.cloud.aws.internal;

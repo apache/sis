@@ -50,7 +50,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 public class UnitServices extends ServiceProvider implements SystemOfUnitsService, FormatService {
     /**

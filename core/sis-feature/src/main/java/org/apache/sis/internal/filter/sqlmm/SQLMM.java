@@ -39,7 +39,6 @@ import org.opengis.filter.SpatialOperatorName;
  * @see <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a>
  *
  * @since 1.1
- * @module
  */
 public enum SQLMM {
     /**

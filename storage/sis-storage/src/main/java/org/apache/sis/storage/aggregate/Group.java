@@ -33,7 +33,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @param  <E>  type of objects in this group.
  *
  * @since 1.3
- * @module
  */
 abstract class Group<E> {
     /**

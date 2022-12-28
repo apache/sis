@@ -101,7 +101,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class Types extends Static {
     /**
@@ -354,7 +353,6 @@ public final class Types extends Static {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static class Description extends ResourceInternationalString {
         /**
@@ -430,7 +428,6 @@ public final class Types extends Static {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class CodeTitle extends Description {
         /**

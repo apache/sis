@@ -37,7 +37,6 @@ import static org.junit.Assume.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public final strictfp class SchemaComplianceTest extends TestCase {
     /**

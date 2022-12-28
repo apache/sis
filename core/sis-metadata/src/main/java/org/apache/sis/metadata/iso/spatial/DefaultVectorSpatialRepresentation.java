@@ -42,7 +42,6 @@ import org.opengis.metadata.spatial.VectorSpatialRepresentation;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_VectorSpatialRepresentation_Type", propOrder = {
     "topologyLevel",

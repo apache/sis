@@ -31,7 +31,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.4
  * @version 0.8
- * @module
  */
 public final class JDK17 {
     /**

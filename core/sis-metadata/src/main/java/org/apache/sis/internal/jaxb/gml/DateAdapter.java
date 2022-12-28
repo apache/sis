@@ -47,7 +47,6 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * @see org.apache.sis.internal.jaxb.gco.GO_DateTime
  *
  * @since 0.4
- * @module
  */
 public final class DateAdapter extends XmlAdapter<XMLGregorianCalendar, Date> {
     /**

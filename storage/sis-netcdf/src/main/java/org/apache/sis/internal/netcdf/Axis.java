@@ -70,7 +70,6 @@ import ucar.nc2.constants.CF;
  * @see Grid#getAxes(Decoder)
  *
  * @since 0.3
- * @module
  */
 public final class Axis extends NamedElement {
     /**

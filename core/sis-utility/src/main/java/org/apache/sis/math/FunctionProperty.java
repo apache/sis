@@ -59,7 +59,6 @@ import java.util.EnumSet;
  * @see org.apache.sis.util.ObjectConverter#properties()
  *
  * @since 0.3
- * @module
  */
 public enum FunctionProperty {
     /**

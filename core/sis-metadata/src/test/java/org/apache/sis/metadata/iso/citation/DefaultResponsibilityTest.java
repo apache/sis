@@ -33,7 +33,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.1
  * @since   0.5
- * @module
  */
 public final strictfp class DefaultResponsibilityTest extends TestCase {
     /**

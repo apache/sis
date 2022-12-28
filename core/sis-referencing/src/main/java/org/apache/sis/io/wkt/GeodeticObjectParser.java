@@ -101,7 +101,6 @@ import static java.util.Collections.singletonMap;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
     /**

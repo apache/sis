@@ -51,7 +51,6 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 class FeatureIterator implements Spliterator<Feature> {
     /**

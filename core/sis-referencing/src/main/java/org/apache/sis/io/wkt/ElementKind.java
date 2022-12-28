@@ -35,7 +35,6 @@ import org.apache.sis.util.Numbers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public enum ElementKind {
     /**

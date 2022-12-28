@@ -73,7 +73,6 @@ import org.opengis.test.CalculationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
 public abstract strictfp class MathTransformTestCase extends TransformTestCase {
     /**

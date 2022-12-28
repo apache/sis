@@ -68,7 +68,6 @@ import static org.junit.Assume.assumeTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 @DependsOn({
     DefaultConversionTest.class,

@@ -58,7 +58,6 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
 public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {

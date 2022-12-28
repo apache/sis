@@ -31,7 +31,6 @@ import org.apache.sis.metadata.iso.lineage.DefaultSource;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final class LI_Source extends PropertyType<LI_Source, Source> {
     /**

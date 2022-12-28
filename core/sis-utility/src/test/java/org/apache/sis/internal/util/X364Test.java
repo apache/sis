@@ -31,7 +31,6 @@ import static org.apache.sis.internal.util.X364.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.util.CharSequencesTest.class)
 public final strictfp class X364Test extends TestCase {

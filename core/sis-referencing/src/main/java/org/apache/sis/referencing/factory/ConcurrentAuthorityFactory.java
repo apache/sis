@@ -102,7 +102,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
  * @since 0.7
- * @module
  */
 public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFactory>
         extends GeodeticAuthorityFactory implements AutoCloseable
@@ -1785,7 +1784,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.2
      * @since   0.7
-     * @module
      */
     private static final class Finder extends IdentifiedObjectFinder {
         /**

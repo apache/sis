@@ -67,7 +67,6 @@ import org.opengis.feature.Attribute;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 final class FeatureSet extends DiscreteSampling {
     /**

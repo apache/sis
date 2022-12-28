@@ -40,7 +40,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn(org.apache.sis.referencing.operation.transform.MathTransformsTest.class)
 public final strictfp class MathTransformParserTest extends TestCase {

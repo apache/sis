@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final strictfp class RandomFailureTransform extends PseudoTransform {
     /**

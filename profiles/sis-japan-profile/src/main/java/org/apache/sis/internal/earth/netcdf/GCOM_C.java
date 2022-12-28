@@ -122,7 +122,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 public final class GCOM_C extends Convention {
     /**

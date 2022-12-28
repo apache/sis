@@ -42,7 +42,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)
 public final strictfp class MetadataSourceTest extends TestCase {

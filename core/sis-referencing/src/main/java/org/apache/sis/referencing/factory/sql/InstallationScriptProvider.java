@@ -66,7 +66,6 @@ import org.apache.sis.internal.util.Constants;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public abstract class InstallationScriptProvider extends InstallationResources {
     /**
@@ -285,7 +284,6 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     @Fallback
     static final class Default extends InstallationScriptProvider {

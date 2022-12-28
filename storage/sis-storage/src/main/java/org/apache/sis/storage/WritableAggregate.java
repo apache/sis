@@ -24,7 +24,6 @@ package org.apache.sis.storage;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public interface WritableAggregate extends Aggregate {
     /**

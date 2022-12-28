@@ -33,7 +33,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Michael Hausegger
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final strictfp class AssociationRoleBuilderTest extends TestCase {
     /**

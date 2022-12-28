@@ -143,7 +143,6 @@ import org.opengis.geometry.Geometry;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final class CRS extends Static {
     /**

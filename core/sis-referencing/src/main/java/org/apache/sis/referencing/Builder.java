@@ -172,7 +172,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @param <B>  the builder subclass.
  *
  * @since 0.4
- * @module
  */
 public abstract class Builder<B extends Builder<B>> {
     /**

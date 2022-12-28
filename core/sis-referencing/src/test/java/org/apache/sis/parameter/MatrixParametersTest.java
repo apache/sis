@@ -30,7 +30,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn(TensorParametersTest.class)
 public strictfp class MatrixParametersTest extends TensorParametersTest {

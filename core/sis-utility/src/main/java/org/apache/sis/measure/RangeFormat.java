@@ -104,7 +104,6 @@ import org.apache.sis.internal.util.Numerics;
  * @see <a href="https://en.wikipedia.org/wiki/ISO_31-11">Wikipedia: ISO 31-11</a>
  *
  * @since 0.3
- * @module
  */
 public class RangeFormat extends Format implements Localized {
     /**
@@ -140,7 +139,6 @@ public class RangeFormat extends Format implements Localized {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     public static final class Field extends FormatField {
         /**

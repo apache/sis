@@ -49,7 +49,6 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn(ConformalProjectionTest.class)
 public final strictfp class MercatorTest extends MapProjectionTestCase {

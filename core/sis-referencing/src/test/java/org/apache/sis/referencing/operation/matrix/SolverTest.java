@@ -49,7 +49,6 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn(GeneralMatrixTest.class) // See class javadoc
 public final strictfp class SolverTest extends TestCase {

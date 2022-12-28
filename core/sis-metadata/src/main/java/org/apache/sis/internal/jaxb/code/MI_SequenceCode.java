@@ -31,7 +31,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class MI_SequenceCode extends CodeListAdapter<MI_SequenceCode, Sequence> {
     /**

@@ -84,7 +84,6 @@ import org.opengis.feature.Operation;
  * @see DefaultFeatureType#newInstance()
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractFeature implements Feature, Serializable {
     /**

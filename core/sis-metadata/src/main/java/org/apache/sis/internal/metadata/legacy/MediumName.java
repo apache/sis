@@ -40,7 +40,6 @@ import static org.opengis.annotation.Specification.*;
  * @see <a href="https://github.com/opengeospatial/geoapi/issues/14">GeoAPI issue #14</a>
  *
  * @since 2.0
- * @module
  */
 @UML(identifier="MD_MediumNameCode", specification=ISO_19115, version=2003)
 public final class MediumName extends CodeList<MediumName> implements Citation {

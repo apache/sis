@@ -38,7 +38,6 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 @SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")

@@ -73,7 +73,6 @@ import javax.xml.bind.annotation.XmlElement;
  * @see LocalisedCharacterString
  *
  * @since 0.3
- * @module
  */
 final class TextGroup {
     /**

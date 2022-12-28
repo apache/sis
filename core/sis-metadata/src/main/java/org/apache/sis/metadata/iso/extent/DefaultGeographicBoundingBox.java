@@ -112,7 +112,6 @@ import static java.lang.Double.doubleToLongBits;
  * @see org.apache.sis.geometry.GeneralEnvelope
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "EX_GeographicBoundingBox_Type", propOrder = {
     "westBoundLongitude",

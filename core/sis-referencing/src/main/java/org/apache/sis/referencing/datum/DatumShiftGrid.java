@@ -151,7 +151,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  *
  * @since 0.7
- * @module
  */
 public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T>> implements Serializable {
     /**

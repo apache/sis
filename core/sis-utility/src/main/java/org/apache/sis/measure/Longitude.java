@@ -42,7 +42,6 @@ import org.apache.sis.math.MathFunctions;
  * @see org.apache.sis.geometry.CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public final class Longitude extends Angle {
     /**

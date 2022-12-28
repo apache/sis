@@ -46,7 +46,6 @@ import org.apache.sis.internal.metadata.sql.SQLBuilder;
  * @see <a href="https://postgis.net/docs/ST_EstimatedExtent.html">ST_EstimatedExtent</a>
  *
  * @since 1.2
- * @module
  */
 final class ExtentEstimator {
     /**

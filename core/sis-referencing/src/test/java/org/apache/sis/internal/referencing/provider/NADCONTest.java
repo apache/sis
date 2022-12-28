@@ -42,7 +42,6 @@ import static org.opengis.test.Assert.*;
  * @author  Simon Reynard (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 public final strictfp class NADCONTest extends DatumShiftTestCase {
     /**

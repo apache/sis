@@ -52,7 +52,6 @@ import org.opengis.feature.Feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 @DependsOn({MetadataTest.class, ReaderTest.class})
 public final strictfp class WriterTest extends TestCase {

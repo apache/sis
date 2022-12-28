@@ -59,7 +59,6 @@ import static java.lang.Math.toIntExact;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 class WorldFileResource extends AbstractGridCoverageResource implements StoreResource {
     /**

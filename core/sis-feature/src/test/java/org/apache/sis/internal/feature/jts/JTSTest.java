@@ -43,7 +43,6 @@ import static org.junit.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public final strictfp class JTSTest extends TestCase {
     /**

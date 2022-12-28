@@ -28,7 +28,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 @XmlTransient
 public final class LambertAzimuthalEqualAreaSpherical extends LambertAzimuthalEqualArea {

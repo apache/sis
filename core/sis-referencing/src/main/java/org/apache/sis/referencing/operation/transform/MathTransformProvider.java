@@ -83,7 +83,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * @see AbstractMathTransform
  *
  * @since 0.6
- * @module
  */
 @FunctionalInterface
 public interface MathTransformProvider {

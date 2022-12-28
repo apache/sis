@@ -52,7 +52,6 @@ import org.opengis.feature.Feature;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-411">SIS-411</a>
  *
  * @since 1.3
- * @module
  */
 @DependsOn(WriterTest.class)
 public final strictfp class UpdaterTest extends TestCase {

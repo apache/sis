@@ -44,7 +44,6 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 @StoreMetadata(formatName    = LandsatStoreProvider.NAME,
                capabilities  = Capability.READ,

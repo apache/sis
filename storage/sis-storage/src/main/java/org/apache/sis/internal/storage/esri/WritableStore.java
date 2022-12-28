@@ -51,7 +51,6 @@ import org.opengis.coverage.grid.SequenceType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 final class WritableStore extends AsciiGridStore implements WritableGridCoverageResource {
     /**

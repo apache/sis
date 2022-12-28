@@ -37,7 +37,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 public final strictfp class DefaultTemporalCRSTest extends TestCase {
     /**

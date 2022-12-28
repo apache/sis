@@ -102,7 +102,6 @@ import org.apache.sis.io.TableAppender;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class Tile implements Serializable {
     /**

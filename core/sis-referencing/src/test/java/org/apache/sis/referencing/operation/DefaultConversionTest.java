@@ -58,7 +58,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     DefaultTransformationTest.class     // Because similar to DefaultConversion but simpler.

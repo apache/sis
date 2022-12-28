@@ -54,7 +54,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public final strictfp class EnvelopeOperationTest extends TestCase {
     /**

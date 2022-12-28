@@ -44,7 +44,6 @@ import ucar.nc2.constants.CF;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 final class GridInfo extends Grid {
     /**

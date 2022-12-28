@@ -51,7 +51,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(WKTFormatTest.class)
 public final strictfp class WKTDictionaryTest extends TestCase {

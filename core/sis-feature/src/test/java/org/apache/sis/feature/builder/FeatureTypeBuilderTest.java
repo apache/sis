@@ -50,7 +50,6 @@ import org.opengis.feature.Operation;
  * @author  Michael Hausegger
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(AttributeTypeBuilderTest.class)
 public final strictfp class FeatureTypeBuilderTest extends TestCase {

@@ -59,7 +59,6 @@ import org.apache.sis.util.resources.Errors;
  * @see MathTransforms#interpolate(double[], double[])
  *
  * @since 0.7
- * @module
  */
 final class LinearInterpolator1D extends AbstractMathTransform1D implements Serializable {
     /**

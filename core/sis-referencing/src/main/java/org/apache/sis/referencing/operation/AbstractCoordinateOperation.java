@@ -107,7 +107,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.6
- * @module
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
     "domainOfValidity",

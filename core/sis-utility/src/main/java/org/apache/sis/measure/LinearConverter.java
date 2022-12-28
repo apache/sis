@@ -44,7 +44,6 @@ import org.apache.sis.internal.util.Numerics;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 final class LinearConverter extends AbstractConverter implements LenientComparable {
     /**

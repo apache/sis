@@ -42,7 +42,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @see PT_Locale
  *
  * @since 0.3
- * @module
  */
 public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**
@@ -99,7 +98,6 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   1.0
-     * @module
      */
     public static final class Wrapped extends XmlAdapter<PT_Locale, Locale> {
         /**

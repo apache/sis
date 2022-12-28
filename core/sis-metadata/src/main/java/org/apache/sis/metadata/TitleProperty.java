@@ -60,7 +60,6 @@ import java.lang.annotation.Documented;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  *
  * @see ValueExistencePolicy#COMPACT
  */

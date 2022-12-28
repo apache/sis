@@ -34,7 +34,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
 public final strictfp class AffineTest extends TestCase {

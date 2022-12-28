@@ -36,7 +36,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final strictfp class QualityParameterTest extends TestCase {
     /**

@@ -52,7 +52,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 class DefaultProjection extends DefaultConversion implements Projection {

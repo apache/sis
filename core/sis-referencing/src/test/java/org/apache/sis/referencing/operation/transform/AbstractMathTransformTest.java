@@ -37,7 +37,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(IterationStrategyTest.class)
 public final strictfp class AbstractMathTransformTest extends TestCase {

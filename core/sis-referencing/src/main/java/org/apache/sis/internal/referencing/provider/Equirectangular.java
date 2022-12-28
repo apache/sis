@@ -69,7 +69,6 @@ import static java.lang.Math.*;
  * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class Equirectangular extends AbstractProvider {

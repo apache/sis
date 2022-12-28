@@ -26,6 +26,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.4
  * @version 0.8
- * @module
  */
 package org.apache.sis.internal.jdk17;

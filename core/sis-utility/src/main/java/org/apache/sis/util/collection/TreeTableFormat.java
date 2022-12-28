@@ -95,7 +95,6 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**

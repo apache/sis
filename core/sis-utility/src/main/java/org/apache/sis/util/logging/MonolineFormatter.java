@@ -118,7 +118,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @see Handler#setFormatter(Formatter)
  *
  * @since 0.3
- * @module
  */
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;

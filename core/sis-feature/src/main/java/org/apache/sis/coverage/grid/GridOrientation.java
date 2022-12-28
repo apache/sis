@@ -39,7 +39,6 @@ import org.apache.sis.util.resources.Errors;
  * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
  *
  * @since 1.1
- * @module
  */
 public final class GridOrientation implements Serializable {
     /**

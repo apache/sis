@@ -54,7 +54,6 @@ import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "sequenceIdentifier")
 @XmlType(name = "MD_RangeDimension_Type", propOrder = {

@@ -40,7 +40,6 @@ import static org.apache.sis.internal.util.Constants.OGC;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @DependsOn({
     TypesTest.class,

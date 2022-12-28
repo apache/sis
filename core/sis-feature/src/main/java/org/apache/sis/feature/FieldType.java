@@ -37,7 +37,6 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 abstract class FieldType extends AbstractIdentifiedType implements PropertyType {
     /**

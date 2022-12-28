@@ -70,7 +70,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.internal.jaxb.gco.UnitAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MeasureType")
 public final class Measure {

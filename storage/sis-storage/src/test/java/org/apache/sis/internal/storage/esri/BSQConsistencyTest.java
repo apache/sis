@@ -33,7 +33,6 @@ import static org.junit.Assert.assertNotNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final strictfp class BSQConsistencyTest extends CoverageReadConsistency {
     /**

@@ -60,7 +60,6 @@ import org.apache.sis.util.resources.Errors;
  * @see Matrices
  *
  * @since 0.4
- * @module
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**

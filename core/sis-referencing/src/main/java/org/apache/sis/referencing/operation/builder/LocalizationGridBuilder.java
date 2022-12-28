@@ -91,7 +91,6 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
  * @see DatumShiftGrid
  *
  * @since 0.8
- * @module
  */
 public class LocalizationGridBuilder extends TransformBuilder {
     /**

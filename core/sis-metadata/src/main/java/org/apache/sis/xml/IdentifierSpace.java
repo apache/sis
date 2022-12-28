@@ -52,7 +52,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @see IdentifierMap
  *
  * @since 0.3
- * @module
  */
 public interface IdentifierSpace<T> extends Citation {
     /**

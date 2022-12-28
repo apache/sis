@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.profile.japan.JapanProfileTest.class

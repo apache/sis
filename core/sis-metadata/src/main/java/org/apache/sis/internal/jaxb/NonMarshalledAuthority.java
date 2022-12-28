@@ -67,7 +67,6 @@ import org.apache.sis.xml.IdentifierSpace;
  * @see IdentifierSpace
  *
  * @since 0.3
- * @module
  */
 public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<T> {
     /**

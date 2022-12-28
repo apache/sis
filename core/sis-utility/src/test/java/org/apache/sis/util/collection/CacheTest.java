@@ -46,7 +46,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn(WeakValueHashMapTest.class)
 public final strictfp class CacheTest extends TestCase {

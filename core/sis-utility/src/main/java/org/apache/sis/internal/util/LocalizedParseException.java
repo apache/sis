@@ -42,7 +42,6 @@ import org.apache.sis.util.LocalizedException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class LocalizedParseException extends ParseException implements LocalizedException {
     /**

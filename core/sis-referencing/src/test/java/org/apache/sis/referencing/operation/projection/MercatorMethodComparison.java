@@ -56,7 +56,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
 public final class MercatorMethodComparison {   // No 'strictfp' keyword here since we want to compare with Mercator class.
     /**

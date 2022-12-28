@@ -83,7 +83,6 @@ import org.apache.sis.util.resources.Errors;
  * @param  <T>  the type of object to be selected.
  *
  * @since 0.4
- * @module
  */
 public final class ExtentSelector<T> {
     /**

@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public final strictfp class FactoryTest extends GeometriesTestCase {
     /**

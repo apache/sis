@@ -36,7 +36,6 @@ import java.lang.annotation.RetentionPolicy;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-86">SIS-86</a>
  *
  * @since 0.3
- * @module
  */
 @Documented
 @Target(ElementType.METHOD)

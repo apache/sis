@@ -81,7 +81,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see org.apache.sis.referencing.crs.AbstractCRS
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "AbstractCoordinateSystemType")
 @XmlRootElement(name = "AbstractCoordinateSystem")

@@ -45,7 +45,6 @@ import static org.junit.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
 final strictfp class ProjectionResultComparator extends NormalizedProjection {

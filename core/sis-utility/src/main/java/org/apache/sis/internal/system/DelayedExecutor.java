@@ -58,7 +58,6 @@ import static java.util.logging.Logger.getLogger;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
  *
  * @since 0.3
- * @module
  */
 public final class DelayedExecutor extends DaemonThread {
     /**

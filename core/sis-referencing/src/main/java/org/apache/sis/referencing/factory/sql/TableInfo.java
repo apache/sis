@@ -33,7 +33,6 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 final class TableInfo {
     /**

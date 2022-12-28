@@ -55,7 +55,6 @@ import org.apache.sis.util.StringBuilders;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public final strictfp class SchemaCompliance extends SchemaInformation {
     /**

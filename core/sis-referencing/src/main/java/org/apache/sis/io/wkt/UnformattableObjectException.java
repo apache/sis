@@ -37,7 +37,6 @@ import org.opengis.referencing.IdentifiedObject;
  * @see Formatter#setInvalidWKT(IdentifiedObject, Exception)
  *
  * @since 0.4
- * @module
  */
 public class UnformattableObjectException extends UnsupportedOperationException {
     /**

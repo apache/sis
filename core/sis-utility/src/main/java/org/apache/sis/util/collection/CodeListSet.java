@@ -58,7 +58,6 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * @see java.util.EnumSet
  *
  * @since 0.3
- * @module
  */
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable

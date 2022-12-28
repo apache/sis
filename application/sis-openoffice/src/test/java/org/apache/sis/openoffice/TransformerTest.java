@@ -36,7 +36,6 @@ import static org.junit.Assume.assumeTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final strictfp class TransformerTest extends TestCase {
     /**

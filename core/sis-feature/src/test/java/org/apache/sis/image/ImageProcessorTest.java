@@ -36,7 +36,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(org.apache.sis.internal.processing.isoline.IsolinesTest.class)
 public final strictfp class ImageProcessorTest extends TestCase {

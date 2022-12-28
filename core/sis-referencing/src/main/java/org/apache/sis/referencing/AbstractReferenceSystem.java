@@ -65,7 +65,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @XmlTransient
 public class AbstractReferenceSystem extends AbstractIdentifiedObject implements ReferenceSystem {

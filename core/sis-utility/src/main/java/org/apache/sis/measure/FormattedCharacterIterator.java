@@ -49,7 +49,6 @@ import org.apache.sis.internal.util.SimpleCharacterIterator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")     // Not needed - see comment about clone() at the end of this file.
 final class FormattedCharacterIterator extends SimpleCharacterIterator implements AttributedCharacterIterator {

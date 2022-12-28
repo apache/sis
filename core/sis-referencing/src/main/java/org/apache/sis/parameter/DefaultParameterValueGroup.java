@@ -106,7 +106,6 @@ import org.apache.sis.util.Utilities;
  * @see DefaultParameterValue
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "ParameterValueGroupType", propOrder = {
     "values",

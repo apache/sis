@@ -48,7 +48,6 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 final strictfp class TestViewer {
     /**

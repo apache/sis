@@ -93,7 +93,6 @@ import org.apache.sis.util.resources.Errors;
  * @see SampleDimension.Builder
  *
  * @since 1.1
- * @module
  */
 public class GridCoverageBuilder {
     /**

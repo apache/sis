@@ -52,7 +52,6 @@ import org.opengis.test.referencing.AffineTransformTest;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})

@@ -52,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ExponentialTransform1D extends AbstractMathTransform1D implements Serializable {
     /**

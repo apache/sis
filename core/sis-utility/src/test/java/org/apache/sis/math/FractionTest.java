@@ -28,7 +28,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public final strictfp class FractionTest extends TestCase {
     /**

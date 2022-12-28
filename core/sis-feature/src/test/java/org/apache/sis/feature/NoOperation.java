@@ -33,7 +33,6 @@ import org.opengis.feature.Property;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
 final strictfp class NoOperation extends AbstractOperation {

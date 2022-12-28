@@ -35,7 +35,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
     /**

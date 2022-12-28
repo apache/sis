@@ -68,7 +68,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @see TableColumn
  *
  * @since 0.3
- * @module
  */
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
@@ -331,7 +330,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see DefaultTreeTable
      * @see TableColumn

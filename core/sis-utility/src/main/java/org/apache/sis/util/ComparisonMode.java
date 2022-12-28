@@ -47,7 +47,6 @@ package org.apache.sis.util;
  * @see Utilities#deepEquals(Object, Object, ComparisonMode)
  *
  * @since 0.3
- * @module
  */
 public enum ComparisonMode {
     /**

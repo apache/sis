@@ -23,7 +23,6 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = LegacyNamespaces.GTS, xmlns = {
     @XmlNs(prefix = "gts", namespaceURI = LegacyNamespaces.GTS),

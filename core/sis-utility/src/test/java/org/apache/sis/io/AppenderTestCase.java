@@ -31,7 +31,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public abstract class AppenderTestCase extends TestCase {
     /**

@@ -40,7 +40,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final strictfp class DirectReferenceSystemTest extends TestCase {
     /**

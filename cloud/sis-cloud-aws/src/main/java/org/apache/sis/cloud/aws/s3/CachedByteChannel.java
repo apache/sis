@@ -33,7 +33,6 @@ import software.amazon.awssdk.http.Abortable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.2
- * @module
  */
 final class CachedByteChannel extends FileCacheByteChannel {
     /**

@@ -40,7 +40,6 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(HashCodeTest.class)
 public final strictfp class PrunerTest extends TestCase {

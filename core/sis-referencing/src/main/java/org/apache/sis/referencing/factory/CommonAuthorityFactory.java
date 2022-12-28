@@ -214,7 +214,6 @@ import static java.util.logging.Logger.getLogger;
  * @see CommonCRS
  *
  * @since 0.7
- * @module
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**

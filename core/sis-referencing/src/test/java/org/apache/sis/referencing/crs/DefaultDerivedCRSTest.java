@@ -46,7 +46,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn({
     DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.

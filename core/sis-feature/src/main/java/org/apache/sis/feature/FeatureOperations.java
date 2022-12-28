@@ -109,7 +109,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final class FeatureOperations extends Static {
     /**

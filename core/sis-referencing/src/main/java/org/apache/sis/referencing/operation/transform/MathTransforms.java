@@ -62,7 +62,6 @@ import org.apache.sis.util.Static;
  * @see MathTransformFactory
  *
  * @since 0.5
- * @module
  */
 public final class MathTransforms extends Static {
     /**

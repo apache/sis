@@ -46,7 +46,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @TitleProperty(name = "code")
 @XmlType(name = "RS_Identifier_Type", namespace = LegacyNamespaces.GMD)

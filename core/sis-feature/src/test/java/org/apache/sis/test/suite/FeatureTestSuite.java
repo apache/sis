@@ -28,7 +28,6 @@ import org.junit.runners.Suite;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.feature.DefaultAttributeTypeTest.class,

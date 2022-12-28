@@ -45,7 +45,6 @@ import org.apache.sis.parameter.Parameters;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 @XmlTransient
 public final class LongitudeRotation extends GeographicOffsets {

@@ -46,7 +46,6 @@ import org.apache.sis.internal.book.Characters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 final class Rewriter {
     /**

@@ -30,7 +30,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class CS_CartesianCS extends PropertyType<CS_CartesianCS, CartesianCS> {
     /**

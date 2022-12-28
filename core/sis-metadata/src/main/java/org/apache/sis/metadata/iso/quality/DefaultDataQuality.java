@@ -56,7 +56,6 @@ import org.apache.sis.metadata.iso.maintenance.DefaultScope;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {
     "scope",

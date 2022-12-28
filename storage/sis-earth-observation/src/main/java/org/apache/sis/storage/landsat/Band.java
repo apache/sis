@@ -50,7 +50,6 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class Band extends GridResourceWrapper implements SchemaModifier {
     /**

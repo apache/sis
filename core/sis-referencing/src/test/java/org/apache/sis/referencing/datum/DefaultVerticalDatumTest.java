@@ -41,7 +41,6 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final strictfp class DefaultVerticalDatumTest extends TestCase {
     /**

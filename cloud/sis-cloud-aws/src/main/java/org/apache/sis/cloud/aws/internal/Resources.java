@@ -31,7 +31,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -42,7 +41,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   1.2
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**

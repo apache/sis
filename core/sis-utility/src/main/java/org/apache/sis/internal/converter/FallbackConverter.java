@@ -57,7 +57,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param <T>  the base type of converted objects.
  *
  * @since 0.3
- * @module
  */
 final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**

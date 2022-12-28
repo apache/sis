@@ -57,7 +57,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public class GeneralDirectPosition extends AbstractDirectPosition implements Serializable, Cloneable {
     /**

@@ -31,7 +31,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.0
  * @version 1.0
- * @module
  */
 public class WarningEvent extends StoreEvent {
     /**

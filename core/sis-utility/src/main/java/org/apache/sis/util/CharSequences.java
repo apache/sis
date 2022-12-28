@@ -77,7 +77,6 @@ import static java.lang.Character.*;
  * @see StringBuilders
  *
  * @since 0.3
- * @module
  */
 public final class CharSequences extends Static {
     /**

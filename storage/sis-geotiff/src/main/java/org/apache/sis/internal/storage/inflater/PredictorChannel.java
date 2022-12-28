@@ -29,7 +29,6 @@ import org.apache.sis.internal.jdk17.JDK17;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 abstract class PredictorChannel extends PixelChannel {
     /**

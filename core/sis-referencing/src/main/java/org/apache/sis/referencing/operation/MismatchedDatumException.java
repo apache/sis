@@ -41,7 +41,6 @@ package org.apache.sis.referencing.operation;
  * @see org.apache.sis.referencing.operation.matrix.MismatchedMatrixSizeException
  *
  * @since 0.6
- * @module
  */
 public class MismatchedDatumException extends IllegalArgumentException {
     /**

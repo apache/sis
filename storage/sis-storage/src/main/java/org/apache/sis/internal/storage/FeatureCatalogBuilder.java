@@ -37,7 +37,6 @@ import org.opengis.feature.FeatureType;
  * @see org.apache.sis.metadata.iso.content.DefaultFeatureCatalogueDescription
  *
  * @since 0.8
- * @module
  */
 public final class FeatureCatalogBuilder extends MetadataBuilder {
     /**

@@ -26,7 +26,6 @@ package org.apache.sis.storage;
  * @see FeatureSet#subset(Query)
  *
  * @since 0.8
- * @module
  */
 public class UnsupportedQueryException extends DataStoreException {
     /**

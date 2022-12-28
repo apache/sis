@@ -46,7 +46,6 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * @see <a href="https://www.isotc211.org/2005/gco/gcoBase.xsd">OGC/ISO schema</a>
  *
  * @since 0.3
- * @module
  */
 final class ObjectReference {
     /**

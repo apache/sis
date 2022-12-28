@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @Workaround(library="JDK", version="1.7")
 public final class Cloner {

@@ -62,7 +62,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @XmlType(name = "GeodeticCRSType", propOrder = {
     "ellipsoidalCS",

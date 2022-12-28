@@ -94,7 +94,6 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * @see GeoKeysLoader
  *
  * @since 0.8
- * @module
  */
 final class CRSBuilder extends ReferencingFactoryContainer {
     /**

@@ -42,7 +42,6 @@ import org.opengis.metadata.identification.BrowseGraphic;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "CI_Organisation_Type", propOrder = {
     "logo",

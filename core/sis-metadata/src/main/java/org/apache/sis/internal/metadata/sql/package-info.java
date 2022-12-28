@@ -75,6 +75,5 @@
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 package org.apache.sis.internal.metadata.sql;

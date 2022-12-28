@@ -39,7 +39,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn(SolverTest.class)
 public final strictfp class NonSquareMatrixTest extends MatrixTestCase {

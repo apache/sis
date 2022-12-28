@@ -96,7 +96,6 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public class LocationFormat extends TabularFormat<Location> {
     /**

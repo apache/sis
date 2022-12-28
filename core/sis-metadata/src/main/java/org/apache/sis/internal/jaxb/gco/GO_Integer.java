@@ -35,7 +35,6 @@ import javax.xml.bind.annotation.XmlType;
  * @see GO_UnlimitedInteger
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "Integer_PropertyType")
 public class GO_Integer extends PropertyType<GO_Integer, Integer> {

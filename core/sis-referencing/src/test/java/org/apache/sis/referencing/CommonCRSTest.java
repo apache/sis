@@ -56,7 +56,6 @@ import static org.apache.sis.test.TestUtilities.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
   org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,

@@ -69,7 +69,6 @@ import org.apache.sis.internal.storage.StoreResource;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
     /**

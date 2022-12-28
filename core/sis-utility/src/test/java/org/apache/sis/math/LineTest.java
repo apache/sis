@@ -30,7 +30,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (MPO, IRD)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(org.apache.sis.internal.util.DoubleDoubleTest.class)
 public final strictfp class LineTest extends TestCase {

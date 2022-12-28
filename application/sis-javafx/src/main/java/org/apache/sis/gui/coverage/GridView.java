@@ -64,7 +64,6 @@ import org.apache.sis.internal.gui.ExceptionReporter;
  * @see CoverageExplorer
  *
  * @since 1.1
- * @module
  */
 @DefaultProperty("image")
 public class GridView extends Control {

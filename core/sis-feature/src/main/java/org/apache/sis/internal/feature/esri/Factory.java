@@ -49,7 +49,6 @@ import org.apache.sis.math.Vector;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public final class Factory extends Geometries<Geometry> {
     /**

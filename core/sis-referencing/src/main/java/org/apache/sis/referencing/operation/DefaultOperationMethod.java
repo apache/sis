@@ -124,7 +124,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  *
  * @since 0.5
- * @module
  */
 @XmlType(name = "OperationMethodType", propOrder = {
     "formulaCitation",

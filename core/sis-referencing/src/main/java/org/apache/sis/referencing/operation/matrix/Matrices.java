@@ -77,7 +77,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;       // F
  * @see org.apache.sis.parameter.TensorParameters
  *
  * @since 0.4
- * @module
  */
 public final class Matrices extends Static {
     /**

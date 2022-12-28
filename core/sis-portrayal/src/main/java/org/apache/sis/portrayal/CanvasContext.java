@@ -44,7 +44,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")   // Not intended to be serialized.
 final class CanvasContext extends CoordinateOperationContext {

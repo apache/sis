@@ -50,7 +50,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName> {
     /**

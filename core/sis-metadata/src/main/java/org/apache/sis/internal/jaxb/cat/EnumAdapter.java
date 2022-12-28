@@ -40,7 +40,6 @@ import org.opengis.util.ControlledVocabulary;
  * @param <BoundType>  the enum being adapted.
  *
  * @since 0.5
- * @module
  */
 public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundType>,
         BoundType extends Enum<BoundType>> extends XmlAdapter<ValueType,BoundType>

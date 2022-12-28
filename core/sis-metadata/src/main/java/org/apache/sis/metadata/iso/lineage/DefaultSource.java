@@ -83,7 +83,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "description")
 @XmlType(name = "LI_Source_Type", propOrder = {

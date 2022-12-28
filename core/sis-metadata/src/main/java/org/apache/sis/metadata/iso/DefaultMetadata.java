@@ -142,7 +142,6 @@ import org.apache.sis.math.FunctionProperty;
  * @see org.apache.sis.storage.Resource#getMetadata()
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MD_Metadata_Type", propOrder = {
     // Attributes new in ISO 19115:2014

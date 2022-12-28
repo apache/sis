@@ -56,7 +56,6 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
  *
  * @since 1.3
- * @module
  */
 @XmlType(name = "Date_PropertyType")
 public class GO_Temporal extends XmlAdapter<GO_Temporal, Temporal> {

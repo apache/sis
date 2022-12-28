@@ -90,7 +90,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterDescriptor
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "OperationParameterGroupType")
 @XmlRootElement(name = "OperationParameterGroup")

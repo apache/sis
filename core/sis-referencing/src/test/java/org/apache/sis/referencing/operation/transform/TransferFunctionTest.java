@@ -37,7 +37,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)
 public final strictfp class TransferFunctionTest extends TestCase {

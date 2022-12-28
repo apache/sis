@@ -61,6 +61,5 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
  * @since   0.3
- * @module
  */
 package org.apache.sis.xml;

@@ -29,7 +29,6 @@ import org.apache.sis.util.Workaround;
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @Workaround(library = "JDK", version = "1.8")
 final strictfp class MemoryCacheImageOutputStream extends javax.imageio.stream.MemoryCacheImageOutputStream {

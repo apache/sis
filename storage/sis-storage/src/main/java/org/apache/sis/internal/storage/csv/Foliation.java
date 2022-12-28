@@ -23,7 +23,6 @@ package org.apache.sis.internal.storage.csv;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 enum Foliation {
     /**

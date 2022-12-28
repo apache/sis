@@ -66,7 +66,6 @@ import org.opengis.metadata.citation.Citation;
  * @see ReferenceResolver#newIdentifiedObject(MarshalContext, Class, Identifier[])
  *
  * @since 0.3
- * @module
  */
 public interface IdentifiedObject {
     /**

@@ -53,7 +53,6 @@ import org.apache.sis.util.collection.Containers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.7
- * @module
  */
 public final class CoordinateOperations extends SystemListener {
     /**

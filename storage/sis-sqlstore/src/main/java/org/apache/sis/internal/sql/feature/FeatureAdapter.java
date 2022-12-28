@@ -51,7 +51,6 @@ import org.opengis.feature.FeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class FeatureAdapter {
     /**

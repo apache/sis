@@ -96,7 +96,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @param <V>  base type of all values in the column identified by this instance.
  *
  * @since 0.3
- * @module
  */
 public class TableColumn<V> implements CheckedContainer<V> {
     /**

@@ -67,7 +67,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
     "abstractCS",

@@ -36,7 +36,6 @@ import org.locationtech.jts.geom.GeometryFactory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 abstract class ShapeConverter {
     /**

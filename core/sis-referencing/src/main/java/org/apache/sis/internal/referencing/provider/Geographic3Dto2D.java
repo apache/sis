@@ -44,7 +44,6 @@ import org.apache.sis.internal.referencing.WKTUtilities;
  * @see Geographic2Dto3D
  *
  * @since 0.7
- * @module
  */
 @XmlTransient
 public final class Geographic3Dto2D extends GeographicRedimension {

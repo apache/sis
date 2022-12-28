@@ -62,7 +62,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  *
  * @since 0.6
- * @module
  */
 class MathTransformParser extends AbstractParser {
     /**

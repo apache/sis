@@ -49,7 +49,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see Canvas#OBJECTIVE_TO_DISPLAY_PROPERTY
  *
  * @since 1.3
- * @module
  */
 public class TransformChangeEvent extends PropertyChangeEvent {
     /**

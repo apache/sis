@@ -36,7 +36,6 @@ import static org.junit.Assert.assertEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
 public final strictfp class AuthalicConversionTest extends MapProjectionTestCase {

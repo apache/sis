@@ -34,7 +34,6 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  *
  * @see ReadOnlyStorageException
  */

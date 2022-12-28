@@ -40,7 +40,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final strictfp class ContextualParametersTest extends TestCase {

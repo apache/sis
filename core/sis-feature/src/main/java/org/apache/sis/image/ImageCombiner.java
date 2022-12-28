@@ -63,7 +63,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class ImageCombiner implements Consumer<RenderedImage> {
     /**

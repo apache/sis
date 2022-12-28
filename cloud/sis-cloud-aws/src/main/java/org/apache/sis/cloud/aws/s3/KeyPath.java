@@ -50,7 +50,6 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.2
- * @module
  */
 final class KeyPath implements Path {
     /**

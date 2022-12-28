@@ -48,7 +48,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final class Link implements OnlineResource {
     /**

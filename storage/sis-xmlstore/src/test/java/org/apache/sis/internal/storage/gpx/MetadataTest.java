@@ -35,7 +35,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(TypesTest.class)
 public final strictfp class MetadataTest extends TestCase {

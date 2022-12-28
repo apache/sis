@@ -50,7 +50,6 @@ import org.apache.sis.internal.util.Strings;
  * @see DataStoreProvider#probeContent(StorageConnector)
  *
  * @since 0.4
- * @module
  */
 public class ProbeResult implements Serializable {
     /**

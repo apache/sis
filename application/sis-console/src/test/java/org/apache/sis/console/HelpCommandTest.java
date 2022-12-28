@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(CommandRunnerTest.class)
 public final strictfp class HelpCommandTest extends TestCase {

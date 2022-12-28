@@ -96,7 +96,6 @@ import static java.util.logging.Logger.getLogger;
  * @see CoverageExplorer
  *
  * @since 1.1
- * @module
  */
 @DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {

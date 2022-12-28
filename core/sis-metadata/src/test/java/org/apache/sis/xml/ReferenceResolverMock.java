@@ -28,7 +28,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final strictfp class ReferenceResolverMock extends ReferenceResolver {
     /**

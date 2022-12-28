@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn(AngleFormatTest.class)
 public final strictfp class AngleTest extends TestCase {

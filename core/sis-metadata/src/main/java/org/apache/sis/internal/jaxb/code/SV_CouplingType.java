@@ -31,7 +31,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final class SV_CouplingType extends CodeListAdapter<SV_CouplingType, CouplingType> {
     /**

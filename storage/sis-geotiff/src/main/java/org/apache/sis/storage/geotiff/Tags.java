@@ -35,7 +35,6 @@ import javax.imageio.plugins.tiff.TIFFTagSet;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 final class Tags {
     /**

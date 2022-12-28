@@ -44,7 +44,6 @@ import org.opengis.filter.Expression;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
         implements FeatureExpression<R,Number>, Optimization.OnExpression<R,Number>

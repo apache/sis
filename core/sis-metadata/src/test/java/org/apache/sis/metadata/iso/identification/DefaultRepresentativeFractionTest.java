@@ -35,7 +35,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public final strictfp class DefaultRepresentativeFractionTest extends TestCase {
     /**

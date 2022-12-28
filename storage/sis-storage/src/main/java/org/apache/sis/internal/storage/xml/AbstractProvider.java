@@ -36,7 +36,6 @@ import org.apache.sis.internal.storage.DocumentedStoreProvider;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 public abstract class AbstractProvider extends DocumentedStoreProvider {
     /**

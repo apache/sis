@@ -126,7 +126,6 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  *
  * @since 0.3
- * @module
  */
 public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Serializable {
     /**

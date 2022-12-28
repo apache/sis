@@ -79,7 +79,6 @@ import java.util.MissingResourceException;
  * @see ResourceBundle#getBundle(String, Locale)
  *
  * @since 1.1
- * @module
  */
 public class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**

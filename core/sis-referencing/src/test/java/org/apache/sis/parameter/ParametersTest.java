@@ -48,7 +48,6 @@ import org.opengis.metadata.Identifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultParameterDescriptorTest.class,

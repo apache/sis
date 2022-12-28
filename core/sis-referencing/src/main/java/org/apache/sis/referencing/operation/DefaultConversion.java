@@ -83,7 +83,6 @@ import org.apache.sis.util.Utilities;
  * @see DefaultTransformation
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "ConversionType")
 @XmlRootElement(name = "Conversion")

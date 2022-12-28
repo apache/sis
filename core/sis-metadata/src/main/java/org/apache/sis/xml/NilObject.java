@@ -77,7 +77,6 @@ package org.apache.sis.xml;
  * @see org.apache.sis.util.Numbers#valueOfNil(Class)
  *
  * @since 0.3
- * @module
  */
 public interface NilObject {
     /**

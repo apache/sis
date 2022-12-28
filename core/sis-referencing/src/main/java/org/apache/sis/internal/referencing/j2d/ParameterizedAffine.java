@@ -45,7 +45,6 @@ import org.apache.sis.internal.system.Semaphores;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 public final class ParameterizedAffine extends AffineTransform2D {
     /**

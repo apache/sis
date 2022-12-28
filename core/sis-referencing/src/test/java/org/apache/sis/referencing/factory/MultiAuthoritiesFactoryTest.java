@@ -57,7 +57,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn(AuthorityFactoryProxyTest.class)
 public final strictfp class MultiAuthoritiesFactoryTest extends TestCase {

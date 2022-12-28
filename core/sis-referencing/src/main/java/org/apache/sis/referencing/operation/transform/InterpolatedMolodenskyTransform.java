@@ -65,7 +65,6 @@ import org.apache.sis.util.Debug;
  * @see InterpolatedGeocentricTransform
  *
  * @since 0.7
- * @module
  */
 public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
     /**
@@ -338,7 +337,6 @@ public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     static class Inverse extends InterpolatedMolodenskyTransform {
         /**

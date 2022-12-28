@@ -35,7 +35,6 @@ import org.apache.sis.util.Debug;
  * @see ColorModelFactory#createGrayScale(int, int, int, double, double)
  *
  * @since 1.0
- * @module
  */
 final class ScaledColorSpace extends ColorSpace {
     /**

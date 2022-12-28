@@ -49,7 +49,6 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 final class EPSGInstaller extends ScriptRunner {
     /**

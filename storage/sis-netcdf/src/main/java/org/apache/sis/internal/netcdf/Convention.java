@@ -71,7 +71,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
  * @since 1.0
- * @module
  */
 public class Convention {
     /**

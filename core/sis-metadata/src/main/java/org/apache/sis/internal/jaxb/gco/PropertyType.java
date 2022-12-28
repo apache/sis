@@ -115,7 +115,6 @@ import org.apache.sis.util.resources.Errors;
  * @see XmlAdapter
  *
  * @since 0.3
- * @module
  */
 public abstract class PropertyType<ValueType extends PropertyType<ValueType,BoundType>, BoundType>
         extends XmlAdapter<ValueType,BoundType>

@@ -46,7 +46,6 @@ import jdk.javadoc.doclet.StandardDoclet;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
 public final class Doclet extends StandardDoclet {
     /**

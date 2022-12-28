@@ -56,7 +56,6 @@ import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 final strictfp class PackageVerifier {
     /**

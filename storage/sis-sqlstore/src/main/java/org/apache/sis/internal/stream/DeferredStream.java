@@ -45,7 +45,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @param  <T>  the type of objects contained in the stream, as specified in {@link Stream} interface.
  *
  * @since 1.1
- * @module
  */
 public abstract class DeferredStream<T> extends StreamWrapper<T> {
     /**

@@ -88,7 +88,6 @@ import org.opengis.feature.Feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<Feature> {
     /**

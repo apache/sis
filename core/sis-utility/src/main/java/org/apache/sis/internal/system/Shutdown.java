@@ -32,7 +32,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 public final class Shutdown extends Thread {
     /**

@@ -64,7 +64,6 @@ import static org.junit.Assume.assumeTrue;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 public strictfp class TestDatabase implements AutoCloseable {
     /**

@@ -71,7 +71,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see MathTransforms#compound(MathTransform...)
  *
  * @since 0.5
- * @module
  */
 public class PassThroughTransform extends AbstractMathTransform implements Serializable {
     /**

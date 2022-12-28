@@ -55,7 +55,6 @@ import org.apache.sis.util.collection.WeakHashSet;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public final class RasterFactory extends Static {
     /**

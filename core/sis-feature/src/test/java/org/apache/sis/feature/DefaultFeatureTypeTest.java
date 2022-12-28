@@ -42,7 +42,6 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
 public final strictfp class DefaultFeatureTypeTest extends TestCase {

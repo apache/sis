@@ -63,7 +63,6 @@ import org.apache.sis.storage.UnsupportedStorageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public abstract class StaxDataStore extends URIDataStore {
     /**

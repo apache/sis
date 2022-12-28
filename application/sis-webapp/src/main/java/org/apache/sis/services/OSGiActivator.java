@@ -32,7 +32,6 @@ import org.apache.sis.internal.system.SystemListener;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since 0.3
- * @module
  */
 public final class OSGiActivator implements BundleActivator, BundleListener {
     /**

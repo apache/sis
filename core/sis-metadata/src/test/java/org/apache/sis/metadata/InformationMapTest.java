@@ -39,7 +39,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
 public final strictfp class InformationMapTest extends TestCase {

@@ -64,7 +64,6 @@ import org.opengis.filter.ValueReference;
  * @param  <G> root class of geometry implementation.
  *
  * @since 1.1
- * @module
  */
 public abstract strictfp class RegistryTestCase<G> extends TestCase {
     /**

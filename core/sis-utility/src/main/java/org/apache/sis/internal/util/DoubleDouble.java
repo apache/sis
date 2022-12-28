@@ -61,7 +61,6 @@ import org.apache.sis.math.DecimalFunctions;
  * @see <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
  * @since 0.4
- * @module
  */
 public final class DoubleDouble extends Number {
     /**

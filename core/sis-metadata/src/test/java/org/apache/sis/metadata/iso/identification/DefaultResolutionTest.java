@@ -39,7 +39,6 @@ import static org.apache.sis.internal.jaxb.gml.MeasureTest.UOM_URL;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)
 public final strictfp class DefaultResolutionTest extends TestCase {

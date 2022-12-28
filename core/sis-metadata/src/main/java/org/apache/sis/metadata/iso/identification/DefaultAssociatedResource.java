@@ -59,7 +59,6 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "MD_AssociatedResource_Type", propOrder = {
     "name",

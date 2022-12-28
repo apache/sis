@@ -41,7 +41,6 @@ import org.apache.sis.util.Debug;
  * @see <a href="https://en.wikipedia.org/wiki/Marching_squares">Marching squares on Wikipedia</a>
  *
  * @since 1.1
- * @module
  */
 final class Tracer {
     /**

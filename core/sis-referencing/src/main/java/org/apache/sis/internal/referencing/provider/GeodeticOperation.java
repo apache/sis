@@ -33,7 +33,6 @@ import org.opengis.referencing.operation.SingleOperation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 abstract class GeodeticOperation extends AbstractProvider {

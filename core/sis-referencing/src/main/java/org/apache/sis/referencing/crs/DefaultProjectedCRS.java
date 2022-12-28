@@ -64,7 +64,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "ProjectedCRSType", propOrder = {
     "baseCRS",

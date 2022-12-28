@@ -41,7 +41,6 @@ import org.apache.sis.util.Deprecable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 abstract strictfp class HTMLGenerator implements Closeable {
     /**

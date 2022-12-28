@@ -41,7 +41,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see Equirectangular
  *
  * @since 1.0
- * @module
  */
 @XmlTransient
 public final class PseudoPlateCarree extends AbstractProvider {

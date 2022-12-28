@@ -58,7 +58,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "AbstractGeneralDerivedCRSType")
 @XmlRootElement(name = "AbstractGeneralDerivedCRS")

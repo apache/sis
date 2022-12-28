@@ -44,7 +44,6 @@ import org.apache.sis.storage.Resource;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class PathAction implements EventHandler<ActionEvent> {
     /**

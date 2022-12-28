@@ -38,7 +38,6 @@ import org.apache.sis.internal.util.StandardDateFormat;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
  * @since 1.0
- * @module
  */
 final class HYCOM {
     /**

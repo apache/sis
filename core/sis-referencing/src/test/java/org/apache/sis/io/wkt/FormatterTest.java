@@ -38,7 +38,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
 public final strictfp class FormatterTest extends TestCase {

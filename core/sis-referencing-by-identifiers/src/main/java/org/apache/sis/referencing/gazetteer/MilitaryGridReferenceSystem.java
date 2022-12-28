@@ -148,7 +148,6 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
@@ -387,7 +386,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.8
-     * @module
      */
     public class Coder extends ReferencingByIdentifiers.Coder {
         /**
@@ -1453,7 +1451,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
      *
      * @since 0.8
-     * @module
      */
     static final class Encoder {
         /**
@@ -1795,7 +1792,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     static final class Decoder extends SimpleLocation.Projected {
         /**

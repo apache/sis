@@ -49,7 +49,6 @@ import javax.imageio.stream.ImageInputStream;
  * @see java.nio.channels.Channels#newInputStream(ReadableByteChannel)
  *
  * @since 0.3
- * @module
  */
 public class ChannelImageInputStream extends ChannelDataInput implements ImageInputStream {
     /**

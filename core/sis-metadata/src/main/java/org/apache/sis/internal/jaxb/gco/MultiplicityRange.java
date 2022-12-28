@@ -30,7 +30,6 @@ import org.apache.sis.xml.NilReason;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @XmlType(name = "MultiplicityRange_Type", propOrder = {
     "lower",

@@ -37,7 +37,6 @@ import static org.junit.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final strictfp class IOUtilitiesTest extends TestCase {
     /**

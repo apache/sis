@@ -78,7 +78,6 @@ import org.apache.sis.gui.DataViewer;
  * @see BackgroundThreads#execute(Runnable)
  *
  * @since 1.1
- * @module
  */
 public final class DataStoreOpener extends Task<DataStore> {
     /**

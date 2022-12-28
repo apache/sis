@@ -35,7 +35,6 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(TableColumnTest.class)
 public final strictfp class DefaultTreeTableTest extends TestCase {

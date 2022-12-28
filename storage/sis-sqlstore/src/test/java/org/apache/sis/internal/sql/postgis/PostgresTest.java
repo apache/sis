@@ -66,7 +66,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 @DependsOn({RasterReaderTest.class, RasterWriterTest.class})
 public final strictfp class PostgresTest extends TestCase {

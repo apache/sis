@@ -46,7 +46,6 @@ import org.apache.maven.plugins.annotations.Parameter;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @Mojo(name = "javamaker", defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public final class JavaMaker extends AbstractMojo {

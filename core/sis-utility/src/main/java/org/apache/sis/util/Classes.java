@@ -58,7 +58,6 @@ import static org.apache.sis.internal.system.Modules.INTERNAL_CLASSNAME_PREFIX;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final class Classes extends Static {
     /**

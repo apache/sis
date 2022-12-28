@@ -40,7 +40,6 @@ import static org.apache.sis.internal.util.Strings.appendUnicodeIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 final class NameIterator implements Iterator<Identifier> {
     /**

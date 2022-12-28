@@ -79,7 +79,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Vadim Semenov
  * @version 1.2
  * @since   0.7
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,

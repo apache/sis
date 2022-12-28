@@ -57,7 +57,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 final class UnitDimension implements Dimension, Serializable {
     /**

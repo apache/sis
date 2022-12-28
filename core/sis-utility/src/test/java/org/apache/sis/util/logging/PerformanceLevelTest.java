@@ -31,7 +31,6 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final strictfp class PerformanceLevelTest extends TestCase {
     /**

@@ -35,7 +35,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see ChannelImageOutputStream
  *
  * @since 0.5
- * @module
  */
 final strictfp class ByteArrayChannel implements SeekableByteChannel {
     /**

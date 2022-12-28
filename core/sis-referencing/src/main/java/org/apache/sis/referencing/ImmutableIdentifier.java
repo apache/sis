@@ -108,7 +108,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
  * @since 1.0
- * @module
  */
 @TitleProperty(name = "code")
 public class ImmutableIdentifier extends FormattableObject implements Identifier, Serializable {

@@ -34,7 +34,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.referencing.cs.AbstractCSTest.class)
 public final strictfp class AbstractCRSTest extends TestCase {

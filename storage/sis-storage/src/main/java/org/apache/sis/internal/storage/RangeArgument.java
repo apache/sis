@@ -40,7 +40,6 @@ import org.apache.sis.util.Localized;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public final class RangeArgument {
     /**

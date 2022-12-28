@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.RelativeInternalPositionalAccuracy;
  * @author  Touraïvane (IRD)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_RelativeInternalPositionalAccuracy_Type")
 @XmlRootElement(name = "DQ_RelativeInternalPositionalAccuracy")

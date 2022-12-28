@@ -28,7 +28,6 @@ import org.junit.BeforeClass;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.CodeTypeTest.class,

@@ -54,7 +54,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements SpatialOperator<R>, Optimization.OnFilter<R> {
     /**

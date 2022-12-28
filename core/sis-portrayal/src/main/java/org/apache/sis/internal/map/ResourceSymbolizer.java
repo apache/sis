@@ -30,7 +30,6 @@ import org.opengis.style.Symbolizer;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public interface ResourceSymbolizer extends Symbolizer {
 

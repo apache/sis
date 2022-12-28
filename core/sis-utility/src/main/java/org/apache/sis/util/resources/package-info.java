@@ -89,6 +89,5 @@
  * @see org.apache.sis.util.ResourceInternationalString
  *
  * @since 0.3
- * @module
  */
 package org.apache.sis.util.resources;

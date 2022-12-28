@@ -42,7 +42,6 @@ import static org.junit.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @DependsOn(CylindricalEqualAreaTest.class)
 public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {

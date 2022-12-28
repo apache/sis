@@ -37,7 +37,6 @@ import org.apache.sis.util.Utilities;
  * @param  <E>  type of objects in this group.
  *
  * @since 1.3
- * @module
  */
 final class GroupByCRS<E> extends Group<E> {
     /**

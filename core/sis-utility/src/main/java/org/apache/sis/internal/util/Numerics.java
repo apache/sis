@@ -43,7 +43,6 @@ import static java.lang.Math.ulp;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final class Numerics extends Static {
     /**

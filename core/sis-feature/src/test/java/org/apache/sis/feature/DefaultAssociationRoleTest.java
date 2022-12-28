@@ -40,7 +40,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(DefaultFeatureTypeTest.class)
 public final strictfp class DefaultAssociationRoleTest extends TestCase {

@@ -128,7 +128,6 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public class GeodeticCalculator {
     /**

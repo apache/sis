@@ -50,7 +50,6 @@ import org.apache.sis.util.Debug;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   1.0
- * @module
  */
 public final class ColorModelFactory {
     /**

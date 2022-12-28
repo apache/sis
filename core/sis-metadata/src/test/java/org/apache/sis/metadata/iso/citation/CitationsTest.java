@@ -46,7 +46,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
 @DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
 public final strictfp class CitationsTest extends TestCase {

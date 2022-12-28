@@ -53,7 +53,6 @@ import org.apache.sis.io.TableAppender;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class MultiResolutionCoverageLoader {
     /**

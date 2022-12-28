@@ -41,7 +41,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(DefaultParameterDescriptorTest.class)

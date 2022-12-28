@@ -32,7 +32,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final strictfp class DefaultInternationalStringTest extends TestCase {
     /** {@value} */ static final String MESSAGE       = "This is an unlocalized message.";

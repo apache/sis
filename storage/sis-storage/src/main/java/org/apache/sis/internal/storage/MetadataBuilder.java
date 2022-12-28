@@ -112,7 +112,6 @@ import org.opengis.feature.FeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public class MetadataBuilder {
     /**

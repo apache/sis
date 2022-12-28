@@ -41,7 +41,6 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest {
     /**

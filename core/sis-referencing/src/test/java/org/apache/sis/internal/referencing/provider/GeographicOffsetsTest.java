@@ -37,7 +37,6 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @DependsOn(AffineTest.class)
 public final strictfp class GeographicOffsetsTest extends TransformTestCase {

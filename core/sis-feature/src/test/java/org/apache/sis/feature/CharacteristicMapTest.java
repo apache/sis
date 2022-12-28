@@ -36,7 +36,6 @@ import org.opengis.feature.Attribute;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(CharacteristicTypeMapTest.class)
 public final strictfp class CharacteristicMapTest extends TestCase {

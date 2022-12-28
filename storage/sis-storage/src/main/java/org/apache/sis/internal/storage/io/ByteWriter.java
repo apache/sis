@@ -36,7 +36,6 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.0
- * @module
  */
 public abstract class ByteWriter {
     /**

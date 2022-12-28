@@ -74,7 +74,6 @@ import org.apache.sis.util.logging.MonolineFormatter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class Command {
     /**

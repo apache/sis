@@ -34,7 +34,6 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final strictfp class LocationTypeTest extends TestCase {
     /**

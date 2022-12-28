@@ -35,7 +35,6 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
 final strictfp class NoOp extends ConformalProjection {

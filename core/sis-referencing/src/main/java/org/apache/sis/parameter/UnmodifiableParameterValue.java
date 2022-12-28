@@ -54,7 +54,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <T>  the type of the value stored in this parameter.
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 final class UnmodifiableParameterValue<T> extends DefaultParameterValue<T> {

@@ -144,7 +144,6 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
  * @since 1.1
- * @module
  */
 public class ImageProcessor implements Cloneable {
     /**

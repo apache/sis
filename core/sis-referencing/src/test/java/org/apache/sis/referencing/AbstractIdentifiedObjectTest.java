@@ -42,7 +42,6 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn({
     IdentifiedObjectsTest.class, NamedIdentifierTest.class,

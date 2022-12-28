@@ -31,7 +31,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
 public final strictfp class DirectionAlongMeridianTest extends TestCase {

@@ -44,7 +44,6 @@ import org.apache.sis.util.Disposable;
  * @see ImageProcessor#prefetch(RenderedImage, Rectangle)
  *
  * @since 1.1
- * @module
  */
 final class PrefetchedImage extends PlanarImage implements TileErrorHandler.Executor {
     /**

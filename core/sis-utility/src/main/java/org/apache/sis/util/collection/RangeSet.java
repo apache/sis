@@ -109,7 +109,6 @@ import static org.apache.sis.util.Numbers.*;
  * @see Range
  *
  * @since 0.3
- * @module
  */
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
@@ -1227,7 +1226,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private final class SubIter extends Iter {
         /**
@@ -1307,7 +1305,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private class Iter implements Iterator<Range<E>> {
         /**

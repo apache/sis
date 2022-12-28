@@ -42,7 +42,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public interface GridCoverageResource extends DataSet {
     /**

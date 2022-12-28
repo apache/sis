@@ -35,7 +35,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
 public final strictfp class ShapeUtilitiesTest extends TestCase {
     /**

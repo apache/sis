@@ -65,7 +65,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  *
  * @since 0.5
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class

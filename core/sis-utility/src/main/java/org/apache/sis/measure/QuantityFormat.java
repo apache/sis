@@ -44,7 +44,6 @@ import static java.util.logging.Logger.getLogger;
  * @see UnitFormat
  *
  * @since 1.1
- * @module
  */
 public class QuantityFormat extends Format implements javax.measure.format.QuantityFormat {
     /**

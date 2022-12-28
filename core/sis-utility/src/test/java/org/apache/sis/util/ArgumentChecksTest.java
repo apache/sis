@@ -29,7 +29,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
 public final strictfp class ArgumentChecksTest extends TestCase {

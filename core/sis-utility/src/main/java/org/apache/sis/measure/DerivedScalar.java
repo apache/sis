@@ -40,7 +40,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 1.0
- * @module
  */
 class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
     /**

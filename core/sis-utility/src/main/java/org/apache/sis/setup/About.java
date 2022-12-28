@@ -82,7 +82,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public enum About {
     /**

@@ -55,7 +55,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @XmlSeeAlso({
     NameValue.Local.class,

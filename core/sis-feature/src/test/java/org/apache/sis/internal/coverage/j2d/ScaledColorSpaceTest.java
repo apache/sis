@@ -38,7 +38,6 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final strictfp class ScaledColorSpaceTest extends ImageTestCase {
     /**

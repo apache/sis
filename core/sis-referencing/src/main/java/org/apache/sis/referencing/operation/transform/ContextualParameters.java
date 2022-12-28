@@ -130,7 +130,6 @@ import static java.util.logging.Logger.getLogger;
  * @see AbstractMathTransform#getContextualParameters()
  *
  * @since 0.6
- * @module
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
@@ -143,7 +142,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @see ContextualParameters#getMatrix(MatrixRole)
      *
      * @since 0.7
-     * @module
      */
     public enum MatrixRole {
         /**

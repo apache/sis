@@ -54,7 +54,6 @@ import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_ApplicationSchemaInformation_Type", namespace = Namespaces.MAS, propOrder = {
     "name",

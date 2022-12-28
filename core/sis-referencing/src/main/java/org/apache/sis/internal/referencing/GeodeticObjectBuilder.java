@@ -72,7 +72,6 @@ import org.apache.sis.parameter.Parameters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**

@@ -36,7 +36,6 @@ import org.locationtech.jts.geom.CoordinateSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 abstract class PackedCoordinateSequence implements CoordinateSequence, Serializable {
     /**

@@ -52,6 +52,5 @@
  * @see <a href="https://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/bil-bip-and-bsq-raster-files.htm">BIL, BIP, and BSQ raster files</a>
  *
  * @since 1.2
- * @module
  */
 package org.apache.sis.internal.storage.esri;

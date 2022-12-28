@@ -68,7 +68,6 @@ import org.apache.sis.internal.system.DefaultFactories;
  * @see org.apache.sis.referencing.AbstractIdentifiedObject#getAlias()
  *
  * @since 0.3
- * @module
  */
 
 /*
@@ -344,7 +343,6 @@ public abstract class AbstractName implements GenericName, Serializable {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class International extends SimpleInternationalString {
         /**

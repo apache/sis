@@ -31,7 +31,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final class Characters extends Static {
     /**
@@ -329,7 +328,6 @@ public final class Characters extends Static {
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#139">WKT 2 specification §B.5</a>
      *
      * @since 0.3
-     * @module
      */
     public static class Filter extends Character.Subset {
         /*

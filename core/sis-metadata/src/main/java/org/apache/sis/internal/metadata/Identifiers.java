@@ -37,7 +37,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.4
  * @version 1.0
- * @module
  */
 public final class Identifiers extends Static {
     /**

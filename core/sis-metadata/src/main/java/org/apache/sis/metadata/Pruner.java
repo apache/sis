@@ -38,7 +38,6 @@ import static org.apache.sis.metadata.ValueExistencePolicy.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 final class Pruner extends MetadataVisitor<Boolean> {
     /**

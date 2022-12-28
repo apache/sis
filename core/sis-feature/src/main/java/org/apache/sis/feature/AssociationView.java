@@ -37,7 +37,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 class AssociationView extends PropertyView<Feature> implements FeatureAssociation {
     /**

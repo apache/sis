@@ -53,7 +53,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see Collections#checkedList(List, Class)
  *
  * @since 0.3
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")           // ArrayList.clone() is sufficient.
 public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedContainer<E> {

@@ -71,7 +71,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public final class AttributeConvention extends Static {
     /**

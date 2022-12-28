@@ -44,7 +44,6 @@ import org.opengis.feature.FeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public final strictfp class MetadataBuilderTest extends TestCase {
     /**

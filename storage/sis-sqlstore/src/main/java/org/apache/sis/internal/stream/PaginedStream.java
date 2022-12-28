@@ -35,7 +35,6 @@ import java.util.stream.Stream;
  * @param  <T>  the type of objects contained in the stream, as specified in {@link Stream} interface.
  *
  * @since 1.1
- * @module
  */
 public final class PaginedStream<T> extends StreamWrapper<T> {
     /**

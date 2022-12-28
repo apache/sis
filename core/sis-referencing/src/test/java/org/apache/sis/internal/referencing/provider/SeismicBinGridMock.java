@@ -33,7 +33,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
 public final strictfp class SeismicBinGridMock extends ProviderMock {

@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @see <a href="http://geotiff.maptools.org/proj_list/lambert_azimuthal_equal_area.html">GeoTIFF parameters for Lambert Azimuthal Equal Area</a>
  *
  * @since 1.2
- * @module
  */
 @XmlTransient
 public class LambertAzimuthalEqualArea extends MapProjection {

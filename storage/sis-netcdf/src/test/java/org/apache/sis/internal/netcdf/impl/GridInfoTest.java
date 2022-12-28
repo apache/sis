@@ -36,7 +36,6 @@ import org.opengis.test.dataset.TestData;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn({VariableInfoTest.class, GridTest.class})
 public final strictfp class GridInfoTest extends GridTest {

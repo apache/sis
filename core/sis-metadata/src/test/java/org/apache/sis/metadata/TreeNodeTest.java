@@ -51,7 +51,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(TreeNodeChildrenTest.class)
 public final strictfp class TreeNodeTest extends TestCase {

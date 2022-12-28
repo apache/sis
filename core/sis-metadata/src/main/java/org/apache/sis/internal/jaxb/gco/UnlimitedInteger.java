@@ -34,7 +34,6 @@ import javax.xml.bind.annotation.XmlValue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @XmlType(name = "UnlimitedInteger_Type")
 @XmlRootElement(name = "UnlimitedInteger")

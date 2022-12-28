@@ -135,7 +135,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",

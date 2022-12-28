@@ -51,7 +51,6 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final strictfp class StoreTest extends TestCase {
     /**

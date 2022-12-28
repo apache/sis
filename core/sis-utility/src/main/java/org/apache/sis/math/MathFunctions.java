@@ -68,7 +68,6 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @see org.apache.sis.util.Numbers
  *
  * @since 0.3
- * @module
  */
 public final class MathFunctions extends Static {
     /**

@@ -58,7 +58,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 final class Initializer {
     /**

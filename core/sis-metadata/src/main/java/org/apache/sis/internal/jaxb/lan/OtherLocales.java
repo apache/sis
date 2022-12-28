@@ -39,7 +39,6 @@ import java.nio.charset.Charset;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final class OtherLocales extends AbstractSet<PT_Locale> {
     /**

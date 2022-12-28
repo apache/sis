@@ -32,7 +32,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(SingletonAttributeTest.class)
 public final strictfp class MultiValuedAttributeTest extends TestCase {

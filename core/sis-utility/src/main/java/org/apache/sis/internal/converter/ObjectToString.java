@@ -43,7 +43,6 @@ import org.apache.sis.math.FunctionProperty;
  * @param <S>  the source type.
  *
  * @since 0.3
- * @module
  */
 class ObjectToString<S> extends SystemConverter<S,String> {
     /**

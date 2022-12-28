@@ -38,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @DependsOn(TypeNamesTest.class)
 public final strictfp class DefaultRecordTypeTest extends TestCase {

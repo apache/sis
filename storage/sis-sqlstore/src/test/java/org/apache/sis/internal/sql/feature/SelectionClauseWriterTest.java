@@ -46,7 +46,6 @@ import org.opengis.filter.SpatialOperator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final strictfp class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
     /**

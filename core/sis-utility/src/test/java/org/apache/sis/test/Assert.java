@@ -46,7 +46,6 @@ import org.apache.sis.util.Classes;
  * @author  Alexis Manin (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public strictfp class Assert extends org.opengis.test.Assert {
     /**

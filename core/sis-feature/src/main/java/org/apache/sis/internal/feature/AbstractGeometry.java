@@ -30,7 +30,6 @@ package org.apache.sis.internal.feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public abstract class AbstractGeometry {
     /**

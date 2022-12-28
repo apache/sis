@@ -74,7 +74,6 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * @see org.apache.sis.util.collection.TreeTableFormat
  *
  * @since 0.3
- * @module
  */
 public class TableAppender extends Appender implements Flushable {
     /**
@@ -884,7 +883,6 @@ public class TableAppender extends Appender implements Flushable {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class Cell {
         /**

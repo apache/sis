@@ -77,7 +77,6 @@ import static java.util.logging.Logger.getLogger;
  * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
  *
  * @since 1.1
- * @module
  */
 public class WraparoundTransform extends AbstractMathTransform implements Serializable {
     /**

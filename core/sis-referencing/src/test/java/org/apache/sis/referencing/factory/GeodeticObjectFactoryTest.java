@@ -63,7 +63,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Cédric Briançon (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({

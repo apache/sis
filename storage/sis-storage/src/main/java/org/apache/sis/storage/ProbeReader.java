@@ -38,7 +38,6 @@ import org.apache.sis.internal.storage.Resources;
  * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
  *
  * @since 1.2
- * @module
  */
 final class ProbeReader extends FilterReader {
     /**

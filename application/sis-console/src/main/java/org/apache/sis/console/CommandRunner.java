@@ -42,7 +42,6 @@ import org.apache.sis.internal.util.X364;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 abstract class CommandRunner {
     /**

@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "MimeFileType_PropertyType")
 @XmlRootElement(name = "MimeFileType")

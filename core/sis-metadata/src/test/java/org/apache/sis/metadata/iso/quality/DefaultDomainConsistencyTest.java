@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final strictfp class DefaultDomainConsistencyTest extends TestCase {
     /**

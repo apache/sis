@@ -58,7 +58,6 @@ import org.apache.sis.util.ArraysExt;
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder#addLinearizers(Map, boolean, int...)
  *
  * @since 1.0
- * @module
  */
 public final class Linearizer {
     /**

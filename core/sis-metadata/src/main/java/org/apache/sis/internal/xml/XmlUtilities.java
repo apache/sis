@@ -51,7 +51,6 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final class XmlUtilities extends SystemListener {
     /**

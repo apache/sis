@@ -32,7 +32,6 @@ import static org.apache.sis.util.Numbers.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final strictfp class NumbersTest extends TestCase {
     /**

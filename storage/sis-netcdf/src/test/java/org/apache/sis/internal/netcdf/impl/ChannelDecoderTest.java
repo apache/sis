@@ -36,7 +36,6 @@ import org.opengis.test.dataset.TestData;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(DecoderTest.class)
 public final strictfp class ChannelDecoderTest extends DecoderTest {

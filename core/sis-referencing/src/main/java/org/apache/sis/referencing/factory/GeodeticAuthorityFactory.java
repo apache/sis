@@ -64,7 +64,6 @@ import org.apache.sis.util.Classes;
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
     /**

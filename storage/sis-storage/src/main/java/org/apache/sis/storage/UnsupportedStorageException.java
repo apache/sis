@@ -35,7 +35,6 @@ import org.apache.sis.internal.storage.io.IOUtilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public class UnsupportedStorageException extends IllegalOpenParameterException {
     /**

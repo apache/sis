@@ -43,7 +43,6 @@ import org.apache.sis.util.Exceptions;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class WKTPane extends StringConverter<Convention> implements ChangeListener<Convention> {
     /**

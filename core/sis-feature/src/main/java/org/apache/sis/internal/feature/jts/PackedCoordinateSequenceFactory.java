@@ -31,7 +31,6 @@ import org.locationtech.jts.geom.CoordinateSequenceFactory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class PackedCoordinateSequenceFactory implements CoordinateSequenceFactory, Serializable {
     /**

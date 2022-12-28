@@ -94,7 +94,6 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * @see DefaultMemberName
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {

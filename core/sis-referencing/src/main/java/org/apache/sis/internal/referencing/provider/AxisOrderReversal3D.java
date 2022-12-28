@@ -28,7 +28,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @XmlTransient
 public final class AxisOrderReversal3D extends AxisOrderReversal {

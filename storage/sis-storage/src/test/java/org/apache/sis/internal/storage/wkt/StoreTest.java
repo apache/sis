@@ -38,7 +38,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn(StoreProviderTest.class)
 public final strictfp class StoreTest extends TestCase {

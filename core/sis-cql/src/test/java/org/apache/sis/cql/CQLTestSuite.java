@@ -27,7 +27,6 @@ import org.junit.runners.Suite;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.cql.ExpressionReadingTest.class,

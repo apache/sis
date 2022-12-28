@@ -32,7 +32,6 @@ import org.opengis.metadata.spatial.DimensionNameType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final strictfp class GridSliceSelectorApp extends Application {
     /**

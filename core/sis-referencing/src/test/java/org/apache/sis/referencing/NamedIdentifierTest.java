@@ -39,7 +39,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 public final strictfp class NamedIdentifierTest extends TestCase {
     /**

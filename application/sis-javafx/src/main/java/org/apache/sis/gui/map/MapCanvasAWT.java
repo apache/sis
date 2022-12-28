@@ -55,7 +55,6 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class MapCanvasAWT extends MapCanvas {
     /**
@@ -212,7 +211,6 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.1
-     * @module
      */
     protected abstract static class Renderer extends MapCanvas.Renderer {
         /**

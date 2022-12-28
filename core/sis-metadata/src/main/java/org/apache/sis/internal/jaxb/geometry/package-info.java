@@ -31,7 +31,6 @@
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GEX, xmlns = {
     @XmlNs(prefix = "gex", namespaceURI = Namespaces.GEX)

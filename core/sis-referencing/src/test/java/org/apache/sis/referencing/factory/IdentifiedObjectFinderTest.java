@@ -40,7 +40,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({CommonAuthorityFactoryTest.class, AuthorityFactoryProxyTest.class})
 public final strictfp class IdentifiedObjectFinderTest extends TestCase {

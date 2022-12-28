@@ -56,7 +56,6 @@ import static org.opengis.test.Validators.validate;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn({
     GeneralEnvelopeTest.class,

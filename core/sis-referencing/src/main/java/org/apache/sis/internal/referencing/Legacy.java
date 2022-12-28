@@ -41,7 +41,6 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 public final class Legacy {
     /**

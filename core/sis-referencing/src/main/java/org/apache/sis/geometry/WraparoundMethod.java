@@ -51,7 +51,6 @@ import org.opengis.geometry.DirectPosition;
  * @see GeneralEnvelope#wraparound(WraparoundMethod)
  *
  * @since 1.1
- * @module
  */
 public enum WraparoundMethod {
     /**

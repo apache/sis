@@ -63,7 +63,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <Q>  the kind of quantity to be measured using this units.
  *
  * @since 0.8
- * @module
  */
 abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {
     /**

@@ -44,7 +44,6 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public strictfp class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {
     /**

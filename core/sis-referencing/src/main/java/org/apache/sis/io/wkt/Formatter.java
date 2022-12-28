@@ -110,7 +110,6 @@ import org.apache.sis.math.Vector;
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  *
  * @since 0.4
- * @module
  */
 public class Formatter implements Localized {
     /**

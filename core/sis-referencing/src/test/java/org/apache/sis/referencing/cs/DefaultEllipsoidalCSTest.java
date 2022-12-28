@@ -38,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractCSTest.class)
 public final strictfp class DefaultEllipsoidalCSTest extends TestCase {

@@ -38,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn(FreeTextMarshallingTest.class)
 public final strictfp class AbstractPositionalAccuracyTest extends TestUsingFile {

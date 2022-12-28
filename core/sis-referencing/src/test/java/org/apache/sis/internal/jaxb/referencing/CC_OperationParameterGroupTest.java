@@ -51,7 +51,6 @@ import static org.junit.Assert.*;
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  *
  * @since 0.6
- * @module
  */
 @DependsOn(CC_GeneralOperationParameterTest.class)
 public final strictfp class CC_OperationParameterGroupTest extends TestCase {

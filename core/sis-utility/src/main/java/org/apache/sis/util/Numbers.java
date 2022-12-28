@@ -44,7 +44,6 @@ import static java.lang.Double.doubleToLongBits;
  * @see org.apache.sis.math.MathFunctions
  *
  * @since 0.3
- * @module
  */
 @SuppressWarnings({
     "UnnecessaryBoxing",

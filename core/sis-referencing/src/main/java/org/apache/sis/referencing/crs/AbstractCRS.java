@@ -87,7 +87,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.datum.AbstractDatum
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "AbstractCRSType", propOrder = {
     "domainOfValidity",

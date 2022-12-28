@@ -40,7 +40,6 @@ import org.apache.sis.util.ObjectConverter;
  * @param <T>  the base type of converted objects.
  *
  * @since 0.3
- * @module
  */
 class ClassPair<S,T> implements Serializable {
     /**

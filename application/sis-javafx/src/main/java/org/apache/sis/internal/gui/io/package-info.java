@@ -29,6 +29,5 @@
  * @see org.apache.sis.internal.gui.DataStoreOpener
  *
  * @since   1.2
- * @module
  */
 package org.apache.sis.internal.gui.io;

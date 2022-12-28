@@ -36,7 +36,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public final strictfp class WraparoundAdjustmentTest extends TestCase {
     /**

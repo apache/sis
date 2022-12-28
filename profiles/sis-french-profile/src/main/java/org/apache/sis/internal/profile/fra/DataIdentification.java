@@ -47,7 +47,6 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "FRA_DataIdentification_Type")
 @XmlRootElement(name = "FRA_DataIdentification")

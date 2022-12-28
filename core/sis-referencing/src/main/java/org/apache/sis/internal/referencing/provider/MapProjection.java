@@ -63,7 +63,6 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @XmlTransient
 public abstract class MapProjection extends AbstractProvider {

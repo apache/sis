@@ -60,7 +60,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param  <R>  the type of value computed as a result of this process.
  *
  * @since 1.1
- * @module
  */
 public abstract class TiledProcess<R> {
     /**

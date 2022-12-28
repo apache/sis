@@ -39,7 +39,6 @@ import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @XmlType(name = "CodeType")
 public final class Code {

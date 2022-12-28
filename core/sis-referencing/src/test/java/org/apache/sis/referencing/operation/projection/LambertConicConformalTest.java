@@ -50,7 +50,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn(ConformalProjectionTest.class)
 public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {

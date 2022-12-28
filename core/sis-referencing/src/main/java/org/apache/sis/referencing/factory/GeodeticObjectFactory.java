@@ -189,7 +189,6 @@ import org.apache.sis.xml.XML;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   0.6
- * @module
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
     /**

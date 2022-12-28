@@ -37,7 +37,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public final strictfp class SampleDimensionTest extends TestCase {
     /**

@@ -89,7 +89,6 @@ import org.opengis.coverage.grid.GridEnvelope;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final class ArgumentChecks extends Static {
     /**

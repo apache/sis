@@ -66,7 +66,6 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @see org.apache.sis.geometry.Envelopes
  *
  * @since 0.4
- * @module
  */
 public final class IdentifiedObjects extends Static {
     /**

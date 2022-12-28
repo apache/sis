@@ -30,7 +30,6 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(MeridianArcTest.class)
 public final strictfp class SinusoidalTest extends MapProjectionTestCase {

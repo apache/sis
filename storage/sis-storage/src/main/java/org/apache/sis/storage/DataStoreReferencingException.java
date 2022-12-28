@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public class DataStoreReferencingException extends DataStoreException {
     /**

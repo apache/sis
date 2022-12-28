@@ -50,7 +50,6 @@ import org.apache.sis.internal.system.DelayedRunnable;
  * @see org.apache.sis.xml.MarshallerPool
  *
  * @since 0.3
- * @module
  */
 public abstract class TypeRegistration {
     /**

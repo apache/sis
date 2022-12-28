@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(CommandRunnerTest.class)
 public final strictfp class CRSCommandTest extends TestCase {

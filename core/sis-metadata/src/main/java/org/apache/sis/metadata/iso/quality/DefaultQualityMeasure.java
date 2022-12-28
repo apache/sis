@@ -57,7 +57,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "DQM_Measure_Type", namespace = Namespaces.DQM, propOrder = {
     "measureIdentifier",

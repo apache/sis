@@ -38,7 +38,6 @@ import org.apache.sis.util.Version;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.8
- * @module
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                fileSuffixes  = "xml",

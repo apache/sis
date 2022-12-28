@@ -74,7 +74,6 @@ import junit.framework.AssertionFailedError;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
     /**

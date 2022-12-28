@@ -34,7 +34,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn(LegacyCodesTest.class)
 public final strictfp class ValueConverterTest extends TestCase {

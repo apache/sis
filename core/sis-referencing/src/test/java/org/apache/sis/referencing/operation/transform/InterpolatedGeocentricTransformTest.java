@@ -42,7 +42,6 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn({
     GeocentricTranslationTest.class,

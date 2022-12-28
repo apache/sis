@@ -80,7 +80,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**

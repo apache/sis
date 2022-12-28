@@ -54,7 +54,6 @@ import org.opengis.metadata.content.FeatureTypeInfo;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 @DependsOn(MetadataTest.class)
 public final strictfp class ReaderTest extends TestCase {

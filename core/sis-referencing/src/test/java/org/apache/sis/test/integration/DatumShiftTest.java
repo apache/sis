@@ -39,7 +39,6 @@ import static org.apache.sis.test.Assume.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({
     NTv2Test.class,

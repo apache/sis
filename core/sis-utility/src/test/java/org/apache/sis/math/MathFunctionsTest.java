@@ -37,7 +37,6 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn({
     org.apache.sis.util.ArraysExtTest.class,

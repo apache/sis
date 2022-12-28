@@ -63,7 +63,6 @@ import org.apache.sis.internal.util.Numerics;
  * @see Statistics#toString()
  *
  * @since 0.3
- * @module
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**

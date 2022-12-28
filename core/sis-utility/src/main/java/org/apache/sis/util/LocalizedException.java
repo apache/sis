@@ -52,7 +52,6 @@ import org.opengis.util.InternationalString;
  * @see org.apache.sis.storage.DataStore#setLocale(Locale)
  *
  * @since 0.8
- * @module
  */
 public interface LocalizedException {
     /**

@@ -60,7 +60,6 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @SuppressWarnings("rawtypes")   // For the omission of <T> in Parameter<T> - see javadoc.
 @XmlType(name = "SV_Parameter_Type", namespace = Namespaces.SRV, propOrder = {

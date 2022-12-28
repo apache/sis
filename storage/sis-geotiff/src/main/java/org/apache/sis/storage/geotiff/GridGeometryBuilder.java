@@ -75,7 +75,6 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class GridGeometryBuilder extends GeoKeysLoader {
 

@@ -56,7 +56,6 @@ import org.apache.sis.xml.Namespaces;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
 @XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)

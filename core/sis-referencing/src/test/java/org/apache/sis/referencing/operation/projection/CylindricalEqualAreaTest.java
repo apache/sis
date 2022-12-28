@@ -36,7 +36,6 @@ import static java.lang.Double.NaN;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final strictfp class CylindricalEqualAreaTest extends MapProjectionTestCase {
     /**

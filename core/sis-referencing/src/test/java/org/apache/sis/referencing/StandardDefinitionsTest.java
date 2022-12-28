@@ -54,7 +54,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,

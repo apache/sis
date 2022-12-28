@@ -45,6 +45,5 @@
  * @see <a href="https://en.wikipedia.org/wiki/World_file">World File format description on Wikipedia</a>
  *
  * @since 1.2
- * @module
  */
 package org.apache.sis.internal.storage.image;

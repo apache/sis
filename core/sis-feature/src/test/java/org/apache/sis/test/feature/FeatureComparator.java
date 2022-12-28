@@ -50,7 +50,6 @@ import org.opengis.feature.Operation;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public strictfp class FeatureComparator {
     /**

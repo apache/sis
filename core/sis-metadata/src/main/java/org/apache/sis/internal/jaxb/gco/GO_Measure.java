@@ -34,7 +34,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @XmlType(name = "Measure_PropertyType")
 public final class GO_Measure extends XmlAdapter<GO_Measure, Double> {

@@ -42,7 +42,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 final class Writer extends StaxStreamWriter {
     /**

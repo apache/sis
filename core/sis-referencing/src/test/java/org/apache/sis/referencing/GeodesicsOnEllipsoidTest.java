@@ -44,7 +44,6 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 @DependsOn(GeodeticCalculatorTest.class)
 public final strictfp class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {

@@ -51,7 +51,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 public abstract class GeocentricAffineBetweenGeographic extends GeocentricAffine {

@@ -45,7 +45,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @DependsOn({
     DefaultCoupledResourceTest.class,

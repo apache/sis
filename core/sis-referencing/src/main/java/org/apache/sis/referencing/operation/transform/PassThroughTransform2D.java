@@ -33,7 +33,6 @@ import org.apache.sis.geometry.DirectPosition2D;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class PassThroughTransform2D extends PassThroughTransform implements MathTransform2D {
     /**

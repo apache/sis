@@ -42,7 +42,6 @@ import static org.apache.sis.internal.system.Modules.MINOR_VERSION;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 public class Version implements CharSequence, Comparable<Version>, Serializable {
     /**

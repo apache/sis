@@ -30,7 +30,6 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(MetadataStandardTest.class)
 public final strictfp class AbstractMetadataTest extends TestCase {

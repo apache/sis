@@ -106,7 +106,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @XmlTransient
 public abstract class Parameters implements ParameterValueGroup, Cloneable {

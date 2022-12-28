@@ -79,7 +79,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class CoordinateOperationFinder implements Supplier<double[]> {
     /**

@@ -37,7 +37,6 @@ import java.util.Collection;
  * @param <E>  the base type of elements in the container.
  *
  * @since 0.3
- * @module
  */
 public interface CheckedContainer<E> {
     /**

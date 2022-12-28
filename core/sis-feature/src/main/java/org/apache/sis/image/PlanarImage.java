@@ -107,7 +107,6 @@ import static java.lang.Math.multiplyFull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public abstract class PlanarImage implements RenderedImage {
     /**

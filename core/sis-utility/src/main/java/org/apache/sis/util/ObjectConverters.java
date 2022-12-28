@@ -63,7 +63,6 @@ import org.apache.sis.internal.converter.SystemRegistry;
  * @see ObjectConverter
  *
  * @since 0.3
- * @module
  */
 public final class ObjectConverters extends Static {
     /**

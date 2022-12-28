@@ -175,7 +175,6 @@ import static java.util.logging.Logger.getLogger;
  * @see AbstractMathTransform
  *
  * @since 0.6
- * @module
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*
@@ -557,7 +556,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.7
-     * @module
      */
     @SuppressWarnings("serial")         // Fields are not statically typed as Serializable.
     public static class Context implements Serializable {

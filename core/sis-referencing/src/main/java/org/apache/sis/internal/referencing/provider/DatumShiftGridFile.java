@@ -71,7 +71,6 @@ import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
  *
  * @since 0.7
- * @module
  */
 abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
@@ -489,7 +488,6 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**
@@ -606,7 +604,6 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.1
-     * @module
      */
     static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**

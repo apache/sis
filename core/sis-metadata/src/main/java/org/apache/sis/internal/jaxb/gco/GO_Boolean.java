@@ -31,7 +31,6 @@ import javax.xml.bind.annotation.XmlType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 @XmlType(name = "Boolean_PropertyType")
 public final class GO_Boolean extends PropertyType<GO_Boolean, Boolean> {

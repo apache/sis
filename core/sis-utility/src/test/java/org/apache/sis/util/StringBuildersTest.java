@@ -30,7 +30,6 @@ import static org.apache.sis.util.StringBuilders.*;
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final strictfp class StringBuildersTest extends TestCase {
     /**

@@ -27,7 +27,6 @@ package org.apache.sis.storage;
  * @see DataStoreProvider#probeContent(StorageConnector)
  *
  * @since 1.2
- * @module
  */
 public class CanNotProbeException extends DataStoreException {
     /**

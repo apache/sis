@@ -36,7 +36,6 @@ import static org.apache.sis.metadata.iso.extent.DefaultExtentTest.FILENAME;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public final strictfp class MimeTypeDetectorTest extends TestUsingFile {
     /**

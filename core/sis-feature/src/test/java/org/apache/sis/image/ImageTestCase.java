@@ -41,7 +41,6 @@ import static org.junit.Assert.assertNotNull;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public abstract strictfp class ImageTestCase extends TestCase {
     /**

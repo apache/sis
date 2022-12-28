@@ -45,7 +45,6 @@ import static org.junit.Assume.assumeTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final strictfp class StoreTest extends TestCase {
     /**

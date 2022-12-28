@@ -77,7 +77,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final class Citations extends Static {
     /**

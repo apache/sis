@@ -34,7 +34,6 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public strictfp class CoordinateDomain {
     /*

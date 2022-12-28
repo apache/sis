@@ -30,7 +30,6 @@ import org.apache.sis.internal.jdk17.HexFormat;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public enum BinaryEncoding {
     /**

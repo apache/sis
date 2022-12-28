@@ -90,7 +90,6 @@ import static java.lang.Double.doubleToLongBits;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
     /**
@@ -648,7 +647,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class WithDelta extends Statistics {
         /**

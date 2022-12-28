@@ -53,7 +53,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public class ScriptRunner implements AutoCloseable {
     /**

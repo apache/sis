@@ -58,7 +58,6 @@ import static org.apache.sis.internal.storage.StoreUtilities.ALLOW_LAST_RESORT_S
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class Variable extends Node {
     /**

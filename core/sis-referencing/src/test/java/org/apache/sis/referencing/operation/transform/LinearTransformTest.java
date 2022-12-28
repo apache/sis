@@ -36,7 +36,6 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn(ProjectiveTransformTest.class)

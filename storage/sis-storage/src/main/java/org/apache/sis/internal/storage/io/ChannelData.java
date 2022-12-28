@@ -34,7 +34,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class ChannelData implements Markable {
     /**

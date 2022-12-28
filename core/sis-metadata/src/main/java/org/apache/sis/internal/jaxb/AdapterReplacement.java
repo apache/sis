@@ -43,7 +43,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @see Unmarshaller#setAdapter(XmlAdapter)
  *
  * @since 0.3
- * @module
  */
 public interface AdapterReplacement {
     /**

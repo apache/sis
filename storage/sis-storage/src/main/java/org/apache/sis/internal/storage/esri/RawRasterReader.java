@@ -56,7 +56,6 @@ import static org.apache.sis.internal.util.Numerics.wholeDiv;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class RawRasterReader extends HyperRectangleReader {
     /**

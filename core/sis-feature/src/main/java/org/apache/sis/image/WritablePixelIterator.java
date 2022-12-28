@@ -54,7 +54,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public class WritablePixelIterator extends PixelIterator implements Closeable {
     /**

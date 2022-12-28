@@ -52,7 +52,6 @@ import org.opengis.test.dataset.TestData;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(VariableTest.class)
 public strictfp class FeatureSetTest extends TestCase {

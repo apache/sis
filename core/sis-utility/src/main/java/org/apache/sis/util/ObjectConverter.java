@@ -78,7 +78,6 @@ import org.apache.sis.math.FunctionProperty;
  * @see ObjectConverters
  *
  * @since 0.3
- * @module
  */
 public interface ObjectConverter<S,T> extends Function<S,T> {
     /**

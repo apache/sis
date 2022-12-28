@@ -62,7 +62,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see AbstractAssociation
  *
  * @since 0.5
- * @module
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**

@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(ArraysExtTest.class)
 public final strictfp class LocalesTest extends TestCase {

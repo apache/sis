@@ -58,7 +58,6 @@ import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**

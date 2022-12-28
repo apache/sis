@@ -28,7 +28,6 @@ import javax.xml.bind.annotation.XmlTransient;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @XmlTransient
 public final class ObliqueMercatorTwoPointsCenter extends ObliqueMercatorTwoPoints {

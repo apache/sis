@@ -35,7 +35,6 @@ import org.apache.sis.util.Workaround;
  * @see javax.xml.stream.util.StreamReaderDelegate
  *
  * @since 0.8
- * @module
  */
 @Workaround(library = "JDK", version = "1.8")
 public class StreamWriterDelegate implements XMLStreamWriter {
