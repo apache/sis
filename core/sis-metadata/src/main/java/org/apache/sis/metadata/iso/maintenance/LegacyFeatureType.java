@@ -34,7 +34,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  *
  * @deprecated To be removed after migration to GeoAPI 4.0.
  */

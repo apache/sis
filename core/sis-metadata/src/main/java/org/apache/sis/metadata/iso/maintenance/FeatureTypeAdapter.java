@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.gco.GO_CharacterString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 final class FeatureTypeAdapter extends XmlAdapter<GO_CharacterString, FeatureType> {
     /**
