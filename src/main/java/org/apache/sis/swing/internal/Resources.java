@@ -175,7 +175,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can not be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);

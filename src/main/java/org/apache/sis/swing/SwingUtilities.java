@@ -130,7 +130,7 @@ final class SwingUtilities extends Static {
      */
     public static boolean showOptionDialog(final Component owner, final Object dialog, final String title, final ActionListener reset) {
         /*
-         * Delegates to Swing thread if this method is invoked from an other thread.
+         * Delegates to Swing thread if this method is invoked from another thread.
          */
         if (!EventQueue.isDispatchThread()) {
             final boolean[] result = new boolean[1];

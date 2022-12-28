@@ -58,7 +58,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  * Controls the position and size of a rectangle which the user can move
  * with their mouse. For example, this class can be used as follows:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class MyClass extends JPanel {
  *         private final MouseReshapeTracker slider = new MouseReshapeTracker() {
  *             protected void clipChangeRequested(double xmin, double xmax, double ymin, double ymax) {
@@ -92,7 +92,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  *             g.fill(slider);
  *         }
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1

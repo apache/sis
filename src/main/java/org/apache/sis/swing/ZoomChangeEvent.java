@@ -39,9 +39,9 @@ public class ZoomChangeEvent extends EventObject {
      * are the affine transforms before and after the change respectively, then the following
      * relation must hold (within the limits of rounding error):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     newZoom = oldZoom.concatenate(change)
-     * }
+     *     }
      */
     private final AffineTransform change;
 
@@ -50,9 +50,9 @@ public class ZoomChangeEvent extends EventObject {
      * before and after the change respectively, then the following relation must hold (within
      * the limits of rounding error):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     newZoom = oldZoom.concatenate(change)
-     * }
+     *     }
      *
      * @param  source  the event source.
      * @param  change  an affine transform indicating the zoom change.

@@ -20,7 +20,7 @@ import java.awt.geom.Point2D;
 
 
 /**
- * An interface for viewers that may be deformed by some artefacts. For example the {@link ZoomPane}
+ * An interface for viewers that may be deformed by some artefacts. For example, the {@link ZoomPane}
  * viewer is capable to show a {@linkplain ZoomPane#setMagnifierVisible magnifying glass} on top of
  * the usual content. The presence of a magnifying glass deforms the viewer in that the apparent
  * position of pixels within the glass are moved. This interface allows for corrections of apparent

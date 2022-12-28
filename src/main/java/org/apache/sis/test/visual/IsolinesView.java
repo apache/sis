@@ -35,7 +35,7 @@ import java.awt.image.DataBuffer;
 import javax.swing.JComponent;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
-import org.apache.sis.internal.processing.image.Isolines;
+import org.apache.sis.internal.processing.isoline.Isolines;
 import org.apache.sis.swing.ZoomPane;
 import org.apache.sis.util.Classes;
 
@@ -51,7 +51,6 @@ import org.apache.sis.util.Classes;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class IsolinesView extends Visualization {
     /**

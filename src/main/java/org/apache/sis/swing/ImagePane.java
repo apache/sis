@@ -43,7 +43,6 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")
 public class ImagePane extends ZoomPane {

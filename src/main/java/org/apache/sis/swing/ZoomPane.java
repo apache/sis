@@ -93,7 +93,7 @@ import static java.lang.Math.rint;
  *   a geographic map with a content ranging from 10° to 15°E and 40° to 45°N should override
  *   this method as follows:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public Rectangle2D getArea() {
  *         return new Rectangle2D.Double(10, 40, 15-10, 45-40);
  *     }
@@ -108,7 +108,7 @@ import static java.lang.Math.rint;
  *   text should use the default transform (the one provided by {@link Graphics2D}) for that purpose.
  *   Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     protected void paintComponent(final Graphics2D graphics) {
  *         graphics.clip(getZoomableBounds(null));
  *         final AffineTransform textTr = graphics.getTransform();
@@ -132,9 +132,9 @@ import static java.lang.Math.rint;
  * The user can specify a different preferred area with {@link #setPreferredArea(Rectangle2D)}.
  * The user can also reduce zoomable bounds by inserting an empty border around the widget, e.g.:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     setBorder(BorderFactory.createEmptyBorder(top, left, bottom, right));
- * }
+ *     }
  *
  * <h2>Zoom actions</h2>
  * Whatever action is performed by the user, all zoom commands are translated as calls to
@@ -158,7 +158,7 @@ import static java.lang.Math.rint;
  * </table>
  *
  * In above table, the last column gives the {@link String}s that identify the different actions
- * which manage the zooms. For example to get action for zoom in, we can write
+ * which manage the zooms. For example, to get action for zoom in, we can write
  * <code>{@linkplain #getActionMap() getActionMap()}.get("ZoomIn")</code>.
  *
  * <h2>Scroll pane</h2>
@@ -344,11 +344,11 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * (CTRL or SHIFT). To obtain the {@link KeyStroke} object for action <var>i</var>,
      * we can use the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     final int key = DEFAULT_KEYBOARD[(i << 1)+0];
      *     final int mdf = DEFAULT_KEYBOARD[(i << 1)+1];
      *     KeyStroke stroke = KeyStroke.getKeyStroke(key, mdf);
-     * }
+     *     }
      */
     private static final int[] ACTION_KEY = {
         /*[0] Left        */ KeyEvent.VK_LEFT,      0,
@@ -799,7 +799,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
 
     /**
      * Returns a bounding box that contains the logical coordinates of all data that may be displayed
-     * in this {@code ZoomPane}. For example, if this {@code ZoomPane} is to display a geographic map,
+     * in this {@code ZoomPane}. For example if this {@code ZoomPane} is to display a geographic map,
      * then this method should return the map's bounds in degrees of latitude and longitude (if the
      * underlying CRS is {@linkplain org.opengis.referencing.crs.GeographicCRS geographic}), in metres
      * (if the underlying CRS is {@linkplain org.opengis.referencing.crs.ProjectedCRS projected}) or
@@ -999,10 +999,10 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * Subclasses should also set the clip area to this bounding box in their {@link #paintComponent(Graphics2D)}
      * method <em>before</em> setting the graphics transform. For example:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     graphics.clip(getZoomableBounds(null));
      *     graphics.transform(zoom);
-     * }
+     *     }
      *
      * @param  bounds  an optional pre-allocated rectangle, or {@code null} to create a new one.
      * @return the bounding box of the zoomable area, in pixel coordinates relative to this {@code ZoomPane} widget.
@@ -1052,7 +1052,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     }
 
     /**
-     * Returns the current {@link #zoom} scale factor. For example a value of 1/100 means that 100 metres are
+     * Returns the current {@link #zoom} scale factor. For example, a value of 1/100 means that 100 metres are
      * displayed as 1 pixel (assuming that the logical coordinates of {@link #getArea()} are expressed in metres).
      *
      * <p>This method combines scale along both axes, which is correct if this {@code ZoomPane} has
@@ -1088,7 +1088,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
         } catch (NoninvertibleTransformException exception) {
             /*
              * Invoke the static method because we will not be able to invoke fireZoomChanged(…).
-             * This is because we can not compute the change.
+             * This is because we cannot compute the change.
              */
             unexpectedException("setTransform", (Exception) exception);
             zoom.setTransform(tr);
@@ -1104,11 +1104,11 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * must express a change in logical units, for example, a translation in metres.
      * This method is conceptually similar to the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     zoom.concatenate(change);
      *     fireZoomChanged(change);
      *     repaint(getZoomableBounds(null));
-     * }
+     *     }
      *
      * If {@code change} is the identity transform, then this method does nothing and listeners are not notified.
      *
@@ -1131,7 +1131,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * must express a change in pixel units, for example a scrolling of 6 pixels toward right.
      * This method is conceptually similar to the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     zoom.preConcatenate(change);
      *     // Converts the change from pixel to logical units
      *     AffineTransform logical = zoom.createInverse();
@@ -1139,7 +1139,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      *     logical.concatenate(zoom);
      *     fireZoomChanged(logical);
      *     repaint(getZoomableBounds(null));
-     * }
+     *     }
      *
      * If {@code change} is the identity transform, then this method does nothing and listeners are not notified.
      *
@@ -1326,9 +1326,9 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * If {@code oldZoom} and {@code newZoom} are the affine transforms of the old and new zoom respectively,
      * the change can be computed in such a way that the following relation hold within rounding errors:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     newZoom = oldZoom.concatenate(change)
-     * }
+     *     }
      *
      * <strong>Note: This method may modify the given {@code change} transform</strong> to combine several
      * consecutive {@code fireZoomChanged(…)} calls in a single transformation.
@@ -2297,7 +2297,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
     }
 
     /**
-     * Invoked when an affine transform can not be inverted.
+     * Invoked when an affine transform cannot be inverted.
      * Current implementation logs the stack trace and resets the zoom.
      *
      * @param  methodName  the caller method name.
@@ -2367,7 +2367,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
             abs((m10 = rint(r=tr.getShearY())) - r) <= EPS)
         {
             /*
-             * At this point the scale and shear coefficients can been rounded to integers.
+             * At this point the scale and shear coefficients can be rounded to integers.
              * Continue only if this rounding does not make the transform non-invertible.
              */
             if ((m00!=0 || m01!=0) && (m10!=0 || m11!=0)) {

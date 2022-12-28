@@ -81,7 +81,7 @@ final class InternalWindowListener implements InternalFrameListener {
             }
             c = c.getParent();
         }
-        return null;            // We can't create a WindowEvent with a null source.
+        return null;            // We cannot create a WindowEvent with a null source.
     }
 
     /**

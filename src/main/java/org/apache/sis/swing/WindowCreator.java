@@ -37,7 +37,7 @@ import org.apache.sis.swing.internal.Resources;
  *
  * <p>By default the new windows are instances of either {@link JDialog}, {@link JFrame} or
  * {@link JInternalFrame} - the latter case occurs if and only if this {@code WindowCreator}
- * has a {@link JDesktopPane} ancestor. However this class provides a
+ * has a {@link JDesktopPane} ancestor. However, this class provides a
  * {@link #setWindowHandler(Handler)} method allowing users to plugin their own mechanism,
  * for example in order to integrate the widget in the NetBeans platform.</p>
  *
@@ -128,7 +128,7 @@ public abstract class WindowCreator extends JComponent {
      * Creates new {@linkplain Window Windows} for the purpose of widgets extending {@link WindowCreator}.
      * The widget will typically use this handler as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public class Widget extends WindowCreator {
      *         private JPanel accessoryContent = ...;
      *         private Window accessoryWindow;
@@ -142,10 +142,10 @@ public abstract class WindowCreator extends JComponent {
      *             accessoryWindow.setVisible(true);
      *         }
      *     }
-     * }
+     *     }
      *
      * The {@linkplain #DEFAULT default handler} will create new windows of kind
-     * {@link JDialog}, {@link JFrame} or {@link JInternalFrame}. However users can provide
+     * {@link JDialog}, {@link JFrame} or {@link JInternalFrame}. However, users can provide
      * a different handler to {@link WindowCreator}, for example in order to integrate the
      * windows with the NetBeans platform.
      */
@@ -252,7 +252,7 @@ public abstract class WindowCreator extends JComponent {
         public boolean showDialog(Component owner, final Component content, final String title) {
             /*
              * Workaround for the Mac L&F, where the internal dialog box has no border
-             * and can not be moved. We will use a native dialog window instead.
+             * and cannot be moved. We will use a native dialog window instead.
              */
             if (UIManager.getLookAndFeel().getName().equalsIgnoreCase("Mac OS X")) {
                 if (!(owner instanceof java.awt.Window)) {

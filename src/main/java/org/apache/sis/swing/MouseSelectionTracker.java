@@ -47,11 +47,11 @@ import javax.swing.event.MouseInputAdapter;
  *
  * This controller should then be registered with one, and only one, component using the following syntax:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Component component = ...
  *     MouseSelectionTracker control = ...
  *     component.addMouseListener(control);
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.1
@@ -175,7 +175,7 @@ public abstract class MouseSelectionTracker extends MouseInputAdapter {
      *         This is usually the same transform than the one used for drawing in a {@link java.awt.Graphics2D} object.
      * @return a geometric shape enclosing the last region to be selected by the user,
      *         or {@code null} if no selection has yet been made.
-     * @throws NoninvertibleTransformException if the affine transform can not be inverted.
+     * @throws NoninvertibleTransformException if the affine transform cannot be inverted.
      */
     public Shape getSelectedArea(final AffineTransform transform) throws NoninvertibleTransformException {
         if (ox == px && oy == py) {

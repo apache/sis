@@ -27,7 +27,7 @@ import javax.swing.WindowConstants;
 /**
  * Interfaces for windows created by {@link WindowCreator}. This interface is typically implemented
  * by {@link JDialog}, {@link JFrame} or {@link JInternalFrame} subclasses, but users can provide other
- * implementation. For example an application developed on top of the <cite>NetBeans platform</cite>
+ * implementation. For example, an application developed on top of the <cite>NetBeans platform</cite>
  * may need to provide their own implementation for better integration with their platform.
  *
  * <p>Instances of {@code Window} are created by
