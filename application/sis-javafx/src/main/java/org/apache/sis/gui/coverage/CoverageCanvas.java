@@ -1160,9 +1160,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Other methods should generally not invoke this method directly,
      * and use the following code instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     runAfterRendering(this::clear);
-     * }
+     *     }
      *
      * @see #runAfterRendering(Runnable)
      */

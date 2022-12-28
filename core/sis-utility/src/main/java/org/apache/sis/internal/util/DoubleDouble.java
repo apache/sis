@@ -42,9 +42,9 @@ import org.apache.sis.math.DecimalFunctions;
  * more compact storage and better performance. {@code DoubleDouble} can be converted to {@code BigDecimal} as
  * below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     BigDecimal decimal = new BigDecimal(dd.value).add(new BigDecimal(dd.error));
- * }
+ *     }
  *
  * <h2>Impact of availability of FMA instructions</h2>
  * When allowed to use <cite>fused multiply-add</cite> (FMA) instruction added in JDK9
@@ -97,7 +97,7 @@ public final class DoubleDouble extends Number {
      * The split constant used as part of multiplication algorithms. The split algorithm is as below
      * (we have to inline it in multiplication methods because Java cannot return multi-values):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private void split(double a) {
      *         double t   = SPLIT * a;
      *         double ahi = t - (t - a);
@@ -428,10 +428,10 @@ public final class DoubleDouble extends Number {
      * Sets the {@link #value} and {@link #error} terms to values read from the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   value = array[index];
      *   error = array[index + errorOffset];
-     * }
+     *   }
      *
      * @param  array        the array from which to get the value and error.
      * @param  index        index of the value in the given array.
@@ -506,10 +506,10 @@ public final class DoubleDouble extends Number {
      * Stores the {@link #value} and {@link #error} terms in the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   array[index] = value;
      *   array[index + errorOffset] = error;
-     * }
+     *   }
      *
      * @param  array        the array where to store the value and error.
      * @param  index        index of the value in the given array.
@@ -551,9 +551,9 @@ public final class DoubleDouble extends Number {
      * Adds another double-double value to this {@code DoubleDouble}.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    add(other.value, other.error);
-     * }
+     * {@snippet lang="java" :
+     *   add(other.value, other.error);
+     *   }
      *
      * @param  other  the other value to add to this {@code DoubleDouble}.
      */
@@ -581,9 +581,9 @@ public final class DoubleDouble extends Number {
      * Adds a {@code double} value to this {@code DoubleDouble} with a default error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    add(otherValue, errorForWellKnownValue(otherValue));
-     * }
+     * {@snippet lang="java" :
+     *   add(otherValue, errorForWellKnownValue(otherValue));
+     *   }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
      * <code>{@linkplain #add(double) add}(otherValue)</code> is more efficient.
@@ -610,9 +610,9 @@ public final class DoubleDouble extends Number {
      * Adds a {@code double} value to this {@code DoubleDouble} without error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    add(otherValue, 0);
-     * }
+     * {@snippet lang="java" :
+     *   add(otherValue, 0);
+     *   }
      *
      * @param  otherValue  the other value to add to this {@code DoubleDouble}.
      */
@@ -637,13 +637,13 @@ public final class DoubleDouble extends Number {
      * keeping in mind that the result of (a.value + b.value) has itself an error
      * which needs to be added to (a.error + b.error). In Java code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final double thisError = this.error;
      *   setToSum(value, otherValue);
      *   error += thisError;
      *   error += otherError;
      *   setToQuickSum(value, error);
-     * }
+     *   }
      *
      * @param  otherValue  the other value to add to this {@code DoubleDouble}.
      * @param  otherError  the error of the other value to add to this {@code DoubleDouble}.
@@ -675,9 +675,9 @@ public final class DoubleDouble extends Number {
      * Adds another double-double value to this {@code DoubleDouble}, reading the values from an array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
-     *    add(array[index], array[index + errorOffset]);
-     * }
+     * {@snippet lang="java" :
+     *   add(array[index], array[index + errorOffset]);
+     *   }
      *
      * @param  array        the array from which to get the value and error.
      * @param  index        index of the value in the given array.
@@ -691,9 +691,9 @@ public final class DoubleDouble extends Number {
      * Subtracts another double-double value from this {@code DoubleDouble}.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    subtract(other.value, other.error);
-     * }
+     * {@snippet lang="java" :
+     *   subtract(other.value, other.error);
+     *   }
      *
      * @param  other  the other value to subtract from this value.
      */
@@ -721,9 +721,9 @@ public final class DoubleDouble extends Number {
      * Subtracts a {@code double} from this {@code DoubleDouble} with a default error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    subtract(otherValue, errorForWellKnownValue(otherValue));
-     * }
+     * {@snippet lang="java" :
+     *   subtract(otherValue, errorForWellKnownValue(otherValue));
+     *   }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
      * <code>{@linkplain #subtract(double) subtract}(otherValue)</code> is more efficient.
@@ -738,9 +738,9 @@ public final class DoubleDouble extends Number {
      * Subtracts a {@code double} from this {@code DoubleDouble} without error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    subtract(otherValue, 0);
-     * }
+     * {@snippet lang="java" :
+     *   subtract(otherValue, 0);
+     *   }
      *
      * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
      */
@@ -763,9 +763,9 @@ public final class DoubleDouble extends Number {
      * Subtracts another double-double value from this {@code DoubleDouble}, reading the values from an array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
-     *    subtract(array[index], array[index + errorOffset]);
-     * }
+     * {@snippet lang="java" :
+     *   subtract(array[index], array[index + errorOffset]);
+     *   }
      *
      * @param  array        the array from which to get the value and error.
      * @param  index        index of the value in the given array.
@@ -779,9 +779,9 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by another double-double value.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    multiply(other.value, other.error);
-     * }
+     * {@snippet lang="java" :
+     *   multiply(other.value, other.error);
+     *   }
      *
      * @param  other  the other value to multiply by this value.
      */
@@ -809,9 +809,9 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by a {@code double} with a default error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    multiply(otherValue, errorForWellKnownValue(otherValue));
-     * }
+     * {@snippet lang="java" :
+     *   multiply(otherValue, errorForWellKnownValue(otherValue));
+     *   }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
      * <code>{@linkplain #multiply(double) multiply}(otherValue)</code> is more efficient.
@@ -826,9 +826,9 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by a {@code double} without error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    multiply(otherValue, 0);
-     * }
+     * {@snippet lang="java" :
+     *   multiply(otherValue, 0);
+     *   }
      *
      * @param  otherValue  the other value to multiply by this {@code DoubleDouble}.
      */
@@ -855,14 +855,14 @@ public final class DoubleDouble extends Number {
      * product has itself an error. The last term (the product of errors) is ignored because presumed very small.
      * In Java code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final double thisValue = this.value;
      *   final double thisError = this.error;
      *   setToProduct(thisValue, otherValue);
      *   error += otherError * thisValue;
      *   error += otherValue * thisError;
      *   setToQuickSum(value, error);
-     * }
+     *   }
      *
      * @param  otherValue  the other value by which to multiply this {@code DoubleDouble}.
      * @param  otherError  the error of the other value by which to multiply this {@code DoubleDouble}.
@@ -880,9 +880,9 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by another double-double value stored in the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
-     *    multiply(array[index], array[index + errorOffset]);
-     * }
+     * {@snippet lang="java" :
+     *   multiply(array[index], array[index + errorOffset]);
+     *   }
      *
      * @param  array        the array from which to get the value and error.
      * @param  index        index of the value in the given array.
@@ -896,9 +896,9 @@ public final class DoubleDouble extends Number {
      * Divides this {@code DoubleDouble} by another double-double value.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    divide(other.value, other.error);
-     * }
+     * {@snippet lang="java" :
+     *   divide(other.value, other.error);
+     *   }
      *
      * @param  other  the other value to by which to divide this value.
      */
@@ -926,9 +926,9 @@ public final class DoubleDouble extends Number {
      * Divides this {@code DoubleDouble} by a {@code double} with a default error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    divide(otherValue, errorForWellKnownValue(otherValue));
-     * }
+     * {@snippet lang="java" :
+     *   divide(otherValue, errorForWellKnownValue(otherValue));
+     *   }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
      * <code>{@linkplain #divide(double) divide}(otherValue)</code> is more efficient.
@@ -943,9 +943,9 @@ public final class DoubleDouble extends Number {
      * Divides this {@code DoubleDouble} by a {@code double} without error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    divide(otherValue, 0);
-     * }
+     * {@snippet lang="java" :
+     *   divide(otherValue, 0);
+     *   }
      *
      * @param  otherValue  the other value by which to divide this {@code DoubleDouble}.
      */
@@ -977,9 +977,9 @@ public final class DoubleDouble extends Number {
      * Divides this {@code DoubleDouble} by another double-double value stored in the given array.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
-     *    divide(array[index], array[index + errorOffset]);
-     * }
+     * {@snippet lang="java" :
+     *   divide(array[index], array[index + errorOffset]);
+     *   }
      *
      * @param  array        the array from which to get the value and error.
      * @param  index        index of the value in the given array.
@@ -993,9 +993,9 @@ public final class DoubleDouble extends Number {
      * Divides the given double-double value by this {@code DoubleDouble}.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    inverseDivide(other.value, other.error);
-     * }
+     * {@snippet lang="java" :
+     *   inverseDivide(other.value, other.error);
+     *   }
      *
      * @param  other  the other value to divide by this value.
      */
@@ -1023,9 +1023,9 @@ public final class DoubleDouble extends Number {
      * Divides the given {@code double} value by this {@code DoubleDouble} with a default error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
-     * }
+     * {@snippet lang="java" :
+     *   inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
+     *   }
      *
      * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
      * <code>{@linkplain #inverseDivide(double) inverseDivide}(otherValue)</code> is more efficient.
@@ -1040,9 +1040,9 @@ public final class DoubleDouble extends Number {
      * Divides the given {@code double} value by this {@code DoubleDouble} without error term.
      * This is a convenience method for:
      *
-     * {@preformat java
-     *    inverseDivide(numeratorValue, 0);
-     * }
+     * {@snippet lang="java" :
+     *   inverseDivide(numeratorValue, 0);
+     *   }
      *
      * @param  numeratorValue  the other value to divide by this {@code DoubleDouble}.
      */
@@ -1083,7 +1083,7 @@ public final class DoubleDouble extends Number {
          */
         final double productError = error;
         setToSum(numeratorValue, -value);
-        error -= productError;  // Complete the above subtraction
+        error -= productError;                      // Complete the above subtraction
         error += numeratorError;
         /*
          * Adds the 'remainder / b' term, using 'remainder / b.value' as an approximation
@@ -1097,9 +1097,9 @@ public final class DoubleDouble extends Number {
      * Divides the given double-double value by this {@code DoubleDouble}.
      * This is a convenience method for a frequently used operation, implemented as below:
      *
-     * {@preformat java
-     *    inverseDivide(array[index], array[index + errorOffset]);
-     * }
+     * {@snippet lang="java" :
+     *   inverseDivide(array[index], array[index + errorOffset]);
+     *   }
      *
      * @param  array        the array from which to get the value and error.
      * @param  index        index of the value in the given array.

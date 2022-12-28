@@ -143,7 +143,7 @@ abstract class Transformer {
      * JAXB annotations. For example, given the following XML, this list should contain {@code cit:CI_Citation},
      * {@code cit:date} and {@code cit:CI_Date} (in that order) when the (un)marshalling reaches the "…" location.
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:date>
      *       <cit:CI_Date>
@@ -151,7 +151,7 @@ abstract class Transformer {
      *       </cit:CI_Date>
      *     </cit:date>
      *   </cit:CI_Citation>
-     * }
+     *   }
      */
     private final List<QName> outerElements;
 
@@ -455,7 +455,7 @@ abstract class Transformer {
      * For example, given the following XML, this method returns {@code true} for {@code cit:CI_Date} but
      * {@code false} for {@code cit:date}:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:date>
      *       <cit:CI_Date>
@@ -463,7 +463,7 @@ abstract class Transformer {
      *       </cit:CI_Date>
      *     </cit:date>
      *   </cit:CI_Citation>
-     * }
+     *   }
      *
      * This method is based on simple heuristic applicable to OGC/ISO conventions,
      * and may change in any future SIS version depending on new formats to support.

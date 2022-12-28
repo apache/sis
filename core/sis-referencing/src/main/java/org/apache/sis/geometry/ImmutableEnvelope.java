@@ -138,9 +138,9 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
-     * {@preformat wkt
-     *     BOX(-180 -90, 180 90)
-     * }
+     * {@snippet lang="wkt" :
+     *   BOX(-180 -90, 180 90)
+     *   }
      *
      * However, this constructor is lenient to other geometry types like {@code POLYGON}.
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}

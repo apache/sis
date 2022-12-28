@@ -41,17 +41,17 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
  *       Those conversions are obtained by a SQL query like below (note that this query can return at most
  *       one result, because {@code COORD_REF_SYS_CODE} is a primary key):
  *
- *       {@preformat sql
+ *       {@snippet lang="sql" :
  *         SELECT PROJECTION_CONV_CODE FROM "Coordinate Reference System" WHERE SOURCE_GEOGCRS_CODE = ? AND COORD_REF_SYS_CODE = ?
- *       }
+ *         }
  *   </li>
  *
  *   <li>The coordinate operation may be standalone. This is the case of coordinate transformations having stochastic errors.
  *       Those transformations are obtained by a SQL query like below (note that this query can return many results):
  *
- *       {@preformat sql
+ *       {@snippet lang="sql" :
  *         SELECT COORD_OP_CODE FROM "Coordinate_Operation" … WHERE … AND SOURCE_CRS_CODE = ? AND TARGET_CRS_CODE = ?
- *       }
+ *         }
  *   </li>
  * </ol>
  *

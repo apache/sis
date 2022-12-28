@@ -786,19 +786,19 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * So the period to add or remove is the number of cells that the grid would have if it was spanning 360° of
      * longitude.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * if longitude values are mapped to {@code gridX} coordinates (in dimension 0), and if a shift of 360° in
+     * <h4>Example</h4>
+     * If longitude values are mapped to {@code gridX} coordinates (in dimension 0), and if a shift of 360° in
      * longitude values is equivalent to a shift of {@code periodX} cells in the grid, then this method can be
      * implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private final double periodX = ...;      // Number of grid cells in 360° of longitude.
      *
-     *     &#64;Override
+     *     @Override
      *     protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
      *         gridCoordinates[0] = Math.IEEEremainder(gridCoordinates[0], periodX);
      *     }
-     * }</div>
+     * }
      *
      * This method receives all grid coordinates in the {@code gridCoordinates} argument and can modify any
      * of them, possibly many at once. The reason is because a shift of 360° of longitude (for example) may

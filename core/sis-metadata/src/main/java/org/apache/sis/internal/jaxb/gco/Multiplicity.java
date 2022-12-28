@@ -30,7 +30,7 @@ import org.apache.sis.measure.NumberRange;
  * The possible cardinality of a relation. Represented by a set of simple multiplicity ranges.
  * Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gco:Multiplicity>
  *     <gco:range>
  *       <gco:MultiplicityRange>
@@ -43,7 +43,7 @@ import org.apache.sis.measure.NumberRange;
  *       </gco:MultiplicityRange>
  *     </gco:range>
  *   </gco:Multiplicity>
- * }
+ *   }
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

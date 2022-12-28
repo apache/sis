@@ -809,9 +809,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *
      * <p>The default implementation is equivalent to:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return cast(parameter(name), parameter.getValueClass());
-     * }
+     *     }
      *
      * where {@code name} is a {@code parameter} {@linkplain DefaultParameterDescriptor#getName() name}
      * or {@linkplain DefaultParameterDescriptor#getAlias() alias} chosen by the same algorithm than

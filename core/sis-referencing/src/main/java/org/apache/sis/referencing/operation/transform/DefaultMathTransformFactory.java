@@ -304,13 +304,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *   <li>All {@code OperationMethod} instances shall be thread-safe.</li>
      *   <li>The {@code Iterable} itself does not need to be thread-safe since all usages will be synchronized as below:
      *
-     *       {@preformat java
+     *       {@snippet lang="java" :
      *           synchronized (methods) {
      *               for (OperationMethod method : methods) {
      *                   // Use the method here.
      *               }
      *           }
-     *       }
+     *           }
      *   </li>
      * </ul>
      *
@@ -1164,12 +1164,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
      * Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
      *     group.parameter("semi_major").setValue(6378137.000);
      *     group.parameter("semi_minor").setValue(6356752.314);
      *     MathTransform mt = factory.createParameterizedTransform(group, null);
-     * }
+     *     }
      *
      * Sometimes the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
      * but rather inferred from the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
@@ -1624,10 +1624,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * The resulting transform will have the following dimensions:
      *
-     * {@preformat java
-     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
-     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
-     * }
+     * {@snippet lang="java" :
+     *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
+     *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
+     *     }
      *
      * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
      * @param  subTransform             transform to use for affected coordinates.

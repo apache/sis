@@ -129,15 +129,16 @@ public class LambertConicConformal extends ConformalProjection {
      * the normalization matrix which use that precision for "degrees to radians" conversion.
      * The goal is to have cleaner results after matrix inversions and multiplications.
      *
-     * <div class="note"><b>Tip:</b> how to verify the value:
-     * {@preformat java
+     * <h4>Tip</h4>
+     * How to verify the value:
+     *
+     * {@snippet lang="java" :
      *     BigDecimal a = new BigDecimal(BELGE_A.value);
      *     a = a.add     (new BigDecimal(BELGE_A.error));
      *     a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));
      *     a = a.multiply(new BigDecimal(60 * 60));
      *     System.out.println(a);
-     * }
-     * </div>
+     *     }
      */
     static Number belgeA() {
         return new DoubleDouble(-1.420431363598774E-4, -1.1777378450498224E-20);

@@ -395,9 +395,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * This includes elements like {@code "SCOPE"}, {@code "ID"} (WKT 2) or {@code "AUTHORITY"} (WKT 1).
      * This WKT 1 element has the following pattern:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     AUTHORITY["<name>", "<code>"]
-     * }
+     *     }
      *
      * <h4>Fallback</h4>
      * The name is a mandatory property, but some invalid WKT with an empty string exist. In such case,
@@ -583,9 +583,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses an optional {@code "UNIT"} element of a known dimension.
      * This element has the following pattern:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     UNIT["<name>", <conversion factor> {,<authority>}]
-     * }
+     *     }
      *
      * Unit was a mandatory element in WKT 1, but became optional in WKT 2 because the unit may be specified
      * in each {@code AXIS[…]} element instead of for the whole coordinate system.
@@ -657,12 +657,12 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses a {@code "CS"} element followed by all {@code "AXIS"} elements.
      * This element has the following pattern (simplified):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     CS["<type>", dimension],
      *     AXIS["<name>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER],
      *     UNIT["<name>", <conversion factor>],
      *     etc.
-     * }
+     *     }
      *
      * This element is different from all other elements parsed by {@code GeodeticObjectParser}
      * in that its components are sibling elements rather than child elements of the CS element.
@@ -986,15 +986,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses an {@code "AXIS"} element.
      * This element has the following pattern (simplified):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     AXIS["<name (abbr.)>", NORTH | SOUTH | EAST | WEST | UP | DOWN | OTHER, ORDER[n], UNIT[…], ID[…]]
-     * }
+     *     }
      *
      * Abbreviation may be specified between parenthesis. Nested parenthesis are possible, as for example:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     AXIS["Easting (E(X))", EAST]
-     * }
+     *     }
      *
      * @param  mode         {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent       the parent element.
@@ -1130,9 +1130,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     PRIMEM["<name>", <longitude> {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode         {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent       the parent element.
@@ -1173,9 +1173,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses an <strong>optional</strong> {@code "TOWGS84"} element.
      * This element is specific to WKT 1 and has the following pattern:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     TOWGS84[<dx>, <dy>, <dz>, <ex>, <ey>, <ez>, <ppm>]
-     * }
+     *     }
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1207,9 +1207,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     SPHEROID["<name>", <semi-major axis>, <inverse flattening> {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1312,9 +1312,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 specification was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     PROJECTION["<name>" {,<authority>}]
-     * }
+     *     }
      *
      * Note that in WKT 2, this element is wrapped inside a {@code Conversion} or {@code DerivingConversion}
      * element which is itself inside the {@code ProjectedCRS} element. This is different than WKT 1, which
@@ -1387,9 +1387,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     DATUM["<name>", <spheroid> {,<to wgs84>} {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode      {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent    the parent element.
@@ -1428,9 +1428,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     VERT_DATUM["<name>", <datum type> {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1467,9 +1467,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses a {@code "TimeDatum"} element. This element has the following pattern:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     TimeDatum["<name>", TimeOrigin[<time origin>] {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1496,9 +1496,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     /**
      * Parses a {@code "ParametricDatum"} element. This element has the following pattern:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     ParametricDatum["<name>", Anchor[...] {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
@@ -1525,9 +1525,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     LOCAL_DATUM["<name>", <datum type> {,<authority>}]
-     * }
+     *     }
      *
      * The datum type (WKT 1 only) is currently ignored.
      *
@@ -1588,9 +1588,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     LOCAL_CS["<name>", <local datum>, <unit>, <axis>, {,<axis>}* {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent     the parent element.
@@ -1698,15 +1698,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 specification had two elements for this:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     GEOGCS["<name>", <datum>, <prime meridian>, <angular unit>  {,<twin axes>} {,<authority>}]
-     * }
+     *     }
      *
      * and
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     GEOCCS["<name>", <datum>, <prime meridian>, <linear unit> {,<axis> ,<axis> ,<axis>} {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent     the parent element.
@@ -1873,9 +1873,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 pattern was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     VERT_CS["<name>", <vert datum>, <linear unit>, {<axis>,} {,<authority>}]
-     * }
+     *     }
      *
      * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent     the parent element.
@@ -2089,10 +2089,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 specification was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     PROJCS["<name>", <geographic cs>, <projection>, {<parameter>,}*,
      *            <linear unit> {,<twin axes>}{,<authority>}]
-     * }
+     *     }
      *
      * @param  mode       {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent     the parent element.
@@ -2172,9 +2172,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * The legacy WKT 1 specification was:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     COMPD_CS["<name>", <head cs>, <tail cs> {,<authority>}]
-     * }
+     *     }
      *
      * In the particular case where there is a geographic CRS and an ellipsoidal height,
      * this method rather build a three-dimensional geographic CRS.
@@ -2208,9 +2208,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * Parses a {@code "FITTED_CS"} element.
      * This element has the following pattern:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *     FITTED_CS["<name>", <to base>, <base cs>]
-     * }
+     *     }
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.

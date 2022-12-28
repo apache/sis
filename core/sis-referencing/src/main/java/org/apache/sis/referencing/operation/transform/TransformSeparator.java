@@ -36,18 +36,18 @@ import org.apache.sis.util.ArraysExt;
  * Given an arbitrary {@link MathTransform}, this class tries to return a new math transform that operates
  * only on a given set of source or target dimensions.
  *
- * <div class="note"><b>Example:</b>
- * if the supplied {@code transform} has (<var>x</var>,<var>y</var>,<var>z</var>) inputs
+ * <h2>Example</h2>
+ * If the supplied {@code transform} has (<var>x</var>,<var>y</var>,<var>z</var>) inputs
  * and (<var>λ</var>,<var>φ</var>,<var>h</var>) outputs, then the following code:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     TransformSeparator s = new TransformSeparator(theTransform);
  *     s.addSourceDimensionRange(0, 2);
  *     MathTransform mt = s.separate();
- * }
+ *     }
  *
  * will return a transform with (<var>x</var>,<var>y</var>) inputs and (probably) (<var>λ</var>,<var>φ</var>) outputs.
- * The output dimensions can be verified with a call to {@link #getTargetDimensions()}.</div>
+ * The output dimensions can be verified with a call to {@link #getTargetDimensions()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

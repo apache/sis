@@ -439,14 +439,14 @@ next:   for (final CoordinateSystem cs : targets) {
      * Returns a coordinate system derived from the given one but with a modified list of axes.
      * The axes may be filtered (excluding some axes), reordered or have their unit and direction modified.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * for replacing all angular units of a coordinate system to degrees (regardless what the original
      * angular units were) while leaving other kinds of units unchanged, one can write:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     CoordinateSystem cs = ...;
      *     cs = CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-     *         &#64;Override
+     *         @Override
      *         public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *             if (Units.isAngular(unit)) {
      *                 unit = Units.DEGREE;
@@ -454,21 +454,21 @@ next:   for (final CoordinateSystem cs : targets) {
      *             return unit;
      *         }
      *     });
-     * }</div>
+     *     }
      *
      * <h4>Coordinate system normalization</h4>
      * This method is often used together with {@link #swapAndScaleAxes swapAndScaleAxes(…)} for normalizing the
      * coordinate values given to a {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform
      * math transform}.
      *
-     * <div class="note"><b>Example:</b>
-     * {@preformat java
+     * <h4>Example</h4>
+     * {@snippet lang="java" :
      *     CoordinateSystem sourceCS = ...;
      *     CoordinateSystem targetCS = ...;
      *     Matrix step1 = swapAndScaleAxes(sourceCS, replaceAxes(sourceCS, AxisConvention.NORMALIZED));
      *     Matrix step2 = ...; // some transform working on coordinates with standard axis order and unit.
      *     Matrix step3 = swapAndScaleAxes(replaceAxes(targetCS, AxisConvention.NORMALIZED), targetCS);
-     * }</div>
+     *     }
      *
      * A rational for normalized axis order and units is explained in the <cite>Axis units and direction</cite> section
      * in the description of the {@linkplain org.apache.sis.referencing.operation.projection map projection package}.
@@ -511,13 +511,13 @@ next:   for (final CoordinateSystem cs : targets) {
      * Non-linear units (e.g. angular or scale units) are left unchanged.
      *
      * <p>This convenience method is equivalent to the following code:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-     *         &#64;Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *         @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *             return Units.isLinear(unit) ? newUnit : unit;
      *         }
      *     });
-     * }
+     *     }
      *
      * @param  cs       the coordinate system in which to replace linear units, or {@code null}.
      * @param  newUnit  the new linear unit.
@@ -542,13 +542,13 @@ next:   for (final CoordinateSystem cs : targets) {
      * Non-angular units (e.g. linear or scale units) are left unchanged.
      *
      * <p>This convenience method is equivalent to the following code:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
-     *         &#64;Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
+     *         @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *             return Units.isAngular(unit) ? newUnit : unit;
      *         }
      *     });
-     * }
+     *     }
      *
      * @param  cs       the coordinate system in which to replace angular units, or {@code null}.
      * @param  newUnit  the new angular unit.

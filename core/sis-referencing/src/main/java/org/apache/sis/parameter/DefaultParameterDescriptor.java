@@ -593,7 +593,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * the parameter value element, like below. In such case, {@link #valueClass} is defined at construction time
      * by {@link #DefaultParameterDescriptor()} because the value is before the descriptor.
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:ParameterValue>
      *     <gml:value uom="…">…</gml:value>
      *     <gml:operationParameter>
@@ -602,18 +602,18 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *       </gml:OperationParameter>
      *     </gml:operationParameter>
      *   </gml:ParameterValue>
-     * }
+     *   }
      *
      * In the second scenario shows below, the descriptor was defined before the value and is referenced by a link.
      * In that case, {@link #valueClass} is {@code null} the first time that this method is invoked. It may become
      * non-null if the same parameter descriptor is reused for many parameter values.
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:ParameterValue>
      *     <gml:value uom="…">…</gml:value>
      *     <gml:operationParameter xlink:href="#LongitudeRotation"/>
      *   </gml:ParameterValue>
-     * }
+     *   }
      *
      * This method modifies the state of this class despite the fact that it should be immutable.
      * It is okay because we are updating an instance created during GML unmarshalling, and that

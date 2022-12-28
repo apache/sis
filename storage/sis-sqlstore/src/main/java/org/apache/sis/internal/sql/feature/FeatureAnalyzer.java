@@ -50,13 +50,13 @@ import org.opengis.feature.FeatureType;
  * methods have values computed as side-effects and which are required by a subsequent method.
  * This is highly dependent of implementation details and may change in any future version.
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *   importedKeys = spec.getForeignerKeys(Relation.Direction.IMPORT);
  *   exportedKeys = spec.getForeignerKeys(Relation.Direction.EXPORT);
  *   attributes   = spec.createAttributes();
  *   primaryKey   = spec.createAssociations(exportedKeys);
  *   featureType  = spec.buildFeatureType();
- * }
+ *   }
  *
  * Methods not listed above can be invoked in any order.
  *

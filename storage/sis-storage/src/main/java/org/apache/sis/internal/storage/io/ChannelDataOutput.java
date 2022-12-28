@@ -307,9 +307,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all bytes from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return write(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of bytes to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
@@ -322,9 +322,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all shorts from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return writeShorts(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of shorts to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
@@ -337,9 +337,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all characters from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return writeChars(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of characters to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
@@ -352,9 +352,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all integers from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return writeInts(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of integers to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
@@ -367,9 +367,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all longs from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return writeLongs(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of longs to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
@@ -382,9 +382,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all floats from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return writeFloats(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of floats to be written into stream.
      * @throws IOException if an error occurred while writing the stream.
@@ -397,9 +397,9 @@ public class ChannelDataOutput extends ChannelData implements Flushable {
      * Writes all doubles from the given array into the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return writeDoubles(src, 0, src.length);
-     * }
+     *     }
      *
      * @param  src  an array of doubles to be written into stream.
      * @throws IOException if an error occurred while writing the stream.

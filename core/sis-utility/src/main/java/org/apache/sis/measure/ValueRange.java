@@ -28,8 +28,8 @@ import java.lang.annotation.RetentionPolicy;
  * When used with JavaBeans, this annotation shall be applied on the getter method
  * as in the following example:
  *
- * {@preformat java
- *     &#64;ValueRange(minimum=0, maximum=100)
+ * {@snippet lang="java" :
+ *     @ValueRange(minimum=0, maximum=100)
  *     public double getCloudCoverPercentage() {
  *         // Method implementation here...
  *     }
@@ -42,8 +42,8 @@ import java.lang.annotation.RetentionPolicy;
  * zero makes no sense. Note also that the {@code maximum} value is not explicitly
  * provided, in which case it defaults to infinity.
  *
- * {@preformat java
- *     &#64;@ValueRange(minimum=0, isMinIncluded=false)
+ * {@snippet lang="java" :
+ *     @ValueRange(minimum=0, isMinIncluded=false)
  *     public double getSpatialResolution() {
  *         // Method implementation here...
  *     }
@@ -54,14 +54,14 @@ import java.lang.annotation.RetentionPolicy;
  * uses a convenience constructor for this purpose. Note that the {@code Double} type could
  * by inferred from {@link java.lang.reflect.Method#getReturnType()}.
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Method myMethod = ...;
  *     ValueRange annotation = myMethod.getAnnotation(ValueRange.class);
  *     if (annotation != null) {
  *         NumberRange<Double> range = new NumberRange(Double.class, annotation);
  *         // Use the range here.
  *     }
- * }
+ *     }
  *
  * The {@link org.apache.sis.metadata.AbstractMetadata} class uses this annotation for inferring
  * {@link org.opengis.parameter.ParameterDescriptor} from metadata interfaces and implementation

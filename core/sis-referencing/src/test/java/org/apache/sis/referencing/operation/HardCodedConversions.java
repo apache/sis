@@ -56,12 +56,12 @@ public final strictfp class HardCodedConversions {
      * A defining conversion for a <cite>Universal Transverse Mercator zone 9</cite> projection.
      * Pseudo Well-Known Text for the {@link org.opengis.referencing.operation.MathTransform}:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   Param_MT["Transverse Mercator",
      *       Parameter["Longitude of natural origin", -129, Unit["degree"]],
      *       Parameter["Scale factor at natural origin", 0.9996],
      *       Parameter["False easting", 500000, Unit["metre"]]]]
-     * }
+     *   }
      */
     public static final DefaultConversion UTM;
     static {

@@ -239,10 +239,10 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * This channel should be opened on a sparse file.
      * To check if a file is sparse, the outputs of following shell commands can be compared:
      *
-     * {@preformat shell
+     * {@snippet lang="shell" :
      *   ls -l the-temporary-file
      *   du --block-size=1 the-temporary-file
-     * }
+     *   }
      *
      * @see <a href="https://en.wikipedia.org/wiki/Sparse_file">Sparse file on Wikipedia</a>
      */

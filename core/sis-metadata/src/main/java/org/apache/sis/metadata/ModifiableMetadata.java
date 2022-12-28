@@ -55,7 +55,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * Subclasses can follow the pattern below for every {@code get} and {@code set} methods,
  * with a different processing for singleton value or for {@linkplain Collection collections}.
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class MyMetadata {
  *
  *         // ==== Example for a singleton value =============================
@@ -84,7 +84,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  *             properties = writeCollection(newValues, properties, Foo.class);
  *         }
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -309,22 +309,22 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * <p>This method is typically invoked for getting a modifiable metadata from an unmodifiable one:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Metadata source  = ...;          // Any implementation.
      *     DefaultMetadata md = DefaultMetadata.castOrCopy(source);
      *     md = (DefaultMetadata) md.deepCopy(DefaultMetadata.State.EDITABLE);
-     * }
+     *     }
      *
      * <h4>Alternative</h4>
      * If unconditional copy is desired, or if the metadata to copy may be arbitrary implementations
      * of GeoAPI interfaces (i.e. not necessarily a {@code ModifiableMetadata} subclass),
      * then the following code can be used instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
      *     Metadata source = ...;                           // Any implementation.
      *     Metadata copy = copier.copy(Metadata.class, source);
-     * }
+     *     }
      *
      * The {@code Metadata} type in above example can be replaced by any other ISO 19115 type.
      * Types from other standards can also be used if the {@link MetadataStandard#ISO_19115} constant

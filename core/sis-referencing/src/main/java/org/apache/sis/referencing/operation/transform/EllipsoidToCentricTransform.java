@@ -366,15 +366,15 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Creates a transform from geographic to Cartesian geocentric coordinates (convenience method).
-     * Invoking this method is equivalent to the following:
+     * This method is equivalent to the following:
      *
-     * {@preformat java
-     *     createGeodeticConversion(factory,
+     * {@snippet lang="java" :
+     *     return createGeodeticConversion(factory,
      *             ellipsoid.getSemiMajorAxis(),
      *             ellipsoid.getSemiMinorAxis(),
      *             ellipsoid.getAxisUnit(),
      *             withHeight, TargetType.CARTESIAN);
-     * }
+     *     }
      *
      * The target type is assumed Cartesian because this is the most frequently used target.
      *

@@ -38,7 +38,7 @@ package org.apache.sis.xml;
  *   <th>Normal {@code Series} element</th>
  *   <th>Unknown {@code Series} element</th>
  * </tr><tr><td>
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <cit:CI_Citation>
  *     <cit:series>
  *       <cit:CI_Series>
@@ -46,13 +46,13 @@ package org.apache.sis.xml;
  *       </cit:CI_Series>
  *     </cit:series>
  *   </cit:CI_Citation>
- * }
+ *   }
  * </td><td>
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <cit:CI_Citation>
  *     <cit:series nilReason="unknown"/>
  *   </cit:CI_Citation>
- * }
+ *   }
  * </td></tr></table>
  *
  * If the {@code CI_Series} element was completely omitted, then {@link org.opengis.metadata.citation.Citation#getSeries()}
@@ -66,9 +66,9 @@ package org.apache.sis.xml;
  * is missing, then invoking {@link NilReason#createNilObject(Class)}. The following example
  * instantiates a {@code Citation} object which is nil because the information are missing:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Citation nil = NilReason.MISSING.createNilObject(Citation.class);
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

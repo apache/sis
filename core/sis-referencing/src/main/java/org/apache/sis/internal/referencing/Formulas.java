@@ -254,9 +254,9 @@ public final class Formulas extends Static {
      * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method does not check for such cases;
      * it is caller responsibility to add this check is necessary, for example as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     double D = max(fastHypot(x, y), max(abs(x), abs(y)));
-     * }
+     *     }
      *
      * According JMH, above check is 1.65 time slower than {@code fastHypot} without checks.
      * We define this {@code fastHypot(…)} method for tracing where {@code sqrt(x² + y²)} is used,

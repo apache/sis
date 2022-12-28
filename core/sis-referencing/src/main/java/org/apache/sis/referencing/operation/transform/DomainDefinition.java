@@ -45,12 +45,12 @@ import org.apache.sis.geometry.GeneralEnvelope;
  * instance, unless that transform is a chain of concatenated transforms (this case is handled automatically
  * by Apache SIS). Usage example:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     AbstractMathTransform transform = …;
  *     transform.getDomain(new DomainDefinition()).ifPresent((domain) -> {
  *         // Do something here with the transform domain.
  *     });
- * }
+ *     }
  *
  * The {@link MathTransforms#getDomain(MathTransform)} convenience method can be used
  * when the default implementation is sufficient.

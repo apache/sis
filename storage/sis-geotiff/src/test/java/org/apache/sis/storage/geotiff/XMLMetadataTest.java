@@ -81,13 +81,13 @@ public final strictfp class XMLMetadataTest extends TestCase {
      * Tests parsing of GDAL metadata and formatting as a tree table.
      * THe XML document is like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <GDALMetadata>
      *     <Item name="SCALE" sample="-3">0.015</Item>
      *     <Item name="acquisitionStartDate">2018-02-28T04:48:00</Item>
      *     <Item name="acquisitionEndDate">2018-02-28T03:04:00</Item>
      *   </GDALMetadata>
-     * }
+     *   }
      *
      * The tree table output is expected to <em>not</em> contains the "Item" word,
      * because this is redundancy repeated for all nodes. Instead, "Item" should

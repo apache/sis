@@ -60,9 +60,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <b>Example:</b> the following code gets a temporal datum having its origin at January 1st, 4713 BC at 12:00 UTC:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     TemporalDatum datum = CommonCRS.Temporal.JULIAN.datum();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)

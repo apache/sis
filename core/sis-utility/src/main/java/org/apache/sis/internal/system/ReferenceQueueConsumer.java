@@ -33,19 +33,19 @@ import static java.util.logging.Logger.getLogger;
  *
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     final class MyReference extends WeakReference<MyType> implements Disposable {
  *         MyReference(MyType referent) {
  *             super(referent, ReferenceQueueConsumer.QUEUE);
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public void dispose() {
  *             // Perform here some cleaning work that must be done when the referent has
  *             // been garbage-collected. Remember that get() returns null from this point.
  *         }
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

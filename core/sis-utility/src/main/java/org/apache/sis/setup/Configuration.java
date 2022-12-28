@@ -102,7 +102,7 @@ public final class Configuration {
      * Data source specified by JNDI has precedence over data source specified by this method in order to let users
      * control their data source. The following example shows how to setup a connection to a PostgreSQL database:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     import org.postgresql.ds.PGSimpleDataSource;
      *
      *     class MyClass {
@@ -124,7 +124,7 @@ public final class Configuration {
      *             Configuration.current().setDatabase(MyClass::createDataSource);
      *         }
      *     }
-     * }
+     *     }
      *
      * This method can be invoked only before the first attempt to {@linkplain #getDatabase() get the database}.
      * If the {@link DataSource} has already be obtained, then this method throws {@link IllegalStateException}.

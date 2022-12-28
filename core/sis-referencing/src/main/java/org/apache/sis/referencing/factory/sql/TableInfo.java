@@ -257,9 +257,9 @@ final class TableInfo {
      * if such condition can be added. The clause appended by this method looks like the following example
      * (details may vary because of enumeration values):
      *
-     * {@preformat sql
-     *   WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
-     * }
+     * {@snippet lang="sql" :
+     *     WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
+     *     }
      *
      * In any case, the caller shall add at least one condition after this method call.
      *

@@ -530,9 +530,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Returns the International Standard Book Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   return getIdentifierMap().getSpecialized(Citations.ISBN);
-     * }
+     * {@snippet lang="java" :
+     *     return getIdentifierMap().getSpecialized(Citations.ISBN);
+     *     }
      *
      * @return the ISBN, or {@code null} if none.
      *
@@ -549,9 +549,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Sets the International Standard Book Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
-     * }
+     * {@snippet lang="java" :
+     *     getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
+     *     }
      *
      * @param  newValue  the new ISBN, or {@code null} if none.
      *
@@ -569,9 +569,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Returns the International Standard Serial Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   return getIdentifierMap().getSpecialized(Citations.ISSN);
-     * }
+     * {@snippet lang="java" :
+     *     return getIdentifierMap().getSpecialized(Citations.ISSN);
+     *     }
      *
      * @return the ISSN, or {@code null} if none.
      *
@@ -588,9 +588,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Sets the International Standard Serial Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
-     * }
+     * {@snippet lang="java" :
+     *     getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
+     *     }
      *
      * @param  newValue  the new ISSN.
      *

@@ -103,8 +103,8 @@ public class BufferedGridCoverage extends GridCoverage {
      * <h4>Usage</h4>
      * Implementation of {@link #render(GridExtent)} method can be like below:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException {
      *         if (sliceExtent == null) {
      *             sliceExtent = gridGeometry.getExtent();
@@ -118,7 +118,7 @@ public class BufferedGridCoverage extends GridCoverage {
      *                 return renderer.createImage();
      *             });
      *         } catch (IllegalGridGeometryException | MismatchedDimensionException e) {
-    *              throw e;
+     *             throw e;
      *         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
      *             throw new CannotEvaluateException(e.getMessage(), e);
      *         }

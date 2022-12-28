@@ -116,14 +116,15 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * instance twice will return the same {@link IdentifiedObject} instance, unless the internal cache has been cleared
  * (e.g. the application is running in a container environment and some modules have been installed or uninstalled).</p>
  *
- * <div class="note"><b>Example:</b> the following code fetches a geographic Coordinate Reference System
+ * <h2>Example</h2>
+ * The following code fetches a geographic Coordinate Reference System
  * using (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:
  *
- * {@preformat java
- *   GeographicCRS crs = CommonCRS.WGS84.normalizedGeographic();
- * }
- * </div>
+ * {@snippet lang="java" :
+ *     GeographicCRS crs = CommonCRS.WGS84.normalizedGeographic();
+ *     }
  *
+ * <h2>Available objects</h2>
  * For each enumeration value, the name of the CRS, datum and ellipsoid objects may or may not be the same.
  * Below is an alphabetical list of object names available in this enumeration:
  *
@@ -1189,9 +1190,9 @@ public enum CommonCRS {
      * <p><b>Example:</b> the following code fetches a vertical Coordinate Reference System for heights
      * above the Mean Sea Level (MSL):</p>
      *
-     * {@preformat java
-     *   VerticalCRS crs = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
-     * }
+     * {@snippet lang="java" :
+     *     VerticalCRS crs = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
+     *     }
      *
      * Below is an alphabetical list of object names available in this enumeration:
      *
@@ -1500,9 +1501,9 @@ public enum CommonCRS {
      *
      * <p><b>Example:</b> the following code fetches a temporal Coordinate Reference System using the Julian calendar:</p>
      *
-     * {@preformat java
-     *   TemporalCRS crs = CommonCRS.Temporal.JULIAN.crs();
-     * }
+     * {@snippet lang="java" :
+     *     TemporalCRS crs = CommonCRS.Temporal.JULIAN.crs();
+     *     }
      *
      * Below is an alphabetical list of object names available in this enumeration.
      * Note that the namespace of identifiers ("OGC" versus "SIS") may change in any future version.

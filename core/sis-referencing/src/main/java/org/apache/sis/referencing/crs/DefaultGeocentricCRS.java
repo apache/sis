@@ -59,9 +59,9 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  *
  * <b>Example:</b> the following code gets a geocentric CRS using the <cite>World Geodetic System 1984</cite> datum:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     GeodeticDatum datum = CommonCRS.WGS84.geocentric();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -248,10 +248,11 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
+     * <h4>Example</h4>
+     * Well-Known Text (version 2)
      * of a geocentric coordinate reference system using the WGS 84 datum.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   GeodeticCRS["Geocentric",
      *     Datum["World Geodetic System 1984",
      *       Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
@@ -261,11 +262,11 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *       Axis["(Y)", geocentricY],
      *       Axis["(Z)", geocentricZ],
      *       LengthUnit["metre", 1]]
-     * }
+     *   }
      *
      * <p>Same coordinate reference system using WKT 1. Note that axis directions are totally different.</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   GEOCCS["Geocentric",
      *     DATUM["World Geodetic System 1984",
      *       SPHEROID["WGS84", 6378137.0, 298.257223563]],
@@ -274,9 +275,9 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *     AXIS["X", OTHER],
      *     AXIS["Y", EAST],
      *     AXIS["Z", NORTH]]
-     * }
-     * </div>
+     *   }
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeocCS"} (WKT 1).
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>

@@ -31,9 +31,9 @@ import org.apache.sis.internal.xml.XmlUtilities;
  *
  * <p>Using this adapter is equivalent to apply the following annotation on a {@code Date} field:</p>
  *
- * {@preformat java
- *     &#64;XmlElement
- *     &#64;XmlSchemaType(name="date")
+ * {@snippet lang="java" :
+ *     @XmlElement
+ *     @XmlSchemaType(name="date")
  *     private Date realizationEpoch;
  * }
  *

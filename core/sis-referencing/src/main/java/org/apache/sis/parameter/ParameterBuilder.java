@@ -65,42 +65,47 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * In this example, the <cite>"Longitude of natural origin"</cite> parameter is giving different aliases
  * for illustrating the case of different software libraries or standards using different conventions.
  *
- * {@preformat java
- *   ParameterBuilder builder = new ParameterBuilder();
- *   builder.setCodeSpace(Citations.EPSG, "EPSG")                   // The default namespace to be used below.
- *          .setRequired(true);                                     // All parameters will be considered mandatory.
+ * {@snippet lang="java" :
+ * public class MyOperation {
+ *     public static final ParameterDescriptorGroup PARAMETERS;
+ *     static {
+ *         ParameterBuilder builder = new ParameterBuilder();
+ *         builder.setCodeSpace(Citations.EPSG, "EPSG")                   // The default namespace to be used below.
+ *                .setRequired(true);                                     // All parameters will be considered mandatory.
  *
- *   // Constructs the list of parameters.
- *   ParameterDescriptor<?>[] parameters = {
- *       builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
- *              .createBounded( -80,  +84, 0, Units.DEGREE),        // Latitude of Mercator projection cannot go to the poles.
+ *         // Constructs the list of parameters.
+ *         ParameterDescriptor<?>[] parameters = {
+ *             builder.addName("Latitude of natural origin")              // Name in the default namespace ("EPSG" in this example).
+ *                    .createBounded( -80,  +84, 0, Units.DEGREE),        // Latitude of Mercator projection cannot go to the poles.
  *
- *       builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
- *              .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
- *              .addName(Citations.OGC, "central_meridian")         // First alias in "OGC" namespace.
- *              .addName(Citations.GEOTIFF, "NatOriginLong")        // Second alias in "GeoTIFF" namespace.
- *              .createBounded(-180, +180, 0, Units.DEGREE),        // Projection is valid on all the longitude range (±180°).
+ *             builder.addIdentifier("8802")                              // Primary key in default namespace ("EPSG" in this example).
+ *                    .addName("Longitude of natural origin")             // Primary name in default namespace ("EPSG" in this example).
+ *                    .addName(Citations.OGC, "central_meridian")         // First alias in "OGC" namespace.
+ *                    .addName(Citations.GEOTIFF, "NatOriginLong")        // Second alias in "GeoTIFF" namespace.
+ *                    .createBounded(-180, +180, 0, Units.DEGREE),        // Projection is valid on all the longitude range (±180°).
  *
- *       builder.addName("Scale factor at natural origin")
- *              .createStrictlyPositive(1, Units.UNITY),
+ *             builder.addName("Scale factor at natural origin")
+ *                    .createStrictlyPositive(1, Units.UNITY),
  *
- *       builder.addName("False easting")
- *              .create(0, Units.METRE),
+ *             builder.addName("False easting")
+ *                    .create(0, Units.METRE),
  *
- *       builder.addName("False northing")
- *              .create(0, Units.METRE)
- *   };
+ *             builder.addName("False northing")
+ *                    .create(0, Units.METRE)
+ *         };
  *
- *   // Put all above parameters in a group.
- *   ParameterDescriptorGroup group = builder
- *           .addIdentifier("9804")                                 // Defined in implicit "EPSG" namespace.
- *           .addName      ("Mercator (variant A)")                 // Defined in implicit "EPSG" namespace.
- *           .addName      ("Mercator (1SP)")                       // Defined in implicit "EPSG" namespace.
- *           .addName      (Citations.OGC, "Mercator_1SP")          // "OGC" namespace explicitly shown by toString().
- *           .addName      (Citations.GEOTIFF, "CT_Mercator")       // "GeoTIFF" namespace explicitly shown by toString().
- *           .addIdentifier(Citations.GEOTIFF, "7")
- *           .setRemarks   ("The “Mercator (1SP)” method name was used prior to October 2010.")
- *           .createGroupForMapProjection(parameters);
+ *         // Put all above parameters in a group.
+ *         PARAMETERS = ParameterDescriptorGroup group = builder
+ *                 .addIdentifier("9804")                                 // Defined in implicit "EPSG" namespace.
+ *                 .addName      ("Mercator (variant A)")                 // Defined in implicit "EPSG" namespace.
+ *                 .addName      ("Mercator (1SP)")                       // Defined in implicit "EPSG" namespace.
+ *                 .addName      (Citations.OGC, "Mercator_1SP")          // "OGC" namespace explicitly shown by toString().
+ *                 .addName      (Citations.GEOTIFF, "CT_Mercator")       // "GeoTIFF" namespace explicitly shown by toString().
+ *                 .addIdentifier(Citations.GEOTIFF, "7")
+ *                 .setRemarks   ("The “Mercator (1SP)” method name was used prior to October 2010.")
+ *                 .createGroupForMapProjection(parameters);
+ *     }
+ * }
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)

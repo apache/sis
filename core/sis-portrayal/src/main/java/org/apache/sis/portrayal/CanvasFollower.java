@@ -165,12 +165,12 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * but not necessarily immediately after (it is okay to defer until first needed).
      * The default implementation registers the following listeners:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
      *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
      *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
      *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
-     * }
+     *     }
      *
      * This method is idempotent (it is okay to invoke it twice).
      *

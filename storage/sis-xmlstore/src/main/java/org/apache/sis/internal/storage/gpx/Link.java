@@ -103,18 +103,18 @@ public final class Link implements OnlineResource {
      * Invoked by JAXB after unmarshalling. If the {@linkplain #uri} is not set but the {@link #text} looks
      * like a URI, uses that text. The intent is to handle link that should have been defined like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <link href="http://some.site.org">
      *   </link>
-     * }
+     *   }
      *
      * but instead has erroneously been defined like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <link>
      *     <text>http://some.site.org</text>
      *   </link>
-     * }
+     *   }
      *
      * If we fail to convert the text to a URI, we will leave the object state as-is.
      */

@@ -291,10 +291,10 @@ public class LinearTransformBuilder extends TransformBuilder {
      * <p>If this builder has been created for randomly distributed source points, then the allocation
      * should rather be performed as below:</p>
      *
-     * {@preformat java
-     *    sources = new double[srcDim][capacity];
-     *    targets = new double[tgtDim][capacity];
-     * }
+     * {@snippet lang="java" :
+     *     sources = new double[srcDim][capacity];
+     *     targets = new double[tgtDim][capacity];
+     *     }
      */
     private void allocate(final int tgtDim) {
         targets = new double[tgtDim][gridLength];

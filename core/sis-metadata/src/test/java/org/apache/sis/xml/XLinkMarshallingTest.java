@@ -87,11 +87,11 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
      * Tests (un)marshalling of an object with a {@code xlink:href} attribute without element definition.
      * The XML fragment is:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <mdb:MD_Metadata>
      *     <mdb:identificationInfo xlink:href="http://test.net"/>
      *   </mdb:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      * @throws URISyntaxException if the URI used in this test is malformed.
@@ -113,7 +113,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
      * Tests (un)marshalling of an object with a {@code xlink:href} attribute with an element definition.
      * The XML fragment is:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <mdb:MD_Metadata>
      *     <mdb:identificationInfo xlink:href="http://test.net">
      *       <mdb:MD_DataIdentification>
@@ -123,7 +123,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
      *       </mdb:MD_DataIdentification>
      *     </mdb:identificationInfo>
      *   </mdb:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      * @throws URISyntaxException if the URI used in this test is malformed.

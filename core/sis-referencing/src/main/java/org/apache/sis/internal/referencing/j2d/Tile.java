@@ -427,17 +427,16 @@ public class Tile implements Serializable {
      * since it may have been {@linkplain AffineTransform#translate(double, double) translated}
      * in order to get a uniform grid geometry for every tiles.
      *
-     * <div class="note"><b>Tip:</b>
+     * <h4>Tip</h4>
      * the <a href="https://en.wikipedia.org/wiki/World_file">World File</a> coefficients of this tile
      * (i.e. the <cite>grid to CRS</cite> transform that we would have if the pixel in the upper-left
      * corner always had indices (0,0)) can be computed as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Point location = tile.getLocation();
      *     AffineTransform gridToCRS = new AffineTransform(tile.getGridToCRS());
      *     gridToCRS.translate(location.x, location.y);
-     * }
-     * </div>
+     *     }
      *
      * @return the <cite>"grid to real world"</cite> transform mapping pixel
      *         {@linkplain PixelOrientation#UPPER_LEFT upper left} corner, or {@code null} if undefined.

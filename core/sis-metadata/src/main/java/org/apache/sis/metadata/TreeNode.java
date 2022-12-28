@@ -713,13 +713,13 @@ class TreeNode implements Node {
      * The user shall set the identifier and the value, in that order, before
      * any other operation on the new child. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     TreeTable.Node node = ...;
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");
      *     // Nothing else to do - node has been added.
-     * }
+     *     }
      *
      * Do not keep a reference to the returned node for a long time, since it is only
      * a proxy toward the real node to be created once the identifier is known.

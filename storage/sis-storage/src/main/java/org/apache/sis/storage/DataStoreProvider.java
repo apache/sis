@@ -299,8 +299,8 @@ public abstract class DataStoreProvider {
      * {@link #probeContent(StorageConnector)} implementations often check the first bytes of the
      * input stream for a "magic number" associated with the format, as in the following example:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public ProbeResult probeContent(StorageConnector connector) throws DataStoreException {
      *         return probeContent(connector, ByteBuffer.class, (buffer) -> {
      *             if (buffer.remaining() >= Integer.BYTES) {
@@ -597,7 +597,7 @@ public abstract class DataStoreProvider {
      * The {@code DataStoreProvider} instance needs to be known before parameters are initialized,
      * since the parameters are implementation-dependent. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     DataStoreProvider provider = ...;
      *     ParameterValueGroup pg = provider.getOpenParameters().createValue();
      *     pg.parameter(DataStoreProvider.LOCATION, myURL);
@@ -605,7 +605,7 @@ public abstract class DataStoreProvider {
      *     try (DataStore ds = provider.open(pg)) {
      *         // Use the data store.
      *     }
-     * }
+     *     }
      *
      * <h4>Implementation note</h4>
      * The default implementation gets the value of a parameter named {@value #LOCATION}.

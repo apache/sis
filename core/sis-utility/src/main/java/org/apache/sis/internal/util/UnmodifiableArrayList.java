@@ -29,15 +29,15 @@ import org.apache.sis.util.collection.CheckedContainer;
 /**
  * An unmodifiable view of an array. Invoking
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     List<?> list = UnmodifiableArrayList.wrap(array);
- * }
+ *     }
  *
  * is equivalent to
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     List<?> list = Collections.unmodifiableList(Arrays.asList(array));
- * }
+ *     }
  *
  * except that this class uses one less level of indirection (which may be significant since
  * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}

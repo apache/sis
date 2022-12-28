@@ -57,8 +57,8 @@ public abstract class OptionalDependency extends SystemListener {
      * Invoked when the classpath is likely to have changed.
      * Subclasses must override like below:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected final void classpathChanged() {
      *         synchronized (MyServices.class) {
      *             super.classpathChanged();

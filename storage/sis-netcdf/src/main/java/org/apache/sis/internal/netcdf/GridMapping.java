@@ -423,10 +423,10 @@ final class GridMapping {
      * transforms or TFW files. The relationship from pixel/line (P,L) coordinates
      * to CRS are:
      *
-     * {@preformat math
+     * {@snippet lang="java" :
      *     X = c[0] + P*c[1] + L*c[2];
      *     Y = c[3] + P*c[4] + L*c[5];
-     * }
+     *     }
      *
      * @param  mapping  the variable that contains attributes giving CRS definition.
      * @return the mapping, or {@code null} if this method did not found grid geometry attributes.

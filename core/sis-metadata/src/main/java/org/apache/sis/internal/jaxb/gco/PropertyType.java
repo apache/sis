@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * the value to be marshalled. Wrappers exist because ISO 19139 have the strange
  * habit to wrap every properties in an extra level, for example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <CI_ResponsibleParty>
  *     <contactInfo>
  *       <CI_Contact>
@@ -52,7 +52,7 @@ import org.apache.sis.util.resources.Errors;
  *       </CI_Contact>
  *     </contactInfo>
  *   </CI_ResponsibleParty>
- * }
+ *   }
  *
  * The {@code <CI_Contact>} level is not really necessary, and JAXB is not designed for inserting
  * such level since it is not the usual way to write XML. In order to get this output with JAXB,
@@ -73,17 +73,17 @@ import org.apache.sis.util.resources.Errors;
  * This method will be systematically called at marshalling time by JAXB. Typical implementation
  * ({@code BoundType} and {@code ValueType} need to be replaced by the concrete class):
  *
- * {@preformat java
- *   &#64;XmlElementRef
- *   public BoundType getElement() {
- *       if (skip()) return null;
- *       final ValueType metadata = this.metadata;
- *       return (metadata instanceof BoundType) ? (BoundType) metadata : new BoundType(metadata);
- *   }
+ * {@snippet lang="java" :
+ *     @XmlElementRef
+ *     public BoundType getElement() {
+ *         if (skip()) return null;
+ *         final ValueType metadata = this.metadata;
+ *         return (metadata instanceof BoundType) ? (BoundType) metadata : new BoundType(metadata);
+ *     }
  *
- *   public void getElement(final BoundType metadata) {
- *       this.metadata = metadata;
- *   }
+ *     public void getElement(final BoundType metadata) {
+ *         this.metadata = metadata;
+ *     }
  * }
  *
  * The actual implementation may be slightly more complicated than the above if there is

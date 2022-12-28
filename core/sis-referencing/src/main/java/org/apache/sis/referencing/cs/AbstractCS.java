@@ -508,19 +508,20 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
      * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).
      *
-     * <div class="note"><b>Example:</b> Well-Known Text of a two-dimensional {@code EllipsoidalCS}
+     * <h4>Example</h4>
+     * Well-Known Text of a two-dimensional {@code EllipsoidalCS}
      * having (φ,λ) axes in a unit defined by the enclosing CRS (usually degrees).
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   CS[ellipsoidal, 2],
      *   Axis["latitude", north],
      *   Axis["longitude", east]
      * }
-     * </div>
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code CS} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code CS} is defined in the WKT 2 specification only.
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "CS"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification §7.5</a>

@@ -25,7 +25,7 @@ import org.apache.sis.internal.jaxb.Context;
  * JAXB adapter for XML {@code <GO_CharacterString>} or {@code <LanguageCode>} elements
  * mapped to {@link Locale}. This adapter formats the locale like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gmd:language>
  *     <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
  *   </gmd:language>
@@ -83,7 +83,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * JAXB adapter for XML {@code <PT_Locale>} elements mapped to {@link Locale}.
      * This adapter formats the locale like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:locale>
      *     <gmd:PT_Locale>
      *       <gmd:language>

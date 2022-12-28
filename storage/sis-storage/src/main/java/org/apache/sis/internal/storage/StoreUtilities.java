@@ -293,11 +293,11 @@ public final class StoreUtilities extends Static {
      * This flag can be tested as below (this cover both the read-only case and the writable
      * case where the files must exist):</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (!options.contains(StandardOpenOption.CREATE)) {
      *         // Throw an exception if the file does not exist.
      *     }
-     * }
+     *     }
      *
      * <p>{@link StandardOpenOption#CREATE_NEW}<br>
      * means that the {@link DataStore} should fail to open if the file already exists.

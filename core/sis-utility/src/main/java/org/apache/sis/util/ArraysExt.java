@@ -1198,10 +1198,10 @@ public final class ArraysExt extends Static {
      * <p>Callers can obtain an array of appropriate length using the following idiom.
      * Note that this idiom will create a new array only if necessary:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     T[] array = ...;
      *     array = resize(array, removeDuplicated(array));
-     * }
+     *     }
      *
      * <div class="note"><b>API note:</b>
      * This method return type is not an array in order to make obvious that the given array will be modified in-place.
@@ -1886,13 +1886,13 @@ public final class ArraysExt extends Static {
      * but only if all casts are lossless. If any cast causes data loss, then this method returns {@code null}.
      * This method is equivalent to the following code, but potentially more efficient:
      *
-     * {@preformat java
-     *    if (isSinglePrecision(data)) {
-     *        return copyAsFloat(data);
-     *    } else {
-     *        return null;
-     *    }
-     * }
+     * {@snippet lang="java" :
+     *     if (isSinglePrecision(data)) {
+     *         return copyAsFloat(data);
+     *     } else {
+     *         return null;
+     *     }
+     *     }
      *
      * @param  data  the array to copy, or {@code null}.
      * @return a copy of the given array with values casted to the {@code float} type, or
@@ -2239,10 +2239,10 @@ public final class ArraysExt extends Static {
      * Callers are encouraged to place the following assertions before calls to this method,
      * using the {@link #isSorted(int[], boolean)} and {@link Arrays#toString(int[])} methods:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   assert isSorted(array1, true) : toString(array1);
      *   assert isSorted(array2, true) : toString(array2);
-     * }
+     *   }
      *
      * @param  array1  the first array, or {@code null}.
      * @param  array2  the second array, or {@code null}.

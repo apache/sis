@@ -771,20 +771,19 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Adds a fragment of Well Know Text (WKT). The {@code wkt} argument given to this method
      * can contains itself other fragments specified in some previous calls to this method.
      *
-     * <div class="note"><b>Example</b>
-     * if the following method is invoked:
+     * <h4>Example</h4>
+     * If the following method is invoked:
      *
-     * {@preformat java
-     *   addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
-     * }
+     * {@snippet lang="java" :
+     *     addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
+     *     }
      *
      * Then other WKT strings parsed by this {@code WKTFormat} instance can refer to the above fragment as below
      * (WKT after the ellipsoid omitted for brevity):
      *
-     * {@preformat java
-     *   Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
+     *     }
      *
      * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
      *

@@ -265,12 +265,12 @@ public final class XML extends Static {
      * database. Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
      * a unmarshaller as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ReferenceResolver  myResolver = ...;
      *     Map<String,Object> properties = new HashMap<>();
      *     properties.put(XML.RESOLVER, myResolver);
      *     Object obj = XML.unmarshal(source, properties);
-     * }
+     *     }
      *
      * @see Unmarshaller#setProperty(String, Object)
      * @see ReferenceResolver
@@ -289,17 +289,17 @@ public final class XML extends Static {
      * for replacing an erroneous URL by a fixed URL. See the {@link ValueConverter} javadoc for
      * more details.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * the following example collects the failures in a list without stopping the (un)marshalling process.
+     * <h4>Example</h4>
+     * The following example collects the failures in a list without stopping the (un)marshalling process.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     class WarningCollector extends ValueConverter {
      *         // The warnings collected during (un)marshalling.
      *         List<String> messages = new ArrayList<String>();
      *
      *         // Override the default implementation in order to
      *         // collect the warnings and allow the process to continue.
-     *         &#64;Override
+     *         @Override
      *         protected <T> boolean exceptionOccured(MarshalContext context,
      *                 T value, Class<T> sourceType, Class<T> targetType, Exception e)
      *         {
@@ -319,7 +319,6 @@ public final class XML extends Static {
      *         // Report here the warnings to the user.
      *     }
      * }
-     * </div>
      *
      * @see Unmarshaller#setProperty(String, Object)
      * @see ValueConverter
@@ -340,7 +339,7 @@ public final class XML extends Static {
      * <div class="note"><b>Example:</b>
      * INSPIRE compliant language code shall be formatted like below (details may vary):
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:language>
      *     <gmd:LanguageCode
      *         codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode"
@@ -351,7 +350,7 @@ public final class XML extends Static {
      * However if this property contains the "{@code language}" value, then the marshaller will format
      * the language code like below (which is legal according OGC schemas, but is not INSPIRE compliant):
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <lan:language>
      *     <gco:CharacterString>fra</gco:CharacterString>
      *   </lan:language>

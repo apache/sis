@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
  *
  * <p>The following schema fragment specifies the expected content contained within this class.</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <complexType name="FRA_Constraints_Type">
  *     <complexContent>
  *       <extension base="{http://www.isotc211.org/2005/gmd}MD_Constraints_Type">
@@ -41,7 +41,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
  *       </extension>
  *     </complexContent>
  *   </complexType>
- * }
+ *   }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)

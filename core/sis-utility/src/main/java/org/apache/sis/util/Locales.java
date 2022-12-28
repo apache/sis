@@ -41,10 +41,10 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * invoked on the {@link #ALL} or {@link #SIS} instance in order to specify the scope.
  * Examples:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Locales[] lc1 = Locales.ALL.getAvailableLanguages();  // All languages installed on the JavaVM.
  *     Locales[] lc2 = Locales.SIS.getAvailableLanguages();  // Only the languages known to Apache SIS.
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cullen Rombach (Image Matters)

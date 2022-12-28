@@ -171,9 +171,9 @@ public enum About {
      *
      * <p>This convenience method is equivalent to the following code:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return configuration(EnumSet.allOf(About.class), null, null);
-     * }
+     *     }
      *
      * @return configuration information, as a tree for grouping some configuration by sections.
      */

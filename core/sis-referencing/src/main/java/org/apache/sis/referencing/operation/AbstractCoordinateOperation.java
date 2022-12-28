@@ -933,11 +933,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * allows a subset of coordinate operations with the ESRI-specific {@code GEOGTRAN} keyword.
      * To enabled this variant, {@link org.apache.sis.io.wkt.WKTFormat} can be configured as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     format = new WKTFormat(null, null);
      *     format.setConvention(Convention.WKT1_IGNORE_AXES);
      *     format.setNameAuthority(Citations.ESRI);
-     * }
+     *     }
      *
      * @param  formatter  the formatter to use.
      * @return {@code "CoordinateOperation"}.

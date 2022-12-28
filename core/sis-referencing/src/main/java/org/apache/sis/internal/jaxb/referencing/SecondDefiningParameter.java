@@ -43,7 +43,7 @@ public final class SecondDefiningParameter {
      * Nested parameter, for JAXB purpose.
      * This is used for marshalling XML like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:secondDefiningParameter>
      *     <gml:SecondDefiningParameter>
      *       <gml:semiMinorAxis uom="urn:ogc:def:uom:EPSG::9001">6371007</gml:semiMinorAxis>
@@ -58,7 +58,7 @@ public final class SecondDefiningParameter {
      * Whether the ellipsoid is a sphere, or {@code null} if unspecified.
      * If this value is {@code true}, then the XML shall be marshalled like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:secondDefiningParameter>
      *     <gml:SecondDefiningParameter>
      *       <gml:isSphere>true</gml:isSphere>

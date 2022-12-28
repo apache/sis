@@ -511,9 +511,9 @@ addURIs:    for (int i=0; ; i++) {
      * This returned set may keep a connection to the EPSG database,
      * so the set can execute efficiently idioms like the following one:
      *
-     * {@preformat java
-     *     getAuthorityCodes(type).containsAll(others)
-     * }
+     * {@snippet lang="java" :
+     *     getAuthorityCodes(type).containsAll(others);
+     *     }
      *
      * The returned set should not be referenced for a long time, as it may prevent this factory to release
      * JDBC resources. If the set of codes is needed for a long time, their values should be copied in another
@@ -1030,14 +1030,14 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Ensures that this factory is not already building an object of the given code.
      * This method shall be followed by a {@code try ... finally} block like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ensureNoCycle(type, code);
      *     try {
      *         ...
      *     } finally {
      *         endOfRecursive(type, code);
      *     }
-     * }
+     *     }
      */
     private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
         if (safetyGuard.putIfAbsent(code, type) != null) {

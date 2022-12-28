@@ -33,9 +33,9 @@ import org.apache.sis.util.CharSequences;
  * This sub-command reproduces the functionality of the following Unix command,
  * except that {@code MimeTypeCommand} uses the SIS detection mechanism instead of the OS one.
  *
- * {@preformat shell
+ * {@snippet lang="shell" :
  *   file --mime-type <files>
- * }
+ *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

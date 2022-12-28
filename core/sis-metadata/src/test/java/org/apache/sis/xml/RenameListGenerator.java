@@ -62,7 +62,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * For generating a new file:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public static void main(String[] args) throws Exception {
  *         RenameListGenerator gen = new RenameListGenerator(Paths.get("/home/user/project/build/classes"));
  *         gen.add(Paths.get("org/apache/sis/metadata/iso"));

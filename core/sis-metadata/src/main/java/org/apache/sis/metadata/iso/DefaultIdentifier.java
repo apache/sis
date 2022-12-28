@@ -57,8 +57,8 @@ import org.apache.sis.xml.Namespaces;
  * <h2>Text, URN and XML representations</h2>
  * The XML representation of {@link DefaultIdentifier} is as the following example:
  *
- * {@preformat xml
- *   <mcc:MD_Identifier
+ * {@snippet lang="xml" :
+ *   <mcc:MD_Identifier>
  *     <mcc:code>
  *       <gco:CharacterString>4326</gco:CharacterString>
  *     </mcc:code>
@@ -70,7 +70,7 @@ import org.apache.sis.xml.Namespaces;
  *       </cit:CI_Citation>
  *     </mcc:authority>
  *   </mcc:MD_Identifier>
- * }
+ *   }
  *
  * <h2>Limitations</h2>
  * <ul>

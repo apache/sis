@@ -50,11 +50,11 @@ public interface FeatureSet extends DataSet {
      *
      * All features returned by {@link #features(boolean)} will be either of that type, or a sub-type of it.
      *
-     * <div class="note"><b>Relationship with metadata:</b>
+     * <h4>Relationship with metadata</h4>
      * if subtypes exist, their list may be obtained from the {@linkplain #getMetadata() metadata} like below
      * (if the {@code FeatureSet} implementation provides that information):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     for (ContentInformation content : metadata.getContentInfo()) {
      *         if (content instanceof FeatureCatalogueDescription) {
      *             for (FeatureTypeInfo info : ((FeatureCatalogueDescription) content).getFeatureTypeInfo()) {
@@ -63,8 +63,7 @@ public interface FeatureSet extends DataSet {
      *             }
      *         }
      *     }
-     * }
-     * </div>
+     *     }
      *
      * @return description of common properties (never {@code null}).
      * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
@@ -131,7 +130,7 @@ public interface FeatureSet extends DataSet {
      * {@link org.apache.sis.util.collection.BackingStoreException}.
      * The following code shows how this stream can be used:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     void myReadOperation() throws DataStoreException {
      *         try (Stream<Feature> features = myDataStore.features(false)) {
      *             // Use the stream here.

@@ -100,7 +100,7 @@ public class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName> {
      * is a {@link TypeName} or a {@link MemberName}, in order to use {@link #getName()} instead.
      * Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:alias>
      *     <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
      *   </gml:alias>
@@ -135,7 +135,7 @@ public class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName> {
      * is a {@link LocalName} or {@link ScopedName}, in order to use {@link #getValue()} instead.
      * Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:alias>
      *     <gco:TypeName>
      *       <gco:aName>

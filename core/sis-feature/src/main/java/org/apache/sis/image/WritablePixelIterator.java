@@ -35,7 +35,7 @@ import org.apache.sis.internal.feature.Resources;
  * <p>Contrarily to {@code PixelIterator}, {@code WritablePixelIterator} needs to be closed after
  * iteration in order to release tiles. Example:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     try (WritablePixelIterator it = WritablePixelIterator.create(image)) {
  *         double[] samples = null;
  *         while (it.next()) {
@@ -44,7 +44,7 @@ import org.apache.sis.internal.feature.Resources;
  *             it.setPixels(sample);                // Replace values in all bands.
  *         }
  *     }
- * }
+ *     }
  *
  * <h2>Casting a {@code PixelIterator}</h2>
  * To check if a {@code PixelIterator} can be used for writing pixels, a {@code … instanceof WritablePixelIterator}

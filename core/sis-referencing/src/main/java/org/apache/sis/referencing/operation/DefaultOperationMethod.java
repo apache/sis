@@ -904,19 +904,20 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * <p>However, it could happen that the user really wanted to specify a {@code ParameterDescriptorGroup} as
      * the sole {@code <gml:parameter>} element. We currently have no easy way to distinguish those cases.</p>
      *
-     * <div class="note"><b>Tip:</b>
+     * <h4>Tip</h4>
      * One possible way to distinguish the two cases would be to check that the parameter group does not contain
      * any property that this method does not have:
      *
-     * {@preformat java
-     *   if (IdentifiedObjects.getProperties(this).entrySet().containsAll(
-     *       IdentifiedObjects.getProperties(parameters).entrySet())) ...
-     * }
+     * {@snippet lang="java" :
+     *     if (IdentifiedObjects.getProperties(this).entrySet().containsAll(
+     *         IdentifiedObjects.getProperties(parameters).entrySet())) ...
+     *     }
      *
      * But we would need to make sure that {@link AbstractSingleOperation#getParameters()} is consistent
-     * with the decision taken by this method.</div>
+     * with the decision taken by this method.
      *
-     * <p><b>Historical note:</b> older, deprecated, names for the parameters were:
+     * <h4>Historical note</h4>
+     * Older, deprecated, names for the parameters were:
      * <ul>
      *   <li>{@code includesParameter}</li>
      *   <li>{@code generalOperationParameter} - note that this name was used by the EPSG repository</li>

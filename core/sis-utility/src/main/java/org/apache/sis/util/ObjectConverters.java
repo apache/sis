@@ -41,12 +41,12 @@ import org.apache.sis.internal.converter.SystemRegistry;
  *   <li>{@link #derivedValues(Map, Class, ObjectConverter)}</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * the following code converts instances in a collection from type {@code S} to type {@code T},
  * where the types are unknown at compile-time. Note that the converter is obtained only once
  * before to be applied to every elements in the loop.
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Class<S> sourceType = ...
  *     Class<T> targetType = ...
  *     Collection<S> sources = ...;
@@ -55,8 +55,7 @@ import org.apache.sis.internal.converter.SystemRegistry;
  *     for (S source : sources) {
  *         targets.add(converter.apply(source));
  *     }
- * }
- * </div>
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3

@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * This object wraps a {@link CodeListUID}, which contain {@link CodeListUID#codeList codeList}
  * and {@link CodeListUID#codeListValue codeListValue} attributes. The result looks like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <dateType>
  *     <CI_DateTypeCode codeList="../Codelist/ML_gmxCodelists.xml#CI_DateTypeCode" codeListValue="revision" codeSpace="fra">
  *       révision
@@ -76,9 +76,9 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      * Wraps the given value.
      * Most implementations will be like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new ValueType(value);
-     * }
+     *     }
      *
      * However, is some cases, the {@code value} argument may be inspected.
      * For example, {@link org.apache.sis.internal.jaxb.code.MD_RestrictionCode}

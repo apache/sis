@@ -59,11 +59,11 @@ public abstract strictfp class TestCase {
      * A flag for code that are pending future SIS development before to be enabled.
      * This flag is always set to {@code false}. It shall be used as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (PENDING_FUTURE_SIS_VERSION) {
      *         // Do some stuff here.
      *     }
-     * }
+     *     }
      *
      * The intent is to make easier to identify test cases that fail with the current version
      * of SIS (e.g. because of unsupported operations), but should pass in a future version.
@@ -80,9 +80,9 @@ public abstract strictfp class TestCase {
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assertEquals(expected, actual, STRICT);
-     * }
+     *     }
      */
     protected static final double STRICT = 0;
 

@@ -47,7 +47,7 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
  *   <tr><td> 2051 </td><td> 34736 </td><td>  1 </td><td>     0 </td></tr>
  * </table>
  *
- * {@preformattext
+ * {@preformat text
  *   GeoDoubleParams(34736) = {1.5}
  *   GeoAsciiParams(34737) = "Custom File|My Geographic|"
  * }

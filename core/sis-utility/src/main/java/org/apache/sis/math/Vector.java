@@ -54,11 +54,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * Vectors can be a view over a subsection of the given array, or can provide a view of the elements in reverse order,
  * <i>etc</i>. The example below creates a view over a subsection:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     float[] array = new float[100];
  *     Vector v = Vector.create(array, false).subList(20, 40)
  *     // At this point, v.doubleValue(0) is equivalent to (double) array[20].
- * }
+ *     }
  *
  * <h2>Usage</h2>
  * The methods that are most often used after {@code Vector} creation are {@link #size()} and {@link #doubleValue(int)}

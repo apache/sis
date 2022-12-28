@@ -45,11 +45,11 @@ import static java.util.logging.Logger.getLogger;
  * {@link #acquireUnmarshaller()} methods, and can restitute the (un)marshaller to the pool
  * after usage like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Marshaller marshaller = pool.acquireMarshaller();
  *     marshaller.marchall(...);
  *     pool.recycle(marshaller);
- * }
+ *     }
  *
  * <h2>Configuring (un)marshallers</h2>
  * The (un)marshallers created by this class can optionally by configured with the SIS-specific
@@ -290,11 +290,11 @@ public class MarshallerPool {
      *
      * <p>This method shall be used as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Marshaller marshaller = pool.acquireMarshaller();
      *     marshaller.marchall(...);
      *     pool.recycle(marshaller);
-     * }
+     *     }
      *
      * Note that {@link #recycle(Marshaller)} shall not be invoked in case of exception,
      * since the marshaller may be in an invalid state.
@@ -316,11 +316,11 @@ public class MarshallerPool {
      *
      * <p>This method shall be used as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Unmarshaller unmarshaller = pool.acquireUnmarshaller();
      *     Unmarshaller.unmarchall(...);
      *     pool.recycle(unmarshaller);
-     * }
+     *     }
      *
      * Note that {@link #recycle(Unmarshaller)} shall not be invoked in case of exception,
      * since the unmarshaller may be in an invalid state.

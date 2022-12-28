@@ -865,9 +865,9 @@ public class StoreListeners implements Localized {
      * If a {@link DataStore} implementation is read-only, then such listeners would never receive any notification.
      * As a slight optimization, the {@code DataStore} constructor can invoke this method for example as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     listeners.setUsableEventTypes(WarningEvent.class);
-     * }
+     *     }
      *
      * With this configuration, calls to {@code addListener(DataAddedEvent.class, foo)} will be ignored,
      * thus avoiding this instance to retain a never-used reference to the {@code foo} listener.

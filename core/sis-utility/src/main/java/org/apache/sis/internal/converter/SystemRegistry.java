@@ -97,12 +97,12 @@ public final class SystemRegistry extends ConverterRegistry {
      * <p>The default implementation is equivalent to the following code
      * (see the package javadoc for more information):</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ClassLoader loader = getClass().getClassLoader();
      *     for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, loader)) {
      *         register(converter);
      *     }
-     * }
+     *     }
      */
     @Override
     protected void initialize() {

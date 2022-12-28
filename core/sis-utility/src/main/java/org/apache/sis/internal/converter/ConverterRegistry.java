@@ -96,12 +96,12 @@ public class ConverterRegistry {
      * fetch the {@code ObjectConverter} instances from the {@code META-INF/services}
      * directories as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ClassLoader loader = getClass().getClassLoader();
      *     for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, loader)) {
      *         register(converter);
      *     }
-     * }
+     *     }
      */
     protected void initialize() {
     }

@@ -174,8 +174,8 @@ public abstract strictfp class TestSuite {
      *
      * Subclasses shall invoke this method as below:
      *
-     * {@preformat java
-     *    &#64;BeforeClass
+     * {@snippet lang="java" :
+     *    @BeforeClass
      *    public static void verifyTestList() {
      *        assertNoMissingTest(MyTestSuite.class);
      *        verifyTestList(MyTestSuite.class);

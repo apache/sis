@@ -31,7 +31,7 @@ import org.apache.sis.util.Exceptions;
  * for re-throwing the cause as in the example below. This allows client code to behave as if a
  * {@link java.util.Collection} interface was allowed to declare checked exceptions.</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     void myMethod() throws IOException {
  *         Collection c = ...;
  *         try {
@@ -105,7 +105,7 @@ public class BackingStoreException extends RuntimeException {
      *
      * This method should be used as in the example below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     void myMethod() throws IOException {
      *         Collection c = ...;
      *         try {

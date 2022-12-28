@@ -63,7 +63,7 @@ import org.opengis.metadata.citation.Responsibility;
  * At most one such element may appear in the document.
  * The XML content is like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <metadata>
  *     <name> String </name>
  *     <desc> String </desc>
@@ -75,7 +75,7 @@ import org.opengis.metadata.citation.Responsibility;
  *     <bounds> Envelope </bounds>
  *     <extensions> any object known to JAXB </extensions>
  *   </metadata>
- * }
+ *   }
  *
  * Those properties can be read or modified directly. All methods defined in this class are bridges to
  * the ISO 19115 metadata model and can be ignored if the user only wants to manipulate the GPX model.

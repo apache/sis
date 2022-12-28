@@ -82,10 +82,10 @@ import org.apache.sis.util.iso.Types;
  * or another database specified at construction time.
  * Metadata instances can be obtained as in the example below:
  *
- * {@preformat java
- *   MetadataSource metadata = MetadataSource.getProvided();
- *   Format format = source.lookup(Format.class, "PNG");
- * }
+ * {@snippet lang="java" :
+ *     MetadataSource metadata = MetadataSource.getProvided();
+ *     Format format = source.lookup(Format.class, "PNG");
+ *     }
  *
  * where {@code id} is the primary key value for the desired record in the {@code Format} table.
  *
@@ -178,7 +178,7 @@ public class MetadataSource implements AutoCloseable {
      * because a single JDBC connection cannot be assumed thread-safe.
      *
      * <p>Usage example:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Class<?> type = …;
      *     synchronized (this) {
      *         // Get an entry, or create a new one if no entry is available.
@@ -191,7 +191,7 @@ public class MetadataSource implements AutoCloseable {
      *         Object value = statement.getValue(…);
      *         preferredIndex = recycle(statement, preferredIndex);
      *     }
-     * }
+     *     }
      *
      * @see #prepareStatement(Class, String, int)
      * @see #recycle(CachedStatement, int)

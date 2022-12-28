@@ -1006,7 +1006,7 @@ public class MetadataBuilder {
      * {@code identificationInfo/resourceFormat} node. If this exception throws an exception,
      * than that exception should be reported as a warning. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     try {
      *         metadata.setPredefinedFormat("MyFormat");
      *     } catch (MetadataStoreException e) {
@@ -1014,7 +1014,7 @@ public class MetadataBuilder {
      *         listeners.warning(null, e);
      *     }
      *     metadata.addCompression("decompression technique");
-     * }
+     *     }
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
      * @throws MetadataStoreException  if this method cannot connect to the {@code jdbc/SpatialMetadata} database.

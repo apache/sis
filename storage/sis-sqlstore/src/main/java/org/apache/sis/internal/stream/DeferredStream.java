@@ -148,8 +148,8 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
      * {@link AutoCloseable}, and that the resource disposal done by that method includes closing
      * the JDBC connection:</p>
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected Spliterator<T> createSourceIterator() throws SQLException {
      *         Connection c = ...;
      *         setCloseHandler(c);

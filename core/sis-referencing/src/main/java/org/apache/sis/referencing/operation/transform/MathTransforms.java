@@ -332,10 +332,10 @@ public final class MathTransforms extends Static {
      * Creates a transform which passes through a subset of coordinates to another transform.
      * This method returns a transform having the following dimensions:
      *
-     * {@preformat java
-     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
-     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
-     * }
+     * {@snippet lang="java" :
+     *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
+     *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
+     *     }
      *
      * Affected coordinates will range from {@code firstAffectedCoordinate} inclusive to
      * {@code dimTarget - numTrailingCoordinates} exclusive.
@@ -684,12 +684,12 @@ public final class MathTransforms extends Static {
      * is returned. Invoking this method is equivalent to the following code, except that it may
      * execute faster with some {@code MathTransform} implementations:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     DirectPosition ptSrc = ...;
      *     DirectPosition ptDst = ...;
      *     Matrix matrixDst = derivative(ptSrc);
      *     ptDst = transform(ptSrc, ptDst);
-     * }
+     *     }
      *
      * @param  transform  the transform to use.
      * @param  srcPts     the array containing the source coordinate.

@@ -1590,10 +1590,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * This method understands both version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
      * of the WKT format.
      *
-     * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
+     * <h4>Example</h4>
+     * Below is a slightly simplified WKT 2 string for a Mercator projection.
      * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
      *     BaseGeodCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
@@ -1609,9 +1610,9 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *       Axis["northing (N)", north],
      *       LengthUnit["metre", 1],
      *     Id["EPSG",5641]]
-     * }
-     * </div>
+     *   }
      *
+     * <h4>Logging</h4>
      * If the given text contains non-fatal anomalies
      * (unknown or unsupported WKT elements, inconsistent unit definitions, unparsable axis abbreviations, <i>etc.</i>),
      * warnings may be reported in a {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.

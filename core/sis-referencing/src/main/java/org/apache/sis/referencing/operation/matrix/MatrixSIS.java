@@ -406,9 +406,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns {@code true} if this matrix is an identity matrix.
      * This method is equivalent to the following code, except that it is potentially more efficient:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Matrices.isIdentity(this, 0.0);
-     * }
+     *     }
      *
      * @return {@code true} if this matrix is an identity matrix.
      *

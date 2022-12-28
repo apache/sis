@@ -47,7 +47,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * <p>This class is convenient for avoiding the creation of duplicated elements, as in the
  * example below:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     K key = ...
  *     V value;
  *     synchronized (map) {
@@ -57,7 +57,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  *             map.put(key, value);
  *         }
  *     }
- * }
+ *     }
  *
  * In the above example, the calculation of a new value needs to be fast because it is performed inside a synchronized
  * statement blocking all other access to the map. This is okay if that particular {@code WeakValueHashMap} instance

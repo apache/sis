@@ -46,19 +46,19 @@
  * The following example projects a (<var>latitude</var>, <var>longitude</var>) coordinate to
  * a <cite>Universal Transverse Mercator</cite> projection in the zone of the coordinate:
  *
- * {@preformat java
- *   GeographicCRS source = CommonCRS.WGS84.geographic();
- *   ProjectedCRS  target = CommonCRS.WGS84.UTM(20, 30);                        // 20°N 30°E   (watch out axis order!)
- *   CoordinateOperation operation = CRS.findOperation(source, target, null);
- *   if (CRS.getLinearAccuracy(operation) > 100) {
- *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
- *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
- *   }
- *   MathTransform mt = operation.getMathTransform();
- *   DirectPosition position = new DirectPosition2D(20, 30);                    // 20°N 30°E   (watch out axis order!)
- *   position = mt.transform(position, position);
- *   System.out.println(position);
- * }
+ * {@snippet lang="java" :
+ *     GeographicCRS source = CommonCRS.WGS84.geographic();
+ *     ProjectedCRS  target = CommonCRS.WGS84.UTM(20, 30);                        // 20°N 30°E   (watch out axis order!)
+ *     CoordinateOperation operation = CRS.findOperation(source, target, null);
+ *     if (CRS.getLinearAccuracy(operation) > 100) {
+ *         // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
+ *         // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
+ *     }
+ *     MathTransform mt = operation.getMathTransform();
+ *     DirectPosition position = new DirectPosition2D(20, 30);                    // 20°N 30°E   (watch out axis order!)
+ *     position = mt.transform(position, position);
+ *     System.out.println(position);
+ *     }
  *
  * <h2>The EPSG database</h2>
  * The EPSG geodetic parameter dataset is a structured database required to:
@@ -85,10 +85,10 @@
  * of type <cite>geodetic datum</cite> is associated to code {@code EPSG:6326}.
  * This means that the EPSG object could be obtained by the following code:
  *
- * {@preformat java
- *   DatumAuthorityFactory factory = ...; // TODO: document how to obtain an EPSG factory.
- *   GeodeticDatum datum = factory.createGeodeticDatum("6326");
- * }
+ * {@snippet lang="java" :
+ *     DatumAuthorityFactory factory = ...;             // TODO: document how to obtain an EPSG factory.
+ *     GeodeticDatum datum = factory.createGeodeticDatum("6326");
+ *     }
  *
  * The EPSG objects can also be inspected online on the <a href="https://epsg.org/">EPSG repository</a> web site.
  *

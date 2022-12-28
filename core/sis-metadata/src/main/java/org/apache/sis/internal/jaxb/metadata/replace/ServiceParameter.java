@@ -81,7 +81,7 @@ public final class ServiceParameter extends Parameter {
      * element as it does for all other attributes) while in ISO 19139:2007 it was not (i.e. name attributes
      * like {@code <gco:aName>} were marshalled directly, without wrapper). Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <srv:name>
      *     <gco:MemberName>
      *       <gco:aName>
@@ -250,7 +250,7 @@ public final class ServiceParameter extends Parameter {
     /**
      * Returns the name to be marshalled in the ISO 19139:2007 way. Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <srv:name>
      *     <gco:aName>
      *       <gco:CharacterString>A parameter name</gco:CharacterString>

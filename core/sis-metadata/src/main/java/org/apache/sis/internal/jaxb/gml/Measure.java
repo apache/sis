@@ -47,7 +47,7 @@ import org.apache.sis.measure.Units;
  * The former expresses some measurements with an object of XML type {@code gco:Distance}
  * (as a substitution for XML type {@code gco:Measure}):
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <mri:distance>
  *     <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
  *   </mri:distance>
@@ -55,7 +55,7 @@ import org.apache.sis.measure.Units;
  *
  * while GML will rather use a a syntax like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>
  * }
  *

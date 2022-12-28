@@ -316,9 +316,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads the next unsigned byte value (8 bits) from the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Byte.toUnsignedInt(readByte());
-     * }
+     *     }
      *
      * @return the value of the next unsigned byte from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -344,9 +344,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads the next unsigned short value (16 bits) from the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Short.toUnsignedInt(readShort());
-     * }
+     *     }
      *
      * @return the value of the next unsigned short from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -385,9 +385,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads the next unsigned integer value (32 bits) from the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Integer.toUnsignedLong(readInt());
-     * }
+     *     }
      *
      * @return the value of the next unsigned integer from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -537,9 +537,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code dest.length} bytes from the stream, and stores them into
      * {@code dest} starting at index 0. The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return readFully(dest, 0, dest.length);
-     * }
+     *     }
      *
      * @param  dest An array of bytes to be written to.
      * @throws IOException if an error (including EOF) occurred while reading the stream.

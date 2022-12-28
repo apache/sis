@@ -43,7 +43,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * <p>For example, the following code:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     TableAppender table = new TableAppender(System.out);
  *     table.nextLine('═');
  *     table.append("English\tFrench\tr.e.d.\n");
@@ -54,7 +54,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *          .append("Mars\tMars\t0.532\n");
  *     table.nextLine('═');
  *     table.flush();
- * }
+ *     }
  *
  * produces the following output:
  *

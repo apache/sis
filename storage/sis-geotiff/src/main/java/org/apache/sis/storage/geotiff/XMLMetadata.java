@@ -102,12 +102,12 @@ final class XMLMetadata implements Filter {
     /**
      * {@code true} if the XML is GDAL metadata. Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <GDALMetadata>
      *     <Item name="acquisitionEndDate">2016-09-08T15:53:00+05:00</Item>
      *     <Item name="acquisitionStartDate">2016-09-08T15:56:00+05:00</Item>
      *   </GDALMetadata>
-     * }
+     *   }
      */
     private final boolean isGDAL;
 

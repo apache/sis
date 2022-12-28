@@ -35,18 +35,18 @@ import org.apache.sis.util.Classes;
  * implementation returning {@code null}. Modules capable to provide an instance shall create
  * a subclass like below:</p>
  *
- * {@preformat java
- *     public final class MyClass extends SC_VerticalCRS implements AdapterReplacement {
- *         &#64;Override
- *         public void register(final Marshaller marshaller) {
- *             marshaller.setAdapter(SC_VerticalCRS.class, this);
- *         }
- *
- *         &#64;Override
- *         public DefaultVerticalCRS getElement() {
- *             return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
- *         }
+ * {@snippet lang="java" :
+ * public final class MyClass extends SC_VerticalCRS implements AdapterReplacement {
+ *     @Override
+ *     public void register(final Marshaller marshaller) {
+ *         marshaller.setAdapter(SC_VerticalCRS.class, this);
  *     }
+ *
+ *     @Override
+ *     public DefaultVerticalCRS getElement() {
+ *         return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
+ *     }
+ * }
  * }
  *
  * Next, the module shall provides the following:
@@ -110,9 +110,9 @@ public class SC_VerticalCRS extends PropertyType<SC_VerticalCRS, VerticalCRS> {
      * The default implementation returns {@code null}. Subclasses shall override
      * this method like below:
      *
-     * {@preformat java
-     *   return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
-     * }
+     * {@snippet lang="java" :
+     *     return skip() ? null : DefaultVerticalCRS.castOrCopy(metadata);
+     *     }
      *
      * @return the metadata to be marshalled.
      */

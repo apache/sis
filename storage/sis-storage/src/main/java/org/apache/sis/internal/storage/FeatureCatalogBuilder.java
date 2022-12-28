@@ -67,9 +67,9 @@ public final class FeatureCatalogBuilder extends MetadataBuilder {
      * Adds descriptions for the given feature in both the {@link DefaultMetadata} and {@link FeatureNaming} instances.
      * Invoking this method is equivalent to executing the following code (omitting {@code null} checks for brevity):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     features.add(store, add(type, null), type);
-     * }
+     *     }
      *
      * @param  type  the feature type to add, or {@code null}.
      * @throws IllegalNameException if a feature of the same name has already been added.

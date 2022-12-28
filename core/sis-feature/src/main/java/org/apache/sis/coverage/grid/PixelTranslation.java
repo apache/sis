@@ -43,26 +43,27 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * This class provides also a few {@code translate(…)} convenience methods,
  * which apply the translation on a given {@link MathTransform} instance.
  *
- * <div class="note"><b>Example:</b>
- * if the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
+ * <h2>Example</h2>
+ * In the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
  * <cite>grid cell</cite> coordinates (typically pixel coordinates) to some arbitrary CRS coordinates.
  * In this example, the transform maps pixels {@linkplain PixelOrientation#CENTER center},
  * while the {@linkplain PixelOrientation#UPPER_LEFT upper left} corner is desired.
  * This code will switch the affine transform from the <cite>pixel center</cite> to
  * <cite>upper left corner</cite> convention:
  *
- * {@preformat java
- *   final AffineTransform  gridToCRS = ...;
- *   final PixelOrientation current   = PixelOrientation.CENTER;
- *   final PixelOrientation desired   = PixelOrientation.UPPER_LEFT;
+ * {@snippet lang="java" :
+ *     public AffineTransform getGridToPixelCorner() {
+ *         AffineTransform  gridToCRS = ...;
+ *         PixelOrientation current   = PixelOrientation.CENTER;
+ *         PixelOrientation desired   = PixelOrientation.UPPER_LEFT;
  *
- *   // Switch the transform from 'current' to 'desired' convention.
- *   final PixelTranslation source = getPixelTranslation(current);
- *   final PixelTranslation target = getPixelTranslation(desired);
- *   gridToCRS.translate(target.dx - source.dx,
- *                       target.dy - source.dy);
+ *         // Switch the transform from 'current' to 'desired' convention.
+ *         PixelTranslation source = getPixelTranslation(current);
+ *         PixelTranslation target = getPixelTranslation(desired);
+ *         return gridToCRS.translate(target.dx - source.dx,
+ *                                    target.dy - source.dy);
+ *     }
  * }
- * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0

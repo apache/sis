@@ -136,7 +136,7 @@ public enum ValueExistencePolicy {
      * This policy is relevant for metadata classes annotated with {@link TitleProperty};
      * for all other classes, this policy is identical to {@link #NON_EMPTY}.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} and
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitationDate} classes are annotated with
      * <code>&#64;TitleProperty(name="title")</code> and <code>&#64;TitleProperty(name="date")</code>
@@ -162,7 +162,7 @@ public enum ValueExistencePolicy {
      *           └─Date type…… Creation
      *     }
      *   </td></tr>
-     * </table></div>
+     * </table>
      *
      * This policy is the default behavior of {@link AbstractMetadata#asTreeTable()},
      * and consequently defines the default rendering of {@link AbstractMetadata#toString()}.

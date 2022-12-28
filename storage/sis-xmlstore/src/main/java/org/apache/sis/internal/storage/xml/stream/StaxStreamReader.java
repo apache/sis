@@ -70,13 +70,13 @@ import org.opengis.feature.Feature;
  * in the following example:
  *
  * <p>Example:</p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class UserObjectReader extends StaxStreamReader {
  *         UserObjectReader(StaxDataStore owner) throws ... {
  *             super(owner);
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public boolean tryAdvance(Consumer<? super Feature> action) throws BackingStoreException {
  *             if (endOfFile) {
  *                 return false;
@@ -86,16 +86,16 @@ import org.opengis.feature.Feature;
  *             return true;
  *         }
  *     }
- * }
+ *     }
  *
  * Readers can be used like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Consumer<Feature> consumer = ...;
  *     try (UserObjectReader reader = new UserObjectReader(dataStore)) {
  *         reader.forEachRemaining(consumer);
  *     }
- * }
+ *     }
  *
  * <h2>Multi-threading</h2>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}

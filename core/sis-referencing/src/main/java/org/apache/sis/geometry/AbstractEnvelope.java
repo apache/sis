@@ -268,11 +268,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * For example in the following code, {@code NaN} values were implicitly checked by
      * the {@code (a < b)} comparison:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (a < b && isNegativeUnsafe(a)) {
      *         // ... do some stuff
      *     }
-     * }
+     *     }
      */
     static boolean isNegativeUnsafe(final double value) {
         return (Double.doubleToRawLongBits(value) & SIGN_BIT_MASK) != 0;
@@ -427,9 +427,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Returns the median coordinate along the specified dimension.
      * In most cases, the result is equal (minus rounding error) to:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     median = (getUpper(dimension) + getLower(dimension)) / 2;
-     * }
+     *     }
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If <var>upper</var> &lt; <var>lower</var> and the
@@ -480,9 +480,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Returns the envelope span (typically width or height) along the specified dimension.
      * In most cases, the result is equal (minus rounding error) to:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     span = getUpper(dimension) - getLower(dimension);
-     * }
+     *     }
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If <var>upper</var> &lt; <var>lower</var> and the

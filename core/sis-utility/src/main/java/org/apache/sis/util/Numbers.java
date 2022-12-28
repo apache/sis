@@ -300,13 +300,12 @@ public final class Numbers extends Static {
      * <p>If one of the given argument is null, then this method returns the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * in the following code, {@code type} is set to {@code Long.class}:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Class<?> type = widestClass(Short.class, Long.class);
-     * }
-     * </div>
+     *     }
      *
      * @param  c1  the first number type, or {@code null}.
      * @param  c2  the second number type, or {@code null}.
@@ -361,13 +360,12 @@ public final class Numbers extends Static {
      * <p>If one of the given argument is null, then this method returns the non-null argument.
      * If both arguments are null, then this method returns {@code null}.</p>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * in the following code, {@code type} is set to {@code Short.class}:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Class<?> type = widestClass(Short.class, Long.class);
-     * }
-     * </div>
+     *     }
      *
      * @param  c1  the first number type, or {@code null}.
      * @param  c2  the second number type, or {@code null}.
@@ -446,9 +444,9 @@ public final class Numbers extends Static {
      * Returns the given number wrapped in the smallest class capable to hold the specified value.
      * This method is equivalent to the following code, in a slightly more efficient way:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return cast(value, narrowestClass(value));
-     * }
+     *     }
      *
      * @param  value  the value to be wrapped in a finer (if possible) {@link Number}.
      * @return the narrowest type capable to hold the given value.

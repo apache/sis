@@ -42,9 +42,9 @@ public abstract class AppenderTestCase extends TestCase {
     /**
      * The appender to test. Subclasses should initialize this field as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   appender = MyAppender(appender);
-     * }
+     *   }
      */
     Appendable appender;
 

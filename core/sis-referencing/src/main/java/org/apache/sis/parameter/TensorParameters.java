@@ -87,7 +87,7 @@ import org.apache.sis.util.resources.Errors;
  *   <th class="sep">Using OGC names</th>
  * </tr>
  * <tr><td>
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   Parameter["A0", <value>, Id["EPSG", 8623]],
  *   Parameter["A1", <value>, Id["EPSG", 8624]],
  *   Parameter["A2", <value>, Id["EPSG", 8625]],
@@ -101,7 +101,7 @@ import org.apache.sis.util.resources.Errors;
  * but they are for polynomial transformations, not for affine transformations.</div>
  *
  * </td><td class="sep">
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   Parameter["num_row", 3],
  *   Parameter["num_col", 3],
  *   Parameter["elt_0_0", <value>],
@@ -123,18 +123,18 @@ import org.apache.sis.util.resources.Errors;
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
  * one can use the following code:
  *
- * {@preformat java
- *   Map<String,?> properties = Map.of(ParameterValueGroup.NAME_KEY, "Affine");
- *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
- * }
+ * {@snippet lang="java" :
+ *     Map<String,?> properties = Map.of(ParameterValueGroup.NAME_KEY, "Affine");
+ *     ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
+ *     }
  *
  * For setting the elements of a few values, then create a matrix from the parameter values:
  *
- * {@preformat java
- *   p.parameter("elt_0_0").setValue(4);    // "A0" also accepted as a synonymous of "elt_0_0".
- *   p.parameter("elt_1_1").setValue(6);    // "B1" also accepted as a synonymous of "elt_1_1".
- *   Matrix m = TensorParameters.WKT1.toMatrix(p);
- * }
+ * {@snippet lang="java" :
+ *     p.parameter("elt_0_0").setValue(4);    // "A0" also accepted as a synonymous of "elt_0_0".
+ *     p.parameter("elt_1_1").setValue(6);    // "B1" also accepted as a synonymous of "elt_1_1".
+ *     Matrix m = TensorParameters.WKT1.toMatrix(p);
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2

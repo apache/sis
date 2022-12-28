@@ -919,11 +919,11 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * The default implementation is equivalent to the following pseudo-code
      * (omitting argument checks):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return intersect(new Range<E>(elementType,
      *           lower.minValue,  lower.isMinIncluded,
      *           upper.minValue, !upper.isMinIncluded));
-     * }
+     *   }
      *
      * <div class="note"><b>API note:</b>
      * This method takes the minimal value of the {@code upper} argument instead

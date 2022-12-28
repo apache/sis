@@ -227,9 +227,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
-     * {@preformat wkt
-     *     BOX(-180 -90, 180 90)
-     * }
+     * {@snippet lang="wkt" :
+     *   BOX(-180 -90, 180 90)
+     *   }
      *
      * However, this constructor is lenient to other geometry types like {@code POLYGON}.
      * Actually this constructor ignores the geometry type and just applies the following
@@ -984,11 +984,11 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * as a result of this method call. If such effect is undesirable, then this method may be
      * combined with {@link #simplify()} as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (envelope.normalize()) {
      *         envelope.simplify();
      *     }
-     * }
+     *     }
      *
      * <h4>Choosing the range of longitude values</h4>
      * Geographic CRS typically have longitude values in the [-180 … +180]° range, but the [0 … 360]°
@@ -1244,15 +1244,15 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * For example, in order to expand only the horizontal component of a four dimensional
      * (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) envelope, one can use:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     envelope.subEnvelope(0, 2).add(myPosition2D);
-     * }
+     *     }
      *
      * If the sub-envelope needs to be independent from the original envelope, use the following idiom:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     GeneralEnvelope copy = envelope.subEnvelope(0, 2).clone();
-     * }
+     *     }
      *
      * The sub-envelope is initialized with a {@code null} {@linkplain #getCoordinateReferenceSystem() CRS}.
      * This method does not compute a sub-CRS because it may not be needed, or the sub-CRS may be already

@@ -27,7 +27,7 @@ import org.opengis.util.ControlledVocabulary;
  * An adapter for {@link Enum}, in order to implement the ISO 19115-3 standard.
  * Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <srv:direction>
  *     <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
  *   </srv:direction>

@@ -411,27 +411,9 @@ public class GridDerivation {
      * (coordinate operations are applied as needed if the Coordinate Reference Systems are not the same).
      * The new grid geometry resolution will be integer multiples of the {@link #base} grid geometry resolution.
      *
-     * <div class="note"><b>Usage:</b>
-     * This method can be helpful for implementation of
-     * {@link org.apache.sis.storage.GridCoverageResource#read(GridGeometry, int...)}.
-     * Example:
-     *
-     * {@preformat java
-     *     class MyDataStorage extends GridCoverageResource {
-     *         &#64;Override
-     *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
-     *             GridDerivation change = getGridGeometry().derive().subgrid(domain);
-     *             GridExtent toRead = change.buildExtent();
-     *             int[] subsampling = change.getSubsampling());
-     *             // Do reading here.
-     *         }
-     *     }
-     * }
-     * </div>
-     *
-     * If {@code gridExtent} contains only an envelope, then this method delegates to {@link #subgrid(Envelope, double...)}.
+     * <p>If {@code gridExtent} contains only an envelope, then this method delegates to {@link #subgrid(Envelope, double...)}.
      * Otherwise if {@code gridExtent} contains only an extent, then this method delegates to {@link #subgrid(GridExtent, int...)}.
-     * Otherwise the following information are mandatory:
+     * Otherwise the following information are mandatory:</p>
      * <ul>
      *   <li>{@linkplain GridGeometry#getExtent() Extent} in {@code areaOfInterest}.</li>
      *   <li>{@linkplain GridGeometry#getGridToCRS(PixelInCell) Grid to CRS} conversion in {@code areaOfInterest}.</li>
@@ -450,7 +432,24 @@ public class GridDerivation {
      * bilinear interpolations in an image, (s)he will need 1 more pixel on each image border.
      * If the caller wants to apply bi-cubic interpolations, (s)he will need 2 more pixels on each image border.
      *
-     * <p>Notes:</p>
+     * <h4>Usage</h4>
+     * This method can be helpful for implementation of
+     * {@link org.apache.sis.storage.GridCoverageResource#read(GridGeometry, int...)}.
+     * Example:
+     *
+     * {@snippet lang="java" :
+     *     class MyDataStorage extends GridCoverageResource {
+     *         @Override
+     *         public GridCoverage read(GridGeometry domain, int... range) throws DataStoreException {
+     *             GridDerivation change = getGridGeometry().derive().subgrid(domain);
+     *             GridExtent toRead = change.buildExtent();
+     *             int[] subsampling = change.getSubsampling());
+     *             // Do reading here.
+     *         }
+     *     }
+     *     }
+     *
+     * <h4>Notes</h4>
      * <ul>
      *   <li>This method can be invoked only once.</li>
      *   <li>This method cannot be used together with another {@code subgrid(…)} method.</li>
@@ -1055,15 +1054,14 @@ public class GridDerivation {
      * grid coordinates, 1 maps to {@linkplain GridExtent#getHigh(int) high grid coordinates} and 0.5 maps to the median position.
      * The slicing is applied on all dimensions except the specified dimensions to keep.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * given a <var>n</var>-dimensional cube, the following call creates a slice of the two first dimensions
      * (numbered 0 and 1, typically the dimensions of <var>x</var> and <var>y</var> axes)
      * located at the center (ratio 0.5) of all other dimensions (typically <var>z</var> and/or <var>t</var> axes):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     gridGeometry.derive().sliceByRatio(0.5, 0, 1).build();
-     * }
-     * </div>
+     *     }
      *
      * @param  sliceRatio        the ratio to apply on all grid dimensions except the ones to keep.
      * @param  dimensionsToKeep  the grid dimension to keep unchanged.

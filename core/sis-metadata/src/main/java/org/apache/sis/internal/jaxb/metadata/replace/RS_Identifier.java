@@ -28,7 +28,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * Identifier using {@code <gmd:RS_Identifier>} XML element name.
  * This is used for (un)marshalling legacy metadata only. Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gmd:RS_Identifier>
  *     <gmd:authority>
  *       <gmd:CI_Citation>
@@ -41,7 +41,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *       <gco:CharacterString>4326</gco:CharacterString>
  *     </gmd:code>
  *   </gmd:RS_Identifier>
- * }
+ *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

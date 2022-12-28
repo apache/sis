@@ -62,9 +62,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <b>Example:</b> the following code gets a vertical datum for height above the geoid:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     VerticalDatum datum = CommonCRS.Vertical.GEOID.datum();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)

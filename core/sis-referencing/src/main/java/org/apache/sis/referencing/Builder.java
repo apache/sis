@@ -97,23 +97,23 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *       information given to the {@code Builder} are ignored.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * The EPSG database defines a projection named <cite>"Mercator (variant A)"</cite> (EPSG:9804).
  * This projection was named <cite>"Mercator (1SP)"</cite> in older EPSG database versions.
  * The same projection was also named "{@code Mercator_1SP}" by OGC some specifications.
  * If we choose EPSG as our primary naming authority, then those three names can be declared as below:
  *
- * {@preformat java
- *   builder.setCodespace (Citations.EPSG, "EPSG")
- *          .addName("Mercator (variant A)")
- *          .addName("Mercator (1SP)")
- *          .addName(Citations.OGC, "Mercator_1SP")
- * }
+ * {@snippet lang="java" :
+ *     builder.setCodespace (Citations.EPSG, "EPSG")
+ *            .addName("Mercator (variant A)")
+ *            .addName("Mercator (1SP)")
+ *            .addName(Citations.OGC, "Mercator_1SP")
+ *     }
  *
  * The {@code toString()} representation of those three names are {@code "Mercator (variant A)"},
  * {@code "Mercator (1SP)"} (note the absence of {@code "EPSG:"} prefix, which is stored as the
  * name {@linkplain org.apache.sis.util.iso.DefaultLocalName#scope() scope} but not shown) and
- * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.</div>
+ * <code>"<b>OGC:</b>Mercator_1SP"</code> respectively.
  *
  *
  * <h2>Builder property lifetimes</h2>
@@ -154,8 +154,8 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *       usage of {@link #properties} map by the factory.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
- * {@preformat java
+ * <p>Example:</p>
+ * {@snippet lang="java" :
  *     public class MyBuilder extends Builder<MyBuilder> {
  *         public Foo createFoo() {
  *             onCreate(false);
@@ -164,8 +164,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *             return foo;
  *         }
  *     }
- * }
- * </div>
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -515,23 +514,23 @@ public abstract class Builder<B extends Builder<B>> {
      * Adds an {@code IdentifiedObject} name in an alternative namespace. This method is typically invoked for
      * {@linkplain AbstractIdentifiedObject#getAlias() aliases} defined after the primary name.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The <cite>"Longitude of natural origin"</cite> parameter defined by EPSG is named differently
      * by OGC and GeoTIFF. Those alternative names can be defined as below:
      *
-     * {@preformat java
-     *   builder.setCodespace(Citations.EPSG, "EPSG")          // Sets the default namespace to "EPSG".
-     *          .addName("Longitude of natural origin")        // Primary name in builder default namespace.
-     *          .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
-     *          .addName(Citations.GEOTIFF, "NatOriginLong");  // Second alias in "GeoTIFF" namespace.
-     * }
+     * {@snippet lang="java" :
+     *     builder.setCodespace(Citations.EPSG, "EPSG")          // Sets the default namespace to "EPSG".
+     *            .addName("Longitude of natural origin")        // Primary name in builder default namespace.
+     *            .addName(Citations.OGC, "central_meridian")    // First alias in "OGC" namespace.
+     *            .addName(Citations.GEOTIFF, "NatOriginLong");  // Second alias in "GeoTIFF" namespace.
+     *     }
      *
      * In this example, {@code "central_meridian"} will be the
      * {@linkplain org.apache.sis.util.iso.DefaultScopedName#tip() tip} and {@code "OGC"} will be the
-     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#head() head} of the first alias.</div>
+     * {@linkplain org.apache.sis.util.iso.DefaultScopedName#head() head} of the first alias.
      *
-     * <p><b>Lifetime:</b>
-     * the name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.</p>
+     * <h4>Lifetime</h4>
+     * The name and all aliases are cleared after a {@code createXXX(…)} method has been invoked.
      *
      * @param  authority  bibliographic reference to the authority defining the codes, or {@code null} if none.
      * @param  name       the {@code IdentifiedObject} alias as a name in the namespace of the given authority.
@@ -1012,7 +1011,7 @@ public abstract class Builder<B extends Builder<B>> {
      * Initializes/cleanups the {@link #properties} map before/after a {@code createXXX(…)} execution.
      * Subclasses shall invoke this method in their {@code createXXX(…)} methods as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public Foo createFoo() {
      *         final Foo foo;
      *         onCreate(false);

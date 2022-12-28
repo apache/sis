@@ -403,9 +403,9 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * <p>The most important alternate unit in Apache SIS is {@link Units#RADIAN}, defined as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   Unit<Angle> RADIAN = ONE.alternate("rad").asType(Angle.class);
-     * }
+     *   }
      *
      * @param  symbol  the new symbol for the alternate unit.
      * @return the alternate unit.

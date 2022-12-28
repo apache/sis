@@ -45,16 +45,16 @@ import org.apache.sis.internal.util.Strings;
  * It may also be used as a workaround for authority factories that do not implement the {@code createObject(String)}
  * method.</p>
  *
- * <div class="note"><b>Example:</b>
- * the following code creates a proxy which will delegates its work to the
+ * <h2>Example</h2>
+ * The following code creates a proxy which will delegates its work to the
  * {@link GeodeticAuthorityFactory#createGeographicCRS createGeographicCRS} method.
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     String code = ...;
  *     AuthorityFactory factory = ...;
  *     AuthorityFactoryProxy proxy = AuthorityFactoryProxy.getInstance(GeographicCRS.class);
  *     GeographicCRS crs = proxy.create(factory, code); // Invokes factory.createGeographicCRS(code);
- * }</div>
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7

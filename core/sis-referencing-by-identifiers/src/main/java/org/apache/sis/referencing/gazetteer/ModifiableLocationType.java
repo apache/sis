@@ -44,29 +44,29 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * Instead, unmodifiable {@linkplain #snapshot snapshots} should be published.
  * The same {@code ModifiableLocationType} instance can be used for many snapshots.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * the following code creates 3 levels of location types: <var>administrative areas</var>, which contain
  * <var>towns</var>, which themselves contain <var>streets</var>. Note that the {@code street} location
  * type has two parents, {@code town} and {@code area}, because a street can be outside any town and
  * directly under the authority of an administrative area instead.
  *
- * {@preformat java
- *   ModifiableLocationType area   = new ModifiableLocationType("administrative area");
- *   ModifiableLocationType town   = new ModifiableLocationType("town");
- *   ModifiableLocationType street = new ModifiableLocationType("street");
+ * {@snippet lang="java" :
+ *     ModifiableLocationType area   = new ModifiableLocationType("administrative area");
+ *     ModifiableLocationType town   = new ModifiableLocationType("town");
+ *     ModifiableLocationType street = new ModifiableLocationType("street");
  *
- *   area  .setTheme("local administration");
- *   town  .setTheme("built environment");
- *   street.setTheme("access");
+ *     area  .setTheme("local administration");
+ *     town  .setTheme("built environment");
+ *     street.setTheme("access");
  *
- *   area  .setDefinition("area of responsibility of highest level local authority");
- *   town  .setDefinition("city or town");
- *   street.setDefinition("thoroughfare providing access to properties");
+ *     area  .setDefinition("area of responsibility of highest level local authority");
+ *     town  .setDefinition("city or town");
+ *     street.setDefinition("thoroughfare providing access to properties");
  *
- *   town  .addParent(area);
- *   street.addParent(area);
- *   street.addParent(town);
- * }
+ *     town  .addParent(area);
+ *     street.addParent(area);
+ *     street.addParent(town);
+ *     }
  *
  * A string representation of the {@code area} location type is as below:
  *
@@ -76,7 +76,6 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  *     │   └─street……………………………… thoroughfare providing access to properties
  *     └─street………………………………………… thoroughfare providing access to properties
  * }
- * </div>
  *
  * <h2>Inheritance of property values</h2>
  * According ISO 19112:2003, all properties except the collection of
@@ -95,9 +94,9 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * reasonably presumed to be in the same territory of use. That territory can be specified only once
  * as below:
  *
- * {@preformat java
- *   area.setTerritoryOfUse("Japan");
- * }
+ * {@snippet lang="java" :
+ *     area.setTerritoryOfUse("Japan");
+ *     }
  *
  * Then, the towns and streets automatically inherit the same value for that property,
  * unless they are explicitly given another value.</div>

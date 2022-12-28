@@ -263,7 +263,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
      * in trigonometric functions. The range reduction must be performed explicitly in map projection code.
      *
      * <p>The math transform tested here is:</p>
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   Param_MT["Albers Equal Area",
      *     Parameter["semi_major", 6378206.4, Unit["metre"]],
      *     Parameter["semi_minor", 6356583.8, Unit["metre"]],
@@ -271,7 +271,7 @@ public final strictfp class AlbersEqualAreaTest extends MapProjectionTestCase {
      *     Parameter["Longitude of false origin", -154, Unit["degree"]],
      *     Parameter["Latitude of 1st standard parallel", 55, Unit["degree"]],
      *     Parameter["Latitude of 2nd standard parallel", 65, Unit["degree"]]]
-     * }
+     *   }
      *
      * @throws FactoryException if an error occurred while creating the map projection.
      * @throws TransformException if an error occurred while projecting a point.

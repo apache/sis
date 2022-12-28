@@ -28,7 +28,7 @@ import org.apache.sis.internal.system.Modules;
  * The usage pattern is:
  *
  * <p><b>On deserialization:</b></p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
  *         in.defaultReadObject();
  *         Object someValue = ...;

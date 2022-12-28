@@ -144,9 +144,9 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * from the given string in <cite>Well Known Text</cite> (WKT) format.
      * The given string is typically a {@code POINT} element like below:
      *
-     * {@preformat wkt
-     *     POINT(6 10)
-     * }
+     * {@snippet lang="wkt" :
+     *   POINT(6 10)
+     *   }
      *
      * However, this constructor is lenient to other types like {@code POINT ZM}.
      *

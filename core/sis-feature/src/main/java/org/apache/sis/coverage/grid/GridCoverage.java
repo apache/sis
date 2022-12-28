@@ -491,9 +491,9 @@ public abstract class GridCoverage extends BandedCoverage {
      * Current implementation is equivalent to the following, where {@code <default flags>}
      * is the same set of flags than {@link GridGeometry#toString()}.
      *
-     * {@preformat java
-     *   return toTree(Locale.getDefault(), <default flags>).toString();
-     * }
+     * {@snippet lang="java" :
+     *     return toTree(Locale.getDefault(), <default flags>).toString();
+     *     }
      *
      * @return a string representation of this grid coverage for debugging purpose.
      */

@@ -26,13 +26,13 @@ package org.apache.sis.coverage.grid;
  * For example if a process is going to need both the grid extent and the "grid to CRS" transform,
  * than it can verify if those two conditions are met in a single method call:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     if (gg.isDefined(GridGeometry.EXTENT | GridGeometry.GRID_TO_CRS) {
  *         GridExtent    extent    = gg.getGridExtent();
  *         MathTransform gridToCRS = gg.getGridToCRS(PixelInCell.CELL_CENTER);
  *         // Do the process.
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0

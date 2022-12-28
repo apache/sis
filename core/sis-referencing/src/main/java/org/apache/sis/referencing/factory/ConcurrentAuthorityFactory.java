@@ -1819,14 +1819,14 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * The {@link #release()} method must be invoked in a {@code finally} block after the call to {@code acquire}.
          * The pattern must be as below (note that the call to {@code acquire()} is inside the {@code try} block):
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     try {
          *         acquire();
          *         (finder or proxy).doSomeStuff();
          *     } finally {
          *         release();
          *     }
-         * }
+         *     }
          */
         private void acquire() throws FactoryException {
             assert Thread.holdsLock(this);

@@ -44,21 +44,21 @@ import org.apache.sis.util.resources.Errors;
  * Subclasses can use those fields like below:
  *
  * <p><b>Formatting table without border:</b></p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     TableAppender table = new TableAppender(out, "");
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
  *     table.append(columnSeparator);
- * }
+ *     }
  *
  * <p><b>Formatting table with a border:</b></p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     TableAppender table = new TableAppender(out, columnSeparator);
  *     // ... do some work, then add a column separator:
  *     table.append(beforeFill);
  *     table.nextColumn(fillCharacter);
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

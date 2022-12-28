@@ -132,9 +132,9 @@ public final class DecimalFunctions extends Static {
      * This method is equivalent to the following code, except that it is potentially faster since the
      * actual implementation avoid to format and parse the value:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return Double.parseDouble(Float.toString(value));
-     * }
+     *   }
      *
      * @param  value  the {@code float} value to convert as a {@code double}.
      * @return the given value as a {@code double} with the extra decimal fraction digits set to zero.
@@ -186,17 +186,17 @@ public final class DecimalFunctions extends Static {
      * equivalent to the following code except that it is potentially faster since the actual implementation
      * avoids the creation of {@link java.math.BigDecimal} objects:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   BigDecimal base2  = new BigDecimal(value);     // Exact same value as stored in IEEE 754 format.
      *   BigDecimal base10 = BigDecimal.valueOf(value); // Exact same value as shown by println(value).
      *   return base10.subtract(base2).doubleValue();
-     * }
+     *   }
      *
      * Computing {@code value + deltaForDoubleToDecimal(value)} has no effect since the absolute value of the
      * returned delta is always smaller than <code>{@linkplain Math#ulp(double) Math.ulp}(value) / 2</code>.
      * To see an effect, a type with more precision than the {@code double} type is necessary.
      *
-     * <div class="note"><b>Use case:</b>
+     * <h4>Use case</h4>
      * Many international standards define values in base 10. For example, the conversion factor from inches
      * to centimetres is defined as exactly 2.54 cm/inch. This is by an internationally accepted definition
      * since 1959, not an approximation. But the 2.54 value cannot be represented exactly in the IEEE 754
@@ -205,7 +205,6 @@ public final class DecimalFunctions extends Static {
      * (e.g. in non-linear equations where errors can grow exponentially), this method can be useful.
      * Other examples of values defined in base 10 are conversions from feet to metres and
      * map projection parameters defined by national mapping agencies.
-     * </div>
      *
      * <h4>Domain of validity</h4>
      * The current implementation cannot compute delta for {@code abs(value) < 3E-8} approximately,
@@ -515,18 +514,17 @@ public final class DecimalFunctions extends Static {
      *   <tr><td>0.123</td>    <td>0.123456</td>    <td>false</td>  <td>{@code approximate} and {@code accurate} cannot be interchanged.</td></tr>
      * </table>
      *
-     * <div class="note"><b>Use case:</b>
+     * <h4>Use case</h4>
      * this method is useful when {@code approximate} is a number parsed by {@link Double#parseDouble(String)}
      * and the data producer may have rounded too many fraction digits when formatting the numbers.
      * In some cases we can suspect what the real value may be and want to ensure that a replacement
      * would not contradict the provided value. This happen for example in Well Known Text format,
      * where the following element is sometimes written with the conversion factor rounded:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   AngleUnit["degree", 0.017453292519943295]      // Expected
      *   AngleUnit["degree", 0.01745329252]             // Given by some providers
-     * }
-     * </div>
+     *   }
      *
      * @param  accurate     the most accurate number.
      * @param  approximate  the number which may have missing decimal fraction digits.

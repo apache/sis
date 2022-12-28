@@ -234,28 +234,26 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * This method is invoked by the default implementation of {@link #openScript(String, int)}
      * for all scripts except {@link #PREPARE} and {@link #FINISH}.
      *
-     * <div class="note"><b>Example 1:</b>
+     * <h4>Example 1</h4>
      * if this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
      * and if the names given at {@linkplain #InstallationScriptProvider(String, String...) construction time} are the
      * filenames in that directory, then this method can be implemented as below:
      *
-     * {@preformat java
-     *    protected InputStream openStream(String name) throws IOException {
-     *        return Files.newInputStream(directory.resolve(name));
-     *    }
+     * {@snippet lang="java" :
+     *      protected InputStream openStream(String name) throws IOException {
+     *          return Files.newInputStream(directory.resolve(name));
+     *      }
      * }
-     * </div>
      *
-     * <div class="note"><b>Example 2:</b>
+     * <h4>Example 2</h4>
      * if this {@code InstallationScriptProvider} instance rather gets the SQL scripts from resources bundled
      * in the same JAR files than and in the same package, then this method can be implemented as below:
      *
-     * {@preformat java
-     *    protected InputStream openStream(String name) {
-     *        return MyClass.getResourceAsStream(name);
-     *    }
+     * {@snippet lang="java" :
+     *      protected InputStream openStream(String name) {
+     *          return MyClass.getResourceAsStream(name);
+     *      }
      * }
-     * </div>
      *
      * @param  name  name of the script file to open. Can be {@code null} if the resource is not found.
      * @return an input stream opened of the given script file.

@@ -37,18 +37,18 @@ import static org.opengis.test.Assert.*;
  * This is the common class used by all tests that need a full EPSG geodetic dataset to be installed.
  * Use this class as below:
  *
- * {@preformat java
- *     &#64;BeforeClass
+ * {@snippet lang="java" :
+ *     @BeforeClass
  *     public static void createFactory() throws FactoryException {
  *         TestFactorySource.createFactory();
  *     }
  *
- *     &#64;AfterClass
+ *     @AfterClass
  *     public static void close() throws FactoryException {
  *         TestFactorySource.close();
  *     }
  *
- *     &#64;Test
+ *     @Test
  *     public void testFoo() {
  *         assumeNotNull(TestFactorySource.factory);
  *         // Test can happen now.

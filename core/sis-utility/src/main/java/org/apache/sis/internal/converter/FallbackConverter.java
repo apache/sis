@@ -133,11 +133,11 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * erasure, and should not need that information if we didn't made a mistake in this class.
      * Nevertheless for safety, callers are encouraged to verify themselves as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Class<T> targetClass = ...;
      *     FallbackConverter<S, ? extends T> converter = merge(...);
      *     assert targetClass.isAssignableFrom(converter.getTargetClass()) : converter;
-     * }
+     *     }
      *
      * In the current implementation, the {@code primary} converter can be either an arbitrary
      * {@code ObjectConverter}, or a previously created {@code FallbackConverter}. However, the

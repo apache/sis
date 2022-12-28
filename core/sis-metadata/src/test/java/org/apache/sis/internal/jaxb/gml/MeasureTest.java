@@ -39,9 +39,9 @@ public final strictfp class MeasureTest extends TestCase {
      * The URL used in {@code uom} attribute of XML elements which contains a measurements.
      * Example:
      *
-     * {@preformat xml
-     *     <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
-     * }
+     * {@snippet lang="xml" :
+     *   <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
+     *   }
      */
     public static final String UOM_URL = CodeListUID.METADATA_ROOT_LEGACY + CodeListUID.UOM_PATH;
 

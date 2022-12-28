@@ -884,31 +884,31 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
      * in a <var>n</var>-dimensional cube where <var>s</var> ≤ <var>n</var>.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.
      * The first step is to specify the <var>x</var> and <var>t</var> coordinates of the slice.
      * In this example we set <var>x</var> to 5 and <var>t</var> to 8.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     GridGeometry grid = ...;             // Geometry of the (x,y,z,t) grid.
      *     GridGeometry slice4D = grid.slice(new GeneralDirectPosition(5, NaN, NaN, 8));
-     * }
+     *     }
      *
      * Above code created a slice at the requested position, but that slice still have 4 dimensions.
      * It is a "slice" because the <var>x</var> and <var>t</var> dimensions of {@code slice4D} have only one cell.
      * If a two-dimensional slice is desired, then above operations can be completed as below.
      * In this example, the result of {@code getSubspaceDimensions(2)} call will be {1,2}.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     int[]  subDimensions = slice4D.getExtent().getSubspaceDimensions(2);
      *     GridGeometry slice2D = slice4D.reduce(subDimensions);
-     * }
+     *     }
      *
      * Note that in this particular example, it would have been more efficient to execute {@code grid.reduce(1,2)} directly.
      * This {@code getSubspaceDimensions(int)} method is more useful for inferring a {@code slice2D} from a {@code slice4D}
      * which has been created elsewhere, or when we do not really want the {@code slice2D} but only its dimension indices.
-     * </div>
      *
+     * <h4>Number of dimensions</h4>
      * This method returns exactly <var>s</var> indices. If there is more than <var>s</var> dimensions having a
      * {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
      * If there is less than <var>s</var> dimensions having a size greater than 1, then the returned list of

@@ -165,9 +165,9 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
      * and {@link #getReferenceSystem()}, for avoiding never-ending loops.
      *
      * <p>This method is implemented as below:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(object, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.

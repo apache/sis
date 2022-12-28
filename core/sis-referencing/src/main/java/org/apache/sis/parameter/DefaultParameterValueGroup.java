@@ -71,29 +71,28 @@ import org.apache.sis.util.Utilities;
  * be invoked regardless of whether the parameter is mandatory or optional: if the parameter was optional and not
  * yet present in this group, it will be created.
  *
- * <div class="note"><b>Example:</b>
+ * <h3>Example 1</h3>
  * Assuming the descriptor defined in the {@link DefaultParameterDescriptorGroup} example,
  * one can set <cite>Mercator (variant A)</cite> projection parameters as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
  *     mercator.parameter("Longitude of natural origin").setValue(-60, Units.DEGREE);  // 60°W
  *     mercator.parameter("Latitude of natural origin") .setValue( 40, Units.DEGREE);  // 40°N
  *     // Keep default values for other parameters.
- * }
- * </div>
+ *     }
  *
+ * <h3>Example 2</h3>
  * Alternatively, if all parameters were created elsewhere and the user wants to copy them in a new
  * parameter group, the {@link List#addAll(Collection)} method can be invoked on the values list.
  *
- * <div class="note"><b>Example:</b>
- * {@preformat java
+ * {@snippet lang="java" :
  *     ParameterValue<?>[] parameter = ...;        // Defined elsewhere.
  *     ParameterValueGroup mercator = Mercator.PARAMETERS.createValue();
  *     Collections.addAll(mercator.values(), parameters);
- * }
- * </div>
+ *     }
  *
+ * <h2>Removing elements</h2>
  * Optional parameters can be removed by the usual {@link List#remove(int)} or {@link List#remove(Object)}
  * operations on the values list. But attempts to remove a mandatory parameter will cause an
  * {@link InvalidParameterCardinalityException} to be thrown.
@@ -263,11 +262,11 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * For example, the following idiom fetches a floating point value for the <cite>False easting</cite>
      * and <cite>False northing</cite> parameters and set a new value for the <cite>False easting</cite> one:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     double easting  = parameter("False easting" ).doubleValue();
      *     double northing = parameter("False northing").doubleValue();
      *     parameter("False easting").setValue(500000.0);
-     * }
+     *     }
      *
      * <div class="note"><b>API note:</b> there is no <code>parameter<b><u>s</u></b>(String)</code> method
      * returning a list of parameter values because the ISO 19111 standard fixes the {@code ParameterValue}
@@ -495,9 +494,9 @@ scan:   for (final GeneralParameterValue param : actual.values()) {
      * Compares the specified object with this parameter for equality.
      * This method is implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *

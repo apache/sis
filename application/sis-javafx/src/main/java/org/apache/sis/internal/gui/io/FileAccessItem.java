@@ -272,7 +272,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**
      * Recomputes all rectangles from current {@link #columnWidth} and {@link #accessRanges}.
      *
-     * <h4>Implementation note:</h4>
+     * <h4>Implementation note</h4>
      * This method is inefficient as it iterates over all ranges instead of only the ranges that changed.
      * It should be okay in the common case where file accesses happens often on consecutive blocks,
      * in which case ranges get merged together and the total number of elements in {@link #accessRanges}

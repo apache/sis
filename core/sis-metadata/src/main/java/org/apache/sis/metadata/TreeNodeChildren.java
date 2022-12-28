@@ -82,9 +82,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * {@link #metadata} object. This is given at construction time and shall be the
      * same than the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
-     * }
+     *     }
      */
     final PropertyAccessor accessor;
 

@@ -1599,9 +1599,9 @@ public class Formatter implements Localized {
      * Invoking this method is equivalent to first verifying the {@code other} class,
      * then delegating as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return other.formatTo(this);
-     * }
+     *     }
      *
      * This method is useful for {@code FormattableObject} which are wrapper around another object.
      * It allows to delegate the WKT formatting to the wrapped object.
@@ -1678,11 +1678,11 @@ public class Formatter implements Localized {
      * Restores the contextual unit to its previous state before the call to {@link #addContextualUnit(Unit)}.
      * This method is used in the following pattern:
      *
-     * {@preformat java
-     *   final Unit<?> previous = formatter.addContextualUnit(unit);
-     *   // ... format some WKT elements here.
-     *   formatter.restoreContextualUnit(unit, previous);
-     * }
+     * {@snippet lang="java" :
+     *     final Unit<?> previous = formatter.addContextualUnit(unit);
+     *     // ... format some WKT elements here.
+     *     formatter.restoreContextualUnit(unit, previous);
+     *     }
      *
      * @param  unit      the value given in argument to {@code addContextualUnit(unit)} (can be {@code null}).
      * @param  previous  the value returned by {@code addContextualUnit(unit)} (can be {@code null}).

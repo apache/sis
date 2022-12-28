@@ -93,9 +93,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <b>Example:</b> the following code gets the WGS84 ellipsoid:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Ellipsoid e = CommonCRS.WGS84.ellipsoid();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)

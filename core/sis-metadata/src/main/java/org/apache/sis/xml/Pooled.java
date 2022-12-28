@@ -520,14 +520,14 @@ abstract class Pooled {
      * Must be invoked by subclasses before a {@code try} block performing a (un)marshalling
      * operation. Must be followed by a call to {@code finish()} in a {@code finally} block.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Context context = begin();
      *     try {
      *         ...
      *     } finally {
      *         context.finish();
      *     }
-     * }
+     *     }
      *
      * @see Context#finish()
      */

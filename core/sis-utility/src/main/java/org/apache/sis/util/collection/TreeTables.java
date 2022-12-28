@@ -72,7 +72,8 @@ import org.apache.sis.util.ArgumentChecks;
  * has no value (for avoiding data lost when the node is discarded) and use the system file
  * separator as name separator:
  *
- * {@preformat java
+ * {@snippet lang="java" :
+ * class MyClass {
  *     final TableColumn columnToProtect = TableColumn.VALUE;
  *     final TableColumn columnToConcatenate = TableColumn.NAME;
  *
@@ -96,6 +97,7 @@ import org.apache.sis.util.ArgumentChecks;
  *         }
  *         return node;
  *     }
+ * }
  * }
  *
  * @author  Martin Desruisseaux

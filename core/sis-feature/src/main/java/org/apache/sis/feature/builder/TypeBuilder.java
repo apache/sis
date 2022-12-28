@@ -64,13 +64,13 @@ import org.opengis.feature.PropertyNotFoundException;
  * qualified name} is requested.
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
  *     FeatureType city = builder.build();
- *
+
  *     System.out.println(city.getName());                              // Prints "City"
  *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
- * }
+ *     }
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

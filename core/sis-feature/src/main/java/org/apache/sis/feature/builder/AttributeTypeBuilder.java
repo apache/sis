@@ -493,10 +493,10 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * Adds another attribute type that describes this attribute type.
      * See <cite>"Attribute characterization"</cite> in {@link DefaultAttributeType} Javadoc for more information.
      *
-     * <p>Usage example:</p>
-     * {@preformat java
+     * <h4>Usage example</h4>
+     * {@snippet lang="java" :
      *     attribute.addCharacteristic(Unit.class).setName("Unit of measurement").setDefaultValue(Units.CELSIUS);
-     * }
+     *     }
      *
      * The default characteristic name is the name of the given type, but callers should invoke one
      * of the {@code CharacteristicTypeBuilder.setName(…)} methods on the returned instance with a better name.
@@ -727,24 +727,23 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * If a type has already been built and this builder state has not changed since the type creation,
      * then the previously created {@code AttributeType} instance is returned.
      *
-     * <div class="note"><b>Example:</b>
-     * the following lines of code add a "name" attribute to a "City" feature, then get the corresponding
+     * <h4>Example</h4>
+     * The following lines of code add a "name" attribute to a "City" feature, then get the corresponding
      * {@code AttributeType<String>} instance. If no setter method is invoked on the builder of the "name"
      * attribute after those lines, then the {@code name} variable below will reference the same instance
      * than the "name" attribute in the {@code city} type.
      *
-     * {@preformat java
-     *   FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
-     *   AttributeType<String> name = builder.addAttribute(String.class).setName("name").build();
-     *   FeatureType city = builder.build();
-     *
-     *   assert city.getProperty("name") == name : "AttributeType instance should be the same.";
-     * }
+     * {@snippet lang="java" :
+     *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
+     *     AttributeType<String> name = builder.addAttribute(String.class).setName("name").build();
+     *     FeatureType city = builder.build();
+
+     *     assert city.getProperty("name") == name : "AttributeType instance should be the same.";
+     *     }
      *
      * Note that {@code city.getProperty("name")} returns {@code AttributeType<?>},
      * i.e. the {@linkplain #getValueClass() value class} is lost at compile-time.
      * By comparison, this {@code build()} method has a more accurate return type.
-     * </div>
      *
      * @return the attribute type.
      */

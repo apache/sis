@@ -86,10 +86,10 @@ public final class ChannelDecoder extends Decoder {
      * The netCDF magic number expected in the first integer of the stream.
      * The comparison shall ignore the 8 lowest bits, as in the following example:
      *
-     * {@preformat java
-     *     int header = ...; // The first integer in the stream.
+     * {@snippet lang="java" :
+     *     int header = ...;     // The first integer in the stream.
      *     boolean isNetCDF = (header & 0xFFFFFF00) == MAGIC_NUMBER;
-     * }
+     *     }
      */
     public static final int MAGIC_NUMBER = ('C' << 24) | ('D' << 16) | ('F' <<  8);
 

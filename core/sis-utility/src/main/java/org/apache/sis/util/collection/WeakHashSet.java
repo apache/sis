@@ -50,14 +50,16 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * This is similar in spirit to the {@link String#intern()} method. The following example shows
  * a convenient way to use {@code WeakHashSet} as an internal pool of immutable objects:
  *
- * {@preformat java
- *     private final WeakHashSet<Foo> pool = new WeakHashSet<Foo>(Foo.class);
+ * {@snippet lang="java" :
+ *     class MyClass {
+ *         private final WeakHashSet<Foo> pool = new WeakHashSet<Foo>(Foo.class);
  *
- *     public Foo create(String definition) {
- *         Foo created = new Foo(definition);
- *         return pool.unique(created);
+ *         public Foo create(String definition) {
+ *             Foo created = new Foo(definition);
+ *             return pool.unique(created);
+ *         }
  *     }
- * }
+ *     }
  *
  * Thus, {@code WeakHashSet} can be used inside a factory to prevent creating duplicate immutable objects.
  *
@@ -261,7 +263,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      * {@code WeakHashSet}. Otherwise, adds {@code element} to this {@code WeakHashSet}.
      * This method is functionally equivalents to the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (element != null) {
      *         T current = get(element);
      *         if (current != null) {
@@ -271,7 +273,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *         }
      *     }
      *     return element;
-     * }
+     *     }
      *
      * @param  <T>      the type of the element to get. Can be {@code null}.
      * @param  element  the element to get or to add in the set if not already presents,

@@ -38,7 +38,7 @@
  * </ul>
  *
  * <h2>Maven project file</h2>
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <dependencies>
  *     <!-- Put all your project dependencies here, including transitive dependencies. -->
  *   </dependencies>

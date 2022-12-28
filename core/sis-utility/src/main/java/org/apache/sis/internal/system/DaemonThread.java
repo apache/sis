@@ -26,17 +26,17 @@ import java.util.ArrayList;
  * This class provides a {@link #isKillRequested()} flag which shall be tested by the subclasses.
  * It is okay to test this flag only when catching {@link InterruptedException}, as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     while (true) {
  *         try {
  *             someObject.wait();
  *         } catch (InterruptedException e) {
  *             if (isKillRequested()) {
- *                 break; // Exit the loop for stopping the thread.
+ *                 break;                       // Exit the loop for stopping the thread.
  *             }
  *         }
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
@@ -67,7 +67,7 @@ abstract class DaemonThread extends Thread {
      * required in OSGi environment). Each module using {@code DaemonThread} shall maintain
      * its <strong>own</strong> list (don't use the list of another module), like below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     class MyInternalClass {
      *         static DaemonThread lastCreatedDaemon;
      *     }
@@ -81,7 +81,7 @@ abstract class DaemonThread extends Thread {
      *             }
      *         }
      *     }
-     * }
+     *     }
      *
      * See {@link ReferenceQueueConsumer} for a real example.
      *

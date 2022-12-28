@@ -65,7 +65,7 @@
  *
  * <p>Those two kinds of types are marshalled as below:</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <MD_MetaData>
  *     <property uuidref="…">
  *       <Foo_Type uuid="…">
@@ -73,7 +73,7 @@
  *       </Foo_Type>
  *     </property>
  *   </MD_MetaData>
- * }
+ *   }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

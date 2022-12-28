@@ -336,11 +336,11 @@ public final class Matrices extends Static {
      * envelope of size 300 × 500, and given {@linkplain Envelope#getLowerCorner() lower corner} translation
      * from (-20, -40) to (-10, -25), then the following method call:
      *
-     * {@preformat java
-     *   matrix = Matrices.createTransform(
-     *           new Envelope2D(null, -20, -40, 100, 200),
-     *           new Envelope2D(null, -10, -25, 300, 500));
-     * }
+     * {@snippet lang="java" :
+     *     matrix = Matrices.createTransform(
+     *             new Envelope2D(null, -20, -40, 100, 200),
+     *             new Envelope2D(null, -10, -25, 300, 500));
+     *     }
      *
      * will return the following square matrix. The transform of the lower corner is given as an example:
      *
@@ -413,11 +413,11 @@ public final class Matrices extends Static {
      * <h4>Example</h4>
      * The following method call:
      *
-     * {@preformat java
-     *   matrix = Matrices.createTransform(
-     *           new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
-     *           new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
-     * }
+     * {@snippet lang="java" :
+     *     matrix = Matrices.createTransform(
+     *             new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
+     *             new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
+     *     }
      *
      * will return the following square matrix, which can be used in coordinate conversions as below:
      *
@@ -476,11 +476,11 @@ public final class Matrices extends Static {
      * <div class="note"><b>Example:</b>
      * combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
      *
-     * {@preformat java
-     *   matrix = Matrices.createTransform(
-     *           new Envelope2D(null, -40, +20, 200, 100), new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
-     *           new Envelope2D(null, -10, -25, 300, 500), new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
-     * }
+     * {@snippet lang="java" :
+     *     matrix = Matrices.createTransform(
+     *             new Envelope2D(null, -40, +20, 200, 100), new AxisDirection[] {AxisDirection.NORTH, AxisDirection.WEST},
+     *             new Envelope2D(null, -10, -25, 300, 500), new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH});
+     *     }
      *
      * will return the following square matrix. The transform of a corner is given as an example.
      * Note that the input coordinate values are swapped because of the (<i>North</i>, <i>West</i>) axis directions,
@@ -537,9 +537,9 @@ public final class Matrices extends Static {
      * and discard the <var>z</var> values, then the indices of source coordinates to select are 1 for <var>y</var>,
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
      *
-     * {@preformat java
-     *   matrix = Matrices.createDimensionSelect(4, new int[] {1, 0, 3});
-     * }
+     * {@snippet lang="java" :
+     *     matrix = Matrices.createDimensionSelect(4, new int[] {1, 0, 3});
+     *     }
      *
      * The above method call will create the following 4×5 matrix,
      * which can be used for converting coordinates as below:

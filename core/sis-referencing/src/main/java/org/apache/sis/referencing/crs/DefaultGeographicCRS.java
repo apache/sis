@@ -74,9 +74,9 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * <b>Example:</b> the following code gets a two-dimensional geographic CRS
  * using the <cite>World Geodetic System 1984</cite> datum:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     GeodeticDatum datum = CommonCRS.WGS84.geographic();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -278,10 +278,11 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
      *
-     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
+     * <h4>Example</h4>
+     * Well-Known Text (version 2)
      * of a geographic coordinate reference system using the WGS 84 datum.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   GeodeticCRS["WGS 84",
      *      Datum["World Geodetic System 1984",
      *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]]],
@@ -294,11 +295,11 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      BBox[-90.00, -180.00, 90.00, 180.00],
      *      Scope["Used by GPS satellite navigation system."],
      *      Id["EPSG", 4326, Citation["IOGP"], URI["urn:ogc:def:crs:EPSG::4326"]]]
-     * }
+     *   }
      *
      * <p>Same coordinate reference system using WKT 1.</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   GEOGCS["WGS 84",
      *      DATUM["World Geodetic System 1984",
      *        SPHEROID["WGS84", 6378137.0, 298.257223563]],
@@ -307,9 +308,9 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *      AXIS["Latitude", NORTH],
      *      AXIS["Longitude", EAST],
      *      AUTHORITY["EPSG", "4326"]]
-     * }
-     * </div>
+     *   }
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"} (WKT 1).
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#49">WKT 2 specification §8</a>

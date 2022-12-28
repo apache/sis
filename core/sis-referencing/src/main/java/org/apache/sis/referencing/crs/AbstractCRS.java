@@ -62,9 +62,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * <p>Coordinate reference systems can have an arbitrary number of dimensions.
  * The actual dimension of a given instance can be determined as below:</p>
  *
- * {@preformat java
- *   int dimension = crs.getCoordinateSystem().getDimension();
- * }
+ * {@snippet lang="java" :
+ *     int dimension = crs.getCoordinateSystem().getDimension();
+ *     }
  *
  * However, most subclasses restrict the allowed number of dimensions.
  *

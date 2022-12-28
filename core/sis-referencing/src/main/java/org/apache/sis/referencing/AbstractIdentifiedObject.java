@@ -765,9 +765,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Compares the specified object with this object for equality.
      * This method is implemented as below (omitting assertions):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
@@ -821,8 +821,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * All {@code computeHashCode()} methods shall invoke {@code super.computeHashCode()},
      * <strong>not</strong> {@code hashCode()}. Example:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected long computeHashCode() {
      *         return super.computeHashCode() + 31 * Objects.hash(myProperties);
      *     }
@@ -855,10 +855,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * }
      * </div><div>
      * <p><b>Java code example</b></p>
-     * {@preformat java
-     *     super.formatTo(formatter);
-     *     // ... write the elements at the insertion point ...
-     *     return "GeodeticCRS";
+     * {@snippet lang="java" :
+     *     @Override
+     *     protected String formatTo(final Formatter formatter) {
+     *         super.formatTo(formatter);
+     *         // ... write the elements at the insertion point ...
+     *         return "GeodeticCRS";
+     *     }
      * }
      * </div></div>
      *

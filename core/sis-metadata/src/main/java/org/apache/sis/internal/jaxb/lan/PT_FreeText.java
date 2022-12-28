@@ -35,7 +35,7 @@ import org.apache.sis.util.ArraysExt;
  * It will be used in order to marshal and unmarshal international strings localized in several language,
  * using the {@link DefaultInternationalString} implementation class. Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <cit:title xsi:type="lan:PT_FreeText_PropertyType">
  *     <gco:CharacterString>Some title in english is present in this node</gco:CharacterString>
  *     <lan:PT_FreeText>

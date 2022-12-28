@@ -24,7 +24,7 @@ import javax.xml.bind.annotation.XmlValue;
  * This type was used by legacy XML format inside {@code <gmd:CI_OnlineResource>}, but has
  * been replaced by {@code <gcx:FileName>} in newer ISO 19115-3:2016 standard. Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gmd:linkage>
  *      <gmd:URL>https://tools.ietf.org/html/rfc1149</gmd:URL>
  *   </gmd:linkage>

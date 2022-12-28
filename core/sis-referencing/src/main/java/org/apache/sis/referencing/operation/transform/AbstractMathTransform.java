@@ -350,7 +350,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * derivative at that location. Invoking this method is conceptually equivalent to running
      * the following:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Matrix derivative = null;
      *     if (derivate) {
      *         double[] coordinates = Arrays.copyOfRange(srcPts, srcOff, srcOff + getSourceDimensions());
@@ -358,7 +358,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *     }
      *     this.transform(srcPts, srcOff, dstPts, dstOff, 1);                   // May overwrite srcPts.
      *     return derivative;
-     * }
+     *     }
      *
      * However, this method provides two advantages:
      *
@@ -941,9 +941,9 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Compares the specified object with this math transform for strict equality.
      * This method is implemented as below (omitting assertions):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * @param  object  the object to compare with this transform.
      * @return {@code true} if the given object is a transform of the same class and using the same parameter values.

@@ -31,9 +31,9 @@ package org.apache.sis.referencing.operation.transform;
  * The following code gives a skeleton for a {@code AbstractMathTransform} implementation
  * capable to transform an array of {@code double} coordinates:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class MyTransform extends AbstractMathTransform {
- *         &#64;Override
+ *         @Override
  *         public void transform(double[] srcPts, int srcOff,
  *                               double[] dstPts, int dstOff, int numPts)
  *         {

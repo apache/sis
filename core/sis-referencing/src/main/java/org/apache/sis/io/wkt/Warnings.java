@@ -50,13 +50,13 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * <div class="note"><b>Example:</b> after parsing the following WKT:
  *
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   GeographicCRS[“WGS 84”,
  *     Datum[“World Geodetic System 1984”,
  *       Ellipsoid[“WGS84”, 6378137.0, 298.257223563, Intruder[“some text here”]]],
  *       PrimeMeridian[“Greenwich”, 0.0, Intruder[“other text here”]],
  *     AngularUnit[“degree”, 0.017453292519943295]]
- * }
+ *   }
  *
  * a call to {@link WKTFormat#getWarnings()} would return a {@code Warnings} instance with the following information:
  *

@@ -58,9 +58,9 @@ import org.apache.sis.gui.DataViewer;
  * caller should invoke {@link #setOnSucceeded(EventHandler)} for defining such action.
  * Example:
  *
- * {@preformat java
- *     public void loadResource(final Object source) {
- *         final DataStoreOpener opener = new DataStoreOpener(source);
+ * {@snippet lang="java" :
+ *     public void loadResource(Object source) {
+ *         var opener = new DataStoreOpener(source);
  *         opener.setOnSucceeded((event) -> addResource((DataStore) event.getSource().getValue()));
  *         opener.setOnFailed(ExceptionReporter::show);
  *         BackgroundThreads.execute(opener);

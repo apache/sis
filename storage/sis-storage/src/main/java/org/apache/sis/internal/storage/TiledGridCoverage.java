@@ -671,11 +671,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
         /**
          * Moves the iterator position to next tile. This method should be invoked in a loop as below:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     do {
          *         // Process current tile.
          *     } while (domain.next());
-         * }
+         *     }
          *
          * @return {@code true} on success, or {@code false} if the iteration is finished.
          */

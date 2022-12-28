@@ -204,14 +204,14 @@ public final class Context extends MarshalContext {
      * Invoked when a marshalling or unmarshalling process is about to begin.
      * Must be followed by a call to {@link #finish()} in a {@code finally} block.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Context context = new Context(…);
      *     try {
      *         ...
      *     } finally {
      *         context.finish();
      *     }
-     * }
+     *     }
      *
      * @param  bitMasks         a combination of {@link #MARSHALLING}, {@code SUBSTITUTE_*} or other bit masks.
      * @param  locale           the locale, or {@code null} if unspecified.
@@ -332,7 +332,7 @@ public final class Context extends MarshalContext {
      * when marshalling object that need to marshal their children in a different
      * locale, like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private void beforeMarshal(Marshaller marshaller) {
      *         Context.push(language);
      *     }
@@ -439,12 +439,12 @@ public final class Context extends MarshalContext {
      * or {@code null} if this information is not provided. The {@code <gml:*PropertyType>} element can contains
      * information not found in {@code <gml:*Type>} objects like XLink or UUID.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * before unmarshalling the {@code <gml:OperationParameter>} (upper case {@code O}) element below,
      * {@code wrapper} will be set to the temporary object representing {@code <gml:operationParameter>}.
      * That adapter provides important information for the SIS {@code <gml:OperationParameter>} constructor.
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gml:ParameterValue>
      *     <gml:valueFile>http://www.opengis.org</gml:valueFile>
      *     <gml:operationParameter>
@@ -453,8 +453,9 @@ public final class Context extends MarshalContext {
      *       </gml:OperationParameter>
      *     </gml:operationParameter>
      *   </gml:ParameterValue>
-     * }</div>
+     *   }
      *
+     * <h4>Design note</h4>
      * For performance reasons, this {@code wrapper} information is not provided by default.
      * See {@link #setWrapper(Context, PropertyType)} for more information.
      *

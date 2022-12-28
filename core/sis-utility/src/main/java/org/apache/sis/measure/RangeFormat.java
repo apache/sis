@@ -682,7 +682,7 @@ public class RangeFormat extends Format implements Localized {
      * Formats a range as an attributed character iterator.
      * Callers can iterate and queries the attribute values as in the following example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     AttributedCharacterIterator it = rangeFormat.formatToCharacterIterator(myRange);
      *     for (char c=it.first(); c!=AttributedCharacterIterator.DONE; c=c.next()) {
      *         // 'c' is a character from the formatted string.
@@ -691,7 +691,7 @@ public class RangeFormat extends Format implements Localized {
      *             // This field extends from it.getRunStart(MIN_VALUE) to it.getRunLimit(MIN_VALUE).
      *         }
      *     }
-     * }
+     *     }
      *
      * Alternatively, if the current {@linkplain AttributedCharacterIterator#getIndex() iterator
      * index} is before the start of the minimum value field, then the starting position of that

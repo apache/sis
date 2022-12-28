@@ -998,7 +998,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Returns the {@linkplain #getInterimTransform(boolean) interim transform} if at least one listener
      * is registered, or {@code null} otherwise. This method should be used with the following pattern:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     AffineTransform2D interim = getInterimTransformForListeners();
      *     transform.something(…);
      *     if (interim != null) {
@@ -1573,9 +1573,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Other methods should generally not invoke this method directly,
      * and use the following code instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     runAfterRendering(this::clear);
-     * }
+     *     }
      *
      * @see #reset()
      * @see #runAfterRendering(Runnable)

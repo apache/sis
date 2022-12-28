@@ -21,7 +21,7 @@
  * The GPX format can be used to describe waypoints, tracks, and routes.
  * Example (from Wikipedia):
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gpx version="1.1" creator="Oregon 400t">
  *     <metadata>
  *       <link href="http://www.garmin.com">
@@ -47,7 +47,7 @@
  *       </trkseg>
  *     </trk>
  *   </gpx>
- * }
+ *   }
  *
  * The GPX 1.1 specification enforces the following conventions:
  * <ul>

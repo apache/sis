@@ -185,10 +185,10 @@ public final class SQLUtilities extends Static {
      * Workaround for what seems to be a Derby 10.11 bug, which seems to behave as if the LIKE pattern
      * had a trailing % wildcard. This can be verified with the following query on the EPSG database:
      *
-     * {@preformat sql
-     *   SELECT COORD_REF_SYS_CODE, COORD_REF_SYS_NAME FROM EPSG."Coordinate Reference System"
-     *    WHERE COORD_REF_SYS_NAME LIKE 'NTF%Paris%Lambert%zone%I'
-     * }
+     * {@snippet lang="sql" :
+     *     SELECT COORD_REF_SYS_CODE, COORD_REF_SYS_NAME FROM EPSG."Coordinate Reference System"
+     *      WHERE COORD_REF_SYS_NAME LIKE 'NTF%Paris%Lambert%zone%I'
+     *     }
      *
      * which returns "NTF (Paris) / Lambert zone I" as expected but also zones II and III.
      *

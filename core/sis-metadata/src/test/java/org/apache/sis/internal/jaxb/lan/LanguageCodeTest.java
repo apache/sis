@@ -109,13 +109,13 @@ public final strictfp class LanguageCodeTest extends TestCase {
      * Returns the XML of a metadata element. This method returns a string like below,
      * where the {@code ${languageCode}} string is replaced by the given argument.
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:MD_Metadata>
      *     <gmd:language>
      *       ${languageCode}
      *     </gmd:language>
      *   </gmd:MD_Metadata>
-     * }
+     *   }
      *
      * @param  languageCode  the XML fragment to write inside the {@code <gmd:language>} element.
      */
@@ -150,13 +150,13 @@ public final strictfp class LanguageCodeTest extends TestCase {
     /**
      * Tests the unmarshalling using the {@code <gmd:LanguageCode>} construct. XML fragment:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:MD_Metadata>
      *     <gmd:language>
      *       <gmd:LanguageCode codeList="(snip)/gmxCodelists.xml#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
      *     </gmd:language>
      *   </gmd:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurs while unmarshalling the language.
      *
@@ -174,13 +174,13 @@ public final strictfp class LanguageCodeTest extends TestCase {
      * Tests the unmarshalling using the {@code <gmd:LanguageCode>} construct without attributes.
      * The adapter is expected to parse the element value. XML fragment:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:MD_Metadata>
      *     <gmd:language>
      *       <gmd:LanguageCode>jpn</gmd:LanguageCode>
      *     </gmd:language>
      *   </gmd:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurs while unmarshalling the language.
      */
@@ -217,13 +217,13 @@ public final strictfp class LanguageCodeTest extends TestCase {
      * Tests the unmarshalling of an XML using the {@code gco:CharacterString} construct.
      * XML fragment:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:MD_Metadata>
      *     <gmd:language>
      *       <gco:CharacterString>jpn</gco:CharacterString>
      *     </gmd:language>
      *   </gmd:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurs while unmarshalling the language.
      */
