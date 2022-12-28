@@ -86,18 +86,17 @@ import org.opengis.feature.Operation;
  *
  * A call to {@code System.out.println(city)} prints the following table:
  *
- * {@preformat text
+ * <pre class="text">
  *   City
  *   ┌────────────┬─────────┬──────────────┬───────────────┐
  *   │ Name       │ Type    │ Multiplicity │ Default value │
  *   ├────────────┼─────────┼──────────────┼───────────────┤
  *   │ name       │ String  │   [1 … 1]    │ Utopia        │
  *   │ population │ Integer │   [1 … 1]    │               │
- *   └────────────┴─────────┴──────────────┴───────────────┘
- * }
+ *   └────────────┴─────────┴──────────────┴───────────────┘</pre>
  *
- * <p>{@code FeatureTypeBuilder} instances should be short lived.
- * After the {@code FeatureType} has been created, the builder should be discarded.</p>
+ * {@code FeatureTypeBuilder} instances should be short lived.
+ * After the {@code FeatureType} has been created, the builder should be discarded.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

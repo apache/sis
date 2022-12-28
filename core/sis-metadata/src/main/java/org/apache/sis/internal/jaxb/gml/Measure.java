@@ -126,16 +126,13 @@ public final class Measure {
      * This method is invoked during XML marshalling. For example if the units are "metre",
      * then this method returns one of the following strings, in preference order:
      *
-     * {@preformat text
-     *     urn:ogc:def:uom:EPSG::9001
-     * }
+     * <pre class="text">urn:ogc:def:uom:EPSG::9001</pre>
      *
      * or one of the following:
      *
-     * {@preformat text
-     *     http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
-     *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
-     * }
+     * <pre class="text">
+     * http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+     * http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])</pre>
      *
      * @return the string representation of the unit of measure.
      *

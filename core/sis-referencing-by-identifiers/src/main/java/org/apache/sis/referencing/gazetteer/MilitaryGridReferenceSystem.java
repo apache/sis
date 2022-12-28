@@ -110,8 +110,8 @@ import org.opengis.referencing.gazetteer.LocationType;
  * The encoding and decoding processes take in account Norway and Svalbard special cases (they have wider UTM zones for
  * historical reasons).</p>
  *
- * <div class="note"><b>Example:</b>
- * the following code:
+ * <h2>Example</h2>
+ * The following code:
  *
  * {@snippet lang="java" :
  *     MilitaryGridReferenceSystem system = new MilitaryGridReferenceSystem();
@@ -122,7 +122,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *
  * should display (locale may vary):
  *
- * {@preformat text
+ * <pre class="text">
  *     ┌─────────────────────────────────────────────────────────────────┐
  *     │ Location type:               Grid coordinate                    │
  *     │ Geographic identifier:       32TNL83                            │
@@ -134,9 +134,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *     │ North bound:                 4,540,000 m    —    41°00′27″N     │
  *     │ Coordinate reference system: WGS 84 / UTM zone 32N              │
  *     │ Administrator:               North Atlantic Treaty Organization │
- *     └─────────────────────────────────────────────────────────────────┘
- * }
- * </div>
+ *     └─────────────────────────────────────────────────────────────────┘</pre>
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe.

@@ -560,10 +560,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * move both envelope borders in order to encompass the given point, as illustrated below (the
      * new point is represented by the {@code +} symbol):
      *
-     * {@preformat text
+     * <pre class="text">
      *    ─────┐   + ┌─────
-     *    ─────┘     └─────
-     * }
+     *    ─────┘     └─────</pre>
      *
      * The default implementation moves only the border which is closest to the given point.
      *
@@ -603,10 +602,9 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * In the example below, the new point is represented by the {@code +}
      * symbol. The point is added only on the closest side.
      *
-     * {@preformat text
+     * <pre class="text">
      *    ─────┐   + ┌─────
-     *    ─────┘     └─────
-     * }
+     *    ─────┘     └─────</pre>
      *
      * @param  i      the dimension of the coordinate
      * @param  value  the coordinate value to add to this envelope.

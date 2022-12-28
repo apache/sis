@@ -296,7 +296,7 @@ public class Convention {
      * <div class="note"><b>Example:</b>
      * consider the following netCDF file (simplified):
      *
-     * {@preformat text
+     * <pre class="text">
      *   dimensions:
      *     grid_y =  161 ;
      *     grid_x =  126 ;
@@ -316,8 +316,7 @@ public class Convention {
      *     ushort SST(data_y, data_x) ;
      *       long_name = "Sea Surface Temperature" ;
      *       dim0 = "Line grids" ;
-     *       dim1 = "Pixel grids" ;
-     * }
+     *       dim1 = "Pixel grids" ;</pre>
      *
      * In this case, even if {@link #namesOfAxisVariables(Variable)} explicitly returns {@code {"Latitude", "Longitude"}}
      * we are still unable to associate the {@code SST} variable to those axes because they have no dimension in common.

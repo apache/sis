@@ -363,7 +363,7 @@ final class FeatureSet extends DiscreteSampling {
      * Those variable contains the actual data. For example if the sample dimension name
      * is "points", then we may have:
      *
-     * {@preformat text
+     * <pre class="text">
      *     double longitude(points);
      *         longitude:axis = "X";
      *         longitude:standard_name = "longitude";
@@ -376,8 +376,7 @@ final class FeatureSet extends DiscreteSampling {
      *         time:axis = "T";
      *         time:standard_name = "time";
      *         time:units = "minutes since 2014-11-29 00:00:00";
-     *     short myCustomProperty(points);
-     * }
+     *     short myCustomProperty(points);</pre>
      *
      * @param  features          where to add the {@code FeatureSet} instance.
      * @param  decoder           the source of the features to create.

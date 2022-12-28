@@ -188,7 +188,7 @@ final class SampleRangeFormat extends RangeFormat {
      * Formats a string representation of the given list of categories.
      * This method formats a table like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   ┌────────────┬────────────────┬─────────────┐
      *   │   Values   │    Measures    │    Name     │
      *   ╞════════════╧════════════════╧═════════════╡
@@ -198,8 +198,7 @@ final class SampleRangeFormat extends RangeFormat {
      *   │         1  │ NaN #1         │ Clouds      │
      *   │         5  │ NaN #5         │ Lands       │
      *   │ [10 … 200) │ [6.0 … 25.0)°C │ Temperature │
-     *   └────────────┴────────────────┴─────────────┘
-     * }
+     *   └────────────┴────────────────┴─────────────┘</pre>
      *
      * @param dimensions  the list of sample dimensions to format.
      */

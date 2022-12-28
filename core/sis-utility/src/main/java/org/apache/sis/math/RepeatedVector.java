@@ -33,26 +33,24 @@ import org.apache.sis.util.resources.Errors;
  * <p>{@link #cycleLength} is usually the length of the {@linkplain #base} vector, but not necessarily.
  * If {@link #occurrences} = 1 and {@code cycleLength} = 4 for example, then this class handles repetitions like below:</p>
  *
- * {@preformat text
+ * <pre class="text">
  *    10 12 15 20
  *    10 12 15 20    ← new cycle
  *    10 12 15 20    ← new cycle
  *    10 12 15 20    ← new cycle
- *    …etc…
- * }
+ *    …etc…</pre>
  *
  * If {@link #occurrences} &gt; 1, then this class handles repetitions in a different way
  * (in this example, {@link #cycleLength} is still 4):
  *
- * {@preformat text
+ * <pre class="text">
  *    10 10 10 10
  *    12 12 12 12
  *    15 15 15 15
  *    20 20 20 20
  *    10 10 10 10    ← new cycle
  *    12 12 12 12
- *    …etc…
- * }
+ *    …etc…</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

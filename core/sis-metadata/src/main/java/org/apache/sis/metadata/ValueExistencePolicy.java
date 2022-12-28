@@ -148,19 +148,17 @@ public enum ValueExistencePolicy {
      *     <th>{@code NON_EMPTY}</th>
      *     <th class="sep">{@code COMPACT}</th>
      *   </tr><tr><td>
-     *     {@preformat text
-     *       Citation
-     *        ├─Title……………………… My document
-     *        └─Date
-     *           ├─Date………………… 2012/01/01
-     *           └─Date type…… Creation
-     *     }
+     *     <pre class="text">
+     * Citation
+     *  ├─Title……………………… My document
+     *  └─Date
+     *     ├─Date………………… 2012/01/01
+     *     └─Date type…… Creation</pre>
      *   </td><td class="sep">
-     *     {@preformat text
-     *       Citation……………………… My document
-     *        └─Date………………………… 2012/01/01
-     *           └─Date type…… Creation
-     *     }
+     *     <pre class="text">
+     * Citation……………………… My document
+     *  └─Date………………………… 2012/01/01
+     *     └─Date type…… Creation</pre>
      *   </td></tr>
      * </table>
      *

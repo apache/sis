@@ -425,11 +425,12 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
-     * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] multiplicity,
+     * <h4>Example</h4>
+     * Given an attribute named “population” with [1 … 1] multiplicity,
      * if no value has been assigned to that attribute, then this {@code quality()} method will return
      * the following data quality report:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Data quality
      *     ├─Scope
      *     │   └─Level………………………………………………… Attribute
@@ -439,9 +440,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *         ├─Evaluation method type…… Direct internal
      *         └─Result
      *             ├─Explanation……………………… Missing value for “population” property.
-     *             └─Pass………………………………………… false
-     * }
-     * </div>
+     *             └─Pass………………………………………… false</pre>
      *
      * @return reports on all constraint violations found.
      *
@@ -458,10 +457,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * The returned string is for debugging purpose and may change in any future SIS version.
      * The current implementation is like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *     Attribute[“temperature” : Float] = {20.3, 17.8, 21.1}
-     *     └─ characteristics: units=°C, accuracy=0.1
-     * }
+     *     └─ characteristics: units=°C, accuracy=0.1</pre>
      *
      * @return a string representation of this attribute for debugging purpose.
      */

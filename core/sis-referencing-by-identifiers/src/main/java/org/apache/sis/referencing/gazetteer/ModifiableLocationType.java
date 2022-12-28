@@ -45,7 +45,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * The same {@code ModifiableLocationType} instance can be used for many snapshots.
  *
  * <h2>Example</h2>
- * the following code creates 3 levels of location types: <var>administrative areas</var>, which contain
+ * The following code creates 3 levels of location types: <var>administrative areas</var>, which contain
  * <var>towns</var>, which themselves contain <var>streets</var>. Note that the {@code street} location
  * type has two parents, {@code town} and {@code area}, because a street can be outside any town and
  * directly under the authority of an administrative area instead.
@@ -70,12 +70,11 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  *
  * A string representation of the {@code area} location type is as below:
  *
- * {@preformat text
+ * <pre class="text">
  *   administrative area………………… area of responsibility of highest level local authority
  *     ├─town……………………………………………… city or town
  *     │   └─street……………………………… thoroughfare providing access to properties
- *     └─street………………………………………… thoroughfare providing access to properties
- * }
+ *     └─street………………………………………… thoroughfare providing access to properties</pre>
  *
  * <h2>Inheritance of property values</h2>
  * According ISO 19112:2003, all properties except the collection of

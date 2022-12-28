@@ -1431,9 +1431,7 @@ check:  while (lower != 0 || upper != dimension) {
      * implementation with a public no-argument constructor, and declaring the fully-qualified name of that class
      * in a file at the following location:</p>
      *
-     * {@preformat text
-     *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
-     * }
+     * <pre class="text">META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory</pre>
      *
      * @param  authority  the authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}

@@ -123,15 +123,14 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
      * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope that cause the method to expand the area of interest. Illustration:
      *
-     * {@preformat text
+     * <pre class="text">
      *                  ┌────────────────────────────────────────────┐
      *                  │             Domain of validity             │
      *                  └────────────────────────────────────────────┘
      *   ┌────────────────────┐                                ┌─────
      *   │  Area of interest  │                                │  AOI
      *   └────────────────────┘                                └─────
-     *    ↖………………………………………………………360° period……………………………………………………↗︎
-     * }
+     *    ↖………………………………………………………360° period……………………………………………………↗︎</pre>
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
      */

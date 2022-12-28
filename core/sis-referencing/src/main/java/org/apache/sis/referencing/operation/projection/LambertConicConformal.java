@@ -514,7 +514,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * Provides the transform equations for the spherical case of the Lambert Conformal projection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h2>Implementation note</h2>
      * this class contains explicit checks for latitude values at poles.
      * See the discussion in the {@link Mercator.Spherical} javadoc for an explanation.
      * The following is specific to the Lambert Conformal projection.
@@ -522,15 +522,13 @@ public class LambertConicConformal extends ConformalProjection {
      * <p>Comparison of observed behavior at poles between the spherical and ellipsoidal cases,
      * if no special checks are applied:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *     ┌───────┬──────────────────────────┬────────────────────────┐
      *     │       │ Spherical                │ Ellipsoidal            │
      *     ├───────┼──────────────────────────┼────────────────────────┤
      *     │ North │ Approximate  (y = small) │ Exact answer (y = 0.0) │
      *     │ South │ Exact answer (y = +∞)    │ Approximate  (y = big) │
-     *     └───────┴──────────────────────────┴────────────────────────┘
-     * }
-     * </div>
+     *     └───────┴──────────────────────────┴────────────────────────┘</pre>
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)

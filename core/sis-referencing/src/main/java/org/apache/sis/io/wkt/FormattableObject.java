@@ -228,11 +228,10 @@ public abstract class FormattableObject {
      * For example if this formattable element is for a {@code GeodeticCRS[…]} element,
      * then this method shall write the content starting at the insertion point shown below:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   GeodeticCRS[ ]
      *               ↑
-     *       (insertion point)
-     * }
+     *       (insertion point)</pre>
      *
      * <h4>Formatting non-standard WKT</h4>
      * If the implementation cannot represent this object without violating some WKT constraints,

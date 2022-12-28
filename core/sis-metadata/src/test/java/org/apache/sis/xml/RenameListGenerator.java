@@ -39,14 +39,13 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * The format is described in the {@code readme.html} page in source code directory.
  * Output format contains namespaces first, then classes, then properties. Example:
  *
- * {@preformat text
+ * <pre class="text">
  * http://standards.iso.org/iso/19115/-3/cit/1.0
  *   CI_Address
  *     administrativeArea
  *     city
  *   CI_Citation
- *     citedResponsibleParty
- * }
+ *     citedResponsibleParty</pre>
  *
  * This class can be used as a starting point for generating a new file from scratch.
  * It should not be used for updating the existing file (unless a lot of things have changed)

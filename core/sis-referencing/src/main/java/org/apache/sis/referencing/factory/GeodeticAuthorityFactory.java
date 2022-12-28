@@ -78,11 +78,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This method may return {@code null} if it cannot obtain this information, for example because
      * the connection to a database is not available.
      *
-     * <div class="note"><b>Example:</b>
-     * a factory that create coordinate reference system objects from EPSG codes could return
-     * a citation like below:
+     * <h4>Example</h4>
+     * A factory that create coordinate reference system objects from EPSG codes could return a citation like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
@@ -92,10 +91,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
      *      ├─ Description ……………………………… EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
-     *      └─ Function ……………………………………… Connection
-     * }
+     *      └─ Function ……………………………………… Connection</pre>
      *
-     * The online resource description with a “Connection” function is a SIS extension.</div>
+     * The online resource description with a “Connection” function is a SIS extension.
      *
      * @return the organization responsible for definition of the database, or {@code null} if unknown.
      *

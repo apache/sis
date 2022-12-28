@@ -31,15 +31,14 @@ import org.opengis.referencing.operation.TransformException;
  * truncates the polylines for removing that spike. This situation happens when some pixel values are exactly
  * equal to isoline value, as in the picture below:
  *
- * {@preformat text
+ * <pre class="text">
  *     ●╌╌╌╲╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○
  *     ╎    ╲ ╎      ╎      ╎      ╎
  *     ╎     ╲╎      ╎   →  ╎      ╎
  *     ●╌╌╌╌╌╌●──────●──────●⤸╌╌╌╌╌○
  *     ╎     ╱╎      ╎   ←  ╎      ╎
  *     ╎    ╱ ╎      ╎      ╎      ╎
- *     ●╌╌╌╱╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○
- * }
+ *     ●╌╌╌╱╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○╌╌╌╌╌╌○</pre>
  *
  * The spike may appear or not depending on the convention adopted for strictly equal values.
  * In above picture, the spike appears because the convention used in this implementation is:

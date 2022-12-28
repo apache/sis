@@ -19,9 +19,9 @@
  * Miscellaneous objects and adapters defined in the {@code "gco"} namespace.
  * For example, a {@link java.lang.String} value has to be marshalled this way:
  *
- * {@preformat text
- *     <gco:CharacterString>my text</gco:CharacterString>
- * }
+ * {@snippet lang="xml" :
+ *   <gco:CharacterString>my text</gco:CharacterString>
+ *   }
  *
  * In the above example, {@code gco} is the prefix for the {@code http://www.isotc211.org/2005/gco}
  * namespace URL.

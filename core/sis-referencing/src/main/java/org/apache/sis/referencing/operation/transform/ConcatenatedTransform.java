@@ -909,13 +909,12 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * This method tries to delegate the concatenation to {@link #transform1} or {@link #transform2}.
      * Assuming that transforms are associative, this is equivalent to trying the following arrangements:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Instead of : other → tr1 → tr2
      *   Try:         (other → tr1) → tr2          where (…) denote an optimized concatenation.
      *
      *   Instead of : tr1 → tr2 → other
-     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.
-     * }
+     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.</pre>
      *
      * @return the simplified transform, or {@code null} if no such optimization is available.
      * @throws FactoryException if an error occurred while combining the transforms.

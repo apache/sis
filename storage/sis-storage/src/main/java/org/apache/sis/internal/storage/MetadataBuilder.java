@@ -1761,7 +1761,7 @@ parse:      for (int i = 0; i < length;) {
      * “Copyright, John Smith, 1992. All rights reserved.”
      * The result of above example will be:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Metadata
      *     └─Identification info
      *         └─Resource constraints
@@ -1774,8 +1774,7 @@ parse:      for (int i = 0; i < length;) {
      *                 └─Cited responsible party
      *                     ├─Party
      *                     │   └─Name…………………………… John Smith
-     *                     └─Role……………………………………… Owner
-     * }
+     *                     └─Role……………………………………… Owner</pre>
      *
      * Storage location is:
      *

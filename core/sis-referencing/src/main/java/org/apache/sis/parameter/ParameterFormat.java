@@ -73,11 +73,11 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * multi-line rows), or to pickup one name per parameter for a more compact table. See {@link ContentLevel}
  * javadoc for output examples.</p>
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * The <cite>Mercator (variant A)</cite> example given in {@link DefaultParameterDescriptorGroup} javadoc
  * will be formatted by default as below:
  *
- * {@preformat text
+ * <pre class="text">
  *   EPSG: Mercator (variant A)
  *   ┌────────────────────────────────┬────────┬────────────┬───────────────┬───────────────┐
  *   │ Name (EPSG)                    │ Type   │ Obligation │ Value domain  │ Default value │
@@ -87,10 +87,9 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *   │ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │
  *   │ False easting                  │ Double │ Mandatory  │   (−∞ … ∞) m  │         0.0 m │
  *   │ False northing                 │ Double │ Mandatory  │   (−∞ … ∞) m  │         0.0 m │
- *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘
- * }
- * </div>
+ *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘</pre>
  *
+ * <h2>Input types</h2>
  * The kinds of objects accepted by this formatter are:
  * <table class="sis">
  *   <caption>Formattable object types</caption>
@@ -147,11 +146,11 @@ public class ParameterFormat extends TabularFormat<Object> {
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getAlias() aliases}.
          * Each parameter may be formatted on many lines if they have aliases.
          *
-         * <div class="note"><b>Example:</b>
+         * <h4>Example</h4>
          * The <cite>Mercator (variant A)</cite> example given in {@link DefaultParameterDescriptorGroup} javadoc,
          * (augmented with parameter aliases) formatted at this level produces a text like below:
          *
-         * {@preformat text
+         * <pre class="text">
          *   EPSG: Mercator (variant A) (9804)
          *   EPSG: Mercator (1SP)
          *   OGC:  Mercator_1SP
@@ -172,9 +171,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   ╟──────────────────────────────────────┼────────┼────────────┼───────────────┼───────────────╢
          *   ║ EPSG: False northing                 │ Double │ Mandatory  │   (−∞ … ∞) m  │         0.0 m ║
          *   ║ OGC:  false_northing                 │        │            │               │               ║
-         *   ╚══════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝
-         * }
-         * </div>
+         *   ╚══════════════════════════════════════╧════════╧════════════╧═══════════════╧═══════════════╝</pre>
          */
         DETAILED,
 
@@ -184,11 +181,11 @@ public class ParameterFormat extends TabularFormat<Object> {
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getAlias() aliases} and
          * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getIdentifiers() identifiers} are omitted.
          *
-         * <div class="note"><b>Example:</b>
+         * <h4>Example</h4>
          * The <cite>Mercator (variant A)</cite> example given in {@link DefaultParameterDescriptorGroup} javadoc
          * formatted at this level produces a text like below:
          *
-         * {@preformat text
+         * <pre class="text">
          *   EPSG: Mercator (variant A)
          *   ┌────────────────────────────────┬────────┬────────────┬───────────────┬───────────────┐
          *   │ Name (EPSG)                    │ Type   │ Obligation │ Value domain  │ Default value │
@@ -198,9 +195,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   │ Scale factor at natural origin │ Double │ Mandatory  │    (0 … ∞)    │         1.0   │
          *   │ False easting                  │ Double │ Mandatory  │   (−∞ … ∞) m  │         0.0 m │
          *   │ False northing                 │ Double │ Mandatory  │   (−∞ … ∞) m  │         0.0 m │
-         *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘
-         * }
-         * </div>
+         *   └────────────────────────────────┴────────┴────────────┴───────────────┴───────────────┘</pre>
          */
         BRIEF,
 
@@ -209,11 +204,11 @@ public class ParameterFormat extends TabularFormat<Object> {
          * this level can also format array of operation method, coordinate reference system, <i>etc.</i>
          * The summary contains the identifier names and aliases aligned in a table.
          *
-         * <div class="note"><b>Example:</b>
+         * <h4>Example</h4>
          * The <cite>Mercator (variant A)</cite> example given in {@link ParameterBuilder} javadoc
          * formatted at this level produces a text like below:
          *
-         * {@preformat text
+         * <pre class="text">
          *   EPSG: Mercator (variant A)
          *   ┌────────────────────────────────┬────────────────────┐
          *   │ EPSG                           │ OGC                │
@@ -223,13 +218,12 @@ public class ParameterFormat extends TabularFormat<Object> {
          *   │ Scale factor at natural origin │ scale_factor       │
          *   │ False easting                  │ false_easting      │
          *   │ False northing                 │ false_northing     │
-         *   └────────────────────────────────┴────────────────────┘
-         * }
-         * </div>
+         *   └────────────────────────────────┴────────────────────┘</pre>
          *
-         * <p><b>Tip:</b> the table formatted by default may be quite large. It is recommended to invoke
-         * {@link ParameterFormat#setPreferredCodespaces(String[])} before to format in order to reduce the
-         * amount of columns to display.</p>
+         * <h4>Tip</h4>
+         * The table formatted by default may be quite large.
+         * It is recommended to invoke {@link ParameterFormat#setPreferredCodespaces(String[])}
+         * before to format in order to reduce the amount of columns to display.
          */
         NAME_SUMMARY
     }

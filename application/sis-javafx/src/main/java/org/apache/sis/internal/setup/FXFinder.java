@@ -318,12 +318,11 @@ public final class FXFinder {
      * Returns the destination directory where to decompress ZIP files.
      * This method assumes the following directory structure:
      *
-     * {@preformat text
+     * <pre class="text">
      *     apache-sis       (can be any name)
      *     ├─ conf
      *     │  └─ setenv.sh
-     *     └─ opt
-     * }
+     *     └─ opt</pre>
      */
     final File getDestinationDirectory() throws IOException {
         File basedir = setenv.toAbsolutePath().toFile().getParentFile();

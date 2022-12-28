@@ -416,7 +416,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * the {@linkplain Citation#getEditionDate() edition date}.
      * Example (the exact content will vary with Apache SIS versions, JDBC driver and EPSG dataset versions):
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
@@ -426,8 +426,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
      *      ├─ Description ……………………………… EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
-     *      └─ Function ……………………………………… Connection
-     * }
+     *      └─ Function ……………………………………… Connection</pre>
      */
     @Override
     public synchronized Citation getAuthority() {

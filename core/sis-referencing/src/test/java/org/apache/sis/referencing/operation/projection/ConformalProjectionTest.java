@@ -54,10 +54,9 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * This is a little bit more a Java test than an Apache SIS test (or to be more
      * accurate, a test of our understanding of the {@code java.lang.Math} library).
      *
-     * {@preformat text
+     * <pre class="text">
      *   Forward:  y = log(tan(π/4 + φ/2))
-     *   Inverse:  φ = π/2 - 2*atan(exp(-y))
-     * }
+     *   Inverse:  φ = π/2 - 2*atan(exp(-y))</pre>
      */
     @Test
     public void verifyMath() {
@@ -90,10 +89,9 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Tests the {@link ConformalProjection#expΨ(double, double)} function.
      *
-     * {@preformat text
+     * <pre class="text">
      *   Forward:  y = -log(t(φ))
-     *   Inverse:  φ = φ(exp(-y))
-     * }
+     *   Inverse:  φ = φ(exp(-y))</pre>
      */
     @Test
     @DependsOnMethod("verifyMath")

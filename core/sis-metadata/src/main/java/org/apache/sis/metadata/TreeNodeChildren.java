@@ -102,20 +102,18 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * If a property has the same name than the parent property that contains it,
      * we write its value in that parent property. For example, instead of:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *    └─Date
      *       ├─Date………………… 2012/01/01
-     *       └─Date type…… Creation
-     * }
+     *       └─Date type…… Creation</pre>
      *
      * We simplify as:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *    └─Date………………………… 2012/01/01
-     *       └─Date type…… Creation
-     * }
+     *       └─Date type…… Creation</pre>
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */

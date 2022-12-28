@@ -38,7 +38,7 @@ import org.apache.sis.util.CharSequences;
  * for decoding <cite>Shizuku</cite> GCOM-W files produced by Japan Aerospace Exploration Agency (JAXA), version 3.
  * The file format is HDF5 and variables are like below (simplified):
  *
- * {@preformat text
+ * <pre class="text">
  *     variables:
  *         short "Geophysical Data"(1976, 243, 2)
  *             float SCALE FACTOR = 0.01
@@ -55,8 +55,7 @@ import org.apache.sis.util.CharSequences;
  *         string :ObservationStartDateTime = "2018-11-01T00:08:02.028Z"
  *         string :ObservationEndDateTime = "2018-11-01T00:57:24.247Z"
  *         string :PlatformShortName = "GCOM-W1" ;
- *         string :SensorShortName = "AMSR2" ;
- * }
+ *         string :SensorShortName = "AMSR2" ;</pre>
  *
  * Observations:
  * <ul class="verbose">

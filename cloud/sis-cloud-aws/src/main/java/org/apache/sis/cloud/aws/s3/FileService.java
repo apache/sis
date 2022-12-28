@@ -173,9 +173,7 @@ public class FileService extends FileSystemProvider {
      * Initializes and returns a new file system identified by a URI.
      * The given URI shall have the following pattern:
      *
-     * {@preformat text
-     *     S3://accessKey@bucket/key
-     * }
+     * <pre class="text">S3://accessKey@bucket/key</pre>
      *
      * In current version all path components after {@code accessKey} are ignored.
      * A future version may allow finer grain control.

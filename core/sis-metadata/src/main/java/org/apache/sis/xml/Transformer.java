@@ -117,12 +117,11 @@ abstract class Transformer {
      * A flag after type name in files loaded by {@link #load(boolean, String, Set, int)}, meaning that the type itself
      * is in a different namespace than the properties listed below the type. For example in the following:
      *
-     * {@preformat text
+     * <pre class="text">
      *  http://standards.iso.org/iso/19115/-3/mri/1.0
      *   SV_ServiceIdentification !other namespace
      *    citation
-     *    abstract
-     * }
+     *    abstract</pre>
      *
      * {@code SV_ServiceIdentification} type is defined in the {@code "http://standards.iso.org/iso/19115/-3/srv/2.0"}
      * namespace, but the {@code citation} and {@code abstract} properties inherited from {@code Identification} are

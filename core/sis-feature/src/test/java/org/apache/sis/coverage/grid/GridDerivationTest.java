@@ -724,7 +724,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry when all involved grid geometries cross the anti-meridian.
      * Illustration:
      *
-     * {@preformat text
+     * <pre class="text">
      *   ──────────────┐                    ┌──────────────────
      *        Grid     │                    │       Grid
      *   ──────────────┘                    └──────────────────
@@ -733,8 +733,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      *          AOI       │       │      Area Of Interest
      *   ─────────────────┘       └────────────────────────────
      *                102°W       22°W
-     *   ↖…………………………………………………………………………………………………360° period…………↗︎
-     * }
+     *   ↖…………………………………………………………………………………………………360° period…………↗︎</pre>
      */
     @Test
     public void testAntiMeridianCrossingInBothGrids() {
@@ -814,15 +813,14 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry from an area of interest overlapping the grid in such a way
      * that we have to overlap the AOI to the full grid extent. Illustration:
      *
-     * {@preformat text
+     * <pre class="text">
      *                  ┌────────────────────────────────────────────┐
      *                  │             Domain of validity             │
      *                  └────────────────────────────────────────────┘
      *   ┌────────────────────┐                                ┌─────
      *   │  Area of interest  │                                │  AOI
      *   └────────────────────┘                                └─────
-     *    ↖………………………………………………………360° period……………………………………………………↗︎
-     * }
+     *    ↖………………………………………………………360° period……………………………………………………↗︎</pre>
      */
     @Test
     public void testAreaOfInterestExpansion() {

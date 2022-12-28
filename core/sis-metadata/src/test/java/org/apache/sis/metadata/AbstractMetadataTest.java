@@ -53,7 +53,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
      * {@link StackOverflowError} or an {@link OutOfMemoryError} (after quite a long time).
      *
      * <p>The tree formatted by this test is:</p>
-     * {@preformat text
+     * <pre class="text">
      *     Acquisition information
      *       └─Platform
      *           ├─Description………………………………… A platform.
@@ -62,8 +62,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
      *               └─Mounted on
      *                   ├─Description…………… A platform.
      *                   └─Instrument
-     *                         (omitted cycle)
-     * }
+     *                         (omitted cycle)</pre>
      *
      * Note that the cycle detection apparently happens too late since "A platform" has been repeated.
      * This is because that same Platform instance appears in two different metadata property.  We do

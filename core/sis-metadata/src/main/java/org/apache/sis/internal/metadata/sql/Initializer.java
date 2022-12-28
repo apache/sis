@@ -54,9 +54,7 @@ import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
  * This includes initialization of a new database if none existed. The schemas will be created by subclasses of
  * this {@code Initializer} class, which must be registered in the following file:
  *
- * {@preformat text
- *   META-INF/services/org.apache.sis.internal.metadata.sql.Initializer
- * }
+ * <pre class="text">META-INF/services/org.apache.sis.internal.metadata.sql.Initializer</pre>
  *
  * {@code Initializer} implementations should define the following methods:
  *

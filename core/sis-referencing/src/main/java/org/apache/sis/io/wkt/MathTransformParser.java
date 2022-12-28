@@ -404,9 +404,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a {@code "PARAM_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     PARAM_MT["<classification-name>" {,<parameter>}* ]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "PARAM_MT"} element as an {@link MathTransform} object.
@@ -447,9 +447,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses an {@code "INVERSE_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     INVERSE_MT[<math transform>]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "INVERSE_MT"} element as an {@link MathTransform} object.
@@ -473,9 +473,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a {@code "PASSTHROUGH_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     PASSTHROUGH_MT[<integer>, <math transform>]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "PASSTHROUGH_MT"} element as an {@link MathTransform} object.
@@ -500,9 +500,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a {@code "CONCAT_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     CONCAT_MT[<math transform> {,<math transform>}*]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "CONCAT_MT"} element as an {@link MathTransform} object.

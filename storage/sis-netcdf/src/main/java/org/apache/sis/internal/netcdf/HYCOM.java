@@ -60,7 +60,7 @@ final class HYCOM {
      * If any variable uses the "day as %Y%m%d.%f" pseudo-units, converts to a number of days since the epoch.
      * The epoch is taken from the unit of the dimension. Example of netCDF file header:
      *
-     * {@preformat text
+     * <pre class="text">
      *     dimensions:
      *         MT = UNLIMITED ; // (1 currently)
      *         Y = 3298 ;
@@ -78,8 +78,7 @@ final class HYCOM {
      *             Date:FORTRAN_format = "(f13.4)" ;
      *     data:
      *         MT = 43024 ;
-     *         Date = 20181017.0000 ;
-     * }
+     *         Date = 20181017.0000 ;</pre>
      *
      * In this example, the real units of {@code Date(MT)} will be taken from {@code MT(MT)}, which is
      * "days since 1900-12-31 00:00:00".

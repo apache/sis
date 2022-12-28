@@ -44,7 +44,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
      * Tests a sample dimension having only qualitative categories.
      * Expected value:
      *
-     * {@preformat text
+     * <pre class="text">
      * ┌────────┬─────────┐
      * │ Values │  Name   │
      * ╞════════╧═════════╡
@@ -53,8 +53,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
      * │     1  │ Clouds  │
      * │     2  │ Lands   │
      * │   255  │ Missing │
-     * └────────┴─────────┘
-     * }
+     * └────────┴─────────┘</pre>
      */
     @Test
     public void testQualitative() {
@@ -78,7 +77,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
      * Expected result (note that the "Values" column differs from NaN numbers, which is
      * the purpose of this test).
      *
-     * {@preformat text
+     * <pre class="text">
      * ┌───────────┬───────────────┬─────────────┐
      * │  Values   │   Measures    │    Name     │
      * ╞═══════════╧═══════════════╧═════════════╡
@@ -88,8 +87,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
      * │        3  │ NaN #2        │ No data     │
      * │ [5 … 254] │ [-2.0 … 35.0] │ Temperature │
      * │      255  │ NaN #4        │ Lands       │
-     * └───────────┴───────────────┴─────────────┘
-     * }
+     * └───────────┴───────────────┴─────────────┘</pre>
      */
     @Test
     public void testMapQualitative() {
@@ -113,7 +111,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
      * Tests a sample dimension having one quantitative category and a few "no data" values.
      * Expected value:
      *
-     * {@preformat text
+     * <pre class="text">
      * ┌────────────┬──────────────────┬─────────────┐
      * │   Values   │     Measures     │    Name     │
      * ╞════════════╧══════════════════╧═════════════╡
@@ -123,8 +121,7 @@ public final strictfp class SampleDimensionTest extends TestCase {
      * │         1  │ NaN #1           │ Clouds      │
      * │ [10 … 200) │ [6.00 … 25.00)°C │ Temperature │
      * │       255  │ NaN #255         │ Lands       │
-     * └────────────┴──────────────────┴─────────────┘
-     * }
+     * └────────────┴──────────────────┴─────────────┘</pre>
      */
     @Test
     public void testQuantitativeWithMissingValues() {

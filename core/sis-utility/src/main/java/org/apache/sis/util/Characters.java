@@ -150,9 +150,9 @@ public final class Characters extends Static {
      * Determines whether the given character is a superscript. Most (but not all) superscripts
      * have a Unicode value in the [2070 … 207F] range. Superscripts are the following symbols:
      *
-     * {@preformat text
+     * <blockquote>
      *   ⁰ ¹ ² ³ ⁴ ⁵ ⁶ ⁷ ⁸ ⁹ ⁺ ⁻ ⁼ ⁽ ⁾ ⁿ
-     * }
+     * </blockquote>
      *
      * @param  c  the character to test.
      * @return {@code true} if the given character is a superscript.
@@ -173,9 +173,9 @@ public final class Characters extends Static {
      * Determines whether the given character is a subscript. All subscripts have
      * a Unicode value in the [2080 … 208E]. Subscripts are the following symbols:
      *
-     * {@preformat text
+     * <blockquote>
      *   ₀ ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉ ₊ ₋ ₌ ₍ ₎
-     * }
+     * </blockquote>
      *
      * @param  c  the character to test.
      * @return {@code true} if the given character is a subscript.
@@ -188,9 +188,9 @@ public final class Characters extends Static {
      * Converts the given character argument to superscript.
      * Only the following characters can be converted (other characters are left unchanged):
      *
-     * {@preformat text
+     * <blockquote>
      *     0 1 2 3 4 5 6 7 8 9 + - = ( ) n
-     * }
+     * </blockquote>
      *
      * @param  c  the character to convert.
      * @return the given character as a superscript, or {@code c} if the given character cannot be converted.
@@ -220,9 +220,9 @@ public final class Characters extends Static {
      * Converts the given character argument to subscript.
      * Only the following characters can be converted (other characters are left unchanged):
      *
-     * {@preformat text
+     * <blockquote>
      *     0 1 2 3 4 5 6 7 8 9 + - = ( )
-     * }
+     * </blockquote>
      *
      * @param  c  the character to convert.
      * @return the given character as a subscript, or {@code c} if the given character cannot be converted.

@@ -30,11 +30,10 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  * optionally accompanied by a code telling whether the CRS type is geographic, projected, temporal,
  * a compound of the above, <i>etc.</i> Those two information are combined in a {@code MD_ReferenceSystem} class
  *
- * {@preformat text
+ * <pre class="text">
  *   mrs:MD_ReferenceSystem
  *   ├─mrs:referenceSystemIdentifier  :  mcc:MD_Identifier
- *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode
- * }
+ *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode</pre>
  *
  * In order to have a more uniform way to handle reference systems, we replace {@code MD_ReferenceSystem} tuples
  * by associations to the actual Reference System objects. GeoAPI does that by using the {@link ReferenceSystem}

@@ -78,7 +78,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * The format can also be set from a {@code logging.properties} file.
  * For example, user can cut and paste the following properties into {@code logging.properties}:
  *
- * {@preformat text
+ * {@snippet lang="properties" :
  *     ###########################################################################
  *     # Properties for the apache.sis.org MonolineFormatter.
  *     # By default, MonolineFormatter displays only the log level
@@ -95,16 +95,16 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *     ###########################################################################
  *     org.apache.sis.util.logging.MonolineFormatter.time = HH:mm:ss.SSS
  *     org.apache.sis.util.logging.MonolineFormatter.source = class:short
- * }
+ *     }
  *
  * See {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} for more information about the
  * above {@code time} and {@code source} properties. Encoding and logging level are configured separately,
  * typically on the JDK {@link ConsoleHandler} like below:
  *
- * {@preformat text
+ * {@snippet lang="properties" :
  *     java.util.logging.ConsoleHandler.encoding = UTF-8
  *     java.util.logging.ConsoleHandler.level = FINE
- * }
+ *     }
  *
  * <h2>Thread safety</h2>
  * The same {@code MonolineFormatter} instance can be safely used by many threads without synchronization
@@ -285,9 +285,9 @@ public class MonolineFormatter extends Formatter {
      * Constructs a default {@code MonolineFormatter}. This no-argument constructor is invoked
      * by the logging system if the {@code logging.properties} file contains the following line:
      *
-     * {@preformat text
-     *   java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
-     * }
+     * {@snippet lang="properties" :
+     *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
+     *     }
      *
      * @since 1.0
      */

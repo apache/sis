@@ -50,25 +50,23 @@ import org.apache.sis.math.Vector;
  * The policy about whether the conversion maps pixel corner or pixel center in GeoTIFF files does not seem
  * totally clear. But the practice at least with GDAL seems to consider the following as equivalent:
  *
- * {@preformat text
+ * <pre class="text">
  *     ModelTiepointTag = (0.0, 0.0, 0.0, -180.0, 90.0, 0.0)
  *     ModelPixelScaleTag = (0.002777777778, 0.002777777778, 0.0)
  *     GeoKeyDirectoryTag:
  *         GTModelTypeGeoKey    = 2    (ModelTypeGeographic)
  *         GTRasterTypeGeoKey   = 1    (RasterPixelIsArea)
- *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)
- * }
+ *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)</pre>
  *
  * and
  *
- * {@preformat text
+ * <pre class="text">
  *     ModelTiepointTag = (-0.5, -0.5, 0.0, -180.0, 90.0, 0.0)
  *     ModelPixelScaleTag = (0.002777777778, 0.002777777778, 0.0)
  *     GeoKeyDirectoryTag:
  *         GTModelTypeGeoKey    = 2    (ModelTypeGeographic)
  *         GTRasterTypeGeoKey   = 2    (RasterPixelIsPoint)
- *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)
- * }
+ *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)</pre>
  *
  * The former is {@link PixelInCell#CELL_CORNER} convention while the latter is {@link PixelInCell#CELL_CENTER}.
  * Note that the translation coefficients in the <cite>grid to CRS</cite> matrix is {@code crs - grid × scale}.

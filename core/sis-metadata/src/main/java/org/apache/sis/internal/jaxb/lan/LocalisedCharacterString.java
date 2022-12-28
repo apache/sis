@@ -134,9 +134,7 @@ final class LocalisedCharacterString {
      * Returns a string representation of this object for debugging purpose.
      * Example:
      *
-     * {@preformat text
-     *   LocalisedCharacterString[#locale-fra, “Un texte”]
-     * }
+     * <pre class="text">LocalisedCharacterString[#locale-fra, “Un texte”]</pre>
      *
      * @see TextGroup#toString()
      */

@@ -116,12 +116,11 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * Tests the simple case (no anti-meridian crossing).
      *
-     * {@preformat text
+     * <pre class="text">
      *     ┌─────────────┐
      *     │  ┌───────┐  │
      *     │  └───────┘  │
-     *     └─────────────┘
-     * }
+     *     └─────────────┘</pre>
      */
     @Test
     public void testSimpleEnvelope() {
@@ -170,12 +169,11 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * Tests a case crossing the anti-meridian.
      *
-     * {@preformat text
+     * <pre class="text">
      *      ─────┐  ┌─────────              ─────┐      ┌─────
      *           │  │  ┌────┐       or      ──┐  │      │  ┌──
      *           │  │  └────┘               ──┘  │      │  └──
-     *      ─────┘  └─────────              ─────┘      └─────
-     * }
+     *      ─────┘  └─────────              ─────┘      └─────</pre>
      */
     @Test
     public void testCrossingAntiMeridian() {
@@ -232,12 +230,11 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * Tests a the anti-meridian case with a larger empty space
      * on the left side.
      *
-     * {@preformat text
+     * <pre class="text">
      *      ───┐    ┌─────────              ───┐      ┌─────
      *         │    │  ┌────┐       or      ───┼──┐   │  ┌──
      *         │    │  └────┘               ───┼──┘   │  └──
-     *      ───┘    └─────────              ───┘      └─────
-     * }
+     *      ───┘    └─────────              ───┘      └─────</pre>
      */
     @Test
     public void testCrossingAntiMeridianTwice() {

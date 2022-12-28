@@ -385,21 +385,19 @@ class TreeNode implements Node {
          * returns the subtype name (<a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>).
          * For example, instead of:</p>
          *
-         * {@preformat text
+         * <pre class="text">
          *   Citation
          *    └─Cited responsible party
          *       └─Party
-         *          └─Name ……………………………… Jon Smith
-         * }
+         *          └─Name ……………………………… Jon Smith</pre>
          *
          * we format:
          *
-         * {@preformat
+         * <pre class="text">
          *   Citation
          *    └─Cited responsible party
          *       └─Individual
-         *          └─Name ……………………………… Jon Smith
-         * }
+         *          └─Name ……………………………… Jon Smith</pre>
          */
         @Override
         CharSequence getName() {

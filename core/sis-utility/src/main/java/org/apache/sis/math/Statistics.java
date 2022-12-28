@@ -571,14 +571,13 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * Returns a string representation of this statistics. This string will span
      * multiple lines, one for each statistical value. For example:
      *
-     * {@preformat text
+     * <pre class="text">
      *     Number of values:     8726
      *     Minimum value:       6.853
      *     Maximum value:       8.259
      *     Mean value:          7.421
      *     Root Mean Square:    7.846
-     *     Standard deviation:  6.489
-     * }
+     *     Standard deviation:  6.489</pre>
      *
      * @return a string representation of this statistics object.
      *

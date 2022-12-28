@@ -81,7 +81,7 @@ public abstract class Interpolation {
      * the horizontal and vertical lines drawn below. This figure is for an image with only one band, otherwise all
      * indices between brackets would need to be multiplied by {@code numBands}.</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   s[0]   s[1]   s[2]   s[3]
      *
      *   s[4]   s[5]───s[6]   s[7]  ← yfrac = 0
@@ -90,8 +90,7 @@ public abstract class Interpolation {
      *
      *   s[12]  s[13]  s[14]  s[15]
      *               ↑
-     *             xfrac
-     * }
+     *             xfrac</pre>
      *
      * On output, this method shall write the interpolation results as {@code numBands} consecutive
      * values in the supplied {@code writeTo} array, starting at {@code writeToOffset} index.

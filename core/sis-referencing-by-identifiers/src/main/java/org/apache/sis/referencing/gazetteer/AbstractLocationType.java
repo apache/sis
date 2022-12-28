@@ -198,12 +198,11 @@ abstract class AbstractLocationType implements LocationType, LenientComparable {
      * Current implementation formats a tree with the {@linkplain ModifiableLocationType#getName() name}
      * and {@linkplain ModifiableLocationType#getDefinition() definition} of each type, like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   administrative area………………… area of responsibility of highest level local authority
      *     ├─town……………………………………………… city or town
      *     │   └─street……………………………… thoroughfare providing access to properties
-     *     └─street………………………………………… thoroughfare providing access to properties
-     * }
+     *     └─street………………………………………… thoroughfare providing access to properties</pre>
      *
      * The string representation is mostly for debugging purpose and may change in any future SIS version.
      *

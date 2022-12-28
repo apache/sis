@@ -103,9 +103,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * its components. But some GeoTIFF files encode the names of all components in the value associated to
      * that key, as in the following example:
      *
-     * {@preformat text
-     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
-     * }
+     * <pre class="text">
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|</pre>
      *
      * In such case, we will split the name into the components names to be stored in an array at indices
      * given by {@code GCRS}, {@code DATUM}, {@code ELLIPSOID} and {@code PRIMEM}.
@@ -898,9 +897,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Splits the {@link GeoKeys#GeogCitation} value into its prime meridian, ellipsoid, datum and CRS name components.
      * This method is intended to parse geographic CRS names written like below:
      *
-     * {@preformat text
-     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
-     * }
+     * <pre class="text">
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|</pre>
      *
      * The keywords of both Well Known Text (WKT) version 1 and 2 are accepted as keys for the datum, ellipsoid and
      * prime meridian names. All other keys are presumed to be for the geographic CRS name. If the given string does

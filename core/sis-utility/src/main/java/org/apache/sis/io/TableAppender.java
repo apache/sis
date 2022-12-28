@@ -58,7 +58,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * produces the following output:
  *
- * {@preformat text
+ * <pre class="text">
  *   ╔═════════╤═════════╤════════╗
  *   ║ English │ French  │ r.e.d. ║
  *   ╟─────────┼─────────┼────────╢
@@ -66,8 +66,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *   ║ Venus   │ Vénus   │ 0.949  ║
  *   ║ Earth   │ Terre   │ 1.00   ║
  *   ║ Mars    │ Mars    │ 0.532  ║
- *   ╚═════════╧═════════╧════════╝
- * }
+ *   ╚═════════╧═════════╧════════╝</pre>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.0

@@ -775,11 +775,12 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
-     * <div class="note"><b>Example:</b> given a feature with an attribute named “population”.
+     * <h4>Example</h4>
+     * Given a feature with an attribute named “population”.
      * If this attribute is mandatory ([1 … 1] multiplicity) but no value has been assigned to it,
      * then this {@code quality()} method will return the following data quality report:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Data quality
      *     ├─Scope
      *     │   └─Level………………………………………………… Feature
@@ -789,9 +790,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *         ├─Evaluation method type…… Direct internal
      *         └─Result
      *             ├─Explanation……………………… Missing value for “population” property.
-     *             └─Pass………………………………………… false
-     * }
-     * </div>
+     *             └─Pass………………………………………… false</pre>
      *
      * @return reports on all constraint violations found.
      *

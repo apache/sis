@@ -81,17 +81,17 @@ import static org.apache.sis.internal.util.CollectionsExt.singletonOrNull;
  * <p>This class will parse properties found in the Landsat metadata file,
  * except {@code GROUP} and {@code END_GROUP}. Example:
  *
- * {@preformat text
+ * <pre class="text">
  *   DATE_ACQUIRED         = 2014-03-12
  *   SCENE_CENTER_TIME     = 03:02:01.5339408Z
  *   CORNER_UL_LAT_PRODUCT = 12.61111
  *   CORNER_UL_LON_PRODUCT = 108.33624
  *   CORNER_UR_LAT_PRODUCT = 12.62381
- *   CORNER_UR_LON_PRODUCT = 110.44017
- * }
+ *   CORNER_UR_LON_PRODUCT = 110.44017</pre>
  *
- * <p><b>NOTE FOR MAINTAINER:</b> if the work performed by this class is modified, consider updating
- * <a href="./doc-files/MetadataMapping.html">./doc-files/MetadataMapping.html</a> accordingly.</p>
+ * <h2>Note for maintainer</h2>
+ * If the work performed by this class is modified, consider updating
+ * <a href="./doc-files/MetadataMapping.html">./doc-files/MetadataMapping.html</a> accordingly.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Rémi Maréchal (Geomatys)

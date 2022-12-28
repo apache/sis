@@ -60,12 +60,11 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
     /**
      * Creates a shallow metadata object without collections.
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title………………………………………………… Some title
      *     ├─Edition…………………………………………… Some edition
-     *     └─Other citation details…… Some other details
-     * }
+     *     └─Other citation details…… Some other details</pre>
      */
     static DefaultCitation metadataWithoutCollections() {
         final DefaultCitation citation = new DefaultCitation("Some title");
@@ -78,14 +77,13 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      * Creates a shallow metadata object with singleton value in collections.
      * This method creates the following metadata:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title………………………………………………… Some title
      *     ├─Alternate title……………………… First alternate title
      *     ├─Edition…………………………………………… Some edition
      *     ├─Presentation form………………… Map digital
-     *     └─Other citation details…… Some other details
-     * }
+     *     └─Other citation details…… Some other details</pre>
      */
     static DefaultCitation metadataWithSingletonInCollections() {
         final DefaultCitation citation = metadataWithoutCollections();
@@ -98,7 +96,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      * Creates a shallow metadata object with multi-occurrences (i.e. more than one value in collections).
      * This method creates the following metadata:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title………………………………………………………… Some title
      *     ├─Alternate title (1 of 2)……… First alternate title
@@ -106,8 +104,7 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      *     ├─Edition…………………………………………………… Some edition
      *     ├─Presentation form (1 of 2)… Map digital
      *     ├─Presentation form (2 of 2)… map hardcopy
-     *     └─Other citation details…………… Some other details
-     * }
+     *     └─Other citation details…………… Some other details</pre>
      */
     static DefaultCitation metadataWithMultiOccurrences() {
         final DefaultCitation citation = metadataWithSingletonInCollections();
@@ -120,20 +117,18 @@ public final strictfp class TreeNodeChildrenTest extends TestCase {
      * Creates a metadata object with a property that can be simplified.
      * Strictly speaking, the metadata is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     └─Date
      *        ├─Date………………… 2012-01-01
-     *        └─Date type…… Creation
-     * }
+     *        └─Date type…… Creation</pre>
      *
      * However, the tree view should simplify as:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     └─Date………………………… 2012-01-01
-     *        └─Date type…… Creation
-     * }
+     *        └─Date type…… Creation</pre>
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */

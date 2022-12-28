@@ -291,21 +291,19 @@ public final strictfp class TestUtilities extends Static {
      * Returns the tree structure of the given string representation, without the localized text.
      * For example, given the following string:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *     ├─Title…………………………………………………… Some title
      *     └─Cited responsible party
-     *         └─Individual name……………… Some person of contact
-     * }
+     *         └─Individual name……………… Some person of contact</pre>
      *
      * this method returns an array containing the following elements:
      *
-     * {@preformat text
+     * <pre class="text">
      *   "",
      *   "  ├─",
      *   "  └─",
-     *   "      └─"
-     * }
+     *   "      └─"</pre>
      *
      * This method is used for comparing two trees having string representation in different locales.
      * In such case, we cannot compare the actual text content. The best we can do is to compare

@@ -848,11 +848,10 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <div class="horizontal-flow">
      * <div><p><b>WKT example</b></p>
-     * {@preformat text
+     * <pre class="text">
      *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
      *                       ↑
-     *               (insertion point)
-     * }
+     *               (insertion point)</pre>
      * </div><div>
      * <p><b>Java code example</b></p>
      * {@snippet lang="java" :

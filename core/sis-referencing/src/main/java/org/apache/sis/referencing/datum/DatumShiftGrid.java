@@ -394,13 +394,12 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * The {@code coordinateToGrid} transform for the above formulas can be represented by the following matrix:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                      ┐
      *   │ 1/Δx      0   -x₀/Δx │
      *   │    0   1/Δy   -y₀/Δy │
      *   │    0      0        1 │
-     *   └                      ┘
-     * }
+     *   └                      ┘</pre>
      *
      * @return conversion from the "real world" coordinates to grid indices including fractional parts.
      */
@@ -494,12 +493,11 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * one computed by {@link #derivativeInCell(double, double)}, opportunistically computed here for performance reasons.
      * The matrix layout is as below, where <var>t₀</var> and <var>t₁</var> are the coordinates after translation.
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                   ┐         ┌                             ┐
      *   │  ∂t₀/∂x   ∂t₀/∂y  │    =    │  vector[n+0]   vector[n+1]  │
      *   │  ∂t₁/∂x   ∂t₁/∂y  │         │  vector[n+2]   vector[n+3]  │
-     *   └                   ┘         └                             ┘
-     * }
+     *   └                   ┘         └                             ┘</pre>
      *
      * <h4>Default implementation</h4>
      * The default implementation performs the following steps for each dimension <var>dim</var>,
@@ -592,12 +590,11 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * {@code tₐ(x,y)} an abbreviation for {@code interpolateInCell(gridX, gridY, …)[a]} and for <var>x</var>
      * and <var>y</var> integers, the derivative is:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                   ┐         ┌                                                        ┐
      *   │  ∂t₀/∂x   ∂t₀/∂y  │    =    │  t₀(x+1,y) - t₀(x,y) + 1      t₀(x,y+1) - t₀(x,y)      │
      *   │  ∂t₁/∂x   ∂t₁/∂y  │         │  t₁(x+1,y) - t₁(x,y)          t₁(x,y+1) - t₁(x,y) + 1  │
-     *   └                   ┘         └                                                        ┘
-     * }
+     *   └                   ┘         └                                                        ┘</pre>
      *
      * <h4>Extrapolations</h4>
      * Derivatives must be consistent with {@link #interpolateInCell(double, double, double[])} even when the

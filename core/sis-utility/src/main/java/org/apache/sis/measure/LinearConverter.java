@@ -221,15 +221,13 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * Returns the inverse of this unit converter.
      * Given that the formula applied by this converter is:
      *
-     * {@preformat math
-     *    y = (x⋅scale + offset) ∕ divisor
-     * }
+     * <pre class="math">
+     *    y = (x⋅scale + offset) ∕ divisor</pre>
      *
      * the inverse formula is:
      *
-     * {@preformat math
-     *    x = (y⋅divisor - offset) ∕ scale
-     * }
+     * <pre class="math">
+     *    x = (y⋅divisor - offset) ∕ scale</pre>
      */
     @Override
     public synchronized UnitConverter inverse() {
@@ -326,16 +324,14 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * by the specified converter (right converter), and then converting by this converter (left converter).  In the
      * following equations, the 1 subscript is for the specified converter and the 2 subscript is for this converter:
      *
-     * {@preformat math
+     * <pre class="math">
      *    t = (x⋅scale₁ + offset₁) ∕ divisor₁
-     *    y = (t⋅scale₂ + offset₂) ∕ divisor₂
-     * }
+     *    y = (t⋅scale₂ + offset₂) ∕ divisor₂</pre>
      *
      * We rewrite as:
      *
-     * {@preformat math
-     *    y = (x⋅scale₁⋅scale₂ + offset₁⋅scale₂ + divisor₁⋅offset₂) ∕ (divisor₁⋅divisor₂)
-     * }
+     * <pre class="math">
+     *    y = (x⋅scale₁⋅scale₂ + offset₁⋅scale₂ + divisor₁⋅offset₂) ∕ (divisor₁⋅divisor₂)</pre>
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {

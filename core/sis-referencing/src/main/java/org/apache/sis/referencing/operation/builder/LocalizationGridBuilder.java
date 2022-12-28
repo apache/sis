@@ -353,13 +353,12 @@ public class LocalizationGridBuilder extends TransformBuilder {
      *
      * The {@code coordinateToGrid} transform for the above formulas can be represented by the following matrix:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                      ┐
      *   │ 1/Δx      0   -x₀/Δx │
      *   │    0   1/Δy   -y₀/Δy │
      *   │    0      0        1 │
-     *   └                      ┘
-     * }
+     *   └                      ┘</pre>
      *
      * If this method is never invoked, then the default conversion is identity.
      * If a {@linkplain #setDesiredPrecision(double) desired precision} has been specified before this method call,

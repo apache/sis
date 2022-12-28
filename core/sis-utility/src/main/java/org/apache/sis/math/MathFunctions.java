@@ -222,9 +222,8 @@ public final class MathFunctions extends Static {
     /**
      * Returns the magnitude of the given vector. This is defined by:
      *
-     * {@preformat math
-     *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
-     * }
+     * <pre class="math">
+     *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)</pre>
      *
      * If the given vector contains a NaN value, then the result is NaN.
      *

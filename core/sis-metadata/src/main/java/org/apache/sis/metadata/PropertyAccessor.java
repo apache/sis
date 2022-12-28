@@ -1300,9 +1300,7 @@ class PropertyAccessor {
      * Returns a string representation of this accessor for debugging purpose.
      * Output example:
      *
-     * {@preformat text
-     *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation]
-     * }
+     * <pre class="text">PropertyAccessor[13 getters &amp; 13 setters in DefaultCitation:Citation]</pre>
      */
     @Override
     public String toString() {

@@ -344,13 +344,12 @@ public final class Matrices extends Static {
      *
      * will return the following square matrix. The transform of the lower corner is given as an example:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌     ┐   ┌              ┐   ┌     ┐
      *   │ -10 │   │ 3.0  0    50 │   │ -20 │       // 3.0 is the scale factor from width of 100 to 300
      *   │ -25 │ = │ 0    2.5  75 │ × │ -40 │       // 2.5 is the scale factor from height of 200 to 500
      *   │   1 │   │ 0    0     1 │   │   1 │
-     *   └     ┘   └              ┘   └     ┘
-     * }
+     *   └     ┘   └              ┘   └     ┘</pre>
      *
      * @param  srcEnvelope  the source envelope.
      * @param  dstEnvelope  the destination envelope.
@@ -421,13 +420,12 @@ public final class Matrices extends Static {
      *
      * will return the following square matrix, which can be used in coordinate conversions as below:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌    ┐   ┌         ┐   ┌    ┐
      *   │ +x │   │ 0 -1  0 │   │  y │
      *   │  y │ = │ 1  0  0 │ × │ -x │
      *   │  1 │   │ 0  0  1 │   │  1 │
-     *   └    ┘   └         ┘   └    ┘
-     * }
+     *   └    ┘   └         ┘   └    ┘</pre>
      *
      * @param  srcAxes  the ordered sequence of axis directions for source coordinate system.
      * @param  dstAxes  the ordered sequence of axis directions for destination coordinate system.
@@ -473,8 +471,8 @@ public final class Matrices extends Static {
      * points on one side of the date line (depending on whether axis direction is reversed), since the wrap around
      * operation cannot be represented by an affine transform.
      *
-     * <div class="note"><b>Example:</b>
-     * combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
+     * <h4>Example</h4>
+     * Combining the examples documented in the above {@code createTransform(…)} methods, the following method call:
      *
      * {@snippet lang="java" :
      *     matrix = Matrices.createTransform(
@@ -487,14 +485,12 @@ public final class Matrices extends Static {
      * and the lower-left corner of the destination envelope is the lower-<em>right</em> corner of the source envelope
      * because of the opposite axis direction.
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌     ┐   ┌               ┐   ┌     ┐
      *   │ -10 │   │ 0   -3.0  350 │   │ -40 │
      *   │ -25 │ = │ 2.5  0     75 │ × │ 120 │       // 120 is the westernmost source coordinate: (x=20) + (width=100)
      *   │   1 │   │ 0    0      1 │   │   1 │
-     *   └     ┘   └               ┘   └     ┘
-     * }
-     * </div>
+     *   └     ┘   └               ┘   └     ┘</pre>
      *
      * @param  srcEnvelope  the source envelope.
      * @param  srcAxes      the ordered sequence of axis directions for source coordinate system.
@@ -531,8 +527,8 @@ public final class Matrices extends Static {
      *   <li>For any row <var>j</var> other than the last row, the column {@code selectedDimensions[j]}.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) coordinate values, if one wants to keep
+     * <h4>Example</h4>
+     * Given (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) coordinate values, if one wants to keep
      * (<var>y</var>,<var>x</var>,<var>t</var>) coordinates (note the <var>x</var> ↔ <var>y</var> swapping)
      * and discard the <var>z</var> values, then the indices of source coordinates to select are 1 for <var>y</var>,
      * 0 for <var>x</var> and 3 for <var>t</var>. One can use the following method call:
@@ -544,16 +540,14 @@ public final class Matrices extends Static {
      * The above method call will create the following 4×5 matrix,
      * which can be used for converting coordinates as below:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌   ┐   ┌           ┐   ┌   ┐
      *   │ y │   │ 0 1 0 0 0 │   │ x │
      *   │ x │   │ 1 0 0 0 0 │   │ y │
      *   │ t │ = │ 0 0 0 1 0 │ × │ z │
      *   │ 1 │   │ 0 0 0 0 1 │   │ t │
      *   └   ┘   └           ┘   │ 1 │
-     *                           └   ┘
-     * }
-     * </div>
+     *                           └   ┘</pre>
      *
      * The inverse of the matrix created by this method will put {@link Double#NaN} values in the extra dimensions.
      * Other dimensions will work as expected.
@@ -609,30 +603,27 @@ public final class Matrices extends Static {
      *       is copied in the last column of the sub-matrix.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * given the following sub-matrix which converts height values from feet to metres before to subtracts 25 metres:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌    ┐   ┌             ┐   ┌   ┐
      *   │ z' │ = │ 0.3048  -25 │ × │ z │
      *   │ 1  │   │ 0         1 │   │ 1 │
-     *   └    ┘   └             ┘   └   ┘
-     * }
+     *   └    ┘   └             ┘   └   ┘</pre>
      *
      * Then a call to {@code Matrices.createPassThrough(2, subMatrix, 1)} will return the following matrix,
      * which can be used for converting the height (<var>z</var>) without affecting the other coordinate values
      * (<var>x</var>,<var>y</var>,<var>t</var>):
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌    ┐   ┌                      ┐   ┌   ┐
      *   │ x  │   │ 1  0  0       0    0 │   │ x │
      *   │ y  │   │ 0  1  0       0    0 │   │ y │
      *   │ z' │ = │ 0  0  0.3048  0  -25 │ × │ z │
      *   │ t  │   │ 0  0  0       1    0 │   │ t │
      *   │ 1  │   │ 0  0  0       0    1 │   │ 1 │
-     *   └    ┘   └                      ┘   └   ┘
-     * }
-     * </div>
+     *   └    ┘   └                      ┘   └   ┘</pre>
      *
      * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
      * @param  subMatrix                the matrix to use for affected coordinates.
@@ -1212,14 +1203,13 @@ public final class Matrices extends Static {
      * (<var>latitude</var>, <var>longitude</var>) axes, converts degrees to radians and converts
      * height values from feet to metres:</p>
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                                                       ┐
      *   │ 0                     0.017453292519943295  0       0 │
      *   │ 0.017453292519943295  0                     0       0 │
      *   │ 0                     0                     0.3048  0 │
      *   │ 0                     0                     0       1 │
-     *   └                                                       ┘
-     * }
+     *   └                                                       ┘</pre>
      *
      * <div class="note"><b>Note:</b>
      * Formatting on a per-column basis is convenient for the kind of matrices used in referencing by coordinates,

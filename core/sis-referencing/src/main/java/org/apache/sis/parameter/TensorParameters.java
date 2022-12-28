@@ -166,20 +166,20 @@ public class TensorParameters<E> implements Serializable {
      *     <th class="sep">Alias</th>
      *   </tr>
      * <tr><td>
-     * {@preformat text
+     * <pre class="text">
      *   ┌            ┐
      *   │ A0  A1  A2 │
      *   │ B0  B1  B2 │
      *   │ C0  C1  C2 │
-     *   └            ┘
-     * }</td><td class="sep">
-     * {@preformat text
+     *   └            ┘</pre>
+     * </td><td class="sep">
+     * <pre class="text">
      *   ┌                             ┐
      *   │ elt_0_0   elt_0_1   elt_0_2 │
      *   │ elt_1_0   elt_1_1   elt_1_2 │
      *   │ elt_2_0   elt_2_1   elt_2_2 │
-     *   └                             ┘
-     * }</td></tr>
+     *   └                             ┘</pre>
+     * </td></tr>
      * </table>
      *
      * <h4>Relationship with EPSG</h4>

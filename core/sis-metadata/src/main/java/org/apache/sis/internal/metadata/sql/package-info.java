@@ -36,9 +36,9 @@
  *
  *   <li><p>If using Derby, copy {@code derby.war} into the {@code $CATALINA_HOME/webapps} directory
  *     and specify the directory where the Derby databases are located:</p>
- *     {@preformat text
+ *     {@snippet lang="shell" :
  *       export JAVA_OPTS=-Dderby.system.home=$SIS_DATA/Databases
- *     }
+ *       }
  *   </li>
  *
  *   <li><p>Declare the JNDI name in application {@code WEB-INF/web.xml} file:</p>

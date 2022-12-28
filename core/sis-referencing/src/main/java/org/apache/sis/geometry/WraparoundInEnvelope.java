@@ -40,7 +40,7 @@ import org.apache.sis.util.ArraysExt;
  * than envelopes transformed using {@link WraparoundTransform} but should never be smaller.
  * For example, when transforming the following envelope with wraparound on the dashed line:</p>
  *
- * {@preformat text
+ * <pre class="text">
  *     ┌─┆───────────────┆───┐           ┆              Envelope to transform.
  *     │ ┆               ┆   │           ┆
  *     └─┆───────────────┆───┘           ┆
@@ -49,8 +49,7 @@ import org.apache.sis.util.ArraysExt;
  *       ┆               ┆   └─────────┘ ┆
  *       ┆             ┌─┆───┐         ┌─┆───┐          Better result (union to be done by caller).
  *       ┆             │ ┆   │         │ ┆   │
- *       ┆             └─┆───┘         └─┆───┘
- * }
+ *       ┆             └─┆───┘         └─┆───┘</pre>
  *
  * <h2>Mutability</h2>
  * <b>This class is mutable.</b> This class records the translations that {@link #shift(double)} wanted to apply

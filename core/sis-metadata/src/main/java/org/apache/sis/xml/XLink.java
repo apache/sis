@@ -831,9 +831,7 @@ public class XLink implements Serializable {
      * Returns a string representation of this object. The default implementation returns the
      * simple class name followed by non-null attributes, as in the example below:
      *
-     * {@preformat text
-     *     XLink[type="locator", href="urn:ogc:def:method:EPSG::4326"]
-     * }
+     * <pre class="text">XLink[type="locator", href="urn:ogc:def:method:EPSG::4326"]</pre>
      */
     @Override
     public String toString() {

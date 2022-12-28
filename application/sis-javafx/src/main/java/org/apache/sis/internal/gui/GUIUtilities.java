@@ -298,16 +298,14 @@ walk:   for (final T search : path) {
      * This is known as <cite>longest common subsequence</cite> (LCS) problem.
      * The LCS elements are not required to occupy consecutive positions within the original sequences.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * for the two following lists <var>x</var> and <var>y</var>,
      * the longest common subsequence if given by <var>lcs</var> below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   x   :  1 2   4 6 7   9
      *   y   :  1 2 3     7 8
-     *   lcs :  1 2       7
-     * }
-     * </div>
+     *   lcs :  1 2       7</pre>
      *
      * This algorithm is useful for computing the differences between two sequences.
      *

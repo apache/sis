@@ -54,14 +54,13 @@ public final class GridOrientation implements Serializable {
      * In matrix terms all non-zero coefficients are on the diagonal or in the translation column.
      * For example, in the three-dimensional case:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                ┐
      *   │ Sx  0   0   Tx │
      *   │ 0   Sy  0   Ty │
      *   │ 0   0   Sz  Tz │
      *   │ 0   0   0   1  │
-     *   └                ┘
-     * }
+     *   └                ┘</pre>
      *
      * with
      * <var>S<sub>x</sub></var> &gt; 0,
@@ -77,14 +76,13 @@ public final class GridOrientation implements Serializable {
      * the matrix is replaced by −<var>S<sub>y</sub></var> and the <var>T<sub>y</sub></var> term has a different value.
      * For example in the three-dimensional case, the {@code gridToCRS} transform is:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                 ┐
      *   │ Sx  0   0   Tx  │
      *   │ 0  −Sy  0   Ty′ │
      *   │ 0   0   Sz  Tz  │
      *   │ 0   0   0   1   │
-     *   └                 ┘
-     * }
+     *   └                 ┘</pre>
      *
      * <h4>When to use</h4>
      * {@code REFLECTION_Y} is commonly used when the grid is a {@link java.awt.image.RenderedImage}.
@@ -120,14 +118,13 @@ public final class GridOrientation implements Serializable {
      * is different than the user-specified CRS (if those CRSs are equal, then the transform is rather
      * like the one shown in {@link #REFLECTION_Y}):
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                  ┐
      *   │  0   Sx  0   Tx  │
      *   │ −Sy  0   0   Ty′ │
      *   │  0   0   Sz  Tz  │
      *   │  0   0   0   1   │
-     *   └                  ┘
-     * }
+     *   └                  ┘</pre>
      *
      * <h4>When to use</h4>
      * This orientation can be used for deriving a coordinate reference system with the

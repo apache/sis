@@ -71,21 +71,20 @@ public final strictfp class HardCodedCitations extends Static {
      *
      * <p>String representation:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *     ├─Title………………………………………………………… EPSG Geodetic Parameter Dataset
      *     ├─Identifier
      *     │   └─Code………………………………………………… EPSG
      *     ├─Cited responsible party
      *     │   ├─Party
-     *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
+     *     │   │   ├─Name……………………………………… International Association of Oil &amp; Gas Producers
      *     │   │   └─Contact info
      *     │   │       └─Online resource
      *     │   │           ├─Linkage………… https://epsg.org/
      *     │   │           └─Function……… Information
      *     │   └─Role………………………………………………… Principal investigator
-     *     └─Presentation form………………………… Table digital
-     * }
+     *     └─Presentation form………………………… Table digital</pre>
      */
     public static final DefaultCitation EPSG;
     static {

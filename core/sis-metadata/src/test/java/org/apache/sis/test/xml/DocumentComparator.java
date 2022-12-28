@@ -150,11 +150,10 @@ public strictfp class DocumentComparator {
      * <p>For example, in order to ignore the namespace, type and schema location declaration,
      * the following strings can be added in this set:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   "http://www.w3.org/2000/xmlns:*",
      *   "http://www.w3.org/2001/XMLSchema-instance:schemaLocation",
-     *   "http://www.w3.org/2001/XMLSchema-instance:type"
-     * }
+     *   "http://www.w3.org/2001/XMLSchema-instance:type"</pre>
      *
      * Note that for convenience, the {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}
      * method automatically replaces some widely used prefixes by their full URL.

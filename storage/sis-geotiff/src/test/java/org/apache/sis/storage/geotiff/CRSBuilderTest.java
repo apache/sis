@@ -34,9 +34,8 @@ public final strictfp class CRSBuilderTest extends TestCase {
     /**
      * Tests {@link CRSBuilder#splitName(String)}. The string used for this test is:
      *
-     * {@preformat text
-     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
-     * }
+     * <pre class="text">
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|</pre>
      */
     @Test
     public void testSplitName() {

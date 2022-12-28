@@ -68,14 +68,13 @@ public final strictfp class DefaultQuantitativeResultTest extends TestCase {
      * Creates a {@code DefaultQuantitativeResult} instance wrapped in an element.
      * The returned element is as below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Quantitative attribute accuracy
      *     ├─Measure
      *     │   └─Name of measure…………………… Some quality flag
      *     └─Quantitative result
      *         ├─Value……………………………………………… The quality is okay
-     *         └─Value record type……………… CharacterSequence
-     * }
+     *         └─Value record type……………… CharacterSequence</pre>
      */
     @SuppressWarnings("deprecation")
     private static Element createResultInsideElement() {

@@ -70,11 +70,11 @@ import org.opengis.referencing.gazetteer.LocationType;
  * Formats {@link Location} instances in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
- * <div class="note"><b>Example:</b>
- * the location identified by "32TNL83" in the {@linkplain MilitaryGridReferenceSystem military grid reference system}
+ * <h2>Example</h2>
+ * The location identified by "32TNL83" in the {@linkplain MilitaryGridReferenceSystem military grid reference system}
  * can be represented by the following string formatted using {@link Locale#ENGLISH}:
  *
- * {@preformat text
+ * <pre class="text">
  *   ┌─────────────────────────────────────────────────────────────┐
  *   │ Location type:               Grid zone designator           │
  *   │ Geographic identifier:       32TNL83                        │
@@ -85,9 +85,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *   │ Representative value:        4,535,000 m    —    40°57′42″N │
  *   │ North bound:                 4,540,000 m    —    41°00′27″N │
  *   │ Coordinate reference system: WGS 84 / UTM zone 32N          │
- *   └─────────────────────────────────────────────────────────────┘
- * }
- * </div>
+ *   └─────────────────────────────────────────────────────────────┘</pre>
  *
  * <h2>Limitations</h2>
  * <ul>

@@ -257,9 +257,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
      * The {@link OperationMethod} implementations shall be listed in the following file:
      *
-     * {@preformat text
-     *     META-INF/services/org.opengis.referencing.operation.OperationMethod
-     * }
+     * <pre class="text">META-INF/services/org.opengis.referencing.operation.OperationMethod</pre>
      *
      * {@code DefaultMathTransformFactory} parses the above-cited files in all JAR files in order to find all available
      * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface

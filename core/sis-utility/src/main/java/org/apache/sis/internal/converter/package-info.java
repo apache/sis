@@ -28,9 +28,7 @@
  * fully qualified classnames of their {@link org.apache.sis.util.ObjectConverter} instances
  * in a file having exactly the following name:
  *
- * {@preformat text
- *     META-INF/services/org.apache.sis.util.ObjectConverter
- * }
+ * <pre class="text">META-INF/services/org.apache.sis.util.ObjectConverter</pre>
  *
  * Applications deployed in a container framework like OSGi shall use only the service loader,
  * because system converters are discarded every time that the classpath changes.

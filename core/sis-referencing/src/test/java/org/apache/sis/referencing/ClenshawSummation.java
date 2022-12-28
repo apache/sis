@@ -37,21 +37,19 @@ import org.apache.sis.util.StringBuilders;
  *
  * The idea is to rewrite some equations using trigonometric identities. Given:
  *
- * {@preformat math
- *     s  =  A⋅sin(θ) + B⋅sin(2θ) + C⋅sin(3θ) + D⋅sin(4θ) + E⋅sin(5θ) + F⋅sin(6θ)
- * }
+ * <pre class="math">
+ *     s  =  A⋅sin(θ) + B⋅sin(2θ) + C⋅sin(3θ) + D⋅sin(4θ) + E⋅sin(5θ) + F⋅sin(6θ)</pre>
  *
  * We rewrite as:
  *
- * {@preformat math
+ * <pre class="math">
  *     s  =  sinθ⋅(A′ + cosθ⋅(B′ + cosθ⋅(C′ + cosθ⋅(D′ + cosθ⋅(E′ + cosθ⋅F′)))))
  *     A′ =  A - C + E
  *     B′ =  2B - 4D + 6F
  *     C′ =  4C - 12E
  *     D′ =  8D - 32F
  *     E′ = 16E
- *     F′ = 32F
- * }
+ *     F′ = 32F</pre>
  *
  * Some calculations were done in an OpenOffice spreadsheet available on
  * <a href="https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods">Subversion</a>.
@@ -79,9 +77,8 @@ public final class ClenshawSummation {
      * Creates a new series expansion to be optimized by Clenshaw summation.
      * Given the following series:
      *
-     * {@preformat math
-     *     s  =  A⋅sin(θ) + B⋅sin(2θ) + C⋅sin(3θ) + D⋅sin(4θ) + E⋅sin(5θ) + F⋅sin(6θ)
-     * }
+     * <pre class="math">
+     *     s  =  A⋅sin(θ) + B⋅sin(2θ) + C⋅sin(3θ) + D⋅sin(4θ) + E⋅sin(5θ) + F⋅sin(6θ)</pre>
      *
      * the arguments given to this constructor shall be A, B, C, D, E and F in that exact order.
      */
@@ -93,15 +90,13 @@ public final class ClenshawSummation {
      * A coefficient to be multiplied by the sine or cosine of an angle. For example in the following expression,
      * each of A, B, C, D, E and F variable is a {@code Coefficient} instance.
      *
-     * {@preformat math
-     *     s  =  A⋅sin(θ) + B⋅sin(2θ) + C⋅sin(3θ) + D⋅sin(4θ) + E⋅sin(5θ) + F⋅sin(6θ)
-     * }
+     * <pre class="math">
+     *     s  =  A⋅sin(θ) + B⋅sin(2θ) + C⋅sin(3θ) + D⋅sin(4θ) + E⋅sin(5θ) + F⋅sin(6θ)</pre>
      *
      * Each {@code Coefficient} is itself defined by a sum of terms, for example:
      *
-     * {@preformat math
-     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵
-     * }
+     * <pre class="math">
+     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵</pre>
      */
     private static final class Coefficient {
         /**
@@ -123,9 +118,8 @@ public final class ClenshawSummation {
          * The {@code toSum[i]} term is multiplied by the {@code factors[i]} at the same index.
          * This method is used for computing B′ in expressions like:
          *
-         * {@preformat math
-         *     B′ = 2B - 4D + 6F
-         * }
+         * <pre class="math">
+         *     B′ = 2B - 4D + 6F</pre>
          *
          * @param toSum    the terms to sum, ignoring null elements.
          * @param factors  multiplication factor for each term to sum.
@@ -186,9 +180,8 @@ public final class ClenshawSummation {
      * One term in in the evaluation of a {@link Coefficient}. This term is usually single fraction.
      * For example, a {@code Coefficient} may be defined as below:
      *
-     * {@preformat math
-     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵
-     * }
+     * <pre class="math">
+     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵</pre>
      *
      * In above example each of -1/2, 3/16 and -1/32 fraction is a {@code Term} instance.
      * However, this class allows a term to be defined by an array of fractions if each term
@@ -222,9 +215,8 @@ public final class ClenshawSummation {
          * The {@code toSum[i]} term is multiplied by the {@code factors[i]} at the same index.
          * This method is used for computing B′ in expressions like:
          *
-         * {@preformat math
-         *     B′ = 2B - 4D + 6F
-         * }
+         * <pre class="math">
+         *     B′ = 2B - 4D + 6F</pre>
          *
          * Note that B, D and F above usually contain many terms, so this method will need to be invoked in a loop.
          *

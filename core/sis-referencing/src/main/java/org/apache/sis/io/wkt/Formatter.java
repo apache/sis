@@ -778,12 +778,12 @@ public class Formatter implements Localized {
      * If formatted, the {@code ID} element will be by default on the same line than the enclosing
      * element (e.g. {@code SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]}). Other example:</p>
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *   PROJCS["NAD27 / Idaho Central",
      *     GEOGCS[...etc...],
      *     ...etc...
      *     ID["EPSG", 26769]]
-     * }
+     *   }
      *
      * For non-internal conventions, all elements other than {@code ID[…]} are formatted
      * only for {@link CoordinateOperation} and root {@link ReferenceSystem} instances,

@@ -40,9 +40,9 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  * An element in a <cite>Well Know Text</cite> (WKT). An {@code Element} is made of {@link String},
  * {@link Number} and other {@link Element}. For example:
  *
- * {@preformat text
+ * {@snippet lang="wkt" :
  *     PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]]
- * }
+ *     }
  *
  * Each {@code Element} object can contain an arbitrary number of other elements.
  * The result is a tree, which can be seen with {@link #toString()} for debugging purpose.

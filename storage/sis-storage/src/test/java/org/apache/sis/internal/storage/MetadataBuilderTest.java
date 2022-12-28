@@ -51,7 +51,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
      * Tests {@link MetadataBuilder#parseLegalNotice(String)}.
      * The expected result of this parsing is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Metadata
      *     └─Identification info
      *         └─Resource constraints
@@ -64,8 +64,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
      *                 └─Cited responsible party
      *                     ├─Party
      *                     │   └─Name…………………………… John Smith
-     *                     └─Role……………………………………… Owner
-     * }
+     *                     └─Role……………………………………… Owner</pre>
      */
     @Test
     public void testParseLegalNotice() {

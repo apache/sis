@@ -68,11 +68,10 @@ public final strictfp class InterpolationTest extends TestCase {
     /**
      * Creates an iterator over a simple 3×3 image. Image values are:
      *
-     * {@preformat text
+     * <pre class="text">
      *   0 1 2
      *   3 4 5
-     *   6 7 8
-     * }
+     *   6 7 8</pre>
      *
      * @param  support  number of pixels needed for interpolations:
      *         1 for nearest, 2 for bilinear, 4 for bicubic.

@@ -214,14 +214,13 @@ public class ConverterRegistry {
      * Consider a converter from class {@code S} to class {@code T} where the two classes
      * are related in a hierarchy as below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   C1
      *   └───C2
      *       ├───C3
      *       │   └───S
      *       └───C4
-     *           └───T
-     * }
+     *           └───T</pre>
      *
      * Invoking this method will register the given converter for all the following cases:
      *

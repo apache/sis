@@ -29,7 +29,7 @@ import java.util.List;
  * <p>Below is an example of what a two-columns {@code TreeTable} instance may look like
  * when {@linkplain TreeTableFormat formatted as a text}:</p>
  *
- * {@preformat text
+ * <pre class="text">
  *   Citation
  *     ├─Title…………………………………………………………… Open Geospatial Consortium
  *     ├─Presentation Forms………………………… document digital
@@ -41,13 +41,12 @@ import java.util.List;
  *     │           ├─Linkage……………………… https://www.ogc.org/
  *     │           └─Function…………………… information
  *     └─Identifiers
- *         └─Code…………………………………………………… OGC
- * }
+ *         └─Code…………………………………………………… OGC</pre>
  *
- * <p>In many cases, the columns are known in advance as hard-coded static constants.
+ * In many cases, the columns are known in advance as hard-coded static constants.
  * Those column constants are typically documented close to the class producing the
  * {@code TreeTable} instance. Using directly those static constants provides type
- * safety, as in the following example:</p>
+ * safety, as in the following example:
  *
  * {@snippet lang="java" :
  *     TreeTable table = ...;                   // Put here a TreeTable instance.

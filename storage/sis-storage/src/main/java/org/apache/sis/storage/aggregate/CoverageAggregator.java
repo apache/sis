@@ -54,7 +54,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * More specifically, {@code CoverageAggregator} organizes resources as below,
  * except that parent nodes having only one child are omitted:
  *
- * {@preformat text
+ * <pre class="text">
  *     Root aggregate
  *     ├─ All coverages with same sample dimensions #1
  *     │  └─ ...
@@ -64,8 +64,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  *        └─ Coverages with equivalent reference systems #2
  *           ├─ Slices with compatible "grid to CRS" #1
  *           ├─ Slices with compatible "grid to CRS" #2
- *           └─ ...
- * }
+ *           └─ ...</pre>
  *
  * Where:
  *

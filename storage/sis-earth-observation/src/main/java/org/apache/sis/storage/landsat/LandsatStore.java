@@ -55,7 +55,7 @@ import org.apache.sis.setup.OptionKey;
  * Landsat data are distributed as a collection of TIFF files,
  * together with a single text file like below:
  *
- * {@preformat text
+ * <pre class="text">
  * GROUP = L1_METADATA_FILE
  *   GROUP = METADATA_FILE_INFO
  *     ORIGIN = "Image courtesy of the U.S. Geological Survey"
@@ -71,8 +71,7 @@ import org.apache.sis.setup.OptionKey;
  *     OUTPUT_FORMAT = "GEOTIFF"
  *     SPACECRAFT_ID = "LANDSAT_8"
  *     SENSOR_ID = "OLI_TIRS"
- *     etc...
- * }
+ *     etc...</pre>
  *
  * This class reads the content from the given input until the first occurrence of the {@code END} keyword.
  * Lines beginning with the {@code #} character (ignoring spaces) are treated as comment lines and ignored.

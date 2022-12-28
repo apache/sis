@@ -55,15 +55,13 @@ public class TilePlaceholder {
      * <p><a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>:
      * call to {@code Graphics2D.drawRenderedImage(…)} fails if the image contains more than one tile
      * (or a single tile not located at 0,0) and the tiles are not instances of {@link WritableRaster}
-     * (i.e. are instances of the read-only {@link Raster} parent class). The exception thrown is:
+     * (i.e. are instances of the read-only {@link Raster} parent class). The exception thrown is:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   Exception in thread "main" java.awt.image.RasterFormatException: (parentX + width) is outside raster
      *       at java.desktop/java.awt.image.WritableRaster.createWritableChild(WritableRaster.java:228)
      *       at java.desktop/sun.java2d.SunGraphics2D.drawTranslatedRenderedImage(SunGraphics2D.java:2852)
-     *       at java.desktop/sun.java2d.SunGraphics2D.drawRenderedImage(SunGraphics2D.java:2711)
-     * }
-     * </p>
+     *       at java.desktop/sun.java2d.SunGraphics2D.drawRenderedImage(SunGraphics2D.java:2711)</pre>
      */
     @Workaround(library="JDK", version="17")
     public static final boolean PENDING_JDK_FIX = true;

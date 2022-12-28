@@ -341,19 +341,17 @@ next:   for (final CoordinateSystem cs : targets) {
      * For example if {@code sourceCS} is a {@link org.opengis.referencing.cs.CartesianCS},
      * then {@code targetCS} must be a {@code CartesianCS} too.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If coordinates in {@code sourceCS} are (<var>x</var>,<var>y</var>) tuples in metres
      * and coordinates in {@code targetCS} are (<var>-y</var>,<var>x</var>) tuples in centimetres,
      * then the transformation can be performed as below:
      *
-     * {@preformat math
+     * <pre class="math">
      *     ┌      ┐   ┌                ┐ ┌     ┐
      *     │-y(cm)│   │   0  -100    0 │ │ x(m)│
      *     │ x(cm)│ = │ 100     0    0 │ │ y(m)│
      *     │ 1    │   │   0     0    1 │ │ 1   │
-     *     └      ┘   └                ┘ └     ┘
-     * }
-     * </div>
+     *     └      ┘   └                ┘ └     ┘</pre>
      *
      * @param  sourceCS  the source coordinate system.
      * @param  targetCS  the target coordinate system.

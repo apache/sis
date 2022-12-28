@@ -113,11 +113,10 @@ final class TextGroup {
      * Returns a string representation of this text group for debugging purpose.
      * Example:
      *
-     * {@preformat text
+     * <pre class="text">
      *   TextGroup
      *   ├─ LocalisedCharacterString[#locale-eng, “A text”]
-     *   └─ LocalisedCharacterString[#locale-fra, “Un texte”]
-     * }
+     *   └─ LocalisedCharacterString[#locale-fra, “Un texte”]</pre>
      *
      * @see LocalisedCharacterString#toString()
      */

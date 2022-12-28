@@ -48,10 +48,9 @@ public final strictfp class BufferedGridCoverageTest extends GridCoverage2DTest 
      * Creates a {@link GridCoverage} instance to test with fixed sample values.
      * The coverage returned by this method shall contain the following values:
      *
-     * {@preformat text
+     * <pre class="text">
      *    2    5
-     *   -5  -10
-     * }
+     *   -5  -10</pre>
      *
      * @param  grid  the grid geometry of the coverage to create.
      * @param  sd    the sample dimensions of the coverage to create.
