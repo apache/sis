@@ -32,7 +32,6 @@ import org.apache.sis.internal.storage.Capability;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.4
- * @module
  */
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "xml",

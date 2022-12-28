@@ -79,7 +79,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class CoordinateOperationFinder implements Supplier<double[]> {
     /**
@@ -147,12 +146,12 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * This is the concatenation of {@link #source} "grid to CRS" with {@link #forwardChangeOfCRS},
      * possibly with wraparound handling and cached for reuse by {@link #inverse()}:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     forwardChangeOfCRS = changeOfCRS.getMathTransform();
      *     // + wraparound handling if applicable.
      *     gridToCRS = source.getGridToCRS(anchor);
      *     gridToCRS = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
-     * }
+     *     }
      *
      * @see #gridToCRS()
      */
@@ -163,12 +162,12 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * This is the concatenation of {@link #inverseChangeOfCRS} with inverse of {@link #source} "grid to CRS",
      * possibly with wraparound handling:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     inverseChangeOfCRS = forwardChangeOfCRS.inverse();
      *     // + wraparound handling if applicable.
      *     crsToGrid = gridToCRS.inverse();
      *     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, crsToGrid);
-     * }
+     *     }
      *
      * @see #inverse()
      * @see #applyWraparound(MathTransform)
@@ -209,14 +208,14 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * Whether to disable completely all wraparounds checks.
      * If {@code true}, then calculation done in this class should be equivalent to following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     forwardChangeOfCRS = changeOfCRS.getMathTransform();
      *     inverseChangeOfCRS = forwardChangeOfCRS.inverse();
      *     gridToCRS          = source.getGridToCRS(anchor);
      *     crsToGrid          = gridToCRS.inverse();
      *     gridToCRS          = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
      *     crsToGrid          = MathTransforms.concatenate(inverseChangeOfCRS, crsToGrid);
-     * }
+     *     }
      *
      * <b>Tip:</b> searching usage of this field should help to identify code doing wraparound handling.
      *

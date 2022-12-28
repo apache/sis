@@ -83,7 +83,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultMemberName
  *
  * @since 0.5
- * @module
  */
 public final class Names extends Static {
     /**

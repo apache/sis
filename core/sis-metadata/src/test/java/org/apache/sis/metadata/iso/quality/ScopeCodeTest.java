@@ -35,9 +35,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-508">SIS-508 on issue tracker</a>
  *
  * @since 1.1
- * @module
  */
-public final strictfp class ScopeCodeTest extends TestCase {
+public final class ScopeCodeTest extends TestCase {
     /**
      * The XML fragment used for testing.
      */

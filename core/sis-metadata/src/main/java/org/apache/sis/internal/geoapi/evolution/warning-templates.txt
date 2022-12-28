@@ -6,7 +6,7 @@ Suggestions for the Javadoc of methods having a CodeList<?> return type
      * The argument type will be changed to the {@code NewCodeList} code list when GeoAPI will provide it
      * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
      *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
      *
@@ -28,6 +28,6 @@ Suggestions for the Javadoc of methods having a CodeList<?> return type
      *           }
      *       }
      *   }
-     * }
+     *   }
      * </div>
      *

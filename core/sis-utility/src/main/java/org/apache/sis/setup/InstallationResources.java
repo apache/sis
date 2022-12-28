@@ -55,9 +55,7 @@ import org.apache.sis.internal.util.MetadataServices;
  * In order to allow those classes to discover which resources are available,
  * {@code InstallationResources} implementations shall be declared in the following file:
  *
- * {@preformat text
- *     META-INF/services/org.apache.sis.setup.InstallationResources
- * }
+ * <pre class="text">META-INF/services/org.apache.sis.setup.InstallationResources</pre>
  *
  * Above registration is usually done automatically when extension modules are added on the classpath.
  * For example, adding the {@code org.apache.sis.non-free:sis-epsg} Maven dependency as documented on
@@ -68,7 +66,6 @@ import org.apache.sis.internal.util.MetadataServices;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 public abstract class InstallationResources {
     /**

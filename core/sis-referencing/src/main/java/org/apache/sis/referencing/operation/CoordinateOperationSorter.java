@@ -30,7 +30,6 @@ import org.apache.sis.referencing.CRS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 final class CoordinateOperationSorter implements Comparable<CoordinateOperationSorter> {
     /**

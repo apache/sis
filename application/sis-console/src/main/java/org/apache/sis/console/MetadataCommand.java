@@ -32,7 +32,6 @@ import org.apache.sis.util.collection.TreeTable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 final class MetadataCommand extends FormattedOutputCommand {
     /**

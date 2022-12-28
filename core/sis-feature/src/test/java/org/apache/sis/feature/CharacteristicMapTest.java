@@ -33,10 +33,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(CharacteristicTypeMapTest.class)
-public final strictfp class CharacteristicMapTest extends TestCase {
+public final class CharacteristicMapTest extends TestCase {
     /**
      * Creates an attribute for a temperature measurement of 20°C with a ±0.1°C accuracy.
      *

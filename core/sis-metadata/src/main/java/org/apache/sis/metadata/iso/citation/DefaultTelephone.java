@@ -81,7 +81,6 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
  * @see DefaultContact#getPhones()
  *
  * @since 0.5
- * @module
  */
 @XmlType(name = "CI_Telephone_Type", propOrder = {
     "number",           // New in ISO 19115:2014
@@ -227,7 +226,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      * The argument type will be changed to the {@code TelephoneType} code list when GeoAPI will provide it
      * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
      *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
      *
@@ -242,14 +241,14 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
      *           return valueOf(UnsupportedCodeList.class, code);
      *       }
      *
-     *       &#64;Override
+     *       @Override
      *       public UnsupportedCodeList[] family() {
      *           synchronized (VALUES) {
      *               return VALUES.toArray(new UnsupportedCodeList[VALUES.size()]);
      *           }
      *       }
      *   }
-     * }
+     *   }
      * </div>
      *
      * @param  newValue  the new type of telephone number.

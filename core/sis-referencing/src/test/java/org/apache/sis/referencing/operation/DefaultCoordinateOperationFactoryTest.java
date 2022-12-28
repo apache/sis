@@ -59,20 +59,19 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @DependsOn({
     CoordinateOperationRegistryTest.class,
     CoordinateOperationFinderTest.class
 })
-public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
+public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assertEquals(expected, actual, STRICT);
-     * }
+     *     }
      */
     private static final double STRICT = 0;
 

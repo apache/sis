@@ -36,17 +36,16 @@ import org.apache.sis.feature.AbstractFeature;
  * file will produce 3 {@code Feature} instances instead of 4, because the two lines of features "a"
  * will be merged in a single feature instance:
  *
- * {@preformat text
+ * {@snippet lang="csv" :
  *    a,  10, 150, 11.0 2.0 12.0 3.0
  *    b,  10, 190, 10.0 2.0 11.0 3.0
  *    a, 150, 190, 12.0 3.0 10.0 3.0
  *    c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0
- * }
+ *    }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class MovingFeatureIterator extends FeatureIterator implements Consumer<LogRecord> {
     /**

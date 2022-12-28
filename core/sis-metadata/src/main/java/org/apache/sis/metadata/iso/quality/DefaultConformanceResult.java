@@ -50,7 +50,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_ConformanceResult_Type", propOrder = {
     "specification",

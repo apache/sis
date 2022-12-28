@@ -28,7 +28,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class Messages extends IndexedResourceBundle {
     /**
@@ -39,7 +38,6 @@ public final class Messages extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**

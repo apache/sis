@@ -60,7 +60,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "EX_GeographicDescription_Type")
 @XmlRootElement(name = "EX_GeographicDescription")

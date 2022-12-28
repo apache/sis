@@ -28,7 +28,6 @@ import org.junit.BeforeClass;
  * @author  Alexis Manin (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.CodeTypeTest.class,
@@ -71,7 +70,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.aggregate.CoverageAggregatorTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
-public final strictfp class StorageTestSuite extends TestSuite {
+public final class StorageTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

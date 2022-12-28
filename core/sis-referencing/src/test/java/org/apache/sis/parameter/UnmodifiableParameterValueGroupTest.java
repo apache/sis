@@ -32,10 +32,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn(UnmodifiableParameterValueTest.class)
-public final strictfp class UnmodifiableParameterValueGroupTest extends TestCase {
+public final class UnmodifiableParameterValueGroupTest extends TestCase {
     /**
      * Tests creation of an {@link UnmodifiableParameterValueGroup} and verify the values.
      */

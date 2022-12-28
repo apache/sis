@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * This is used in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic}.
  * Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <fileType>
  *     <gcx:MimeFileType type="image/tiff">Graphic TIFF</gcx:MimeFileType>
  *   </fileType>
@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "MimeFileType_PropertyType")
 @XmlRootElement(name = "MimeFileType")

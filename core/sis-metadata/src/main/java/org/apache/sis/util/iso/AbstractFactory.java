@@ -27,7 +27,6 @@ import org.apache.sis.internal.simple.SimpleCitation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public abstract class AbstractFactory implements Factory {
     /**

@@ -45,14 +45,13 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({
     SubTypesTest.class,
     DefaultGeographicCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultCompoundCRSTest extends TestCase {
+public final class DefaultCompoundCRSTest extends TestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
      */

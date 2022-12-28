@@ -25,7 +25,6 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (IRD)
  * @version 0.7
  * @since   0.7
- * @module
  */
 final class AxisName {
     /**

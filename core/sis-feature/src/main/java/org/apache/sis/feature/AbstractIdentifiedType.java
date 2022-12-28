@@ -42,7 +42,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 public class AbstractIdentifiedType implements Deprecable, Serializable {
     /**

@@ -47,7 +47,7 @@ import org.apache.sis.measure.Units;
  * The former expresses some measurements with an object of XML type {@code gco:Distance}
  * (as a substitution for XML type {@code gco:Measure}):
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <mri:distance>
  *     <gco:Distance uom="http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])">1000.0</gco:Distance>
  *   </mri:distance>
@@ -55,7 +55,7 @@ import org.apache.sis.measure.Units;
  *
  * while GML will rather use a a syntax like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:semiMajorAxis uom="urn:ogc:def:uom:EPSG::9001">6378137</gml:semiMajorAxis>
  * }
  *
@@ -70,7 +70,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.internal.jaxb.gco.UnitAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MeasureType")
 public final class Measure {
@@ -126,16 +125,13 @@ public final class Measure {
      * This method is invoked during XML marshalling. For example if the units are "metre",
      * then this method returns one of the following strings, in preference order:
      *
-     * {@preformat text
-     *     urn:ogc:def:uom:EPSG::9001
-     * }
+     * <pre class="text">urn:ogc:def:uom:EPSG::9001</pre>
      *
      * or one of the following:
      *
-     * {@preformat text
-     *     http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
-     *     http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
-     * }
+     * <pre class="text">
+     * http://www.isotc211.org/2005/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])
+     * http://schemas.opengis.net/iso/19139/20070417/resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])</pre>
      *
      * @return the string representation of the unit of measure.
      *

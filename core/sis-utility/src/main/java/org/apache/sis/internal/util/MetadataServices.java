@@ -42,7 +42,6 @@ import org.opengis.util.CodeList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.6
- * @module
  */
 public class MetadataServices extends OptionalDependency {
     /**

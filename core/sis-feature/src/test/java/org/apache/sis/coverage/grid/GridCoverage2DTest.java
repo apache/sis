@@ -56,9 +56,8 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public strictfp class GridCoverage2DTest extends TestCase {
+public class GridCoverage2DTest extends TestCase {
     /**
      * Width and height of the grid tested in this class.
      */
@@ -69,10 +68,9 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * The image size is 2×2 pixels, the "grid to CRS" transform is identity,
      * the range of sample values is [-97.5 … 105] metres and the packed values are:
      *
-     * {@preformat text
+     * <pre class="text">
      *    2    5
-     *   -5  -10
-     * }
+     *   -5  -10</pre>
      */
     private GridCoverage createTestCoverage() {
         return createTestCoverage(MathTransforms.identity(2));
@@ -97,10 +95,9 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * Creates a {@link GridCoverage} instance to test with fixed sample values.
      * The coverage returned by this method shall contain the following values:
      *
-     * {@preformat text
+     * <pre class="text">
      *    2    5
-     *   -5  -10
-     * }
+     *   -5  -10</pre>
      *
      * @param  grid  the grid geometry of the coverage to create.
      * @param  sd    the sample dimensions of the coverage to create.

@@ -33,10 +33,9 @@ import static java.lang.StrictMath.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class OrthographicTest extends MapProjectionTestCase {
+public final class OrthographicTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Orthographic} using spherical formulas.
      *

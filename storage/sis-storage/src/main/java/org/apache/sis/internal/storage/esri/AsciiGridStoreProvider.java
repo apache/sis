@@ -40,7 +40,6 @@ import org.apache.sis.internal.storage.PRJDataStore;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 @StoreMetadata(formatName    = AsciiGridStoreProvider.NAME,
                fileSuffixes  = {"asc", "grd", "agr", "aig"},

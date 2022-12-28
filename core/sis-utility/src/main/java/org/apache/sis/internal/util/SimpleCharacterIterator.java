@@ -28,7 +28,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public class SimpleCharacterIterator implements CharacterIterator, CharSequence, Serializable {
     /**

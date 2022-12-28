@@ -38,7 +38,6 @@ import org.apache.sis.util.ArraysExt;
  * @param  <E>  type of elements in this bag.
  *
  * @since 1.0
- * @module
  */
 public abstract class Bag<E> extends AbstractCollection<E> {
     /**

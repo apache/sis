@@ -73,7 +73,6 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 public final class WKTUtilities extends Static {
     /**

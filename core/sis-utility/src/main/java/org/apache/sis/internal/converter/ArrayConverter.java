@@ -38,7 +38,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class ArrayConverter<S,T> extends SystemConverter<S,T> {
     /**

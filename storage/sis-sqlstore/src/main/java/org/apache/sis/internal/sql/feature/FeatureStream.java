@@ -57,7 +57,6 @@ import org.apache.sis.internal.geoapi.filter.SortBy;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class FeatureStream extends DeferredStream<AbstractFeature> {
     /**

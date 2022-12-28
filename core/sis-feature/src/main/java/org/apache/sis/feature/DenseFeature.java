@@ -37,7 +37,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 final class DenseFeature extends AbstractFeature implements Cloneable {
     /**

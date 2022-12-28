@@ -35,7 +35,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class DeferredProperty {
     /**

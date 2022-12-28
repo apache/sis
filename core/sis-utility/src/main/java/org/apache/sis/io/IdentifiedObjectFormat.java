@@ -34,7 +34,6 @@ import org.apache.sis.internal.util.MetadataServices;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")   // Because this class does not contain field that need to be cloned.
 final class IdentifiedObjectFormat extends Format {

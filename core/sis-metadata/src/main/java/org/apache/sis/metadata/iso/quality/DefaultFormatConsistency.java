@@ -42,7 +42,6 @@ import org.opengis.metadata.quality.FormatConsistency;
  * @author  Touraïvane (IRD)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_FormatConsistency_Type")
 @XmlRootElement(name = "DQ_FormatConsistency")

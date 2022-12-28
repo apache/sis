@@ -32,7 +32,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @author  Cullen Rombach (Image Matters)
  * @since   1.0
  * @since   0.5
- * @module
  */
 public final class CI_Responsibility extends PropertyType<CI_Responsibility, DefaultResponsibility> {
     /**

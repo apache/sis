@@ -45,7 +45,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * @see AttributeTypeBuilder#addCharacteristic(Class)
  *
  * @since 0.8
- * @module
  */
 public final class CharacteristicTypeBuilder<V> extends TypeBuilder {
     /**

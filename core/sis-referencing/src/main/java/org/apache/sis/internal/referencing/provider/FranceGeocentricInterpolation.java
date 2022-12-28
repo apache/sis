@@ -89,7 +89,6 @@ import static org.apache.sis.internal.util.Constants.DIM;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 public class FranceGeocentricInterpolation extends GeodeticOperation {

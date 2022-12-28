@@ -33,7 +33,6 @@ import org.apache.sis.coverage.SampleDimension;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     /**

@@ -27,7 +27,6 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class InvalidShapefileFormatException extends DataStoreException {
     /** Serial UID. */

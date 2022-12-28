@@ -45,10 +45,10 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * The following example creates a set of {@link org.opengis.referencing.cs.AxisDirection}s
  * for a (<var>x</var>,<var>y</var>,<var>z</var>) coordinate system:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *   CodeListSet<AxisDirection> codes = new CodeListSet<>(AxisDirection.class);
  *   Collections.addAll(codes, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP),
- * }
+ *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
@@ -58,7 +58,6 @@ import org.apache.sis.internal.util.CheckedArrayList;
  * @see java.util.EnumSet
  *
  * @since 0.3
- * @module
  */
 public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
         implements CheckedContainer<E>, Cloneable, Serializable

@@ -31,7 +31,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 abstract class EvaluatorWrapper implements GridCoverage.Evaluator {
     /**

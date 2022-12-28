@@ -37,7 +37,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see CoverageExplorer#setCoverage(ImageRequest)
  *
  * @since 1.1
- * @module
  */
 public class ImageRequest {
     /**

@@ -40,10 +40,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(StringConverterTest.class)
-public final strictfp class PathConverterTest extends TestCase {
+public final class PathConverterTest extends TestCase {
     /**
      * Assumes that the platform file system has a Unix-style root.
      * Windows platform has driver letters instead, like "C:\\",

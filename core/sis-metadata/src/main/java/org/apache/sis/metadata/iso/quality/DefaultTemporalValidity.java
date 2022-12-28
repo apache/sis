@@ -43,7 +43,6 @@ import org.opengis.metadata.quality.TemporalValidity;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_TemporalValidity_Type")
 @XmlRootElement(name = "DQ_TemporalValidity")

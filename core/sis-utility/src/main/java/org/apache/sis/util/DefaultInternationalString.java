@@ -49,7 +49,6 @@ import org.apache.sis.util.collection.Containers;
  * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
  *
  * @since 1.1
- * @module
  */
 public class DefaultInternationalString extends AbstractInternationalString implements Serializable {
     /**

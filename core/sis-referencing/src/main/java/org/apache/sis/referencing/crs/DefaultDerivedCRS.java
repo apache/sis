@@ -98,7 +98,6 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createDerivedCRS(String)
  *
  * @since 0.6
- * @module
  */
 @XmlType(name="DerivedCRSType", propOrder = {
     "baseCRS",

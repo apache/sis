@@ -43,7 +43,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *
  * <p>For example, the following code:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     TableAppender table = new TableAppender(System.out);
  *     table.nextLine('═');
  *     table.append("English\tFrench\tr.e.d.\n");
@@ -54,11 +54,11 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *          .append("Mars\tMars\t0.532\n");
  *     table.nextLine('═');
  *     table.flush();
- * }
+ *     }
  *
  * produces the following output:
  *
- * {@preformat text
+ * <pre class="text">
  *   ╔═════════╤═════════╤════════╗
  *   ║ English │ French  │ r.e.d. ║
  *   ╟─────────┼─────────┼────────╢
@@ -66,8 +66,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  *   ║ Venus   │ Vénus   │ 0.949  ║
  *   ║ Earth   │ Terre   │ 1.00   ║
  *   ║ Mars    │ Mars    │ 0.532  ║
- *   ╚═════════╧═════════╧════════╝
- * }
+ *   ╚═════════╧═════════╧════════╝</pre>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.0
@@ -75,7 +74,6 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * @see org.apache.sis.util.collection.TreeTableFormat
  *
  * @since 0.3
- * @module
  */
 public class TableAppender extends Appender implements Flushable {
     /**
@@ -885,7 +883,6 @@ public class TableAppender extends Appender implements Flushable {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class Cell {
         /**

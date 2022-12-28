@@ -33,7 +33,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Cloneable {
     /**

@@ -31,7 +31,6 @@ import org.apache.sis.storage.Resource;
  * @see StoreListeners#close()
  *
  * @version 1.3
- * @module
  */
 public class CloseEvent extends CascadedStoreEvent<CloseEvent> {
     /**

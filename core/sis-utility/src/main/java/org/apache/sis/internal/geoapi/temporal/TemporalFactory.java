@@ -26,7 +26,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
- * @module
  */
 public interface TemporalFactory {
     Instant createInstant(Date date);

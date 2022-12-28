@@ -33,9 +33,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
-public final strictfp class ResidualGridTest extends TestCase {
+public final class ResidualGridTest extends TestCase {
     /**
      * The grid to test.
      */
@@ -135,10 +134,9 @@ public final strictfp class ResidualGridTest extends TestCase {
      * Tests {@link ResidualGrid#derivativeInCell(double, double)}.
      * The Jacobian is computed with those values:
      *
-     * {@preformat text
+     * <pre class="text">
      *   (0,4)   (2,3)
-     *   (1,4)   (3,3)
-     * }
+     *   (1,4)   (3,3)</pre>
      *
      * So this mean for example that when moving from 1 cell to the right, the residual change from (0,4) to (2,3).
      * Consequently, the <var>x</var> position is increased from (2-0) = 2 cells in addition to the move to the right

@@ -52,10 +52,9 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 @DependsOn({MetadataTest.class, ReaderTest.class})
-public final strictfp class WriterTest extends TestCase {
+public final class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */

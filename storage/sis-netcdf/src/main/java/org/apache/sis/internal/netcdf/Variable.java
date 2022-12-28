@@ -58,7 +58,6 @@ import static org.apache.sis.internal.storage.StoreUtilities.ALLOW_LAST_RESORT_S
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class Variable extends Node {
     /**
@@ -977,7 +976,7 @@ public abstract class Variable extends Node {
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Example:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DIMENSIONS:
      *     time: 3
      *     lat : 2
@@ -992,8 +991,7 @@ public abstract class Variable extends Node {
      *     (1,0,0) (1,0,1) (1,0,2) (1,0,3)
      *     (1,1,0) (1,1,1) (1,1,2) (1,1,3)
      *     (2,0,0) (2,0,1) (2,0,2) (2,0,3)
-     *     (2,1,0) (2,1,1) (2,1,2) (2,1,3)
-     * }
+     *     (2,1,0) (2,1,1) (2,1,2) (2,1,3)</pre>
      *
      * If {@link #hasRealValues()} returns {@code true}, then this method shall
      * {@linkplain #replaceNaN(Object) replace fill values and missing values by NaN values}.

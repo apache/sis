@@ -40,7 +40,6 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class PolarStereographicA extends AbstractStereographic {

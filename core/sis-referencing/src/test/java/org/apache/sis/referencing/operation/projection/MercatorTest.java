@@ -51,10 +51,9 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn(ConformalProjectionTest.class)
-public final strictfp class MercatorTest extends MapProjectionTestCase {
+public final class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mercator} for a sphere or an ellipsoid.
      * The new instance is stored in the inherited {@link #transform} field.

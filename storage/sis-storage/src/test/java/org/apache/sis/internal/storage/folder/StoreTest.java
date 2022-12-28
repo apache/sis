@@ -45,9 +45,8 @@ import static org.junit.Assume.assumeTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * Gets the path to the test directory. If the directory is not accessible through the file system
      * (for example if the test data are read from a JAR file), then skip the tests. This happen if the

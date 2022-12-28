@@ -79,13 +79,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Vadim Semenov
  * @version 1.2
  * @since   0.7
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
     org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class
 })
-public final strictfp class EPSGFactoryTest extends TestCase {
+public final class EPSGFactoryTest extends TestCase {
     /**
      * Creates the factory to use for all tests in this class.
      *

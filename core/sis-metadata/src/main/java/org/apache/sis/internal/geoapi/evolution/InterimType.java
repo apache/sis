@@ -29,7 +29,6 @@ import java.lang.reflect.Method;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  *
  * @see Interim#getReturnType(Method)
  */

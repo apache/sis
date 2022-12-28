@@ -40,13 +40,12 @@ import static org.apache.sis.internal.util.Constants.OGC;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @DependsOn({
     TypesTest.class,
     DefaultNameFactoryTest.class
 })
-public final strictfp class TypeNamesTest extends TestCase {
+public final class TypeNamesTest extends TestCase {
     /**
      * Verifies that the call to {@link TypeNames#toTypeName(NameFactory, Class)} returns a {@code TypeName} having the
      * given name and namespace, then tests the reverse operation with {@link TypeNames#toClass(String, String)}.

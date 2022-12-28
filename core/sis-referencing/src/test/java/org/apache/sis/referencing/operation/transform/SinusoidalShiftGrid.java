@@ -36,10 +36,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @SuppressWarnings("serial")                             // Not intended to be serialized.
-final strictfp class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
+final class SinusoidalShiftGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
      * Number of source and target dimensions of the grid.
      */

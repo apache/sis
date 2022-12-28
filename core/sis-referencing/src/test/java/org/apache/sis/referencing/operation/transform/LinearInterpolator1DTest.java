@@ -33,9 +33,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys).
  * @version 1.0
  * @since   0.7
- * @module
  */
-public final strictfp class LinearInterpolator1DTest extends MathTransformTestCase {
+public final class LinearInterpolator1DTest extends MathTransformTestCase {
     /**
      * The values of the <i>y=f(x)</i> function to test.
      */

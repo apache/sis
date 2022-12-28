@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 abstract class FieldType extends AbstractIdentifiedType {
     /**
@@ -123,9 +122,7 @@ abstract class FieldType extends AbstractIdentifiedType {
      * Helper method for implementation of {@code PropertyType.toString()} methods.
      * Example:
      *
-     * {@preformat text
-     *     PropertyType[“name” : ValueClass]
-     * }
+     * <pre class="text">PropertyType[“name” : ValueClass]</pre>
      *
      * @param deprecated  whether the type to format is deprecated.
      * @param className   the interface name of the object on which {@code toString()} is invoked.
@@ -152,9 +149,7 @@ abstract class FieldType extends AbstractIdentifiedType {
      * Helper method for implementation of {@code Property.toString()} methods.
      * Example:
      *
-     * {@preformat text
-     *     Property[“name” : ValueClass] = {value1, value2, ...}
-     * }
+     * <pre class="text">Property[“name” : ValueClass] = {value1, value2, ...}</pre>
      *
      * @param deprecated  whether the type to format is deprecated.
      * @param className   the interface name of the object on which {@code toString()} is invoked.

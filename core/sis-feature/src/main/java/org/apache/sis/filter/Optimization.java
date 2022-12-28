@@ -52,10 +52,10 @@ import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
  * This class is <strong>not</strong> thread-safe.
  * A new instance shall be created for each thread applying optimizations. Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Filter<R> filter = ...;
  *     filter = new Optimization().apply(filter);
- * }
+ *     }
  *
  * <h2>How optimizations are applied</h2>
  * Optimizations are specific to each expression and filter type.
@@ -74,7 +74,6 @@ import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class Optimization {
     /**

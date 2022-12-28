@@ -47,13 +47,12 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn({
     ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
-public final strictfp class MetadataReaderTest extends TestCase {
+public final class MetadataReaderTest extends TestCase {
     /**
      * Tests {@link MetadataReader#split(String)}.
      */

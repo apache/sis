@@ -70,9 +70,8 @@ import junit.framework.AssertionFailedError;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
-public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
+public abstract class AnnotationConsistencyCheck extends TestCase {
     /**
      * The {@value} string used in JAXB annotations for default names or namespaces.
      */
@@ -135,7 +134,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      * directly inside its parent as we usually do in XML. Instead, we have a {@code <CI_Contact>}.
      * inside the {@code <contactInfo>} element as below:</p>
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <CI_ResponsibleParty>
      *     <contactInfo>
      *       <CI_Contact>
@@ -143,7 +142,7 @@ public abstract strictfp class AnnotationConsistencyCheck extends TestCase {
      *       </CI_Contact>
      *     </contactInfo>
      *   </CI_ResponsibleParty>
-     * }
+     *   }
      *
      * To reflect that fact, this method shall return the internal {@code CI_Contact}
      * wrapper class for the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} argument.

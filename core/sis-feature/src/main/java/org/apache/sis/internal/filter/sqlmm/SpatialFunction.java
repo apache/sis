@@ -46,7 +46,6 @@ import org.apache.sis.filter.Expression;
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Object>, Optimization.OnExpression<R,Object> {
     /**

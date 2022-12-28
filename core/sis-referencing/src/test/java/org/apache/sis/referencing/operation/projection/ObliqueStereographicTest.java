@@ -43,13 +43,12 @@ import static org.apache.sis.test.Assert.*;
  * @author  Emmanuel Giasson (Thales)
  * @version 1.2
  * @since   0.7
- * @module
  */
 @DependsOn({
     InitializerTest.class,
     NormalizedProjectionTest.class
 })
-public final strictfp class ObliqueStereographicTest extends MapProjectionTestCase {
+public final class ObliqueStereographicTest extends MapProjectionTestCase {
     /**
      * Parameter values provided by the IOGP Report 373-07-02 –
      * <cite>Coordinate conversions and transformation including formulas</cite>

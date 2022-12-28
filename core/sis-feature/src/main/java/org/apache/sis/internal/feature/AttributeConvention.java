@@ -67,7 +67,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public final class AttributeConvention extends Static {
     /**

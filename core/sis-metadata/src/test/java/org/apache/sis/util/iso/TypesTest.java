@@ -46,9 +46,8 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class TypesTest extends TestCase {
+public final class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#toInternationalString(Map, String)} method.
      */

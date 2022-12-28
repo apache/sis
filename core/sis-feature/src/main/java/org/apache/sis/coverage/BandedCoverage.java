@@ -49,7 +49,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class BandedCoverage {
     /**
@@ -134,7 +133,6 @@ public abstract class BandedCoverage {
      * @see BandedCoverage#evaluator()
      *
      * @since 1.1
-     * @module
      */
     public interface Evaluator extends Function<DirectPosition, double[]> {
         /**

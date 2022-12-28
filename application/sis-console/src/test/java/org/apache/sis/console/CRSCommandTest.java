@@ -31,10 +31,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class CRSCommandTest extends TestCase {
+public final class CRSCommandTest extends TestCase {
     /**
      * The Well Known Text for EPSG:4326 as a regular expression.
      * This string uses the native line separator. Consequently, test cases comparing

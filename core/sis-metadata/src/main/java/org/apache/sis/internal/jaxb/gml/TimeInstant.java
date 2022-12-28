@@ -38,7 +38,6 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "TimeInstantType")
 @XmlRootElement(name="TimeInstant")

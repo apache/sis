@@ -113,7 +113,6 @@ import org.apache.sis.setup.OptionKey;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 public class WorldFileStore extends PRJDataStore {
     /**

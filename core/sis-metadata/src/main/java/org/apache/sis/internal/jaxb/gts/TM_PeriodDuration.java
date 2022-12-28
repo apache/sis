@@ -43,7 +43,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
     /**

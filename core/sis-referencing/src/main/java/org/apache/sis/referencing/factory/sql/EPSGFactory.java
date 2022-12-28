@@ -83,7 +83,6 @@ import org.apache.sis.util.Localized;
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
  * @since 0.7
- * @module
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
@@ -504,9 +503,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * wanting to return instances of their own {@link EPSGDataAccess} subclass.
      * The default implementation is simply:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new EPSGDataAccess(this, connection, translator);
-     * }
+     *     }
      *
      * Subclasses can override this method with a similar code but with {@code new EPSGDataAccess(…)} replaced
      * by {@code new MyDataAccessSubclass(…)}.

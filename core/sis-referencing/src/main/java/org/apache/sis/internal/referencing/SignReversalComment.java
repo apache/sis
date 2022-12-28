@@ -35,7 +35,6 @@ import org.apache.sis.util.AbstractInternationalString;
  * @see org.apache.sis.internal.referencing.provider.AbstractProvider#inverse()
  *
  * @since 0.7
- * @module
  */
 public final class SignReversalComment extends AbstractInternationalString implements Serializable {
     /**

@@ -83,7 +83,6 @@ import org.apache.sis.util.Classes;
  * @param <T>  the type of objects to be included in this set.
  *
  * @since 0.7
- * @module
  */
 public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet<T> implements CheckedContainer<T>, Localized {
     /**

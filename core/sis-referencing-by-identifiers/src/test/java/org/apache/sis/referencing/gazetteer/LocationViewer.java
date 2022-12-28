@@ -49,7 +49,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @Debug
 @SuppressWarnings("serial")

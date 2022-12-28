@@ -55,7 +55,7 @@ import ucar.nc2.constants.CF;
  * for decoding <cite>Shikisai</cite> GCOM-C files produced by Japan Aerospace Exploration Agency (JAXA), version 1.00.
  * The file format is HDF5 and variables are like below (simplified):
  *
- * {@preformat text
+ * <pre class="text">
  *     group: Geometry_data {
  *         variables:
  *             float Latitude(161, 126)
@@ -95,8 +95,7 @@ import ucar.nc2.constants.CF;
  *         string :Contact_point = "JAXA/Earth Observation Research Center (EORC)"
  *         string :Processing_organization = "JAXA/GCOM-C science project"
  *         string :Processing_UT = "20181202 04:42:09"
- *     }
- * }
+ *     }</pre>
  *
  * Observations:
  * <ul class="verbose">
@@ -123,7 +122,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 public final class GCOM_C extends Convention {
     /**
@@ -360,7 +358,7 @@ public final class GCOM_C extends Convention {
      * Returns the map projection definition for the given data variable.
      * This method expects the following attribute names in the {@value #GEOMETRY_DATA} group:
      *
-     * {@preformat text
+     * <pre class="text">
      *     group: Geometry_data {
      *         // group attributes:
      *         string Image_projection      = "EQA (sinusoidal equal area) projection from 0-deg longitude"
@@ -372,8 +370,7 @@ public final class GCOM_C extends Convention {
      *         float  Lower_left_latitude   =  70.0
      *         float  Lower_right_longitude =  87.714134
      *         float  Lower_right_latitude  =  70.0
-     *     }
-     * }
+     *     }</pre>
      *
      * @param  node  the group of variables from which to read attributes.
      * @return the map projection definition as a modifiable map, or {@code null} if none.

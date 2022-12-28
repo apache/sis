@@ -34,13 +34,12 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn({
     RangeTest.class,
     org.apache.sis.util.NumbersTest.class
 })
-public final strictfp class NumberRangeTest extends TestCase {
+public final class NumberRangeTest extends TestCase {
     /**
      * Tests {@link NumberRange#isCacheable(Number)}.
      */

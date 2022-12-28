@@ -106,7 +106,6 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * @see CRS
  *
  * @since 0.3
- * @module
  */
 public final class Envelopes extends Static {
     /**

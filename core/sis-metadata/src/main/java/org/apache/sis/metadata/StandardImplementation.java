@@ -33,7 +33,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class StandardImplementation extends MetadataStandard {
     /**

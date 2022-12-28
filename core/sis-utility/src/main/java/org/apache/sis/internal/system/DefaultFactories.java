@@ -40,7 +40,6 @@ import static java.util.logging.Logger.getLogger;
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
  *
  * @since 0.3
- * @module
  */
 public final class DefaultFactories extends SystemListener {
     /**

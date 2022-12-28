@@ -39,11 +39,10 @@ import org.junit.Ignore;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn(ProjectiveTransformTest.class)
-public final strictfp class LinearTransformTest extends ProjectiveTransformTest {
+public final class LinearTransformTest extends ProjectiveTransformTest {
     /**
      * Creates a new test suite.
      */

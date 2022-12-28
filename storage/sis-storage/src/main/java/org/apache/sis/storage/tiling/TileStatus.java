@@ -34,7 +34,6 @@ import java.io.IOException;
  * @see TileMatrix#getTileStatus(long...)
  *
  * @since 1.2
- * @module
  */
 public enum TileStatus {
     /**

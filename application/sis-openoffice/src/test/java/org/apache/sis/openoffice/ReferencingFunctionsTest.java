@@ -35,10 +35,9 @@ import static org.junit.Assume.assumeFalse;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(TransformerTest.class)
-public final strictfp class ReferencingFunctionsTest extends TestCase {
+public final class ReferencingFunctionsTest extends TestCase {
     /**
      * The instance to use for testing purpose.
      */

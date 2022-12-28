@@ -56,7 +56,6 @@ import org.opengis.util.InternationalString;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {
     "fileName",

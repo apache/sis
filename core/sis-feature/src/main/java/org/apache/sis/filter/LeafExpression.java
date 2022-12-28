@@ -47,7 +47,6 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @param  <V>  the type of value computed by the expression.
  *
  * @since 1.1
- * @module
  */
 abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V> {
     /**

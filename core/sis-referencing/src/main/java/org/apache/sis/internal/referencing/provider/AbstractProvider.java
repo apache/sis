@@ -54,7 +54,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @XmlTransient
 public abstract class AbstractProvider extends DefaultOperationMethod implements MathTransformProvider {

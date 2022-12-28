@@ -31,7 +31,6 @@ import static org.apache.sis.util.CharSequences.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 final class XPath extends Static {
     /**

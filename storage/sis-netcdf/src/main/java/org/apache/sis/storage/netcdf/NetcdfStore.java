@@ -63,7 +63,6 @@ import ucar.nc2.constants.CDM;
  * @see NetcdfStoreProvider
  *
  * @since 0.3
- * @module
  */
 public class NetcdfStore extends DataStore implements Aggregate {
     /**

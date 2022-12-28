@@ -57,7 +57,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "CI_OnlineResource_Type", propOrder = {
     "linkage",
@@ -325,15 +324,14 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
      * Returns the request used to access the resource depending on the protocol.
      * This is used mainly for POST requests.
      *
-     * <div class="note"><b>Example:</b>
-     * {@preformat xml
+     * <h4>Example</h4>
+     * {@snippet lang="xml" :
      *     <GetFeature service="WFS" version="2.0.0"
      *                 outputFormat="application/gml+xml;verson=3.2"
      *                 xmlns="(…snip…)">
      *         <Query typeNames="Roads"/>
      *     </GetFeature>
-     * }
-     * </div>
+     *     }
      *
      * @return Request used to access the resource.
      *

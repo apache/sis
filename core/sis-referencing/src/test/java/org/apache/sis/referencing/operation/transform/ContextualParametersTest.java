@@ -40,10 +40,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
 @DependsOn(DefaultParameterDescriptorGroupTest.class)
-public final strictfp class ContextualParametersTest extends TestCase {
+public final class ContextualParametersTest extends TestCase {
     /**
      * Creates an instance to use for testing purpose.
      */

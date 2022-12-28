@@ -68,7 +68,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see ColorModelFactory#createColorModel(int, int, int, Collection)
  *
  * @since 1.1
- * @module
  */
 public final class Colorizer {
     /**

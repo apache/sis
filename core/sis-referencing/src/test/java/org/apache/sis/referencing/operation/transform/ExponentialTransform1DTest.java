@@ -34,13 +34,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn({
     CoordinateDomainTest.class,
     LinearTransformTest.class
 })
-public final strictfp class ExponentialTransform1DTest extends MathTransformTestCase {
+public final class ExponentialTransform1DTest extends MathTransformTestCase {
     /**
      * Arbitrary parameter of the exponential transform to be tested.
      */

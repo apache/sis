@@ -40,9 +40,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since 0.7
- * @module
  */
-public final strictfp class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
+public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code GR3DF97A.txt}" file.
      * The amount of data in this test file is less than 0.14% of the original file.

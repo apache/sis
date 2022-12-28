@@ -88,7 +88,6 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 final class Store extends URIDataStore implements FeatureSet {
     /**
@@ -340,9 +339,9 @@ final class Store extends URIDataStore implements FeatureSet {
      * The envelope returned by this method will be stored in the {@link #envelope} field.
      *
      * <p>Example:</p>
-     * {@preformat text
-     *   &#64;stboundedby, urn:ogc:def:crs:CRS:1.3:84, 2D, 50.23 9.23, 50.31 9.27, 2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec
-     * }
+     * {@snippet lang="csv" :
+     *   @stboundedby, urn:ogc:def:crs:CRS:1.3:84, 2D, 50.23 9.23, 50.31 9.27, 2012-01-17T12:33:41Z, 2012-01-17T12:37:00Z, sec
+     *   }
      *
      * This method sets {@link #timeEncoding} and {@link #spatialDimensionCount} as a side-effect.
      *
@@ -496,9 +495,9 @@ final class Store extends URIDataStore implements FeatureSet {
      * The feature type returned by this method will be stored in the {@link #featureType} field.
      *
      * <p>Example:</p>
-     * {@preformat text
-     *   &#64;columns, mfidref, trajectory, state,xsd:token, "type code",xsd:integer
-     * }
+     * {@snippet lang="csv" :
+     *   @columns, mfidref, trajectory, state,xsd:token, "type code",xsd:integer
+     *   }
      *
      * This method needs {@link #timeEncoding} and {@link #dissociate} to be computed.
      * This methods sets {@link #hasTrajectories} as a side-effect.
@@ -598,9 +597,9 @@ final class Store extends URIDataStore implements FeatureSet {
      * The value returned by this method will be stored in the {@link #foliation} field.
      *
      * <p>Example:</p>
-     * {@preformat text
-     *   &#64;foliation,Sequential
-     * }
+     * {@snippet lang="csv" :
+     *   @foliation,Sequential
+     *   }
      *
      * @param  elements  the line elements. The first elements should be {@code "@foliation"}.
      * @return the foliation metadata.

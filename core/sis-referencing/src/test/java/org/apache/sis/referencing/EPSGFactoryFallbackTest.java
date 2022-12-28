@@ -54,13 +54,12 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 @DependsOn({
   StandardDefinitionsTest.class,
   CommonCRSTest.class
 })
-public final strictfp class EPSGFactoryFallbackTest extends TestCase {
+public final class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Tests {@link EPSGFactoryFallback#getAuthorityCodes(Class)}.
      *

@@ -53,7 +53,6 @@ import org.apache.sis.util.ArraysExt;
  * @see Decoder#getGridCandidates()
  *
  * @since 0.3
- * @module
  */
 public abstract class Grid extends NamedElement {
     /**

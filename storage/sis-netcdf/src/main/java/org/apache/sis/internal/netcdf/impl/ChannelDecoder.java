@@ -79,17 +79,16 @@ import org.apache.sis.math.Vector;
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
  * @since 0.3
- * @module
  */
 public final class ChannelDecoder extends Decoder {
     /**
      * The netCDF magic number expected in the first integer of the stream.
      * The comparison shall ignore the 8 lowest bits, as in the following example:
      *
-     * {@preformat java
-     *     int header = ...; // The first integer in the stream.
+     * {@snippet lang="java" :
+     *     int header = ...;     // The first integer in the stream.
      *     boolean isNetCDF = (header & 0xFFFFFF00) == MAGIC_NUMBER;
-     * }
+     *     }
      */
     public static final int MAGIC_NUMBER = ('C' << 24) | ('D' << 16) | ('F' <<  8);
 

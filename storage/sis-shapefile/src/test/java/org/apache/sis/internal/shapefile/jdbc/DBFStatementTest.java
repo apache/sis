@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class DBFStatementTest extends AbstractTestBaseForInternalJDBC {
     /**

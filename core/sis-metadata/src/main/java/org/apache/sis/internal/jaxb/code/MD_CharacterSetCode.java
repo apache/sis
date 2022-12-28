@@ -38,7 +38,6 @@ import org.apache.sis.internal.jaxb.cat.CodeListUID;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {
     /**

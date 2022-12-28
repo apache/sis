@@ -27,9 +27,7 @@ import org.apache.sis.util.LenientComparable;
  * instead of using the more generic {@link LinearConverter} class because we want to avoid performing
  * any arithmetic operation in the {@link #convert(double)} method, in order to preserve negative zero:
  *
- * {@preformat java
- *     convert(-0d) ≡ -0d
- * }
+ * <pre class="math">convert(-0d) ≡ -0d</pre>
  *
  * When the value is used in a map projection parameter, its sign can have implications in the chain of
  * concatenated transforms. The final result is numerically equivalent, but intermediate steps may differ
@@ -38,7 +36,6 @@ import org.apache.sis.util.LenientComparable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 final class IdentityConverter extends AbstractConverter implements LenientComparable {
     /**

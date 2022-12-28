@@ -54,7 +54,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
  *
  * @since 1.0
- * @module
  */
 public class ReferencingFactoryContainer {
     /**

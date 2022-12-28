@@ -60,7 +60,6 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  * @see Geometries#wrap(Object)
  *
  * @since 0.8
- * @module
  */
 public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geometry {
     /**

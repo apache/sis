@@ -36,7 +36,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @XmlTransient
 final class Sphere extends DefaultEllipsoid {

@@ -44,7 +44,6 @@ import static java.lang.Math.abs;
  * @see <a href="https://pomax.github.io/bezierinfo/">A Primer on Bézier Curves</a>
  *
  * @since 1.0
- * @module
  */
 public abstract class Bezier {
     /**

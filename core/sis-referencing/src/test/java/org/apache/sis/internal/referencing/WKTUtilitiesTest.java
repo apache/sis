@@ -34,10 +34,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @DependsOn(ReferencingUtilitiesTest.class)
-public final strictfp class WKTUtilitiesTest extends TestCase {
+public final class WKTUtilitiesTest extends TestCase {
     /**
      * Tests {@link WKTUtilities#toType(Class, Class)}.
      *

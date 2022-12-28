@@ -35,7 +35,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public enum DataDirectory {
     /**

@@ -31,7 +31,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param  <G>  root class of geometry instances of the underlying library.
  *
  * @since 1.1
- * @module
  */
 public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
     /**

@@ -40,9 +40,8 @@ import org.apache.sis.feature.AbstractOperation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
-public final strictfp class AttributeConventionTest extends TestCase {
+public final class AttributeConventionTest extends TestCase {
     /**
      * Tests {@link AttributeConvention#contains(GenericName)} method.
      */

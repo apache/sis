@@ -60,7 +60,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         implements CheckedContainer<TreeTable.Node>, Serializable

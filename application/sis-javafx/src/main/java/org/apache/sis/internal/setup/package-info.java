@@ -24,6 +24,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 package org.apache.sis.internal.setup;

@@ -29,7 +29,6 @@ import org.postgresql.util.PGobject;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class ObjectGetter extends ValueGetter<Object> {
     /**

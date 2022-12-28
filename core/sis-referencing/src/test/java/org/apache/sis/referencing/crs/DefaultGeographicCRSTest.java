@@ -39,13 +39,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultGeodeticCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultGeographicCRSTest extends TestCase {
+public final class DefaultGeographicCRSTest extends TestCase {
     /**
      * Tests the {@link DefaultGeographicCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#POSITIVE_RANGE}.

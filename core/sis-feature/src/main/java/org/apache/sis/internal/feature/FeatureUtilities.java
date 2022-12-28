@@ -40,7 +40,6 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final class FeatureUtilities extends Static {
     /**

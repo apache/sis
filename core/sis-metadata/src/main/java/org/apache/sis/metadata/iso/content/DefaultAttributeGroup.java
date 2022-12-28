@@ -61,7 +61,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "MD_AttributeGroup_Type", propOrder = {
     "contentTypes",

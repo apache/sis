@@ -56,14 +56,13 @@ import static org.apache.sis.test.TestUtilities.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
   org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
   org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
   StandardDefinitionsTest.class
 })
-public final strictfp class CommonCRSTest extends TestCase {
+public final class CommonCRSTest extends TestCase {
     /**
      * Length of a day in milliseconds.
      */

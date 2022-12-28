@@ -116,9 +116,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     GeodeticDatum datum = CommonCRS.WGS84.datum();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -135,7 +135,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",
@@ -622,22 +621,22 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
      *
-     * <div class="note"><b>Example:</b> Well-Known Text of a WGS 84 datum.
+     * <h4>Example</h4>
+     * Well-Known Text of a WGS 84 datum.
      *
-     * {@preformat wkt
-     *      Datum["World Geodetic System 1984",
-     *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
-     *      Id["EPSG", 6326, Citation["IOGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
-     * }
+     * {@snippet lang="wkt" :
+     *   Datum["World Geodetic System 1984",
+     *     Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
+     *   Id["EPSG", 6326, Citation["IOGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
+     *   }
      *
      * <p>Same datum using WKT 1.</p>
      *
-     * {@preformat wkt
-     *      DATUM["World Geodetic System 1984"
-     *        SPHEROID["WGS84", 6378137.0, 298.257223563],
-     *      AUTHORITY["EPSG", "6326"]]
-     * }
-     * </div>
+     * {@snippet lang="wkt" :
+     *   DATUM["World Geodetic System 1984"
+     *     SPHEROID["WGS84", 6378137.0, 298.257223563],
+     *   AUTHORITY["EPSG", "6326"]]
+     *   }
      *
      * Note that the {@linkplain #getPrimeMeridian() prime meridian} shall be formatted by the caller
      * as a separated element after the geodetic datum (for compatibility with WKT 1).

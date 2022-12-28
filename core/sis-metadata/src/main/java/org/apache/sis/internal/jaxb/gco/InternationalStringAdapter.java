@@ -33,7 +33,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class InternationalStringAdapter extends XmlAdapter<GO_CharacterString, InternationalString> {
     /**

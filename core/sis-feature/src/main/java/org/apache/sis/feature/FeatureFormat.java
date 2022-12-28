@@ -58,11 +58,12 @@ import static java.util.logging.Logger.getLogger;
  * Formats {@linkplain AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
- * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
- * “twin town”) may be formatted like below. The two first properties are {@linkplain AbstractAttribute attributes}
+ * <h2>Example</h2>
+ * A feature named “City” and containing 3 properties (“name”, “population” and “twin town”)
+ * may be formatted like below. The two first properties are {@linkplain AbstractAttribute attributes}
  * while the last property is an {@linkplain AbstractAssociation association} to another feature.
  *
- * {@preformat text
+ * <pre class="text">
  *   City
  *   ┌────────────┬─────────┬──────────────┬───────────┐
  *   │ Name       │ Type    │ Multiplicity │ Value     │
@@ -70,8 +71,7 @@ import static java.util.logging.Logger.getLogger;
  *   │ name       │ String  │ [1 … 1]      │ Paderborn │
  *   │ population │ Integer │ [1 … 1]      │ 143,174   │
  *   │ twin town  │ City    │ [0 … ∞]      │ Le Mans   │
- *   └────────────┴─────────┴──────────────┴───────────┘
- * }</div>
+ *   └────────────┴─────────┴──────────────┴───────────┘</pre>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -82,7 +82,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {
     /**

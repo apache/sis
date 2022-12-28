@@ -45,10 +45,9 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @DependsOn({LinkOperationTest.class, EnvelopeOperationTest.class})
-public final strictfp class FeatureOperationsTest extends TestCase {
+public final class FeatureOperationsTest extends TestCase {
     /**
      * Creates a feature type with an envelope operation.
      * The feature contains the following properties:

@@ -36,13 +36,13 @@
  *
  *   <li><p>If using Derby, copy {@code derby.war} into the {@code $CATALINA_HOME/webapps} directory
  *     and specify the directory where the Derby databases are located:</p>
- *     {@preformat text
+ *     {@snippet lang="shell" :
  *       export JAVA_OPTS=-Dderby.system.home=$SIS_DATA/Databases
- *     }
+ *       }
  *   </li>
  *
  *   <li><p>Declare the JNDI name in application {@code WEB-INF/web.xml} file:</p>
- *     {@preformat xml
+ *     {@snippet lang="xml" :
  *       <resource-ref>
  *         <description>EPSG dataset and other metadata used by Apache SIS.</description>
  *         <res-ref-name>jdbc/SpatialMetadata</res-ref-name>
@@ -54,7 +54,7 @@
  *
  *   <li><p>Configure the data source in {@code $CATALINA_HOME/conf/context.xml} or in application
  *     {@code META-INF/context.xml} file (change attribute values as needed for the chosen JDBC driver):</p>
- *     {@preformat xml
+ *     {@snippet lang="xml" :
  *       <Context crossContext="true">
  *         <WatchedResource>WEB-INF/web.xml</WatchedResource>
  *         <Resource name            = "jdbc/SpatialMetadata"
@@ -75,6 +75,5 @@
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 package org.apache.sis.internal.metadata.sql;

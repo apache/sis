@@ -35,7 +35,6 @@ import org.apache.sis.util.Classes;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class TM_Duration extends PropertyType<TM_Duration, Duration> {
     /**

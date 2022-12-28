@@ -52,7 +52,6 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "DQM_Description_Type", namespace = Namespaces.DQM, propOrder = {
     "textDescription",

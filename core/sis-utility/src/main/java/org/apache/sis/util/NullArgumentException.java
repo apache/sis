@@ -34,7 +34,6 @@ package org.apache.sis.util;
  * @see ArgumentChecks#ensureNonNull(String, Object)
  *
  * @since 0.3
- * @module
  */
 public class NullArgumentException extends NullPointerException {
     /**

@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
  *
  * <p>The following schema fragment specifies the expected content contained within this class.</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <complexType name="FRA_LegalConstraints_Type">
  *     <complexContent>
  *       <extension base="{http://www.isotc211.org/2005/gmd}MD_LegalConstraints_Type">
@@ -41,14 +41,13 @@ import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
  *       </extension>
  *     </complexContent>
  *   </complexType>
- * }
+ *   }
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "FRA_LegalConstraints_Type")
 @XmlRootElement(name="FRA_LegalConstraints")

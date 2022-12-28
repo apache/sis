@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class LinearlyDerivedVectorTest extends TestCase {
+public final class LinearlyDerivedVectorTest extends TestCase {
     /**
      * Tests creation of a vector and a few methods that haven been overridden.
      */

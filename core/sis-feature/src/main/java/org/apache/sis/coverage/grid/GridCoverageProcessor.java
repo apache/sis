@@ -59,7 +59,6 @@ import static java.util.logging.Logger.getLogger;
  * @see org.apache.sis.image.ImageProcessor
  *
  * @since 1.1
- * @module
  */
 public class GridCoverageProcessor implements Cloneable {
     /**

@@ -50,7 +50,6 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "AbstractDQ_TemporalQuality_Type")
 @XmlRootElement(name = "AbstractDQ_TemporalQuality")

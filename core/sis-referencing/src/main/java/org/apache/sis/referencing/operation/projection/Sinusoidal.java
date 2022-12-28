@@ -44,7 +44,6 @@ import static org.apache.sis.internal.referencing.provider.Sinusoidal.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public class Sinusoidal extends MeridianArcBased {
     /**
@@ -224,7 +223,6 @@ public class Sinusoidal extends MeridianArcBased {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   1.0
-     * @module
      */
     private static final class Spherical extends Sinusoidal {
         /**

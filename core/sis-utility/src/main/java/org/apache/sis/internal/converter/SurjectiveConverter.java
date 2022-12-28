@@ -41,7 +41,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <T>  the type of converted objects.
  *
  * @since 0.3
- * @module
  */
 public abstract class SurjectiveConverter<S,T> implements ObjectConverter<S,T> {
     /**

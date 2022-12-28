@@ -46,7 +46,6 @@ import org.opengis.util.FactoryException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 abstract class AbstractLinearTransform extends AbstractMathTransform implements LinearTransform, Matrix, Serializable {
     /**

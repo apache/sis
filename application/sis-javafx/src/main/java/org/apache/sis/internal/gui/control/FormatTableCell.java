@@ -47,7 +47,6 @@ import org.apache.sis.internal.gui.Styles;
  * @param  <T>  the type of elements contained in {@link javafx.scene.control.TableColumn}.
  *
  * @since 1.1
- * @module
  */
 final class FormatTableCell<S,T> extends TableCell<S,T> {
     /**

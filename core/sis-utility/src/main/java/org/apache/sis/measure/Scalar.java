@@ -43,7 +43,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 0.8
- * @module
  */
 class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Comparable<Q> {
     /**

@@ -41,11 +41,10 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 @SuppressWarnings("serial")
 @XmlRootElement(name = "IO_IdentifiedObject")
-public strictfp class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifier, Serializable {
+public class IdentifiedObjectMock implements IdentifiedObject, ReferenceIdentifier, Serializable {
     /**
      * The object name to be returned by {@link #getCode()}.
      */

@@ -33,7 +33,6 @@ import org.apache.sis.util.Deprecable;
  * @param <V> the type of property values.
  *
  * @since 0.5
- * @module
  */
 abstract class Field<V> extends Property {
     /**

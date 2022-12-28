@@ -34,10 +34,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn(LegacyCodesTest.class)
-public final strictfp class ValueConverterTest extends TestCase {
+public final class ValueConverterTest extends TestCase {
     /**
      * Tests {@link ValueConverter#toLanguageCode(MarshalContext, Locale)}.
      * The results should be ISO 639-2 codes (3 letters language codes).

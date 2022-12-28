@@ -35,9 +35,8 @@ import static java.util.Locale.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
-public final strictfp class ImplementationHelperTest extends TestCase {
+public final class ImplementationHelperTest extends TestCase {
     /**
      * Tests {@link ImplementationHelper#toMilliseconds(Date)}.
      */

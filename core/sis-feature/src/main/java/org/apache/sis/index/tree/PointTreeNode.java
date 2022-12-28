@@ -46,7 +46,6 @@ import java.io.Serializable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 abstract class PointTreeNode implements Cloneable, Serializable {
     /**

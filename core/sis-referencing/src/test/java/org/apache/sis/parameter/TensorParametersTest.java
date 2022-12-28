@@ -40,14 +40,13 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultParameterDescriptorTest.class,
     DefaultParameterValueTest.class,
     ParametersTest.class
 })
-public strictfp class TensorParametersTest extends TestCase {
+public class TensorParametersTest extends TestCase {
     /**
      * The parameters to use for testing purpose. Mostly identical to {@link TensorParameters#WKT1},
      * except that it is not an instance of the {@link MatrixParameters} subclass. Those parameters

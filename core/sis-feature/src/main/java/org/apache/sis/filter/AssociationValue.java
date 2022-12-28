@@ -49,7 +49,6 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @see PropertyValue
  *
  * @since 1.2
- * @module
  */
 final class AssociationValue<V> extends LeafExpression<AbstractFeature, V>
         implements ValueReference<AbstractFeature, V>, Optimization.OnExpression<AbstractFeature, V>

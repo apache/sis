@@ -40,7 +40,6 @@ import org.apache.sis.math.MathFunctions;
  * @param <E>  the type of elements in the collection.
  *
  * @since 0.3
- * @module
  */
 abstract class WeakEntry<E> extends WeakReference<E> implements Disposable {
     /**

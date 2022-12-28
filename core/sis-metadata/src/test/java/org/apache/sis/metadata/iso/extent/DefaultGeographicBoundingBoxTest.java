@@ -35,9 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultGeographicBoundingBoxTest extends TestCase {
+public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Asserts that the given geographic bounding box is strictly equals to the given values.
      * The {@link GeographicBoundingBox#getInclusion()} is expected to be {@code true}.

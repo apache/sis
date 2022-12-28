@@ -49,7 +49,6 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "EX_BoundingPolygon_Type")
 @XmlRootElement(name = "EX_BoundingPolygon")

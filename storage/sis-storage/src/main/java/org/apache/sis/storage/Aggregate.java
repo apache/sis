@@ -56,7 +56,6 @@ import java.util.Collection;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public interface Aggregate extends Resource {
     /**

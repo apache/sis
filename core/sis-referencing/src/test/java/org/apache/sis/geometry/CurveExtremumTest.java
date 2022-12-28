@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-public final strictfp class CurveExtremumTest extends TestCase {
+public final class CurveExtremumTest extends TestCase {
     /**
      * Tolerance factor for the tests in this class.
      */

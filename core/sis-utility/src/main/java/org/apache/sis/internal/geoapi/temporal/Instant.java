@@ -26,7 +26,6 @@ import org.opengis.temporal.TemporalPrimitive;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.5
- * @module
  */
 public interface Instant extends TemporalPrimitive {
     /**

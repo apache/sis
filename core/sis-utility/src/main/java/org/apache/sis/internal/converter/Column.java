@@ -35,7 +35,6 @@ import org.apache.sis.util.collection.DefaultTreeTable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class Column extends TableColumn<Class<?>> implements Serializable {
     /**

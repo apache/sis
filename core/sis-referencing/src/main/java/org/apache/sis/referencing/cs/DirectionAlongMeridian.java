@@ -48,7 +48,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (IRD)
  * @version 1.2
  * @since   0.4
- * @module
  */
 final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
     /**

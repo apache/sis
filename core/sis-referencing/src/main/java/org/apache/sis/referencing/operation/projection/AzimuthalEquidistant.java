@@ -71,7 +71,6 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * @see ModifiedAzimuthalEquidistant
  *
  * @since 1.1
- * @module
  */
 public class AzimuthalEquidistant extends NormalizedProjection {
     /**

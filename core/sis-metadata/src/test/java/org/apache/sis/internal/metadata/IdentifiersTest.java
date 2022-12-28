@@ -35,9 +35,8 @@ import static org.junit.Assert.*;
  * @author Martin Desruisseaux (Geomatys)
  * @since  1.0
  * @versio 1.0
- * @module
  */
-public final strictfp class IdentifiersTest extends TestCase {
+public final class IdentifiersTest extends TestCase {
     /**
      * Creates a citation with the given title and the given identifiers.
      */

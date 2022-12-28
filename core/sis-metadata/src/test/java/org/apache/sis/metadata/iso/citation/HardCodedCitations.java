@@ -40,9 +40,8 @@ import static java.util.Collections.singleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class HardCodedCitations extends Static {
+public final class HardCodedCitations extends Static {
     /**
      * The ISO 19111 standard.
      */
@@ -73,21 +72,20 @@ public final strictfp class HardCodedCitations extends Static {
      *
      * <p>String representation:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *     ├─Title………………………………………………………… EPSG Geodetic Parameter Dataset
      *     ├─Identifier
      *     │   └─Code………………………………………………… EPSG
      *     ├─Cited responsible party
      *     │   ├─Party
-     *     │   │   ├─Name……………………………………… International Association of Oil & Gas Producers
+     *     │   │   ├─Name……………………………………… International Association of Oil &amp; Gas Producers
      *     │   │   └─Contact info
      *     │   │       └─Online resource
      *     │   │           ├─Linkage………… https://epsg.org/
      *     │   │           └─Function……… Information
      *     │   └─Role………………………………………………… Principal investigator
-     *     └─Presentation form………………………… Table digital
-     * }
+     *     └─Presentation form………………………… Table digital</pre>
      */
     public static final DefaultCitation EPSG;
     static {

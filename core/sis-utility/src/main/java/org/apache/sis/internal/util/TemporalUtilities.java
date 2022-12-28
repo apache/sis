@@ -34,7 +34,6 @@ import org.apache.sis.internal.temporal.DefaultTemporalFactory;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final class TemporalUtilities extends Static {
     /**

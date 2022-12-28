@@ -125,7 +125,6 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * @see org.apache.sis.geometry.CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public class AngleFormat extends Format implements Localized {
     /**
@@ -205,7 +204,6 @@ public class AngleFormat extends Format implements Localized {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     public static final class Field extends FormatField {
         /**
@@ -1292,7 +1290,7 @@ public class AngleFormat extends Format implements Localized {
      * Formats an angle, latitude or longitude value as an attributed character iterator.
      * Callers can iterate and queries the attribute values as in the following example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     AttributedCharacterIterator it = angleFormat.formatToCharacterIterator(myAngle);
      *     for (char c=it.first(); c!=AttributedCharacterIterator.DONE; c=c.next()) {
      *         // 'c' is a character from the formatted string.
@@ -1301,7 +1299,7 @@ public class AngleFormat extends Format implements Localized {
      *             // This field extends from it.getRunStart(MINUTES) to it.getRunLimit(MINUTES).
      *         }
      *     }
-     * }
+     *     }
      *
      * Alternatively, if the current {@linkplain AttributedCharacterIterator#getIndex() iterator
      * index} is before the start of the minutes field, then the starting position of that field

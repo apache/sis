@@ -61,7 +61,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, Map.Entry<String,MathTransform> {
     /**

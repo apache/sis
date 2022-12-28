@@ -84,7 +84,6 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/mdb/1.0/mdb.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MDB,

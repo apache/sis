@@ -83,7 +83,6 @@ import static java.lang.Math.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 public class MolodenskyTransform extends MolodenskyFormula {
     /**

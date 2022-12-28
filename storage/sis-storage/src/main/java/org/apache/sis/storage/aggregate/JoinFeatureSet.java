@@ -69,7 +69,6 @@ import org.apache.sis.internal.geoapi.filter.BinaryComparisonOperator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public class JoinFeatureSet extends AggregatedFeatureSet {
     /**

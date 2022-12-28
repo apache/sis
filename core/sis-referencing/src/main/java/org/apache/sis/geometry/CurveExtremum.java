@@ -40,7 +40,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class CurveExtremum {
     /**

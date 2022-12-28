@@ -39,7 +39,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 public final class NilReferencingObject implements NilObject, ReferenceSystem {
     /**

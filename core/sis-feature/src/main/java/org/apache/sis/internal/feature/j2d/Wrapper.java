@@ -51,7 +51,6 @@ import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class Wrapper extends GeometryWithCRS<Shape> {
     /**

@@ -109,7 +109,6 @@ import static org.apache.sis.util.Numbers.*;
  * @see Range
  *
  * @since 0.3
- * @module
  */
 public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range<E>>
         implements CheckedContainer<Range<E>>, SortedSet<Range<E>>, Cloneable, Serializable
@@ -919,11 +918,11 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * The default implementation is equivalent to the following pseudo-code
      * (omitting argument checks):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return intersect(new Range<E>(elementType,
      *           lower.minValue,  lower.isMinIncluded,
      *           upper.minValue, !upper.isMinIncluded));
-     * }
+     *   }
      *
      * <div class="note"><b>API note:</b>
      * This method takes the minimal value of the {@code upper} argument instead
@@ -1227,7 +1226,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private final class SubIter extends Iter {
         /**
@@ -1307,7 +1305,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private class Iter implements Iterator<Range<E>> {
         /**

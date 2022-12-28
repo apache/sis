@@ -40,12 +40,11 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({
     GeocentricTranslationTest.class
 })
-public final strictfp class PositionVector7ParamTest extends MathTransformTestCase {
+public final class PositionVector7ParamTest extends MathTransformTestCase {
     /**
      * Returns the sample point for a step in the example given by the EPSG guidance note.
      *

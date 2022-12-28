@@ -58,7 +58,6 @@ import org.apache.sis.setup.OptionKey;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 final class Store extends URIDataStore implements Filter {
     /**

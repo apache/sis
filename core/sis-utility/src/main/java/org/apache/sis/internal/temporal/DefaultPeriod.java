@@ -28,7 +28,6 @@ import org.apache.sis.internal.geoapi.temporal.Period;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class DefaultPeriod implements Period {
     /** Bounds making this period. */

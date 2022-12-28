@@ -56,7 +56,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
 abstract class ConformalProjection extends NormalizedProjection {
     /**

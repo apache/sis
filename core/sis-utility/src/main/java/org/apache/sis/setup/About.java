@@ -82,7 +82,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public enum About {
     /**
@@ -171,9 +170,9 @@ public enum About {
      *
      * <p>This convenience method is equivalent to the following code:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return configuration(EnumSet.allOf(About.class), null, null);
-     * }
+     *     }
      *
      * @return configuration information, as a tree for grouping some configuration by sections.
      */

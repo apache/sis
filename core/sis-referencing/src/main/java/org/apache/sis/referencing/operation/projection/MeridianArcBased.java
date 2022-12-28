@@ -32,7 +32,6 @@ import static java.lang.Math.*;
  * @see <a href="https://en.wikipedia.org/wiki/Meridian_arc">Meridian arc on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 abstract class MeridianArcBased extends NormalizedProjection {
     /**

@@ -82,7 +82,6 @@ import org.apache.sis.internal.util.Strings;
  * @see DefaultMemberName
  *
  * @since 0.3
- * @module
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**

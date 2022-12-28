@@ -55,7 +55,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final class CollectionsExt extends Static {
     /**

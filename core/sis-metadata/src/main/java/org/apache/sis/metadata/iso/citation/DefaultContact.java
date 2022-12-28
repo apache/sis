@@ -65,7 +65,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "CI_Contact_Type", propOrder = {
     "phone",

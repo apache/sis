@@ -28,7 +28,6 @@ import java.nio.CharBuffer;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class AppendableWriter extends Writer {
     /**

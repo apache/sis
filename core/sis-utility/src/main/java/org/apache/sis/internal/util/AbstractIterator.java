@@ -32,7 +32,6 @@ import java.util.NoSuchElementException;
  * @param <E> the type of elements to be returned by the iterator.
  *
  * @since 0.7
- * @module
  */
 public abstract class AbstractIterator<E> implements Iterator<E> {
     /**

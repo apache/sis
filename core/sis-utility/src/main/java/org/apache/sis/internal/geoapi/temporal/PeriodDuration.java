@@ -28,7 +28,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
- * @module
  */
 public interface PeriodDuration extends org.opengis.temporal.PeriodDuration {
     /**

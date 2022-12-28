@@ -46,7 +46,6 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @XmlType(name = "DQ_Confidence_Type")
 @XmlRootElement(name = "DQ_Confidence")

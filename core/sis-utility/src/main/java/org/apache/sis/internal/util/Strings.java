@@ -33,7 +33,6 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 public final class Strings extends Static {
     /**
@@ -88,11 +87,11 @@ public final class Strings extends Static {
      * (maybe the developer really wanted no-break spaces). To preserve no-break spaces, the
      * following can be used instead:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (text != null && !(text = text.trim()).isEmpty()) {
      *         // Use text here.
      *     }
-     * }
+     *     }
      *
      * @param  text  the text to trim, or {@code null}.
      * @return the trimmed text, or {@code null} if the given text was null or blank.

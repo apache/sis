@@ -41,7 +41,6 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
  *
  * @since 1.0
- * @module
  */
 public final class SortByComparator<R> implements SortBy<R>, Serializable {
     /**

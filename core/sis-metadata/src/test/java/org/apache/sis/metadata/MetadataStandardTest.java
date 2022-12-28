@@ -58,7 +58,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn({
     PropertyAccessorTest.class,
@@ -66,7 +65,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     NameMapTest.class,
     TypeMapTest.class,
     ValueMapTest.class})
-public final strictfp class MetadataStandardTest extends TestCase {
+public final class MetadataStandardTest extends TestCase {
     /**
      * The standard being tested.
      */

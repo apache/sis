@@ -35,9 +35,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
-public final strictfp class FormulasTest extends TestCase {
+public final class FormulasTest extends TestCase {
     /**
      * Verifies the {@link Formulas#LONGITUDE_MAX} constant.
      */

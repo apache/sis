@@ -52,7 +52,6 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 @StoreMetadata(formatName    = SQLStoreProvider.NAME,
                capabilities  = Capability.READ,

@@ -48,7 +48,6 @@ import static org.apache.sis.internal.util.Numerics.LONG_SHIFT;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class MaskedImage extends SourceAlignedImage {
     /**
@@ -75,13 +74,13 @@ final class MaskedImage extends SourceAlignedImage {
      * The clip after rasterization. Each element contains 8 pixel values.
      * Index of pixel value at coordinate (x,y) can be obtained as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     int xm      = x - maskBounds.x;
      *     int xy      = y - maskBounds.y;
      *     int element = mask[ym*scanlineStride + xm/Byte.SIZE];
      *     int shift   = (Byte.SIZE-1) - (xm & (Byte.SIZE-1));
      *     int pixel   = (element >>> shift) & 1;
-     * }
+     *     }
      *
      * @see #getMask()
      */
@@ -170,13 +169,13 @@ final class MaskedImage extends SourceAlignedImage {
      * After conversion to {@link LongBuffer}, index of pixel value at
      * coordinate (x,y) can be obtained as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     int xm      = x - maskBounds.x;
      *     int xy      = y - maskBounds.y;
      *     int element = mask[ym*scanlineStride + xm/Long.SIZE];
      *     int shift   = (Long.SIZE-1) - (xm & (Long.SIZE-1));
      *     int pixel   = (element >>> shift) & 1;
-     * }
+     *     }
      *
      * <h4>Pre-conditions</h4>
      * The {@link #getMaskTiles()} method must have been invoked at least once before this method.

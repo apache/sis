@@ -34,9 +34,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public strictfp class FeatureAssert extends ReferencingAssert {
+public class FeatureAssert extends ReferencingAssert {
     /**
      * For subclass constructor only.
      */

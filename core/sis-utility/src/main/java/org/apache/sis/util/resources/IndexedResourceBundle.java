@@ -79,7 +79,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
     /**
@@ -545,11 +544,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * formatted using {@link MessageFormat}. Calling this method is approximately equivalent to
      * calling:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     String pattern = getString(key);
      *     Format f = new MessageFormat(pattern);
      *     return f.format(arg0);
-     * }
+     *     }
      *
      * If {@code arg0} is not already an array, it will be placed into an array of length 1. Using
      * {@link MessageFormat}, all occurrences of "{0}", "{1}", "{2}" in the resource string will be

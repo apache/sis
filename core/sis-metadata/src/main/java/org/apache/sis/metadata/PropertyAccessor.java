@@ -81,7 +81,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 class PropertyAccessor {
     /**
@@ -122,16 +121,16 @@ class PropertyAccessor {
      * The implementation class, or {@link #type} if none.
      * The following condition must hold:
      *
-     * {@preformat java
-     *     type.isAssignableFrom(implementation);
-     * }
+     * {@snippet lang="java" :
+     *     assert type.isAssignableFrom(implementation);
+     *     }
      *
-     * <div class="note"><b>Design note:</b>
+     * <h4>Design note</h4>
      * We could enforce the above-cited restriction with type parameter: if the {@link #type} field is declared
      * as {@code Class<T>}, then this {@code implementation} field would be declared as {@code Class<? extends T>}.
      * However, this is not useful for this internal class because the {@code <T>} type is never known; we have the
      * {@code <?>} type everywhere except in tests, which result in compiler warnings at {@code PropertyAccessor}
-     * construction.</div>
+     * construction.
      */
     final Class<?> implementation;
 
@@ -1300,9 +1299,7 @@ class PropertyAccessor {
      * Returns a string representation of this accessor for debugging purpose.
      * Output example:
      *
-     * {@preformat text
-     *     PropertyAccessor[13 getters & 13 setters in DefaultCitation:Citation]
-     * }
+     * <pre class="text">PropertyAccessor[13 getters &amp; 13 setters in DefaultCitation:Citation]</pre>
      */
     @Override
     public String toString() {

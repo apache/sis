@@ -31,7 +31,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param  <S>  type of stream interface, as defined in {@link BaseStream}.
  *
  * @since 1.1
- * @module
  */
 public abstract class BaseStreamWrapper<T, S extends BaseStream<T,S>> implements BaseStream<T,S> {
     /**

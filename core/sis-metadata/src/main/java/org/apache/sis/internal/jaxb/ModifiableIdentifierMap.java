@@ -41,7 +41,6 @@ import org.apache.sis.xml.XLink;
  * @see org.apache.sis.xml.IdentifiedObject
  *
  * @since 0.7
- * @module
  */
 public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
     /**

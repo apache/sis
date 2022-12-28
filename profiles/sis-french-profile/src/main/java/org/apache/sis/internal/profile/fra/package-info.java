@@ -28,7 +28,6 @@
  * @see org.apache.sis.profile.france
  *
  * @since 0.4
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = FrenchProfile.NAMESPACE,
            xmlns = {@XmlNs(prefix = "fra", namespaceURI = FrenchProfile.NAMESPACE)})

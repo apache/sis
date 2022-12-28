@@ -32,10 +32,10 @@ import org.opengis.metadata.citation.Citation;
  * attributes of the XML element. Those identifiers can be specified using the {@link IdentifierSpace}
  * enum values as below:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     IdentifiedObject object = ...;
  *     object.getIdentifierMap().put(IdentifierSpace.ID, "myID");
- * }
+ *     }
  *
  * <h2>Relationship with GeoAPI</h2>
  * Identifiers exist also in some (not all) GeoAPI objects. Some GeoAPI objects
@@ -66,7 +66,6 @@ import org.opengis.metadata.citation.Citation;
  * @see ReferenceResolver#newIdentifiedObject(MarshalContext, Class, Identifier[])
  *
  * @since 0.3
- * @module
  */
 public interface IdentifiedObject {
     /**

@@ -37,10 +37,9 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(GeneralDirectPositionTest.class)
-public final strictfp class AbstractEnvelopeTest extends TestCase {
+public final class AbstractEnvelopeTest extends TestCase {
     /**
      * Enumeration of implementations to be tested.
      * The {@code LAST} constant is for stopping the loops.
@@ -116,12 +115,11 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * Tests the simple case (no anti-meridian crossing).
      *
-     * {@preformat text
+     * <pre class="text">
      *     ┌─────────────┐
      *     │  ┌───────┐  │
      *     │  └───────┘  │
-     *     └─────────────┘
-     * }
+     *     └─────────────┘</pre>
      */
     @Test
     public void testSimpleEnvelope() {
@@ -170,12 +168,11 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
     /**
      * Tests a case crossing the anti-meridian.
      *
-     * {@preformat text
+     * <pre class="text">
      *      ─────┐  ┌─────────              ─────┐      ┌─────
      *           │  │  ┌────┐       or      ──┐  │      │  ┌──
      *           │  │  └────┘               ──┘  │      │  └──
-     *      ─────┘  └─────────              ─────┘      └─────
-     * }
+     *      ─────┘  └─────────              ─────┘      └─────</pre>
      */
     @Test
     public void testCrossingAntiMeridian() {
@@ -232,12 +229,11 @@ public final strictfp class AbstractEnvelopeTest extends TestCase {
      * Tests a the anti-meridian case with a larger empty space
      * on the left side.
      *
-     * {@preformat text
+     * <pre class="text">
      *      ───┐    ┌─────────              ───┐      ┌─────
      *         │    │  ┌────┐       or      ───┼──┐   │  ┌──
      *         │    │  └────┘               ───┼──┘   │  └──
-     *      ───┘    └─────────              ───┘      └─────
-     * }
+     *      ───┘    └─────────              ───┘      └─────</pre>
      */
     @Test
     public void testCrossingAntiMeridianTwice() {

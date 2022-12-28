@@ -37,7 +37,6 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @SuppressWarnings("deprecation")
 public final class CI_ResponsibleParty extends PropertyType<CI_ResponsibleParty, ResponsibleParty> {

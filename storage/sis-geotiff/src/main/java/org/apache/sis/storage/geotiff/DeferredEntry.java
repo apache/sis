@@ -23,7 +23,6 @@ package org.apache.sis.storage.geotiff;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class DeferredEntry implements Comparable<DeferredEntry> {
     /**

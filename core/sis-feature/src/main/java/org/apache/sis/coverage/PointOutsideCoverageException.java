@@ -23,6 +23,10 @@ package org.apache.sis.coverage;
  * <div class="note"><b>Upcoming API change:</b>
  * this class may move to GeoAPI in a future version. If that move happens,
  * the {@code org.apache.sis.coverage} package name would become {@code org.opengis.coverage}.</div>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @version 1.0
+ * @since   1.0
  */
 public class PointOutsideCoverageException extends CannotEvaluateException {
     /**

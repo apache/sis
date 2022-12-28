@@ -98,7 +98,6 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -116,7 +115,6 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     public enum TargetType {
         /**
@@ -366,15 +364,15 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Creates a transform from geographic to Cartesian geocentric coordinates (convenience method).
-     * Invoking this method is equivalent to the following:
+     * This method is equivalent to the following:
      *
-     * {@preformat java
-     *     createGeodeticConversion(factory,
+     * {@snippet lang="java" :
+     *     return createGeodeticConversion(factory,
      *             ellipsoid.getSemiMajorAxis(),
      *             ellipsoid.getSemiMinorAxis(),
      *             ellipsoid.getAxisUnit(),
      *             withHeight, TargetType.CARTESIAN);
-     * }
+     *     }
      *
      * The target type is assumed Cartesian because this is the most frequently used target.
      *
@@ -780,7 +778,6 @@ next:   while (--numPts >= 0) {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**

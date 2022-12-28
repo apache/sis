@@ -35,9 +35,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public final strictfp class ExtentSelectorTest extends TestCase {
+public final class ExtentSelectorTest extends TestCase {
     /**
      * Whether to test an alternate ordering where distance to TOI is tested last.
      *

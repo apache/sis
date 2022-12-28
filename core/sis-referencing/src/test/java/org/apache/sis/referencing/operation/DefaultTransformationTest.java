@@ -46,12 +46,11 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class
 })
-public final strictfp class DefaultTransformationTest extends TestCase {
+public final class DefaultTransformationTest extends TestCase {
     /**
      * Creates a geocentric CRS using the given datum.
      */

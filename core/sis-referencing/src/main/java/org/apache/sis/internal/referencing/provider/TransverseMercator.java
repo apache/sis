@@ -42,7 +42,6 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator.html">GeoTIFF parameters for Transverse Mercator</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class TransverseMercator extends AbstractMercator {
@@ -171,7 +170,6 @@ public final class TransverseMercator extends AbstractMercator {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     public enum Zoner {
         /**

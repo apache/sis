@@ -45,10 +45,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @see org.apache.sis.internal.metadata.MergerTest
  *
  * @since 0.8
- * @module
  */
 @DependsOn(MetadataStandardTest.class)
-public final strictfp class MetadataCopierTest extends TestCase {
+public final class MetadataCopierTest extends TestCase {
     /**
      * Tests {@link MetadataCopier#copy(Object)}.
      */

@@ -32,7 +32,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
 final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> implements Cloneable {
     /**

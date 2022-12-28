@@ -37,10 +37,9 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn(AbstractMathTransformTest.class)
-public final strictfp class ScaleTransformTest extends MathTransformTestCase {
+public final class ScaleTransformTest extends MathTransformTestCase {
     /**
      * Sets the {@link #transform} field to the {@link ScaleTransform} instance to test.
      *

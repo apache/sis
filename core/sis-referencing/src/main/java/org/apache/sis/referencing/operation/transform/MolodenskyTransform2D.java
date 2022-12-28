@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 class MolodenskyTransform2D extends MolodenskyTransform implements MathTransform2D {
     /**

@@ -45,7 +45,6 @@ import org.opengis.geometry.Envelope;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public interface DataSet extends Resource {
     /**

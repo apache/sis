@@ -27,7 +27,6 @@ import org.apache.sis.util.Static;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class FrenchProfile extends Static {
     /**
@@ -96,22 +95,22 @@ public final class FrenchProfile extends Static {
      * Those two cases are represented by the following schema fragments:
      *
      * <p><b>Direct:</b></p>
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <complexType name="FRA_DirectReferenceSystem_Type">
      *     <complexContent>
      *       <extension base="{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem_Type"/>
      *     </complexContent>
      *   </complexType>
-     * }
+     *   }
      *
      * <p><b>Indirect:</b></p>
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <complexType name="FRA_IndirectReferenceSystem_Type">
      *     <complexContent>
      *       <extension base="{http://www.isotc211.org/2005/gmd}MD_ReferenceSystem_Type"/>
      *     </complexContent>
      *   </complexType>
-     * }
+     *   }
      *
      * @param  rs        the reference system to make AFNOR-compliant, or {@code null}.
      * @param  indirect  {@code false} for {@code FRA_DirectReferenceSystem}, or

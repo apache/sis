@@ -33,7 +33,6 @@ import org.apache.sis.geometry.DirectPosition2D;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ConcatenatedTransform2D extends ConcatenatedTransform implements MathTransform2D {
     /**

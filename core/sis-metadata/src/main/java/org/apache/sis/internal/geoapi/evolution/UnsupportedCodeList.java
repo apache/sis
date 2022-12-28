@@ -29,14 +29,13 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * Currently defines constants mostly for {@code org.opengis.metadata.citation.TelephoneType},
  * but constants for other code list can be constructed like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *   operation.getDistributedComputingPlatforms().add(UnsupportedCodeList.valueOf("SOAP"));
- * }
+ *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
     /**

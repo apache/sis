@@ -41,7 +41,6 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class FinalLocationType extends AbstractLocationType implements Serializable {
     /**

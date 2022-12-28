@@ -34,7 +34,6 @@ import org.opengis.metadata.ExtendedElementInformation;
  * @see MetadataStandard#asInformationMap(Class, KeyNamePolicy)
  *
  * @since 0.3
- * @module
  */
 final class InformationMap extends PropertyMap<ExtendedElementInformation> {
     /**

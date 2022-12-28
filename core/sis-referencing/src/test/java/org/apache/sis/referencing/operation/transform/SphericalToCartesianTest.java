@@ -35,9 +35,8 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
-public final strictfp class SphericalToCartesianTest extends TransformTestCase {
+public final class SphericalToCartesianTest extends TransformTestCase {
     /**
      * Returns coordinate tuples in spherical coordinates and their equivalent in Cartesian coordinates.
      */

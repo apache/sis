@@ -21,7 +21,7 @@
  * JAXB cannot marshal directly interfaces), and wrappers around the value to be marshalled.
  * ISO 19139 have the strange habit to wrap every properties in an extra level, for example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <CI_ResponsibleParty>
  *     <contactInfo>
  *       <CI_Contact>
@@ -29,7 +29,7 @@
  *       </CI_Contact>
  *     </contactInfo>
  *   </CI_ResponsibleParty>
- * }
+ *   }
  *
  * The {@code </CI_Contact>} level is not really necessary, and JAXB is not designed for inserting
  * such level since it is not the usual way to write XML. In order to get this output with JAXB, we
@@ -56,7 +56,6 @@
  * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, xmlns = {
     @XmlNs(prefix = "gco", namespaceURI = Namespaces.GCO),

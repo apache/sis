@@ -39,7 +39,6 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
  *
  * @since 1.1
- * @module
  */
 final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
     /**

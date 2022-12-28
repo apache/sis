@@ -51,7 +51,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "LinearCSType")
 @XmlRootElement(name = "LinearCS")

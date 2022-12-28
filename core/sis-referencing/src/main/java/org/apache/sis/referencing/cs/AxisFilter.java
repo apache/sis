@@ -50,7 +50,6 @@ import javax.measure.Unit;
  * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
  *
  * @since 0.6
- * @module
  */
 public interface AxisFilter {
     /**
@@ -68,12 +67,12 @@ public interface AxisFilter {
      * Returns a replacement for the given axis direction.
      * The default implementation unconditionally returns the given {@code direction} unchanged.
      *
-     * <div class="note"><b>Example:</b>
-     * for forcing the direction of the <var>z</var> axis toward up while leaving other axes unchanged,
+     * <h4>Example</h4>
+     * For forcing the direction of the <var>z</var> axis toward up while leaving other axes unchanged,
      * one can write:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public getDirectionReplacement(CoordinateSystemAxis axis, AxisDirection direction) {
      *         if (direction == AxisDirection.DOWN) {
      *             direction = AxisDirection.UP;
@@ -81,7 +80,6 @@ public interface AxisFilter {
      *         return direction;
      *     }
      * }
-     * </div>
      *
      * @param  axis       the axis for which to change axis direction, if desired.
      * @param  direction  the original axis direction.
@@ -97,12 +95,12 @@ public interface AxisFilter {
      * Returns a replacement for the given axis unit.
      * The default implementation unconditionally returns the given {@code unit} unchanged.
      *
-     * <div class="note"><b>Example:</b>
-     * for replacing all angular units of a coordinate system to degrees (regardless what the original
+     * <h4>Example</h4>
+     * For replacing all angular units of a coordinate system to degrees (regardless what the original
      * angular units were) while leaving other kinds of units unchanged, one can write:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
      *         if (Units.isAngular(unit)) {
      *             unit = Units.DEGREE;
@@ -110,7 +108,6 @@ public interface AxisFilter {
      *         return unit;
      *     }
      * }
-     * </div>
      *
      * @param  axis  the axis for which to change unit, if desired.
      * @param  unit  the original axis unit.

@@ -46,7 +46,6 @@ import org.apache.sis.util.Utilities;
  * @see MathTransforms#specialize(MathTransform, Map)
  *
  * @since 1.0
- * @module
  */
 class SpecializableTransform extends AbstractMathTransform implements Serializable {
     /**

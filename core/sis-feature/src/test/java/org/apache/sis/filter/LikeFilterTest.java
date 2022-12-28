@@ -31,9 +31,8 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class LikeFilterTest extends TestCase {
+public final class LikeFilterTest extends TestCase {
     /**
      * Tests {@link LikeFilter#isMetaCharacter(char)}.
      */

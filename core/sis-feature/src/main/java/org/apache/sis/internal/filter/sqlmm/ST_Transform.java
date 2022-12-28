@@ -59,7 +59,6 @@ import org.apache.sis.internal.geoapi.filter.Literal;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ST_Transform<R,G> extends FunctionWithSRID<R> {
     /**

@@ -44,9 +44,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class ResamplingGridTest extends TestCase {
+public final class ResamplingGridTest extends TestCase {
     /**
      * Tests {@link ResamplingGrid#create(MathTransform2D, Rectangle)} with an affine transform.
      * The method should detect the affine case and return an equal transform (not necessarily the same instance).

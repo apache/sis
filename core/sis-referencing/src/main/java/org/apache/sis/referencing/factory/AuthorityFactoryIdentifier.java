@@ -41,7 +41,6 @@ import org.apache.sis.internal.referencing.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 final class AuthorityFactoryIdentifier {
     /**

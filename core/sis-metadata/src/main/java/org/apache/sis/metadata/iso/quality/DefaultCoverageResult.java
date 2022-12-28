@@ -65,7 +65,6 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "QE_CoverageResult_Type", propOrder = {
     "spatialRepresentationType",

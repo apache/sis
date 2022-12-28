@@ -38,7 +38,6 @@ import java.lang.annotation.RetentionPolicy;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

@@ -32,10 +32,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractCSTest.class)
-public final strictfp class DefaultSphericalCSTest extends TestCase {
+public final class DefaultSphericalCSTest extends TestCase {
     /**
      * Tests a spherical CRS conforms to EPSG:8.9:6404 definition.
      * Expected axes are:

@@ -25,7 +25,6 @@ package org.apache.sis.geometry;
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3
  * @version 0.3
- * @module
  */
 public class MismatchedReferenceSystemException extends IllegalArgumentException {
     /**

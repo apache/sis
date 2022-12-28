@@ -40,7 +40,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class CityLocation {
  *         public static final TableColumn<String> CITY_NAME  = new TableColumn<>(String.class, "City name");
  *         public static final TableColumn<Float>  LATITUDE   = new TableColumn<>(Float.class,  "Latitude");
@@ -55,7 +55,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *             return table;
  *         }
  *     }
- * }
+ *     }
  *
  * The {@code setRoot(…)} method accepts arbitrary {@link TreeTable.Node} implementations.
  * However, it is likely to be safer and more memory efficient when used together with the
@@ -68,7 +68,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @see TableColumn
  *
  * @since 0.3
- * @module
  */
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
@@ -331,7 +330,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see DefaultTreeTable
      * @see TableColumn

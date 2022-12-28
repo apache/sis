@@ -54,7 +54,6 @@ import org.apache.sis.util.collection.IntegerList;
  * @see CloseableReference#close()
  *
  * @since 0.7
- * @module
  */
 @SuppressWarnings("serial")   // serialVersionUID not needed because of writeReplace().
 final class AuthorityCodes extends AbstractMap<String,String> implements Serializable {

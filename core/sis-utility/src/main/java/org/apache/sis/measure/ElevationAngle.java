@@ -38,7 +38,6 @@ import org.opengis.referencing.cs.AxisDirection;        // For javadoc
  * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
  *
  * @since 0.4
- * @module
  */
 public final class ElevationAngle extends Angle {
     /**

@@ -62,7 +62,6 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class Decoder extends ReferencingFactoryContainer implements Closeable {
     /**

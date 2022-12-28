@@ -50,7 +50,6 @@ import org.opengis.util.TypeName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public class ReferencingServices extends OptionalDependency {
     /**

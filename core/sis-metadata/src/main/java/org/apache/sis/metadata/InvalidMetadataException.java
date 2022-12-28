@@ -23,7 +23,6 @@ package org.apache.sis.metadata;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public class InvalidMetadataException extends IllegalStateException {
     /**

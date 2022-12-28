@@ -34,9 +34,8 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
+public final class CharacteristicTypeBuilderTest extends TestCase {
     /**
      * Tests {@link CharacteristicTypeBuilder#setValueClass(Class)}.
      * This implies the replacement of the builder by a new instance.

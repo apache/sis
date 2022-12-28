@@ -30,9 +30,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.4
- * @module
  */
-public final strictfp class TagsTest extends TestCase {
+public final class TagsTest extends TestCase {
     /**
      * Tests {@link Tags#name(short)}.
      */

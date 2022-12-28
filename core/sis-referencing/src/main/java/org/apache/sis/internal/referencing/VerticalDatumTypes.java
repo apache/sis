@@ -40,7 +40,6 @@ import org.apache.sis.util.Characters;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 public final class VerticalDatumTypes implements CodeList.Filter {
     /**

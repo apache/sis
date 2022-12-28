@@ -55,7 +55,6 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
  *
  * @since 0.3
- * @module
  *
  * @todo This adapter may be deleted in favor of {@link GO_Temporal} after all usages
  *       of {@link Date} have been replaced by {@link java.time.temporal.Temporal}.

@@ -66,7 +66,6 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see AbstractLocation
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
@@ -292,7 +291,6 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   1.3
-     * @module
      */
     public abstract static class Coder {
         /**
@@ -335,10 +333,10 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
          * A combined method which sets the encoder precision to the given value, then formats the given position.
          * The default implementation is equivalent to the following code:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     setPrecision(precision, position);
          *     return encode(position);
-         * }
+         *     }
          *
          * Subclasses should override with more efficient implementation,
          * for example by transforming the given position only once.

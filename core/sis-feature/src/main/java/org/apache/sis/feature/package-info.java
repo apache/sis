@@ -95,6 +95,5 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 package org.apache.sis.feature;

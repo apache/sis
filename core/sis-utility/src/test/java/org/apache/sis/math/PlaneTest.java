@@ -31,10 +31,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (MPO, IRD)
  * @version 0.8
  * @since   0.5
- * @module
  */
 @DependsOn(org.apache.sis.internal.util.DoubleDoubleTest.class)
-public final strictfp class PlaneTest extends TestCase {
+public final class PlaneTest extends TestCase {
     /**
      * The Pearson coefficient computed by the last call to
      * {@link #assertFitEquals(double, double[], double[], double[])}.

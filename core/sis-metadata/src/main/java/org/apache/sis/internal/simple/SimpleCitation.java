@@ -44,7 +44,6 @@ import org.apache.sis.internal.util.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public class SimpleCitation implements Citation, Serializable {
     /**

@@ -46,7 +46,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ExpandableList extends TransformationList<AbstractFeature,AbstractFeature>
         implements Callback<TableColumn<AbstractFeature,AbstractFeature>, TableCell<AbstractFeature,AbstractFeature>>,

@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class ArraysExtTest extends TestCase {
+public final class ArraysExtTest extends TestCase {
     /**
      * Tests {@link ArraysExt#removeDuplicated(Object[])}.
      */

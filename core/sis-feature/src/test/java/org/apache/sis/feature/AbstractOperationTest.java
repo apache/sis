@@ -32,10 +32,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class AbstractOperationTest extends TestCase {
+public final class AbstractOperationTest extends TestCase {
     /**
      * Returns an operation that found new cities.
      */

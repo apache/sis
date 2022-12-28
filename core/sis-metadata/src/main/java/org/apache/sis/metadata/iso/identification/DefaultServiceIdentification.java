@@ -77,7 +77,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "SV_ServiceIdentification_Type", namespace = Namespaces.SRV, propOrder = {
     "serviceType",
@@ -330,7 +329,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      * The argument type will be changed to the {@code CouplingType} code list when GeoAPI will provide it
      * (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
      *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
      *
@@ -352,7 +351,7 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
      *           }
      *       }
      *   }
-     * }
+     *   }
      * </div>
      *
      * @param  newValue  the new type of coupling between service and associated data.

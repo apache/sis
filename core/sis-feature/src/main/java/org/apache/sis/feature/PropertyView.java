@@ -43,7 +43,6 @@ import org.apache.sis.internal.feature.Resources;
  * @param <V> the type of property values.
  *
  * @since 0.8
- * @module
  */
 final class PropertyView {
     /**

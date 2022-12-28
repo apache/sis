@@ -89,7 +89,6 @@ import org.apache.sis.xml.NilReason;
  * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
  *
  * @since 0.3
- * @module
  */
 @TitleProperty(name = "description")
 @XmlType(name = "EX_Extent_Type", propOrder = {

@@ -52,7 +52,6 @@ import static org.apache.sis.internal.referencing.provider.CassiniSoldner.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class CassiniSoldner extends MeridianArcBased {
     /**
@@ -372,7 +371,6 @@ public class CassiniSoldner extends MeridianArcBased {
      * @author  Rémi Maréchal (Geomatys)
      * @version 1.1
      * @since   1.1
-     * @module
      */
     static final class Spherical extends CassiniSoldner {
         /**

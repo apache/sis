@@ -41,7 +41,6 @@ import org.apache.sis.storage.DataStore;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 @StoreMetadata(formatName    = RawRasterStoreProvider.NAME,
                fileSuffixes  = {"bil", "bip", "bsq"},

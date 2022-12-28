@@ -27,9 +27,9 @@ import java.util.Collection;
  * If a class implements both {@code CheckedContainer} and {@code Collection},
  * then the parameterized type shall be the same type. Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     class MyList<E> extends AbstractList<E> implements CheckedContainer<E> { ... }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
@@ -37,7 +37,6 @@ import java.util.Collection;
  * @param <E>  the base type of elements in the container.
  *
  * @since 0.3
- * @module
  */
 public interface CheckedContainer<E> {
     /**

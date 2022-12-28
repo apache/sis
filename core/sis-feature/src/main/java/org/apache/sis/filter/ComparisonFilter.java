@@ -70,7 +70,6 @@ import org.apache.sis.internal.geoapi.filter.BetweenComparisonOperator;
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         implements BinaryComparisonOperator<R>, Optimization.OnFilter<R>

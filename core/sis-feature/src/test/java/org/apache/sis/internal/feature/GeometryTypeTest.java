@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class GeometryTypeTest extends TestCase {
+public final class GeometryTypeTest extends TestCase {
     /**
      * Tests {@link GeometryType#forBinaryType(int)} and verifies {@link GeometryType#binaryType()} values.
      */

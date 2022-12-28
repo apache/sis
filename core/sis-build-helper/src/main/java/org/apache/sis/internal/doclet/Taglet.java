@@ -41,7 +41,6 @@ import jdk.javadoc.doclet.StandardDoclet;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 abstract class Taglet implements jdk.javadoc.doclet.Taglet {
     /**

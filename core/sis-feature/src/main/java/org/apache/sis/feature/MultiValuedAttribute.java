@@ -50,7 +50,6 @@ import org.apache.sis.internal.feature.Resources;
  * @see DefaultAttributeType
  *
  * @since 0.5
- * @module
  */
 final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**

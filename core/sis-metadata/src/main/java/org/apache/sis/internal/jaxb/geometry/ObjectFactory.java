@@ -32,7 +32,6 @@ import org.apache.sis.util.Workaround;
  * @author  Guilhem Legal (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 @XmlRegistry
 public class ObjectFactory {

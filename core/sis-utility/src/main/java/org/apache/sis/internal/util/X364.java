@@ -38,7 +38,6 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.io.wkt.Colors
  *
  * @since 0.3
- * @module
  */
 public enum X364 {
     /** Reset all attributes to their default value. */ RESET               ((byte)  0, null),

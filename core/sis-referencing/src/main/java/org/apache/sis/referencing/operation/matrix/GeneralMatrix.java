@@ -41,7 +41,6 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * @see Matrices#createDiagonal(int, int)
  *
  * @since 0.4
- * @module
  */
 class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     /**

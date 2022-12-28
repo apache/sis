@@ -48,10 +48,9 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)
-public final strictfp class NameMarshallingTest extends TestCase {
+public final class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      *

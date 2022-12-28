@@ -40,7 +40,6 @@ import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
     /**

@@ -48,19 +48,17 @@ import org.apache.sis.util.collection.TreeTable.Node;
  *
  * Example:
  *
- * {@preformat text
+ * <pre class="text">
  *     Identification info
  *      ├─Abstract………………………………………………………………………………… Some data.
  *      ├─Locale (1 of 2)……………………………………………………………… en_US
  *      │   └─Character set………………………………………………………… US-ASCII
  *      └─Locale (2 of 2)……………………………………………………………… fr
- *          └─Character set………………………………………………………… ISO-8859-1
- * }
+ *          └─Character set………………………………………………………… ISO-8859-1</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class LocaleAndCharset implements Node {
     /**

@@ -134,7 +134,6 @@ import org.apache.sis.util.UnknownNameException;
  * @see DefaultNameFactory
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "TypeName_Type")
 @XmlRootElement(name = "TypeName")

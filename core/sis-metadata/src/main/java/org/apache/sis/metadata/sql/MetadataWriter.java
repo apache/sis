@@ -114,7 +114,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public class MetadataWriter extends MetadataSource {
     /**
@@ -635,9 +634,9 @@ public class MetadataWriter extends MetadataSource {
      * Returns the SQL statement for creating the given table with the given primary key.
      * This method returns a string of the following form:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     CREATE TABLE "schema"."table" (primaryKey VARCHAR(20) NOT NULL PRIMARY KEY)
-     * }
+     *     }
      */
     private String createTable(final String table, final String primaryKey) throws SQLException {
         return helper().clear().append("CREATE TABLE ").appendIdentifier(schema(), table)

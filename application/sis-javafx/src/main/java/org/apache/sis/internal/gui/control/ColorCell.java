@@ -53,7 +53,6 @@ import org.apache.sis.internal.gui.GUIUtilities;
  * @param  <S>  the type of row data as declared in the {@code TableView} generic type.
  *
  * @since 1.1
- * @module
  */
 final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<ActionEvent> {
     /**

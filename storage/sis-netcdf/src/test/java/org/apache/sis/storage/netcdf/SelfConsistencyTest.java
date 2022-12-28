@@ -39,9 +39,8 @@ import static org.junit.Assume.assumeNotNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class SelfConsistencyTest extends CoverageReadConsistency {
+public final class SelfConsistencyTest extends CoverageReadConsistency {
     /**
      * The file used for the test, opened only once.
      */

@@ -83,11 +83,10 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @SuppressWarnings("OverlyStrongTypeCast")
 @DependsOn(PropertyInformationTest.class)
-public final strictfp class PropertyAccessorTest extends TestCase {
+public final class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new property accessor for the {@link DefaultCitation} class.
      */
@@ -265,15 +264,14 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Tests the {@link PropertyAccessor#get(int, Object)} method on the {@link HardCodedCitations#ISO_19111} constant.
      * The metadata object read by this test is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title…………………………………… International Organization for Standardization
      *     ├─Alternate title………… ISO 19111
      *     ├─Identifier
      *     │   ├─Code…………………………… 19111
      *     │   └─Code space…………… ISO
-     *     └─Presentation form…… Document digital
-     * }
+     *     └─Presentation form…… Document digital</pre>
      */
     @Test
     @DependsOnMethod("testConstructor")
@@ -301,15 +299,14 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * with a value to be stored <cite>as-is</cite> (without conversion).
      * The metadata object created by this test is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title………………………… Some title
      *     ├─Identifier
      *     │   ├─Code………………… Some ISBN code
      *     │   └─Authority
      *     │       └─Title…… ISBN
-     *     └─ISBN…………………………… Some ISBN code
-     * }
+     *     └─ISBN…………………………… Some ISBN code</pre>
      */
     @Test
     @DependsOnMethod("testGet")
@@ -337,10 +334,9 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * Setting a property to {@code null} is equivalent to removing that property value.
      * The metadata object used by this test (before removal) is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
-     *     └─Title………………………… Some title
-     * }
+     *     └─Title………………………… Some title</pre>
      */
     @Test
     @DependsOnMethod("testSet")
@@ -398,10 +394,9 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * with a value that will need to be converted. The conversion will be from
      * {@link String} to {@link InternationalString}. The created metadata object is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
-     *     └─Title……………… Some title
-     * }
+     *     └─Title……………… Some title</pre>
      */
     @Test
     @DependsOnMethod("testSet")
@@ -424,12 +419,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * is a collection. The new collection shall replace the previous one (no merge expected).
      * The metadata object created by this test after the replacement is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title……………………………………………………… Ignored title
      *     ├─Alternate title (1 of 2)…… New title 1
-     *     └─Alternate title (2 of 2)…… New title 2
-     * }
+     *     └─Alternate title (2 of 2)…… New title 2</pre>
      *
      * @see #testSetInAppendMode()
      */
@@ -463,12 +457,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * when adding elements in a collection, without conversion of type.
      * The metadata object created by this test is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title……………………………………………………… Ignored title
      *     ├─Alternate title (1 of 2)…… Another title
-     *     └─Alternate title (2 of 2)…… Yet another title
-     * }
+     *     └─Alternate title (2 of 2)…… Yet another title</pre>
      */
     @Test
     @DependsOnMethod("testSet")
@@ -481,12 +474,11 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * when adding elements in a collection, with conversion of type.
      * The metadata object created by this test is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title……………………………………………………… Ignored title
      *     ├─Alternate title (1 of 2)…… Another title
-     *     └─Alternate title (2 of 2)…… Yet another title
-     * }
+     *     └─Alternate title (2 of 2)…… Yet another title</pre>
      */
     @Test
     @DependsOnMethod("testSetIntoCollection")
@@ -533,14 +525,13 @@ public final strictfp class PropertyAccessorTest extends TestCase {
      * are added into existing collections instead of replacing them.
      * The metadata object created by this test after the merge is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DefaultCitation
      *     ├─Title……………………………………………………… Added title
      *     ├─Alternate title (1 of 4)…… Old title 1
      *     ├─Alternate title (2 of 4)…… Old title 2
      *     ├─Alternate title (3 of 4)…… New title 1
-     *     └─Alternate title (4 of 4)…… New title 2
-     * }
+     *     └─Alternate title (4 of 4)…… New title 2</pre>
      *
      * @see #testSetCollection()
      */

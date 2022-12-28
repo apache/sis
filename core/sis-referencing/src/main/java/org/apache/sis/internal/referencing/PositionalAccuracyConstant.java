@@ -48,7 +48,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
  *
  * @since 0.5
- * @module
  */
 @XmlTransient
 public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPositionalAccuracy {

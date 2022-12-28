@@ -39,7 +39,6 @@ import org.apache.sis.internal.sql.feature.InfoStatements;
  * @see <a href="https://postgis.net/docs/RT_reference.html">PostGIS Raster reference</a>
  *
  * @since 1.2
- * @module
  */
 abstract class RasterFormat {
     /**

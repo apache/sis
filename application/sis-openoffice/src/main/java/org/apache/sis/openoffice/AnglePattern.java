@@ -39,7 +39,6 @@ import org.apache.sis.util.collection.Cache;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class AnglePattern {
     /**

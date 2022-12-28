@@ -103,19 +103,19 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * The encoding and decoding processes take in account Norway and Svalbard special cases (they have wider UTM zones for
  * historical reasons).</p>
  *
- * <div class="note"><b>Example:</b>
- * the following code:
+ * <h2>Example</h2>
+ * The following code:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     MilitaryGridReferenceSystem system = new MilitaryGridReferenceSystem();
  *     MilitaryGridReferenceSystem.Coder coder = system.createCoder();
  *     Location loc = coder.decode("32TNL83");
  *     System.out.println(loc);
- * }
+ *     }
  *
  * should display (locale may vary):
  *
- * {@preformat text
+ * <pre class="text">
  *     ┌─────────────────────────────────────────────────────────────────┐
  *     │ Location type:               Grid coordinate                    │
  *     │ Geographic identifier:       32TNL83                            │
@@ -127,9 +127,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  *     │ North bound:                 4,540,000 m    —    41°00′27″N     │
  *     │ Coordinate reference system: WGS 84 / UTM zone 32N              │
  *     │ Administrator:               North Atlantic Treaty Organization │
- *     └─────────────────────────────────────────────────────────────────┘
- * }
- * </div>
+ *     └─────────────────────────────────────────────────────────────────┘</pre>
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe.
@@ -143,7 +141,6 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
@@ -186,20 +183,20 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * The first of the two letters ({@code 'I'} and {@code 'O'}) excluded in MGRS notation.
      * This letter and all following letters shall be shifted by one character. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     char band = ...;
      *     if (band >= EXCLUDE_I) {
      *         band++;
      *         if (band >= EXCLUDE_O) band++;
      *     }
-     * }
+     *     }
      *
      * or equivalently:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     char band = ...;
      *     if (band >= EXCLUDE_I && ++band >= EXCLUDE_O) band++;
-     * }
+     *     }
      */
     private static final char EXCLUDE_I = 'I';
 
@@ -374,7 +371,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.8
-     * @module
      */
     public class Coder extends ReferencingByIdentifiers.Coder {
         /**
@@ -1445,7 +1441,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
      *
      * @since 0.8
-     * @module
      */
     static final class Encoder {
         /**
@@ -1787,7 +1782,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     static final class Decoder extends SimpleLocation.Projected {
         /**
@@ -1813,16 +1807,16 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          *     coordinates in the latitude band, as a multiple of the number of metres in a full cycle of
          *     {@value #GRID_ROW_COUNT} rows. That northing value can be computed in metre as below:
          *
-         *     {@preformat java
+         *     {@snippet lang="java" :
          *         double northing = (ROW_RESOLVER[i] & NORTHING_BITS_MASK) * (GRID_SQUARE_SIZE * GRID_ROW_COUNT);
-         *     }
+         *         }
          *   </li><li>
          *     Given a row number <var>row</var> in the [0 … 19] range, the following expression tells
          *     if that row can be inside the latitude band:
          *
-         *     {@preformat java
+         *     {@snippet lang="java" :
          *         boolean isValidRow = (ROW_RESOLVER[i] & (1 << (row + NORTHING_BITS_COUNT))) != 0;
-         *     }
+         *         }
          *
          *     Note that the same row may be valid in two consecutive latitude bands.
          *     The trailing {@code _0000} parts make room for {@value #NORTHING_BITS_COUNT} bits.

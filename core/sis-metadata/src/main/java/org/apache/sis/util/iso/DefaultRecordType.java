@@ -62,8 +62,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * {@link DefaultRecordSchema#createRecordType(CharSequence, Map)} method.
  * Example:
  *
- * <div class="note">
- * {@preformat java
+ * {@snippet lang="java" :
  *     DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
  *     // The same instance can be reused for all records to create in that schema.
  *
@@ -73,8 +72,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  *     fields.put("longitude",   Double .class);
  *     fields.put("population",  Integer.class);
  *     RecordType record = schema.createRecordType("MyRecordType", fields);
- * }
- * </div>
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus inherently thread-safe if the {@link TypeName}, the {@link RecordSchema}
@@ -95,7 +93,6 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * @see DefaultMemberName
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "RecordType")
 public class DefaultRecordType extends RecordDefinition implements RecordType, Serializable {
@@ -293,9 +290,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * {@linkplain DefaultRecordSchema record schema}, then the record type name shall be valid in the
      * {@linkplain DefaultNameSpace name space} of the record schema:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     NameSpace namespace = getContainer().getSchemaName().scope()
-     * }
+     *     }
      *
      * <div class="note"><b>Comparison with Java reflection:</b>
      * If we think about this {@code RecordType} as equivalent to a {@code Class} instance,
@@ -366,9 +363,9 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * Returns the set of attribute names defined in this {@code RecordType}'s dictionary.
      * This method is functionally equivalent to the following code, but slightly more efficient:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     getFieldTypes().keySet();
-     * }
+     *     }
      *
      * @return the set of field names, or an empty set if none.
      */
@@ -388,14 +385,13 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * Returns the type associated to the given attribute name, or {@code null} if none.
      * This method is functionally equivalent to (omitting the check for null value):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     getFieldTypes().get(name).getTypeName();
-     * }
+     *     }
      *
-     * <div class="note"><b>Comparison with Java reflection:</b>
+     * <h4>Comparison with Java reflection</h4>
      * If we think about this {@code RecordType} as equivalent to a {@code Class} instance, then
      * this method can be though as related to the Java {@link Class#getField(String)} method.
-     * </div>
      *
      * @param  fieldName  the attribute name for which to get the associated type name.
      * @return the associated type name, or {@code null} if none.
@@ -410,14 +406,14 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * Determines if the given record is compatible with this record type. This method returns {@code true}
      * if the given {@code record} argument is non-null and the following condition holds:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Set<MemberName> attributeNames = record.getAttributes().keySet();
      *     boolean isInstance = getMembers().containsAll(attributeNames);
-     * }
+     *     }
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * We do not require that {@code record.getRecordType() == this} in order to allow record
-     * "sub-types" to define additional fields, in a way similar to Java sub-classing.</div>
+     * "sub-types" to define additional fields, in a way similar to Java sub-classing.
      *
      * @param  record  the record to test for compatibility.
      * @return {@code true} if the given record is compatible with this {@code RecordType}.
@@ -498,12 +494,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * A record can be anything, but usages that we have seen so far write a character sequence
      * of what seems <var>key</var>-<var>description</var> pairs. Examples:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gco:RecordType>
      *     General Meteorological Products: General products include the baseline reflectivity and velocity,
      *     and also algorithmic graphic products spectrum width, vertical integrated liquid, and VAD wind profile.
      *   </gco:RecordType>
-     * }
+     *   }
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */

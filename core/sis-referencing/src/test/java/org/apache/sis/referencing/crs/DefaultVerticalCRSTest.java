@@ -30,9 +30,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultVerticalCRSTest extends TestCase {
+public final class DefaultVerticalCRSTest extends TestCase {
     /**
      * Tests WKT 1 formatting.
      */

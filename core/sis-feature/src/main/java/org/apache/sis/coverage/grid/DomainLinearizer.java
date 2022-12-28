@@ -49,7 +49,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see LinearTransformBuilder#approximate(MathTransform, Envelope)
  *
  * @since 1.1
- * @module
  */
 public class DomainLinearizer {
     /**

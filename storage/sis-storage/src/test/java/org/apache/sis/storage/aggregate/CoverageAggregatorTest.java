@@ -30,9 +30,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
-public final strictfp class CoverageAggregatorTest extends TestCase {
+public final class CoverageAggregatorTest extends TestCase {
     /**
      * Tests an empty aggregator.
      *

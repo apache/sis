@@ -65,9 +65,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
-public abstract strictfp class MathTransformTestCase extends TransformTestCase {
+public abstract class MathTransformTestCase extends TransformTestCase {
     /**
      * The number of coordinates to use for stressing the math transform. We use a number that
      * encompass at least 2 time the default buffer size in order to test the code that use

@@ -36,10 +36,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn(AffineTest.class)
-public final strictfp class Geographic3Dto2DTest extends TestCase {
+public final class Geographic3Dto2DTest extends TestCase {
     /**
      * Tests {@code Geographic3Dto2D.createMathTransform(…)}.
      *

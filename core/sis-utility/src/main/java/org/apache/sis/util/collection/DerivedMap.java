@@ -64,7 +64,6 @@ import org.apache.sis.math.FunctionProperty;
  * @param <V>   the type of values in this map.
  *
  * @since 0.3
- * @module
  */
 class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         ObjectConverter<Map.Entry<SK,SV>, Map.Entry<K,V>>, Serializable

@@ -31,7 +31,6 @@ import org.apache.sis.internal.storage.Resources;
  * @see ConcurrentWriteException
  *
  * @since 0.8
- * @module
  */
 public class ConcurrentReadException extends DataStoreException {
     /**

@@ -30,7 +30,6 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 public final class CD_Ellipsoid extends PropertyType<CD_Ellipsoid, Ellipsoid> {
     /**

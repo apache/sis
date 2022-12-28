@@ -29,9 +29,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class WraparoundApplicatorTest extends TestCase {
+public final class WraparoundApplicatorTest extends TestCase {
     /**
      * Tests {@link WraparoundApplicator#range(CoordinateSystem, int)}.
      */

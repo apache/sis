@@ -52,7 +52,6 @@ import org.apache.sis.filter.Expression;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public abstract class Node implements Serializable {
     /**

@@ -50,7 +50,6 @@ import java.awt.image.WritableRenderedImage;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class BandedIterator extends WritablePixelIterator {
     /**

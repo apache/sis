@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class FunctionNamesTest extends TestCase {
+public final class FunctionNamesTest extends TestCase {
     /**
      * Verifies that each field has the same name than its value.
      *

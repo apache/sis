@@ -39,7 +39,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 public final class Features extends Static {
     /**

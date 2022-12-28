@@ -31,7 +31,6 @@ import org.apache.sis.internal.metadata.legacy.LegacyPropertyAdapter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class LegacyTelephones extends LegacyPropertyAdapter<String,Telephone> {
     /**

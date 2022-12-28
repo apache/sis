@@ -63,6 +63,5 @@
  * @author  Adrian Custer (Geomatys)
  * @version 1.4
  * @since   0.5
- * @module
  */
 package org.apache.sis.referencing.operation.transform;

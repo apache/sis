@@ -55,7 +55,6 @@ import org.apache.sis.gui.Widget;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 @DefaultProperty("metadata")
 public class MetadataSummary extends Widget {

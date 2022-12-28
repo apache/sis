@@ -41,7 +41,6 @@ import org.apache.sis.storage.Resource;
  * @see Resource#addListener(Class, StoreListener)
  *
  * @since 1.0
- * @module
  */
 public interface StoreListener<E extends StoreEvent> extends EventListener {
     /**

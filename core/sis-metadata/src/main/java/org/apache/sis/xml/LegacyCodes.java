@@ -30,7 +30,6 @@ import org.apache.sis.util.collection.Containers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class LegacyCodes {
     /**

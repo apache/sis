@@ -23,7 +23,6 @@ package org.apache.sis.internal.netcdf;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public enum VariableRole {
     /**

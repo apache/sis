@@ -42,9 +42,8 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class ImmutableIdentifierTest extends TestCase {
+public final class ImmutableIdentifierTest extends TestCase {
     /**
      * Returns the properties map to be used in argument to test methods.
      */

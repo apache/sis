@@ -88,7 +88,6 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 final class StandardDefinitions {
     /**

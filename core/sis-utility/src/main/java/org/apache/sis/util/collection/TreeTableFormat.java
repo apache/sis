@@ -55,22 +55,20 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * If a {@code TreeTable} is formatted with only that column,
  * then the {@link String} result is like the following example:
  *
- * {@preformat text
+ * <pre class="text">
  *   Node #1
  *     ├─Node #2
  *     │   └─Node #4
- *     └─Node #3
- * }
+ *     └─Node #3</pre>
  *
  * If the same {@code TreeTable} is formatted with two columns,
  * then the {@link String} result is like the following example:
  *
- * {@preformat text
+ * <pre class="text">
  *   Node #1……………………… More #1
  *     ├─Node #2…………… More #2
  *     │   └─Node #4… More #4
- *     └─Node #3…………… More #3
- * }
+ *     └─Node #3…………… More #3</pre>
  *
  * This representation can be printed to the {@linkplain java.io.Console#writer() console output}
  * (for example) if the stream uses a monospaced font and supports Unicode characters.
@@ -97,7 +95,6 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
@@ -932,10 +929,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * The output with default values is like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   root
-     *     └─column0…… column1…… column2…… column3
-     * }
+     *     └─column0…… column1…… column2…… column3</pre>
      *
      * Subclasses can override this method if different column separators are desired.
      * Note however that doing so may prevent the {@link #parse parse(…)} method to work.

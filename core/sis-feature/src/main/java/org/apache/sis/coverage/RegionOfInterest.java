@@ -51,7 +51,6 @@ import org.apache.sis.util.Utilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class RegionOfInterest implements LenientComparable, Serializable {
     /**

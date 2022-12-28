@@ -74,7 +74,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  * @see DataStores#open(Object)
  *
  * @since 0.3
- * @module
  */
 public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
@@ -292,9 +291,9 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * the returned identifier shall be different than the identifiers of those child resources.
      * In other words, the following equality shall hold without ambiguity:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     findResource(getIdentifier().toString()) == this
-     * }
+     *     }
      *
      * Note that this identifier is not guaranteed to be unique between different {@code DataStore} instances;
      * it only needs to be unique among the resources provided by this data store instance.

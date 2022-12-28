@@ -54,7 +54,6 @@ import org.apache.sis.util.logging.Logging;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public abstract class URIDataStore extends DataStore implements StoreResource, ResourceOnFileSystem {
     /**
@@ -208,7 +207,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.2
      * @since   0.8
-     * @module
      */
     public abstract static class Provider extends DataStoreProvider {
         /**

@@ -29,7 +29,6 @@ package org.apache.sis.referencing;
  * @see GeodeticCalculator
  *
  * @since 1.0
- * @module
  */
 public class GeodeticException extends RuntimeException {
     /**

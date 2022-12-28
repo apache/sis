@@ -29,7 +29,6 @@ import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
  * @author  Cullen Rombach (Image Matters)
  * @since   1.0
  * @version 1.0
- * @module
  */
 public final class MD_FeatureTypeInfo extends PropertyType<MD_FeatureTypeInfo, DefaultFeatureTypeInfo> {
     /**

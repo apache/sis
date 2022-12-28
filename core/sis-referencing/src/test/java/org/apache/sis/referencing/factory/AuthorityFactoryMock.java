@@ -52,9 +52,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
-public final strictfp class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
+public final class AuthorityFactoryMock extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, AutoCloseable
 {
     /**

@@ -50,7 +50,6 @@ import static java.util.logging.Logger.getLogger;
  * @see Citations
  *
  * @since 0.6
- * @module
  */
 public class CitationConstant extends SimpleCitation {
     /**

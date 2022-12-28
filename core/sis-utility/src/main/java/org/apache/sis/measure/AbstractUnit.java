@@ -63,7 +63,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <Q>  the kind of quantity to be measured using this units.
  *
  * @since 0.8
- * @module
  */
 abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientComparable, Serializable {
     /**
@@ -338,9 +337,9 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * Indicates if this unit is compatible with the given unit.
      * This implementation delegates to:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return getDimension().equals(that.getDimension());
-     * }
+     *   }
      *
      * @param  that the other unit to compare for compatibility.
      * @return {@code true} if the given unit is compatible with this unit.

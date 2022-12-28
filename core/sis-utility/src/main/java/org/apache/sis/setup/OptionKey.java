@@ -52,7 +52,7 @@ import static java.util.logging.Logger.getLogger;
  * Developers who wish to define their own options can define static constants in a subclass,
  * as in the following example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public final class MyOptionKey<T> extends OptionKey<T> {
  *         public static final OptionKey<String> MY_OPTION = new MyOptionKey<>("MY_OPTION", String.class);
  *
@@ -60,7 +60,7 @@ import static java.util.logging.Logger.getLogger;
  *             super(name, type);
  *         }
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -68,7 +68,6 @@ import static java.util.logging.Logger.getLogger;
  * @param <T>  the type of option values.
  *
  * @since 0.3
- * @module
  */
 public class OptionKey<T> implements Serializable {
     /**
@@ -260,12 +259,12 @@ public class OptionKey<T> implements Serializable {
      * Returns the option value in the given map for this key, or {@code null} if none.
      * This is a convenience method for implementers, which can be used as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public <T> T getOption(final OptionKey<T> key) {
      *         ArgumentChecks.ensureNonNull("key", key);
      *         return key.getValueFrom(options);
      *     }
-     * }
+     *     }
      *
      * @param  options  the map where to search for the value, or {@code null} if not yet created.
      * @return the current value in the map for the this option, or {@code null} if none.
@@ -278,12 +277,12 @@ public class OptionKey<T> implements Serializable {
      * Sets a value for this option key in the given map, or in a new map if the given map is {@code null}.
      * This is a convenience method for implementers, which can be used as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public <T> void setOption(final OptionKey<T> key, final T value) {
      *         ArgumentChecks.ensureNonNull("key", key);
      *         options = key.setValueInto(options, value);
      *     }
-     * }
+     *     }
      *
      * @param  options  the map where to set the value, or {@code null} if not yet created.
      * @param  value    the new value for the given option, or {@code null} for removing the value.

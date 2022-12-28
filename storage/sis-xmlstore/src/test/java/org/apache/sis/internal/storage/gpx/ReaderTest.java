@@ -54,10 +54,9 @@ import org.opengis.util.GenericName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 @DependsOn(MetadataTest.class)
-public final strictfp class ReaderTest extends TestCase {
+public final class ReaderTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */

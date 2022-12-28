@@ -35,7 +35,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class MappedByteReader extends AbstractDbase3ByteReader implements AutoCloseable {
     /** List of field descriptors. */

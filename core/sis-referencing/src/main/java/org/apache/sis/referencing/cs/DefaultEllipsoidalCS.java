@@ -53,7 +53,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoidalCS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "EllipsoidalCSType")
 @XmlRootElement(name = "EllipsoidalCS")

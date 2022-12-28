@@ -37,7 +37,6 @@ import static java.lang.Math.multiplyFull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class CompressedSubset extends DataSubset {
     /**

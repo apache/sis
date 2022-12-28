@@ -31,7 +31,6 @@ import org.apache.sis.internal.system.SystemListener;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public final class DataStores extends Static {
     /**

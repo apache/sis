@@ -41,7 +41,6 @@ import java.util.Objects;
  *            then this is the type of elements (not the collection type).
  *
  * @since 0.8
- * @module
  */
 class AttributeView<V> extends AbstractAttribute<V> {
     /**

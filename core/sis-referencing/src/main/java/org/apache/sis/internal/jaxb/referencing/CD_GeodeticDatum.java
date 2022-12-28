@@ -30,7 +30,6 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, GeodeticDatum> {
     /**

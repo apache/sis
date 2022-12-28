@@ -78,7 +78,6 @@ import static java.util.logging.Logger.getLogger;
  * @see java.awt.image.AffineTransformOp
  *
  * @since 1.1
- * @module
  */
 public class ResampledImage extends ComputedImage {
     /**
@@ -316,9 +315,9 @@ public class ResampledImage extends ComputedImage {
      * The return value should be 0 according above contract, but this method returns 0.5 instead.
      * This addition of a 0.5 offset allows the following substitution:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Math.round(x) ≈ (long) Math.floor(x + 0.5)
-     * }
+     *     }
      *
      * {@link Math#round(double)} is the desired behavior for nearest-neighbor interpolation, but the buffer given
      * to {@link Interpolation#interpolate(DoubleBuffer, int, double, double, double[], int)} is filled with values

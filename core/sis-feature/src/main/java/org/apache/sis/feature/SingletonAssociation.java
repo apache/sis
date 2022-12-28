@@ -37,7 +37,6 @@ import java.util.Objects;
  * @see DefaultAssociationRole
  *
  * @since 0.5
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
 final class SingletonAssociation extends AbstractAssociation {

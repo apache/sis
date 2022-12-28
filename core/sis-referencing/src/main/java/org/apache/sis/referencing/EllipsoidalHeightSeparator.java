@@ -52,7 +52,6 @@ import static org.apache.sis.internal.referencing.ReferencingUtilities.getProper
  * @see org.apache.sis.internal.referencing.EllipsoidalHeightCombiner
  *
  * @since 1.0
- * @module
  */
 final class EllipsoidalHeightSeparator implements AxisFilter {
     /**

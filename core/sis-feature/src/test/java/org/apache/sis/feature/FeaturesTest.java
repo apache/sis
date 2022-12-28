@@ -30,10 +30,9 @@ import static org.junit.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 0.7
  * @since   0.5
- * @module
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class FeaturesTest extends TestCase {
+public final class FeaturesTest extends TestCase {
     /**
      * Tests {@code Features.cast(AttributeType, Class)}.
      */

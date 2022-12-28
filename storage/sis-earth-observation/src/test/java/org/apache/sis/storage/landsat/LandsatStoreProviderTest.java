@@ -33,9 +33,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class LandsatStoreProviderTest extends TestCase {
+public final class LandsatStoreProviderTest extends TestCase {
     /**
      * Tests {@link LandsatStoreProvider#probeContent(StorageConnector)} method.
      *

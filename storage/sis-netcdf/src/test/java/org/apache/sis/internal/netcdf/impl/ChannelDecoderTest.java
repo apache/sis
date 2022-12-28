@@ -36,10 +36,9 @@ import org.apache.sis.test.DependsOn;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(DecoderTest.class)
-public final strictfp class ChannelDecoderTest extends DecoderTest {
+public final class ChannelDecoderTest extends DecoderTest {
     /**
      * Creates a new decoder for the specified dataset.
      *

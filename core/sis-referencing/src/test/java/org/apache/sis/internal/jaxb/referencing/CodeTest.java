@@ -37,9 +37,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
-public final strictfp class CodeTest extends TestCase {
+public final class CodeTest extends TestCase {
     /**
      * Tests the {@link Code#Code(ReferenceIdentifier)} constructor with {@code "EPSG:4326"} identifier.
      * This test intentionally uses an identifier with the {@code IOGP} authority instead of

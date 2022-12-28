@@ -44,7 +44,6 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 abstract class AbstractLocationType implements LenientComparable {
     /**
@@ -215,9 +214,9 @@ abstract class AbstractLocationType implements LenientComparable {
      * and {@link #getReferenceSystem()}, for avoiding never-ending loops.
      *
      * <p>This method is implemented as below:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(object, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * @param  object  the object to compare to {@code this}.
      * @return {@code true} if both objects are equal.
@@ -248,12 +247,11 @@ abstract class AbstractLocationType implements LenientComparable {
      * Current implementation formats a tree with the {@linkplain ModifiableLocationType#getName() name}
      * and {@linkplain ModifiableLocationType#getDefinition() definition} of each type, like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   administrative area………………… area of responsibility of highest level local authority
      *     ├─town……………………………………………… city or town
      *     │   └─street……………………………… thoroughfare providing access to properties
-     *     └─street………………………………………… thoroughfare providing access to properties
-     * }
+     *     └─street………………………………………… thoroughfare providing access to properties</pre>
      *
      * The string representation is mostly for debugging purpose and may change in any future SIS version.
      *

@@ -41,10 +41,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)
-public final strictfp class NamesTest extends TestCase {
+public final class NamesTest extends TestCase {
     /**
      * Tests {@link Names#createScopedName(GenericName, String, CharSequence)}.
      */

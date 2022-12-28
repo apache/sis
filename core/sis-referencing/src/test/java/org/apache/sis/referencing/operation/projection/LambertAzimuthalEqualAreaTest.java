@@ -42,9 +42,8 @@ import static org.junit.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
+public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
     /**
      * The radius of the sphere used in sphere test cases.
      */

@@ -51,7 +51,6 @@ import static org.apache.sis.internal.processing.isoline.Tracer.LOWER_RIGHT;
  * @see <a href="https://en.wikipedia.org/wiki/Marching_squares">Marching squares on Wikipedia</a>
  *
  * @since 1.1
- * @module
  */
 public final class Isolines {
     /**

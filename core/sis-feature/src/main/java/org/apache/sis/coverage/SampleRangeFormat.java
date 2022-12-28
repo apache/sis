@@ -37,7 +37,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 @SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
 final class SampleRangeFormat extends RangeFormat {
@@ -188,7 +187,7 @@ final class SampleRangeFormat extends RangeFormat {
      * Formats a string representation of the given list of categories.
      * This method formats a table like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   ┌────────────┬────────────────┬─────────────┐
      *   │   Values   │    Measures    │    Name     │
      *   ╞════════════╧════════════════╧═════════════╡
@@ -198,8 +197,7 @@ final class SampleRangeFormat extends RangeFormat {
      *   │         1  │ NaN #1         │ Clouds      │
      *   │         5  │ NaN #5         │ Lands       │
      *   │ [10 … 200) │ [6.0 … 25.0)°C │ Temperature │
-     *   └────────────┴────────────────┴─────────────┘
-     * }
+     *   └────────────┴────────────────┴─────────────┘</pre>
      *
      * @param dimensions  the list of sample dimensions to format.
      */

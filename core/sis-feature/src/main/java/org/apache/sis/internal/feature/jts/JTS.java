@@ -54,7 +54,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public final class JTS extends Static {
     /**

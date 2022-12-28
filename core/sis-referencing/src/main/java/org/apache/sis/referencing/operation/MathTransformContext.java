@@ -43,7 +43,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 final class MathTransformContext extends Context {
     /**

@@ -62,7 +62,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 final class Dispatcher implements InvocationHandler {
     /**

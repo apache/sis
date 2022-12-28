@@ -30,7 +30,6 @@ import software.amazon.awssdk.services.s3.model.Bucket;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class BucketStore extends FileStore {
     /**

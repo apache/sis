@@ -56,7 +56,6 @@ import org.apache.sis.internal.util.X364;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
 public class LineAppender extends Appender implements Flushable {
     /**

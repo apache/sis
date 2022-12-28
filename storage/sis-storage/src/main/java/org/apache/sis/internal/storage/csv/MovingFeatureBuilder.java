@@ -41,7 +41,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class MovingFeatureBuilder extends MovingFeatures {
     /**

@@ -98,7 +98,6 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/mri/1.0/mri.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MRI,

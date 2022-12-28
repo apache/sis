@@ -30,9 +30,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class BandTest extends TestCase {
+public final class BandTest extends TestCase {
     /**
      * Verifies the values returned by {@link Band#bufferToPixelType(int)}
      * by comparing them to the values returned by {@link Band#getDataBufferType()}.

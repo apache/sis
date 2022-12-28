@@ -30,6 +30,5 @@
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 package org.apache.sis.internal.feature;

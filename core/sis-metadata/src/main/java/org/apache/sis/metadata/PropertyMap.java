@@ -40,7 +40,6 @@ import java.util.Iterator;
  * @see InformationMap
  *
  * @since 0.3
- * @module
  */
 abstract class PropertyMap<V> extends AbstractMap<String,V> {
     /**
@@ -115,7 +114,6 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     abstract class Iter implements Iterator<Map.Entry<String,V>> {
         /**
@@ -152,7 +150,6 @@ abstract class PropertyMap<V> extends AbstractMap<String,V> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     class Entries extends AbstractSet<Map.Entry<String,V>> {
         /**

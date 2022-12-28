@@ -30,7 +30,6 @@ package org.apache.sis.coverage;
  * @see <a href="https://en.wikipedia.org/wiki/Linear_subspace">Linear subspace on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 public class SubspaceNotSpecifiedException extends CannotEvaluateException {
     /**

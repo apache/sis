@@ -28,7 +28,6 @@ import java.util.AbstractList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class FixedSizeList extends AbstractList<Object> {
     /**

@@ -81,7 +81,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @XmlType(name = "MD_SampleDimension_Type", propOrder = {
     "maxValue",

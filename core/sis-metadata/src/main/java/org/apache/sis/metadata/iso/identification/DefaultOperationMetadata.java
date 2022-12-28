@@ -70,7 +70,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @TitleProperty(name = "operationName")
 @XmlType(name = "SV_OperationMetadata_Type", namespace = Namespaces.SRV, propOrder = {
@@ -203,7 +202,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      * The element type will be changed to the {@code DistributedComputingPlatform} code list when GeoAPI will provide
      * it (tentatively in GeoAPI 3.1). In the meantime, users can define their own code list class as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final class UnsupportedCodeList extends CodeList<UnsupportedCodeList> {
      *       private static final List<UnsupportedCodeList> VALUES = new ArrayList<UnsupportedCodeList>();
      *
@@ -225,7 +224,7 @@ public class DefaultOperationMetadata extends ISOMetadata {
      *           }
      *       }
      *   }
-     * }
+     *   }
      * </div>
      *
      * @param  newValues  the new distributed computing platforms on which the operation has been implemented.

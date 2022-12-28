@@ -48,10 +48,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class HashCodeTest extends TestCase {
+public final class HashCodeTest extends TestCase {
     /**
      * Computes the hash code value of the given object.
      */

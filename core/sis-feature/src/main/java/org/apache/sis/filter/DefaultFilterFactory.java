@@ -64,7 +64,6 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  * @param  <T>  base class of temporal objects.
  *
  * @since 1.1
- * @module
  */
 public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory {
     /**

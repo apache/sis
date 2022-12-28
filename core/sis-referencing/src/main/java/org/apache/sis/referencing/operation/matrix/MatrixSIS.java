@@ -60,7 +60,6 @@ import org.apache.sis.util.resources.Errors;
  * @see Matrices
  *
  * @since 0.4
- * @module
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**
@@ -406,9 +405,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns {@code true} if this matrix is an identity matrix.
      * This method is equivalent to the following code, except that it is potentially more efficient:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Matrices.isIdentity(this, 0.0);
-     * }
+     *     }
      *
      * @return {@code true} if this matrix is an identity matrix.
      *
@@ -637,14 +636,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * <code>{@linkplain #multiply(Matrix) multiply}(T)</code> where <var>T</var> is a matrix like
      * below (size varies):
      *
-     * {@preformat math
+     * <pre class="math">
      *        ┌                    ┐
      *        │ 1  0  0  vector[0] │
      *    T = │ 0  1  0  vector[1] │
      *        │ 0  0  1  vector[2] │
      *        │ 0  0  0  vector[3] │
-     *        └                    ┘
-     * }
+     *        └                    ┘</pre>
      *
      * The length of the given vector must be equal to the number of columns in this matrix.
      * The last vector element is 1 for an affine transform, but other values are allowed.

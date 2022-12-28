@@ -48,10 +48,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({DefaultGeographicBoundingBoxTest.class, DefaultExtentTest.class})
-public final strictfp class ExtentsTest extends TestCase {
+public final class ExtentsTest extends TestCase {
     /**
      * One minute of angle, in degrees.
      */

@@ -23,7 +23,6 @@ package org.apache.sis.internal.geoapi.temporal;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.0
  * @version 1.0
- * @module
  */
 public interface Duration {
 }

@@ -114,7 +114,6 @@ import org.apache.sis.io.wkt.Convention;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "CompoundCRSType")
 @XmlRootElement(name = "CompoundCRS")

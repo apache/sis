@@ -41,16 +41,15 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 public final class Legacy {
     /**
      * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
      * OGC 01-009 defines the default geocentric axes as:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   AXIS[“X”,OTHER], AXIS[“Y”,EAST], AXIS[“Z”,NORTH]
-     * }
+     *   }
      *
      * where the {@code OTHER} axis is toward prime meridian. Those directions and axis names are different than
      * the ISO 19111's ones (ISO names are "Geocentric X", "Geocentric Y" and "Geocentric Z"). This constant uses

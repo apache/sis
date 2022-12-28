@@ -36,7 +36,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @param  <R>  the type of resources used as inputs.
  *
  * @since 1.1
- * @module
  */
 final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
     /**

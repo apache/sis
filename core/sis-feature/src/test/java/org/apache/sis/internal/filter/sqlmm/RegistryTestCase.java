@@ -62,9 +62,8 @@ import org.apache.sis.internal.geoapi.filter.Literal;
  * @param  <G> root class of geometry implementation.
  *
  * @since 1.1
- * @module
  */
-public abstract strictfp class RegistryTestCase<G> extends TestCase {
+public abstract class RegistryTestCase<G> extends TestCase {
     /**
      * Name of property value used in test feature instances.
      */

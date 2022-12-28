@@ -33,7 +33,6 @@ import javafx.util.Callback;
  * @param <T>  the type of values in table cells.
  *
  * @since 1.1
- * @module
  */
 public final class IdentityValueFactory<S extends T, T>
         implements Callback<TableColumn.CellDataFeatures<S,T>, ObservableValue<T>>

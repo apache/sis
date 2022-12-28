@@ -34,7 +34,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @Debug
 enum PolylineStage {

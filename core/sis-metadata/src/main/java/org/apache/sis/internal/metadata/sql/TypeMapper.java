@@ -26,7 +26,6 @@ import java.sql.Types;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final class TypeMapper {
     /**

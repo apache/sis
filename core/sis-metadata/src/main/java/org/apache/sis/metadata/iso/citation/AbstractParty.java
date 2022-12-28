@@ -66,7 +66,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @TitleProperty(name = "name")
 @XmlType(name = "AbstractCI_Party_Type", propOrder = {

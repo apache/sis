@@ -41,9 +41,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
-public final strictfp class ConvertedGridCoverageTest extends TestCase {
+public final class ConvertedGridCoverageTest extends TestCase {
     /**
      * Creates a test coverage backed by an image of 2 pixels
      * on a single row with sample values (-1, 3).

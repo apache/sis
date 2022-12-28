@@ -61,7 +61,6 @@ import org.apache.sis.measure.Angle;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCartesianCS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "CartesianCSType")
 @XmlRootElement(name = "CartesianCS")

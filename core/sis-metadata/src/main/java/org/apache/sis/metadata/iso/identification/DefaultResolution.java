@@ -76,7 +76,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @see AbstractIdentification#getSpatialResolutions()
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MD_Resolution_Type") // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_Resolution")

@@ -78,7 +78,6 @@ import static java.util.logging.Logger.getLogger;
  * @see Units#valueOf(String)
  *
  * @since 0.8
- * @module
  */
 public class UnitFormat extends Format implements javax.measure.format.UnitFormat, Localized {
     /**
@@ -139,7 +138,6 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     public enum Style {
         /**

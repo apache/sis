@@ -77,7 +77,6 @@ import org.apache.sis.gui.Widget;
  * @see GridView
  *
  * @since 1.1
- * @module
  */
 @DefaultProperty("coverage")
 public class CoverageExplorer extends Widget {

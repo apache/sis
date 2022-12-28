@@ -42,7 +42,6 @@ import org.opengis.metadata.quality.TopologicalConsistency;
  * @author  Touraïvane (IRD)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_TopologicalConsistency_Type")
 @XmlRootElement(name = "DQ_TopologicalConsistency")

@@ -63,7 +63,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
     /**

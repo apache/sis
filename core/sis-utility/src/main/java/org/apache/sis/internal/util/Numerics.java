@@ -43,7 +43,6 @@ import static java.lang.Math.ulp;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 public final class Numerics extends Static {
     /**
@@ -100,13 +99,13 @@ public final class Numerics extends Static {
      * detect the cases where two {@link org.apache.sis.referencing.operation.transform.LinearTransform}
      * are equal for practical purpose. This threshold can be used as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Matrix m1 = ...;
      *     Matrix m2 = ...;
      *     if (Matrices.epsilonEqual(m1, m2, COMPARISON_THRESHOLD, true)) {
      *         // Consider that matrixes are equal.
      *     }
-     * }
+     *     }
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
@@ -123,9 +122,9 @@ public final class Numerics extends Static {
      * {@code double}. For any real value, the following code evaluate to 0 if the given value is
      * positive:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Double.doubleToRawLongBits(value) & SIGN_BIT_MASK;
-     * }
+     *     }
      *
      * Note that this idiom differentiates positive zero from negative zero.
      * It should be used only when such difference matter.
@@ -511,9 +510,9 @@ public final class Numerics extends Static {
      * Converts a power of 2 to a power of 10, rounded toward negative infinity.
      * This method is equivalent to the following code, but using only integer arithmetic:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return (int) Math.floor(exp2 * LOG10_2);
-     * }
+     *     }
      *
      * This method is valid only for arguments in the [-2620 … 2620] range, which is more than enough
      * for the range of {@code double} exponents. We do not put this method in public API because it
@@ -552,9 +551,9 @@ public final class Numerics extends Static {
      * where <var>n</var> is {@link Math#getExponent(double)} - {@value #SIGNIFICAND_SIZE}.
      * For any non-NaN values (including infinity), the following relationship holds:
      *
-     * {@preformat java
-     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == Math.abs(value);
-     * }
+     * {@snippet lang="java" :
+     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == Math.abs(value);
+     *     }
      *
      * For negative values, this method behaves as if the value was positive.
      *
@@ -582,9 +581,9 @@ public final class Numerics extends Static {
      * <var>n</var> is {@link Math#getExponent(float)} - {@value #SIGNIFICAND_SIZE_OF_FLOAT}.
      * For any non-NaN positive values (including infinity), the following relationship holds:
      *
-     * {@preformat java
-     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
-     * }
+     * {@snippet lang="java" :
+     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
+     *     }
      *
      * For negative values, this method behaves as if the value was positive.
      *

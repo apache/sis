@@ -43,7 +43,6 @@ import org.apache.sis.xml.NilReason;
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
  * @since 0.3
- * @module
  */
 public enum ValueExistencePolicy {
     /**
@@ -136,7 +135,7 @@ public enum ValueExistencePolicy {
      * This policy is relevant for metadata classes annotated with {@link TitleProperty};
      * for all other classes, this policy is identical to {@link #NON_EMPTY}.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * the {@link org.apache.sis.metadata.iso.citation.DefaultCitation} and
      * {@link org.apache.sis.metadata.iso.citation.DefaultCitationDate} classes are annotated with
      * <code>&#64;TitleProperty(name="title")</code> and <code>&#64;TitleProperty(name="date")</code>
@@ -148,21 +147,19 @@ public enum ValueExistencePolicy {
      *     <th>{@code NON_EMPTY}</th>
      *     <th class="sep">{@code COMPACT}</th>
      *   </tr><tr><td>
-     *     {@preformat text
-     *       Citation
-     *        ├─Title……………………… My document
-     *        └─Date
-     *           ├─Date………………… 2012/01/01
-     *           └─Date type…… Creation
-     *     }
+     *     <pre class="text">
+     * Citation
+     *  ├─Title……………………… My document
+     *  └─Date
+     *     ├─Date………………… 2012/01/01
+     *     └─Date type…… Creation</pre>
      *   </td><td class="sep">
-     *     {@preformat text
-     *       Citation……………………… My document
-     *        └─Date………………………… 2012/01/01
-     *           └─Date type…… Creation
-     *     }
+     *     <pre class="text">
+     * Citation……………………… My document
+     *  └─Date………………………… 2012/01/01
+     *     └─Date type…… Creation</pre>
      *   </td></tr>
-     * </table></div>
+     * </table>
      *
      * This policy is the default behavior of {@link AbstractMetadata#asTreeTable()},
      * and consequently defines the default rendering of {@link AbstractMetadata#toString()}.

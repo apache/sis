@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.referencing.gazetteer.LocationFormatTest.class,
@@ -37,7 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.referencing.gazetteer.MilitaryGridReferenceSystemTest.class,
     org.apache.sis.referencing.gazetteer.GazetteerFactoryTest.class
 })
-public final strictfp class ReferencingByIdentifiersTestSuite extends TestSuite {
+public final class ReferencingByIdentifiersTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

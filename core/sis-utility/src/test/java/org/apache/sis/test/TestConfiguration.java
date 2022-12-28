@@ -25,9 +25,8 @@ import org.apache.sis.util.Static;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class TestConfiguration extends Static {
+public final class TestConfiguration extends Static {
     /**
      * The {@systemProperty org.apache.sis.test.extensive} system property for enabling more extensive tests.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},

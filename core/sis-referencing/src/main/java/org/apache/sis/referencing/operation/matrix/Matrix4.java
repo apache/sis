@@ -38,7 +38,6 @@ import org.opengis.referencing.operation.Matrix;
  * @see Matrix3
  *
  * @since 0.4
- * @module
  */
 public class Matrix4 extends MatrixSIS {
     /**

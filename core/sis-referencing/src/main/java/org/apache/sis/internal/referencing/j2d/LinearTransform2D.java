@@ -28,7 +28,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public interface LinearTransform2D extends MathTransform2D, LinearTransform {
     /**

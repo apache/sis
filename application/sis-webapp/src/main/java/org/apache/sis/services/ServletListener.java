@@ -29,7 +29,6 @@ import org.apache.sis.internal.system.Shutdown;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 @WebListener("Apache SIS shutdown hook")
 public final class ServletListener implements ServletContextListener {

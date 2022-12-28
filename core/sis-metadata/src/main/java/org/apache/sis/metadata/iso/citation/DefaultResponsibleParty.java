@@ -57,7 +57,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * @author  Cédric Briançon (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @XmlType(name = "CI_ResponsibleParty_Type", namespace = LegacyNamespaces.GMD, propOrder = {
     "individualName",

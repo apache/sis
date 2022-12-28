@@ -41,7 +41,6 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @param  <V>  the type of values computed by the expression.
  *
  * @since 1.0
- * @module
  */
 public interface FeatureExpression<R,V> extends Expression<R,V> {
     /**

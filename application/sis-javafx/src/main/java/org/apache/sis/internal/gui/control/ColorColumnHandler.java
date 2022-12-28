@@ -41,7 +41,6 @@ import org.apache.sis.internal.gui.ImmutableObjectProperty;
  * @param  <S>  the type of row data as declared in the {@link TableView} generic type.
  *
  * @since 1.1
- * @module
  */
 public abstract class ColorColumnHandler<S> implements Callback<TableColumn.CellDataFeatures<S,ColorRamp>, ObservableValue<ColorRamp>> {
     /**

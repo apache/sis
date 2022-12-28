@@ -49,7 +49,6 @@ import org.apache.sis.metadata.TitleProperty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "name")
 @XmlType(name = "MI_RangeElementDescription_Type", propOrder = {

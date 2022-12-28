@@ -53,14 +53,13 @@ import static org.apache.sis.test.Assert.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({
     CoordinateDomainTest.class,
     ContextualParametersTest.class,
     EllipsoidToCentricTransformTest.class   // Used as a reference implementation
 })
-public final strictfp class MolodenskyTransformTest extends MathTransformTestCase {
+public final class MolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
      */

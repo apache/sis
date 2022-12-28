@@ -37,7 +37,6 @@ import org.apache.sis.storage.Resource;
  * @see TileMatrix#getTiles(GridExtent, boolean)
  *
  * @since 1.2
- * @module
  */
 public interface Tile {
     /**

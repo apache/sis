@@ -45,7 +45,6 @@ import org.apache.sis.internal.feature.Resources;
  * @see DefaultAssociationRole
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractAssociation extends Field<AbstractFeature> implements Cloneable, Serializable {
     /**

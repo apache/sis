@@ -28,7 +28,6 @@ package org.apache.sis.image;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public enum SequenceType {
     /**

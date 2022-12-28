@@ -48,7 +48,6 @@ import org.opengis.geometry.Envelope;
  * @see GridCoverageResource#subset(Query)
  *
  * @since 0.8
- * @module
  */
 public abstract class Query {
     /**

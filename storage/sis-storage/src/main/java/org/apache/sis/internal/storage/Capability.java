@@ -38,7 +38,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public enum Capability {
     /**

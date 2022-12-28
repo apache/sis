@@ -30,7 +30,6 @@ import org.opengis.util.GenericName;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.5
- * @module
  */
 interface FeatureType {
     GenericName getName();

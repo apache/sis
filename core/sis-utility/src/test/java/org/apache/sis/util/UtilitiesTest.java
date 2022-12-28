@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class UtilitiesTest extends TestCase {
+public final class UtilitiesTest extends TestCase {
     /**
      * Tests {@link Utilities#deepEquals(Object, Object, ComparisonMode)}.
      */
@@ -87,7 +86,7 @@ public final strictfp class UtilitiesTest extends TestCase {
     /**
      * For {@link #testDeepEquals()} purpose only.
      */
-    private static final strictfp class DummyLenient implements LenientComparable {
+    private static final class DummyLenient implements LenientComparable {
         /** Label to be used in comparison. */
         private final String label;
 

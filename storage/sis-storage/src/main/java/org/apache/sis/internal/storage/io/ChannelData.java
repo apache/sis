@@ -34,16 +34,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class ChannelData implements Markable {
     /**
      * Number of bits needed for storing the bit offset in {@link #bitPosition}.
      * The following condition must hold:
      *
-     * {@preformat java
-     *     (1 << BIT_OFFSET_SIZE) == Byte.SIZE
-     * }
+     * {@snippet lang="java" :
+     *     assert (1 << BIT_OFFSET_SIZE) == Byte.SIZE;
+     *     }
      */
     private static final int BIT_OFFSET_SIZE = 3;
 

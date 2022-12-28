@@ -40,7 +40,6 @@ import org.apache.sis.util.Debug;
  * @see ConcurrentAuthorityFactory#printCacheContent(PrintWriter)
  *
  * @since 0.7
- * @module
  */
 @Debug
 final class CacheRecord implements Comparable<CacheRecord> {

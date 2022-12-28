@@ -36,7 +36,6 @@ import org.apache.sis.internal.util.Numerics;
  * @param  <E>  the type of elements stored in the {@link PointTree}.
  *
  * @since 1.1
- * @module
  */
 class NodeIterator<E> implements Spliterator<E>, Cloneable {
     /**

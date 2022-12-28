@@ -30,10 +30,9 @@ import org.opengis.referencing.cs.RangeMeaning;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
-public strictfp class CoordinateSystemAxisMock extends IdentifiedObjectMock
+public class CoordinateSystemAxisMock extends IdentifiedObjectMock
         implements CoordinateSystemAxis, CoordinateSystem
 {
     /**

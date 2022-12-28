@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @see java.util.concurrent.ForkJoinPool#commonPool()
  *
  * @since 1.1
- * @module
  */
 @SuppressWarnings("serial")                     // Not intended to be serialized.
 public final class CommonExecutor extends AtomicInteger implements ThreadFactory {

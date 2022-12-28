@@ -59,7 +59,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn({
     MathTransformParserTest.class,
@@ -73,7 +72,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
     org.apache.sis.referencing.crs.DefaultImageCRSTest.class,
     org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class
 })
-public final strictfp class GeodeticObjectParserTest extends TestCase {
+public final class GeodeticObjectParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */

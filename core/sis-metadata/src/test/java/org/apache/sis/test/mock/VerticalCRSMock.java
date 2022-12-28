@@ -36,10 +36,9 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class VerticalCRSMock extends IdentifiedObjectMock
+public final class VerticalCRSMock extends IdentifiedObjectMock
         implements VerticalCRS, VerticalDatum, VerticalCS, CoordinateSystemAxis
 {
     /**

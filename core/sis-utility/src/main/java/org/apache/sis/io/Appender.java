@@ -50,7 +50,6 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * @see java.io.FilterWriter
  *
  * @since 0.3
- * @module
  */
 abstract class Appender implements Appendable {
     /**

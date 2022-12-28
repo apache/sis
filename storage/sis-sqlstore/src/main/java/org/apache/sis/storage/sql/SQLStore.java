@@ -58,7 +58,6 @@ import org.apache.sis.util.Exceptions;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public class SQLStore extends DataStore implements Aggregate {
     /**

@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.0
  */
-public final strictfp class LinearIteratorTest extends PixelIteratorTest {
+public final class LinearIteratorTest extends PixelIteratorTest {
     /**
      * Creates a new test case.
      */

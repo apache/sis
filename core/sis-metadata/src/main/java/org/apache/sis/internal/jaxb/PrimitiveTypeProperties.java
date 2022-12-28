@@ -34,7 +34,6 @@ import org.apache.sis.xml.NilReason;
  * @see NilReason#createNilObject(Class)
  *
  * @since 0.4
- * @module
  */
 public final class PrimitiveTypeProperties {
     /**

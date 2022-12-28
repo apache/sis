@@ -54,7 +54,6 @@ import static javax.xml.stream.XMLStreamConstants.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   1.0
- * @module
  */
 final class TransformingWriter extends Transformer implements XMLEventWriter {
     /**

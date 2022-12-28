@@ -35,7 +35,6 @@ import org.apache.sis.internal.filter.Node;
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class FilterNode<R> extends Node implements Filter<R> {
     /**

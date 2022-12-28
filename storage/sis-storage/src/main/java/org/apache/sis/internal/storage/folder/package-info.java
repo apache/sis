@@ -21,6 +21,5 @@
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 package org.apache.sis.internal.storage.folder;

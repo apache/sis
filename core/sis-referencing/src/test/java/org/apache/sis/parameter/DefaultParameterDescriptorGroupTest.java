@@ -40,10 +40,9 @@ import static org.opengis.referencing.IdentifiedObject.*;
  * @author  Johann Sorel (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
-public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase {
+public final class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
      * The default value used by the parameters in the {@link #M1_M1_O1_O2} descriptor.
      */

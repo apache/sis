@@ -51,24 +51,24 @@
  * provide a {@code getResources(Locale)} static method.
  * It can be used for fetching localized strings as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     String text = TheBundle.getResources(locale).getString(key, optionalArguments);
- * }
+ *     }
  *
  * For convenience, all {@code IndexedResourceBundle} subclasses provide also various {@code format(int, …)} static
  * methods for fetching localized texts in the {@linkplain java.util.Locale#getDefault() system default locale}:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     text = TheBundle.format(key, optionalArguments);         // Uses the default locale.
- * }
+ *     }
  *
  * If the locale is not known at method invocation time, {@code formatInternational(int, …)} static methods
  * returns a localizable string which can be localized later:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     InternationalString i18n = TheBundle.formatInternational(key, optionalArguments);
  *     String text = i18n.toString(locale);                             // Localize now.
- * }
+ *     }
  *
  * If optional arguments are present, then the following types are handled in a special way
  * (non exhaustive list):
@@ -89,6 +89,5 @@
  * @see org.apache.sis.util.ResourceInternationalString
  *
  * @since 0.3
- * @module
  */
 package org.apache.sis.util.resources;

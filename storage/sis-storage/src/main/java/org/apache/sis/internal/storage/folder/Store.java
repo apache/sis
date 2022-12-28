@@ -78,7 +78,6 @@ import org.apache.sis.internal.storage.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 class Store extends DataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
     /**

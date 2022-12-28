@@ -42,7 +42,6 @@ import org.apache.sis.internal.geoapi.filter.TemporalOperatorName;
  * @param  <T>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         implements Filter<T>, Optimization.OnFilter<T>

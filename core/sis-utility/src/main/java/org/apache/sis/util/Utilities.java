@@ -32,7 +32,6 @@ import org.apache.sis.util.collection.CheckedContainer;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final class Utilities extends Static {
     /**
@@ -63,9 +62,9 @@ public final class Utilities extends Static {
      * <h4>Implementation note</h4>
      * This is a convenience method for the following method call:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return deepEquals(object1, object2, ComparisonMode.IGNORE_METADATA);
-     * }
+     *     }
      *
      * @param  object1  the first object to compare (may be null).
      * @param  object2  the second object to compare (may be null).
@@ -97,9 +96,9 @@ public final class Utilities extends Static {
      * <h4>Implementation note</h4>
      * This is a convenience method for the following method call:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return deepEquals(object1, object2, ComparisonMode.APPROXIMATE);
-     * }
+     *     }
      *
      * @param  object1  the first object to compare (may be null).
      * @param  object2  the second object to compare (may be null).

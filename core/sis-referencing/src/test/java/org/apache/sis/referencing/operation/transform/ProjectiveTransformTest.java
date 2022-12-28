@@ -53,11 +53,10 @@ import org.opengis.test.referencing.TransformTestCase;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
-public strictfp class ProjectiveTransformTest extends TransformTestCase {
+public class ProjectiveTransformTest extends TransformTestCase {
     /**
      * The factory to use for creating linear transforms.
      */

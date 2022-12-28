@@ -60,7 +60,6 @@ import org.apache.sis.internal.util.SetOfUnknownSize;
  * @param <E>  the type of elements in this set.
  *
  * @since 0.3
- * @module
  */
 class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>, Serializable {
     /**
@@ -142,9 +141,9 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
      * This method first checks if the given element is non-null,
      * then delegates to the {@link #storage} set like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return storage.add(inverse.apply(element));
-     * }
+     *     }
      *
      * @param  element element whose presence in this set is to be ensured.
      * @return {@code true} if the set changed as a result of the call.
@@ -213,9 +212,9 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
          * This method first checks if the given element is an instance of {@link #getElementType()},
          * then delegates to the {@link #storage} set like below:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     return storage.contains(inverse.apply(element));
-         * }
+         *     }
          *
          * @param  element  object to be checked for containment in this set.
          * @return {@code true} if this set contains the specified element.
@@ -231,9 +230,9 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
          * This method first checks if the given element is an instance of {@link #getElementType},
          * then delegates to the {@link #storage} set like below:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     return storage.remove(inverse.apply(element));
-         * }
+         *     }
          *
          * @param  element  element to be removed from this set, if present.
          * @return {@code true} if the set contained the specified element.

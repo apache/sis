@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>This adapter formats the locale like below:</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <cit:country>
  *     <lan:Country codeList="http://(...snip...)" codeListValue="FR">France</lan:Country>
  *   </cit:country>
@@ -50,7 +50,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "Country_PropertyType")
 public final class Country extends GO_CharacterString {

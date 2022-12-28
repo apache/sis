@@ -40,7 +40,6 @@ import org.apache.sis.util.LocalizedException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public class UnparsableObjectException extends ParseException implements LocalizedException {
     /**

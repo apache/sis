@@ -25,7 +25,6 @@ import org.apache.sis.internal.storage.folder.UnstructuredAggregate;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 enum TreeViewType {
     /**

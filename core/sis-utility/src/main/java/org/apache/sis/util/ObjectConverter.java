@@ -78,7 +78,6 @@ import org.apache.sis.math.FunctionProperty;
  * @see ObjectConverters
  *
  * @since 0.3
- * @module
  */
 public interface ObjectConverter<S,T> extends Function<S,T> {
     /**
@@ -154,11 +153,11 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      * Returns a converter capable to convert instances of <var>T</var> back to instances of <var>S</var>.
      * Before to invoke this method, callers can verify if this converter is invertible as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (converter.properties().contains(FunctionProperty.INVERTIBLE)) {
      *         // Call to converter.inverse() is allowed here.
      *     }
-     * }
+     *     }
      *
      * @return a converter for converting instances of <var>T</var> back to instances of <var>S</var>.
      * @throws UnsupportedOperationException if this converter is not invertible.

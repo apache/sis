@@ -31,7 +31,6 @@ import org.apache.sis.internal.util.Numerics;
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public final class Fraction extends Number implements Comparable<Fraction>, Serializable {
     /**

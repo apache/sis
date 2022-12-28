@@ -39,7 +39,6 @@ import java.util.Objects;
  * @param <E>  the type of elements in the list.
  *
  * @since 1.0
- * @module
  */
 public abstract class ListOfUnknownSize<E> extends AbstractSequentialList<E> {
     /**

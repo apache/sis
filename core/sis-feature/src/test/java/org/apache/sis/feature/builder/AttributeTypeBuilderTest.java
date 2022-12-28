@@ -47,10 +47,9 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @DependsOn(CharacteristicTypeBuilderTest.class)
-public final strictfp class AttributeTypeBuilderTest extends TestCase {
+public final class AttributeTypeBuilderTest extends TestCase {
     /**
      * Tests with the minimum number of parameters.
      */

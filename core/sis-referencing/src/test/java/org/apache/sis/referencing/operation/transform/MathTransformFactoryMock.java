@@ -38,9 +38,8 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
-public final strictfp class MathTransformFactoryMock implements MathTransformFactory {
+public final class MathTransformFactoryMock implements MathTransformFactory {
     /**
      * The operation method.
      */

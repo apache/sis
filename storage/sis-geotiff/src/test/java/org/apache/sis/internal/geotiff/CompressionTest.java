@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class CompressionTest extends TestCase {
+public final class CompressionTest extends TestCase {
     /**
      * Tests {@link Compression#valueOf(long)}.
      */

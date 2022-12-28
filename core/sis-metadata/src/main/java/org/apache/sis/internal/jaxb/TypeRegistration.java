@@ -42,9 +42,7 @@ import org.apache.sis.internal.system.DelayedRunnable;
  * To allow such automatic configuration, modules must declare instances of this interface in the
  * following file:
  *
- * {@preformat text
- *     META-INF/services/org.org.apache.sis.internal.jaxb.TypeRegistration
- * }
+ * <pre class="text">META-INF/services/org.org.apache.sis.internal.jaxb.TypeRegistration</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -52,7 +50,6 @@ import org.apache.sis.internal.system.DelayedRunnable;
  * @see org.apache.sis.xml.MarshallerPool
  *
  * @since 0.3
- * @module
  */
 public abstract class TypeRegistration {
     /**

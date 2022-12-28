@@ -40,10 +40,9 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)
-public final strictfp class DefaultExtentTest extends TestUsingFile {
+public final class DefaultExtentTest extends TestUsingFile {
     /**
      * An XML file containing extent information.
      */

@@ -42,7 +42,6 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 class GridCacheKey {
     /**
@@ -185,7 +184,7 @@ class GridCacheKey {
          * Returns a handler for fetching the localization grid from the global cache if one exists, or computing it.
          * This method must be used with a {@code try … finally} block as below:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     GridCacheValue tr;
          *     final Cache.Handler<GridCacheValue> handler = key.lock();
          *     try {
@@ -196,7 +195,7 @@ class GridCacheKey {
          *     } finally {
          *         handler.putAndUnlock(tr);
          *     }
-         * }
+         *     }
          */
         final Cache.Handler<GridCacheValue> lock() {
             return CACHE.lock(this);

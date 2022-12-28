@@ -35,9 +35,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @see ChannelImageOutputStream
  *
  * @since 0.5
- * @module
  */
-final strictfp class ByteArrayChannel implements SeekableByteChannel {
+final class ByteArrayChannel implements SeekableByteChannel {
     /**
      * Bytes array where to write the data.
      * The length of this array is the capacity.

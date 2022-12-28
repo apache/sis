@@ -50,7 +50,6 @@ import org.apache.sis.storage.event.StoreListener;
  * @see Aggregate#components()
  *
  * @since 0.8
- * @module
  */
 public interface Resource {
     /**

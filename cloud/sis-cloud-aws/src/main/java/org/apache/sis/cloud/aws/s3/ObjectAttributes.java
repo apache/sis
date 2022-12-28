@@ -38,7 +38,6 @@ import software.amazon.awssdk.core.exception.SdkException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class ObjectAttributes implements BasicFileAttributeView {
     /**

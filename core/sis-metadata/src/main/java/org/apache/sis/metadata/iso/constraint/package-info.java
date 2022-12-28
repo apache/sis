@@ -66,7 +66,6 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @XmlSchema(location="https://schemas.isotc211.org/19115/-3/mco/1.0/mco.xsd",
            elementFormDefault=XmlNsForm.QUALIFIED, namespace=Namespaces.MCO,

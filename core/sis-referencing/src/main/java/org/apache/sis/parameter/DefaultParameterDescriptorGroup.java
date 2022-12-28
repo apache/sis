@@ -55,11 +55,11 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * If nevertheless a {@code ParameterDescriptorGroup} needs to be instantiated directly,
  * then the {@link ParameterBuilder} class may make the task easier.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * The following example declares the parameters for a <cite>Mercator (variant A)</cite> projection method
  * valid from 80°S to 84°N on all the longitude range (±180°).
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     class Mercator {
  *         static final ParameterDescriptorGroup PARAMETERS;
  *         static {
@@ -79,8 +79,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *             PARAMETERS = builder.createGroup(parameters);
  *         }
  *     }
- * }
- * </div>
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -90,7 +89,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterDescriptor
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "OperationParameterGroupType")
 @XmlRootElement(name = "OperationParameterGroup")

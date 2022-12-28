@@ -37,10 +37,9 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
-abstract strictfp class ProviderMock extends AbstractProvider {
+abstract class ProviderMock extends AbstractProvider {
     /**
      * Creates a new mock provider.
      */

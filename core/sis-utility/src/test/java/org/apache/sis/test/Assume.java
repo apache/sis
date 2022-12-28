@@ -27,9 +27,8 @@ import org.apache.sis.internal.system.DataDirectory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
-public final strictfp class Assume extends org.junit.Assume {
+public final class Assume extends org.junit.Assume {
     /**
      * Do not allow instantiation.
      */

@@ -30,10 +30,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
-public final strictfp class DefaultCompoundCSTest extends TestCase {
+public final class DefaultCompoundCSTest extends TestCase {
     /**
      * Tests {@link DefaultCompoundCS} construction.
      */

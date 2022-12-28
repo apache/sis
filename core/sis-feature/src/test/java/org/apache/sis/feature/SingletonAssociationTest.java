@@ -30,13 +30,12 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn({
     DefaultAssociationRoleTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class SingletonAssociationTest extends TestCase {
+public final class SingletonAssociationTest extends TestCase {
     /**
      * Returns an association to use for testing purpose.
      *

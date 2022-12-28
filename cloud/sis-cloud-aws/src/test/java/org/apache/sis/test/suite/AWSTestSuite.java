@@ -29,7 +29,7 @@ import org.junit.BeforeClass;
     org.apache.sis.cloud.aws.s3.KeyPathMatcherTest.class,
     org.apache.sis.cloud.aws.s3.ClientFileSystemTest.class
 })
-public final strictfp class AWSTestSuite extends TestSuite {
+public final class AWSTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

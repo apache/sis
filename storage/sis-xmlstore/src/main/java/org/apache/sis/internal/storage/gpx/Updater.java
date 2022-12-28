@@ -35,7 +35,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class Updater extends RewriteOnUpdate {
     /**

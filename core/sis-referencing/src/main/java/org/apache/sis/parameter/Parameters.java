@@ -106,7 +106,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @XmlTransient
 public abstract class Parameters implements ParameterValueGroup, Cloneable {
@@ -809,9 +808,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *
      * <p>The default implementation is equivalent to:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return cast(parameter(name), parameter.getValueClass());
-     * }
+     *     }
      *
      * where {@code name} is a {@code parameter} {@linkplain DefaultParameterDescriptor#getName() name}
      * or {@linkplain DefaultParameterDescriptor#getAlias() alias} chosen by the same algorithm than

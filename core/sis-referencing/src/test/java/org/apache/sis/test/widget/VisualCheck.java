@@ -31,9 +31,8 @@ import org.apache.sis.test.TestConfiguration;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class VisualCheck {
+public final class VisualCheck {
     /**
      * Whether to show widgets.
      */

@@ -30,7 +30,6 @@ import javafx.beans.property.ReadOnlyObjectProperty;
  * @param  <T>  the type of value stored in the property.
  *
  * @since 1.1
- * @module
  */
 public class ImmutableObjectProperty<T> extends ReadOnlyObjectProperty<T> {
     /**

@@ -73,7 +73,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",

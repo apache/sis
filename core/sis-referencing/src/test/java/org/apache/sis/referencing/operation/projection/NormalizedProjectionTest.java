@@ -31,7 +31,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     // Following dependency is where the basic parameters (e.g. SEMI_MAJOR) are tested.
@@ -39,7 +38,7 @@ import static org.junit.Assert.*;
     org.apache.sis.internal.referencing.provider.MapProjectionTest.class,
     InitializerTest.class
 })
-public final strictfp class NormalizedProjectionTest extends TransformTestCase {
+public final class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.
      */

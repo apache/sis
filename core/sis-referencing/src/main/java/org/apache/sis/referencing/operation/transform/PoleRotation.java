@@ -70,7 +70,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class PoleRotation extends AbstractMathTransform2D implements Serializable {
     /**

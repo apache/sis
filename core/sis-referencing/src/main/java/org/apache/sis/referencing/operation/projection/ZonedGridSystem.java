@@ -66,7 +66,6 @@ import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercat
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public class ZonedGridSystem extends AbstractMathTransform2D implements Serializable {
     /**
@@ -206,7 +205,6 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.8
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**

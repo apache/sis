@@ -50,7 +50,6 @@ import org.apache.sis.internal.util.Strings;
  * @see DataStoreProvider#probeContent(StorageConnector)
  *
  * @since 0.4
- * @module
  */
 public class ProbeResult implements Serializable {
     /**
@@ -93,7 +92,7 @@ public class ProbeResult implements Serializable {
      * amount of bytes. This value can be returned by {@link DataStoreProvider#probeContent(StorageConnector)}
      * implementations as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public ProbeResult probeContent(StorageConnector storage) throws DataStoreException {
      *         final ByteBuffer buffer = storage.getStorageAs(ByteBuffer.class);
      *         if (buffer == null) {

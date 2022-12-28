@@ -54,10 +54,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(ReferencingByIdentifiersTest.class)
-public final strictfp class MilitaryGridReferenceSystemTest extends TestCase {
+public final class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Verifies the metadata.
      */

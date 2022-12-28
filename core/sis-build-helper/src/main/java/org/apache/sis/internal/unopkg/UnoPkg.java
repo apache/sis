@@ -39,7 +39,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @Mojo(name = "unopkg", defaultPhase = LifecyclePhase.PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public final class UnoPkg extends AbstractMojo implements FilenameFilter {

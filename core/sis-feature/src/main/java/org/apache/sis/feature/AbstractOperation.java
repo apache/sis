@@ -58,7 +58,6 @@ import org.apache.sis.util.Classes;
  * @see DefaultFeatureType
  *
  * @since 0.6
- * @module
  */
 public abstract class AbstractOperation extends AbstractIdentifiedType
         implements BiFunction<AbstractFeature, ParameterValueGroup, Object>

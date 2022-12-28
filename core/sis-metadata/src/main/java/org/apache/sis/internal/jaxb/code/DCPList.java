@@ -30,7 +30,6 @@ import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeListAdapter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final class DCPList extends UnsupportedCodeListAdapter<DCPList> {
     /**

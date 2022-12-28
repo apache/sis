@@ -87,7 +87,6 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @see ObliqueMercator
  *
  * @since 0.6
- * @module
  */
 public class Mercator extends ConformalProjection {
     /**
@@ -520,7 +519,6 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      * @author  Rueben Schulz (UBC)
      * @version 0.6
      * @since   0.6
-     * @module
      */
     static final class Spherical extends Mercator {
         /**

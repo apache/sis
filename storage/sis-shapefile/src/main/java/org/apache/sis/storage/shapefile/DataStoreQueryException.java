@@ -28,7 +28,6 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Marc Le Bihan
  * @version 0.6
  * @since   0.6
- * @module
  */
 public class DataStoreQueryException extends DataStoreException {
     /** Serial UID. */

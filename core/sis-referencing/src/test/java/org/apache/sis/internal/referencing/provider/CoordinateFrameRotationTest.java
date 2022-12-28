@@ -37,12 +37,11 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({
     PositionVector7ParamTest.class
 })
-public final strictfp class CoordinateFrameRotationTest extends MathTransformTestCase {
+public final class CoordinateFrameRotationTest extends MathTransformTestCase {
     /**
      * Creates the transformation from WGS 72 to WGS 84.
      */

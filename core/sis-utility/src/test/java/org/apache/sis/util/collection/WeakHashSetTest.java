@@ -35,10 +35,9 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.util.ArraysExtTest.class)
-public final strictfp class WeakHashSetTest extends TestCase {
+public final class WeakHashSetTest extends TestCase {
     /**
      * The size of the test sets to be created.
      */

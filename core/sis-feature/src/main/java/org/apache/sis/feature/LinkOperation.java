@@ -33,7 +33,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 final class LinkOperation extends AbstractOperation {
     /**

@@ -37,10 +37,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)
-public final strictfp class TransferFunctionTest extends TestCase {
+public final class TransferFunctionTest extends TestCase {
     /**
      * Tests the creation of a linear transfer function.
      */

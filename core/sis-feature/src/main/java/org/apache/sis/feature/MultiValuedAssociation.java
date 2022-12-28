@@ -43,7 +43,6 @@ import org.apache.sis.internal.feature.Resources;
  * @see DefaultAssociationRole
  *
  * @since 0.5
- * @module
  */
 final class MultiValuedAssociation extends AbstractAssociation {
     /**

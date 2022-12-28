@@ -41,7 +41,6 @@ import org.apache.sis.util.CorruptedObjectException;
  * @see DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 final class SparseFeature extends AbstractFeature implements Cloneable {
     /**

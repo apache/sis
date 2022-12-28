@@ -68,16 +68,17 @@
  * method is provided for fetching a parameter regardless of whether it was present or not — optional parameters
  * are created when first needed.</p>
  *
- * <div class="note"><b>Example:</b> the following code snippet assumes that the implementer of a Mercator projection
+ * <h3>Example</h3>
+ * The following code snippet assumes that the implementer of a Mercator projection
  * provides a {@code ParameterDescriptorGroup} instance in a {@code PARAMETERS} static constant:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     ParameterValueGroup group = Mercator.PARAMETERS.createValue();
  *     group.parameter("Longitude of natural origin").setValue(-60);        // Using default units (e.g. degrees).
  *     group.parameter("False easting").setValue(200.0, Units.KILOMETRE);   // Using explicit units.
- * }
- * </div>
+ *     }
  *
+ * <h2>Exceptions</h2>
  * Calls to {@code parameter(…)} throw a {@link org.opengis.parameter.ParameterNotFoundException}
  * if the given name is unknown to the group.
  * Calls to {@code setValue(…)} throw a {@link org.opengis.parameter.InvalidParameterValueException}
@@ -86,7 +87,6 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @XmlSchema(elementFormDefault= XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns = {
     @XmlNs(prefix = "gml", namespaceURI = Namespaces.GML),

@@ -63,7 +63,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                capabilities  = {Capability.READ, Capability.WRITE},

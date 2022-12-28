@@ -49,9 +49,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
-public final strictfp class EnvelopeOperationTest extends TestCase {
+public final class EnvelopeOperationTest extends TestCase {
     /**
      * The description of a feature with two geometric properties. The properties are named "g1" and "g2"
      * and may or may not have default CRS, depending which {@code initialize(…)} method is invoked.

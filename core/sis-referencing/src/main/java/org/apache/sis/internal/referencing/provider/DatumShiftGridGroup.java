@@ -59,7 +59,6 @@ import org.apache.sis.util.collection.Containers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**

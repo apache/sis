@@ -68,7 +68,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @SuppressWarnings("deprecation")
 @XmlType(name = "CI_Responsibility_Type", propOrder = {

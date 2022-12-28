@@ -72,7 +72,6 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @see GridCoverage#evaluator()
  *
  * @since 1.1
- * @module
  */
 class DefaultEvaluator implements GridCoverage.Evaluator {
     /**

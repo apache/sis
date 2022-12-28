@@ -57,7 +57,6 @@ import org.apache.sis.util.Classes;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 public abstract class Geometries<G> implements Serializable {
     /**

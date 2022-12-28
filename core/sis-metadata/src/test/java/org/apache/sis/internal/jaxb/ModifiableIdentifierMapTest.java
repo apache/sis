@@ -42,10 +42,9 @@ import static org.apache.sis.xml.IdentifierSpace.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn(IdentifierMapAdapterTest.class)
-public final strictfp class ModifiableIdentifierMapTest extends TestCase {
+public final class ModifiableIdentifierMapTest extends TestCase {
     /**
      * The HREF string to replace by {@link XLink#toString()}.
      */

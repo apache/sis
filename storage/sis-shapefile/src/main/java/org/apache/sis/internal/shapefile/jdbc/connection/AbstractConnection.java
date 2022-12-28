@@ -47,7 +47,6 @@ import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @SuppressWarnings("unused")
 abstract class AbstractConnection extends AbstractJDBC implements Connection {

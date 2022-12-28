@@ -31,9 +31,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class LocationTypeTest extends TestCase {
+public final class LocationTypeTest extends TestCase {
     /**
      * Creates the example given in annex B of ISO 19112:2003.
      *

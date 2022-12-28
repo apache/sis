@@ -147,7 +147,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public class Canvas extends Observable implements Localized {
     /**

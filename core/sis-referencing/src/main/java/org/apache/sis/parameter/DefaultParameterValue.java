@@ -93,9 +93,9 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * The type and constraints on parameter values are given by the {@linkplain #getDescriptor() descriptor},
  * which is specified at construction time. The parameter type can be fetch with the following idiom:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
- * }
+ *     }
  *
  * <h2>Instantiation</h2>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
@@ -126,7 +126,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterValueGroup
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",
@@ -857,9 +856,9 @@ convert:            if (componentType != null) {
      * Compares the specified object with this parameter for equality.
      * This method is implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
@@ -942,9 +941,9 @@ convert:            if (componentType != null) {
      * Formats this parameter as a <cite>Well Known Text</cite> {@code Parameter[…]} element.
      * Example:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   Parameter["False easting", 0.0, LengthUnit["metre", 1]]
-     * }
+     *   }
      *
      * <h4>Unit of measurement</h4>
      * The units of measurement were never specified in WKT 1 format, and are optional in WKT 2 format.
@@ -960,7 +959,7 @@ convert:            if (componentType != null) {
      * parameters, which are in kilometres in this example.
      *
      * <p><b>WKT 1:</b></p>
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   PROJCS[…,
      *     GEOGCS[…,
      *       UNIT[“grad”, 0.015707963267948967]],       // Unit for all angles
@@ -970,10 +969,10 @@ convert:            if (componentType != null) {
      *     PARAMETER[“false_easting”, 600.0],           // In kilometres
      *     PARAMETER[“false_northing”, 2200.0],         // In kilometres
      *     UNIT[“kilometre”, 1000]]                     // Unit for all lengths
-     * }
+     *   }
      *
      * <p><b>WKT 2:</b></p>
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS[…
      *     BaseGeodCRS[…
      *       AngleUnit[“grad”, 0.015707963267948967]],
@@ -985,7 +984,7 @@ convert:            if (componentType != null) {
      *       Parameter[“False northing”, 2200.0]],
      *     CS[“Cartesian”, 2],
      *       LengthUnit[“kilometre”, 1000]]
-     * }
+     *   }
      * </div>
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.

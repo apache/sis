@@ -52,7 +52,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")

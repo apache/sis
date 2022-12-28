@@ -40,7 +40,6 @@ import com.esri.core.geometry.*;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class ShapefileByteReader extends CommonByteReader<InvalidShapefileFormatException, SQLShapefileNotFoundException> {
     /** Name of the Geometry field. */

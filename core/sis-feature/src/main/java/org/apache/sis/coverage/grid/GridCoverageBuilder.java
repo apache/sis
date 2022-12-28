@@ -60,25 +60,26 @@ import org.apache.sis.util.resources.Errors;
  * Those methods are overloaded with many variants accepting different kind of arguments. For example, values can
  * be specified as a {@link RenderedImage}, a {@link Raster} or some other types.
  *
- * <div class="note"><b>Example:</b>
- * the easiest way to create a {@link GridCoverage} from a matrix of values is to set the values in a
+ * <h2>Example</h2>
+ * The easiest way to create a {@link GridCoverage} from a matrix of values is to set the values in a
  * {@link WritableRaster} and to specify the domain as an {@link Envelope}:
  *
- * {@preformat java
- *     WritableRaster data = Raster.createBandedRaster​(DataBuffer.TYPE_USHORT, width, height, numBands, null);
- *     for (int y=0; y<height; y++) {
- *         for (int x=0; x<width; x++) {
- *             int value = ...;                     // Compute a value here.
- *             data.setSample(x, y, 0, value);      // Set value in the first band.
+ * {@snippet lang="java" :
+ *     public GridCoverage createCoverage() {
+ *         WritableRaster data = Raster.createBandedRaster​(DataBuffer.TYPE_USHORT, width, height, numBands, null);
+ *         for (int y=0; y<height; y++) {
+ *             for (int x=0; x<width; x++) {
+ *                 int value = ...;                     // Compute a value here.
+ *                 data.setSample(x, y, 0, value);      // Set value in the first band.
+ *             }
  *         }
- *     }
- *     GridCoverageBuilder builder = new GridCoverageBuilder();
- *     builder.setValues(data).flixAxis(1);
+ *         var builder = new GridCoverageBuilder();
+ *         builder.setValues(data).flixAxis(1);
  *
- *     Envelope domain = ...;                       // Specify here the "real world" coordinates.
- *     GridCoverage coverage = builder.setDomain(domain).build();
+ *         Envelope domain = ...;                       // Specify here the "real world" coordinates.
+ *         return builder.setDomain(domain).build();
+ *     }
  * }
- * </div>
  *
  * <h2>Limitations</h2>
  * Current implementation creates only two-dimensional coverages.
@@ -92,7 +93,6 @@ import org.apache.sis.util.resources.Errors;
  * @see SampleDimension.Builder
  *
  * @since 1.1
- * @module
  */
 public class GridCoverageBuilder {
     /**

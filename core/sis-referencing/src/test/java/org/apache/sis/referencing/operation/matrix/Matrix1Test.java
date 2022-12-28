@@ -30,10 +30,9 @@ import static org.apache.sis.referencing.operation.matrix.Matrix1.SIZE;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @DependsOn(SolverTest.class)
-public final strictfp class Matrix1Test extends MatrixTestCase {
+public final class Matrix1Test extends MatrixTestCase {
     /**
      * Returns the size of the matrix of interest for this test class.
      */

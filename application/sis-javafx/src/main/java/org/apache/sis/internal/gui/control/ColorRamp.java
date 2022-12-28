@@ -40,7 +40,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see ColorCell#getItem()
  *
  * @since 1.1
- * @module
  */
 public final class ColorRamp {
     /**

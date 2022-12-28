@@ -38,9 +38,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-public final strictfp class DefaultContactTest extends TestCase implements Filter {
+public final class DefaultContactTest extends TestCase implements Filter {
     /**
      * The resource key for the message of the warning that occurred, or {@code null} if none.
      */

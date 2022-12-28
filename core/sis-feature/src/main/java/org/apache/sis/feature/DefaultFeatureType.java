@@ -100,7 +100,6 @@ import org.apache.sis.internal.feature.Resources;
  * @see org.apache.sis.storage.FeatureNaming
  *
  * @since 0.5
- * @module
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**

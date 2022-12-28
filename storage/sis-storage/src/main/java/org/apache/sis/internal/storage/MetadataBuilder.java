@@ -110,7 +110,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public class MetadataBuilder {
     /**
@@ -1004,7 +1003,7 @@ public class MetadataBuilder {
      * {@code identificationInfo/resourceFormat} node. If this exception throws an exception,
      * than that exception should be reported as a warning. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     try {
      *         metadata.setPredefinedFormat("MyFormat");
      *     } catch (MetadataStoreException e) {
@@ -1012,7 +1011,7 @@ public class MetadataBuilder {
      *         listeners.warning(null, e);
      *     }
      *     metadata.addCompression("decompression technique");
-     * }
+     *     }
      *
      * @param  abbreviation  the format short name or abbreviation, or {@code null} for no-operation.
      * @throws MetadataStoreException  if this method cannot connect to the {@code jdbc/SpatialMetadata} database.
@@ -1768,7 +1767,7 @@ parse:      for (int i = 0; i < length;) {
      * “Copyright, John Smith, 1992. All rights reserved.”
      * The result of above example will be:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Metadata
      *     └─Identification info
      *         └─Resource constraints
@@ -1781,8 +1780,7 @@ parse:      for (int i = 0; i < length;) {
      *                 └─Cited responsible party
      *                     ├─Party
      *                     │   └─Name…………………………… John Smith
-     *                     └─Role……………………………………… Owner
-     * }
+     *                     └─Role……………………………………… Owner</pre>
      *
      * Storage location is:
      *

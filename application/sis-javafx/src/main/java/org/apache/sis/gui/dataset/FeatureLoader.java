@@ -39,7 +39,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class FeatureLoader extends Task<Boolean> implements Consumer<AbstractFeature> {
     /**

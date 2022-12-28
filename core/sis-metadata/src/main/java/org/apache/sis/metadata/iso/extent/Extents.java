@@ -90,7 +90,6 @@ import org.apache.sis.internal.geoapi.evolution.Interim;
  * @see org.apache.sis.geometry.Envelopes
  *
  * @since 0.3
- * @module
  */
 public final class Extents extends Static {
     /**
@@ -491,9 +490,9 @@ public final class Extents extends Static {
      * or {@code null} if none. First, this method computes the union of all temporal elements. Then this method
      * computes the linear interpolation between the start and end time as in the following pseudo-code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new Date(startTime + (endTime - startTime) * location);
-     * }
+     *     }
      *
      * Special cases:
      * <ul>

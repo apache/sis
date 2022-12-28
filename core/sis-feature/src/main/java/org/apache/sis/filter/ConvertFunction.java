@@ -45,7 +45,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @see org.apache.sis.internal.filter.GeometryConverter
  *
  * @since 1.1
- * @module
  */
 final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         implements FeatureExpression<R,V>, Optimization.OnExpression<R,V>

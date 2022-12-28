@@ -51,7 +51,6 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_COMPRESSION;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.1
- * @module
  */
 abstract class DataCube extends TiledGridResource implements ResourceOnFileSystem, StoreResource {
     /**

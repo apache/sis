@@ -35,7 +35,6 @@ import org.apache.sis.xml.Namespaces;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-398">SIS-398</a>
  *
  * @since 0.3
- * @module
  */
 public final class MI_PolarisationOrientationCode
         extends CodeListAdapter<MI_PolarisationOrientationCode, PolarizationOrientation>

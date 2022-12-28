@@ -37,7 +37,6 @@ import org.apache.sis.util.collection.Containers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 public final class CC_OperationParameterGroup extends PropertyType<CC_OperationParameterGroup,ParameterDescriptorGroup> {
     /**

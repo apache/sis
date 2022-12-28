@@ -29,10 +29,9 @@ import org.apache.sis.test.DependsOn;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(WordWrapTest.class)
-public final strictfp class WordWrapWithLineSeparatorTest extends WordWrapTest {
+public final class WordWrapWithLineSeparatorTest extends WordWrapTest {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */

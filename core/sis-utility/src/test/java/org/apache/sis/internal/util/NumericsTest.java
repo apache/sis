@@ -37,10 +37,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.3
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
-public final strictfp class NumericsTest extends TestCase {
+public final class NumericsTest extends TestCase {
     /**
      * Verifies the value of {@link Numerics#LONG_SHIFT} and {@link Numerics#INT_SHIFT}.
      */

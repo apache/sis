@@ -29,10 +29,10 @@ import org.apache.sis.math.FunctionProperty;
  * <p>Some predefined unique instances of {@code ObjectToString} are available
  * by the following pattern:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Class<S> sourceClass = ...;
  *     ObjectConverter<S,String> c = StringConverter.getInstance(sourceClass).inverse();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
@@ -43,7 +43,6 @@ import org.apache.sis.math.FunctionProperty;
  * @param <S>  the source type.
  *
  * @since 0.3
- * @module
  */
 class ObjectToString<S> extends SystemConverter<S,String> {
     /**

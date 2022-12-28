@@ -38,7 +38,6 @@ import org.apache.sis.measure.Units;
  * @see <a href="http://geotiff.maptools.org/proj_list/hotine_oblique_mercator.html">GeoTIFF parameters for Hotine Oblique Mercator</a>
  *
  * @since 1.0
- * @module
  */
 @XmlTransient
 public class ObliqueMercator extends AbstractMercator {

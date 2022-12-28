@@ -75,7 +75,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
@@ -857,9 +856,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * Formula is given in appendix B of <a href="https://arxiv.org/pdf/1102.1215.pdf">C.F.F Karney (2011)</a>
      * given <var>x</var> and <var>y</var> the coordinates on a plane coordinate system centered on the antipodal point:
      *
-     * {@preformat math
-     *     μ⁴ + 2μ³ + (1−x²-y²)μ² − 2y²μ - y² = 0
-     * }
+     * <blockquote>
+     * μ⁴ + 2μ³ + (1−x²-y²)μ² − 2y²μ - y² = 0
+     * </blockquote>
      *
      * The results should have only one positive root {@literal (μ > 0)}.
      *

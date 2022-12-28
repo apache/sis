@@ -37,10 +37,9 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Ross Laidlaw
  * @version 0.4
  * @since   0.3
- * @module
  */
 @DependsOn(AbstractEnvelopeTest.class)
-public final strictfp class Envelope2DTest extends TestCase {
+public final class Envelope2DTest extends TestCase {
     /**
      * Tests {@code Envelope2D} serialization.
      */

@@ -34,7 +34,6 @@ import org.apache.sis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  *
  * @see org.opengis.filter.FilterFactory#function(String, Expression...)
  *

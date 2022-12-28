@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * group are handled in a special way. For example, identifiers associated to the {@link #HREF}
  * space are marshalled in the outer property element, as in the example below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <cit:CI_Citation>
  *     <cit:series xlink:href="http://myReference">
  *       <cit:CI_Series>
@@ -37,7 +37,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  *       </cit:CI_Series>
  *     </cit:series>
  *   </cit:CI_Citation>
- * }
+ *   }
  *
  * The values defined in this interface can be used as keys in the map returned by
  * {@link IdentifiedObject#getIdentifierMap()}.
@@ -52,7 +52,6 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * @see IdentifierMap
  *
  * @since 0.3
- * @module
  */
 public interface IdentifierSpace<T> extends Citation {
     /**

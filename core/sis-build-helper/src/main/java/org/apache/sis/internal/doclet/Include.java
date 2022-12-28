@@ -38,7 +38,6 @@ import com.sun.source.doctree.DocTree;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 public final class Include extends Taglet {
     /**

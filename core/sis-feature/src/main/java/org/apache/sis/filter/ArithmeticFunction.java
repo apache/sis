@@ -43,7 +43,6 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
         implements FeatureExpression<R,Number>, Optimization.OnExpression<R,Number>

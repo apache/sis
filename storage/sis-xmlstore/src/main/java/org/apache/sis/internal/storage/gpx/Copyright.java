@@ -65,7 +65,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public final class Copyright implements LegalConstraints, ResponsibleParty, Citation, CitationDate {
     /**

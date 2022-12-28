@@ -53,7 +53,6 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class ResampledGridCoverage extends DerivedGridCoverage {
     /**

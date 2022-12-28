@@ -43,10 +43,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @RunWith(Suite.class)
-public abstract strictfp class TestSuite {
+public abstract class TestSuite {
     /**
      * The default set of base classes that all test cases are expected to extends.
      * This is the default argument value for {@link #verifyTestList(Class)} method.
@@ -174,8 +173,8 @@ public abstract strictfp class TestSuite {
      *
      * Subclasses shall invoke this method as below:
      *
-     * {@preformat java
-     *    &#64;BeforeClass
+     * {@snippet lang="java" :
+     *    @BeforeClass
      *    public static void verifyTestList() {
      *        assertNoMissingTest(MyTestSuite.class);
      *        verifyTestList(MyTestSuite.class);

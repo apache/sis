@@ -65,7 +65,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "VerticalCSType")
 @XmlRootElement(name = "VerticalCS")

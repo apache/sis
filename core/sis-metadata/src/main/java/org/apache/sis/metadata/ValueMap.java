@@ -36,7 +36,6 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
  * @since 0.3
- * @module
  */
 final class ValueMap extends PropertyMap<Object> {
     /**
@@ -194,7 +193,6 @@ final class ValueMap extends PropertyMap<Object> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     final class Property extends AbstractMapEntry<String,Object> {
         /**
@@ -255,7 +253,6 @@ final class ValueMap extends PropertyMap<Object> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private final class Iter implements Iterator<Map.Entry<String,Object>> {
         /**
@@ -333,7 +330,6 @@ final class ValueMap extends PropertyMap<Object> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private final class Entries extends PropertyMap<Object>.Entries {
         /**

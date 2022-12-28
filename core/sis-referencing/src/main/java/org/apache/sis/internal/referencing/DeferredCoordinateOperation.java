@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-327">SIS-327</a>
  *
  * @since 0.8
- * @module
  */
 @SuppressWarnings("serial")
 public final class DeferredCoordinateOperation extends AbstractCoordinateOperation {

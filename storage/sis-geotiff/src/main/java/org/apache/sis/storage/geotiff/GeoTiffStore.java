@@ -70,7 +70,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public class GeoTiffStore extends DataStore implements Aggregate {
     /**

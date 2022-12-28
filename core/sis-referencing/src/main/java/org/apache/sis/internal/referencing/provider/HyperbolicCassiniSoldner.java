@@ -27,7 +27,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @XmlTransient
 public final class HyperbolicCassiniSoldner extends CassiniSoldner {

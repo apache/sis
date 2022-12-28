@@ -29,7 +29,6 @@ import org.apache.sis.util.LocalizedException;
  * @see Features#validate(AbstractFeature)
  *
  * @since 0.7
- * @module
  */
 final class InvalidFeatureException extends IllegalArgumentException implements LocalizedException {
     /**

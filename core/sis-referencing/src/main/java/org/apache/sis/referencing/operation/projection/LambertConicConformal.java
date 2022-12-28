@@ -68,7 +68,6 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public class LambertConicConformal extends ConformalProjection {
     /**
@@ -129,15 +128,16 @@ public class LambertConicConformal extends ConformalProjection {
      * the normalization matrix which use that precision for "degrees to radians" conversion.
      * The goal is to have cleaner results after matrix inversions and multiplications.
      *
-     * <div class="note"><b>Tip:</b> how to verify the value:
-     * {@preformat java
+     * <h4>Tip</h4>
+     * How to verify the value:
+     *
+     * {@snippet lang="java" :
      *     BigDecimal a = new BigDecimal(BELGE_A.value);
      *     a = a.add     (new BigDecimal(BELGE_A.error));
      *     a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));
      *     a = a.multiply(new BigDecimal(60 * 60));
      *     System.out.println(a);
-     * }
-     * </div>
+     *     }
      */
     static Number belgeA() {
         return new DoubleDouble(-1.420431363598774E-4, -1.1777378450498224E-20);
@@ -513,7 +513,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * Provides the transform equations for the spherical case of the Lambert Conformal projection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h2>Implementation note</h2>
      * this class contains explicit checks for latitude values at poles.
      * See the discussion in the {@link Mercator.Spherical} javadoc for an explanation.
      * The following is specific to the Lambert Conformal projection.
@@ -521,22 +521,19 @@ public class LambertConicConformal extends ConformalProjection {
      * <p>Comparison of observed behavior at poles between the spherical and ellipsoidal cases,
      * if no special checks are applied:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *     ┌───────┬──────────────────────────┬────────────────────────┐
      *     │       │ Spherical                │ Ellipsoidal            │
      *     ├───────┼──────────────────────────┼────────────────────────┤
      *     │ North │ Approximate  (y = small) │ Exact answer (y = 0.0) │
      *     │ South │ Exact answer (y = +∞)    │ Approximate  (y = big) │
-     *     └───────┴──────────────────────────┴────────────────────────┘
-     * }
-     * </div>
+     *     └───────┴──────────────────────────┴────────────────────────┘</pre>
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)
      * @author  Rueben Schulz (UBC)
      * @version 1.1
      * @since   0.6
-     * @module
      */
     static final class Spherical extends LambertConicConformal {
         /**

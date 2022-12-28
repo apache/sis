@@ -41,7 +41,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class MetadataFallback extends MetadataSource {
     /**

@@ -39,7 +39,6 @@ import org.apache.sis.util.Numbers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 final class TypeNames {
     /**

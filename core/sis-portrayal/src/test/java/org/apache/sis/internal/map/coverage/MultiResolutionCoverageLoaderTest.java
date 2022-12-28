@@ -43,9 +43,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class MultiResolutionCoverageLoaderTest extends TestCase {
+public final class MultiResolutionCoverageLoaderTest extends TestCase {
     /**
      * The loader being tested.
      */

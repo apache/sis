@@ -48,10 +48,9 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Michael Hausegger
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(AttributeTypeBuilderTest.class)
-public final strictfp class FeatureTypeBuilderTest extends TestCase {
+public final class FeatureTypeBuilderTest extends TestCase {
     /**
      * Verifies that {@code FeatureTypeBuilder.setSuperTypes(FeatureType...)} ignores null parents.
      * This method tests only the builder state without creating feature type.

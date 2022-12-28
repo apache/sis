@@ -40,14 +40,13 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({
     MolodenskyTransformTest.class,
     GeocentricTranslationTest.class,
     InterpolatedGeocentricTransformTest.class
 })
-public final strictfp class InterpolatedMolodenskyTransformTest extends InterpolatedGeocentricTransformTest {
+public final class InterpolatedMolodenskyTransformTest extends InterpolatedGeocentricTransformTest {
     /**
      * Creates an approximation of the <cite>"France geocentric interpolation"</cite> transform
      * using the Molodensky transform. This method relax slightly the tolerance threshold since

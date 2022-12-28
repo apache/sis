@@ -59,7 +59,6 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author  Johann Sorel (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class Types {
     /**

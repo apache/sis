@@ -30,7 +30,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 enum BandName {
     COASTAL_AEROSOL(BandGroupName.REFLECTIVE,   "Coastal Aerosol",                    (short)   433),

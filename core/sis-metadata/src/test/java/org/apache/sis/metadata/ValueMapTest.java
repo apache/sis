@@ -49,10 +49,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @see MetadataStandardTest#testValueMap()
  *
  * @since 0.3
- * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public final strictfp class ValueMapTest extends TestCase {
+public final class ValueMapTest extends TestCase {
     /**
      * The citation instance created by {@link #createCitation()}.
      */
@@ -73,14 +72,13 @@ public final strictfp class ValueMapTest extends TestCase {
      * This method creates the following metadata
      * (ignoring identifiers, which will be inferred from the ISBN value):
      *
-     * {@preformat text
-     *     Citation
-     *       ├─Title…………………………………………………… Undercurrent
-     *       ├─Edition……………………………………………… <nil:unknown>
-     *       ├─Cited Responsible Parties
-     *       │   └─Individual Name……………… Testsuya Toyoda
-     *       └─ISBN……………………………………………………… 9782505004509
-     * }
+     * <pre class="text">
+     *   Citation
+     *     ├─Title…………………………………………………… Undercurrent
+     *     ├─Edition……………………………………………… &lt;nil:unknown&gt;
+     *     ├─Cited Responsible Parties
+     *     │   └─Individual Name……………… Testsuya Toyoda
+     *     └─ISBN……………………………………………………… 9782505004509</pre>
      *
      * The citation instance is stored in the {@link #citation} field.
      * The title and author instances are stored in the {@link #title} and {@link #author} fields.
@@ -122,14 +120,13 @@ public final strictfp class ValueMapTest extends TestCase {
      * Tests the {@link ValueMap#entrySet()} method.
      * The expected metadata is:
      *
-     * {@preformat text
-     *     Citation
-     *       ├─Title…………………………………………………… Undercurrent
-     *       ├─Identifiers…………………………………… 9782505004509
-     *       ├─Cited Responsible Parties
-     *       │   └─Individual Name……………… Testsuya Toyoda
-     *       └─ISBN……………………………………………………… 9782505004509
-     * }
+     * <pre class="text">
+     *   Citation
+     *     ├─Title…………………………………………………… Undercurrent
+     *     ├─Identifiers…………………………………… 9782505004509
+     *     ├─Cited Responsible Parties
+     *     │   └─Individual Name……………… Testsuya Toyoda
+     *     └─ISBN……………………………………………………… 9782505004509</pre>
      *
      * Note that this test is intentionally sensitive to iteration order.
      * That order shall be fixed by the {@code XmlType} annotation.

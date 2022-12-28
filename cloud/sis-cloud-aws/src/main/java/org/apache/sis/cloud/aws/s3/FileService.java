@@ -78,7 +78,6 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.2
- * @module
  */
 public class FileService extends FileSystemProvider {
     /**
@@ -173,9 +172,7 @@ public class FileService extends FileSystemProvider {
      * Initializes and returns a new file system identified by a URI.
      * The given URI shall have the following pattern:
      *
-     * {@preformat text
-     *     S3://accessKey@bucket/key
-     * }
+     * <pre class="text">S3://accessKey@bucket/key</pre>
      *
      * In current version all path components after {@code accessKey} are ignored.
      * A future version may allow finer grain control.

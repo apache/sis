@@ -92,7 +92,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final class Namespaces extends Static {
     /**

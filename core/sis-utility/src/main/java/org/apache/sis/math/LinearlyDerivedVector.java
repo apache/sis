@@ -37,7 +37,6 @@ import org.apache.sis.measure.NumberRange;
  * @see Vector#transform(double, double)
  *
  * @since 1.0
- * @module
  */
 final class LinearlyDerivedVector extends Vector implements Serializable {
     /**

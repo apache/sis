@@ -53,10 +53,9 @@ import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn(ConformalProjectionTest.class)
-public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {
+public final class LambertConicConformalTest extends MapProjectionTestCase {
     /**
      * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
      *

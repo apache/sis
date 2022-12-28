@@ -39,9 +39,8 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class HardCodedConversions {
+public final class HardCodedConversions {
     /**
      * A defining conversion for a <cite>Mercator (variant A)</cite> (also known as "1SP") projection
      * with a scale factor of 1.
@@ -56,12 +55,12 @@ public final strictfp class HardCodedConversions {
      * A defining conversion for a <cite>Universal Transverse Mercator zone 9</cite> projection.
      * Pseudo Well-Known Text for the {@link org.opengis.referencing.operation.MathTransform}:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   Param_MT["Transverse Mercator",
      *       Parameter["Longitude of natural origin", -129, Unit["degree"]],
      *       Parameter["Scale factor at natural origin", 0.9996],
      *       Parameter["False easting", 500000, Unit["metre"]]]]
-     * }
+     *   }
      */
     public static final DefaultConversion UTM;
     static {

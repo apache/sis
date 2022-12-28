@@ -136,7 +136,6 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
  * @since   1.0
- * @module
  */
 public class GridGeometry implements LenientComparable, Serializable {
     /**
@@ -817,11 +816,11 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The conversion is often an affine transform, but not necessarily.
      * Conversions from cell indices to geospatial coordinates can be performed for example as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     MathTransform  gridToCRS     = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
      *     DirectPosition indicesOfCell = new GeneralDirectPosition(2, 3, 4):
      *     DirectPosition aPixelCenter  = gridToCRS.transform(indicesOfCell, null);
-     * }
+     *     }
      *
      * Callers must specify whether they want the "real world" coordinates of cell center or cell corner.
      * The cell corner is the one for which all grid indices have the smallest values (closest to negative infinity).
@@ -1358,21 +1357,20 @@ public class GridGeometry implements LenientComparable, Serializable {
      * {@code GridDerivation} does not change the state of this {@code GridGeometry} but instead creates
      * new instances as needed. Examples of modifications include clipping to a sub-area or applying a sub-sampling.
      *
-     * <div class="note"><b>Example:</b>
-     * for clipping this grid geometry to a sub-area, one can use:
+     * <p>Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
+     * {@code GridDerivation} preserves the number of dimensions. For example, {@linkplain GridDerivation#slice slicing}
+     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
+     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.</p>
      *
-     * {@preformat java
+     * <h4>Example</h4>
+     * For clipping this grid geometry to a sub-area, one can use:
+     *
+     * {@snippet lang="java" :
      *     GridGeometry gg = ...;
      *     Envelope areaOfInterest = ...;
      *     gg = gg.derive().rounding(GridRoundingMode.ENCLOSING)
      *                     .subgrid(areaOfInterest).build();
-     * }
-     * </div>
-     *
-     * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
-     * {@code GridDerivation} preserves the number of dimensions. For example, {@linkplain GridDerivation#slice slicing}
-     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
-     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.
+     *     }
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */

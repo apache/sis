@@ -39,7 +39,6 @@ import org.locationtech.jts.geom.Point;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class PathIteratorAdapter implements PathIterator {
     /**

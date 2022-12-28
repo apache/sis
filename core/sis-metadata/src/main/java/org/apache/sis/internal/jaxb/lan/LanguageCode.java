@@ -32,7 +32,7 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  *
  * <p>This adapter formats the locale like below (by {@link LocaleAdapter}):</p>
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gmd:language>
  *     <gmd:LanguageCode codeList="http://(...snip...)" codeListValue="eng">English</gmd:LanguageCode>
  *   </gmd:language>
@@ -40,13 +40,13 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  *
  * or (when using {@link PT_Locale} adapter):
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <lan:PT_Locale>
  *     <lan:language>
  *       <lan:LanguageCode codeList="http://(...snip...)" codeListValue="eng">English</lan:LanguageCode>
  *     </lan:language>
  *   </lan:PT_Locale>
- * }
+ *   }
  *
  * Note that {@code <gco:CharacterString>} can be substituted to the language code.
  *
@@ -55,7 +55,6 @@ import org.apache.sis.internal.jaxb.gco.CharSequenceAdapter;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "LanguageCode_PropertyType")
 public final class LanguageCode extends GO_CharacterString {

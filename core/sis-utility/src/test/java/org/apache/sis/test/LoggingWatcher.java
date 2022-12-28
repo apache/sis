@@ -36,34 +36,33 @@ import org.junit.runners.model.FrameworkMethod;
  * Watches the logs sent to the given logger.
  * For using, create a rule in the JUnit test class like below:
  *
- * {@preformat java
- *     &#64;Rule
+ * {@snippet lang="java" :
+ *     @Rule
  *     public final LoggingWatcher loggings = new LoggingWatcher(Logger.getLogger(Loggers.XML));
- * }
+ *     }
  *
  * Recommended but not mandatory, ensure that there is no unexpected logging in any tests:
  *
- * {@preformat java
- *     &#64;After
+ * {@snippet lang="java" :
+ *     @After
  *     public void assertNoUnexpectedLog() {
  *         loggings.assertNoUnexpectedLog();
  *     }
- * }
+ *     }
  *
  * In tests that are expected to emit warnings, add the following lines:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     // Do the test here.
  *     loggings.assertNextLogContains("Some keywords", "that are expected", "to be found in the message");
  *     loggings.assertNoUnexpectedLog();
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
-public final strictfp class LoggingWatcher extends TestWatchman implements Filter {
+public final class LoggingWatcher extends TestWatchman implements Filter {
     /**
      * The logged messages.
      */

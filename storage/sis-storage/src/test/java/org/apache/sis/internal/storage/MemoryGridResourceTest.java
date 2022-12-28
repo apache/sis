@@ -38,10 +38,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 @DependsOn(RangeArgumentTest.class)
-public final strictfp class MemoryGridResourceTest extends TestCase {
+public final class MemoryGridResourceTest extends TestCase {
     /**
      * Arbitrary size for the grid to test.
      */

@@ -48,7 +48,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 class SimpleLocation extends AbstractLocation implements DirectPosition, Envelope, GeographicBoundingBox {
     /**
@@ -304,7 +303,6 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     abstract static class Projected extends SimpleLocation implements GeographicBoundingBox {
         /**

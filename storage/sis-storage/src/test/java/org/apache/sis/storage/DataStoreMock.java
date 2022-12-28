@@ -28,9 +28,8 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
-public final strictfp class DataStoreMock extends DataStore {
+public final class DataStoreMock extends DataStore {
     /**
      * The display name.
      */

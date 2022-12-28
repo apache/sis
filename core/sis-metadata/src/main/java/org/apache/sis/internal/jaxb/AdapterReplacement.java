@@ -43,16 +43,15 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @see Unmarshaller#setAdapter(XmlAdapter)
  *
  * @since 0.3
- * @module
  */
 public interface AdapterReplacement {
     /**
      * Invoked when a new adapter is created by {@link org.apache.sis.xml.MarshallerPool}.
      * Typical implementations will be as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     marshaller.setAdapter(MyParent.class, this);
-     * }
+     *     }
      *
      * @param  marshaller The marshaller to be configured.
      * @throws JAXBException if the given marshaller cannot be configured.
@@ -63,9 +62,9 @@ public interface AdapterReplacement {
      * Invoked when a new adapter is created by {@link org.apache.sis.xml.MarshallerPool}.
      * Typical implementations will be as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     unmarshaller.setAdapter(MyParent.class, this);
-     * }
+     *     }
      *
      * @param  unmarshaller The unmarshaller to be configured.
      * @throws JAXBException if the given unmarshaller cannot be configured.

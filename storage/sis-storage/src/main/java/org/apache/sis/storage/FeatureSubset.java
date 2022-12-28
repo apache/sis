@@ -42,7 +42,6 @@ import org.apache.sis.internal.geoapi.filter.SortBy;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 final class FeatureSubset extends AbstractFeatureSet {
     /**

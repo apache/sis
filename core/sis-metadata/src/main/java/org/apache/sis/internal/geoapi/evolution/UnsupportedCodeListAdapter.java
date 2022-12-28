@@ -33,7 +33,6 @@ import org.apache.sis.internal.jaxb.cat.CodeListUID;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCodeListAdapter<ValueType>>
         extends XmlAdapter<ValueType,CodeList<?>>
@@ -62,9 +61,9 @@ public abstract class UnsupportedCodeListAdapter<ValueType extends UnsupportedCo
      * Wraps the code into an adapter.
      * Most implementations will be like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new ValueType(value);
-     * }
+     *     }
      *
      * @param  value  the value of {@link CodeList} to be marshalled.
      * @return the wrapper for the code list value.

@@ -39,10 +39,9 @@ import static java.lang.StrictMath.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
-public final strictfp class DoubleDoubleTest extends TestCase {
+public final class DoubleDoubleTest extends TestCase {
     /**
      * Number of time to repeat arithmetic tests.
      */

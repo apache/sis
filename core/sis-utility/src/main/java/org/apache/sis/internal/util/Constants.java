@@ -33,7 +33,6 @@ import org.apache.sis.util.Static;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.5
- * @module
  */
 public final class Constants extends Static {
     /**

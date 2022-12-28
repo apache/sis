@@ -74,24 +74,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * <h2>Substituting a free text by a code list</h2>
  * The ISO standard allows to substitute some character strings in the <cite>"free text"</cite> domain
- * by a {@link CodeList} value.
- *
- * <div class="note"><b>Example:</b>
- * in the following XML fragment, the {@code <mac:type>} value is normally a {@code <gco:CharacterString>}
- * but has been replaced by a {@code SensorType} code below:
- *
- * {@preformat xml
- *   <mac:MI_Instrument>
- *     <mac:type>
- *       <gmi:MI_SensorTypeCode
- *           codeList="http://standards.iso.org/…snip…/codelists.xml#CI_SensorTypeCode"
- *           codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
- *     </mac:type>
- *   </mac:MI_Instrument>
- * }
- * </div>
- *
- * Such substitution can be done with:
+ * by a {@link CodeList} value. Such substitution can be done with:
  *
  * <ul>
  *   <li>{@link #getCodeTitle(CodeList)} for getting the {@link InternationalString} instance
@@ -100,10 +83,23 @@ import static java.util.logging.Logger.getLogger;
  *       {@code InternationalString}.</li>
  * </ul>
  *
+ * <h2>Example</h2>
+ * In the following XML fragment, the {@code <mac:type>} value is normally a {@code <gco:CharacterString>}
+ * but has been replaced by a {@code SensorType} code below:
+ *
+ * {@snippet lang="xml" :
+ *   <mac:MI_Instrument>
+ *     <mac:type>
+ *       <gmi:MI_SensorTypeCode
+ *           codeList="http://standards.iso.org/…snip…/codelists.xml#CI_SensorTypeCode"
+ *           codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
+ *     </mac:type>
+ *   </mac:MI_Instrument>
+ *   }
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class Types extends Static {
     /**
@@ -356,7 +352,6 @@ public final class Types extends Static {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static class Description extends ResourceInternationalString {
         /**
@@ -432,7 +427,6 @@ public final class Types extends Static {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class CodeTitle extends Description {
         /**

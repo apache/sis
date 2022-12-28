@@ -46,7 +46,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Scope;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractMD_SpatialRepresentation_Type")
 @XmlRootElement(name = "AbstractMD_SpatialRepresentation")

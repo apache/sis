@@ -39,7 +39,6 @@ import static java.util.logging.Logger.getLogger;
  * @see EPSGFactory#canClose(EPSGDataAccess)
  *
  * @since 0.7
- * @module
  */
 final class CloseableReference extends WeakReference<AuthorityCodes> implements Disposable {
     /**

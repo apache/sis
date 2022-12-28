@@ -24,13 +24,13 @@
  * property keys that can be used for configuring (un)marshallers and convenience static methods.
  * For example, the following code:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     XML.marshal(Citations.OGC, System.out);
- * }
+ *     }
  *
  * will produce a string like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
  *   <cit:CI_Citation xmlns:gmd="http://www.isotc211.org/2005/gmd"
  *                    xmlns:gco="http://www.isotc211.org/2005/gco">
@@ -39,7 +39,7 @@
  *     </cit:title>
  *     ... much more XML below this point ...
  *   </cit:CI_Citation>
- * }
+ *   }
  *
  * <h2>Customizing the XML</h2>
  * In order to parse and format ISO 19115-3 compliant documents, SIS needs its own
@@ -61,6 +61,5 @@
  * @author  Cullen Rombach (Image Matters)
  * @version 1.4
  * @since   0.3
- * @module
  */
 package org.apache.sis.xml;

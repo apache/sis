@@ -37,10 +37,9 @@ import static org.junit.Assert.assertEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class MeridianArcTest extends MapProjectionTestCase {
+public final class MeridianArcTest extends MapProjectionTestCase {
     /**
      * Threshold for comparison of floating point values.
      */
@@ -64,13 +63,12 @@ public final strictfp class MeridianArcTest extends MapProjectionTestCase {
      * The equation is given in Snyder 3-21. We use this equation as a reference for testing validity of other forms.
      * The equation is:
      *
-     * {@preformat math
+     * <pre class="math">
      *   M = a[(1 – e²/4 – 3e⁴/64  –  5e⁶/256  – …)⋅φ
      *          – (3e²/8 + 3e⁴/32  + 45e⁶/1024 + …)⋅sin2φ
      *                 + (15e⁴/256 + 45e⁶/1024 + …)⋅sin4φ
      *                            – (35e⁶/3072 + …)⋅sin6φ
-     *                                         + …]
-     * }
+     *                                         + …]</pre>
      *
      * @param  φ  latitude in radians.
      * @return distance on meridian from equator to the given latitude on an ellipsoid with semi-major axis of 1.

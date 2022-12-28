@@ -53,7 +53,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {
     "values",

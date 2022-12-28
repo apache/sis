@@ -51,11 +51,10 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(org.apache.sis.measure.AngleTest.class)
-public final strictfp class StringConverterTest extends TestCase {
+public final class StringConverterTest extends TestCase {
     /**
      * Asserts that conversion of the given {@code source} value produces
      * the given {@code target} value, and tests the inverse conversion.

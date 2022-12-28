@@ -67,7 +67,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <V>  the type of mapped values.
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractMap<K,V> implements Map<K,V> {
     /**

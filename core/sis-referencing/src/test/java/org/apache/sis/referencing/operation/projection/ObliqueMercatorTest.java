@@ -35,10 +35,9 @@ import static java.lang.StrictMath.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(MercatorTest.class)
-public final strictfp class ObliqueMercatorTest extends MapProjectionTestCase {
+public final class ObliqueMercatorTest extends MapProjectionTestCase {
     /**
      * Returns a new instance of {@link ObliqueMercator}.
      *

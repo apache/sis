@@ -39,7 +39,6 @@ import org.apache.sis.util.ObjectConverters;
  * @see Measure
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "MeasureListType")
 public final class MeasureList {

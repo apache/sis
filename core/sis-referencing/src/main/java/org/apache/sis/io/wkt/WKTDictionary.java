@@ -88,7 +88,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * The additional CRS are defined by Well-Known Text strings in a {@code "MyCRS.txt"} file.
  * First step is to create a CRS factory with those definitions:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public final class MyCRS extends WKTDictionary implements CRSAuthorityFactory {
  *         MyCRS() throws IOException, FactoryException {
  *             super(new DefaultCitation("MyAuthority"));
@@ -97,7 +97,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *             }
  *         }
  *     }
- * }
+ *     }
  *
  * The second step is to register this factory as a service with a
  * {@code META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory} file on the classpath.
@@ -127,7 +127,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class WKTDictionary extends GeodeticAuthorityFactory {
     /**

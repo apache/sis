@@ -35,7 +35,6 @@ import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 final class LikeFilter<R> extends FilterNode<R> implements Optimization.OnFilter<R> {
     /**

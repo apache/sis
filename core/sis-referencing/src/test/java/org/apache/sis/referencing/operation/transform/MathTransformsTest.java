@@ -42,10 +42,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @DependsOn(org.apache.sis.referencing.operation.matrix.MatricesTest.class)
-public final strictfp class MathTransformsTest extends TestCase {
+public final class MathTransformsTest extends TestCase {
     /**
      * Creates a dummy transform for testing purpose.
      * The transform has the following properties:

@@ -33,7 +33,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @param <T>  the type of option values.
  *
  * @since 1.0
- * @module
  */
 public final class DataOptionKey<T> extends OptionKey<T> {
     /**

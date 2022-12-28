@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.IdentifiersTest.class,
@@ -142,7 +141,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.sql.MetadataWriterTest.class,
     org.apache.sis.metadata.iso.citation.CitationsTest.class
 })
-public final strictfp class MetadataTestSuite extends TestSuite {
+public final class MetadataTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

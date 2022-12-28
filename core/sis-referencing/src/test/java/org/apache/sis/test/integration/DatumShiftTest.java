@@ -39,14 +39,13 @@ import static org.apache.sis.test.Assume.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({
     NTv2Test.class,
     NADCONTest.class,
     FranceGeocentricInterpolationTest.class
 })
-public final strictfp class DatumShiftTest extends TestCase {
+public final class DatumShiftTest extends TestCase {
     /**
      * Tests loading an official {@code "ntf_r93.gsb"} datum shift grid file
      * and interpolating the sample point tested by {@link FranceGeocentricInterpolationTest}.

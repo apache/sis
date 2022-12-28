@@ -33,7 +33,6 @@ import org.apache.sis.internal.system.Modules;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
     /**

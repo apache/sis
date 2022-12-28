@@ -34,9 +34,8 @@ import org.apache.sis.internal.geoapi.filter.BetweenComparisonOperator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class ComparisonFilterTest extends TestCase {
+public final class ComparisonFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */

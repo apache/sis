@@ -33,7 +33,6 @@ import org.opengis.util.GenericName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public interface WritableTileMatrixSet extends TileMatrixSet {
     /**

@@ -38,10 +38,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 @DependsOn(DefaultAttributeTypeTest.class)
-public final strictfp class DefaultFeatureTypeTest extends TestCase {
+public final class DefaultFeatureTypeTest extends TestCase {
     /**
      * Convenience method returning the given name in a a property map
      * to be given to {@link AbstractIdentifiedType} constructor.

@@ -29,7 +29,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.5
  * @version 0.6
- * @module
  */
 final class ParameterizedTransformTestMock {
     ParameterizedTransformTestMock(MathTransformFactory factory) {

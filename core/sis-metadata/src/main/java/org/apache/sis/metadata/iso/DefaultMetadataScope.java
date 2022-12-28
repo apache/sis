@@ -58,7 +58,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "MD_MetadataScope_Type", propOrder = {
     "resourceScope",

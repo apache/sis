@@ -28,7 +28,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @XmlTransient
 public final class PolarStereographicC extends AbstractStereographic {

@@ -93,7 +93,6 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * @see Unit
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "CoordinateSystemAxisType", propOrder = {
     "abbreviation",

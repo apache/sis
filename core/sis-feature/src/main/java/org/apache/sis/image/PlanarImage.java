@@ -87,7 +87,7 @@ import static java.lang.Math.multiplyFull;
  * {@link WritableRenderedImage#releaseWritableTile releaseWritableTile(…)} methods should be invoked in
  * {@code try ... finally} blocks like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     WritableRenderedImage image = ...;
  *     WritableRaster tile = image.getWritableTile(tileX, tileY);
  *     try {
@@ -95,7 +95,7 @@ import static java.lang.Math.multiplyFull;
  *     } finally {
  *         image.releaseWritableTile(tileX, tileY);
  *     }
- * }
+ *     }
  *
  * This is recommended because implementations may count the number of acquisitions and releases for deciding
  * when to notify the {@link java.awt.image.TileObserver}s. Some implementations may also acquire and release
@@ -107,7 +107,6 @@ import static java.lang.Math.multiplyFull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public abstract class PlanarImage implements RenderedImage {
     /**

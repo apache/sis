@@ -25,7 +25,6 @@ package org.apache.sis.internal.referencing.provider;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public enum DatumShiftMethod {
     /**

@@ -45,11 +45,11 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * require {@code "https"} protocol, but the URLs in this class use {@code "http"} for historical reasons).
  * Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gmi:MI_SensorTypeCode
  *       codeList="http://standards.iso.org/…snip…/codelists.xml#CI_SensorTypeCode"
  *       codeListValue="RADIOMETER">Radiometer</gmi:MI_SensorTypeCode>
- * }
+ *   }
  *
  * <p>Constants in this class are organized in three groups:</p>
  * <ul>
@@ -79,7 +79,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @see CodeListAdapter
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "CodeList", propOrder = {"codeList", "codeListValue", "codeSpace"})
 public final class CodeListUID {

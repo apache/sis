@@ -29,6 +29,5 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 package org.apache.sis.internal.maven;

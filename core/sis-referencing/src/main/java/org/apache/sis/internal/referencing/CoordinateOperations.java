@@ -53,7 +53,6 @@ import org.apache.sis.util.collection.Containers;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   0.7
- * @module
  */
 public final class CoordinateOperations extends SystemListener {
     /**
@@ -94,11 +93,10 @@ public final class CoordinateOperations extends SystemListener {
      * are longitude at dimension 0 or 1, and some measurement of time (in climatology) at dimension 2 or 3,
      * then the most likely values are (binary digits):
      *
-     * {@preformat text
+     * <pre class="text">
      *     0000    0100    1000
      *     0001    0101    1001
-     *     0010    0110    1010
-     * }
+     *     0010    0110    1010</pre>
      *
      * The last decimal value is 10 (binary {@code 1010}); we don't need to cache more.
      */

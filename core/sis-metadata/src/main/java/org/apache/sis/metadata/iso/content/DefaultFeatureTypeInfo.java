@@ -61,7 +61,6 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @see org.apache.sis.feature.DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 @TitleProperty(name = "featureTypeName")
 @XmlType(name = "MD_FeatureTypeInfo_Type", propOrder = {

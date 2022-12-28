@@ -32,7 +32,6 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 final class InterpolatedTransform2D extends InterpolatedTransform implements MathTransform2D {
     /**
@@ -93,7 +92,6 @@ final class InterpolatedTransform2D extends InterpolatedTransform implements Mat
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     final class Inverse extends InterpolatedTransform.Inverse implements MathTransform2D {
         /**

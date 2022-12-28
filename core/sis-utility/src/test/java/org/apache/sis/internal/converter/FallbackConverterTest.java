@@ -36,11 +36,10 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn({StringConverterTest.class,
     org.apache.sis.util.collection.TreeTableFormatTest.class})
-public final strictfp class FallbackConverterTest extends TestCase {
+public final class FallbackConverterTest extends TestCase {
     /**
      * Conversions that are expected to be supported.
      * Greater values imply all conversions identified by lower values.

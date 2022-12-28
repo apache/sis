@@ -31,7 +31,7 @@ import org.apache.sis.util.ComparisonMode;
  *
  * <blockquote><var>y</var> = {@linkplain #scale}⋅{@linkplain #base}<sup><var>x</var></sup></blockquote>
  *
- * <div class="note"><b>Tip:</b>
+ * <h2>Tip</h2>
  * if a linear transform is applied before this exponential transform, then the equation can be rewritten as:
  * <var>scale</var>⋅<var>base</var><sup><var>a</var> + <var>b</var>⋅<var>x</var></sup> =
  * <var>scale</var>⋅<var>base</var><sup><var>a</var></sup>⋅(<var>base</var><sup><var>b</var></sup>)<sup><var>x</var></sup>
@@ -39,11 +39,10 @@ import org.apache.sis.util.ComparisonMode;
  * It is possible to find back the coefficients of the original linear transform by
  * pre-concatenating a logarithmic transform before the exponential one, as below:
  *
- * {@preformat java
- *   LinearTransform1D linear = MathTransforms.create(exponentialTransform,
- *           LogarithmicTransform1D.create(base, -Math.log(scale) / Math.log(base)));
- * }
- * </div>
+ * {@snippet lang="java" :
+ *     LinearTransform1D linear = MathTransforms.create(exponentialTransform,
+ *             LogarithmicTransform1D.create(base, -Math.log(scale) / Math.log(base)));
+ *     }
  *
  * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -53,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ExponentialTransform1D extends AbstractMathTransform1D implements Serializable {
     /**

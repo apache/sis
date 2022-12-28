@@ -62,7 +62,6 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.util.collection.RangeSet
  *
  * @since 0.3
- * @module
  */
 public class MeasurementRange<E extends Number & Comparable<? super E>> extends NumberRange<E> {
     /**

@@ -58,9 +58,8 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  * @param  <G> root class of geometry implementation.
  *
  * @since 1.1
- * @module
  */
-public abstract strictfp class BinarySpatialFilterTestCase<G> extends TestCase {
+public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     /**
      * The factory to use for testing purpose.
      */

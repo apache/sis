@@ -89,7 +89,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**

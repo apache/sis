@@ -42,13 +42,12 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn({
     GeocentricTranslationTest.class,
     FranceGeocentricInterpolationTest.class
 })
-public strictfp class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
+public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
      * Creates the <cite>"France geocentric interpolation"</cite> transform,
      * including the normalization and denormalization parts.

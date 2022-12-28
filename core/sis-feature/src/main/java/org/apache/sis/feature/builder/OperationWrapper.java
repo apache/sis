@@ -31,7 +31,6 @@ import org.apache.sis.feature.AbstractIdentifiedType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class OperationWrapper extends PropertyTypeBuilder {
     /**

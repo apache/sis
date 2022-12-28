@@ -33,10 +33,9 @@ import org.apache.sis.internal.geoapi.temporal.Period;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")
-final strictfp class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Serializable {
+final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Serializable {
     /**
      * Period beginning and ending, in milliseconds since Java epoch.
      */

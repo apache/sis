@@ -55,7 +55,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final class Person implements ResponsibleParty, Contact, Address {
     /**

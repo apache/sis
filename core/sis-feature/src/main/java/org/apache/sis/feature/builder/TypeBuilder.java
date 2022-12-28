@@ -60,19 +60,18 @@ import org.apache.sis.util.Classes;
  * qualified name} is requested.
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
  *     FeatureType city = builder.build();
- *
+
  *     System.out.println(city.getName());                              // Prints "City"
  *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
- * }
+ *     }
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public abstract class TypeBuilder implements Localized {
     /**

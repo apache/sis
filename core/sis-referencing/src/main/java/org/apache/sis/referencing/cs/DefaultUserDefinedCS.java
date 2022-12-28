@@ -45,7 +45,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @XmlType(name = "UserDefinedCSType")
 @XmlRootElement(name = "UserDefinedCS")

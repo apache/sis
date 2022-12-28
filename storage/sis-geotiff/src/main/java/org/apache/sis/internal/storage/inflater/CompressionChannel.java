@@ -35,7 +35,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.1
- * @module
  */
 abstract class CompressionChannel extends PixelChannel {
     /**

@@ -30,7 +30,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class EPSGParameterDomain extends NumberRange<Double> {
     /**

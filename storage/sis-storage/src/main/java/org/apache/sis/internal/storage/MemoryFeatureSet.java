@@ -36,7 +36,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public class MemoryFeatureSet extends AbstractFeatureSet {
     /**

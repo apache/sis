@@ -25,7 +25,7 @@ import org.apache.sis.internal.jaxb.Context;
  * JAXB adapter for XML {@code <GO_CharacterString>} or {@code <LanguageCode>} elements
  * mapped to {@link Locale}. This adapter formats the locale like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gmd:language>
  *     <gmd:LanguageCode codeList="(snip)#LanguageCode" codeListValue="jpn">Japanese</gmd:LanguageCode>
  *   </gmd:language>
@@ -42,7 +42,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @see PT_Locale
  *
  * @since 0.3
- * @module
  */
 public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
     /**
@@ -83,7 +82,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * JAXB adapter for XML {@code <PT_Locale>} elements mapped to {@link Locale}.
      * This adapter formats the locale like below:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:locale>
      *     <gmd:PT_Locale>
      *       <gmd:language>
@@ -99,7 +98,6 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   1.0
-     * @module
      */
     public static final class Wrapped extends XmlAdapter<PT_Locale, Locale> {
         /**

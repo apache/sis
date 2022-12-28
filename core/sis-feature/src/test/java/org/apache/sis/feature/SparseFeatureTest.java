@@ -26,14 +26,13 @@ import org.apache.sis.test.DependsOn;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn({
     DefaultFeatureTypeTest.class,
     SingletonAttributeTest.class,
     PropertySingletonTest.class
 })
-public final strictfp class SparseFeatureTest extends FeatureTestCase {
+public final class SparseFeatureTest extends FeatureTestCase {
     /**
      * Creates a new feature for the given type.
      */

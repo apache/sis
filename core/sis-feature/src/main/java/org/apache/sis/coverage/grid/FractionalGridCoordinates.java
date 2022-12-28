@@ -52,7 +52,6 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
  * @since 1.1
- * @module
  */
 public class FractionalGridCoordinates implements Serializable {
     /**

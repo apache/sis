@@ -50,7 +50,6 @@ import static java.lang.Double.*;
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  *
  * @since 0.5
- * @module
  */
 public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
     /**

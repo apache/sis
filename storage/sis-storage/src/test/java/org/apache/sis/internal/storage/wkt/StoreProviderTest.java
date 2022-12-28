@@ -33,10 +33,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
-public final strictfp class StoreProviderTest extends TestCase {
+public final class StoreProviderTest extends TestCase {
     /**
      * Verifies validity of {@code StoreProvider.MIN_LENGTH} and {@code StoreProvider.MAX_LENGTH} constants
      * by comparing them with the content of {@code StoreProvider.KEYWORDS} map.

@@ -58,7 +58,6 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCRS(String)
  *
  * @since 0.7
- * @module
  */
 @XmlType(name = "ParametricCRSType", propOrder = {
     "coordinateSystem",

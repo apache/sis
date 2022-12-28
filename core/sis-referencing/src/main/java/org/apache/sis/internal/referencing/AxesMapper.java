@@ -34,7 +34,6 @@ import static java.lang.Long.numberOfTrailingZeros;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 enum AxesMapper {
     /**

@@ -30,10 +30,9 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(MetadataStandardTest.class)
-public final strictfp class AbstractMetadataTest extends TestCase {
+public final class AbstractMetadataTest extends TestCase {
     /**
      * Tests the {@link AbstractMetadata#hashCode()} method on an object having cyclic associations.
      * This is the same test than {@link MetadataStandardTest#testHashCodeOnCyclicMetadata()}, with
@@ -53,7 +52,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
      * {@link StackOverflowError} or an {@link OutOfMemoryError} (after quite a long time).
      *
      * <p>The tree formatted by this test is:</p>
-     * {@preformat text
+     * <pre class="text">
      *     Acquisition information
      *       └─Platform
      *           ├─Description………………………………… A platform.
@@ -62,8 +61,7 @@ public final strictfp class AbstractMetadataTest extends TestCase {
      *               └─Mounted on
      *                   ├─Description…………… A platform.
      *                   └─Instrument
-     *                         (omitted cycle)
-     * }
+     *                         (omitted cycle)</pre>
      *
      * Note that the cycle detection apparently happens too late since "A platform" has been repeated.
      * This is because that same Platform instance appears in two different metadata property.  We do

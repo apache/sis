@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class RewindableLineReaderTest extends TestCase {
+public final class RewindableLineReaderTest extends TestCase {
     /**
      * Number of bytes to transfer from the {@code ImageInputStream} to {@code BufferedReader}.
      * We use a small size in order to invalidate the {@code BufferedReader} mark without having

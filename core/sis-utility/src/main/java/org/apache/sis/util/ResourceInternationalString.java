@@ -34,25 +34,22 @@ import java.util.MissingResourceException;
  * See the {@link ResourceBundle#getBundle(String, Locale, ClassLoader) ResourceBundle.getBundle(…)}
  * Javadoc for more information.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * if a file named "{@code MyResources.properties}" exists in {@code org.mypackage}
  * and contains the following line:
  *
- * {@preformat text
- *     MyKey = some value
- * }
+ * <pre class="text">MyKey = some value</pre>
  *
  * Then an international string for {@code "some value"} can be created using the following code:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     InternationalString value = new ResourceInternationalString("org.mypackage.MyResources", "MyKey");
- * }
+ *     }
  *
  * The {@code "some value"} string will be localized if the required properties files exist, for
  * example "{@code MyResources_fr.properties}" for French or "{@code MyResources_it.properties}"
  * for Italian, <i>etc</i>.
  * If needed, users can gain more control by overriding the {@link #getBundle(Locale)} method.
- * </div>
  *
  * <h2>Class loaders</h2>
  * Developers can specify explicitly the {@link ClassLoader} to use be overriding the
@@ -82,7 +79,6 @@ import java.util.MissingResourceException;
  * @see ResourceBundle#getBundle(String, Locale)
  *
  * @since 1.1
- * @module
  */
 public class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
@@ -128,8 +124,8 @@ public class ResourceInternationalString extends AbstractInternationalString imp
      * For example, the code below works well if {@code MyResource} is a class defined
      * in the same module than the one that contain the resources to load:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected ResourceBundle getBundle(final Locale locale) {
      *         return ResourceBundle.getBundle(resources, locale, MyResource.class.getClassLoader());
      *     }

@@ -47,7 +47,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 final class IdentifierCommand extends FormattedOutputCommand {
     /**

@@ -44,9 +44,8 @@ import org.apache.sis.filter.Filter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
+public final class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
     /**
      * The factory to use for creating the filter objects.
      */

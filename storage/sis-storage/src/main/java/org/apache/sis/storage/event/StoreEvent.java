@@ -35,7 +35,6 @@ import org.apache.sis.internal.storage.StoreResource;
  * @see StoreListener
  *
  * @since 1.0
- * @module
  */
 public abstract class StoreEvent extends EventObject implements Localized {
     /**

@@ -51,7 +51,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <T>  the target number type.
  *
  * @since 0.3
- * @module
  */
 final class NumberConverter<S extends Number, T extends Number> extends SystemConverter<S,T> {
     /**

@@ -35,7 +35,6 @@ import org.apache.sis.feature.DefaultFeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  *
  * @todo we do not yet have an example of file that {@link ucar.nc2.ft.FeatureDatasetFactoryManager} can handle
  *       (maybe we don't use that class correctly).

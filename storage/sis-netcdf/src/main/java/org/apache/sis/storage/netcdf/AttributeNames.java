@@ -142,7 +142,6 @@ import org.opengis.metadata.extent.GeographicDescription;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public class AttributeNames {
     /**
@@ -199,7 +198,6 @@ public class AttributeNames {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
      * @since   0.8
-     * @module
      */
     public static class Term implements Serializable {
         /**
@@ -597,7 +595,6 @@ public class AttributeNames {
      * @see org.apache.sis.storage.netcdf.AttributeNames.Dimension
      *
      * @since 0.3
-     * @module
      */
     public static class Responsible implements Serializable {
         /**
@@ -928,7 +925,6 @@ public class AttributeNames {
      * @see org.apache.sis.storage.netcdf.AttributeNames.Responsible
      *
      * @since 0.3
-     * @module
      */
     public static class Dimension implements Serializable {
         /**

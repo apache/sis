@@ -39,12 +39,11 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultGeodeticCRSTest.class
 })
-public final strictfp class DefaultGeocentricCRSTest extends TestCase {
+public final class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Tests the {@link DefaultGeocentricCRS#forConvention(AxesConvention)} method
      * for {@link AxesConvention#RIGHT_HANDED}.

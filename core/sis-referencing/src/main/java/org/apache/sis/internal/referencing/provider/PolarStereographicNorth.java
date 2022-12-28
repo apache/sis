@@ -34,7 +34,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @XmlTransient
 public final class PolarStereographicNorth extends AbstractStereographic {

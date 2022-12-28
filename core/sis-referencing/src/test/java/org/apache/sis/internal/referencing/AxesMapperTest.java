@@ -30,9 +30,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class AxesMapperTest extends TestCase {
+public final class AxesMapperTest extends TestCase {
     /**
      * Tests with axes having same direction in same order.
      */

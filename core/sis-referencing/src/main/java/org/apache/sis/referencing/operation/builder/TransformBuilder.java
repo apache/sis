@@ -34,7 +34,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public abstract class TransformBuilder {
     /**

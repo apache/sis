@@ -36,9 +36,8 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class SampleModelFactoryTest extends TestCase {
+public final class SampleModelFactoryTest extends TestCase {
     /**
      * Arbitrary width, height and number of bands for the sample models to create.
      * Size does not matter because we will not create data buffer.

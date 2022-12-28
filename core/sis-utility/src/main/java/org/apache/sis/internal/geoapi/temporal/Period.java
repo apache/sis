@@ -25,7 +25,6 @@ import org.opengis.temporal.TemporalPrimitive;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
- * @module
  */
 public interface Period extends TemporalPrimitive {
     /**

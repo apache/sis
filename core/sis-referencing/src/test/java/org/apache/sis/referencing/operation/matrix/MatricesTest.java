@@ -43,7 +43,6 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @DependsOn({
     Matrix1Test.class,
@@ -53,7 +52,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
     GeneralMatrixTest.class,
     NonSquareMatrixTest.class
 })
-public final strictfp class MatricesTest extends TestCase {
+public final class MatricesTest extends TestCase {
     /**
      * Tests {@link Matrices#create(int, int, Number[])}.
      */

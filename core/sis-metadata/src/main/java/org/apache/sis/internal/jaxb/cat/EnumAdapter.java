@@ -23,7 +23,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * An adapter for {@link Enum}, in order to implement the ISO 19115-3 standard.
  * Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <srv:direction>
  *     <srv:SV_ParameterDirection>in</srv:SV_ParameterDirection>
  *   </srv:direction>
@@ -36,7 +36,6 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * @param <BoundType>  the enum being adapted.
  *
  * @since 0.5
- * @module
  */
 public abstract class EnumAdapter<ValueType extends EnumAdapter<ValueType,BoundType>,
         BoundType extends Enum<BoundType>> extends XmlAdapter<ValueType,BoundType>

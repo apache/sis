@@ -26,9 +26,8 @@ import org.locationtech.jts.geom.Geometry;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class RegistryUsingJTS_Test extends RegistryTestCase<Geometry> {
+public final class RegistryUsingJTS_Test extends RegistryTestCase<Geometry> {
     /**
      * Creates a new test.
      */

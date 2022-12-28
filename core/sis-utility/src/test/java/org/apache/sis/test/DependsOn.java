@@ -31,7 +31,6 @@ import java.lang.annotation.Target;
  * @author  Martin Desruisseaux
  * @version 0.3
  * @since   0.3
- * @module
  */
 @Inherited
 @Documented

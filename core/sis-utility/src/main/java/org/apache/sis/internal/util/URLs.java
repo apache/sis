@@ -31,7 +31,6 @@ import org.apache.sis.util.Static;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 public final class URLs extends Static {
     /**

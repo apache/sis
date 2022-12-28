@@ -47,7 +47,6 @@ import org.apache.sis.storage.event.StoreListeners;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class FileAccessView extends Widget implements UnaryOperator<ChannelFactory> {
     /**

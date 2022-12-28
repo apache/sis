@@ -38,19 +38,18 @@ import static org.junit.Assert.fail;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
  * @version 0.3
- * @module
  */
-strictfp class GeoapiAssert extends org.opengis.test.Assert {
+class GeoapiAssert extends org.opengis.test.Assert {
     /**
      * A flag for code that are pending next GeoAPI release before to be enabled.
      * This flag is always set to {@code false}, except occasionally just before
      * a GeoAPI release for testing purpose. It shall be used as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (PENDING_NEXT_GEOAPI_RELEASE) {
      *         // Do some stuff here.
      *     }
-     * }
+     *     }
      *
      * The intend is to make easier to identify test cases that fail with the current version
      * of the {@code geoapi-conformance} module, but should pass with the development snapshot.

@@ -42,7 +42,6 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class TwoGeometries<R,G> extends SpatialFunction<R> {
     /**

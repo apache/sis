@@ -47,14 +47,13 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
  *   <tr><td> 2051 </td><td> 34736 </td><td>  1 </td><td>     0 </td></tr>
  * </table>
  *
- * {@preformattext
+ * <pre class="text">
  *   GeoDoubleParams(34736) = {1.5}
- *   GeoAsciiParams(34737) = "Custom File|My Geographic|"
- * }
+ *   GeoAsciiParams(34737) = "Custom File|My Geographic|"</pre>
  *
- * <p>The first number in the {@code GeoKeyDirectory} table indicates that this is a version 1 GeoTIFF GeoKey directory.
+ * The first number in the {@code GeoKeyDirectory} table indicates that this is a version 1 GeoTIFF GeoKey directory.
  * This version will only change if the key structure is changed. The other numbers on the first line said that the file
- * uses revision 1.2 of the set of keys and that there is 6 key values.</p>
+ * uses revision 1.2 of the set of keys and that there is 6 key values.
  *
  * <p>The next line indicates that the first key (1024 = {@code ModelType}) has the value 2 (Geographic),
  * explicitly placed in the entry list since the TIFF tag location is 0.
@@ -69,7 +68,6 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.2
- * @module
  */
 class GeoKeysLoader {
     /**

@@ -55,7 +55,6 @@
  * @author  Cédric Briançon (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @XmlSchema(location = "http://schemas.opengis.net/gml/3.2.1/datums.xsd",
            elementFormDefault = XmlNsForm.QUALIFIED, namespace = Namespaces.GML, xmlns =

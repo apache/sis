@@ -44,9 +44,9 @@ import org.apache.sis.util.Locales;
  * document to fail. An application may want to change this behavior by replacing URLs that
  * are known to be erroneous by fixed versions of those URLs. Example:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     class URLFixer extends ValueConverter {
- *         &#64;Override
+ *         @Override
  *         public URL toURL(MarshalContext context, URI uri) throws MalformedURLException {
  *             try {
  *                 return super.toURL(context, uri);
@@ -59,7 +59,7 @@ import org.apache.sis.util.Locales;
  *             }
  *         }
  *     }
- * }
+ *     }
  *
  * See the {@link XML#CONVERTER} javadoc for an example of registering a custom
  * {@code ValueConverter} to a (un)marshaller.
@@ -67,7 +67,6 @@ import org.apache.sis.util.Locales;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public class ValueConverter {
     /**
@@ -369,9 +368,9 @@ public class ValueConverter {
      * is as below, omitting the check for null value and the call to {@link #exceptionOccured
      * exceptionOccured(…)} in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return UUID.fromString(value);
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a UUID, or {@code null}.
@@ -398,9 +397,9 @@ public class ValueConverter {
      * (omitting the check for null value and the call to {@link #exceptionOccured
      * exceptionOccured(…)} in case of error):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new URI(value);
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a URI, or {@code null}.
@@ -427,9 +426,9 @@ public class ValueConverter {
      * the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
      * in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return value.toURI();
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the URL to convert to a URI, or {@code null}.
@@ -455,9 +454,9 @@ public class ValueConverter {
      * the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
      * in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return value.toURL();
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the URI to convert to a URL, or {@code null}.
@@ -483,9 +482,9 @@ public class ValueConverter {
      * omitting the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
      * in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return NilReason.valueOf(value);
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a nil reason, or {@code null}.

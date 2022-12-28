@@ -29,7 +29,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public final class Vocabulary extends IndexedResourceBundle {
     /**
@@ -40,7 +39,6 @@ public final class Vocabulary extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**

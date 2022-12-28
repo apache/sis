@@ -32,9 +32,8 @@ import org.apache.sis.test.DependsOnMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class PoleRotationTest extends MathTransformTestCase {
+public final class PoleRotationTest extends MathTransformTestCase {
     /**
      * Returns the transform factory to use for testing purpose.
      * This mock supports only the "affine" and "concatenate" operations.
@@ -244,10 +243,10 @@ public final strictfp class PoleRotationTest extends MathTransformTestCase {
      * {@code coords.txt} is a file containing input coordinates in (λ,φ)
      * order and the output is in (φ,λ) order.
      *
-     * {@preformat shell
+     * {@snippet lang="shell" :
      *   cs2cs -I -E -f %g "EPSG:4326" +to +type=crs +proj=ob_tran +o_proj=longlat +datum=WGS84 +no_defs \
      *         +o_lat_p=70 +o_lon_p=40 +lon_0=190 coords.txt
-     * }
+     *   }
      *
      * Note that a 180° offset must be added to the {@code +lon_0} parameter.
      *

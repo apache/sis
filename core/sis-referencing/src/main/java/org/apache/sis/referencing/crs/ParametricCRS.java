@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.SingleCRS;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.7
  * @version 0.7
- * @module
  */
 interface ParametricCRS extends SingleCRS {
 }

@@ -40,7 +40,6 @@ import org.apache.sis.internal.metadata.sql.Reflection;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class QueryAnalyzer extends FeatureAnalyzer {
     /**

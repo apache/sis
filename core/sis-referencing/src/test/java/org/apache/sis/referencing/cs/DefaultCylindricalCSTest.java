@@ -34,10 +34,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn(DefaultPolarCSTest.class)
-public final strictfp class DefaultCylindricalCSTest extends TestCase {
+public final class DefaultCylindricalCSTest extends TestCase {
     /**
      * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)}
      * with a change from clockwise to counterclockwise axis orientation.

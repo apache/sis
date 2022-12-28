@@ -32,10 +32,9 @@ import org.apache.sis.test.DependsOn;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({ChannelDecoderTest.class, VariableTest.class})
-public final strictfp class VariableInfoTest extends VariableTest {
+public final class VariableInfoTest extends VariableTest {
     /**
      * Creates a new test.
      */

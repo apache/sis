@@ -64,7 +64,6 @@ import org.apache.sis.util.Utilities;
  * @see IdentifiedObjects#newFinder(String)
  *
  * @since 0.7
- * @module
  */
 public class IdentifiedObjectFinder {
     /**
@@ -76,7 +75,6 @@ public class IdentifiedObjectFinder {
      * @see #getSearchDomain()
      *
      * @since 0.7
-     * @module
      */
     public enum Domain {
         /**

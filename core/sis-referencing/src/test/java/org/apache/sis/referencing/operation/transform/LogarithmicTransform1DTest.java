@@ -34,10 +34,9 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
 @DependsOn(ExponentialTransform1DTest.class)
-public final strictfp class LogarithmicTransform1DTest extends MathTransformTestCase {
+public final class LogarithmicTransform1DTest extends MathTransformTestCase {
     /**
      * Arbitrary parameter of the logarithmic transform to be tested.
      */

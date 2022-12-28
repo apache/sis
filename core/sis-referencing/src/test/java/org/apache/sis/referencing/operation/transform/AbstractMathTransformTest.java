@@ -37,10 +37,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(IterationStrategyTest.class)
-public final strictfp class AbstractMathTransformTest extends TestCase {
+public final class AbstractMathTransformTest extends TestCase {
     /**
      * Tests the transform methods expecting at least one argument of type {@code float[]}.
      * We will use the {@link AbstractMathTransform#transform(double[], int, double[], int, int)}

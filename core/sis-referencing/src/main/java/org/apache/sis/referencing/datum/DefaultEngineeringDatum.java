@@ -45,7 +45,6 @@ import org.apache.sis.io.wkt.Formatter;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "EngineeringDatumType")
 @XmlRootElement(name = "EngineeringDatum")
