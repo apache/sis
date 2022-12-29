@@ -46,17 +46,8 @@ import org.apache.sis.math.DecimalFunctions;
  *     BigDecimal decimal = new BigDecimal(dd.value).add(new BigDecimal(dd.error));
  *     }
  *
- * <h2>Impact of availability of FMA instructions</h2>
- * When allowed to use <cite>fused multiply-add</cite> (FMA) instruction added in JDK9
- * (see <a href="https://issues.apache.org/jira/browse/SIS-136">SIS-136</a> on Apache SIS JIRA),
- * then the following methods should be revisited:
- *
- * <ul>
- *   <li>{@link #setToProduct(double, double)} - revisit with [Hida &amp; al.] algorithm 7.</li>
- * </ul>
- *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
@@ -91,29 +82,6 @@ public final class DoubleDouble extends Number {
      * consider the result as zero.
      */
     private static final int ZERO_THRESHOLD = 2;
-
-    /**
-     * The split constant used as part of multiplication algorithms. The split algorithm is as below
-     * (we have to inline it in multiplication methods because Java cannot return multi-values):
-     *
-     * {@snippet lang="java" :
-     *     private void split(double a) {
-     *         double t   = SPLIT * a;
-     *         double ahi = t - (t - a);
-     *         double alo = a - ahi;
-     *     }
-     * }
-     *
-     * <p>Source: [Hida &amp; al.] page 4 algorithm 5, itself reproduced from [Shewchuk] page 325.</p>
-     */
-    private static final double SPLIT = (1 << 27) + 1;
-
-    /**
-     * Maximal value that can be handled by {@link #multiply(double, double)}.
-     * If a multiplication is using a value greater than {@code MAX_VALUE},
-     * then the result will be infinity or NaN.
-     */
-    public static final double MAX_VALUE = Double.MAX_VALUE / SPLIT;
 
     /**
      * Pre-defined constants frequently used in SIS, sorted in increasing order. This table contains only
@@ -484,20 +452,16 @@ public final class DoubleDouble extends Number {
      * Sets this {@code DoubleDouble} to the product of the given numbers.
      * The given numbers shall not be greater than {@value #MAX_VALUE} in magnitude.
      *
-     * <p>Source: [Hida &amp; al.] page 4 algorithm 6, itself reproduced from [Shewchuk] page 326.</p>
+     * <p>Source: [Hida &amp; al.] page 5 algorithm 7, itself reproduced from [Shewchuk] page 326.
+     * This is the algorithm used when FMA instruction is available. For an algorithm without FMA,
+     * see [Hida &amp; al.] page 4 algorithm 6 (it is more complicated).</p>
      *
      * @param  a  the first number to multiply.
      * @param  b  the second number to multiply.
      */
     public void setToProduct(final double a, final double b) {
         value = a * b;
-        double t = SPLIT * a;
-        final double ahi = t - (t - a);
-        final double alo = a - ahi;
-        t = SPLIT * b;
-        final double bhi = t - (t - b);
-        final double blo = b - bhi;
-        error = ((ahi*bhi - value) + ahi*blo + alo*bhi) + alo*blo;
+        error = Math.fma(a, b, -value);     // Really needs the `fma(…)` precision here.
         if (DISABLED) error = 0;
     }
 
@@ -656,9 +620,9 @@ public final class DoubleDouble extends Number {
         if (value == 0 && error != 0) {
             /*
              * The two values almost cancelled, only their error terms are different.
-             * The number of significand bits (mantissa) in the IEEE 'double' representation is 52,
+             * The number of significand bits (mantissa) in the IEEE `double` representation is 52,
              * not counting the hidden bit. So estimate the accuracy of the double-double number as
-             * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 52 additional
+             * the accuracy of the `double` value (which is 1 ULP) scaled as if we had 52 additional
              * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 0).
              * If the error is not greater than that value, then assume that it is not significant.
              */
@@ -1073,19 +1037,19 @@ public final class DoubleDouble extends Number {
         }
         final double denominatorValue = value;
         /*
-         * The 'b * (a.value / b.value)' part in the method javadoc.
+         * The `b * (a.value / b.value)` part in the method javadoc.
          */
         final double quotient = numeratorValue / denominatorValue;
         multiply(quotient);
         /*
-         * Compute 'remainder' as 'a - above_product'.
+         * Compute `remainder` as `a - above_product`.
          */
         final double productError = error;
         setToSum(numeratorValue, -value);
         error -= productError;                      // Complete the above subtraction
         error += numeratorError;
         /*
-         * Adds the 'remainder / b' term, using 'remainder / b.value' as an approximation
+         * Adds the `remainder / b` term, using `remainder / b.value` as an approximation
          * (otherwise we would have to invoke this method recursively). The approximation
          * is assumed okay since the second term is small compared to the first one.
          */

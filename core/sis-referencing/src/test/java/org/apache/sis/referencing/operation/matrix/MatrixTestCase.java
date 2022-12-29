@@ -45,7 +45,7 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 public abstract class MatrixTestCase extends TestCase {
@@ -184,7 +184,7 @@ public abstract class MatrixTestCase extends TestCase {
     {
         assertEquals("numRow", numRow, actual.getNumRow());
         assertEquals("numCol", numCol, actual.getNumCol());
-        assertArrayEquals(expected, actual.getElements(), tolerance); // First because more informative in case of failure.
+        assertArrayEquals(expected, actual.getElements(), tolerance);           // First because more informative in case of failure.
         assertTrue(Matrices.create(numRow, numCol, expected).equals(actual, tolerance));
     }
 
@@ -525,8 +525,8 @@ public abstract class MatrixTestCase extends TestCase {
             if ((n % 10) == 0) {
                 setRandomValues(at, matrix);
             }
-            at.translate(vector[0] = random.nextDouble() * 50 - 25,
-                         vector[1] = random.nextDouble() * 50 - 25);
+            at.translate(vector[0] = Math.fma(random.nextDouble(), 50, -25),
+                         vector[1] = Math.fma(random.nextDouble(), 50, -25));
             matrix.translate(vector);
             assertMatrixEquals("translate", AffineTransforms2D.toMatrix(at), matrix, TOLERANCE);
         }
@@ -538,8 +538,8 @@ public abstract class MatrixTestCase extends TestCase {
     private void setRandomValues(final AffineTransform at, final MatrixSIS matrix) {
         at.setToRotation(random.nextDouble() * StrictMath.PI);
         at.scale(nextNonZeroRandom(), nextNonZeroRandom());
-        at.translate(random.nextDouble() * 100 - 50,
-                     random.nextDouble() * 100 - 50);
+        at.translate(Math.fma(random.nextDouble(), 100, - 50),
+                     Math.fma(random.nextDouble(), 100, - 50));
         matrix.setElements(new double[] {
             at.getScaleX(), at.getShearX(), at.getTranslateX(),
             at.getShearY(), at.getScaleY(), at.getTranslateY(),
@@ -564,8 +564,8 @@ public abstract class MatrixTestCase extends TestCase {
             if ((n % 10) == 0) {
                 setRandomValues(at, matrix);
             }
-            vector[0] = random.nextDouble() * 50 - 25;
-            vector[1] = random.nextDouble() * 50 - 25;
+            vector[0] = Math.fma(random.nextDouble(), 50, -25);
+            vector[1] = Math.fma(random.nextDouble(), 50, -25);
             vector[2] = 1;
             final double[] result = matrix.multiply(vector);        // The result to verify.
             at.transform(vector, 0, vector, 0, 1);                  // The expected result.
@@ -596,7 +596,7 @@ public abstract class MatrixTestCase extends TestCase {
             final int nx = random.nextInt(8) + 1;
             elements = new double[numCol * nx];
             for (int k=0; k<elements.length; k++) {
-                elements[k] = 8 - random.nextDouble() * 10;
+                elements[k] = Math.fma(random.nextDouble(), -10, 8);
             }
             final Matrix referenceArg = new Matrix(elements, nx).transpose();
             final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
@@ -636,7 +636,7 @@ public abstract class MatrixTestCase extends TestCase {
             final int nx = random.nextInt(8) + 1;
             elements = new double[numCol * nx];
             for (int k=0; k<elements.length; k++) {
-                elements[k] = 8 - random.nextDouble() * 10;
+                elements[k] = Math.fma(random.nextDouble(), -10, 8);
             }
             final Matrix referenceArg = new Matrix(elements, nx).transpose();
             final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);

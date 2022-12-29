@@ -33,16 +33,16 @@ import org.apache.sis.internal.util.Numerics;
  * Note that the "linear" word in this class does not have the same meaning than the same word
  * in the {@link #isLinear()} method inherited from JSR-385.
  *
- * <p><b>Implementation note:</b>
+ * <h2>Implementation note</h2>
  * for performance reason we should create specialized subtypes for the case where there is only a scale to apply,
  * or only an offset, <i>etc.</i> But we don't do that in Apache SIS implementation because we will rarely use the
  * {@code UnitConverter} for converting a lot of values. We rather use {@code MathTransform} for operations on
  * <var>n</var>-dimensional tuples, and unit conversions are only a special case of those more generic operations.
  * The {@code sis-referencing} module provided the specialized implementations needed for efficient operations
- * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.</p>
+ * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 final class LinearConverter extends AbstractConverter implements LenientComparable {
@@ -273,8 +273,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public double convert(final double value) {
-        // TODO: use JDK9' Math.fma(…) and verify if it solve the accuracy issue in LinearConverterTest.inverse().
-        return (value * scale + offset) / divisor;
+        return Math.fma(value, scale, offset) / divisor;
     }
 
     /**
