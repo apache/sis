@@ -253,7 +253,7 @@ public final class Matrices extends Static {
          * enough because callers in other package may perform additional arithmetic operations
          * on it (for example org.apache.sis.referencing.cs.CoordinateSystems.swapAndScaleAxes).
          */
-        final MatrixSIS matrix = new GeneralMatrix(dstAxes.length+1, srcAxes.length+1, false, 2);
+        final MatrixSIS matrix = GeneralMatrix.createExtendedPrecision(dstAxes.length+1, srcAxes.length+1, false);
         /*
          * Maps source axes to destination axes. If no axis is moved (for example if the user
          * want to transform (NORTH,EAST) to (SOUTH,EAST)), then source and destination index
@@ -404,10 +404,9 @@ public final class Matrices extends Static {
      *       then an exception will be thrown.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * it is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
-     * (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
-     * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
+     * For example, it is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>)
+     * to (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
+     * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).
      *
      * <h4>Example</h4>
      * The following method call:
@@ -444,8 +443,10 @@ public final class Matrices extends Static {
             /*
              * createTransform(…) may fail if the arrays contain two axes with the same direction, for example
              * AxisDirection.OTHER. This check prevents that failure for the common case of an identity transform.
+             * The returned matrix must use extended precision for reason documented in `createTransform(…)`.
              */
-            return Matrices.createIdentity(srcAxes.length + 1);
+            final int n = srcAxes.length + 1;
+            return new GeneralMatrix(n, n, true, 2);
         }
         return createTransform(null, srcAxes, null, dstAxes, false);
     }
@@ -647,13 +648,13 @@ public final class Matrices extends Static {
          * The 'stride' and 'length' values will be used for computing indices in that array.
          * The DoubleDouble temporary object is used only if the array contains error terms.
          */
-        final int      stride  = sourceDimensions;
-        final int      length  = sourceDimensions * targetDimensions;
-        final double[] sources = getExtendedElements(subMatrix);
-        final DoubleDouble transfer = (sources.length > length) ? new DoubleDouble() : null;
-        final MatrixSIS matrix = createZero(targetDimensions-- + expansion,
-                                            sourceDimensions-- + expansion,
-                                            transfer != null);
+        final int       stride   = sourceDimensions;
+        final int       length   = sourceDimensions * targetDimensions;
+        final double[]  sources  = getExtendedElements(subMatrix);
+        final var       transfer = (sources.length > length) ? new DoubleDouble() : null;
+        final MatrixSIS matrix   = createZero(targetDimensions-- + expansion,
+                                              sourceDimensions-- + expansion,
+                                              transfer != null);
         /*
          * Following code processes from upper row to lower row.
          * First, set the diagonal elements on leading new dimensions.
@@ -788,13 +789,13 @@ public final class Matrices extends Static {
         if (numRow == srcRow && numCol == srcCol) {
             return matrix;
         }
-        final int      stride  = srcCol;
-        final int      length  = srcCol * srcRow;
-        final double[] sources = getExtendedElements(matrix);
-        final DoubleDouble transfer = (sources.length > length) ? new DoubleDouble() : null;
-        final MatrixSIS resized = createZero(numRow, numCol, transfer != null);
-        final int copyRow = Math.min(--numRow, --srcRow);
-        final int copyCol = Math.min(--numCol, --srcCol);
+        final int       stride   = srcCol;
+        final int       length   = srcCol * srcRow;
+        final double[]  sources  = getExtendedElements(matrix);
+        final var       transfer = (sources.length > length) ? new DoubleDouble() : null;
+        final MatrixSIS resized  = createZero(numRow, numCol, transfer != null);
+        final int       copyRow  = Math.min(--numRow, --srcRow);
+        final int       copyCol  = Math.min(--numCol, --srcCol);
         for (int j=copyRow; j<numRow; j++) {
             resized.setElement(j, j, 1);
         }

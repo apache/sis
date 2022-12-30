@@ -90,12 +90,17 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * If {@code setToIdentity} is {@code true}, then the elements
      * on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
+     * <p>Do not invoke this constructor directly (except by {@link NonSquareMatrix} constructor) unless
+     * the matrix is known to be square. If this is not the case, invoke a factory method instead.</p>
+     *
      * @param  numRow         number of rows.
      * @param  numCol         number of columns.
      * @param  setToIdentity  {@code true} for initializing the matrix to the identity matrix,
      *                        or {@code false} for leaving it initialized to zero.
      * @param  precision      1 for normal precision, or 2 for extended precision.
      *                        No other value is allowed (this is not verified).
+     *
+     * @see #createExtendedPrecision(int, int, boolean)
      */
     GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
         ensureValidSize(numRow, numCol);

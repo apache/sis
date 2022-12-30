@@ -26,6 +26,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 
 
 /**
@@ -239,6 +240,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
 
     /**
      * Returns the coefficient of this linear conversion.
+     * Coefficients are offset and scale, in that order.
      */
     @Override
     @SuppressWarnings("fallthrough")
@@ -258,11 +260,13 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * package to perform more accurate calculations.
      */
     private static Number ratio(final double value, final double divisor) {
-        final int numerator = (int) value;
-        if (numerator == value) {
-            final int denominator = (int) divisor;
-            if (denominator == divisor) {
-                return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+        if (value != 0) {
+            final int numerator = (int) value;
+            if (numerator == value) {
+                final int denominator = (int) divisor;
+                if (denominator == divisor) {
+                    return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+                }
             }
         }
         return value / divisor;
@@ -278,15 +282,20 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
 
     /**
      * Applies the linear conversion on the given value. This method uses {@link BigDecimal} arithmetic if
-     * the given value is an instance of {@code BigDecimal}, or IEEE 754 floating-point arithmetic otherwise.
-     *
-     * <p>Apache SIS rarely uses {@link BigDecimal} arithmetic, so providing an efficient implementation of
-     * this method is not a goal.</p>
+     * the given value is an instance of {@code BigDecimal}, or double-double arithmetic if the value is an
+     * instance of {@link DoubleDouble}, or IEEE 754 floating-point arithmetic otherwise.
      */
     @Override
     public Number convert(Number value) {
         ArgumentChecks.ensureNonNull("value", value);
         if (!isIdentity()) {
+            if (value instanceof DoubleDouble) {
+                var dd = new DoubleDouble((DoubleDouble) value);
+                dd.multiply(scale);
+                dd.add(offset);
+                dd.divide(divisor);
+                return dd;
+            }
             if (value instanceof BigInteger) {
                 value = new BigDecimal((BigInteger) value);
             }

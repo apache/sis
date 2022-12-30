@@ -75,14 +75,6 @@ public final class Numerics extends Static {
     }
 
     /**
-     * Whether to use {@link Math#fma(double, double, double)} for performance reasons.
-     * We do not use this flag when the goal is to get better accuracy rather than performance.
-     * Use of FMA brings performance benefits on machines having hardware support,
-     * but come at a high cost on older machines without hardware support.
-     */
-    public static final boolean USE_FMA = true;
-
-    /**
      * Maximum number of rows or columns in Apache SIS matrices. We define a maximum because SIS is expected to work
      * mostly with small matrices, because their sizes are related to the number of dimensions in coordinate systems.
      * The maximum should not be greater than {@value Short#MAX_VALUE} in order to ensure that {@code rows * columns}

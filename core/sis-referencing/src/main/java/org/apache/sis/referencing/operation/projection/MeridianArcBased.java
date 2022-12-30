@@ -16,8 +16,8 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.referencing.Formulas;
 
 import static java.lang.Math.*;
 
@@ -186,7 +186,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      */
     final double distance(final double φ, final double sinφ, final double cosφ) {
         final double sinφ2 = sinφ * sinφ;
-        if (Numerics.USE_FMA) {
+        if (Formulas.USE_FMA) {
             return fma(cosφ*sinφ, fma(sinφ2, fma(sinφ2, fma(sinφ2, cf4, cf3), cf2), cf1), cf0*φ);
         } else {
             return cf0*φ + cosφ*sinφ*(cf1 + sinφ2*(cf2 + sinφ2*(cf3 + sinφ2*cf4)));
@@ -199,7 +199,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      * @return the derivative at the specified latitude.
      */
     final double dM_dφ(final double sinφ2) {
-        if (Numerics.USE_FMA) {
+        if (Formulas.USE_FMA) {
             return fma(fma(fma(fma(fma(-8, sinφ2, 7),
                       cf4, -6*cf3), sinφ2,
                     5*cf3 - 4*cf2), sinφ2,
@@ -225,7 +225,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
         double cosφ  = cos(φ);
         double sinφ  = sin(φ);
         double sinφ2 = sinφ * sinφ;
-        if (Numerics.USE_FMA) {
+        if (Formulas.USE_FMA) {
             φ = fma(cosφ*sinφ, fma(sinφ2, fma(sinφ2, fma(sinφ2, ci4, ci3), ci2), ci1), φ);
         } else {
             φ += cosφ*sinφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                 // Snyder 3-26.

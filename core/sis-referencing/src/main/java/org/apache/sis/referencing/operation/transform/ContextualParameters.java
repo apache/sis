@@ -124,7 +124,7 @@ import static java.util.logging.Logger.getLogger;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
@@ -187,6 +187,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #getDescriptor()
      */
+    @SuppressWarnings("serial")                         // Not statically typed as Serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
@@ -198,6 +199,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #getMatrix(MatrixRole)
      */
+    @SuppressWarnings("serial")                 // Not statically typed as Serializable.
     private Matrix normalize, denormalize;
 
     /**
@@ -210,6 +212,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @see #parameter(String)
      * @see #freeze()
      */
+    @SuppressWarnings("serial")                 // Not statically typed as Serializable.
     private ParameterValue<?>[] values;
 
     /**
@@ -298,19 +301,6 @@ public class ContextualParameters extends Parameters implements Serializable {
             this.values = ArraysExt.resize(values, count);
         }
         isFrozen = true;
-    }
-
-    /**
-     * Creates a matrix for a linear step of the transforms chain.
-     * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
-     * to allow {@link #getMatrix(MatrixRole)} to return the reference to the (de)normalize matrices.
-     */
-    private static MatrixSIS linear(final String name, final Integer size) {
-        if (size == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, name));
-        }
-        final int n = size + 1;
-        return Matrices.create(n, n, ExtendedPrecisionMatrix.IDENTITY);
     }
 
     /**
