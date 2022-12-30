@@ -212,8 +212,9 @@ public final class Matrices extends Static {
          * Below is an intantionally undocumented feature. We use those sentinel values as a way to create
          * matrices with extended precision without exposing our double-double arithmetic in public API.
          */
-        if (elements == ExtendedPrecisionMatrix.IDENTITY || elements == ExtendedPrecisionMatrix.ZERO) {
-            return GeneralMatrix.createExtendedPrecision(numRow, numCol, elements == ExtendedPrecisionMatrix.IDENTITY);
+        final boolean setToIdentity = (elements == ExtendedPrecisionMatrix.IDENTITY);
+        if (setToIdentity || elements == ExtendedPrecisionMatrix.ZERO) {
+            return GeneralMatrix.createExtendedPrecision(numRow, numCol, setToIdentity);
         }
         final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol, false);
         if (matrix.setElements(elements)) {

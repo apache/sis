@@ -347,11 +347,15 @@ public final class DoubleDouble extends Number {
     public static double errorForWellKnownValue(final double value) {
         if (DISABLED) return 0;
         final int i = Arrays.binarySearch(VALUES, Math.abs(value));
+        final double error;
         if (i >= 0) {
-            return MathFunctions.xorSign(ERRORS[i], value);
+            error = MathFunctions.xorSign(ERRORS[i], value);
+        } else {
+            final double delta = DecimalFunctions.deltaForDoubleToDecimal(value);
+            error = Double.isNaN(delta) ? 0 : delta;
         }
-        final double delta = DecimalFunctions.deltaForDoubleToDecimal(value);
-        return Double.isNaN(delta) ? 0 : delta;
+        assert !(Math.abs(error) >= Math.ulp(value)) : value;       // Use ! for being tolerant to NaN.
+        return error;
     }
 
     /**
@@ -834,8 +838,8 @@ public final class DoubleDouble extends Number {
         final double thisValue = this.value;
         final double thisError = this.error;
         setToProduct(thisValue, otherValue);
-        error += otherError * thisValue;
-        error += otherValue * thisError;
+        error = Math.fma(otherError, thisValue, error);
+        error = Math.fma(otherValue, thisError, error);
         normalize();
     }
 

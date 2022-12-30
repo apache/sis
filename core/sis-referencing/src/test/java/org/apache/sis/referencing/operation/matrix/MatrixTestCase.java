@@ -26,6 +26,7 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
+import static java.lang.StrictMath.*;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -168,7 +169,7 @@ public abstract class MatrixTestCase extends TestCase {
                 assertEquals(name, e, actual.getNumber(j,i).doubleValue(), tolerance);
                 if (tolerance != STRICT && statistics != null) {
                     synchronized (statistics) {
-                        statistics.accept(StrictMath.abs(e - a));
+                        statistics.accept(abs(e - a));
                     }
                 }
             }
@@ -194,7 +195,7 @@ public abstract class MatrixTestCase extends TestCase {
     private static void assertEqualsRelative(final String message, final double expected,
             final MatrixSIS matrix, final int row, final int column)
     {
-        assertEquals(message, expected, matrix.getElement(row, column), StrictMath.abs(expected) * 1E-12);
+        assertEquals(message, expected, matrix.getElement(row, column), abs(expected) * 1E-12);
     }
 
     /**
@@ -204,7 +205,7 @@ public abstract class MatrixTestCase extends TestCase {
      */
     private double nextNonZeroRandom() {
         double value = random.nextDouble() * 200 - 100;
-        value += StrictMath.copySign(0.001, value);
+        value += copySign(0.001, value);
         if (random.nextBoolean()) {
             value = 1 / value;
         }
@@ -399,7 +400,7 @@ public abstract class MatrixTestCase extends TestCase {
             final double e = matrix.getElement(j, i);
             sum += e*e;
         }
-        return StrictMath.sqrt(sum);
+        return sqrt(sum);
     }
 
     /**
@@ -525,8 +526,8 @@ public abstract class MatrixTestCase extends TestCase {
             if ((n % 10) == 0) {
                 setRandomValues(at, matrix);
             }
-            at.translate(vector[0] = Math.fma(random.nextDouble(), 50, -25),
-                         vector[1] = Math.fma(random.nextDouble(), 50, -25));
+            at.translate(vector[0] = fma(random.nextDouble(), 50, -25),
+                         vector[1] = fma(random.nextDouble(), 50, -25));
             matrix.translate(vector);
             assertMatrixEquals("translate", AffineTransforms2D.toMatrix(at), matrix, TOLERANCE);
         }
@@ -536,10 +537,10 @@ public abstract class MatrixTestCase extends TestCase {
      * Sets random values in the given affine transform and a copy of those values in the given matrix.
      */
     private void setRandomValues(final AffineTransform at, final MatrixSIS matrix) {
-        at.setToRotation(random.nextDouble() * StrictMath.PI);
+        at.setToRotation(random.nextDouble() * PI);
         at.scale(nextNonZeroRandom(), nextNonZeroRandom());
-        at.translate(Math.fma(random.nextDouble(), 100, - 50),
-                     Math.fma(random.nextDouble(), 100, - 50));
+        at.translate(fma(random.nextDouble(), 100, - 50),
+                     fma(random.nextDouble(), 100, - 50));
         matrix.setElements(new double[] {
             at.getScaleX(), at.getShearX(), at.getTranslateX(),
             at.getShearY(), at.getScaleY(), at.getTranslateY(),
@@ -564,8 +565,8 @@ public abstract class MatrixTestCase extends TestCase {
             if ((n % 10) == 0) {
                 setRandomValues(at, matrix);
             }
-            vector[0] = Math.fma(random.nextDouble(), 50, -25);
-            vector[1] = Math.fma(random.nextDouble(), 50, -25);
+            vector[0] = fma(random.nextDouble(), 50, -25);
+            vector[1] = fma(random.nextDouble(), 50, -25);
             vector[2] = 1;
             final double[] result = matrix.multiply(vector);        // The result to verify.
             at.transform(vector, 0, vector, 0, 1);                  // The expected result.
@@ -596,7 +597,7 @@ public abstract class MatrixTestCase extends TestCase {
             final int nx = random.nextInt(8) + 1;
             elements = new double[numCol * nx];
             for (int k=0; k<elements.length; k++) {
-                elements[k] = Math.fma(random.nextDouble(), -10, 8);
+                elements[k] = fma(random.nextDouble(), -10, 8);
             }
             final Matrix referenceArg = new Matrix(elements, nx).transpose();
             final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
@@ -636,7 +637,7 @@ public abstract class MatrixTestCase extends TestCase {
             final int nx = random.nextInt(8) + 1;
             elements = new double[numCol * nx];
             for (int k=0; k<elements.length; k++) {
-                elements[k] = Math.fma(random.nextDouble(), -10, 8);
+                elements[k] = fma(random.nextDouble(), -10, 8);
             }
             final Matrix referenceArg = new Matrix(elements, nx).transpose();
             final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
