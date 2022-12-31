@@ -80,6 +80,9 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
 
     /**
      * Error terms of {@link #scale} and {@link #offset} used in double-double arithmetic.
+     * For performance reasons, those terms are not used in {@code transform(…)} methods.
+     * They are used in {@link #getMatrix()} for making possible to use double-double arithmetic
+     * during the creation of concatenated or inverse transforms.
      */
     private final double scaleError, offsetError;
 
@@ -473,12 +476,12 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                    doubleToRawLongBits(scaleError)  == doubleToRawLongBits(that.scaleError) &&
                    doubleToRawLongBits(offsetError) == doubleToRawLongBits(that.offsetError);
             /*
-             * NOTE: 'LinearTransform1D' and 'ConstantTransform1D' are heavily used by 'Category'
-             * from 'org.apache.sis.coverage' package. It is essential for Cateory to differenciate
-             * various NaN values. Because 'equals' is used by WeakHashSet.unique(Object) (which
-             * is used by 'DefaultMathTransformFactory'), test for equality cannot use the non-raw
-             * doubleToLongBits method because it collapse all NaN into a single canonical value.
-             * The 'doubleToRawLongBits' method instead provides the needed functionality.
+             * NOTE: `LinearTransform1D` and `ConstantTransform1D` are extensively used by `SampleDimension`
+             * in `org.apache.sis.coverage` package. It is essential for sample dimensions to differentiate
+             * various NaN values. Because `equals(…)` is used by `WeakHashSet.unique(Object)` in turn used
+             * by `DefaultMathTransformFactory`, equality tests cannot use the non-raw `doubleToLongBits(…)`
+             * method because it collapse all NaN into a single canonical value.
+             * The `doubleToRawLongBits(…)` method instead provides the needed functionality.
              */
         }
         return false;

@@ -123,7 +123,7 @@ public final class SinusoidalTest extends MapProjectionTestCase {
         createProjection(true);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
         derivativeDeltas = new double[] {delta, delta};
-        tolerance = Formulas.LINEAR_TOLERANCE / 10;
+        tolerance = Formulas.LINEAR_TOLERANCE / 10000;
         verifyDerivative(105,  30);
         verifyDerivative(100, -60);
     }

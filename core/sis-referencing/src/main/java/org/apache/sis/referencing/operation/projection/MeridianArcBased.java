@@ -114,12 +114,12 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * of 2, which result in exact representations in IEEE 754 double type. Derivation from Kawase formula can be
          * viewed at: https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods
          */
-        cf0 = fma(e10,  -441./0x10000, fma(e8, -175./0x4000, fma(e6,   -5./0x100, fma(e4,  -3./0x40, fma(e2, -1./4, 1)))));
-        cf1 = fma(e10,  1575./0x20000, fma(e8,  175./0x4000, fma(e6,    5./0x100, fma(e4,   3./0x40,     e2*(-3./4)))));
-        cf2 = fma(e10, -2625./0x8000,  fma(e8,  175./0x6000, fma(e6, 5120./0x60000,   e4*(-15./0x20))));
-        cf3 = fma(e10,   735./0x800,   fma(e8, 2240./0x60000,    e6* (-35./0x60)));
-        cf4 = fma(e10, -2205./0x1000,      e8*(-315./0x400));
-     // cf5 =     e10*  (693./0x20000)  omitted for now (not yet used).
+        cf0 = fma(e2, -1./4, fma(e4,  -3./0x40, fma(e6,   -5./0x100,   fma(e8, -175./0x4000,  e10*( -441./0x10000))))) + 1;
+        cf1 = fma(e2, -3./4, fma(e4,   3./0x40, fma(e6,    5./0x100,   fma(e8,  175./0x4000,  e10*( 1575./0x20000)))));
+        cf2 =                fma(e4, -15./0x20, fma(e6, 5120./0x60000, fma(e8,  175./0x6000,  e10*(-2625./0x8000))));
+        cf3 =                                   fma(e6,  -35./0x60,    fma(e8, 2240./0x60000, e10*(  735./0x800)));
+        cf4 =                                                          fma(e8, -315./0x400,   e10*(-2205./0x1000));
+     // cf5 =         /* omitted for now (not yet used) */                                    e10*(  693./0x20000);
         /*
          * Coefficients for inverse transform derived from Snyder 3-26 and EPSG guidance notes:
          *
