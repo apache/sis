@@ -235,7 +235,6 @@ public final class Matrices extends Static {
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
      *        If {@code false}, then source and destination envelopes will be ignored and can be null.
      */
-    @SuppressWarnings("null")
     private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
                                              final Envelope dstEnvelope, final AxisDirection[] dstAxes,
                                              final boolean useEnvelopes)
@@ -645,7 +644,7 @@ public final class Matrices extends Static {
         int targetDimensions = subMatrix.getNumRow();
         /*
          * Get data from the source matrix, together with the error terms if present.
-         * The 'stride' and 'length' values will be used for computing indices in that array.
+         * The `stride` and `length` values will be used for computing indices in that array.
          * The DoubleDouble temporary object is used only if the array contains error terms.
          */
         final int       stride   = sourceDimensions;
@@ -677,7 +676,7 @@ public final class Matrices extends Static {
                 targetDimensions,        1);                            // Copy some rows of only 1 column.
         /*
          * Set the pseudo-diagonal elements on the trailing new dimensions.
-         * 'diff' is zero for a square matrix and non-zero for rectangular matrix.
+         * `diff` is zero for a square matrix and non-zero for rectangular matrix.
          */
         final int diff = targetDimensions - sourceDimensions;
         for (int i=lastColumn - numTrailingCoordinates; i<lastColumn; i++) {
@@ -1081,7 +1080,7 @@ public final class Matrices extends Static {
                 if (i == j) {
                     e--;
                 }
-                if (!(Math.abs(e) <= tolerance)) {              // Uses '!' in order to catch NaN values.
+                if (!(Math.abs(e) <= tolerance)) {              // Uses `!` in order to catch NaN values.
                     return false;
                 }
             }
@@ -1275,7 +1274,7 @@ public final class Matrices extends Static {
                         /*
                          * If the number use exponential notation, we will not be allowed to append any zero.
                          * Otherwise we will append some zeros for right-alignment, but without exceeding the
-                         * IEEE 754 'double' accuracy for not giving a false sense of precision.
+                         * IEEE 754 `double` accuracy for not giving a false sense of precision.
                          */
                         if (element.indexOf('E') < 0) {
                             final int accuracy = -DecimalFunctions.floorLog10(Math.ulp(value));

@@ -414,7 +414,6 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * The {@link DefaultParameterValueGroup} subclass will override this method with a more efficient
      * implementation which avoid creating some deferred parameters.
      */
-    @SuppressWarnings("null")
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         int i1 = 0, i2 = 0;
         ParameterValue<?> first     = null;

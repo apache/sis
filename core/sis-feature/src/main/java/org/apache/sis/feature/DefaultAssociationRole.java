@@ -233,14 +233,14 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
                 } else {
                     /*
                      * The feature that we need to resolve is not the one we just created. Maybe we can find
-                     * this desired feature in an association of the 'creating' feature, instead of beeing
-                     * the 'creating' feature itself. This is a little bit unusual, but not illegal.
+                     * this desired feature in an association of the `creating` feature, instead of beeing
+                     * the `creating` feature itself. This is a little bit unusual, but not illegal.
                      */
                     final List<FeatureType> deferred = new ArrayList<>();
                     resolved = search(creating, properties, name, deferred);
                     if (resolved == null) {
                         /*
-                         * Did not found the desired FeatureType in the 'creating' instance.
+                         * Did not found the desired FeatureType in the `creating` instance.
                          * Try harder, by searching recursively in associations of associations.
                          */
                         if (deferred.isEmpty() || (resolved = deepSearch(deferred, name)) == null) {
@@ -270,7 +270,6 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * @param  deferred    where to store {@code FeatureType}s to be eventually used for a deep search.
      * @return the feature of the given name, or {@code null} if none.
      */
-    @SuppressWarnings("null")
     private static FeatureType search(final FeatureType feature, Collection<? extends PropertyType> properties,
             final GenericName name, final List<FeatureType> deferred)
     {
@@ -365,7 +364,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     public final FeatureType getValueType() {
         /*
          * This method shall be final for consistency with other methods in this classes
-         * which use the 'valueType' field directly. Furthermore, this method is invoked
+         * which use the `valueType` field directly. Furthermore, this method is invoked
          * (indirectly) by DefaultFeatureType constructors.
          */
         FeatureType type = valueType;
@@ -491,8 +490,8 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     @Override
     public int hashCode() {
         /*
-         * Do not use the full 'valueType' object for computing hash code,
-         * because it may change before and after 'resolve' is invoked. In
+         * Do not use the full `valueType` object for computing hash code,
+         * because it may change before and after `resolve` is invoked. In
          * addition, this avoid infinite recursivity in case of cyclic graph.
          */
         return super.hashCode() + valueType.getName().hashCode();

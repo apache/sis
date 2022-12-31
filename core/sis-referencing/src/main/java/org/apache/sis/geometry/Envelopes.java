@@ -302,7 +302,6 @@ public final class Envelopes extends Static {
      * @throws TransformException if the point cannot be transformed
      *         or if a problem occurred while calculating the derivative.
      */
-    @SuppressWarnings("null")
     static Matrix derivativeAndTransform(final MathTransform transform, final double[] srcPts,
             final double[] dstPts, final int dstOff, final boolean derivate) throws TransformException
     {
@@ -376,7 +375,6 @@ public final class Envelopes extends Static {
      *                    or {@code null} for computing the union of all results instead.
      * @return the transformed envelope. May be {@code null} if {@code results} was non-null.
      */
-    @SuppressWarnings("null")
     private static GeneralEnvelope transform(final MathTransform transform, final Envelope envelope,
             double[] targetPt, final List<GeneralEnvelope> results) throws TransformException
     {
@@ -607,7 +605,6 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
      *
      * @since 0.5
      */
-    @SuppressWarnings("null")
     public static GeneralEnvelope transform(final CoordinateOperation operation, Envelope envelope)
             throws TransformException
     {

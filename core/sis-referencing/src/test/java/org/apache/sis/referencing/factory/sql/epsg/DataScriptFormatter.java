@@ -445,7 +445,6 @@ public final class DataScriptFormatter extends ScriptRunner {
     /**
      * Removes the useless "E0" exponents after floating point numbers.
      */
-    @SuppressWarnings("null")
     private String removeUselessExponents(String line) {
         StringBuilder cleaned = null;
         final Matcher matcher = uselessExponentPattern.matcher(line);

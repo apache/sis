@@ -216,7 +216,6 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      *
      * @see #setMarshallable(Collection, Identifier)
      */
-    @SuppressWarnings("null")
     public static Collection<? extends Identifier> setMarshallables(
             final Collection<Identifier> identifiers, final Collection<? extends Identifier> newValues)
     {

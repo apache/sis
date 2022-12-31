@@ -367,7 +367,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
-    @SuppressWarnings("null")
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
         // Quick search for an exact match.
         ArgumentChecks.ensureNonNull("name", name);

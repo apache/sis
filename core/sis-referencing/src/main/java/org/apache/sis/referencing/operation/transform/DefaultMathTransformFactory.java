@@ -1035,7 +1035,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @see #getCompletedParameters()
          */
-        @SuppressWarnings("null")
         final RuntimeException completeParameters(final DefaultMathTransformFactory factory, OperationMethod method,
                 final ParameterValueGroup userParams) throws FactoryException, IllegalArgumentException
         {

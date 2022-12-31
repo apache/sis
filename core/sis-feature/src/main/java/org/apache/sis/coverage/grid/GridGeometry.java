@@ -522,7 +522,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  rounding   controls behavior of rounding from floating point values to integers.
      * @throws IllegalGridGeometryException if the math transform cannot compute the grid extent or the resolution.
      */
-    @SuppressWarnings("null")
     public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope, final GridRoundingMode rounding) {
         if (gridToCRS == null) {
             ArgumentChecks.ensureNonNull("envelope", envelope);

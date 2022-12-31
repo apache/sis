@@ -500,16 +500,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *       for the area of interest.</li>
      * </ul>
      *
-     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
      * But a list is returned because the same step may be implemented by different operation methods. Only one element
-     * in the returned list should be selected (usually the first one).</p>
+     * in the returned list should be selected (usually the first one).
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation cannot be constructed.
      */
-    @SuppressWarnings("null")
     protected List<CoordinateOperation> createOperationStep(final GeodeticCRS sourceCRS,
                                                             final GeodeticCRS targetCRS)
             throws FactoryException
