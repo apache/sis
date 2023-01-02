@@ -51,6 +51,7 @@ import org.apache.sis.util.collection.DefaultTreeTable;
  * @version 1.1
  * @since   1.1
  */
+@SuppressWarnings("CloneableImplementsClone")
 public class RTreeNode extends GeneralEnvelope {
     /**
      * For cross-version compatibility.

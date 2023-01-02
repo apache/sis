@@ -438,6 +438,7 @@ public final class Types extends Static {
         /**
          * The code list for which to create a title.
          */
+        @SuppressWarnings("serial")         // Enum and CodeList implementations are serializable.
         final ControlledVocabulary code;
 
         /**

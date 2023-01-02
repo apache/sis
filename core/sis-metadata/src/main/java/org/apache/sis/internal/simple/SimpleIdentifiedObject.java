@@ -51,6 +51,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     /**
      * The primary name by which this object is identified.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected Identifier name;
 
     /**

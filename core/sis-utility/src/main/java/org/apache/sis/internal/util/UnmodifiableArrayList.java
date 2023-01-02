@@ -70,6 +70,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
     /**
      * The wrapped array.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final E[] array;
 
     /**

@@ -80,7 +80,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * The parameter for the number of row, columns and other dimensions in the tensor.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ParameterValue<Integer>[] dimensions;
 
     /**

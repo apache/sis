@@ -47,6 +47,7 @@ final class TransformAdapter2D extends AbstractMathTransform2D implements Serial
     /**
      * The math transform which was supposed to implement the {@link MathTransform2D} interface..
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final MathTransform impl;
 
     /**

@@ -79,6 +79,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * The coordinate reference system for this position, or {@code null}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private CoordinateReferenceSystem crs;
 
     /**

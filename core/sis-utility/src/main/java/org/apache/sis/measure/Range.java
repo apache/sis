@@ -105,6 +105,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     /**
      * The minimal and maximal values.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final E minValue, maxValue;
 
     /**

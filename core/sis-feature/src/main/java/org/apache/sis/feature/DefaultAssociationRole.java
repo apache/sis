@@ -74,6 +74,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see #getValueType()
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private volatile FeatureType valueType;
 
     /**

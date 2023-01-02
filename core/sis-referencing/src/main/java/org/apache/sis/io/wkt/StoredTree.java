@@ -86,6 +86,7 @@ final class StoredTree implements Serializable {
          * (e.g. "north"). A null value is not equivalent to an empty list. For example, the
          * list is null when parsing {@code "FOO"} but is empty when parsing {@code "FOO[]"}.
          */
+        @SuppressWarnings("serial")                 // Not statically typed as Serializable.
         private final Object[] children;
 
         /**

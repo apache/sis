@@ -232,7 +232,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CENTER
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final MathTransform gridToCRS;
 
     /**
@@ -242,7 +242,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final MathTransform cornerToCRS;
 
     /**

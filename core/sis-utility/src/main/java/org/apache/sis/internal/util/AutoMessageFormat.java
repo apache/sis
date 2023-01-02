@@ -30,7 +30,7 @@ import java.text.MessageFormat;
  * @version 1.0
  * @since   1.0
  */
-@SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not to be serialized.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not intended to be serialized.
 public final class AutoMessageFormat extends MessageFormat {
     /**
      * Formats that may need to be configured before to write a value, or {@code null} if none.

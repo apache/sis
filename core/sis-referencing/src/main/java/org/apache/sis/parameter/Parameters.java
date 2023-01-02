@@ -198,7 +198,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     private static final class Wrapper extends Parameters implements Serializable {
         private static final long serialVersionUID = -5491790565456920471L;
 
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ParameterValueGroup delegate;
         Wrapper(final ParameterValueGroup delegate) {this.delegate = delegate;}
 

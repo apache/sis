@@ -112,7 +112,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * Work around for RFE #4093999 in Sun's bug database
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @Workaround(library="JDK", version="1.7")
+    @Workaround(library="JDK", version="1.7", fixed="20")
     private AffineTransform2D(final ExtendedPrecisionMatrix m, final double[] elements) {
         super(pz(elements[0]), pz(elements[3]),
               pz(elements[1]), pz(elements[4]),

@@ -58,7 +58,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      *
      * @see #getExpression1()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, ? extends V1> expression1;
 
     /**
@@ -66,7 +66,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      *
      * @see #getExpression2()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, ? extends V2> expression2;
 
     /**

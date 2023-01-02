@@ -158,6 +158,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #groundDimensions
      * @see #setGroundPrecision(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<?> groundPrecision;
 
     /**
@@ -171,6 +172,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #accuracyThreshold
      * @see #setGroundAccuracy(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<?> groundAccuracy;
 
     /**
@@ -246,6 +248,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @see #setDefaultCRS(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private CoordinateReferenceSystem defaultCRS;
 
     /**

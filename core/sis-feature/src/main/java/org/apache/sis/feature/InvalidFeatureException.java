@@ -47,6 +47,7 @@ final class InvalidFeatureException extends InvalidPropertyValueException implem
     /**
      * A description of the illegal feature.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final InternationalString message;
 
     /**

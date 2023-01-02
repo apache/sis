@@ -96,6 +96,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * The sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
      * This is often the sub-transform specified at construction time, but not necessarily.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final MathTransform subTransform;
 
     /**

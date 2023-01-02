@@ -73,7 +73,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      *
      * @see #getParameters()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, ?> expression;
 
     /**

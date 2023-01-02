@@ -214,7 +214,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * construction time). In addition this field is part of serialization form in order to preserve the
      * references graph.</div>
      */
-    @SuppressWarnings("serial")                     // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final AbstractMathTransform inverse;
 
     /**

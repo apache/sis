@@ -61,7 +61,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      *
      * @see #inverse()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     volatile LinearTransform inverse;
 
     /**

@@ -557,7 +557,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @version 1.3
      * @since   0.7
      */
-    @SuppressWarnings("serial")         // Fields are not statically typed as Serializable.
+    @SuppressWarnings("serial")         // All field values are usually serializable instances.
     public static class Context implements Serializable {
         /**
          * For cross-version compatibility.

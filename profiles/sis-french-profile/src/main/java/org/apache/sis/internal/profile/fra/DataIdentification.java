@@ -59,6 +59,7 @@ public class DataIdentification extends DefaultDataIdentification {
     /**
      * The documents at the origin of the creation of the identified resources.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Collection<Citation> relatedCitations;
 
     /**

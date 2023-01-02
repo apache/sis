@@ -57,6 +57,7 @@ final class ArrayConverter<S,T> extends SystemConverter<S,T> {
      * The converter for array elements. The source and target types shall be compatible with the array component
      * types of {@code <S>} and {@code <T>} (this constraint cannot be expressed by JDK 7 parameterized types).
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ObjectConverter<?,?> converter;
 
     /**

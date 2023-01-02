@@ -53,6 +53,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      *
      * @see #getSortProperties()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final SortProperty<R>[] properties;
 
     /**

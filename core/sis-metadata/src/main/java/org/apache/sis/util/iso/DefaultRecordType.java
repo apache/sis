@@ -107,7 +107,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @see #getTypeName()
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final TypeName typeName;
 
     /**

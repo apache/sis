@@ -53,6 +53,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * The associated feature.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Feature value;
 
     /**

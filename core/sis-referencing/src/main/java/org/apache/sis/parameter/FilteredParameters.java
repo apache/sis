@@ -35,6 +35,7 @@ import org.apache.sis.util.ComparisonMode;
  * @version 1.3
  * @since   1.3
  */
+@SuppressWarnings("CloneableImplementsClone")
 final class FilteredParameters extends UnmodifiableParameterValueGroup {
     /**
      * For cross-version compatibility.
@@ -44,7 +45,7 @@ final class FilteredParameters extends UnmodifiableParameterValueGroup {
     /**
      * The filtered parameter values.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GeneralParameterValue[] filtered;
 
     /**

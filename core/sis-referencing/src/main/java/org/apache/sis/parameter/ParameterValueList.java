@@ -65,14 +65,14 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * <p>This descriptor shall not be used in {@link #equals(Object)} and {@link #hashCode()}
      * implementations in order to stay consistent with the {@link List} contract.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final ParameterDescriptorGroup descriptor;
 
     /**
      * The parameter values in the group. The length of this array is the list capacity.
      * This array will growth as needed.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private GeneralParameterValue[] values;
 
     /**

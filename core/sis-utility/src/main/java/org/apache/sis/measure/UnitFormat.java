@@ -266,7 +266,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @see #label(Unit, String)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Various serializable implementations.
     private final Map<Unit<?>,String> unitToLabel;
 
     /**
@@ -277,7 +277,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *
      * @see #label(Unit, String)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Various serializable implementations.
     private final Map<String,Unit<?>> labelToUnit;
 
     /**
@@ -1102,6 +1102,7 @@ appPow: if (unit == null) {
      * @return the unit parsed from the specified symbols.
      * @throws MeasurementParseException if a problem occurred while parsing the given symbols.
      */
+    @Override
     @SuppressWarnings({"null", "fallthrough"})
     public Unit<?> parse(CharSequence symbols, final ParsePosition position) throws MeasurementParseException {
         ArgumentChecks.ensureNonNull("symbols",  symbols);

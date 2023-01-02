@@ -60,6 +60,7 @@ public class Constraints extends DefaultConstraints {
     /**
      * The documents that specifies the nature of the constraints.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Collection<Citation> citations;
 
     /**

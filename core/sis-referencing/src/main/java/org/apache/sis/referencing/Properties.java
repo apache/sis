@@ -92,6 +92,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
     /**
      * The object where all properties come from.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final IdentifiedObject object;
 
     /**

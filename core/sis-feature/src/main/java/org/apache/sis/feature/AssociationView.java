@@ -47,6 +47,7 @@ class AssociationView extends PropertyView<Feature> implements FeatureAssociatio
     /**
      * The role of this association. Must be one of the properties listed in the {@link #feature}.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final FeatureAssociationRole role;
 
     /**

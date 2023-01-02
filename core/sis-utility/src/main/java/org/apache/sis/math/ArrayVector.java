@@ -1229,7 +1229,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public byte     byteValue(int index) {return Byte   .parseByte  (array[index]);}
         @Override public Number         get(int index) {
             final String value = array[index];
-            return (value != null) ? Double.parseDouble(value) : null;
+            return (value != null) ? Double.valueOf(value) : null;
         }
 
         /** Stores the given value in this vector and returns the previous value. */

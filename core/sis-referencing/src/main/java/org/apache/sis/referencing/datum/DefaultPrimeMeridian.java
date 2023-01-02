@@ -111,6 +111,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Unit<Angle> angularUnit;
 
     /**

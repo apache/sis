@@ -277,7 +277,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <p>The length of this array determine the tensor {@linkplain #rank() rank}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ParameterDescriptor<Integer>[] dimensions;
 
     /**

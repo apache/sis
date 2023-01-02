@@ -76,6 +76,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      * If the transform is invertible, the inverse. Otherwise {@code null}.
      * The transform is invertible only if values are in increasing order.
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final MathTransform1D inverse;
 
     /**
@@ -91,7 +92,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         this.values = values;                           // Cloning this array is caller's responsibility.
         double last = values[0];
         for (int i=1; i<values.length; i++) {
-            if (!(last <= (last = values[i]))) {        // Use '!' for catching NaN values.
+            if (!(last <= (last = values[i]))) {        // Use `!` for catching NaN values.
                 inverse = null;                         // Transform is not reversible.
                 return;
             }

@@ -57,6 +57,9 @@ public class ResourceEvent extends Event {
 
     /**
      * Path to the resource being loaded or closed.
+     *
+     * @todo The default implementation provided by the JDK is not serializable.
+     *       We have no workaround at this time.
      */
     private final Path path;
 

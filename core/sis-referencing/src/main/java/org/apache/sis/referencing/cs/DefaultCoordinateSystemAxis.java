@@ -206,6 +206,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * @see #getUnit()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Unit<?> unit;
 
     /**

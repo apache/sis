@@ -185,7 +185,7 @@ class DerivedSet<S,E> extends SetOfUnknownSize<E> implements CheckedContainer<E>
         /**
          * The converter from the derived to the storage type.
          */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ObjectConverter<E,S> inverse;
 
         /**

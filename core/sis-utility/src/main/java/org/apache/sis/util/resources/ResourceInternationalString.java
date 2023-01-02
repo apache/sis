@@ -65,6 +65,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      * specify {@code null} as an argument value. We distinguish the two cases with the sign
      * of the {@link #key} value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Object arguments;
 
     /**

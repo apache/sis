@@ -126,7 +126,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      *
      * @see #inverse()
      */
-    @SuppressWarnings("serial")                 // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private MathTransform2D inverse;
 
     /**

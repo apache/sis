@@ -53,7 +53,7 @@ public class DirectReferenceSystem extends ReferenceSystemMetadata {
     /**
      * Empty constructor for JAXB.
      */
-    private DirectReferenceSystem() {
+    public DirectReferenceSystem() {
     }
 
     /**

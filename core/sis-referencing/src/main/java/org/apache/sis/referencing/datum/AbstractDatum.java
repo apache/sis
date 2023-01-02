@@ -101,6 +101,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @see #getAnchorPoint()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private InternationalString anchorDefinition;
 
     /**
@@ -121,6 +122,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @see #getDomainOfValidity()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private Extent domainOfValidity;
 
     /**
@@ -131,6 +133,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @see #getScope()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private InternationalString scope;
 
     /**

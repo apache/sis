@@ -105,12 +105,15 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * The parameter descriptor of the provider that created this grid.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
      * The files from which the grid has been loaded. This is not used directly by this class
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
      * transform for setting the parameter values. Shall never be null and never empty.
+     *
+     * @todo We have a serialization problem here. Possible workaround may be to replace by URI.
      */
     private final Path[] files;
 

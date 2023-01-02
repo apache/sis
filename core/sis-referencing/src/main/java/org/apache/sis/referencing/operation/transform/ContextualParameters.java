@@ -187,7 +187,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #getDescriptor()
      */
-    @SuppressWarnings("serial")                         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
@@ -199,7 +199,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #getMatrix(MatrixRole)
      */
-    @SuppressWarnings("serial")                 // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Matrix normalize, denormalize;
 
     /**
@@ -212,7 +212,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @see #parameter(String)
      * @see #freeze()
      */
-    @SuppressWarnings("serial")                 // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private ParameterValue<?>[] values;
 
     /**

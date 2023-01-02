@@ -148,7 +148,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #getDescriptor()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private ParameterDescriptor<T> descriptor;
 
     /**
@@ -168,7 +168,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @since 0.7
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected Unit<?> unit;
 
     /**
