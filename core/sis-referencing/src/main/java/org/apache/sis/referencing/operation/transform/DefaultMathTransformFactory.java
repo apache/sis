@@ -557,7 +557,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @version 1.3
      * @since   0.7
      */
-    @SuppressWarnings("serial")         // Fields are not statically typed as Serializable.
+    @SuppressWarnings("serial")         // All field values are usually serializable instances.
     public static class Context implements Serializable {
         /**
          * For cross-version compatibility.
@@ -1035,7 +1035,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @see #getCompletedParameters()
          */
-        @SuppressWarnings("null")
         final RuntimeException completeParameters(final DefaultMathTransformFactory factory, OperationMethod method,
                 final ParameterValueGroup userParams) throws FactoryException, IllegalArgumentException
         {

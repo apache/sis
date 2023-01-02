@@ -69,7 +69,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see WKTFormat#getWarnings()
  *
@@ -104,9 +104,7 @@ public final class Warnings implements Localized, Serializable {
 
     /**
      * Warning messages or exceptions emitted during parsing or formatting.
-     * Initially {@code null} and created when first needed.
-     *
-     * <p>Objects in this list must be a sequence of the following tuple:</p>
+     * Objects in this list must be a sequence of the following tuple:
      *
      * <ul>
      *   <li>An optional message as an {@link InternationalString}.</li>
@@ -117,18 +115,16 @@ public final class Warnings implements Localized, Serializable {
      *
      * @see #add(InternationalString, Exception, String[])
      */
-    private List<Object> messages;
+    private final ArrayList<Object> messages;
 
     /**
      * The keywords of elements in which exception occurred.
-     * Initially {@code null} and created when first needed.
-     *
-     * <p>For each {@code String[]} value, the first array element shall be the keyword of the WKT element
+     * For each {@code String[]} value, the first array element shall be the keyword of the WKT element
      * in which the exception occurred. The second array element shall be the parent of above-cited first
      * element. Other array elements can optionally be present for declaring the parents of the parent,
-     * but they will be ignored by this {@code Warnings} implementation.</p>
+     * but they will be ignored by this {@code Warnings} implementation.
      */
-    private Map<Exception, String[]> exceptionSources;
+    private final LinkedHashMap<Exception, String[]> exceptionSources;
 
     /**
      * Keyword of unknown elements. This is initially a direct reference to the {@link AbstractParser#ignoredElements}
@@ -137,6 +133,7 @@ public final class Warnings implements Localized, Serializable {
      *
      * @see AbstractParser#ignoredElements
      */
+    @SuppressWarnings("serial")                             // Various serializable implementations.
     private Map<String, List<String>> ignoredElements;
 
     /**
@@ -155,6 +152,8 @@ public final class Warnings implements Localized, Serializable {
         this.errorLocale     = locale;
         this.isParsing       = isParsing;
         this.ignoredElements = ignoredElements;
+        exceptionSources = new LinkedHashMap<>(4);
+        messages = new ArrayList<>();
     }
 
     /**
@@ -184,15 +183,9 @@ public final class Warnings implements Localized, Serializable {
      */
     final void add(final InternationalString message, final Exception cause, final String[] source) {
         assert (message != null) || (cause != null);
-        if (messages == null) {
-            messages = new ArrayList<>(4);                          // We expect few items.
-        }
         messages.add(message);
         messages.add(cause);
         if (cause != null) {
-            if (exceptionSources == null) {
-                exceptionSources = new LinkedHashMap<>(4);          // We expect few items.
-            }
             exceptionSources.put(cause, source);
         }
     }

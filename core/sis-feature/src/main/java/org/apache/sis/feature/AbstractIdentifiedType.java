@@ -98,6 +98,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @see #getName()
      * @see #NAME_KEY
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private final GenericName name;
 
     /**
@@ -106,6 +107,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @see #getDefinition()
      * @see #DEFINITION_KEY
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private final InternationalString definition;
 
     /**
@@ -115,6 +117,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @see #getDesignation()
      * @see #DESIGNATION_KEY
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private final InternationalString designation;
 
     /**
@@ -124,6 +127,7 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @see #getDescription()
      * @see #DESCRIPTION_KEY
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private final InternationalString description;
 
     /**

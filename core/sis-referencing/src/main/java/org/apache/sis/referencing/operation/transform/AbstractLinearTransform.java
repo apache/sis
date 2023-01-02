@@ -27,6 +27,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -34,8 +35,8 @@ import org.opengis.util.FactoryException;
 
 
 /**
- * Base class of linear transforms. For efficiency reasons, this transform implements itself the matrix
- * to be returned by {@link #getMatrix()}.
+ * Base class of linear transforms.
+ * For efficiency reasons, this transform implements itself the matrix to be returned by {@link #getMatrix()}.
  *
  * <p>Subclasses need to implement the following methods:</p>
  * <ul>
@@ -44,7 +45,7 @@ import org.opengis.util.FactoryException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.6
  */
 abstract class AbstractLinearTransform extends AbstractMathTransform implements LinearTransform, Matrix, Serializable {
@@ -60,6 +61,7 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
      *
      * @see #inverse()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     volatile LinearTransform inverse;
 
     /**
@@ -239,7 +241,11 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
                 for (int i=0; i<srcDim; i++) {
                     final double e = getElement(j, i);
                     if (e != 0) {   // See the comment in ProjectiveTransform for the purpose of this test.
-                        sum += srcPts[srcOff + i] * e;
+                        if (Formulas.USE_FMA) {
+                            sum = Math.fma(srcPts[srcOff + i], e, sum);
+                        } else {
+                            sum += srcPts[srcOff + i] * e;
+                        }
                     }
                 }
                 buffer[j] = sum;

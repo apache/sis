@@ -62,8 +62,7 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * Values are positives if this set sorts by increasing frequencies, or negatives if this set sorts by
      * decreasing frequencies.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    private final Map<E,Integer> count;
+    private final LinkedHashMap<E,Integer> count;
 
     /**
      * {@code 0} if the element should be sorted in the usual order, or {@code -1}

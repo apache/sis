@@ -66,7 +66,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      *
      * @see BinarySpatialOperator#getOperand1()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression1;
 
     /**
@@ -74,7 +74,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      *
      * @see BinarySpatialOperator#getOperand2()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression2;
 
     /**
@@ -156,6 +156,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
+    @SuppressWarnings("unchecked")      // We replace <? super ? super R> by <? super R>.
     protected static <R,G> Expression<? super R, ?> original(final Expression<R, GeometryWrapper<G>> expression) {
         Expression<? super R, ?> unwrapped = unwrap(expression);
         if (unwrapped instanceof LeafExpression.Transformed<?, ?>) {

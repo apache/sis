@@ -104,6 +104,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *
      * @see #name()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString name;
 
     /**

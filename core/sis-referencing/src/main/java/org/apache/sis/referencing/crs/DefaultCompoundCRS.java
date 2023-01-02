@@ -131,6 +131,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * <p><b>Consider this field as final!</b>
      * This field is modified only at construction and unmarshalling time by {@link #setComponents(List)}</p>
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private List<? extends CoordinateReferenceSystem> components;
 
     /**

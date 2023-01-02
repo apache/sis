@@ -62,7 +62,7 @@ abstract class PropertyView<V> extends Field<V> implements Property, Serializabl
     /**
      * The feature from which to read and where to write the attribute or association value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Feature feature;
 
     /**

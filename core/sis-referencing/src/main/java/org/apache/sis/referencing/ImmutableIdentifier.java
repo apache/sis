@@ -122,7 +122,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      *
      * @see #getAuthority()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Citation authority;
 
     /**
@@ -152,7 +152,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     /**
      * Natural language description of the meaning of the code value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString description;
 
     /**

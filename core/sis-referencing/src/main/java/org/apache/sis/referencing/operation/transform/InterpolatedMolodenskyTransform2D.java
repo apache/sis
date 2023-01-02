@@ -33,7 +33,10 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>
  */
+@Deprecated(since="1.4", forRemoval=true)
 final class InterpolatedMolodenskyTransform2D extends InterpolatedMolodenskyTransform implements MathTransform2D {
     /**
      * Serial number for compatibility with different versions.

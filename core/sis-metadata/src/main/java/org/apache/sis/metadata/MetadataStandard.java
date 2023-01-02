@@ -174,7 +174,7 @@ public class MetadataStandard implements Serializable {
      *
      * @see #getCitation()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Citation citation;
 
     /**

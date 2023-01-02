@@ -33,7 +33,7 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
  */
 public final class Formulas extends Static {
@@ -97,6 +97,14 @@ public final class Formulas extends Static {
      * <p>Current value has been determined empirically for allowing {@code GeodesicsOnEllipsoidTest} to pass.</p>
      */
     public static final int MAXIMUM_ITERATIONS = 18;
+
+    /**
+     * Whether to use {@link Math#fma(double, double, double)} for performance reasons.
+     * We do not use this flag when the goal is to get better accuracy rather than performance.
+     * Use of FMA brings performance benefits on machines having hardware support,
+     * but come at a high cost on older machines without hardware support.
+     */
+    public static final boolean USE_FMA = true;
 
     /**
      * Do not allow instantiation of this class.

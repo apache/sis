@@ -77,7 +77,7 @@ final class UnitDimension implements Dimension, Serializable {
      *
      * @see #getBaseDimensions()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                     // The implementation is serializable.
     final Map<UnitDimension,Fraction> components;
 
     /**

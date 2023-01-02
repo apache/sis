@@ -470,7 +470,6 @@ public class DocumentComparator {
      * @param expected  the node having the expected attributes.
      * @param actual    the node to compare.
      */
-    @SuppressWarnings("null")
     protected void compareAttributes(final Node expected, final Node actual) {
         final NamedNodeMap expectedAttributes = expected.getAttributes();
         final NamedNodeMap actualAttributes   = actual.getAttributes();
@@ -500,7 +499,7 @@ public class DocumentComparator {
                  * └───────────────────┴─────────────────────────────────┴──────────────┴─────────────┘
                  *
                  * By default, this block is not be executed. However if the user gave us Nodes that are
-                 * not namespace aware, then the 'isIgnored(…)' method will try to parse the node name.
+                 * not namespace aware, then the `isIgnored(…)` method will try to parse the node name.
                  */
                 name = expAttr.getNodeName();
             }
@@ -528,7 +527,7 @@ public class DocumentComparator {
         if (!ignored.isEmpty()) {
             if (ns == null) {
                 /*
-                 * If there is no namespace, then the 'name' argument should be the qualified name
+                 * If there is no namespace, then the `name` argument should be the qualified name
                  * (with a prefix). Example: "xsi:schemaLocation". We will look first for an exact
                  * name match, then for a match after replacing the local name by "*".
                  */
@@ -754,7 +753,6 @@ public class DocumentComparator {
      * @param  node           the node to format.
      * @param  lineSeparator  the platform-specific line separator.
      */
-    @SuppressWarnings("null")
     private static void formatNode(final StringBuilder buffer, final Node node, final String lineSeparator) {
         if (node == null) {
             buffer.append("(no node)").append(lineSeparator);

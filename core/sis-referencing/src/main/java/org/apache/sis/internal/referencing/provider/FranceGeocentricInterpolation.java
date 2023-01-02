@@ -365,7 +365,6 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * @param  averages  an "average" value for the offset in each dimension, or {@code null} if unknown.
      * @param  scale     the factor by which to multiply each compressed value before to add to the average value.
      */
-    @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Length> getOrLoad(final Path file, final double[] averages, final double scale)
             throws FactoryException
     {
@@ -477,7 +476,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                                     Level.WARNING, Errors.Keys.UnsupportedInterpolation_1, interp);
                             record.setLoggerName(Loggers.COORDINATE_OPERATION);
                             Logging.log(FranceGeocentricInterpolation.class, "createMathTransform", record);
-                            // We declare 'createMathTransform' method because it is closer to public API.
+                            // We declare `createMathTransform(…)` method because it is closer to public API.
                         }
                         break;
                     }
@@ -528,7 +527,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             tZ[p] = -parseFloat(t.nextToken());
             final double accuracy = ACCURACY[Math.min(ACCURACY.length - 1,
                     Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
-            if (!(accuracy >= grid.accuracy)) {     // Use '!' for replacing the initial NaN.
+            if (!(accuracy >= grid.accuracy)) {     // Use `!` for replacing the initial NaN.
                 grid.accuracy = accuracy;
             }
         } while ((line = in.readLine()) != null);

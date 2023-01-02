@@ -59,13 +59,17 @@ import org.apache.sis.util.Debug;
  * But in the {@code InterpolatedMolodenskyTransform} case, the interpolated translations are rather the
  * ({@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}) parameters of a Molodensky transformation.</p>
  *
+ * @deprecated This operation method is non-standard, of little use and has greater errors than intended.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>
  * @see InterpolatedGeocentricTransform
  *
  * @since 0.7
  */
+@Deprecated(since="1.4", forRemoval=true)
 public class InterpolatedMolodenskyTransform extends MolodenskyFormula {
     /**
      * Serial number for inter-operability with different versions.

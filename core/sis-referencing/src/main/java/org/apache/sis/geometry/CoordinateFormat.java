@@ -158,6 +158,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #groundDimensions
      * @see #setGroundPrecision(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<?> groundPrecision;
 
     /**
@@ -171,6 +172,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #accuracyThreshold
      * @see #setGroundAccuracy(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<?> groundAccuracy;
 
     /**
@@ -246,6 +248,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @see #setDefaultCRS(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private CoordinateReferenceSystem defaultCRS;
 
     /**
@@ -966,7 +969,6 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @param  crs  the target CRS in the conversion from ground units to CRS units.
      */
-    @SuppressWarnings("null")
     private void applyGroundPrecision(final CoordinateReferenceSystem crs) {
         /*
          * If the given resolution is linear (for example in metres), compute an equivalent resolution in degrees
@@ -1622,13 +1624,13 @@ skipSep:    if (i != 0) {
                 throw new LocalizedParseException(getLocale(), key, args, index);
             }
             /*
-             * At this point 'subPos' is set to the beginning of the next coordinate to parse in 'asString'.
+             * At this point `subPos` is set to the beginning of the next coordinate to parse in `asString`.
              * Parse the value as a number, angle or date, as determined from the coordinate system axis.
              */
             if (formats != null) {
                 format = formats[i];
             }
-            @SuppressWarnings("null")
+            @SuppressWarnings("null")       // `format` was initially null only if `formats` is non-null.
             final Object object = format.parseObject(asString, subPos);
             if (object == null) {
                 /*

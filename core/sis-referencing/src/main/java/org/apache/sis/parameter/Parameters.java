@@ -198,7 +198,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     private static final class Wrapper extends Parameters implements Serializable {
         private static final long serialVersionUID = -5491790565456920471L;
 
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ParameterValueGroup delegate;
         Wrapper(final ParameterValueGroup delegate) {this.delegate = delegate;}
 
@@ -414,7 +414,6 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * The {@link DefaultParameterValueGroup} subclass will override this method with a more efficient
      * implementation which avoid creating some deferred parameters.
      */
-    @SuppressWarnings("null")
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         int i1 = 0, i2 = 0;
         ParameterValue<?> first     = null;

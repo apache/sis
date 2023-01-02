@@ -42,7 +42,7 @@ final class UninitializedParameter implements GeneralParameterValue, Serializabl
     /**
      * The descriptor of the parameter to initialize.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GeneralParameterDescriptor descriptor;
 
     /**

@@ -601,7 +601,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         final int dimension = getDimension();
         for (int i=0; i!=dimension; i++) {
             final double span = getUpper(i) - getLower(i);  // Do not use getSpan(i).
-            if (!(span > 0)) {                              // Use '!' for catching NaN.
+            if (!(span > 0)) {                              // Use `!` for catching NaN.
                 if (!isNegative(span)) {
                     return EMPTY;                           // Span is positive zero.
                 }
@@ -651,11 +651,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             }
             /*
              * Assign the minimum and maximum coordinate values in the dimension where a wraparound has been found.
-             * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
+             * The `for` loop below iterates only over the `i` values for which the `isWrapAround` bit is set to 1.
              */
             int mask = 1;               // For identifying whether we need to set the lower or the upper coordinate.
-            @SuppressWarnings("null")
-            final CoordinateSystem cs = crs.getCoordinateSystem();            // Should not be null at this point.
+            @SuppressWarnings("null")   // CRS should not be null at this point.
+            final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double min = axis.getMinimumValue();
@@ -699,7 +699,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             return true;
         }
         for (int i=0; i<dimension; i++) {
-            if (!(getSpan(i) > 0)) {                            // Use '!' in order to catch NaN
+            if (!(getSpan(i) > 0)) {            // Use `!` in order to catch NaN
                 return true;
             }
         }
@@ -778,7 +778,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                 if (isNegative(upper - lower)) {
                     /*
                      * "Crossing the anti-meridian" case: if we reach this point, then the
-                     * [upper...lower] range  (note the 'lower' and 'upper' interchanging)
+                     * [upper...lower] range  (note the `lower` and `upper` interchanging)
                      * is actually a space outside the envelope and we have checked that
                      * the coordinate value is outside that space.
                      */

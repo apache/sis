@@ -97,6 +97,7 @@ public class TransferFunction implements Cloneable, Serializable {
      *
      * <p>This field is serialized because the transform may be a user-provided one.</p>
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private MathTransform1D transform;
 
     /**

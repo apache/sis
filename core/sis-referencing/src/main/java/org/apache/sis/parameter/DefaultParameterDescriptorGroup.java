@@ -107,7 +107,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *
      * @see #descriptors()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private List<GeneralParameterDescriptor> descriptors;
 
     /**
@@ -367,7 +367,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
-    @SuppressWarnings("null")
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
         // Quick search for an exact match.
         ArgumentChecks.ensureNonNull("name", name);

@@ -49,7 +49,7 @@ import org.apache.sis.util.Utilities;
  * Future versions may allow other ways such as mask rasters.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public class RegionOfInterest implements LenientComparable, Serializable {
@@ -61,6 +61,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
     /**
      * The region of interest as a geometry. Coordinates are in the CRS given be {@link #crs}.
      */
+    @SuppressWarnings("serial")                     // Most Java2D implementations are serializable.
     private final Shape geometry;
 
     /**
@@ -68,6 +69,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
      * In current version, it shall be a two-dimensional CRS.
      * May be {@code null} if unknown.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final CoordinateReferenceSystem crs;
 
     /**
@@ -134,7 +136,7 @@ public class RegionOfInterest implements LenientComparable, Serializable {
      */
     @Override
     public boolean equals(final Object other, final ComparisonMode mode) {
-        if (other instanceof ComparisonMode) {
+        if (other instanceof RegionOfInterest) {
             final RegionOfInterest that = (RegionOfInterest) other;
             if (mode != ComparisonMode.STRICT || other.getClass() == getClass()) {
                 return geometry.equals(that.geometry) && Utilities.deepEquals(crs, that.crs, mode);

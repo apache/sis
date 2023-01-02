@@ -36,7 +36,7 @@ import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
  * the {@link DoubleDouble#error}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see Matrices#createDiagonal(int, int)
  *
@@ -90,12 +90,17 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * If {@code setToIdentity} is {@code true}, then the elements
      * on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      *
+     * <p>Do not invoke this constructor directly (except by {@link NonSquareMatrix} constructor) unless
+     * the matrix is known to be square. If this is not the case, invoke a factory method instead.</p>
+     *
      * @param  numRow         number of rows.
      * @param  numCol         number of columns.
      * @param  setToIdentity  {@code true} for initializing the matrix to the identity matrix,
      *                        or {@code false} for leaving it initialized to zero.
      * @param  precision      1 for normal precision, or 2 for extended precision.
      *                        No other value is allowed (this is not verified).
+     *
+     * @see #createExtendedPrecision(int, int, boolean)
      */
     GeneralMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
         ensureValidSize(numRow, numCol);
@@ -125,6 +130,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         this.numRow = (short) numRow;
         this.numCol = (short) numCol;
         this.elements = elements.clone();
+        assert isValid();
     }
 
     /**
@@ -145,6 +151,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             elements = new double[numRow * numCol];
             getElements(matrix, numRow, numCol, elements);
         }
+        assert isValid();
     }
 
     /**
@@ -154,6 +161,34 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         numRow   = matrix.numRow;
         numCol   = matrix.numCol;
         elements = matrix.elements.clone();
+        assert isValid();
+    }
+
+    /**
+     * Verifies that this matrix is well-formed. This method verifies that the matrix size is valid,
+     * that the {@link #elements} array is non-null and has a valid length, and that all error terms
+     * are smaller than 1 ULP of the corresponding matrix element value.
+     *
+     * @return whether this matrix is well-formed.
+     * @throws NullPointerException if the {@link #elements} array is null.
+     * @throws AssertionError (thrown by {@link DoubleDouble#DoubleDouble(double, double)} constructor)
+     *         if an error term is not smaller than the corresponding matrix element value.
+     */
+    private boolean isValid() {
+        final int numRow = this.numRow;
+        final int numCol = this.numCol;
+        final int length = elements.length;
+        int i = numRow * numCol;                // Cannot overflow.
+        if ((numRow |  numCol) < 0 || (length != i && length != i*2) ||
+            (numRow != numCol) != (this instanceof NonSquareMatrix))
+        {
+            return false;
+        }
+        boolean isValid = true;
+        while (--i >= 0) {
+            isValid &= Numerics.equals(getNumber(i / numCol, i % numCol).doubleValue(), elements[i]);
+        }
+        return isValid;
     }
 
     /**
@@ -267,6 +302,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @return the current value at the given row and column, rounded to nearest integer.
+     * @throws ArithmeticException if the value is NaN or overflows integer capacity.
      *
      * @see DoubleDouble#longValue()
      *
@@ -276,15 +312,18 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     public long getInteger(int row, int column) {
         if (row >= 0 && row < numRow && column >= 0 && column < numCol) {
             int i = row * numCol + column;
-            long value = Math.round(elements[i]);
+            final double value = elements[i];
+            long r = Math.round(value);
             i += numRow * numCol;
             if (i < elements.length) {
-                value += (long) elements[i];        // Really want rounding toward zero.
+                r += (long) elements[i];            // Really want rounding toward zero.
             }
-            return value;
-        } else {
-            throw indexOutOfBounds(row, column);
+            if (Math.abs(r - value) <= 0.5) {
+                return r;
+            }
+            throw new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Long.TYPE));
         }
+        throw indexOutOfBounds(row, column);
     }
 
     /**
@@ -395,7 +434,8 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * The returned array does <em>not</em> include error terms used in double-double arithmetic.
      */
     @Override
     public final double[] getElements() {
@@ -412,15 +452,17 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
-     * {@inheritDoc}
+     * Sets all matrix elements from a flat, row-major (column indices vary fastest) array.
+     * The given array shall not contain error terms. The error terms will be set to default values.
      */
     @Override
     public final void setElements(final double[] newValues) {
         ensureLengthMatch(numRow*numCol, newValues);
         System.arraycopy(newValues, 0, elements, 0, newValues.length);
         if (elements.length != newValues.length) {
-            inferErrors(newValues);
+            inferErrors(elements);
         }
+        assert isValid();
     }
 
     /**
@@ -436,7 +478,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * </ul>
      *
      * @param  newValues  the new matrix elements in a row-major array.
-     * @return {@code true} if at leat one {@link DoubleDouble} instance has been found, in which case all
+     * @return {@code true} if at least one {@link DoubleDouble} instance has been found, in which case all
      *         errors terms have been initialized, or {@code false} otherwise, in which case no error term
      *         has been initialized (this is a <cite>all or nothing</cite> operation).
      * @throws IllegalArgumentException if the given array does not have the expected length.
@@ -486,6 +528,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             }
             elements[i + length] = error;
         }
+        if (isExtended) {
+            assert isValid();
+        }
         return isExtended;
     }
 
@@ -513,6 +558,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         } else {
             super.setMatrix(matrix);
         }
+        assert isValid();
     }
 
     /**
@@ -662,6 +708,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
                 sum.storeTo(elements, k++, errorOffset);
             }
         }
+        assert isValid();
     }
 
     /**

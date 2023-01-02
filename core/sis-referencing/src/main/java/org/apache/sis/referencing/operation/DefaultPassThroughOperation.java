@@ -75,7 +75,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      *
      * @see #getOperation()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private SingleOperation operation;
 
     /**

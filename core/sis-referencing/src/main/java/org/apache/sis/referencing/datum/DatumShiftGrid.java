@@ -182,6 +182,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #getCoordinateUnit()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Unit<C> coordinateUnit;
 
     /**
@@ -190,6 +191,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #getCoordinateToGrid()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final LinearTransform coordinateToGrid;
 
     /**
@@ -197,6 +199,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #getTranslationUnit()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Unit<T> translationUnit;
 
     /**

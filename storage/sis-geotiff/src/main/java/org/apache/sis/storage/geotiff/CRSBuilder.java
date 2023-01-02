@@ -464,7 +464,6 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
-    @SuppressWarnings("null")
     public CoordinateReferenceSystem build(final GeoKeysLoader source) throws FactoryException {
         try {
             source.logger = this;
@@ -491,7 +490,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             default: invalidValue(GeoKeys.RasterType, code); break;
         }
         /*
-         * First create the main coordinate reference system, as determined by 'ModelType'.
+         * First create the main coordinate reference system, as determined by `ModelType`.
          * Then if a vertical CRS exists and the main CRS is not geocentric (in which case
          * adding a vertical CRS would make no sense), create a three-dimensional compound CRS.
          */

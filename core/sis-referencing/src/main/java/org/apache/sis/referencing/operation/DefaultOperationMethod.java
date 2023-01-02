@@ -154,7 +154,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This field is modified only at unmarshalling time by {@link #setFormulaCitation(Citation)}
      * or {@link #setFormulaDescription(String)}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Formula formula;
 
     /**
@@ -194,7 +194,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * This field is modified only at unmarshalling time by {@link #setDescriptors(GeneralParameterDescriptor[])}
      * or {@link #afterUnmarshal(Unmarshaller, Object)}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private ParameterDescriptorGroup parameters;
 
     /**

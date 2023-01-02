@@ -418,7 +418,6 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             System.arraycopy(source, srcOffset, coordinates, beginIndex, dimension);
             System.arraycopy(source, srcOffset + (source.length >>> 1), coordinates, beginIndex + d, dimension);
         } else {
-            @SuppressWarnings("null")
             final DirectPosition lower = envelope.getLowerCorner();
             final DirectPosition upper = envelope.getUpperCorner();
             for (int i=0; i<dimension; i++) {
@@ -845,7 +844,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double max1  = upper.getOrdinate(i);
             final double span0 = max0 - min0;
             final double span1 = max1 - min1;
-            if (isSameSign(span0, span1)) {                 // Always 'false' if any value is NaN.
+            if (isSameSign(span0, span1)) {                 // Always `false` if any value is NaN.
                 /*
                  * First, verify that the two envelopes intersect.
                  *     ┌──────────┐             ┌─────────────┐
@@ -1155,7 +1154,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final int iUpper = iLower + d;
             final double lower = coordinates[iLower];
             final double upper = coordinates[iUpper];
-            if (isNegative(upper - lower)) {                            // Use 'isNegative' for catching [+0 … -0] range.
+            if (isNegative(upper - lower)) {                        // Use `isNegative(…)` for catching [+0 … -0] range.
                 final CoordinateSystemAxis axis = getAxis(crs, i);
                 if (isWrapAround(axis)) {
                     changed = true;

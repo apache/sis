@@ -180,7 +180,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getName()
      * @see #getNames()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private ReferenceIdentifier name;
 
     /**
@@ -191,7 +191,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@code Names.add(Identifier)}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Collection<GenericName> alias;
 
     /**
@@ -204,7 +204,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getIdentifiers()
      * @see #getIdentifier()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Set<ReferenceIdentifier> identifiers;
 
     /**
@@ -215,7 +215,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @see #getRemarks()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private InternationalString remarks;
 
     /**

@@ -73,7 +73,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
      * All identifiers associated with this metadata, or {@code null} if none.
      * This field is initialized to a non-null value when first needed.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected Collection<Identifier> identifiers;
 
     /**

@@ -127,7 +127,6 @@ public final class TestFactorySource {
      *
      * @throws FactoryException if an error occurred while creating the factory.
      */
-    @SuppressWarnings("null")
     public static synchronized void createFactory() throws FactoryException {
         if (!isUnavailable) {
             EPSGFactory af = factory;

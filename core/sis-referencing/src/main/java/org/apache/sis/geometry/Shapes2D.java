@@ -411,7 +411,6 @@ public final class Shapes2D extends Static {
      * @see #transform(MathTransform2D, Rectangle2D, Rectangle2D)
      * @see Envelopes#transform(CoordinateOperation, Envelope)
      */
-    @SuppressWarnings("null")
     public static Rectangle2D transform(final CoordinateOperation operation,
                                         final Rectangle2D         envelope,
                                               Rectangle2D         destination)

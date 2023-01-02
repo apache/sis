@@ -77,13 +77,13 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * Approximate geographic area of geometries, or {@code null} if unspecified.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GeographicBoundingBox areaOfInterest;
 
     /**
      * The target CRS in which to transform geometries, or {@code null} for inferring automatically.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final CoordinateReferenceSystem computationCRS;
 
     /**
@@ -92,7 +92,7 @@ public final class SpatialOperationContext implements Serializable {
      * Note that it does not mean that the units of measurement must be meters; only that they must
      * be compatible with meters.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Unit<?> systemUnit;
 
     /**
@@ -104,7 +104,7 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * The common CRS found by {@link #transform(GeometryWrapper[])}. May be null.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     CoordinateReferenceSystem commonCRS;
 
     /**

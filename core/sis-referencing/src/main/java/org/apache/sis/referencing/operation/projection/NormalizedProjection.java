@@ -236,7 +236,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * construction time). In addition this field is part of serialization form in order to preserve the
      * references graph.</div>
      */
-    private final MathTransform2D inverse;
+    private final Inverse inverse;
 
     /**
      * Maps the parameters to be used for initializing {@link NormalizedProjection} and its

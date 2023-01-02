@@ -39,6 +39,7 @@ final class FeatureOperationException extends IllegalStateException implements L
     /**
      * A description of the computation error.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final InternationalString message;
 
     /**

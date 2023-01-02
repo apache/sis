@@ -124,6 +124,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     /**
      * The coordinate reference system, or {@code null}.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private CoordinateReferenceSystem crs;
 
     /**

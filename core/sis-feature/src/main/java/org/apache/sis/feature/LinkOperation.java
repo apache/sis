@@ -54,6 +54,7 @@ final class LinkOperation extends AbstractOperation {
     /**
      * The type of the result.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final PropertyType result;
 
     /**

@@ -67,6 +67,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     /**
      * The primary converter, to be tried first.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final ObjectConverter<S, ? extends T> primary;
 
     /**
@@ -76,6 +77,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * type he would have asked explicitly for it. In addition this layout reduces the amount of
      * exceptions to be thrown and caught before we found a successful conversion.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final ObjectConverter<S, ? extends T> fallback;
 
     /**

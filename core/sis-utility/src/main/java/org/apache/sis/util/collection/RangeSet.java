@@ -1511,6 +1511,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      *
      * @see RangeSet#create(Class, boolean, boolean)
      */
+    @SuppressWarnings("CloneableImplementsClone")
     private static final class Numeric<E extends Number & Comparable<? super E>> extends RangeSet<E> {
         private static final long serialVersionUID = 5603640102714482527L;
 

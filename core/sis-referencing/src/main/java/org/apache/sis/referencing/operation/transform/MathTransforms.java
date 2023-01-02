@@ -36,6 +36,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -57,7 +58,7 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see MathTransformFactory
  *
@@ -198,7 +199,10 @@ public final class MathTransforms extends Static {
             if (Matrices.isAffine(matrix)) {
                 switch (sourceDimension) {
                     case 1: {
-                        return linear(matrix.getElement(0,0), matrix.getElement(0,1));
+                        final MatrixSIS m = MatrixSIS.castOrCopy(matrix);
+                        return LinearTransform1D.create(
+                                DoubleDouble.castOrCopy(m.getNumber(0,0)),
+                                DoubleDouble.castOrCopy(m.getNumber(0,1)));
                     }
                     case 2: {
                         if (matrix instanceof ExtendedPrecisionMatrix) {

@@ -46,7 +46,7 @@ import org.apache.sis.util.ArraysExt;
  * @version 1.2
  * @since   0.8
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
 public final class StoreFormat extends WKTFormat {
     /**
      * The geometry library, or {@code null} for the default.

@@ -1654,6 +1654,7 @@ public final class Units extends Static {
      *
      * @since 0.8
      */
+    @OptionalCandidate
     @SuppressWarnings("fallthrough")
     public static Number[] coefficients(final UnitConverter converter) {
         if (converter != null) {

@@ -59,7 +59,7 @@ public final class SpecializedIdentifier<T> implements Identifier, Cloneable, Se
      *
      * @see #getAuthority()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final IdentifierSpace<T> authority;
 
     /**

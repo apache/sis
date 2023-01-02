@@ -46,6 +46,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @since 0.3
  */
+@SuppressWarnings("CloneableImplementsClone")
 public final class CheckedHashSet<E> extends LinkedHashSet<E> implements CheckedContainer<E> {
     /**
      * Serial version UID for compatibility with different versions.

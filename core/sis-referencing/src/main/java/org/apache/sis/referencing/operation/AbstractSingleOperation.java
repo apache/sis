@@ -94,7 +94,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * @see #getMethod()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private OperationMethod method;
 
     /**
@@ -107,7 +107,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @see #getParameterValues()
      * @see #setParameterValues(ParameterValueGroup, Map)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     ParameterValueGroup parameters;
 
     /**

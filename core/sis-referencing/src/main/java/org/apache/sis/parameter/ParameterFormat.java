@@ -245,7 +245,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      *
      * @see #getPreferredCodespaces()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Various serializable implementations.
     private Set<String> preferredCodespaces;
 
     /**
@@ -334,7 +334,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      */
     public String[] getPreferredCodespaces() {
         final Set<String> p = preferredCodespaces;
-        return (p != null) ? p.toArray(new String[p.size()]) : null;
+        return (p != null) ? p.toArray(String[]::new) : null;
     }
 
     /**
@@ -351,7 +351,7 @@ public class ParameterFormat extends TabularFormat<Object> {
         if (codespaces != null) {
             copy = CollectionsExt.immutableSet(true, codespaces);
         }
-        this.preferredCodespaces = copy;
+        preferredCodespaces = copy;
     }
 
     /**

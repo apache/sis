@@ -41,11 +41,13 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
     /**
      * The first unit converter to apply.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final UnitConverter c1;
 
     /**
      * The second unit converter to apply, after {@code c1}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final UnitConverter c2;
 
     /**

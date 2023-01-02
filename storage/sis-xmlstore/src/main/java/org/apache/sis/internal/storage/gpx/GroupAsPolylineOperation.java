@@ -153,6 +153,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
         /**
          * The feature on which to execute the operation.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final Feature feature;
 
         /**

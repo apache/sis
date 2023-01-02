@@ -59,7 +59,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     /**
      * The conversion from this unit to the {@linkplain #target} unit.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final UnitConverter toTarget;
 
     /**

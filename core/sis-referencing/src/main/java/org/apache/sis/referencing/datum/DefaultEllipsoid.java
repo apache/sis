@@ -157,6 +157,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     /**
      * The units of the semi-major and semi-minor axis values.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Unit<Length> unit;
 
     /**

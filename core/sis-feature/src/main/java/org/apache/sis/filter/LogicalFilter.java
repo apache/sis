@@ -51,7 +51,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     /**
      * The filter on which to apply the logical operator.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Filter<? super R>[] operands;
 
     /**
@@ -219,7 +219,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         private static final long serialVersionUID = -1296823195138427781L;
 
         /** The filter to negate. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final Filter<? super R> operand;
 
         /** Creates a new operator. */

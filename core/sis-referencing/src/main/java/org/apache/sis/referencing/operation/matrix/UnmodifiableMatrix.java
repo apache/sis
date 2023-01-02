@@ -38,6 +38,7 @@ final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMat
     /**
      * The wrapped matrix.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Matrix matrix;
 
     /**

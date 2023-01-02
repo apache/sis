@@ -183,7 +183,6 @@ public final class Resources extends IndexedResourceBundle {
         private static final long serialVersionUID = 7465539282825054584L;
 
         International(short key)                           {super(key);}
-        International(short key, Object args)              {super(key, args);}
         @Override protected KeyConstants getKeyConstants() {return Resources.Keys.INSTANCE;}
         @Override protected IndexedResourceBundle getBundle(final Locale locale) {
             return forLocale(locale);

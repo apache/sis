@@ -103,7 +103,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      *
      * @see #getIdentifiers(Class)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     public final Collection<Identifier> identifiers;
 
     /**

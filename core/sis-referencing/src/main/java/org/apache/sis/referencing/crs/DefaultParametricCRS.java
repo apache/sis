@@ -79,6 +79,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private ParametricDatum datum;
 
     /**

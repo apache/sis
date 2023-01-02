@@ -64,7 +64,7 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
     /**
      * The buffer distance around the geometry of the second expression.
      */
-    @SuppressWarnings("serial")                         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Quantity<Length> distance;
 
     /**

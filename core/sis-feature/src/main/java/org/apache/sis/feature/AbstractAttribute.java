@@ -86,6 +86,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     final AttributeType<V> type;
 
     /**

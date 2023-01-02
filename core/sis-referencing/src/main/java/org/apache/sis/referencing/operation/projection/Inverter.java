@@ -50,7 +50,7 @@ import static java.lang.Math.abs;
  *
  * @since 1.1
  */
-@SuppressWarnings({"CloneableImplementsClone", "serial"})
+@SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
 final class Inverter extends Matrix2 {
     /**
      * Creates a new matrix initialized to identity.

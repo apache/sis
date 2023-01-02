@@ -101,6 +101,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     final FeatureType type;
 
     /**
@@ -844,7 +845,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Notifies that the comparison of {@code this} feature is finished.
      */
     final void comparisonEnd() {
-        if (COMPARING.get().remove(this) != Boolean.TRUE) {
+        if (!Boolean.TRUE.equals(COMPARING.get().remove(this))) {
             throw new AssertionError();     // Should never happen.
         }
     }

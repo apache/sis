@@ -172,6 +172,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         /**
          * The parameters for the semi-major and semi-minor axis length.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final ParameterValue<?> semiMajor, semiMinor;
 
         /**
@@ -264,6 +265,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         /**
          * The parameters for the semi-major and semi-minor axis length.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final ParameterValue<?> semiMajor, semiMinor;
 
         /**
@@ -441,6 +443,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
         /**
          * The parameters for the standard parallels.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final ParameterValue<?> standardParallel1, standardParallel2;
 
         /**

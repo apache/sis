@@ -49,7 +49,7 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
     /**
      * The property on which to apply sorting.
      */
-    @SuppressWarnings("serial")     // Not statically typed as Serializable.
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private final ValueReference<? super R, ?> property;
 
     /**

@@ -53,7 +53,7 @@ class AttributeView<V> extends PropertyView<V> implements Attribute<V> {
     /**
      * The type of this attribute. Must be one of the properties listed in the {@link #feature}.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final AttributeType<V> type;
 
     /**

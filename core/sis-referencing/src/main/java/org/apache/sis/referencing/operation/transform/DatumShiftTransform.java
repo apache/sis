@@ -111,6 +111,8 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      *
      * Those factors are extracted from the {@link DatumShiftGrid#getCoordinateToGrid()}
      * transform for performance reasons.
+     *
+     * @see #computeConversionFactors()
      */
     private transient double scaleX, scaleY, x0, y0;
 

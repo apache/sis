@@ -232,7 +232,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CENTER
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final MathTransform gridToCRS;
 
     /**
@@ -242,7 +242,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final MathTransform cornerToCRS;
 
     /**
@@ -522,7 +522,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  rounding   controls behavior of rounding from floating point values to integers.
      * @throws IllegalGridGeometryException if the math transform cannot compute the grid extent or the resolution.
      */
-    @SuppressWarnings("null")
     public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope, final GridRoundingMode rounding) {
         if (gridToCRS == null) {
             ArgumentChecks.ensureNonNull("envelope", envelope);

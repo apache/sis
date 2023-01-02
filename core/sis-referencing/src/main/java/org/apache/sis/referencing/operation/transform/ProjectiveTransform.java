@@ -23,6 +23,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.util.ArgumentChecks;
 
 
@@ -35,7 +36,7 @@ import org.apache.sis.util.ArgumentChecks;
  * lines in the source is preserved in the output.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see java.awt.geom.AffineTransform
  *
@@ -281,7 +282,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                          * getting 2D points from 3D points. In such case, the fact that the excluded dimensions had
                          * NaN values should not force the retained dimensions to get NaN values.
                          */
-                        sum += srcPts[srcOff + i] * e;
+                        if (Formulas.USE_FMA) {
+                            sum = Math.fma(srcPts[srcOff + i], e, sum);
+                        } else {
+                            sum += srcPts[srcOff + i] * e;
+                        }
                     }
                 }
                 buffer[j] = sum;
@@ -345,7 +350,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
                     if (e != 0) {                                   // See comment in transform(double[], ...)
-                        sum += srcPts[srcOff + i] * e;
+                        if (Formulas.USE_FMA) {
+                            sum = Math.fma(srcPts[srcOff + i], e, sum);
+                        } else {
+                            sum += srcPts[srcOff + i] * e;
+                        }
                     }
                 }
                 buffer[j] = sum;
@@ -381,7 +390,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
                     if (e != 0) {                                   // See comment in transform(double[], ...)
-                        sum += srcPts[srcOff + i] * e;
+                        if (Formulas.USE_FMA) {
+                            sum = Math.fma(srcPts[srcOff + i], e, sum);
+                        } else {
+                            sum += srcPts[srcOff + i] * e;
+                        }
                     }
                 }
                 buffer[j] = sum;
@@ -416,7 +429,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                 for (int i=0; i<srcDim; i++) {
                     final double e = elt[mix++];
                     if (e != 0) {                                   // See comment in transform(double[], ...)
-                        sum += srcPts[srcOff + i] * e;
+                        if (Formulas.USE_FMA) {
+                            sum = Math.fma(srcPts[srcOff + i], e, sum);
+                        } else {
+                            sum += srcPts[srcOff + i] * e;
+                        }
                     }
                 }
                 buffer[j] = sum;

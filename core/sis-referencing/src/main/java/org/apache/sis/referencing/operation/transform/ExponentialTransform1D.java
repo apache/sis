@@ -83,6 +83,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * The inverse of this transform. Created only when first needed. Serialized in order to avoid
      * rounding error if this transform is actually the one which was created from the inverse.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private MathTransform1D inverse;
 
     /**

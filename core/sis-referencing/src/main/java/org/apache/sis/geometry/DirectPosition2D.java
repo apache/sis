@@ -77,6 +77,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     /**
      * The coordinate reference system for this position;
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private CoordinateReferenceSystem crs;
 
     /**

@@ -43,6 +43,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
     /**
      * The source of coordinate values.
      */
+    @SuppressWarnings("serial")         // Most Java2D implementations are serializable.
     protected final Shape source;
 
     /**

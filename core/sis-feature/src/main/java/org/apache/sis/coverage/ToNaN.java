@@ -32,7 +32,7 @@ import org.apache.sis.internal.feature.Resources;
  * @version 1.1
  * @since   1.0
  */
-@SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})                       // Not intended to be serialized.
 final class ToNaN extends HashSet<Integer> implements DoubleToIntFunction {
     /**
      * The value which should be assigned ordinal 0 if that ordinal value is available.

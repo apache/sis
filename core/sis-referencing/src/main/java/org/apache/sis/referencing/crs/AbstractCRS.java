@@ -117,7 +117,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * @see #getCoordinateSystem()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private CoordinateSystem coordinateSystem;
 
     /**

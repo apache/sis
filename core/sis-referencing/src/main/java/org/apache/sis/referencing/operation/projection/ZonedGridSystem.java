@@ -98,11 +98,13 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
     /**
      * The projection that performs the actual work before we add the zone number.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     final AbstractMathTransform projection;
 
     /**
      * The inverse of this map projection.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private final MathTransform2D inverse;
 
     /**
@@ -220,6 +222,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
         /**
          * The projection that performs the actual work after we removed the zone number.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final AbstractMathTransform inverseProjection;
 
         /**

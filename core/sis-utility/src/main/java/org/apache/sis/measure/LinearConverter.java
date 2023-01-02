@@ -26,6 +26,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 
 
 /**
@@ -33,16 +34,16 @@ import org.apache.sis.internal.util.Numerics;
  * Note that the "linear" word in this class does not have the same meaning than the same word
  * in the {@link #isLinear()} method inherited from JSR-385.
  *
- * <p><b>Implementation note:</b>
+ * <h2>Implementation note</h2>
  * for performance reason we should create specialized subtypes for the case where there is only a scale to apply,
  * or only an offset, <i>etc.</i> But we don't do that in Apache SIS implementation because we will rarely use the
  * {@code UnitConverter} for converting a lot of values. We rather use {@code MathTransform} for operations on
  * <var>n</var>-dimensional tuples, and unit conversions are only a special case of those more generic operations.
  * The {@code sis-referencing} module provided the specialized implementations needed for efficient operations
- * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.</p>
+ * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 final class LinearConverter extends AbstractConverter implements LenientComparable {
@@ -239,6 +240,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
 
     /**
      * Returns the coefficient of this linear conversion.
+     * Coefficients are offset and scale, in that order.
      */
     @Override
     @SuppressWarnings("fallthrough")
@@ -258,11 +260,13 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * package to perform more accurate calculations.
      */
     private static Number ratio(final double value, final double divisor) {
-        final int numerator = (int) value;
-        if (numerator == value) {
-            final int denominator = (int) divisor;
-            if (denominator == divisor) {
-                return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+        if (value != 0) {
+            final int numerator = (int) value;
+            if (numerator == value) {
+                final int denominator = (int) divisor;
+                if (denominator == divisor) {
+                    return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+                }
             }
         }
         return value / divisor;
@@ -273,21 +277,25 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public double convert(final double value) {
-        // TODO: use JDK9' Math.fma(…) and verify if it solve the accuracy issue in LinearConverterTest.inverse().
-        return (value * scale + offset) / divisor;
+        return Math.fma(value, scale, offset) / divisor;
     }
 
     /**
      * Applies the linear conversion on the given value. This method uses {@link BigDecimal} arithmetic if
-     * the given value is an instance of {@code BigDecimal}, or IEEE 754 floating-point arithmetic otherwise.
-     *
-     * <p>Apache SIS rarely uses {@link BigDecimal} arithmetic, so providing an efficient implementation of
-     * this method is not a goal.</p>
+     * the given value is an instance of {@code BigDecimal}, or double-double arithmetic if the value is an
+     * instance of {@link DoubleDouble}, or IEEE 754 floating-point arithmetic otherwise.
      */
     @Override
     public Number convert(Number value) {
         ArgumentChecks.ensureNonNull("value", value);
         if (!isIdentity()) {
+            if (value instanceof DoubleDouble) {
+                var dd = new DoubleDouble((DoubleDouble) value);
+                dd.multiply(scale);
+                dd.add(offset);
+                dd.divide(divisor);
+                return dd;
+            }
             if (value instanceof BigInteger) {
                 value = new BigDecimal((BigInteger) value);
             }

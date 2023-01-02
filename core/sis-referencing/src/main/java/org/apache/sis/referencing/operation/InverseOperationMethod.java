@@ -59,7 +59,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
     /**
      * The original operation method for which this {@code InverseOperationMethod} is the inverse.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private final OperationMethod inverse;
 
     /**
