@@ -55,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see Matrices
  *
@@ -170,11 +170,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @return the current value at the given row and column, rounded to nearest integer.
+     * @throws ArithmeticException if the value is NaN or overflows integer capacity.
      *
      * @since 1.3
      */
     public long getInteger(int row, int column) {
-        return Math.round(getElement(row, column));
+        final double value = getElement(row, column);
+        final long r = Math.round(value);
+        if (Math.abs(r - value) <= 0.5) {
+            return r;
+        }
+        throw new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Long.TYPE));
     }
 
     /**

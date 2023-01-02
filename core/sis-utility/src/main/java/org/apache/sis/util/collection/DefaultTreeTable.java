@@ -81,7 +81,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @see #getRoot()
      * @see #setRoot(TreeTable.Node)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private TreeTable.Node root;
 
     /**
@@ -390,7 +390,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @see #getParent()
          * @see #setParent(TreeTable.Node)
          */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private TreeTable.Node parent;
 
         /**
@@ -695,7 +695,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @return {@code true} if the two objects are equal, ignoring the parent node.
          */
         @Override
-        @SuppressWarnings("null")
         public boolean equals(final Object other) {
             if (other == this) {
                 return true;

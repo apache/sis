@@ -63,7 +63,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     /**
      * The unit of measurement associated to the value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Unit<Q> unit;
 
     /**

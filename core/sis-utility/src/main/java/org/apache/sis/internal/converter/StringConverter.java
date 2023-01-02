@@ -65,7 +65,7 @@ import org.apache.sis.measure.Units;
  * This base class and all inner classes are immutable, and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.3
  */
 abstract class StringConverter<T> extends SystemConverter<String, T> {
@@ -77,7 +77,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
     /**
      * The inverse converter from the target to the source class.
      */
-    private final ObjectConverter<T, String> inverse;
+    private final ObjectToString<T> inverse;
 
     /**
      * Creates a new converter for the given target class.
@@ -94,7 +94,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
      * Invoked by the constructor for creating the inverse converter.
      * To be overridden by classes which need a specialized instance.
      */
-    ObjectConverter<T, String> createInverse() {
+    ObjectToString<T> createInverse() {
         return new ObjectToString<>(targetClass, this);
     }
 
@@ -166,7 +166,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Double() {super(java.lang.Double.class);}                            // Instantiated by ServiceLoader.
 
         @Override java.lang.Double doConvert(String source) throws NumberFormatException {
-            return java.lang.Double.parseDouble(source);
+            return java.lang.Double.valueOf(source);
         }
     }
 
@@ -175,7 +175,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Float() {super(java.lang.Float.class);}                              // Instantiated by ServiceLoader.
 
         @Override java.lang.Float doConvert(String source) throws NumberFormatException {
-            return java.lang.Float.parseFloat(source);
+            return java.lang.Float.valueOf(source);
         }
     }
 
@@ -184,7 +184,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Long() {super(java.lang.Long.class);}                                // Instantiated by ServiceLoader.
 
         @Override java.lang.Long doConvert(String source) throws NumberFormatException {
-            return java.lang.Long.parseLong(source);
+            return java.lang.Long.valueOf(source);
         }
     }
 
@@ -193,7 +193,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Integer() {super(java.lang.Integer.class);}                          // Instantiated by ServiceLoader.
 
         @Override java.lang.Integer doConvert(String source) throws NumberFormatException {
-            return java.lang.Integer.parseInt(source);
+            return java.lang.Integer.valueOf(source);
         }
     }
 
@@ -202,7 +202,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Short() {super(java.lang.Short.class);}                              // Instantiated by ServiceLoader.
 
         @Override java.lang.Short doConvert(String source) throws NumberFormatException {
-            return java.lang.Short.parseShort(source);
+            return java.lang.Short.valueOf(source);
         }
     }
 
@@ -211,7 +211,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Byte() {super(java.lang.Byte.class);}                                // Instantiated by ServiceLoader.
 
         @Override java.lang.Byte doConvert(String source) throws NumberFormatException {
-            return java.lang.Byte.parseByte(source);
+            return java.lang.Byte.valueOf(source);
         }
     }
 
@@ -361,7 +361,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
 
         /** Invoked by the constructor for creating the inverse converter. */
-        @Override ObjectConverter<T, String> createInverse() {
+        @Override ObjectToString<T> createInverse() {
             return new ObjectToString.CodeList<>(targetClass, this);
         }
     }
@@ -393,7 +393,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         }
 
         /** Invoked by the constructor for creating the inverse converter. */
-        @Override ObjectConverter<T, String> createInverse() {
+        @Override ObjectToString<T> createInverse() {
             return new ObjectToString.Enum<>(targetClass, this);
         }
     }

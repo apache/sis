@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.util;
 
-import java.io.Serializable;
 import java.text.CharacterIterator;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -26,15 +25,10 @@ import org.apache.sis.util.ArgumentChecks;
  * around a given {@link CharSequence}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
-public class SimpleCharacterIterator implements CharacterIterator, CharSequence, Serializable {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 4211374670559434445L;
-
+public class SimpleCharacterIterator implements CharacterIterator, CharSequence {
     /**
      * The wrapped character sequence.
      */

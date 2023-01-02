@@ -79,6 +79,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private ImageDatum datum;
 
     /**

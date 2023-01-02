@@ -103,6 +103,7 @@ public class Category implements Serializable {
      *
      * @see #getName()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final InternationalString name;
 
     /**
@@ -139,6 +140,7 @@ public class Category implements Serializable {
      *
      * @see #getTransferFunction()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final MathTransform1D toConverse;
 
     /**

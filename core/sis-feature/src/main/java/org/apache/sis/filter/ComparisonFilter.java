@@ -234,7 +234,6 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * @param  left   the first object to compare. Must be non-null.
      * @param  right  the second object to compare. Must be non-null.
      */
-    @SuppressWarnings("null")
     private boolean evaluate(Object left, Object right) {
         /*
          * For numbers, the apply(…) method inherited from parent class will delegate to specialized methods like

@@ -126,6 +126,7 @@ public class XLink implements Serializable {
      * @see #getTitle()
      * @category semantic
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private InternationalString title;
 
     /**

@@ -77,12 +77,14 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * The parent of all children managed by this list.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final TreeTable.Node parent;
 
     /**
      * The children, or {@code null} if none.
      * This array will be created when first needed.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private TreeTable.Node[] children;
 
     /**

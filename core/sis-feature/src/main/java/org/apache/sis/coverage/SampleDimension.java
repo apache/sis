@@ -93,6 +93,7 @@ public class SampleDimension implements Serializable {
      *
      * @see #getName()
      */
+    @SuppressWarnings("serial")       // Most SIS implementations are serializable.
     private final GenericName name;
 
     /**
@@ -114,6 +115,7 @@ public class SampleDimension implements Serializable {
      *
      * @see #getTransferFunction()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final MathTransform1D transferFunction;
 
     /**

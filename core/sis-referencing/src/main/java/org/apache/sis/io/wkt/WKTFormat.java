@@ -168,7 +168,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The preferred authority for objects or parameter names. A {@code null} value
      * means that the authority shall be inferred from the {@linkplain #convention}.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Citation authority;
 
     /**
@@ -226,8 +226,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #fragments(boolean)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    private Map<String,StoredTree> fragments;
+    private TreeMap<String,StoredTree> fragments;
 
     /**
      * {@code true} if the {@link #fragments} map is shared by two or more {@code WKTFormat} instances.

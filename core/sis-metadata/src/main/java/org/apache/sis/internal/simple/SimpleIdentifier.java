@@ -49,6 +49,7 @@ public class SimpleIdentifier implements ReferenceIdentifier, Deprecable, Serial
      * @see #getCodeSpace()
      * @see #getVersion()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Citation authority;
 
     /**

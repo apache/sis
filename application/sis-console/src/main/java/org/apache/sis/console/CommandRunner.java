@@ -221,7 +221,7 @@ abstract class CommandRunner {
             console = System.console();
             colors = (value != null) ? Option.COLORS.parseBoolean(value) : (console != null) && X364.isAnsiSupported();
         } catch (RuntimeException e) {
-            @SuppressWarnings("null")                                   // 'option' has been assigned in 'get' argument.
+            @SuppressWarnings("null")                   // `option` has been assigned in `get` argument.
             final String name = option.label();
             throw new InvalidOptionException(Errors.format(Errors.Keys.IllegalOptionValue_2, name, value), name);
         }

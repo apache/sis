@@ -155,7 +155,6 @@ public final class NADCON extends AbstractProvider {
      * @param latitudeShifts   name of the grid file for latitude shifts.
      * @param longitudeShifts  name of the grid file for longitude shifts.
      */
-    @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Path latitudeShifts, final Path longitudeShifts)
             throws FactoryException
     {
@@ -171,7 +170,7 @@ public final class NADCON extends AbstractProvider {
                     final Loader loader;
                     Path file = latitudeShifts;
                     try {
-                        // Note: buffer size must be divisible by the size of 'float' data type.
+                        // Note: buffer size must be divisible by the size of `float` data type.
                         final ByteBuffer buffer = ByteBuffer.allocate(4096).order(ByteOrder.LITTLE_ENDIAN);
                         final FloatBuffer fb = buffer.asFloatBuffer();
                         try (ReadableByteChannel in = Files.newByteChannel(rlat)) {
@@ -445,7 +444,7 @@ public final class NADCON extends AbstractProvider {
                 }
                 /*
                  * Convert seconds to degrees for consistency with the unit declared at the beginning of this method,
-                 * then divide by cell size for consistency with the 'isCellRatio = true' configuration.
+                 * then divide by cell size for consistency with the `isCellRatio = true` configuration.
                  */
                 for (int i=0; i<array.length; i++) {
                     array[i] /= scale;

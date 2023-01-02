@@ -388,7 +388,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @return Data Access Object (DAO) to use in {@code createFoo(String)} methods.
      * @throws FactoryException if the Data Access Object creation failed.
      */
-    @SuppressWarnings("null")
     private DAO getDataAccess() throws FactoryException {
         /*
          * First checks if the current thread is already using a factory. If yes, we will

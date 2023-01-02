@@ -147,7 +147,7 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      * The value returned by {@link #toJavaType()}, or {@code null} if none.
      * This is usually a {@link Class}, which is serializable.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")
     private final Type javaType;
 
     /**

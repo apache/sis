@@ -58,13 +58,13 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Optimi
     /**
      * The first of the two expressions to be used by this function.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, GeometryWrapper<G>> expression2;
 
     /**
@@ -146,6 +146,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Optimi
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
+    @SuppressWarnings("unchecked")      // We replace <? super ? super R> by <? super R>.
     protected static <R,G> Expression<? super R, ?> original(final Expression<R, GeometryWrapper<G>> expression) {
         Expression<? super R, ?> unwrapped = unwrap(expression);
         if (unwrapped instanceof LeafExpression.Transformed<?, ?>) {

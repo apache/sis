@@ -60,6 +60,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
     /**
      * The expression giving the coordinate values. May include the SRID as last parameter.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Expression<? super R, ?>[] parameters;
 
     /**

@@ -49,6 +49,7 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * The converter to apply after this one.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ObjectConverter<? super String, ? extends T> next;
 
     /**

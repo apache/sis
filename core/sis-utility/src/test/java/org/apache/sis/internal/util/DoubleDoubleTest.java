@@ -71,7 +71,7 @@ public final class DoubleDoubleTest extends TestCase {
      * in order to change only the exponent part of the IEEE representation.
      */
     private double nextRandom() {
-        return random.nextDouble() * 2048 - 1024;
+        return fma(random.nextDouble(), 2048, -1024);
     }
 
     /**
@@ -224,7 +224,7 @@ public final class DoubleDoubleTest extends TestCase {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).add(toBigDecimal(op));
-            dd.add(op);     // Must be after 'expected' computation.
+            dd.add(op);     // Must be after `expected` computation.
             assertExtendedEquals(expected, dd, ADD_TOLERANCE_FACTOR);
         }
     }
@@ -241,7 +241,7 @@ public final class DoubleDoubleTest extends TestCase {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).multiply(toBigDecimal(op), MathContext.DECIMAL128);
-            dd.multiply(op);    // Must be after 'expected' computation.
+            dd.multiply(op);    // Must be after `expected` computation.
             assertExtendedEquals(expected, dd, PRODUCT_TOLERANCE_FACTOR);
         }
     }
@@ -258,7 +258,7 @@ public final class DoubleDoubleTest extends TestCase {
             nextRandom(dd);
             nextRandom(op);
             final BigDecimal expected = toBigDecimal(dd).divide(toBigDecimal(op), MathContext.DECIMAL128);
-            dd.divide(op);      // Must be after 'expected' computation.
+            dd.divide(op);      // Must be after `expected` computation.
             assertExtendedEquals(expected, dd, PRODUCT_TOLERANCE_FACTOR);
         }
     }

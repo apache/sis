@@ -94,7 +94,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *
      * @see #getDatum()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private EngineeringDatum datum;
 
     /**

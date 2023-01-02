@@ -295,7 +295,6 @@ public class FeatureFormat extends TabularFormat<Object> {
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
-    @SuppressWarnings("null")       // Many false positives in this method.
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
@@ -613,9 +612,9 @@ format:                     for (final DefaultAttributeType<?> ct : ((DefaultAtt
                                 Collection<?> cv = CollectionsExt.singletonOrEmpty(ct.getDefaultValue());
                                 if (feature != null) {
                                     /*
-                                     * Usually, the property 'cp' below is null because all features use the same
+                                     * Usually, the property `cp` below is null because all features use the same
                                      * characteristic value (for example the same unit of measurement),  which is
-                                     * given by the default value 'cv'.  Nevertheless we have to check if current
+                                     * given by the default value `cv`.  Nevertheless we have to check if current
                                      * feature overrides this characteristic.
                                      */
                                     final Object cp = feature.getProperty(propertyType.getName().toString());

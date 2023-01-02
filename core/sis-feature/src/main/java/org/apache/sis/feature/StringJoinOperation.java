@@ -95,6 +95,7 @@ final class StringJoinOperation extends AbstractOperation {
          * array if the property was an attribute instead of an association. For formatting the feature
          * identifier, we need to use the inverse of that converter.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final ObjectConverter<? super String, ?> converter;
 
         /** Creates a new wrapper over the given converter. */
@@ -132,6 +133,7 @@ final class StringJoinOperation extends AbstractOperation {
      * the inverse conversion is often a simple call to {@link Object#toString()}, so there
      * is a risk that some of the latter converters do not bother to remember their inverse.</p>
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ObjectConverter<? super String, ?>[] converters;
 
     /**

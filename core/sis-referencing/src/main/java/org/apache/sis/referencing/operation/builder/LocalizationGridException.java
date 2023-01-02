@@ -52,6 +52,7 @@ public class LocalizationGridException extends FactoryDataException {
      *
      * @see #getPotentialCause()
      */
+    @SuppressWarnings("serial")             // String and most InternationalString are serializable.
     private CharSequence potentialCause;
 
     /**

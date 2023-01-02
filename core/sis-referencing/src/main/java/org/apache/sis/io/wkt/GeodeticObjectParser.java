@@ -1888,7 +1888,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
      * @throws ParseException if the {@code "VerticalCRS"} element cannot be parsed.
      */
-    @SuppressWarnings("null")
     private SingleCRS parseVerticalCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
     {

@@ -59,13 +59,13 @@ class DerivedScalar<Q extends Quantity<Q>> extends Scalar<Q> {
      * and its system unit (stored in super-class) is something more complex than a scale
      * factor, otherwise we would not need this {@code DerivedScalar}.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private final Unit<Q> derivedUnit;
 
     /**
      * Converter from the system unit to the unit of this quantity.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private final UnitConverter fromSystem;
 
     /**

@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Johann Sorel (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see MathTransforms#interpolate(double[], double[])
  *
@@ -76,6 +76,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
      * If the transform is invertible, the inverse. Otherwise {@code null}.
      * The transform is invertible only if values are in increasing order.
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final MathTransform1D inverse;
 
     /**
@@ -91,7 +92,7 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
         this.values = values;                           // Cloning this array is caller's responsibility.
         double last = values[0];
         for (int i=1; i<values.length; i++) {
-            if (!(last <= (last = values[i]))) {        // Use '!' for catching NaN values.
+            if (!(last <= (last = values[i]))) {        // Use `!` for catching NaN values.
                 inverse = null;                         // Transform is not reversible.
                 return;
             }
@@ -116,15 +117,15 @@ final class LinearInterpolator1D extends AbstractMathTransform1D implements Seri
          * return a one-dimensional affine transform instead of an interpolator.
          * We need to perform this check before the sign reversal applied after this loop.
          */
-        double value;
+        double value, tolerance;
         int i = 0;
         do {
             if (++i >= n) {
                 return LinearTransform1D.create(slope, offset);
             }
             value = values[i];
-        } while (Numerics.epsilonEqual(value, offset + slope*i,     // TODO: use Math.fma with JDK9.
-                        Math.max(Math.abs(value), as) * Numerics.COMPARISON_THRESHOLD));
+            tolerance = Math.max(Math.abs(value), as) * Numerics.COMPARISON_THRESHOLD;
+        } while (Numerics.epsilonEqual(value, Math.fma(i, slope, offset), tolerance));
         /*
          * If the values are in decreasing order, reverse their sign so we get increasing order.
          * We will multiply the results by -1 after the transformation.

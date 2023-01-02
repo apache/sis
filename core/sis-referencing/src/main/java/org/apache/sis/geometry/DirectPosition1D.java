@@ -52,6 +52,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     /**
      * The coordinate reference system for this position;
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private CoordinateReferenceSystem crs;
 
     /**

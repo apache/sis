@@ -88,6 +88,7 @@ final class EnvelopeOperation extends AbstractOperation {
      * Note that this is the CRS desired by user of this {@link EnvelopeOperation};
      * it may be unrelated to the CRS of stored geometries.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     final CoordinateReferenceSystem targetCRS;
 
     /**
@@ -106,6 +107,7 @@ final class EnvelopeOperation extends AbstractOperation {
      * implementations of {@link DenseFeature} and {@link SparseFeature} have a "all of nothing" behavior anyway.
      * So there is no performance gain to expect from a fine-grained knowledge of which properties declare a CRS.
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final CoordinateOperation[] attributeToCRS;
 
     /**

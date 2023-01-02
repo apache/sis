@@ -864,7 +864,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
-    @SuppressWarnings("null")
     private void addContentInfo() {
         /*
          * Prepare a list of features and coverages, but without writing metadata now.

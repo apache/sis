@@ -302,11 +302,11 @@ public class MetadataWriter extends MetadataSource {
                 }
                 /*
                  * We have found a column to add. Check if the column actually needs to be added to the parent table
-                 * (if such parent exists). In most case, the answer is "no" and 'addTo' is equal to 'table'.
+                 * (if such parent exists). In most case, the answer is "no" and `addTo` is equal to `table`.
                  */
                 String addTo = table;
                 if (helper.dialect.supportsTableInheritance) {
-                    @SuppressWarnings("null")
+                    @SuppressWarnings("null")     // `colTables` is initialized in same time than `colTypes`.
                     final Class<?> declaring = colTables.get(column);
                     if (!interfaceType.isAssignableFrom(declaring)) {
                         addTo = getTableName(declaring);
@@ -403,7 +403,7 @@ public class MetadataWriter extends MetadataSource {
         /*
          * Process all dependencies now. This block may invoke this method recursively.
          * Once a dependency has been added to the database, the corresponding value in
-         * the 'asMap' HashMap is replaced by the identifier of the dependency we just added.
+         * the `asMap` HashMap is replaced by the identifier of the dependency we just added.
          */
         Map<String,FKey> referencedTables = null;
         for (final Map.Entry<String,Object> entry : asSingletons.entrySet()) {

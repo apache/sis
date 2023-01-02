@@ -158,7 +158,6 @@ public final class NTv2 extends AbstractProvider {
      * @param  file      name of the datum shift grid file to load.
      * @param  version   the expected version (1 or 2).
      */
-    @SuppressWarnings("null")
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
             final Path file, final int version) throws FactoryException
     {
@@ -567,7 +566,7 @@ public final class NTv2 extends AbstractProvider {
                     ty[i] = (float) (buffer.getFloat() / dy);   // Division by dx and dy because isCellValueRatio = true.
                     tx[i] = (float) (buffer.getFloat() / dx);
                     final double accuracy = Math.min(buffer.getFloat() / dy, buffer.getFloat() / dx);
-                    if (accuracy > 0 && !(accuracy >= data.accuracy)) {     // Use '!' for replacing the initial NaN.
+                    if (accuracy > 0 && !(accuracy >= data.accuracy)) {     // Use `!` for replacing the initial NaN.
                         data.accuracy = accuracy;                           // Smallest non-zero accuracy.
                     }
                 }

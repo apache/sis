@@ -196,6 +196,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @see #getTargetDatum()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final GeodeticDatum targetDatum;
 
     /**
@@ -204,6 +205,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @see #getDomainOfValidity()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final Extent domainOfValidity;
 
     /**

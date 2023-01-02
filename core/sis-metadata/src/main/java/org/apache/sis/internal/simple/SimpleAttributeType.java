@@ -44,6 +44,7 @@ public final class SimpleAttributeType<V> implements Type, Serializable {
     /**
      * The name for this attribute type.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final TypeName name;
 
     /**

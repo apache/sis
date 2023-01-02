@@ -1496,7 +1496,6 @@ search:         for (int j=domain(); --j >= 0;) {
      * some codes may not work anymore. Search for {@code isAffine()} statements for locating codes
      * that depend on affine transform assumption.</p>
      */
-    @SuppressWarnings("serial")
     private MatrixSIS fit() throws FactoryException {
         final double[][] sources = this.sources;                    // Protect from changes.
         final double[][] targets = this.targets;

@@ -2838,7 +2838,6 @@ next:                   while (r.next()) {
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
-    @SuppressWarnings("null")
     public synchronized CoordinateOperation createCoordinateOperation(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {

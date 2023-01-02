@@ -74,6 +74,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * The coordinate reference system, or {@code null}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     CoordinateReferenceSystem crs;
 
     /**

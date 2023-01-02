@@ -209,7 +209,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         private static final long serialVersionUID = 3499911507293121425L;
 
         /** The inverse of {@link #keyConverter}. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         protected final ObjectConverter<K,SK> keyInverse;
 
         InvertibleKey(final Map<SK,SV> storage,
@@ -253,7 +253,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         private static final long serialVersionUID = -8290698486357636366L;
 
         /** The inverse of {@link #valueConverter}. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ObjectConverter<V,SV> valueInverse;
 
         InvertibleValue(final Map<SK,SV> storage,
@@ -285,7 +285,7 @@ class DerivedMap<SK,SV,K,V> extends AbstractMap<K,V> implements
         private static final long serialVersionUID = -6625938922337246124L;
 
         /** The inverse of {@link #valueConverter}. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ObjectConverter<V,SV> valueInverse;
 
         /** The inverse of this entry converter. */

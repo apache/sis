@@ -470,7 +470,7 @@ fill:   for (int i=0; ; i++) {
             if (name == null) {
                 name = resources.getString(nameKey);
             }
-            @SuppressWarnings("null")
+            @SuppressWarnings("null")   // `section` is non-null because of initially non-null `newSection`.
             final TreeTable.Node node = section.newChild();
             node.setValue(NAME, name);
             if (children != null) {

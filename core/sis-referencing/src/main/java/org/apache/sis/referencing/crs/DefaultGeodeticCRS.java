@@ -84,6 +84,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private GeodeticDatum datum;
 
     /**

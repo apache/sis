@@ -833,7 +833,7 @@ public abstract class AbstractFeature implements Serializable {
      * Notifies that the comparison of {@code this} feature is finished.
      */
     final void comparisonEnd() {
-        if (COMPARING.get().remove(this) != Boolean.TRUE) {
+        if (!Boolean.TRUE.equals(COMPARING.get().remove(this))) {
             throw new AssertionError();     // Should never happen.
         }
     }

@@ -51,7 +51,7 @@ class UnaryFunction<R,V> extends Node {
      *
      * @see #getExpression()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, ? extends V> expression;
 
     /**

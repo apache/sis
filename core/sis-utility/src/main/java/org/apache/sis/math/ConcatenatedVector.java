@@ -38,6 +38,7 @@ final class ConcatenatedVector extends Vector implements Serializable {
     /**
      * The vectors to concatenate.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Vector first, second;
 
     /**

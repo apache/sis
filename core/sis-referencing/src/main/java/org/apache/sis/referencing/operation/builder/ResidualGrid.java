@@ -123,6 +123,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * inverse of {@link #getCoordinateToGrid()}. But in this {@code ResidualGrid} case, we need to override with
      * the linear regression computed by {@link LocalizationGridBuilder}.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     final LinearTransform gridToTarget;
 
     /**

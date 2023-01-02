@@ -52,6 +52,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
     /**
      * The expression giving the geometries.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, GeometryWrapper<G>> geometry1, geometry2;
 
     /**
@@ -150,6 +151,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
         /**
          * The first argument after the geometries.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final Expression<? super R, ?> argument;
 
         /**

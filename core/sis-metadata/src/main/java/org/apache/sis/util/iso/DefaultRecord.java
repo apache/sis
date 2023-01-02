@@ -72,7 +72,7 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * The type definition of this record. Cannot be {@code null}.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final RecordDefinition definition;
 
     /**

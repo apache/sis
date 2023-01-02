@@ -56,6 +56,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     /**
      * The global transform to use if there is no suitable specialization.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final MathTransform global;
 
     /**
@@ -73,6 +74,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         /**
          * The transform to apply in this area.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final MathTransform transform;
 
         /**
@@ -81,6 +83,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
          *
          * @see #createInverseTransform()
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         MathTransform inverse;
 
         /**
@@ -140,6 +143,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
      *
      * @see #inverse()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private MathTransform inverse;
 
     /**
@@ -533,6 +537,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         /**
          * The inverse of {@link SpecializableTransform#global}.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final MathTransform global;
 
         /**

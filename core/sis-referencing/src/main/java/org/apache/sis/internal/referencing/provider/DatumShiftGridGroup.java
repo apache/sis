@@ -57,7 +57,7 @@ import org.apache.sis.util.collection.Containers;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
@@ -73,6 +73,9 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      */
     @SuppressWarnings("CloneableImplementsClone")
     private static final class Region extends IntervalRectangle {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -2925837396412170681L;
+
         /** Subsampling compared to the grid having finest resolution. */
         private final double sx, sy;
 

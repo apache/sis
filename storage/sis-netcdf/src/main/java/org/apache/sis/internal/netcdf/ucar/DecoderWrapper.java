@@ -452,7 +452,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @throws DataStoreException if the library of geometric objects is not available.
      */
     @Override
-    @SuppressWarnings("null")
     public DiscreteSampling[] getDiscreteSampling(final DataStore lock) throws IOException, DataStoreException {
         final FeatureDataset features = getFeatureDataSet();
         if (features instanceof FeatureDatasetPoint) {

@@ -74,6 +74,7 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      *
      * @see #unit()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Unit<?> unit;
 
     /**

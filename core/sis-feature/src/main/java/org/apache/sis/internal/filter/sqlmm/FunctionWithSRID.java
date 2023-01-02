@@ -58,6 +58,7 @@ abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
     /**
      * The expression giving the spatial reference system identifier, or {@code null} if none.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, ?> srid;
 
     /**

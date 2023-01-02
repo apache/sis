@@ -166,6 +166,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @see #getEllipsoid()
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private Ellipsoid ellipsoid;
 
     /**
@@ -176,6 +177,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @see #getPrimeMeridian()
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private PrimeMeridian primeMeridian;
 
     /**

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.index.tree;
 
-import java.io.Serializable;
 import java.util.Optional;
 import java.util.AbstractSet;
 import java.util.Collection;
@@ -73,13 +72,18 @@ import org.apache.sis.util.collection.CheckedContainer;
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <E>  the type of elements stored in this tree.
  *
  * @since 1.1
  */
-public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>, Serializable {
+public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> {
+    /*
+     * We do not declare this class as Serializable because we would need to serialize
+     * the lambda function `Locator`. While technically possible, this is not recommended.
+     */
+
     /**
      * Provides the coordinates of any element stored in {@link PointTree}.
      *
@@ -96,11 +100,6 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E>,
          */
         void getPositionOf(E element, double[] dest);
     }
-
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 488727778652772913L;
 
     /**
      * The maximum number of dimensions (inclusive) that this class currently supports.

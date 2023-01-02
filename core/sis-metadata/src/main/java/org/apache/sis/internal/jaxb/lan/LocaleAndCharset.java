@@ -350,7 +350,6 @@ public final class LocaleAndCharset implements Node {
      * @param  newValues  the new languages.
      * @return the given map, or a new map if necessary and the given map was null.
      */
-    @SuppressWarnings("null")
     public static Map<Locale,Charset> setLanguages(Map<Locale,Charset> locales, final Collection<? extends Locale> newValues) {
         final Charset encoding = (locales != null) ? CollectionsExt.first(locales.values()) : null;
         if (newValues == null || newValues.isEmpty()) {
@@ -369,8 +368,9 @@ public final class LocaleAndCharset implements Node {
         /*
          * If an encoding was defined before invocation of this method and is not associated to any
          * locale specified in `newValues`, preserve that encoding in an entry with null locale.
+         * Note: `locales` is non-null if `encoding` is non-null.
          */
-        if (encoding != null && !locales.values().contains(encoding)) {     // `locales` is non-null if `encoding` is non-null.
+        if (encoding != null && !locales.values().contains(encoding)) {
             locales.put(null, encoding);
         }
         return locales;

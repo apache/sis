@@ -49,6 +49,7 @@ import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -62,6 +63,7 @@ import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
@@ -113,7 +115,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)
  *
@@ -498,16 +500,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      *       for the area of interest.</li>
      * </ul>
      *
-     * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
+     * This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
      * But a list is returned because the same step may be implemented by different operation methods. Only one element
-     * in the returned list should be selected (usually the first one).</p>
+     * in the returned list should be selected (usually the first one).
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation cannot be constructed.
      */
-    @SuppressWarnings("null")
     protected List<CoordinateOperation> createOperationStep(final GeodeticCRS sourceCRS,
                                                             final GeodeticCRS targetCRS)
             throws FactoryException
@@ -871,9 +872,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * This "epoch shift" is in units of `targetCRS`.
          */
         final Unit<Time> targetUnit = targetCS.getAxis(0).getUnit().asType(Time.class);
-        double epochShift = sourceDatum.getOrigin().getTime() -
-                            targetDatum.getOrigin().getTime();
-        epochShift = Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift);
+        DoubleDouble epochShift = new DoubleDouble(sourceDatum.getOrigin().getTime());
+        epochShift.subtract(new DoubleDouble(targetDatum.getOrigin().getTime()));
+        epochShift = DoubleDouble.castOrCopy(Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift));
         /*
          * Check axis directions. The method `swapAndScaleAxes` should returns a matrix of size 2×2.
          * The element at index (0,0) may be +1 if source and target axes are in the same direction,
@@ -883,15 +884,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          *
          * The "epoch shift" previously computed is a translation. Consequently, it is added to element (0,1).
          */
-        final Matrix matrix;
+        final MatrixSIS matrix;
         try {
-            matrix = CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS);
+            matrix = MatrixSIS.castOrCopy(CoordinateSystems.swapAndScaleAxes(sourceCS, targetCS));
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
-        final double translation = matrix.getElement(0, translationColumn);
-        matrix.setElement(0, translationColumn, translation + epochShift);
+        final DoubleDouble translation = DoubleDouble.castOrCopy(matrix.getNumber(0, translationColumn));
+        translation.add(epochShift);
+        matrix.setNumber(0, translationColumn, translation);
         return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
     }
 

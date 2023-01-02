@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.referencing.Formulas;
 
 import static java.lang.Math.*;
 
@@ -27,7 +28,7 @@ import static java.lang.Math.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Meridian_arc">Meridian arc on Wikipedia</a>
  *
@@ -113,12 +114,12 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * of 2, which result in exact representations in IEEE 754 double type. Derivation from Kawase formula can be
          * viewed at: https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods
          */
-        cf0 =  -441./0x10000 * e10  +  -175./0x4000  * e8  +    -5./0x100   * e6  +   -3./0x40 * e4  +  -1./4 * e2  +  1;
-        cf1 =  1575./0x20000 * e10  +   175./0x4000  * e8  +     5./0x100   * e6  +    3./0x40 * e4  +  -3./4 * e2;
-        cf2 = -2625./0x8000  * e10  +   175./0x6000  * e8  +  5120./0x60000 * e6  +  -15./0x20 * e4;
-        cf3 =   735./0x800   * e10  +  2240./0x60000 * e8  +   -35./0x60    * e6;
-        cf4 = -2205./0x1000  * e10  +  -315./0x400   * e8;
-     // cf5 =   693./0x20000 * e10  omitted for now (not yet used).
+        cf0 = fma(e2, -1./4, fma(e4,  -3./0x40, fma(e6,   -5./0x100,   fma(e8, -175./0x4000,  e10*( -441./0x10000))))) + 1;
+        cf1 = fma(e2, -3./4, fma(e4,   3./0x40, fma(e6,    5./0x100,   fma(e8,  175./0x4000,  e10*( 1575./0x20000)))));
+        cf2 =                fma(e4, -15./0x20, fma(e6, 5120./0x60000, fma(e8,  175./0x6000,  e10*(-2625./0x8000))));
+        cf3 =                                   fma(e6,  -35./0x60,    fma(e8, 2240./0x60000, e10*(  735./0x800)));
+        cf4 =                                                          fma(e8, -315./0x400,   e10*(-2205./0x1000));
+     // cf5 =         /* omitted for now (not yet used) */                                    e10*(  693./0x20000);
         /*
          * Coefficients for inverse transform derived from Snyder 3-26 and EPSG guidance notes:
          *
@@ -134,17 +135,19 @@ abstract class MeridianArcBased extends NormalizedProjection {
          * µ is the rectifying latitude.
          * Derivation of coefficients used by this class are provided in the above-cited spreadsheet.
          */
-        rµ = (1 - 1./4*e2 - 3./64*e4 - 5./256*e6);        // Part of Snyder 7-19 for computing rectifying latitude.
+        rµ = fma(e6, -5./256,
+             fma(e4, -3./64,
+             fma(e2, -1./4, 1)));                         // Part of Snyder 7-19 for computing rectifying latitude.
         DoubleDouble e1 = initializer.axisLengthRatio();
         e1.ratio_1m_1p();
         final double ei  = e1.doubleValue();              // Equivalent to [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]   (Snyder 3-24).
         final double ei2 = ei*ei;
         final double ei3 = ei*ei2;
         final double ei4 = ei2*ei2;
-        ci1 =   657./0x40 * ei4  +    31./4 * ei3  +   21./4 * ei2  +  3./1 * ei;
-        ci2 = -5045./0x20 * ei4  +  -151./3 * ei3  +  -21./2 * ei2;
-        ci3 =  3291./0x08 * ei4  +   151./3 * ei3;
-        ci4 = -1097./0x04 * ei4;
+        ci1 = fma(ei4,    657./0x40, fma(ei3,   31./4, fma(ei2,  21./4, ei*(3./1))));
+        ci2 = fma(ei4,  -5045./0x20, fma(ei3, -151./3,     ei2*(-21./2)));
+        ci3 = fma(ei4,   3291./0x08,     ei3* (151./3));
+        ci4 =     ei4* (-1097./0x04);
     }
 
     /**
@@ -183,7 +186,11 @@ abstract class MeridianArcBased extends NormalizedProjection {
      */
     final double distance(final double φ, final double sinφ, final double cosφ) {
         final double sinφ2 = sinφ * sinφ;
-        return cf0*φ + cosφ*sinφ*(cf1 + sinφ2*(cf2 + sinφ2*(cf3 + sinφ2*cf4)));     // TODO: use Math.fma with JDK9.
+        if (Formulas.USE_FMA) {
+            return fma(cosφ*sinφ, fma(sinφ2, fma(sinφ2, fma(sinφ2, cf4, cf3), cf2), cf1), cf0*φ);
+        } else {
+            return cf0*φ + cosφ*sinφ*(cf1 + sinφ2*(cf2 + sinφ2*(cf3 + sinφ2*cf4)));
+        }
     }
 
     /**
@@ -192,11 +199,19 @@ abstract class MeridianArcBased extends NormalizedProjection {
      * @return the derivative at the specified latitude.
      */
     final double dM_dφ(final double sinφ2) {
-        return ((((7 - 8*sinφ2)*cf4 - 6*cf3) * sinφ2
-                            + 5*cf3 - 4*cf2) * sinφ2
-                            + 3*cf2 - 2*cf1) * sinφ2
-                            +   cf1
-                            +   cf0;
+        if (Formulas.USE_FMA) {
+            return fma(fma(fma(fma(fma(-8, sinφ2, 7),
+                      cf4, -6*cf3), sinφ2,
+                    5*cf3 - 4*cf2), sinφ2,
+                    3*cf2 - 2*cf1), sinφ2,
+                      cf1)  + cf0;
+        } else {
+            return ((((7 + -8*sinφ2)*cf4 - 6*cf3) * sinφ2
+                                 + 5*cf3 - 4*cf2) * sinφ2
+                                 + 3*cf2 - 2*cf1) * sinφ2
+                                 +   cf1
+                                 +   cf0;
+        }
     }
 
     /**
@@ -207,9 +222,14 @@ abstract class MeridianArcBased extends NormalizedProjection {
      */
     final double latitude(final double distance) {
         double    φ  = distance / rµ;             // Rectifying latitude µ used as first approximation.
+        double cosφ  = cos(φ);
         double sinφ  = sin(φ);
         double sinφ2 = sinφ * sinφ;
-        φ += cos(φ)*sinφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                 // Snyder 3-26.
+        if (Formulas.USE_FMA) {
+            φ = fma(cosφ*sinφ, fma(sinφ2, fma(sinφ2, fma(sinφ2, ci4, ci3), ci2), ci1), φ);
+        } else {
+            φ += cosφ*sinφ*(ci1 + sinφ2*(ci2 + sinφ2*(ci3 + sinφ2*ci4)));                 // Snyder 3-26.
+        }
         /*
          * We could improve accuracy by continuing from here with Newton's iterative method
          * (see MeridianArcTest.inverse(…) for implementation). However, those iterations requires

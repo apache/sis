@@ -23,7 +23,7 @@
  * {@link org.apache.sis.coverage.grid}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 package org.apache.sis.coverage;

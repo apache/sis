@@ -62,7 +62,6 @@ public final class ExtentsTest extends TestCase {
      * @throws IncommensurableException if a conversion between incompatible units were attempted.
      */
     @Test
-    @SuppressWarnings("null")
     public void testGetVerticalRange() throws IncommensurableException {
         final List<DefaultVerticalExtent> extents = Arrays.asList(
                 new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),

@@ -339,7 +339,6 @@ public abstract class GeocentricAffine extends GeodeticOperation {
         {
             return null;        // Coordinate systems are not two EllipsoidalCS or two CartesianCS.
         }
-        @SuppressWarnings("null")
         int dimension  = sourceCS.getDimension();
         if (dimension != targetCS.getDimension()) {
             dimension  = 4;     // Any value greater than 3 means "mismatched dimensions" for this method.

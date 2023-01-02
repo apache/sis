@@ -157,5 +157,57 @@
             <attribute name="enabled" value="true"/>
             <attribute name="hintSeverity" value="HINT"/>
         </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertToTextBlock">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertTextBlockToString">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.NoLoggers">
+            <attribute name="custom-loggers" value="false"/>
+            <attribute name="custom-loggers-list" value=""/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHintCREATE_FINAL_FIELD_CTOR">
+            <attribute name="create-final-fields-from-ctor" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHintCREATE_LOCAL_VARIABLE">
+            <attribute name="create-local-variables-in-place" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertSwitchToRuleSwitch">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertToNestedRecordPattern">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertToSwitchPatternInstanceOf">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHintSURROUND_WITH_TRY_CATCH">
+            <attribute name="surround-try-catch-rethrow" value="false"/>
+            <attribute name="surround-try-catch-java-util-logging-Logger" value="true"/>
+            <attribute name="surround-try-catch-rethrow-runtime" value="false"/>
+            <attribute name="surround-try-catch-org-openide-util-Exceptions" value="true"/>
+            <attribute name="surround-try-catch-printStackTrace" value="true"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertToPatternInstanceOf">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.AddUnderscores">
+            <attribute name="size-binary" value="4"/>
+            <attribute name="size-hexadecimal" value="4"/>
+            <attribute name="size-decimal" value="3"/>
+            <attribute name="also-with-underscores" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.jdk.ConvertToRecordPattern">
+            <attribute name="enabled" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.errors.ErrorFixesFakeHintIMPORT_CLASS">
+            <attribute name="organize-import-class" value="false"/>
+        </node>
+        <node name="org.netbeans.modules.java.hints.bugs.NPECheck">
+            <attribute name="unboxing-unknown" value="true"/>
+            <attribute name="enable-for-fields" value="false"/>
+            <attribute name="enabled" value="false"/>
+        </node>
     </tool>
 </configuration>

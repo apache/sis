@@ -41,7 +41,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn({
@@ -106,6 +106,7 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {NORTH, EAST, UP},
                 new AxisDirection[] {NORTH, EAST, UP});
 
+        assertExtendedPrecision(matrix);
         assertTrue ("isAffine",   matrix.isAffine());
         assertTrue ("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 4, matrix.getNumRow());
@@ -128,6 +129,7 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {NORTH, EAST, UP},
                 new AxisDirection[] {WEST, UP, SOUTH});
 
+        assertExtendedPrecision(matrix);
         assertTrue ("isAffine",   matrix.isAffine());
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 4, matrix.getNumRow());
@@ -155,6 +157,7 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {NORTH, EAST, UP},
                 new AxisDirection[] {DOWN, NORTH});
 
+        assertExtendedPrecision(matrix);
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
@@ -180,6 +183,7 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {NORTH, EAST, UP},
                 new AxisDirection[] {DOWN, DOWN});
 
+        assertExtendedPrecision(matrix);
         assertFalse("isIdentity", matrix.isIdentity());
         assertEquals("numRow", 3, matrix.getNumRow());
         assertEquals("numCol", 4, matrix.getNumCol());
@@ -240,6 +244,19 @@ public final class MatricesTest extends TestCase {
         if (!message.contains(label)) {
             fail("Direction \"" + label + "\" not found in error message: " + message);
         }
+    }
+
+    /**
+     * Asserts that the given matrix uses extended precision. This is mandatory for all matrices
+     * returned by {@link Matrices#createTransform(AxisDirection[], AxisDirection[])} because
+     * {@code CoordinateSystems.swapAndScaleAxes(…)} will modify those matrices in-place with
+     * the assumption that they accept extended precision.
+     *
+     * @param  matrix  the matrix to test.
+     */
+    private static void assertExtendedPrecision(final Matrix matrix) {
+        assertTrue(matrix instanceof GeneralMatrix);
+        assertTrue(((GeneralMatrix) matrix).isExtendedPrecision());
     }
 
     /**

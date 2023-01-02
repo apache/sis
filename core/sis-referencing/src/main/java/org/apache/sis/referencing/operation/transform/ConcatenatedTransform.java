@@ -84,11 +84,13 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * The first math transform.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     protected final MathTransform transform1;
 
     /**
      * The second math transform.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     protected final MathTransform transform2;
 
     /**
@@ -98,6 +100,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @see #inverse()
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private MathTransform inverse;
 
     /**

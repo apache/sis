@@ -429,7 +429,6 @@ public abstract class TypeBuilder implements Localized {
      * @return element of the given name, or {@code null} if none were found.
      * @throws IllegalArgumentException if the given name is ambiguous.
      */
-    @SuppressWarnings("null")
     final <E extends TypeBuilder> E forName(final List<E> types, final String name, final boolean nonAmbiguous) {
         E best      = null;                     // Best type found so far.
         E ambiguity = null;                     // If two types are found at the same depth, the other type.

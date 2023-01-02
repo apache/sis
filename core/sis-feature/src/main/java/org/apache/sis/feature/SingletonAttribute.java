@@ -55,6 +55,7 @@ final class SingletonAttribute<V> extends AbstractAttribute<V> implements Clonea
     /**
      * The attribute value, or {@code null} if none.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private V value;
 
     /**

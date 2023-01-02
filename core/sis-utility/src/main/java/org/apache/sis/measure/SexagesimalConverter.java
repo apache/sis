@@ -126,7 +126,7 @@ class SexagesimalConverter extends AbstractConverter {
     /**
      * The inverse of this converter.
      */
-    private final UnitConverter inverse;
+    private final SexagesimalConverter inverse;
 
     /**
      * Constructs a converter for sexagesimal units.

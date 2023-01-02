@@ -141,6 +141,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * The transform to apply before and after the geocentric translation. Shall be instance of
      * {@link EllipsoidToCentricTransform} and {@code EllipsoidToCentricTransform.Inverse} respectively.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final AbstractMathTransform ellipsoidToCentric, centricToEllipsoid;
 
     /**

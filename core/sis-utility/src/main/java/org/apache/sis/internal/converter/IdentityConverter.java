@@ -29,7 +29,7 @@ import org.apache.sis.math.FunctionProperty;
  * This class is immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @param <S>  the base type of source objects.
  * @param <T>  the base type of converted objects.
@@ -47,7 +47,7 @@ public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T
     /**
      * The inverse converter specified at construction time, or {@code null} if none.
      */
-    private final ObjectConverter<T, S> inverse;
+    private final SystemConverter<T, S> inverse;
 
     /**
      * Creates a new identity converter.
@@ -58,11 +58,11 @@ public final class IdentityConverter<S extends T, T> extends SystemConverter<S,T
      */
     @SuppressWarnings("unchecked")
     public IdentityConverter(final Class<S> sourceClass, final Class<T> targetClass,
-            ObjectConverter<T, S> inverse)
+            SystemConverter<T, S> inverse)
     {
         super(sourceClass, targetClass);
         if (inverse == null && sourceClass == targetClass) {
-            inverse = (ObjectConverter<T,S>) this;
+            inverse = (SystemConverter<T,S>) this;
         }
         this.inverse = inverse;
     }

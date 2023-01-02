@@ -37,6 +37,7 @@ import org.apache.sis.internal.util.Numerics;
  *
  * @since 1.1
  */
+@SuppressWarnings("CloneableImplementsClone")
 class NodeIterator<E> implements Spliterator<E>, Cloneable {
     /**
      * Sentinel value meaning that iteration is over.

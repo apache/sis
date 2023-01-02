@@ -184,7 +184,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         private static final long serialVersionUID = -5120203649333919221L;
 
         /** The original expression. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final Expression<R,?> original;
 
         /** Creates a new literal holding the given constant value. */

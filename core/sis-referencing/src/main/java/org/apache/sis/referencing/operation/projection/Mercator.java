@@ -242,12 +242,6 @@ public class Mercator extends ConformalProjection {
         super(initializer);
         variant = (Variant) initializer.variant;
         /*
-         * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
-         * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
-         * for now; it will be converted to radians later.
-         */
-        final double λ0 = initializer.getAndStore(Mercator1SP.LONGITUDE_OF_ORIGIN);
-        /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
          * that the value must be zero. The EPSG dataset provides this parameter for "Mercator variant A" (1SP),

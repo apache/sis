@@ -66,7 +66,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     @Test
     public void testExtendedPrecision() {
         final long value = 1000000000000010000L;
-        assertNotEquals(value, Math.round((double) value));
+        assertNotEquals(value, StrictMath.round((double) value));
         final GeneralMatrix m = new GeneralMatrix(1, 1, false, 2);
         final DoubleDouble ddval = new DoubleDouble((Long) value);
         m.setNumber(0, 0, ddval);
@@ -155,7 +155,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     @Test
     public void testTranslateVector() {
         testTranslateVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
-//      testTranslateVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
-        // TODO: revisit commented-out test after using Math.fma with JDK9.
+        testTranslateVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
     }
 }

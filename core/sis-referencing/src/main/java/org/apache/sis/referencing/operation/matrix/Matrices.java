@@ -212,8 +212,9 @@ public final class Matrices extends Static {
          * Below is an intantionally undocumented feature. We use those sentinel values as a way to create
          * matrices with extended precision without exposing our double-double arithmetic in public API.
          */
-        if (elements == ExtendedPrecisionMatrix.IDENTITY || elements == ExtendedPrecisionMatrix.ZERO) {
-            return GeneralMatrix.createExtendedPrecision(numRow, numCol, elements == ExtendedPrecisionMatrix.IDENTITY);
+        final boolean setToIdentity = (elements == ExtendedPrecisionMatrix.IDENTITY);
+        if (setToIdentity || elements == ExtendedPrecisionMatrix.ZERO) {
+            return GeneralMatrix.createExtendedPrecision(numRow, numCol, setToIdentity);
         }
         final GeneralMatrix matrix = GeneralMatrix.createExtendedPrecision(numRow, numCol, false);
         if (matrix.setElements(elements)) {
@@ -234,7 +235,6 @@ public final class Matrices extends Static {
      * @param useEnvelopes {@code true} if source and destination envelopes shall be taken in account.
      *        If {@code false}, then source and destination envelopes will be ignored and can be null.
      */
-    @SuppressWarnings("null")
     private static MatrixSIS createTransform(final Envelope srcEnvelope, final AxisDirection[] srcAxes,
                                              final Envelope dstEnvelope, final AxisDirection[] dstAxes,
                                              final boolean useEnvelopes)
@@ -252,7 +252,7 @@ public final class Matrices extends Static {
          * enough because callers in other package may perform additional arithmetic operations
          * on it (for example org.apache.sis.referencing.cs.CoordinateSystems.swapAndScaleAxes).
          */
-        final MatrixSIS matrix = new GeneralMatrix(dstAxes.length+1, srcAxes.length+1, false, 2);
+        final MatrixSIS matrix = GeneralMatrix.createExtendedPrecision(dstAxes.length+1, srcAxes.length+1, false);
         /*
          * Maps source axes to destination axes. If no axis is moved (for example if the user
          * want to transform (NORTH,EAST) to (SOUTH,EAST)), then source and destination index
@@ -403,10 +403,9 @@ public final class Matrices extends Static {
      *       then an exception will be thrown.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * it is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>) to
-     * (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
-     * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).</div>
+     * For example, it is legal to transform from (<i>easting</i>, <i>northing</i>, <i>up</i>)
+     * to (<i>easting</i>, <i>northing</i>) — this is the first above case — but illegal
+     * to transform (<i>easting</i>, <i>northing</i>) to (<i>easting</i>, <i>up</i>).
      *
      * <h4>Example</h4>
      * The following method call:
@@ -443,8 +442,10 @@ public final class Matrices extends Static {
             /*
              * createTransform(…) may fail if the arrays contain two axes with the same direction, for example
              * AxisDirection.OTHER. This check prevents that failure for the common case of an identity transform.
+             * The returned matrix must use extended precision for reason documented in `createTransform(…)`.
              */
-            return Matrices.createIdentity(srcAxes.length + 1);
+            final int n = srcAxes.length + 1;
+            return new GeneralMatrix(n, n, true, 2);
         }
         return createTransform(null, srcAxes, null, dstAxes, false);
     }
@@ -643,16 +644,16 @@ public final class Matrices extends Static {
         int targetDimensions = subMatrix.getNumRow();
         /*
          * Get data from the source matrix, together with the error terms if present.
-         * The 'stride' and 'length' values will be used for computing indices in that array.
+         * The `stride` and `length` values will be used for computing indices in that array.
          * The DoubleDouble temporary object is used only if the array contains error terms.
          */
-        final int      stride  = sourceDimensions;
-        final int      length  = sourceDimensions * targetDimensions;
-        final double[] sources = getExtendedElements(subMatrix);
-        final DoubleDouble transfer = (sources.length > length) ? new DoubleDouble() : null;
-        final MatrixSIS matrix = createZero(targetDimensions-- + expansion,
-                                            sourceDimensions-- + expansion,
-                                            transfer != null);
+        final int       stride   = sourceDimensions;
+        final int       length   = sourceDimensions * targetDimensions;
+        final double[]  sources  = getExtendedElements(subMatrix);
+        final var       transfer = (sources.length > length) ? new DoubleDouble() : null;
+        final MatrixSIS matrix   = createZero(targetDimensions-- + expansion,
+                                              sourceDimensions-- + expansion,
+                                              transfer != null);
         /*
          * Following code processes from upper row to lower row.
          * First, set the diagonal elements on leading new dimensions.
@@ -675,7 +676,7 @@ public final class Matrices extends Static {
                 targetDimensions,        1);                            // Copy some rows of only 1 column.
         /*
          * Set the pseudo-diagonal elements on the trailing new dimensions.
-         * 'diff' is zero for a square matrix and non-zero for rectangular matrix.
+         * `diff` is zero for a square matrix and non-zero for rectangular matrix.
          */
         final int diff = targetDimensions - sourceDimensions;
         for (int i=lastColumn - numTrailingCoordinates; i<lastColumn; i++) {
@@ -787,13 +788,13 @@ public final class Matrices extends Static {
         if (numRow == srcRow && numCol == srcCol) {
             return matrix;
         }
-        final int      stride  = srcCol;
-        final int      length  = srcCol * srcRow;
-        final double[] sources = getExtendedElements(matrix);
-        final DoubleDouble transfer = (sources.length > length) ? new DoubleDouble() : null;
-        final MatrixSIS resized = createZero(numRow, numCol, transfer != null);
-        final int copyRow = Math.min(--numRow, --srcRow);
-        final int copyCol = Math.min(--numCol, --srcCol);
+        final int       stride   = srcCol;
+        final int       length   = srcCol * srcRow;
+        final double[]  sources  = getExtendedElements(matrix);
+        final var       transfer = (sources.length > length) ? new DoubleDouble() : null;
+        final MatrixSIS resized  = createZero(numRow, numCol, transfer != null);
+        final int       copyRow  = Math.min(--numRow, --srcRow);
+        final int       copyCol  = Math.min(--numCol, --srcCol);
         for (int j=copyRow; j<numRow; j++) {
             resized.setElement(j, j, 1);
         }
@@ -1079,7 +1080,7 @@ public final class Matrices extends Static {
                 if (i == j) {
                     e--;
                 }
-                if (!(Math.abs(e) <= tolerance)) {              // Uses '!' in order to catch NaN values.
+                if (!(Math.abs(e) <= tolerance)) {              // Uses `!` in order to catch NaN values.
                     return false;
                 }
             }
@@ -1273,7 +1274,7 @@ public final class Matrices extends Static {
                         /*
                          * If the number use exponential notation, we will not be allowed to append any zero.
                          * Otherwise we will append some zeros for right-alignment, but without exceeding the
-                         * IEEE 754 'double' accuracy for not giving a false sense of precision.
+                         * IEEE 754 `double` accuracy for not giving a false sense of precision.
                          */
                         if (element.indexOf('E') < 0) {
                             final int accuracy = -DecimalFunctions.floorLog10(Math.ulp(value));

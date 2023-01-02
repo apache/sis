@@ -124,6 +124,7 @@ public class DefaultAttributeType<V> extends FieldType {
      *
      * @see #getDefaultValue()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final V defaultValue;
 
     /**

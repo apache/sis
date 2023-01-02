@@ -64,7 +64,7 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
 
     /**
      * If the conversion can be represented by a polynomial equation, returns the coefficients of that equation.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null}. This is the implementation of {@link Units#coefficients(UnitConverter)}.
      */
     Number[] coefficients() {
         return isIdentity() ? new Number[0] : null;

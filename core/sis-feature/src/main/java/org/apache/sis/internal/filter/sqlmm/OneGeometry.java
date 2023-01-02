@@ -47,7 +47,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
     /**
      * The expression giving the geometry.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, GeometryWrapper<G>> geometry;
 
     /**
@@ -107,6 +107,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
         /**
          * The first argument after the geometry.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final Expression<? super R, ?> argument;
 
         /**

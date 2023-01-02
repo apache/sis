@@ -197,6 +197,7 @@ split:  if (path != null) {
      * put the column name in the SQL {@code WHERE} clause. It makes the difference between
      * using or not the database index.
      */
+    @Override
     public abstract PropertyValue<V> optimize(Optimization optimization);
 
 
@@ -412,7 +413,7 @@ split:  if (path != null) {
         private final Class<S> source;
 
         /** The conversion from source type to the type to be returned. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ObjectConverter<? super S, ? extends V> converter;
 
         /** Creates a new expression retrieving values from a property of the given name. */

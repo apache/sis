@@ -1538,7 +1538,6 @@ public class StorageConnector implements Serializable {
          */
         final Map<AutoCloseable,Boolean> toClose = new IdentityHashMap<>(views.size());
         for (Coupled c : views.values()) {
-            @SuppressWarnings("null")
             Object v = c.view;
             if (v != view) {
                 if (v instanceof AutoCloseable) {

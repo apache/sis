@@ -69,6 +69,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
     /**
      * The expression giving the geometry.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Expression<? super R, GeometryWrapper<G>> geometry;
 
     /**

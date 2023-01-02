@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.j2d;
 
+import java.io.Serializable;
 import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -59,11 +60,14 @@ import org.apache.sis.internal.util.Strings;
  * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.8
  */
 @SuppressWarnings("CloneableImplementsClone")
-public class IntervalRectangle extends Rectangle2D {
+public class IntervalRectangle extends Rectangle2D implements Serializable {
+    /** For cross-version compatibility. */
+    private static final long serialVersionUID = -5921513912411186629L;
+
     /** Minimal <var>x</var> coordinate value. */ public double xmin;
     /** Minimal <var>y</var> coordinate value. */ public double ymin;
     /** Maximal <var>x</var> coordinate value. */ public double xmax;

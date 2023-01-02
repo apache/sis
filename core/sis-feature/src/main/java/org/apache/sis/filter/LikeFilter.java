@@ -45,7 +45,7 @@ final class LikeFilter<R> extends FilterNode<R> implements Optimization.OnFilter
     /**
      * The source of values to compare against the pattern.
      */
-    @SuppressWarnings("serial")                         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Expression<? super R, ?> expression;
 
     /**

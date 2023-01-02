@@ -38,7 +38,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * @version 1.1
  * @since   1.0
  */
-@SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})           // Not intended to serialized.
 final class SampleRangeFormat extends RangeFormat {
     /**
      * Maximum value for {@link #numFractionDigits}. This is the number

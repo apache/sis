@@ -65,6 +65,7 @@ final class RepeatedVector extends Vector implements Serializable {
     /**
      * The vector on which this vector is derived from.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Vector base;
 
     /**
