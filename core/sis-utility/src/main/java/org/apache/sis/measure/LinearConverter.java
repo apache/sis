@@ -291,7 +291,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
         if (!isIdentity()) {
             if (value instanceof DoubleDouble) {
                 var dd = (DoubleDouble) value;
-                return dd.multiply(scale).add(offset).divide(divisor);
+                return dd.multiply(scale, true).add(offset, true).divide(divisor, true);
             }
             if (value instanceof BigInteger) {
                 value = new BigDecimal((BigInteger) value);

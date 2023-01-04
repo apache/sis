@@ -128,11 +128,11 @@ final class Initializer {
         final double fn = getAndStore(roles.get(ParameterRole.FALSE_NORTHING))
                         - getAndStore(roles.get(ParameterRole.FALSE_SOUTHING));
 
-        DoubleDouble k = DoubleDouble.of(a);  // The value by which to multiply all results of normalized projection.
+        DoubleDouble k = DoubleDouble.of(a, true);  // The value by which to multiply all results of normalized projection.
         if (a == b) {
             eccentricitySquared = DoubleDouble.ZERO;
         } else if (variant != null && variant.useAuthalicRadius()) {
-            k = DoubleDouble.of(Formulas.getAuthalicRadius(a, b));
+            k = DoubleDouble.of(Formulas.getAuthalicRadius(a, b), false);
             eccentricitySquared = DoubleDouble.ZERO;
         } else {
             /*
@@ -161,10 +161,10 @@ final class Initializer {
              * constructor applies corrections for making those values more accurate in base 10 rather than 2.
              */
             if (isIvfDefinitive) {
-                var f = DoubleDouble.of(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue()).inverse();
-                eccentricitySquared = f.multiply(2).subtract(f.square());
+                var f = DoubleDouble.of(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue(), true).inverse();
+                eccentricitySquared = f.scalb(1).subtract(f.square());
             } else {
-                eccentricitySquared = DoubleDouble.ONE.subtract(DoubleDouble.of(b).divide(k).square());
+                eccentricitySquared = DoubleDouble.ONE.subtract(DoubleDouble.of(b, true).divide(k).square());
             }
             final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
             if (radius != null) {
@@ -185,7 +185,7 @@ final class Initializer {
                  *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
                  */
                 k = rν2(sin(toRadians(parameters.doubleValue(radius))));
-                k = DoubleDouble.of(b).divide(k);
+                k = DoubleDouble.of(b, true).divide(k);
             }
         }
         /*
@@ -195,7 +195,7 @@ final class Initializer {
          */
         final ParameterDescriptor<? extends Number> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
         if (scaleFactor != null) {
-            k = k.multiply(getAndStore(scaleFactor));
+            k = k.multiply(getAndStore(scaleFactor), true);
         }
         /*
          * Set meridian rotation, scale factor, false easting and false northing parameter values
@@ -203,8 +203,8 @@ final class Initializer {
          */
         context.normalizeGeographicInputs(λ0);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        denormalize.convertAfter(0, k, DoubleDouble.of(fe));
-        denormalize.convertAfter(1, k, DoubleDouble.of(fn));
+        denormalize.convertAfter(0, k, DoubleDouble.of(fe, true));
+        denormalize.convertAfter(1, k, DoubleDouble.of(fn, true));
     }
 
     /**
@@ -277,18 +277,31 @@ final class Initializer {
     }
 
     /**
+     * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid.
+     */
+    final double authalicRadius() {
+        return Formulas.getAuthalicRadius(1, axisLengthRatio().doubleValue());
+    }
+
+    /**
      * Computes the square of the reciprocal of the radius of curvature of the ellipsoid
      * perpendicular to the meridian at latitude φ. That radius of curvature is:
      *
      * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
      *
      * This method returns 1/ν², which is the (1 - ℯ²⋅sin²φ) part of above equation.
-     * Special cases:
+     * In other words, the radius of curvature is 1 / √[rν²(sinφ)].
+     *
+     * <h4>Special cases</h4>
      * <ul>
      *   <li>If φ is 0°, then <var>m</var> is 1.</li>
      *   <li>If φ is ±90°, then <var>m</var> is 0 provided that we are not in the spherical case
      *       (otherwise we get {@link Double#NaN}).</li>
      * </ul>
+     *
+     * <h4>Accuracy</h4>
+     * The accuracy is only a few digits more than {@code double} value, not the full double-double precision.
+     * This extra accuracy come from the (1 - <var>small value</var>) part of the equation.
      *
      * @param  sinφ  the sine of the φ latitude.
      * @return reciprocal squared of the radius of curvature of the ellipsoid
@@ -296,24 +309,13 @@ final class Initializer {
      */
     final DoubleDouble rν2(final double sinφ) {
         if (DoubleDouble.DISABLED) {
-            return DoubleDouble.of0(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ));
+            return DoubleDouble.of(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ), false);
         }
         /*
-         * Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
+         * Compute 1 - ℯ²⋅sin²φ.  Because ℯ²⋅sin²φ  may be small,
          * this is where double-double arithmetic has more value.
          */
-        return DoubleDouble.ONE.subtract(eccentricitySquared.multiply(DoubleDouble.of0(sinφ).square()));
-    }
-
-    /**
-     * Returns the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     * This is {@code 1/sqrt(rν2(sinφ))}.
-     *
-     * @param  sinφ  the sine of the φ latitude.
-     * @return radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     */
-    final double radiusOfCurvature(final double sinφ) {
-        return rν2(sinφ).sqrt().inverse().doubleValue();
+        return DoubleDouble.ONE.subtract(eccentricitySquared.multiply(DoubleDouble.product(sinφ, sinφ)));
     }
 
     /**
@@ -327,27 +329,31 @@ final class Initializer {
      * the use of φ₀ (or φ₁ as relevant to method) for φ is suggested, except if the projection is
      * equal area when the radius of authalic sphere should be used.
      *
+     * <h4>Accuracy</h4>
+     * The accuracy is only a few digits more than {@code double} value, not the full double-double precision.
+     * This extra accuracy come from the (1 - <var>small value</var>) parts in both numerator and denominator.
+     *
      * @param  sinφ  the sine of the φ latitude.
      * @return radius of the conformal sphere at latitude φ.
      */
-    final double radiusOfConformalSphere(final double sinφ) {
-        return DoubleDouble.ONE.subtract(eccentricitySquared).sqrt().divide(rν2(sinφ)).doubleValue();
+    final DoubleDouble radiusOfConformalSphere(final double sinφ) {
+        return DoubleDouble.ONE.subtract(eccentricitySquared).sqrt().divide(rν2(sinφ));
     }
 
     /**
      * Returns the scale factor at latitude φ (Snyder 14-15). This is computed as:
      *
-     * <blockquote>cosφ / sqrt(rν2(sinφ))</blockquote>
+     * <blockquote>cosφ / √[rν²(sinφ)]</blockquote>
      *
-     * The result is returned as a {@code DoubleDouble} for allowing callers to perform some additional
-     * operations on it, but the {@link DoubleDouble#error} term should be considered mostly meaningless
-     * because of the limited precision of {@code sinφ} and {@code cosφ} terms.
+     * <h4>Accuracy</h4>
+     * The result is returned as a {@code double} because the limited precision of {@code sinφ} and {@code cosφ}
+     * makes the error term meaningless. We use double-double arithmetic only for intermediate calculation.
      *
      * @param  sinφ  the sine of the φ latitude.
      * @param  cosφ  the cosine of the φ latitude.
      * @return scale factor at latitude φ.
      */
-    final DoubleDouble scaleAtφ(final double sinφ, final double cosφ) {
-        return DoubleDouble.of0(cosφ).divide(rν2(sinφ).sqrt());
+    final double scaleAtφ(final double sinφ, final double cosφ) {
+        return DoubleDouble.of(cosφ, false).divide(rν2(sinφ).sqrt()).doubleValue();
     }
 }

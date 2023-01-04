@@ -286,11 +286,11 @@ public class TransverseMercator extends NormalizedProjection {
          */
         final double Q = asinh(tan(φ0)) - eccentricity * atanh(eccentricity * sin(φ0));
         final double β = atan(sinh(Q));
-        DoubleDouble M0 = B.negate().multiply0(
+        DoubleDouble M0 = B.negate().multiply(
                 β + fma(cf2, sin(2*β),
                     fma(cf4, sin(4*β),
                     fma(cf6, sin(6*β),
-                        cf8* sin(8*β)))));
+                        cf8* sin(8*β)))), false);
         /*
          * At this point, all parameters have been processed. Now store
          * the linear operations in the (de)normalize affine transforms:

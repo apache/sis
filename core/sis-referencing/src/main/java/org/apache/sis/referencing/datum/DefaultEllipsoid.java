@@ -436,7 +436,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      */
     private DoubleDouble eccentricitySquared() {
         final DoubleDouble f = flattening(this);
-        return f.multiply(2).subtract(f.square());
+        return f.scalb(1).subtract(f.square());
     }
 
     /**
@@ -452,11 +452,12 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * </div>
      */
     private static DoubleDouble flattening(final Ellipsoid e) {
+        final boolean decimal = true;       // Parameters are presumed accurate in base 10 (not 2) by definition.
         if (e.isIvfDefinitive()) {
-            return DoubleDouble.ONE.divide(e.getInverseFlattening());
+            return DoubleDouble.ONE.divide(e.getInverseFlattening(), decimal);
         } else {
-            var a = DoubleDouble.of(e.getSemiMajorAxis());      // Presumed accurate in base 10 (not 2) by definition.
-            return a.subtract(e.getSemiMinorAxis()).divide(a);
+            var a = DoubleDouble.of(e.getSemiMajorAxis(), decimal);
+            return a.subtract(e.getSemiMinorAxis(), decimal).divide(a);
         }
     }
 
@@ -522,8 +523,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
-        DoubleDouble a = DoubleDouble.of(semiMajor);            // Presumed accurate in base 10 if no unit conversion.
-        return a.subtract(getSemiMajorAxis()).doubleValue();    // Presumed accurate in base 10 (not 2) by definition.
+        // Presumed accurate in base 10 (not 2) by definition.
+        final DoubleDouble a = DoubleDouble.of(semiMajor, true);
+        return a.subtract(getSemiMajorAxis(), true).doubleValue();
     }
 
     /**

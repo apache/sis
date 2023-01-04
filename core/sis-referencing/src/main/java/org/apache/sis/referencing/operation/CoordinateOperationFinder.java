@@ -874,7 +874,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Unit<Time> targetUnit = targetCS.getAxis(0).getUnit().asType(Time.class);
         DoubleDouble epochShift = DoubleDouble.of(sourceDatum.getOrigin().getTime());
         epochShift = epochShift.subtract(targetDatum.getOrigin().getTime());
-        epochShift = DoubleDouble.of(Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift));
+        epochShift = DoubleDouble.of(Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift), true);
         /*
          * Check axis directions. The method `swapAndScaleAxes` should returns a matrix of size 2×2.
          * The element at index (0,0) may be +1 if source and target axes are in the same direction,
@@ -891,7 +891,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
-        var translation = DoubleDouble.of(matrix.getNumber(0, translationColumn));
+        final var translation = DoubleDouble.of(matrix.getNumber(0, translationColumn), true);
         matrix.setNumber(0, translationColumn, translation.add(epochShift));
         return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
     }

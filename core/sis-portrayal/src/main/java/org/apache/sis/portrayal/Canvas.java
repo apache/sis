@@ -616,7 +616,7 @@ public class Canvas extends Observable implements Localized {
         final int       srcDim     = magnitudes.getNumCol();
         DoubleDouble    scale      = DoubleDouble.ZERO;             // Will be set to average magnitude value.
         for (int i=0; i<srcDim; i++) {
-            scale = scale.add(magnitudes.getNumber(0, i));
+            scale = scale.add(magnitudes.getNumber(0, i), false);
         }
         scale = scale.divide(srcDim);
         /*

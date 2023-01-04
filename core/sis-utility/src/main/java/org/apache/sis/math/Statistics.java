@@ -210,13 +210,13 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
             if (!Double.isNaN(mean) || !Double.isNaN(standardDeviation)) {
                 ArgumentChecks.ensureBetween("mean", minimum, maximum, mean);
             }
-            final DoubleDouble sd = DoubleDouble.of(mean).multiply(count);
+            final DoubleDouble sd = DoubleDouble.of(mean, true).multiply(count);
             sum = sd.value;
             lowBits = sd.error;
             /*
              * squareSum = standardDeviation² × (allPopulation ? count : count-1) + sum²/count
              */
-            DoubleDouble sq = DoubleDouble.of(standardDeviation);
+            DoubleDouble sq = DoubleDouble.of(standardDeviation, true);
             sq = sq.square().multiply(allPopulation ? count : count-1);
             sq = sq.add(sd.square().divide(count));
             squareSum = sq.value;

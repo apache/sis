@@ -166,8 +166,8 @@ public class CylindricalEqualArea extends AuthalicConversion {
          * but we nevertheless support it.
          */
         final double φ1 = toRadians(initializer.getAndStore(STANDARD_PARALLEL));
-        final DoubleDouble k0 = initializer.scaleAtφ(sin(φ1), cos(φ1))
-                .multiply(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
+        final DoubleDouble k0 = DoubleDouble.of(initializer.scaleAtφ(sin(φ1), cos(φ1)), false)
+                                .multiply(initializer.getAndStore(Mercator1SP.SCALE_FACTOR), true);
         /*
          * In most Apache SIS map projection implementations, the scale factor is handled by the super-class by
          * specifying a ParameterRole.SCALE_FACTOR. However, in the case of this CylindricalEqualArea we rather
@@ -181,7 +181,7 @@ public class CylindricalEqualArea extends AuthalicConversion {
          */
         DoubleDouble ik;
         ik = DoubleDouble.ONE.subtract(initializer.eccentricitySquared);
-        ik = ik.multiply0(0.5);              // This line need to be cancelled when using spherical formulas.
+        ik = ik.scalb(-1);              // This line need to be cancelled when using spherical formulas.
         ik = ik.divide(k0);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k0, null);

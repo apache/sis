@@ -127,29 +127,29 @@ public class AlbersEqualArea extends AuthalicConversion {
         final double cosφ1 = cos(φ1);
         final double sinφ2 = sin(φ2);
         final double cosφ2 = cos(φ2);
-        final var    m1sq  = initializer.scaleAtφ(sinφ1, cosφ1).square();           // (cos(φ₁) / √(1 – ℯ²sin²φ₁))²
-        final double α1    = qm(sinφ1);                                             // Omitted ×(1-ℯ²) (see below)
+        final double m1    = initializer.scaleAtφ(sinφ1, cosφ1);        // (cos(φ₁) / √(1 – ℯ²sin²φ₁))²
+        final double α1    = qm(sinφ1);                                 // Omitted ×(1-ℯ²) (see below)
         if (secant) {
-            var  m2sq = initializer.scaleAtφ(sinφ2, cosφ2).square();                // (cos(φ₂) / √(1 – ℯ²sin²φ₂))²
-            double α2 = qm(sinφ2);                                                  // Omitted ×(1-ℯ²) (see below)
-            nm = m1sq.subtract(m2sq).divide0(α2 - α1).doubleValue();                // n = nm / (1-ℯ²)
+            final double m2 = initializer.scaleAtφ(sinφ2, cosφ2);       // (cos(φ₂) / √(1 – ℯ²sin²φ₂))²
+            final double α2 = qm(sinφ2);                                // Omitted ×(1-ℯ²) (see below)
+            nm = (m1*m1 - m2*m2) / (α2 - α1);                           // n = nm / (1-ℯ²)
         } else {
             nm = sinφ1;
         }
-        C = m1sq.add0(nm*α1).doubleValue();   // Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in α₁.
+        C = m1*m1 + nm*α1;                  // Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in α₁.
         /*
          * Compute rn = (1-ℯ²)/nm, which is the reciprocal of the "real" n used in Snyder and EPSG guidance note.
          * We opportunistically use double-double arithmetic since the MatrixSIS operations use them anyway, but
-         * we do not really have that accuracy because of the limited precision of 'nm'. The intent is rather to
-         * increase the chances term cancellations happen during concatenation of coordinate operations.
+         * we do not really have that accuracy because of the limited precision of `nm`. The intent is rather to
+         * increase the chances that term cancellations happen during concatenation of coordinate operations.
          */
-        final DoubleDouble rn = DoubleDouble.ONE.subtract(initializer.eccentricitySquared).divide0(nm);
+        final DoubleDouble rn = DoubleDouble.ONE.subtract(initializer.eccentricitySquared).divide(nm, false);
         /*
-         * Compute  ρ₀ = √(C - n⋅q(sinφ₀))/n  with multiplication by a omitted because already taken in account
-         * by the denormalization matrix. Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in qm(…).
+         * Compute  ρ₀ = √(C - n⋅q(sinφ₀))/n  with multiplication by `a` omitted because already taken in account
+         * by the denormalization matrix. Omitted (1-ℯ²) term in `nm` cancels with omitted (1-ℯ²) term in qm(…).
          * See above note about double-double arithmetic usage.
          */
-        final var ρ0 = DoubleDouble.of0(C - nm*qm(sinφ0)).sqrt().multiply(rn);
+        final var ρ0 = DoubleDouble.sum(C, -nm*qm(sinφ0)).sqrt().multiply(rn);
         /*
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.

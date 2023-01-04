@@ -692,10 +692,10 @@ public class GridGeometry implements LenientComparable, Serializable {
                     resolution = new double[tgtDim];
                     for (int j=0; j<tgtDim; j++) {
                         final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
-                        DoubleDouble scale  = DoubleDouble.of(affine.getNumber(j, i));
-                        DoubleDouble offset = DoubleDouble.of(affine.getNumber(j, srcDim));
+                        DoubleDouble scale  = DoubleDouble.of(affine.getNumber(j, i), true);
+                        DoubleDouble offset = DoubleDouble.of(affine.getNumber(j, srcDim), true);
                         resolution[j] = Math.abs(scale.doubleValue());
-                        offset = offset.add(scale.multiply0(0.5));
+                        offset = offset.add(scale.scalb(-1));
                         affine.setNumber(j, srcDim, offset);
                     }
                     gridToCRS = MathTransforms.linear(affine);
@@ -1422,9 +1422,9 @@ public class GridGeometry implements LenientComparable, Serializable {
                 final double p = periods[i];
                 if (p != 1) {
                     newResolution[i] /= p;
-                    final DoubleDouble pd = DoubleDouble.of(p);
+                    final DoubleDouble pd = DoubleDouble.of(p, true);
                     for (int j=0; j<tgtDim; j++) {
-                        DoubleDouble e = DoubleDouble.of(matrix.getNumber(j, i));
+                        DoubleDouble e = DoubleDouble.of(matrix.getNumber(j, i), true);
                         matrix.setNumber(j, i, e.divide(pd));
                         changed = true;
                     }

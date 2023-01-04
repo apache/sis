@@ -419,10 +419,11 @@ next:   for (final CoordinateSystem cs : targets) {
                     default: throw new IncommensurableException(Resources.format(
                                 Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
-                final var shift  = matrix.getNumber(j, sourceDim);
-                final var factor = DoubleDouble.of(matrix.getNumber(j,i));
-                matrix.setNumber(j, i, factor.multiply(scale));
-                matrix.setNumber(j, sourceDim, factor.multiply(offset).add(shift));
+                final boolean decimal = true;   // Whether values were intended to be exact in base 10.
+                final var shift  = DoubleDouble.of(matrix.getNumber(j, sourceDim), decimal);
+                final var factor = DoubleDouble.of(matrix.getNumber(j, i), decimal);
+                matrix.setNumber(j, i,         factor.multiply(scale,  decimal));
+                matrix.setNumber(j, sourceDim, factor.multiply(offset, decimal).add(shift));
             }
         }
         return matrix;

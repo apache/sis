@@ -201,8 +201,8 @@ public final class MathTransforms extends Static {
                     case 1: {
                         final MatrixSIS m = MatrixSIS.castOrCopy(matrix);
                         return LinearTransform1D.create(
-                                DoubleDouble.of(m.getNumber(0,0)),
-                                DoubleDouble.of(m.getNumber(0,1)));
+                                DoubleDouble.of(m.getNumber(0,0), true),
+                                DoubleDouble.of(m.getNumber(0,1), true));
                     }
                     case 2: {
                         if (matrix instanceof ExtendedPrecisionMatrix) {

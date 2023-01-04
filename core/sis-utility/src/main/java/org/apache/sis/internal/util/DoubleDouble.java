@@ -215,32 +215,38 @@ public final class DoubleDouble extends Number {
      * {@code DoubleDouble}, {@link BigDecimal}, {@link BigInteger} or {@link Fraction},
      * then the error term will be taken in account.
      *
-     * @param  n  the value.
+     * @param  value    the value.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
      * @return the value as a double-double number.
      */
-    public static DoubleDouble of(Number n) {
-        if (n instanceof DoubleDouble) {
-            return (DoubleDouble) n;
+    public static DoubleDouble of(Number value, final boolean decimal) {
+        if (value instanceof DoubleDouble) {
+            return (DoubleDouble) value;
         }
-        if (n instanceof Fraction) {
-            final Fraction f = (Fraction) n;
+        if (value instanceof Fraction) {
+            final Fraction f = (Fraction) value;
             return new DoubleDouble(f.numerator, 0)
                             .divide(f.denominator);
         }
-        final double value, error;
-        if (n instanceof BigInteger) {
-            n = new BigDecimal((BigInteger) n, MathContext.DECIMAL128);
+        final double v, error;
+        if (value instanceof Float) {
+            final float f = (Float) value;
+            value = decimal ? DecimalFunctions.floatToDouble(f) : f;
+        } else if (value instanceof BigInteger) {
+            value = new BigDecimal((BigInteger) value, MathContext.DECIMAL128);
         }
-        value = n.doubleValue();
-        if (n instanceof Long) {
-            error = n.longValue() - (long) value;       // Need rounding toward zero.
-        } else if (n instanceof BigDecimal) {
+        v = value.doubleValue();
+        if (value instanceof Long) {
+            error = value.longValue() - (long) v;       // Need rounding toward zero.
+        } else if (value instanceof BigDecimal) {
             // Really need new BigDecimal(value) below, not BigDecimal.valueOf(value).
-            error = ((BigDecimal) n).subtract(new BigDecimal(value), MathContext.DECIMAL64).doubleValue();
+            error = ((BigDecimal) value).subtract(new BigDecimal(v), MathContext.DECIMAL64).doubleValue();
+        } else if (decimal) {
+            error = errorForWellKnownValue(v);
         } else {
-            error = errorForWellKnownValue(value);
+            error = 0;
         }
-        return new DoubleDouble(value, error);
+        return new DoubleDouble(v, error);
     }
 
     /**
@@ -265,30 +271,18 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * CReturns an instance for the given value and an error term inferred by
-     * {@link #errorForWellKnownValue(double)}.
+     * Returns an instance for the given value.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
+     * {@code decimal} should be {@code false} when the value has been computed using transcendental functions
+     * (cosine, logarithm, <i>etc.</i>), in which case there is no way we can infer a meaningful error term.
+     * Should also be {@code false} (for performance reason) when the value is an exact representation in base 2.
      *
-     * <p><b>Tip:</b> if the other value is known to be an integer or a power of 2,
-     * then invoking {@link #of0(double)} is more efficient.</p>
-     *
-     * @param  value  the initial value.
+     * @param  value    the value.
+     * @param  decimal  whether the value was intended to be exact in base 10.
      * @return the value as a double-double number.
      */
-    public static DoubleDouble of(final double value) {
-        return new DoubleDouble(value, errorForWellKnownValue(value));
-    }
-
-    /**
-     * Returns an instance for the given value verbatim, without inferring an error term for double-double arithmetic.
-     * Use this method when the value has been computed using transcendental functions (cosine, logarithm, <i>etc.</i>)
-     * in which case there is no way we can infer a meaningful error term.
-     * Also used when the value is known to have an exact representation as a {@code double} primitive type.
-     *
-     * @param  value  the value to wrap in a {@code DoubleDouble} instance.
-     * @return the value as a double-double number.
-     */
-    public static DoubleDouble of0(final double value) {
-        return new DoubleDouble(value, 0);
+    public static DoubleDouble of(final double value, final boolean decimal) {
+        return new DoubleDouble(value, decimal ? errorForWellKnownValue(value) : 0);
     }
 
     /**
@@ -340,8 +334,7 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Return value + error.
-     * The result should be identical to {@link #value},
+     * Return value + error. The result should be identical to {@link #value},
      * but we nevertheless do the sum as a safety.
      *
      * @return {@link #value} + {@link #error}.
@@ -415,6 +408,8 @@ public final class DoubleDouble extends Number {
 
     /**
      * Returns the sum of the given numbers.
+     * The double-double accuracy is useful when the largest value is exact in base 2.
+     * A typical example is: 1 - (small value).
      *
      * <p>Source: [Hida &amp; al.] page 4 algorithm 4, itself reproduced from [Shewchuk] page 314.</p>
      *
@@ -430,6 +425,8 @@ public final class DoubleDouble extends Number {
 
     /**
      * Returns the product of the given numbers.
+     * Note that unless the given arguments are exact in base 2,
+     * the result is not more accurate than a {@code double}.
      *
      * <p>Source: [Hida &amp; al.] page 5 algorithm 7, itself reproduced from [Shewchuk] page 326.
      * This is the algorithm used when FMA instruction is available. For an algorithm without FMA,
@@ -472,11 +469,12 @@ public final class DoubleDouble extends Number {
      * Adds a {@code Number} value to this {@code DoubleDouble}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value to add to this {@code DoubleDouble}.
+     * @param  other    the other value to add to this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
      * @return the sum of {@code this} with the given number.
      */
-    public DoubleDouble add(final Number other) {
-        return add(of(other));
+    public DoubleDouble add(final Number other, final boolean decimal) {
+        return add(of(other, decimal));
     }
 
     /**
@@ -500,26 +498,15 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Adds a {@code double} value to this {@code DoubleDouble} with a default error term.
+     * Adds a {@code double} value to this {@code DoubleDouble}.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * <p><b>Tip:</b> if the other value is known to be an integer or a power of 2,
-     * then invoking {@link #add0(double)} is more efficient.</p>
-     *
-     * @param  other  the other value to add to this {@code DoubleDouble}.
+     * @param  other    the other value to add to this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
      * @return the sum of {@code this} with the given number.
      */
-    public DoubleDouble add(final double other) {
-        return add(other, errorForWellKnownValue(other));
-    }
-
-    /**
-     * Adds a {@code double} value to this {@code DoubleDouble} without error term.
-     *
-     * @param  other  the other value to add to this {@code DoubleDouble}.
-     * @return the sum of {@code this} with the given number.
-     */
-    public DoubleDouble add0(final double other) {
-        return add(other, 0);
+    public DoubleDouble add(final double other, final boolean decimal) {
+        return add(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
@@ -584,11 +571,12 @@ public final class DoubleDouble extends Number {
      * Subtracts a {@code Number} from this {@code DoubleDouble}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value to subtract from this {@code DoubleDouble}.
+     * @param  other    the other value to subtract from this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
      * @return the difference between {@code this} and the given number.
      */
-    public DoubleDouble subtract(final Number other) {
-        return subtract(of(other));
+    public DoubleDouble subtract(final Number other, final boolean decimal) {
+        return subtract(of(other, decimal));
     }
 
     /**
@@ -613,26 +601,15 @@ public final class DoubleDouble extends Number {
 
     /**
      * Subtracts a {@code double} from this {@code DoubleDouble} with a default error term.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * <p><b>Tip:</b> if the other value is known to be an integer or a power of 2,
-     * then invoking {@link #subtract0(double)} is more efficient.</p>
-     *
-     * @param  other  the other value to subtract from this {@code DoubleDouble}.
+     * @param  other    the other value to subtract from this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
      * @return the difference between {@code this} and the given number.
      */
-    public DoubleDouble subtract(double other) {
+    public DoubleDouble subtract(double other, final boolean decimal) {
         other = -other;
-        return add(other, errorForWellKnownValue(other));
-    }
-
-    /**
-     * Subtracts a {@code double} from this {@code DoubleDouble} without error term.
-     *
-     * @param  other  the other value to subtract from this {@code DoubleDouble}.
-     * @return the difference between {@code this} and the given number.
-     */
-    public DoubleDouble subtract0(final double other) {
-        return add(-other, 0);
+        return add(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
@@ -649,11 +626,12 @@ public final class DoubleDouble extends Number {
      * Multiplies this {@code DoubleDouble} by a {@code Number}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value to multiply by this {@code DoubleDouble}.
+     * @param  other    the other value to multiply by this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
      * @return the product of {@code this} with the given number.
      */
-    public DoubleDouble multiply(final Number other) {
-        return multiply(of(other));
+    public DoubleDouble multiply(final Number other, final boolean decimal) {
+        return multiply(of(other, decimal));
     }
 
     /**
@@ -678,25 +656,14 @@ public final class DoubleDouble extends Number {
 
     /**
      * Multiplies this {@code DoubleDouble} by a {@code double} with a default error term.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * <p><b>Tip:</b> if the other value is known to be an integer or a power of 2,
-     * then invoking {@link #multiply0(double)} is more efficient.</p>
-     *
-     * @param  other  the other value to multiply by this {@code DoubleDouble}.
+     * @param  other    the other value to multiply by this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
      * @return the product of {@code this} with the given number.
      */
-    public DoubleDouble multiply(final double other) {
-        return multiply(other, errorForWellKnownValue(other));
-    }
-
-    /**
-     * Multiplies this {@code DoubleDouble} by a {@code double} without error term.
-     *
-     * @param  other  the other value to multiply by this {@code DoubleDouble}.
-     * @return the product of {@code this} with the given number.
-     */
-    public DoubleDouble multiply0(final double other) {
-        return multiply(other, 0);
+    public DoubleDouble multiply(final double other, final boolean decimal) {
+        return multiply(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
@@ -759,11 +726,12 @@ public final class DoubleDouble extends Number {
      * Divides this {@code DoubleDouble} by a {@code Number}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value by which to divide this {@code DoubleDouble}.
+     * @param  other    the other value by which to divide this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
      * @return the ratio between {@code this} and the given number.
      */
-    public DoubleDouble divide(final Number other) {
-        return divide(of(other));
+    public DoubleDouble divide(final Number other, final boolean decimal) {
+        return divide(of(other, decimal));
     }
 
     /**
@@ -788,25 +756,14 @@ public final class DoubleDouble extends Number {
 
     /**
      * Divides this {@code DoubleDouble} by a {@code double} with a default error term.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * <p><b>Tip:</b> if the other value is known to be an integer or a power of 2,
-     * then invoking {@link #divide0(double)} is more efficient.</p>
-     *
-     * @param  other  the other value by which to divide this {@code DoubleDouble}.
+     * @param  other    the other value by which to divide this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
      * @return the ratio between {@code this} and the given number.
      */
-    public DoubleDouble divide(final double other) {
-        return divide(other, errorForWellKnownValue(other));
-    }
-
-    /**
-     * Divides this {@code DoubleDouble} by a {@code double} without error term.
-     *
-     * @param  other  the other value by which to divide this {@code DoubleDouble}.
-     * @return the ratio between {@code this} and the given number.
-     */
-    public DoubleDouble divide0(final double other) {
-        return divide(other, 0);
+    public DoubleDouble divide(final double other, final boolean decimal) {
+        return divide(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
@@ -862,6 +819,18 @@ public final class DoubleDouble extends Number {
      */
     public DoubleDouble ratio_1m_1p() {
         return ONE.subtract(this).divide(add(1));
+    }
+
+    /**
+     * Returns {@code this} × 2ⁿ. Typical usages are
+     * {@code scalb(1)} for an efficient multiplication by 2 and
+     * {@code scalb(-1)} for an efficient division by 2.
+     *
+     * @param  n  power of 2 used to scale {@code this}.
+     * @return {@code this} × 2ⁿ.
+     */
+    public DoubleDouble scalb(final int n) {
+        return new DoubleDouble(Math.scalb(value, n), Math.scalb(error, n));
     }
 
     /**

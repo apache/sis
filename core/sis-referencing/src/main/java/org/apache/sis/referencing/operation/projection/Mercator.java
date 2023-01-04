@@ -34,7 +34,6 @@ import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -268,7 +267,7 @@ public class Mercator extends ConformalProjection {
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, DoubleDouble.of0(-log(expΨ(φ0, eccentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, -log(expΨ(φ0, eccentricity * sin(φ0))));
         }
         /*
          * Variants of the Mercator projection which can be handled by scale factors.
@@ -284,7 +283,7 @@ public class Mercator extends ConformalProjection {
             normalize  .convertBefore(1, 0.80, null);
             denormalize.convertBefore(1, 1.25, null);
         } else if (variant == Variant.AUXILIARY) {
-            DoubleDouble ratio = null;
+            final Number ratio;
             final int type = initializer.getAndStore(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE, 0);
             switch (type) {
                 default: {
@@ -292,9 +291,9 @@ public class Mercator extends ConformalProjection {
                             MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE.getName().getCode(), type));
                 }
                 case AuthalicMercator.TYPE:
-                case 2: ratio = DoubleDouble.of0(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().doubleValue())); break;
+                case 2: ratio = initializer.authalicRadius();  break;
                 case 1: ratio = initializer.axisLengthRatio(); break;
-                case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
+                case 0: ratio = null; break;      // Same as "Popular Visualisation Pseudo Mercator".
             }
             denormalize.convertAfter(0, ratio, null);
             denormalize.convertAfter(1, ratio, null);

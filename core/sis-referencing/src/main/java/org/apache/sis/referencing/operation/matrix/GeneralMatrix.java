@@ -278,7 +278,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             assert dd.equals(getNumber(row, column));
             return dd;
         } else {
-            return DoubleDouble.of(value);
+            return DoubleDouble.of(value, true);
         }
     }
 
@@ -498,7 +498,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         }
         boolean isExtended = false;
         for (int i=0; i<length; i++) {
-            final DoubleDouble value = DoubleDouble.of(newValues[i]);
+            final DoubleDouble value = DoubleDouble.of(newValues[i], true);
             final double element = value.doubleValue();
             elements[i] = element;
             final double error;

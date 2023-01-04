@@ -318,8 +318,8 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
             if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
                 !isNaN(x = p.getOrdinate(0)))
             {
-                mean_x = mean_x.add0(x);
-                mean_y = mean_y.add0(y);
+                mean_x = mean_x.add(x, false);
+                mean_y = mean_y.add(y, false);
                 n++;
             }
         }
@@ -346,9 +346,9 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
             if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
                 !isNaN(x = p.getOrdinate(0)))
             {
-                var  dx = DoubleDouble.of(x).subtract(mean_x);          // Δx = x - mean_x
+                var  dx = DoubleDouble.of(x, true).subtract(mean_x);    // Δx = x - mean_x
                 mean_x2 = mean_x2.add(dx.square());                     // mean_x² += (Δx)²
-                mean_xy = mean_xy.add(dx.multiply(y));                  // mean_xy += Δx * y
+                mean_xy = mean_xy.add(dx.multiply(y, true));            // mean_xy += Δx * y
                 mean_y2 = mean_y2.add(DoubleDouble.product(y, y));      // mean_y² += y²
             }
         }

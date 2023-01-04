@@ -219,7 +219,7 @@ public final class DoubleDoubleTest extends TestCase {
     @Test
     @DependsOnMethod("testDivide")
     public void testRatio_1m_1p() {
-        final DoubleDouble t = DoubleDouble.of0(0.25).ratio_1m_1p();
+        final DoubleDouble t = DoubleDouble.of(0.25, false).ratio_1m_1p();
         assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue(), STRICT);
     }
 

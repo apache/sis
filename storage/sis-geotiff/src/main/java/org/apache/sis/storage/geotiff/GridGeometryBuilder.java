@@ -230,12 +230,13 @@ final class GridGeometryBuilder extends GeoKeysLoader {
              *                          scale  =  affine(i,i)  —  on the diagonal
              */
             if (distance != Double.POSITIVE_INFINITY) {
+                final boolean decimal = true;               // Whether values were intended to be exact in base 10.
                 final int numDim = affine.getNumRow() - 1;
                 final int trCol  = affine.getNumCol() - 1;
                 for (int j=0; j<numDim; j++) {
                     final double src = -modelTiePoints.doubleValue(nearest + j);
                     final double tgt =  modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / 2);
-                    final DoubleDouble t = DoubleDouble.of(src).multiply(affine.getNumber(j,j)).add(tgt);
+                    var t = DoubleDouble.of(src, decimal).multiply(affine.getNumber(j,j), decimal).add(tgt, decimal);
                     affine.setNumber(j, trCol, t);
                 }
                 return true;

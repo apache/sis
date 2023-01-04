@@ -148,7 +148,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * This method does not need to verify argument validity.
      */
     DoubleDouble getDD(final int row, final int column) {
-        return DoubleDouble.of(getElement(row, column));
+        return DoubleDouble.of(getElement(row, column), true);
     }
 
     /**
@@ -207,7 +207,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @since 0.8
      */
     public void setNumber(int row, int column, final Number value) {
-        final DoubleDouble n = DoubleDouble.of(value);
+        final DoubleDouble n = DoubleDouble.of(value, true);
         if (n.error != 0) {
             set(row, column, n);        // Package-private method when public method can not be invoked.
         } else {
@@ -509,17 +509,18 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @since 0.6
      */
     public void convertBefore(final int srcDim, final Number scale, final Number offset) {
+        final boolean decimal = false;          // Whether given values were intended to be exact in base 10.
         final int lastCol = getNumCol() - 1;
         ArgumentChecks.ensureValidIndex(lastCol, srcDim);
         for (int j = getNumRow(); --j >= 0;) {
             if (offset != null) {
                 DoubleDouble s = getDD(j, srcDim);          // Scale factor
                 DoubleDouble t = getDD(j, lastCol);         // Translation factor
-                set(j, lastCol, t.add(s.multiply(offset)));
+                set(j, lastCol, t.add(s.multiply(offset, decimal)));
             }
             if (scale != null) {
                 DoubleDouble s = getDD(j, srcDim);          // Scale factor
-                set(j, srcDim, s.multiply(scale));
+                set(j, srcDim, s.multiply(scale, decimal));
             }
         }
     }
@@ -539,18 +540,19 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @since 0.6
      */
     public void convertAfter(final int tgtDim, final Number scale, final Number offset) {
+        final boolean decimal = false;          // Whether given values were intended to be exact in base 10.
         final int lastRow = getNumRow() - 1;
         final int lastCol = getNumCol() - 1;
         ArgumentChecks.ensureValidIndex(lastRow, tgtDim);
         if (scale != null) {
             for (int i=lastCol; i>=0; i--) {
                 DoubleDouble s = getDD(tgtDim, i);
-                set(tgtDim, i, s.multiply(scale));
+                set(tgtDim, i, s.multiply(scale, decimal));
             }
         }
         if (offset != null) {
             DoubleDouble t = getDD(tgtDim, lastCol);
-            set(tgtDim, lastCol, t.add(offset));
+            set(tgtDim, lastCol, t.add(offset, decimal));
         }
     }
 
@@ -605,7 +607,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         for (int j=0; j<target.length; j++) {
             var sum = DoubleDouble.ZERO;
             for (int i=0; i<numCol; i++) {
-                sum = sum.add(getDD(j, i).multiply(vector[i]));
+                sum = sum.add(getDD(j, i).multiply(vector[i], true));
             }
             target[j] = sum.doubleValue();
         }
@@ -648,7 +650,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         for (int j=0; j<numRow; j++) {
             var sum = DoubleDouble.ZERO;
             for (int i=0; i<numCol; i++) {
-                sum = sum.add(getDD(j, i).multiply(vector[i]));
+                sum = sum.add(getDD(j, i).multiply(vector[i], true));
             }
             set(j, numCol-1, sum);
         }

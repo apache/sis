@@ -190,7 +190,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
                 case 6: d = ddS; break;
                 default: throw new AssertionError(index);
             }
-            p = p.add(factor.multiply(d));
+            p = p.add(factor.multiply(d, true));
         }
         return p;
     }

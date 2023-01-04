@@ -130,8 +130,8 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
      * @return a bound of the [−n⋅π … n⋅π] range.
      */
     static double boundOfScaledLongitude(final MatrixSIS normalize, final boolean negative) {
-        DoubleDouble bound = DoubleDouble.of(normalize.getNumber(0, 0));
-        bound = bound.multiply0(negative ? Longitude.MIN_VALUE : Longitude.MAX_VALUE);
+        DoubleDouble bound = DoubleDouble.of(normalize.getNumber(0, 0), true);
+        bound = bound.multiply(negative ? Longitude.MIN_VALUE : Longitude.MAX_VALUE, false);
         return bound.doubleValue();
     }
 

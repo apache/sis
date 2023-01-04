@@ -401,14 +401,14 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
                     vectors.setElement(tcDim, i, Double.NaN);   // For preventing this row to be selected again.
                 }
                 DoubleDouble m = DoubleDouble.of(sign);
-                m = m.divide(magnitudes.getNumber(0, tgDim));
+                m = m.divide(magnitudes.getNumber(0, tgDim), false);
                 crsToGrid.setNumber(tgDim, tcDim, m);           // Scale factor from CRS coordinates to grid coordinates.
                 /*
                  * Move the point of interest in a place where conversion to source grid coordinates
                  * will be close to integer. The exact location does not matter; an additional shift
                  * will be applied later for translating to target grid extent.
                  */
-                m = m.multiply(originToPOI[tcDim] - targetPOI[tcDim]);
+                m = m.multiply(DoubleDouble.sum(originToPOI[tcDim], -targetPOI[tcDim]));
                 crsToGrid.setNumber(tgDim, crsDim, m);
             }
             crsToGrid.setElement(gridDim, crsDim, 1);

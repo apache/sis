@@ -707,7 +707,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
         final int ny = gridSize[1];
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
-                sum = sum.add0(getCellValue(dim, gridX, gridY));
+                sum = sum.add(getCellValue(dim, gridX, gridY), false);
             }
         }
         return sum.doubleValue() / (nx * ny);

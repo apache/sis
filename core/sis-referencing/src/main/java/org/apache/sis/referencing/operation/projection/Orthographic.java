@@ -47,7 +47,7 @@ import static org.apache.sis.internal.referencing.provider.Orthographic.*;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public class Orthographic extends NormalizedProjection {
@@ -115,9 +115,9 @@ public class Orthographic extends NormalizedProjection {
          * since the computed value below is zero in the spherical case.
          */
         if (eccentricity != 0) {
-            final double ν0 = initializer.radiusOfCurvature(sinφ0);
+            final double ν0_cosφ0 = initializer.scaleAtφ(sinφ0, cosφ0);
             final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-            denormalize.convertBefore(1, null, eccentricitySquared * ν0 * (sinφ0 * cosφ0));
+            denormalize.convertBefore(1, null, eccentricitySquared * ν0_cosφ0 * sinφ0);
         }
     }
 

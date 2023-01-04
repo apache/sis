@@ -1627,12 +1627,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                 final boolean flip = (flippedAxes & Numerics.bitmask(j)) != 0;
                 DoubleDouble offset = DoubleDouble.of(coordinates[i]);
                 DoubleDouble size   = DoubleDouble.of(coordinates[i+srcDim]).subtract(offset).add(1);
-                scale = DoubleDouble.of(env.getSpan(j)).divide(size);
+                scale = DoubleDouble.of(env.getSpan(j), true).divide(size);
                 if (flip) scale = scale.negate();
                 if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
                     offset = offset.multiply(scale).negate();
                 }
-                offset = offset.add(flip ? env.getMaximum(j) : env.getMinimum(j));
+                offset = offset.add(flip ? env.getMaximum(j) : env.getMinimum(j), true);
                 affine.setNumber(j, srcDim, offset);
             } else {
                 scale = DoubleDouble.NaN;

@@ -410,9 +410,9 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                 final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
                 final double y = p.getOrdinate(1); if (Double.isNaN(y)) continue;
                 final double z = p.getOrdinate(2); if (Double.isNaN(z)) continue;
-                sum_x  = sum_x .add0(x);
-                sum_y  = sum_y .add0(y);
-                sum_z  = sum_z .add0(z);
+                sum_x  = sum_x .add(x, false);
+                sum_y  = sum_y .add(y, false);
+                sum_z  = sum_z .add(z, false);
                 sum_xx = sum_xx.add(DoubleDouble.product(x, x));
                 sum_yy = sum_yy.add(DoubleDouble.product(y, y));
                 sum_xy = sum_xy.add(DoubleDouble.product(x, y));
@@ -445,17 +445,17 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                     if (Double.isNaN(z)) {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, Strings.toIndexed("z", n)));
                     }
-                    sum_z  = sum_z .add0(z);
+                    sum_z  = sum_z .add(z, false);
                     sum_zx = sum_zx.add(DoubleDouble.product(z, x));
                     sum_zy = sum_zy.add(DoubleDouble.product(z, y));
                     n++;
                 }
             }
-            sum_x  = DoubleDouble.of0(n/2d).multiply (nx-1);      // Division by 2 is exact.
-            sum_y  = DoubleDouble.of0(n/2d).multiply (ny-1);
-            sum_xx = DoubleDouble.of (n)   .multiply0(nx-0.5).multiply(nx-1).divide(3);
-            sum_yy = DoubleDouble.of (n)   .multiply0(ny-0.5).multiply(ny-1).divide(3);
-            sum_xy = DoubleDouble.of0(n/4d).multiply (ny-1)  .multiply(nx-1);
+            sum_x  = DoubleDouble.of(n/2d, false).multiply(nx-1);       // Division by 2 is exact.
+            sum_y  = DoubleDouble.of(n/2d, false).multiply(ny-1);
+            sum_xx = DoubleDouble.of(n)          .multiply(nx-0.5, false).multiply(nx-1).divide(3);
+            sum_yy = DoubleDouble.of(n)          .multiply(ny-0.5, false).multiply(ny-1).divide(3);
+            sum_xy = DoubleDouble.of(n/4d, false).multiply(ny-1)         .multiply(nx-1);
             this.n = n;
         }
 

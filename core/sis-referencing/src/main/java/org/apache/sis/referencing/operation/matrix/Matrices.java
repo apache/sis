@@ -278,18 +278,19 @@ public final class Matrices extends Static {
                      */
                     final boolean same = srcDir.equals(dstDir);
                     if (useEnvelopes) {
+                        final boolean decimal = true;   // Whether values are assumed exact in base 10.
                         /*
                          * See the comment in transform(Envelope, Envelope) for an explanation about why
                          * we use the lower/upper corners instead of getMinimum()/getMaximum() methods.
                          */
                         DoubleDouble scale, translate;
-                        scale = DoubleDouble.of(dstEnvelope.getSpan(dstIndex))
-                                        .divide(srcEnvelope.getSpan(srcIndex));
+                        scale = DoubleDouble.of(dstEnvelope.getSpan(dstIndex), decimal)
+                                        .divide(srcEnvelope.getSpan(srcIndex), decimal);
                         if (!same) {
                             scale = scale.negate();
                         }
-                        translate = scale.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
-                        translate = DoubleDouble.of(dstCorner.getOrdinate(dstIndex)).subtract(translate);
+                        translate = scale.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex), decimal);
+                        translate = DoubleDouble.of(dstCorner.getOrdinate(dstIndex), decimal).subtract(translate);
 
                         matrix.setNumber(dstIndex, srcIndex,       scale);
                         matrix.setNumber(dstIndex, srcAxes.length, translate);

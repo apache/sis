@@ -433,7 +433,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             case 6: p = dS; break;
             default: throw new AssertionError(index);
         }
-        return DoubleDouble.of(p);
+        return DoubleDouble.of(p, true);
     }
 
     /**
@@ -551,9 +551,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          * elements should have the same value, but we tolerate slight deviation
          * (this will be verified later).
          */
-        DoubleDouble RS = DoubleDouble.of(getNumber(matrix, 0, 0))
-                                     .add(getNumber(matrix, 1, 1))
-                                     .add(getNumber(matrix, 2, 2)).divide(3);
+        DoubleDouble RS = DoubleDouble.of(getNumber(matrix, 0, 0), true)
+                                     .add(getNumber(matrix, 1, 1), true)
+                                     .add(getNumber(matrix, 2, 2), true).divide(3);
         /*
          * Computes: RS = S * toRadians(1″)
          *           dS = (S-1) * PPM
@@ -570,12 +570,12 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.NonUniformScale));
             }
             for (int i = j+1; i < SIZE-1; i++) {
-                final DoubleDouble mr = DoubleDouble.of(getNumber(matrix, j, i)).divide(RS);    // Negative rotation term.
-                final DoubleDouble pr = DoubleDouble.of(getNumber(matrix, i, j)).divide(RS);    // Positive rotation term.
-                if (!(abs(pr.value + mr.value) <= 2*tolerance)) {                               // We expect mr ≈ -pr.
+                final DoubleDouble mr = DoubleDouble.of(getNumber(matrix, j, i), true).divide(RS);    // Negative rotation term.
+                final DoubleDouble pr = DoubleDouble.of(getNumber(matrix, i, j), true).divide(RS);    // Positive rotation term.
+                if (!(abs(pr.value + mr.value) <= 2*tolerance)) {                                     // We expect mr ≈ -pr.
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.NotASkewSymmetricMatrix));
                 }
-                final double value = pr.subtract(mr).multiply0(0.5).doubleValue();  // Average of the two rotation terms.
+                final double value = pr.subtract(mr).scalb(-1).doubleValue();   // Average of the two rotation terms.
                 switch (j*SIZE + i) {
                     case 1: rZ =  value; break;
                     case 2: rY = -value; break;

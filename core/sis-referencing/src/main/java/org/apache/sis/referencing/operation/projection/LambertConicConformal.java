@@ -292,7 +292,7 @@ public class LambertConicConformal extends ConformalProjection {
          * a 0/0 indetermination.
          */
         final double sinφ1 = sin(φ1);
-        final var    m1 = initializer.scaleAtφ(sinφ1, cos(φ1));
+        final double m1 = initializer.scaleAtφ(sinφ1, cos(φ1));
         final double t1 = expΨ(φ1, eccentricity*sinφ1);
         /*
          * Compute n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
@@ -301,9 +301,9 @@ public class LambertConicConformal extends ConformalProjection {
          */
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {                    // Should be `true` for 2SP case.
             final double sinφ2 = sin(φ2);
-            final var    m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
+            final double m2 = initializer.scaleAtφ(sinφ2, cos(φ2));
             final double t2 = expΨ(φ2, eccentricity*sinφ2);
-            n = log(m1.divide(m2).doubleValue()) / log(t1/t2);      // Tend toward 0/0 if φ1 ≈ φ2.
+            n = log(m1/m2) / log(t1/t2);                            // Tend toward 0/0 if φ1 ≈ φ2.
         } else {
             n = -sinφ1;
         }
@@ -311,12 +311,10 @@ public class LambertConicConformal extends ConformalProjection {
          * Compute F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
          * Following constants will be stored in the denormalization matrix, to be applied
          * after the non-linear formulas implemented by this LambertConicConformal class.
-         * Opportunistically use double-double arithmetic since the matrix coefficients will
-         * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
-        DoubleDouble F = m1.divide(DoubleDouble.of0(n).multiply0(pow(t1, n)));
+        double F = m1 / (n * pow(t1, n));
         if (!isNorth) {
-            F = F.negate();
+            F = -F;
         }
         /*
          * Compute the radius of the parallel of latitude of the false origin.
@@ -326,9 +324,9 @@ public class LambertConicConformal extends ConformalProjection {
          *
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
-        DoubleDouble rF = null;
+        Number rF = null;
         if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expΨ(+π/2).
-            rF = F.multiply0(pow(expΨ(φ0, eccentricity*sin(φ0)), n));
+            rF = F * pow(expΨ(φ0, eccentricity*sin(φ0)), n);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -347,20 +345,19 @@ public class LambertConicConformal extends ConformalProjection {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        DoubleDouble sλ = DoubleDouble.of0(n);
-        DoubleDouble sφ = null;
-        if (isNorth) {
-            // Reverse the sign of either longitude or latitude values before map projection.
-            sφ = DoubleDouble.of(-1);
+        double sλ = n;
+        Number sφ = null;
+        if (isNorth) {      // Reverse the sign of either longitude or latitude values before map projection.
+            sφ = -1;
         } else {
-            sλ = sλ.negate();
+            sλ = -sλ;
         }
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        normalize  .convertAfter(0, sλ, (variant == Variant.BELGIUM) ? BELGE_A : null);
-        normalize  .convertAfter(1, sφ, null);
-        denormalize.convertBefore(0, F, null);
-        denormalize.convertBefore(1, F.negate(), rF);
+        normalize  .convertAfter (0, sλ, (variant == Variant.BELGIUM) ? BELGE_A : null);
+        normalize  .convertAfter (1, sφ, null);
+        denormalize.convertBefore(0,  F, null);
+        denormalize.convertBefore(1, -F, rF);
     }
 
     /**
