@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
  */
 public final class GeneralMatrixTest extends MatrixTestCase {
@@ -68,9 +68,9 @@ public final class GeneralMatrixTest extends MatrixTestCase {
         final long value = 1000000000000010000L;
         assertNotEquals(value, StrictMath.round((double) value));
         final GeneralMatrix m = new GeneralMatrix(1, 1, false, 2);
-        final DoubleDouble ddval = new DoubleDouble((Long) value);
+        final DoubleDouble ddval = DoubleDouble.of(value);
         m.setNumber(0, 0, ddval);
-        assertEquals(Long.toString(value), ddval.toString());
+        assertEquals(value, ddval.longValue());
         assertEquals(ddval, m.getNumber (0, 0));
         assertEquals(value, m.getInteger(0, 0));
     }

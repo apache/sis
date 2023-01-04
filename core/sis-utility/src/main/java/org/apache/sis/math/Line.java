@@ -44,7 +44,7 @@ import static java.lang.Double.*;
  * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.</div>
  *
  * @author  Martin Desruisseaux (MPO, IRD)
- * @version 1.0
+ * @version 1.4
  *
  * @see Plane
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
@@ -305,8 +305,8 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
     public double fit(final Iterable<? extends DirectPosition> points) {
         ArgumentChecks.ensureNonNull("points", points);
         int i = 0, n = 0;
-        final DoubleDouble mean_x = new DoubleDouble();
-        final DoubleDouble mean_y = new DoubleDouble();
+        DoubleDouble mean_x = DoubleDouble.ZERO;
+        DoubleDouble mean_y = DoubleDouble.ZERO;
         for (final DirectPosition p : points) {
             final int dimension = p.getDimension();
             if (dimension != DIMENSION) {
@@ -318,13 +318,13 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
             if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
                 !isNaN(x = p.getOrdinate(0)))
             {
-                mean_x.addKahan(x);
-                mean_y.addKahan(y);
+                mean_x = mean_x.add0(x);
+                mean_y = mean_y.add0(y);
                 n++;
             }
         }
-        mean_x.divide(n);
-        mean_y.divide(n);
+        mean_x = mean_x.divide(n);
+        mean_y = mean_y.divide(n);
         /*
          * We have to solve two equations with two unknowns:
          *
@@ -338,57 +338,37 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
          *
          * where dx = x-mean(x). In this case mean(Δx) == 0.
          */
-        final DoubleDouble a       = new DoubleDouble();
-        final DoubleDouble b       = new DoubleDouble();
-        final DoubleDouble mean_x2 = new DoubleDouble();
-        final DoubleDouble mean_y2 = new DoubleDouble();
-        final DoubleDouble mean_xy = new DoubleDouble();
+        DoubleDouble mean_x2 = DoubleDouble.ZERO;
+        DoubleDouble mean_y2 = DoubleDouble.ZERO;
+        DoubleDouble mean_xy = DoubleDouble.ZERO;
         for (final DirectPosition p : points) {
-            final double y;
-            if (!isNaN(y       = p.getOrdinate(1)) &&       // Test first the dimension which is most likely to contain NaN.
-                !isNaN(a.value = p.getOrdinate(0)))
+            final double y, x;
+            if (!isNaN(y = p.getOrdinate(1)) &&     // Test first the dimension which is most likely to contain NaN.
+                !isNaN(x = p.getOrdinate(0)))
             {
-                a.error = 0;
-                a.subtract(mean_x);     // Δx = x - mean_x
-                b.setFrom(a);
-                b.multiply(a);          // (Δx)² = Δx * Δx
-                mean_x2.add(b);         // mean_x² += (Δx)²
-
-                a.multiply(y);          // xy = Δx * y
-                mean_xy.add(a);         // mean_xy += xy
-
-                a.setToProduct(y, y);   // y² = y * y
-                mean_y2.add(a);         // mean_y² += y²
+                var  dx = DoubleDouble.of(x).subtract(mean_x);          // Δx = x - mean_x
+                mean_x2 = mean_x2.add(dx.square());                     // mean_x² += (Δx)²
+                mean_xy = mean_xy.add(dx.multiply(y));                  // mean_xy += Δx * y
+                mean_y2 = mean_y2.add(DoubleDouble.product(y, y));      // mean_y² += y²
             }
         }
-        mean_x2.divide(n);
-        mean_y2.divide(n);
-        mean_xy.divide(n);
+        mean_x2 = mean_x2.divide(n);
+        mean_y2 = mean_y2.divide(n);
+        mean_xy = mean_xy.divide(n);
         /*
          * Assuming that 'mean(x) == 0', then the correlation
          * coefficient can be approximate by:
          *
          * R = mean(xy) / sqrt( mean(x²) * (mean(y²) - mean(y)²) )
          */
-        a.setFrom(mean_xy);
-        a.divide (mean_x2);     // slope = mean_xy / mean_x²
-        b.setFrom(mean_x);
-        b.multiply(a);
-        b.negate();
-        b.add(mean_y);          // y₀ = mean_y - mean_x * slope
+        var a = mean_xy.divide (mean_x2);                   // slope = mean_xy / mean_x²
+        var b = mean_y.subtract(mean_x.multiply(a));        // y₀ = mean_y - mean_x * slope
         setEquation(a, b);
         /*
          * Compute the correlation coefficient:
          * mean_xy / sqrt(mean_x2 * (mean_y2 - mean_y * mean_y))
          */
-        a.setFrom(mean_y);
-        a.multiply(mean_y);
-        a.negate();
-        a.add(mean_y2);
-        a.multiply(mean_x2);
-        a.sqrt();
-        a.inverseDivide(mean_xy);
-        return a.doubleValue();
+        return mean_xy.divide(mean_x2.multiply(mean_y2.subtract(mean_y.square())).sqrt()).doubleValue();
     }
 
     /**

@@ -143,7 +143,7 @@ import org.apache.sis.coverage.grid.GridExtent;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public class Canvas extends Observable implements Localized {
@@ -609,16 +609,16 @@ public class Canvas extends Observable implements Localized {
     private static MathTransform orthogonalTangent(final MathTransform newToOld, final double[] poiInNew)
             throws TransformException, RenderException
     {
-        final double[]     poiInOld   = new double[newToOld.getTargetDimensions()];
-        final MatrixSIS    derivative = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(newToOld, poiInNew, 0, poiInOld, 0));
-        final MatrixSIS    magnitudes = derivative.normalizeColumns();
-        final MatrixSIS    affine     = Matrices.createAffine(derivative, new DirectPositionView.Double(poiInOld));
-        final int          srcDim     = magnitudes.getNumCol();
-        final DoubleDouble scale      = new DoubleDouble();             // Will be set to average magnitude value.
+        final double[]  poiInOld   = new double[newToOld.getTargetDimensions()];
+        final MatrixSIS derivative = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(newToOld, poiInNew, 0, poiInOld, 0));
+        final MatrixSIS magnitudes = derivative.normalizeColumns();
+        final MatrixSIS affine     = Matrices.createAffine(derivative, new DirectPositionView.Double(poiInOld));
+        final int       srcDim     = magnitudes.getNumCol();
+        DoubleDouble    scale      = DoubleDouble.ZERO;             // Will be set to average magnitude value.
         for (int i=0; i<srcDim; i++) {
-            scale.add(DoubleDouble.castOrCopy(magnitudes.getNumber(0, i)));
+            scale = scale.add(magnitudes.getNumber(0, i));
         }
-        scale.divide(srcDim);
+        scale = scale.divide(srcDim);
         /*
          * Following code assumes a two-dimensional rotation matrix. We have not yet explored how
          * to generalize to n-dimensional case (Gram–Schmidt process may be a path to explore).

@@ -239,11 +239,9 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                 if (DoubleDouble.DISABLED) {
                     inverse = create(1/scale, -offset/scale);
                 } else {
-                    final var sd = new DoubleDouble(scale, scaleError);
-                    final var od = new DoubleDouble(sd);
-                    od.inverseDivide(-offset, -offsetError);
-                    sd.inverseDivide(1, 0);
-                    inverse = create(sd, od);
+                    final var sd = DoubleDouble.of( scale,   scaleError);
+                    final var od = DoubleDouble.of(-offset, -offsetError);
+                    inverse = create(sd.inverse(), od.divide(sd));
                 }
                 inverse.inverse = this;
                 this.inverse = inverse;

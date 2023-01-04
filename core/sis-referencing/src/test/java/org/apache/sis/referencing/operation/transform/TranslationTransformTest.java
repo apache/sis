@@ -35,7 +35,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link TranslationTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 @DependsOn(AbstractMathTransformTest.class)
@@ -82,7 +82,7 @@ public final class TranslationTransformTest extends MathTransformTestCase {
     public void testExtendedPrecision() {
         final Number O = 0;
         final Number l = 1;
-        final DoubleDouble r = DoubleDouble.createDegreesToRadians();
+        final DoubleDouble r = DoubleDouble.DEGREES_TO_RADIANS;
         final MatrixSIS matrix = Matrices.create(4, 4, new Number[] {
             l, O, O, r,
             O, l, O, r,

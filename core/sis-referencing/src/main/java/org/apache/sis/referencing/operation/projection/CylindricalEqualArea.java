@@ -59,7 +59,7 @@ import static org.apache.sis.internal.referencing.provider.LambertCylindricalEqu
  * However, this projection may be useful for computing areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  */
 public class CylindricalEqualArea extends AuthalicConversion {
@@ -145,9 +145,10 @@ public class CylindricalEqualArea extends AuthalicConversion {
          * "Longitude of origin" and "scale factor" are intentionally omitted from this map because they will
          * be handled in a special way. See comments in Mercator.initializer(…) method for more details.
          */
-        roles.put(ParameterRole.SCALE_FACTOR,   SCALE_FACTOR);
-        roles.put(ParameterRole.FALSE_EASTING,  FALSE_EASTING);
-        roles.put(ParameterRole.FALSE_NORTHING, FALSE_NORTHING);
+        roles.put(ParameterRole.SCALE_FACTOR,     SCALE_FACTOR);
+        roles.put(ParameterRole.FALSE_EASTING,    FALSE_EASTING);
+        roles.put(ParameterRole.FALSE_NORTHING,   FALSE_NORTHING);
+        roles.put(ParameterRole.CENTRAL_MERIDIAN, LONGITUDE_OF_ORIGIN);
         return new Initializer(method, parameters, roles, variant);
     }
 
@@ -159,27 +160,14 @@ public class CylindricalEqualArea extends AuthalicConversion {
     private CylindricalEqualArea(final Initializer initializer) {
         super(initializer, null);
         variant = (Variant) initializer.variant;
-        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        /*
-         * The longitude of origin is normally subtracted in the 'normalize' matrix. But in the particular of case
-         * of this map projection we can apply -λ₀ on any matrix.  So we apply that operation on 'denormalize' for
-         * consistency with the Mercator projection and for increasing the chances to have cancellation when
-         * multiplying matrices together.
-         */
-        final double λ0 = initializer.getAndStore(LONGITUDE_OF_ORIGIN);
-        if (λ0 != 0) {
-            final DoubleDouble offset = DoubleDouble.createDegreesToRadians();
-            offset.multiplyGuessError(-λ0);
-            denormalize.convertBefore(0, null, offset);
-        }
         /*
          * Compute the scale factor as k₀ = cosφ₁/√(1 - ℯ²⋅sin²φ₁), multiplied by user-specified scale factor if any.
          * Explicit scale factor is not formally a Cylindrical Equal Area parameter (it is rather computed from φ₁),
          * but we nevertheless support it.
          */
         final double φ1 = toRadians(initializer.getAndStore(STANDARD_PARALLEL));
-        final DoubleDouble k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
-        k0.multiplyGuessError(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
+        final DoubleDouble k0 = initializer.scaleAtφ(sin(φ1), cos(φ1))
+                .multiply(initializer.getAndStore(Mercator1SP.SCALE_FACTOR));
         /*
          * In most Apache SIS map projection implementations, the scale factor is handled by the super-class by
          * specifying a ParameterRole.SCALE_FACTOR. However, in the case of this CylindricalEqualArea we rather
@@ -191,10 +179,11 @@ public class CylindricalEqualArea extends AuthalicConversion {
          * Furthermore, we also multiply y by (1-ℯ²)/2 for avoiding the need to recompute this constant during
          * the projection of every point.
          */
-        final DoubleDouble ik = new DoubleDouble(1d);
-        ik.subtract(initializer.eccentricitySquared);
-        ik.multiply(0.5);                   // This line need to be cancelled when using spherical formulas.
-        ik.divide(k0);
+        DoubleDouble ik;
+        ik = DoubleDouble.ONE.subtract(initializer.eccentricitySquared);
+        ik = ik.multiply0(0.5);              // This line need to be cancelled when using spherical formulas.
+        ik = ik.divide(k0);
+        final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k0, null);
         denormalize.convertAfter(1, ik, null);
     }

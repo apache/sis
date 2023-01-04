@@ -61,7 +61,7 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see ObliqueStereographic
  *
@@ -233,7 +233,7 @@ public class PolarStereographic extends ConformalProjection {
              *
              * In the spherical case, should give ρ == 2.
              */
-            ρ = new DoubleDouble(2 / sqrt(pow(1+eccentricity, 1+eccentricity)
+            ρ = DoubleDouble.of0(2 / sqrt(pow(1+eccentricity, 1+eccentricity)
                                         * pow(1-eccentricity, 1-eccentricity)));
             ρF = null;
         } else {
@@ -255,9 +255,9 @@ public class PolarStereographic extends ConformalProjection {
              * In the spherical case, should give ρ = 1 + sinφ1   (Snyder 21-7 and 21-11).
              */
             final double sinφ1 = sin(φ1);
-            final double mF = initializer.scaleAtφ(sinφ1, cos(φ1));
-            ρ = new DoubleDouble(mF / expΨ(φ1, eccentricity*sinφ1));
-            ρF = (variant == Variant.C) ? new DoubleDouble(-mF) : null;
+            final DoubleDouble mF = initializer.scaleAtφ(sinφ1, cos(φ1));
+            ρ  = mF.divide0(expΨ(φ1, eccentricity*sinφ1));
+            ρF = (variant == Variant.C) ? mF.negate() : null;
         }
         /*
          * At this point, all parameters have been processed. Now process to their
@@ -267,8 +267,8 @@ public class PolarStereographic extends ConformalProjection {
         denormalize.convertBefore(0, ρ, null);
         denormalize.convertBefore(1, ρ, ρF);
         if (isNorth) {
-            final Number reverseSign = new DoubleDouble(-1d);
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
+            final Number reverseSign = DoubleDouble.of(-1);
             normalize  .convertAfter (1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);
         }

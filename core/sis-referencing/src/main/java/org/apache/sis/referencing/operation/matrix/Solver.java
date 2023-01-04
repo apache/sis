@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  JAMA team
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
@@ -324,8 +324,6 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
         assert errorLU == GeneralMatrix.indexOfErrors(size, size, LU);
         final int[] pivot = ArraysExt.range(0, size);
         final double[]  column = new double[size * 2];  // [0 … size-1] : column values; [size … 2*size-1] : error terms.
-        final DoubleDouble acc = new DoubleDouble();    // Temporary variable for sum ("accumulator") and subtraction.
-        final DoubleDouble rat = new DoubleDouble();    // Temporary variable for products and ratios.
         for (int i=0; i<size; i++) {
             /*
              * Make a copy of the i-th column.
@@ -348,14 +346,13 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             for (int j=0; j<size; j++) {
                 final int rowOffset = j*size;
                 final int kmax = Math.min(j,i);
-                acc.clear();
+                var acc = DoubleDouble.ZERO;
                 for (int k=0; k<kmax; k++) {
-                    rat.setFrom(LU, rowOffset + k, errorLU);
-                    rat.multiply(column, k, size);
-                    acc.add(rat);
+                    var rat = DoubleDouble.ofPair(LU, rowOffset + k, errorLU);
+                    rat = rat.multiply(column, k, size);
+                    acc = acc.add(rat);
                 }
-                acc.subtract(column, j, size);
-                acc.negate();
+                acc = DoubleDouble.ofPair(column, j, size).subtract(acc);
                 acc.storeTo(column, j, size);
                 acc.storeTo(LU, rowOffset + i, errorLU);
             }
@@ -373,7 +370,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                 final int pRow = p*size;
                 final int iRow = i*size;
                 for (int k=0; k<size; k++) {                                // Swap two full rows.
-                    DoubleDouble.swap(LU, pRow + k, iRow + k, errorLU);
+                    swap(LU, pRow + k, iRow + k, errorLU);
                 }
                 ArraysExt.swap(pivot, p, i);
             }
@@ -388,13 +385,11 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
              *         }
              *     }
              */
-            acc.setFrom(LU, i*size + i, errorLU);
+            var acc = DoubleDouble.ofPair(LU, i*size + i, errorLU);
             if (!acc.isZero()) {
                 for (int j=i; ++j < size;) {
                     final int t = j*size + i;
-                    rat.setFrom(acc);
-                    rat.inverseDivide(LU, t, errorLU);
-                    rat.storeTo      (LU, t, errorLU);
+                    divide(LU, t, errorLU, acc);
                 }
             }
         }
@@ -403,7 +398,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          * Ensure that the matrix is not singular.
          */
         for (int j=0; j<size; j++) {
-            rat.setFrom(LU, j*size + j, errorLU);
+            var rat = DoubleDouble.ofPair(LU, j*size + j, errorLU);
             if (rat.isZero()) {
                 throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.SingularMatrix));
             }
@@ -440,11 +435,10 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                 final int loRowOffset = j*innerSize;        // Offset of some row after the current row.
                 final int luRowOffset = j*size;             // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
-                    acc.setFrom (elements, loRowOffset + i, errorOffset);
-                    rat.setFrom (elements, rowOffset   + i, errorOffset);
-                    rat.multiply(LU,       luRowOffset + k, errorLU);
-                    acc.subtract(rat);
-                    acc.storeTo (elements, loRowOffset + i, errorOffset);
+                    var acc = DoubleDouble.ofPair(elements, loRowOffset + i, errorOffset);
+                    var rat = DoubleDouble.ofPair(elements, rowOffset   + i, errorOffset);
+                    acc = acc.subtract(rat.multiply(LU,     luRowOffset + k, errorLU));
+                    acc.storeTo(elements, loRowOffset + i, errorOffset);
                 }
             }
         }
@@ -464,25 +458,55 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          *     }
          */
         for (int k=size; --k >= 0;) {
-            final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
-            acc.setFrom(LU, k*size + k, errorLU);       // A diagonal element on the current row.
-            for (int i=0; i<innerSize; i++) {           // Apply to all columns in the current row.
-                rat.setFrom(acc);
-                rat.inverseDivide(elements, rowOffset + i, errorOffset);
-                rat.storeTo      (elements, rowOffset + i, errorOffset);
+            final int rowOffset = k*innerSize;                          // Offset of row computed by current iteration.
+            var acc = DoubleDouble.ofPair(LU, k*size + k, errorLU);     // A diagonal element on the current row.
+            for (int i=0; i<innerSize; i++) {                           // Apply to all columns in the current row.
+                divide(elements, rowOffset + i, errorOffset, acc);
             }
             for (int j=0; j<k; j++) {
-                final int upRowOffset = j*innerSize;    // Offset of a row before (locate upper) the current row.
-                acc.setFrom(LU, j*size + k, errorLU);   // Same column than the diagonal element, but in the upper row.
-                for (int i=0; i<innerSize; i++) {       // Apply to all columns in the upper row.
-                    rat.setFrom(elements, rowOffset + i, errorOffset);
-                    rat.multiply(acc);
-                    rat.subtract(elements, upRowOffset + i, errorOffset);
-                    rat.negate();
+                final int upRowOffset = j*innerSize;                        // Offset of a row before (locate upper) the current row.
+                acc = DoubleDouble.ofPair(LU, j*size + k, errorLU);         // Same column than the diagonal element, but in the upper row.
+                for (int i=0; i<innerSize; i++) {                           // Apply to all columns in the upper row.
+                    DoubleDouble rat;
+                    rat = DoubleDouble.ofPair(elements, rowOffset   + i, errorOffset).multiply(acc);
+                    rat = DoubleDouble.ofPair(elements, upRowOffset + i, errorOffset).subtract(rat);
                     rat.storeTo(elements, upRowOffset + i, errorOffset);
                 }
             }
         }
         return result;
+    }
+
+    /**
+     * Divides an element of the matrix by the given double-double value.
+     * The matrix element is updated with the result.
+     *
+     * @param  elements     the array from which to get the value and error.
+     * @param  rowOffset    index of the value in the given array.
+     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
+     * @param  acc          the divisor.
+     */
+    private static void divide(final double[] elements, final int rowOffset, final int errorOffset, final DoubleDouble acc) {
+        DoubleDouble.ofPair(elements, rowOffset, errorOffset).divide(acc)
+                   .storeTo(elements, rowOffset, errorOffset);
+    }
+
+    /**
+     * Swaps two double-double values in the given array.
+     *
+     * @param  array        the array where to swap the values and errors.
+     * @param  i0           index of the first value to swap.
+     * @param  i1           index of the second value to swap.
+     * @param  errorOffset  offset to add to the indices in order to get the error indices in the given array.
+     *
+     * @see org.apache.sis.util.ArraysExt#swap(double[], int, int)
+     */
+    private static void swap(final double[] array, int i0, int i1, final int errorOffset) {
+        double t = array[i0];
+        array[i0] = array[i1];
+        array[i1] = t;
+        t = array[i0 += errorOffset];
+        array[i0] = array[i1 += errorOffset];
+        array[i1] = t;
     }
 }

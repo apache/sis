@@ -186,7 +186,9 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         }
         boolean isValid = true;
         while (--i >= 0) {
-            isValid &= Numerics.equals(getNumber(i / numCol, i % numCol).doubleValue(), elements[i]);
+            final double a = getNumber(i / numCol, i % numCol).doubleValue();
+            final double b = elements[i];
+            isValid &= (a == b) || (Double.isNaN(a) == Double.isNaN(b));
         }
         return isValid;
     }
@@ -267,15 +269,16 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * This method does not need to verify argument validity.
      */
     @Override
-    final void get(final int row, final int column, final DoubleDouble dd) {
+    final DoubleDouble getDD(final int row, final int column) {
         int i = row * numCol + column;
-        dd.value = elements[i];
+        final double value = elements[i];
         i += numRow * numCol;
         if (i < elements.length) {
-            dd.error = elements[i];
+            final DoubleDouble dd = DoubleDouble.of(value, elements[i]);
             assert dd.equals(getNumber(row, column));
+            return dd;
         } else {
-            dd.error = DoubleDouble.errorForWellKnownValue(dd.value);
+            return DoubleDouble.of(value);
         }
     }
 
@@ -341,7 +344,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
             final double value = elements[i];
             i += numRow * numCol;
             if (i < elements.length) {
-                return new DoubleDouble(value, elements[i]);
+                return DoubleDouble.of(value, elements[i]);
             } else {
                 return value;
             }
@@ -495,15 +498,12 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         }
         boolean isExtended = false;
         for (int i=0; i<length; i++) {
-            Number value = newValues[i];
-            if (DoubleDouble.shouldConvert(value)) {
-                value = new DoubleDouble(value);
-            }
+            final DoubleDouble value = DoubleDouble.of(newValues[i]);
             final double element = value.doubleValue();
             elements[i] = element;
             final double error;
-            if (value instanceof DoubleDouble) {
-                error = ((DoubleDouble) value).error;
+            if (value.error != 0) {
+                error = value.error;
                 /*
                  * If this is the first time that we found an explicit error term, then we need to
                  * initialize all elements before the current one because they were left unitialized
@@ -678,23 +678,20 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         /*
          * Compute the product, to be stored directly in 'this'.
          */
-        final DoubleDouble dot = new DoubleDouble();
-        final DoubleDouble sum = new DoubleDouble();
         for (int k=0,j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                sum.clear();
+                var sum = DoubleDouble.ZERO;
                 double max = 0;
                 int iB = i;                                 // Index of values in a single column of B.
                 int iA = j * nc;                            // Index of values in a single row of A.
                 final int nextRow = iA + nc;
                 while (iA < nextRow) {
-                    dot.setFrom(eltA, iA, errA);
+                    var dot = DoubleDouble.ofPair(eltA, iA, errA);
                     if (!dot.isZero()) {                    // For avoiding multiplication with NaN values.
-                        final double vB = eltB[iB];
-                        final double eB = eltB[iB + errB];
-                        if (vB != 0 || eB != 0) {           // For avoiding multiplication with NaN values.
-                            dot.multiply(vB, eB);
-                            sum.add(dot);
+                        final var vB = DoubleDouble.ofPair(eltB, iB, errB);
+                        if (!vB.isZero()) {                 // For avoiding multiplication with NaN values.
+                            dot = dot.multiply(vB);
+                            sum = sum.add(dot);
                             final double value = Math.abs(dot.value);
                             if (value > max) max = value;
                         }
@@ -703,7 +700,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
                     iA++;                                   // Move to next column of A.
                 }
                 if (Math.abs(sum.value) < Math.ulp(max) * ZERO_THRESHOLD) {
-                    sum.clear();                            // Sum is not significant according double arithmetic.
+                    sum = DoubleDouble.ZERO;                // Sum is not significant according double arithmetic.
                 }
                 sum.storeTo(elements, k++, errorOffset);
             }

@@ -142,7 +142,7 @@ import org.apache.sis.measure.Units;
  * NTv2 should be preferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -702,12 +702,12 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @return a translation value close to the average for the given dimension.
      */
     public double getCellMean(final int dim) {
-        final DoubleDouble sum = new DoubleDouble();
+        DoubleDouble sum = DoubleDouble.ZERO;
         final int nx = gridSize[0];
         final int ny = gridSize[1];
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
-                sum.addKahan(getCellValue(dim, gridX, gridY));
+                sum = sum.add0(getCellValue(dim, gridX, gridY));
             }
         }
         return sum.doubleValue() / (nx * ny);

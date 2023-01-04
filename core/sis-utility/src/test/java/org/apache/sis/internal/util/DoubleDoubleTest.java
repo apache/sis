@@ -37,7 +37,7 @@ import static java.lang.StrictMath.*;
  * Those tests need {@link DoubleDouble#DISABLED} to be set to {@code false}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
@@ -75,10 +75,10 @@ public final class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * Fetches the next {@code DoubleDouble} random values and store them in the given object.
+     * Fetches the next {@code DoubleDouble} random value.
      */
-    private void nextRandom(final DoubleDouble dd) {
-        dd.setToSum(nextRandom(), random.nextDouble());
+    private DoubleDouble nextRandomDD() {
+        return DoubleDouble.sum(nextRandom(), random.nextDouble());
     }
 
     /**
@@ -125,12 +125,10 @@ public final class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * Tests {@link DoubleDouble#normalize()}.
+     * Tests {@link DoubleDouble#quickSum(double, double)}.
      */
     @Test
-    @DependsOnMethod("testSetToQuickSum")
-    public void testNormalize() {
-        final DoubleDouble dd = new DoubleDouble();
+    public void testQuickSum() {
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             double a = nextRandom();
             double b = nextRandom();
@@ -139,76 +137,37 @@ public final class DoubleDoubleTest extends TestCase {
                 a = b;
                 b = t;
             }
-            dd.value = a;
-            dd.error = b;
-            dd.normalize();
+            var dd = DoubleDouble.quickSum(a, b);
             assertNormalizedAndEquals(a + b, dd);
             assertExtendedEquals(new BigDecimal(a).add(new BigDecimal(b)), dd, ADD_TOLERANCE_FACTOR);
         }
     }
 
     /**
-     * Tests {@link DoubleDouble#setToQuickSum(double, double)}.
+     * Tests {@link DoubleDouble#sum(double, double)}.
      */
     @Test
-    public void testSetToQuickSum() {
-        final DoubleDouble dd = new DoubleDouble();
-        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            double a = nextRandom();
-            double b = nextRandom();
-            if (abs(a) < abs(b)) {
-                final double t = a;
-                a = b;
-                b = t;
-            }
-            dd.setToQuickSum(a, b);
-            assertNormalizedAndEquals(a + b, dd);
-            assertExtendedEquals(new BigDecimal(a).add(new BigDecimal(b)), dd, ADD_TOLERANCE_FACTOR);
-        }
-    }
-
-    /**
-     * Tests {@link DoubleDouble#setToSum(double, double)}.
-     */
-    @Test
-    public void testSetToSum() {
-        final DoubleDouble dd = new DoubleDouble();
+    public void testSum() {
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final double a = nextRandom();
             final double b = nextRandom();
-            dd.setToSum(a, b);
+            var dd = DoubleDouble.sum(a, b);
             assertNormalizedAndEquals(a + b, dd);
             assertExtendedEquals(new BigDecimal(a).add(new BigDecimal(b)), dd, ADD_TOLERANCE_FACTOR);
         }
     }
 
     /**
-     * Tests {@link DoubleDouble#setToProduct(double, double)}.
+     * Tests {@link DoubleDouble#product(double, double)}.
      */
     @Test
-    public void testSetToProduct() {
-        final DoubleDouble dd = new DoubleDouble();
+    public void testProduct() {
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final double a = nextRandom();
             final double b = nextRandom();
-            dd.setToProduct(a, b);
+            var dd = DoubleDouble.product(a, b);
             assertNormalizedAndEquals(a * b, dd);
             assertExtendedEquals(new BigDecimal(a).multiply(new BigDecimal(b)), dd, ADD_TOLERANCE_FACTOR);
-        }
-    }
-
-    /**
-     * Tests {@link DoubleDouble#addKahan(double)}.
-     */
-    @Test
-    public void testAddKahan() {
-        final DoubleDouble dd = new DoubleDouble(1, 0);
-        BigDecimal expected = BigDecimal.ONE;
-        for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            final double b = random.nextDouble();
-            dd.addKahan(b);
-            expected = expected.add(new BigDecimal(b));
-            assertExtendedEquals(expected, dd, ADD_TOLERANCE_FACTOR * NUMBER_OF_REPETITIONS);
         }
     }
 
@@ -216,16 +175,13 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#add(DoubleDouble)}.
      */
     @Test
-    @DependsOnMethod({"testSetToSum", "testNormalize"})
+    @DependsOnMethod("testSum")
     public void testAdd() {
-        final DoubleDouble dd = new DoubleDouble();
-        final DoubleDouble op = new DoubleDouble();
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            nextRandom(dd);
-            nextRandom(op);
+            final DoubleDouble dd = nextRandomDD();
+            final DoubleDouble op = nextRandomDD();
             final BigDecimal expected = toBigDecimal(dd).add(toBigDecimal(op));
-            dd.add(op);     // Must be after `expected` computation.
-            assertExtendedEquals(expected, dd, ADD_TOLERANCE_FACTOR);
+            assertExtendedEquals(expected, dd.add(op), ADD_TOLERANCE_FACTOR);
         }
     }
 
@@ -233,16 +189,13 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#multiply(DoubleDouble)}.
      */
     @Test
-    @DependsOnMethod({"testSetToProduct", "testNormalize"})
+    @DependsOnMethod("testProduct")
     public void testMultiply() {
-        final DoubleDouble dd = new DoubleDouble();
-        final DoubleDouble op = new DoubleDouble();
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            nextRandom(dd);
-            nextRandom(op);
+            final DoubleDouble dd = nextRandomDD();
+            final DoubleDouble op = nextRandomDD();
             final BigDecimal expected = toBigDecimal(dd).multiply(toBigDecimal(op), MathContext.DECIMAL128);
-            dd.multiply(op);    // Must be after `expected` computation.
-            assertExtendedEquals(expected, dd, PRODUCT_TOLERANCE_FACTOR);
+            assertExtendedEquals(expected, dd.multiply(op), PRODUCT_TOLERANCE_FACTOR);
         }
     }
 
@@ -250,16 +203,13 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#divide(DoubleDouble)}.
      */
     @Test
-    @DependsOnMethod({"testMultiply", "testSetToSum", "testSetToQuickSum"})
+    @DependsOnMethod({"testMultiply", "testSum", "testQuickSum"})
     public void testDivide() {
-        final DoubleDouble dd = new DoubleDouble();
-        final DoubleDouble op = new DoubleDouble();
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            nextRandom(dd);
-            nextRandom(op);
+            final DoubleDouble dd = nextRandomDD();
+            final DoubleDouble op = nextRandomDD();
             final BigDecimal expected = toBigDecimal(dd).divide(toBigDecimal(op), MathContext.DECIMAL128);
-            dd.divide(op);      // Must be after `expected` computation.
-            assertExtendedEquals(expected, dd, PRODUCT_TOLERANCE_FACTOR);
+            assertExtendedEquals(expected, dd.divide(op), PRODUCT_TOLERANCE_FACTOR);
         }
     }
 
@@ -269,8 +219,7 @@ public final class DoubleDoubleTest extends TestCase {
     @Test
     @DependsOnMethod("testDivide")
     public void testRatio_1m_1p() {
-        final DoubleDouble t = new DoubleDouble(0.25);
-        t.ratio_1m_1p();
+        final DoubleDouble t = DoubleDouble.of0(0.25).ratio_1m_1p();
         assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue(), STRICT);
     }
 
@@ -287,8 +236,7 @@ public final class DoubleDoubleTest extends TestCase {
     @DependsOnMethod({"testMultiply", "testDivide"})
     public void testSqrt() {
         final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
-        final DoubleDouble dd = new DoubleDouble(2d);
-        dd.sqrt();
+        DoubleDouble dd = DoubleDouble.of(2).sqrt();
         assertNormalizedAndEquals(sqrt(2), dd);
         assertEquals(0, SQRT2.subtract(toBigDecimal(dd)).doubleValue(), 1E-32);
         /*
@@ -297,19 +245,17 @@ public final class DoubleDoubleTest extends TestCase {
          * a tolerance value 1000 time the one that we used for √2.
          */
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
-            nextRandom(dd);
+            dd = nextRandomDD();
             if (dd.value < 0) {
-                dd.negate();
+                dd = dd.negate();
             }
-            final double value = dd.value;
-            final double error = dd.error;
-            dd.square();
-            dd.sqrt();
-            dd.subtract(value, error);
+            final DoubleDouble original = dd;
+            dd = dd.square();
+            dd = dd.sqrt();
+            dd = dd.subtract(original);
             assertEquals(0, dd.doubleValue(), 1E-29);
         }
-        dd.clear();
-        dd.sqrt();
+        dd = DoubleDouble.ZERO.sqrt();
         assertTrue(dd.isZero());
     }
 
@@ -319,8 +265,7 @@ public final class DoubleDoubleTest extends TestCase {
     @Test
     @DependsOnMethod({"testMultiply", "testAdd"})
     public void testSeries() {
-        final DoubleDouble t = new DoubleDouble(2d);
-        t.series(1, 1./3, 1./9, 1./7, 1./13);                                       // Random coefficients.
+        DoubleDouble t = DoubleDouble.of(2).series(1, 1./3, 1./9, 1./7, 1./13);     // Random coefficients.
         assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue(), STRICT);
     }
 
@@ -396,7 +341,7 @@ public final class DoubleDoubleTest extends TestCase {
     @DependsOnMethod("testArraysConsistency")
     public void testErrorForWellKnownValue() {
         for (final String text : PREDEFINED_VALUES) {
-            final double     value         = Double.valueOf(text);
+            final double     value         = Double.parseDouble(text);
             final BigDecimal accurate      = new BigDecimal(text);
             final BigDecimal approximation = new BigDecimal(value);
             final double     expected      = accurate.subtract(approximation).doubleValue();
@@ -435,18 +380,18 @@ public final class DoubleDoubleTest extends TestCase {
     }
 
     /**
-     * Tests the {@code DoubleDouble.createFoo()} methods.
+     * Tests the {@code DoubleDouble} constants.
      */
     @Test
     @DependsOnMethod("testErrorForWellKnownValue")
-    public void testCreate() {
+    public void testConstants() {
         for (int i=0; ; i++) {
             final DoubleDouble dd;
             switch (i) {
-                case 0:  dd = DoubleDouble.createPi();               break;
-                case 1:  dd = DoubleDouble.createRadiansToDegrees(); break;
-                case 2:  dd = DoubleDouble.createDegreesToRadians(); break;
-                case 3:  dd = DoubleDouble.createSecondsToRadians(); break;
+                case 0:  dd = DoubleDouble.PI;                 break;
+                case 1:  dd = DoubleDouble.RADIANS_TO_DEGREES; break;
+                case 2:  dd = DoubleDouble.DEGREES_TO_RADIANS; break;
+                case 3:  dd = DoubleDouble.SECONDS_TO_RADIANS; break;
                 default: return;                                             // Test done.
             }
             assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
@@ -459,12 +404,12 @@ public final class DoubleDoubleTest extends TestCase {
     @Test
     public void testLong() {
         long value = Long.MAX_VALUE - 10;
-        DoubleDouble t = new DoubleDouble(value);
+        DoubleDouble t = DoubleDouble.of(value);
         assertEquals(-10, t.error, STRICT);
         assertEquals(value, t.longValue());
 
         value = Long.MIN_VALUE + 10;
-        t = new DoubleDouble(value);
+        t = DoubleDouble.of(value);
         assertEquals(10, t.error, STRICT);
         assertEquals(value, t.longValue());
     }

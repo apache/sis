@@ -79,7 +79,7 @@ public final class MatricesTest extends TestCase {
          * able to find back our error terms.
          */
         for (int i = 0; i < elements.length; i += SIZE+1) {
-            elements[i] = new DoubleDouble(elements[i].doubleValue(), SENTINEL_VALUE);
+            elements[i] = DoubleDouble.of(elements[i].doubleValue(), SENTINEL_VALUE);
         }
         final MatrixSIS matrix = Matrices.create(SIZE, SIZE, elements);
         assertInstanceOf("Created with DoubleDouble elements", GeneralMatrix.class, matrix);

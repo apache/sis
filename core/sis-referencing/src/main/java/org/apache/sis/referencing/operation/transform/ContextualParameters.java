@@ -464,11 +464,10 @@ public class ContextualParameters extends Parameters implements Serializable {
          * In theory the check for (λ0 != 0) is useless. However, Java has a notion of negative zero, and we want
          * to avoid negative zeros because we do not want them to appear in WKT formatting of matrix elements.
          */
-        final DoubleDouble toRadians = DoubleDouble.createDegreesToRadians();
+        final DoubleDouble toRadians = DoubleDouble.DEGREES_TO_RADIANS;
         DoubleDouble offset = null;
         if (λ0 != 0) {
-            offset = DoubleDouble.createAndGuessError(-λ0);
-            offset.multiply(toRadians);
+            offset = DoubleDouble.of(-λ0).multiply(toRadians);
         }
         final MatrixSIS normalize = (MatrixSIS) this.normalize;         // Must be the same instance, not a copy.
         normalize.convertBefore(0, toRadians, offset);
@@ -494,7 +493,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     public synchronized MatrixSIS denormalizeGeographicOutputs(final double λ0) {
         ensureModifiable();
-        final DoubleDouble toDegrees = DoubleDouble.createRadiansToDegrees();
+        final DoubleDouble toDegrees = DoubleDouble.RADIANS_TO_DEGREES;
         final MatrixSIS denormalize = (MatrixSIS) this.denormalize;         // Must be the same instance, not a copy.
         denormalize.convertAfter(0, toDegrees, (λ0 != 0) ? λ0 : null);
         denormalize.convertAfter(1, toDegrees, null);

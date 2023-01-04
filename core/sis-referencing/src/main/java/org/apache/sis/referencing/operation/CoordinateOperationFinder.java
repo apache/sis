@@ -872,9 +872,9 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * This "epoch shift" is in units of `targetCRS`.
          */
         final Unit<Time> targetUnit = targetCS.getAxis(0).getUnit().asType(Time.class);
-        DoubleDouble epochShift = new DoubleDouble(sourceDatum.getOrigin().getTime());
-        epochShift.subtract(new DoubleDouble(targetDatum.getOrigin().getTime()));
-        epochShift = DoubleDouble.castOrCopy(Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift));
+        DoubleDouble epochShift = DoubleDouble.of(sourceDatum.getOrigin().getTime());
+        epochShift = epochShift.subtract(targetDatum.getOrigin().getTime());
+        epochShift = DoubleDouble.of(Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift));
         /*
          * Check axis directions. The method `swapAndScaleAxes` should returns a matrix of size 2×2.
          * The element at index (0,0) may be +1 if source and target axes are in the same direction,
@@ -891,9 +891,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
-        final DoubleDouble translation = DoubleDouble.castOrCopy(matrix.getNumber(0, translationColumn));
-        translation.add(epochShift);
-        matrix.setNumber(0, translationColumn, translation);
+        var translation = DoubleDouble.of(matrix.getNumber(0, translationColumn));
+        matrix.setNumber(0, translationColumn, translation.add(epochShift));
         return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
     }
 

@@ -58,7 +58,7 @@ import static org.apache.sis.internal.referencing.Formulas.JULIAN_YEAR_LENGTH;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.4
  */
 @SuppressWarnings("CloneableImplementsClone")                   // Fields in this class do not need cloning.
@@ -151,35 +151,34 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
-     * Returns the elapsed time from the {@linkplain TimeDependentBWP#getTimeReference() reference time}
-     * to the given date in millennium, or {@code null} if none.
+     * Returns the elapsed time from the reference time to the given date, or {@code null} if none.
+     * The reference time is given by {@link #getTimeReference()}.
+     *
+     * @return fractional number of tropical years since reference time, or {@code null}.
      */
     @Override
     final DoubleDouble period(final Date time) {
         if (time != null) {
             final long millis = time.getTime() - timeReference;
             if (millis != 0) {                                          // Returns null for 0 as an optimization.
-                final DoubleDouble period = new DoubleDouble(millis);
-                period.divide(1000 * JULIAN_YEAR_LENGTH);
-                return period;
+                return DoubleDouble.of(millis).divide(JULIAN_YEAR_LENGTH);
             }
         }
         return null;
     }
 
     /**
-     * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
-     * then the returned value shall be corrected for the given period.
+     * Returns the parameter at the given index, taking rate of change in account.
+     * The given {@code factor} argument shall contain a conversion factor from mm/year to m/year
+     * except for parameter at index 6.
      *
      * @param  index   0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
-     * @param  period  the value computed by {@link #period(Date)}, or {@code null}.
+     * @param  factor  factor by which to multiply the rate of change, or {@code null}.
      */
     @Override
-    final DoubleDouble param(final int index, final DoubleDouble period) {
-        final DoubleDouble p = super.param(index, period);
-        if (period != null) {
-            final double value = period.value;
-            final double error = period.error;
+    final DoubleDouble param(final int index, final DoubleDouble factor) {
+        DoubleDouble p = super.param(index, factor);
+        if (factor != null) {
             final double d;
             switch (index) {
                 case 0: d = dtX; break;
@@ -188,13 +187,10 @@ public class TimeDependentBWP extends BursaWolfParameters {
                 case 3: d = drX; break;
                 case 4: d = drY; break;
                 case 5: d = drZ; break;
-                case 6: d = ddS; period.multiply(1000); break;
+                case 6: d = ddS; break;
                 default: throw new AssertionError(index);
             }
-            period.multiplyGuessError(d);
-            p.add(period);
-            period.value = value;
-            period.error = error;
+            p = p.add(factor.multiply(d));
         }
         return p;
     }

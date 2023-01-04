@@ -72,7 +72,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;       // F
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.parameter.TensorParameters
  *
@@ -282,14 +282,14 @@ public final class Matrices extends Static {
                          * See the comment in transform(Envelope, Envelope) for an explanation about why
                          * we use the lower/upper corners instead of getMinimum()/getMaximum() methods.
                          */
-                        final DoubleDouble scale = new DoubleDouble(same ? +1d : -1d);
-                        scale.multiplyGuessError(dstEnvelope.getSpan(dstIndex));
-                        scale.divideGuessError  (srcEnvelope.getSpan(srcIndex));
-
-                        final DoubleDouble translate = new DoubleDouble(scale);
-                        translate.multiplyGuessError((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
-                        translate.negate();
-                        translate.addGuessError(dstCorner.getOrdinate(dstIndex));
+                        DoubleDouble scale, translate;
+                        scale = DoubleDouble.of(dstEnvelope.getSpan(dstIndex))
+                                        .divide(srcEnvelope.getSpan(srcIndex));
+                        if (!same) {
+                            scale = scale.negate();
+                        }
+                        translate = scale.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex));
+                        translate = DoubleDouble.of(dstCorner.getOrdinate(dstIndex)).subtract(translate);
 
                         matrix.setNumber(dstIndex, srcIndex,       scale);
                         matrix.setNumber(dstIndex, srcAxes.length, translate);
@@ -650,10 +650,9 @@ public final class Matrices extends Static {
         final int       stride   = sourceDimensions;
         final int       length   = sourceDimensions * targetDimensions;
         final double[]  sources  = getExtendedElements(subMatrix);
-        final var       transfer = (sources.length > length) ? new DoubleDouble() : null;
         final MatrixSIS matrix   = createZero(targetDimensions-- + expansion,
                                               sourceDimensions-- + expansion,
-                                              transfer != null);
+                                              sources.length > length);
         /*
          * Following code processes from upper row to lower row.
          * First, set the diagonal elements on leading new dimensions.
@@ -666,11 +665,11 @@ public final class Matrices extends Static {
          * which are unconditionally stored in the last column.
          */
         final int lastColumn = sourceDimensions + expansion;
-        matrix.setElements(sources, length, stride, transfer,
+        matrix.setElements(sources, length, stride,
                 0,                     0,                               // Source (row, colum)
                 firstAffectedCoordinate, firstAffectedCoordinate,       // Target (row, column)
                 targetDimensions,        sourceDimensions);             // Number of rows and columns to copy.
-        matrix.setElements(sources, length, stride, transfer,
+        matrix.setElements(sources, length, stride,
                 0,                       sourceDimensions,              // Source (row, colum):  last column
                 firstAffectedCoordinate, lastColumn,                    // Target (row, column): part of last column
                 targetDimensions,        1);                            // Copy some rows of only 1 column.
@@ -687,11 +686,11 @@ public final class Matrices extends Static {
          * this row contains only 0 element except for the last one, which is 1.
          */
         final int lastRow = targetDimensions + expansion;
-        matrix.setElements(sources, length, stride, transfer,
+        matrix.setElements(sources, length, stride,
                 targetDimensions, 0,                                // Source (row, colum):  last row
                 lastRow,          firstAffectedCoordinate,          // Target (row, column): part of last row
                 1,                sourceDimensions);                // Copy some columns of only 1 row.
-        matrix.setElements(sources, length, stride, transfer,
+        matrix.setElements(sources, length, stride,
                 targetDimensions, sourceDimensions,
                 lastRow,          lastColumn,
                 1,                1);
@@ -791,17 +790,16 @@ public final class Matrices extends Static {
         final int       stride   = srcCol;
         final int       length   = srcCol * srcRow;
         final double[]  sources  = getExtendedElements(matrix);
-        final var       transfer = (sources.length > length) ? new DoubleDouble() : null;
-        final MatrixSIS resized  = createZero(numRow, numCol, transfer != null);
+        final MatrixSIS resized  = createZero(numRow, numCol, sources.length > length);
         final int       copyRow  = Math.min(--numRow, --srcRow);
         final int       copyCol  = Math.min(--numCol, --srcCol);
         for (int j=copyRow; j<numRow; j++) {
             resized.setElement(j, j, 1);
         }
-        resized.setElements(sources, length, stride, transfer, 0,      0,       0,      0,       copyRow, copyCol);    // Shear and scale terms.
-        resized.setElements(sources, length, stride, transfer, 0,      srcCol,  0,      numCol,  copyRow, 1);          // Translation column.
-        resized.setElements(sources, length, stride, transfer, srcRow, 0,       numRow, 0,       1,       copyCol);    // Last row.
-        resized.setElements(sources, length, stride, transfer, srcRow, srcCol,  numRow, numCol,  1,       1);          // Last row.
+        resized.setElements(sources, length, stride, 0,      0,       0,      0,       copyRow, copyCol);    // Shear and scale terms.
+        resized.setElements(sources, length, stride, 0,      srcCol,  0,      numCol,  copyRow, 1);          // Translation column.
+        resized.setElements(sources, length, stride, srcRow, 0,       numRow, 0,       1,       copyCol);    // Last row.
+        resized.setElements(sources, length, stride, srcRow, srcCol,  numRow, numCol,  1,       1);          // Last row.
         return resized;
     }
 
