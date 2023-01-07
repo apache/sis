@@ -29,7 +29,7 @@ import org.apache.sis.internal.util.Numerics;
  * All {@code Fraction} instances are immutable and thus inherently thread-safe.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 public final class Fraction extends Number implements Comparable<Fraction>, Serializable {
@@ -443,6 +443,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * Returns this fraction rounded toward zero.
+     * If the fraction value is NaN, then this method returns 0.
      *
      * @return {@link #numerator} / {@link #denominator} rounded toward zero.
      *
@@ -452,33 +453,25 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     @Override
     public int intValue() {
-        return numerator / denominator;
+        return isNaN() ? 0 : numerator / denominator;
     }
 
-    /**
-     * Returns this fraction rounded toward zero, if the result can be represented as a short integer.
-     *
-     * @return this fraction rounded toward zero.
-     * @throws ArithmeticException if the result cannot be represented as a short integer.
+    /*
+     * Do not override `shortValue()` and `byteValue()` in order to keep a behavior
+     * consistent with all `Number` subclasses provided in the standard JDK: first
+     * a narrowing conversion to `int` followed by discarding the high order bits.
+     * Note than even a direct `(short) value` cast implicitly does above steps.
      */
-    @Override
-    public short shortValue() {
-        final int n = intValue();
-        if ((n & ~0xFFFF) == 0) return (short) n;
-        throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Short.SIZE));
-    }
 
     /**
-     * Returns this fraction rounded toward zero, if the result can be represented as a signed byte.
+     * Returns {@code true} if the numerator and denominator are both zero.
      *
-     * @return this fraction rounded toward zero.
-     * @throws ArithmeticException if the result cannot be represented as a signed byte.
+     * @return whether this fraction is 0/0.
+     *
+     * @since 1.4
      */
-    @Override
-    public byte byteValue() {
-        final int n = intValue();
-        if ((n & ~0xFF) == 0) return (byte) n;
-        throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Byte.SIZE));
+    public boolean isNaN() {
+        return (numerator | denominator) == 0;
     }
 
     /**

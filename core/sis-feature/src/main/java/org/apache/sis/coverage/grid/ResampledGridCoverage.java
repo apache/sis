@@ -354,7 +354,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             final int       crsDim     = vectors.getNumRow();                 // Number of dimensions of target CRS.
             final int       gridDim    = target.getDimension();               // Number of dimensions of target grid.
             final int       mappedDim  = Math.min(magnitudes.getNumCol(), Math.min(crsDim, gridDim));
-            final MatrixSIS crsToGrid  = Matrices.create(gridDim + 1, crsDim + 1, ExtendedPrecisionMatrix.ZERO);
+            final MatrixSIS crsToGrid  = Matrices.create(gridDim + 1, crsDim + 1, ExtendedPrecisionMatrix.CREATE_ZERO);
             final int[]     dimSelect  = (gridDim > crsDim && targetExtent != null) ?
                                          targetExtent.getSubspaceDimensions(crsDim) : null;
             /*

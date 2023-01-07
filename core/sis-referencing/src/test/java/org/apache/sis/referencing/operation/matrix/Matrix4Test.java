@@ -59,22 +59,10 @@ public final class Matrix4Test extends MatrixTestCase {
         initialize(-7053945420932915425L);
         final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix4 matrix = new Matrix4(
-                elements[ 0],
-                elements[ 1],
-                elements[ 2],
-                elements[ 3],
-                elements[ 4],
-                elements[ 5],
-                elements[ 6],
-                elements[ 7],
-                elements[ 8],
-                elements[ 9],
-                elements[10],
-                elements[11],
-                elements[12],
-                elements[13],
-                elements[14],
-                elements[15]);
+                elements[ 0], elements[ 1], elements[ 2], elements[ 3],
+                elements[ 4], elements[ 5], elements[ 6], elements[ 7],
+                elements[ 8], elements[ 9], elements[10], elements[11],
+                elements[12], elements[13], elements[14], elements[15]);
         validate(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
     }

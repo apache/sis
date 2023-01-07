@@ -21,8 +21,8 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.Arithmetic;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -32,7 +32,7 @@ import org.apache.sis.util.ArraysExt;
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
@@ -42,7 +42,7 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7382503993222285134L;
+    private static final long serialVersionUID = -3713820636959453961L;
 
     /**
      * Translation terms, to be applied in the same order than coordinate values.
@@ -51,18 +51,21 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     private final double[] offsets;
 
     /**
-     * The error terms in double-double arithmetic, or {@code null} if none.
-     * May be shorter than {@code offsets} if all remaining errors are zero.
+     * The offsets with potentially extended precision.
+     * Zero values <em>shall</em> be represented by null elements.
      */
-    private final double[] errors;
+    private final Number[] numbers;
 
     /**
      * Constructs an uniform translation transform for the given offset applied on all dimensions.
      */
-    TranslationTransform(final int dimension, double offset) {
-        offsets = new double[dimension];
-        Arrays.fill(offsets, offset);
-        errors = null;
+    TranslationTransform(final int dim, final double offset) {
+        offsets = new double[dim];
+        numbers = new Double[dim];
+        Arrays.fill(offsets, offset);       // Unconditional because the offset may be -0.
+        if (offset != 0) {
+            Arrays.fill(numbers, offset);
+        }
     }
 
     /**
@@ -70,29 +73,21 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
      */
     TranslationTransform(final double[] offsets) {
         this.offsets = offsets.clone();
-        this.errors  = null;
+        this.numbers = wrap(this.offsets);
     }
 
     /**
      * Creates a transform as the inverse of the given transform.
      */
     private TranslationTransform(final TranslationTransform other) {
-        offsets = negate(other.offsets);
-        errors  = negate(other.errors);
-        inverse = other;
-    }
-
-    /**
-     * Returns a new array with negative values of given array (can be {@code null}).
-     */
-    private static double[] negate(double[] array) {
-        if (array != null) {
-            array = array.clone();
-            for (int i=0; i<array.length; i++) {
-                array[i] = -array[i];
-            }
+        final int dim = other.offsets.length;
+        offsets = new double[dim];
+        numbers = new Number[dim];
+        for (int i=0; i<dim; i++) {
+            offsets[i] = -other.offsets[i];
+            numbers[i] = Arithmetic.negate(other.numbers[i]);
         }
-        return array;
+        inverse = other;
     }
 
     /**
@@ -100,47 +95,27 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
      * This constructors assumes that the matrix is square, affine and contains only
      * translation terms (this is not verified).
      */
-    TranslationTransform(final int size, final double[] elements) {
-        final int n = size * size;
+    TranslationTransform(final int size, final Number[] elements) {
         final int dim = size - 1;
-        offsets = new double[dim];
-        double[] errors = null;
-        int lastError = -1;
-        for (int i=0; i<dim; i++) {
-            int j = dim + i*size;
-            offsets[i] = elements[j];
-            if ((j += n) < elements.length) {
-                final double e = elements[j];
-                if (e != 0) {
-                    if (errors == null) {
-                        errors = new double[dim];
-                    }
-                    errors[i] = e;
-                    lastError = i;
-                }
-            }
-        }
-        this.errors = ArraysExt.resize(errors, lastError + 1);
+        numbers = new Number[dim];
+        offsets = ScaleTransform.store(elements, numbers, (i) -> dim + i*size);
     }
 
     /**
-     * Returns a copy of matrix elements, including error terms if any.
+     * Returns a copy of all matrix elements in a flat, row-major array.
+     * Zero values <em>shall</em> be null. Callers can write in the returned array.
      */
     @Override
-    public double[] getExtendedElements() {
-        final int dim = offsets.length;
-        final int numCol = getNumCol();
-        final int n = getNumRow() * numCol;
-        final double[] elements = new double[(errors == null) ? n : (n << 1)];
+    public Number[] getElementAsNumbers(final boolean writable) {
+        final int dim  = numbers.length;
+        final int size = dim + 1;
+        final Number[] elements = new Number[size * size];
         for (int i=0; i<dim; i++) {
-            int j = i*numCol;
-            elements[j +    i] = 1;
-            elements[j += dim] = offsets[i];
-            if (errors != null && i < errors.length) {
-                elements[j + n] = errors[i];
-            }
+            int j = i * size;
+            elements[j + i]   = 1;
+            elements[j + dim] = numbers[i];
         }
-        elements[n - 1] = 1;
+        elements[elements.length - 1] = 1;
         return elements;
     }
 
@@ -161,20 +136,15 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     }
 
     /**
-     * Returns the matrix element at the given index.
+     * Retrieves the value at the specified row and column of the matrix.
+     * If the value is zero, then this method <em>shall</em> return {@code null}.
      */
     @Override
-    public double getElement(final int row, final int column) {
-        final int dim = offsets.length;
+    public final Number getElementOrNull(final int row, final int column) {
+        final int dim = numbers.length;
         ArgumentChecks.ensureBetween("row",    0, dim, row);
         ArgumentChecks.ensureBetween("column", 0, dim, column);
-        if (column == row) {
-            return 1;
-        } else if (column == dim) {
-            return offsets[row];
-        } else {
-            return 0;
-        }
+        return (column == row) ? 1 : (column == dim) ? numbers[row] : null;
     }
 
     /**
@@ -182,8 +152,8 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
      */
     @Override
     public boolean isIdentity() {
-        for (int i=0; i<offsets.length; i++) {
-            if (offsets[i] != 0) {
+        for (int i=0; i<numbers.length; i++) {
+            if (numbers[i] != null) {
                 return false;
             }
         }
@@ -340,6 +310,6 @@ final class TranslationTransform extends AbstractLinearTransform implements Exte
     @Override
     protected boolean equalsSameClass(final Object object) {
         final TranslationTransform that = (TranslationTransform) object;
-        return Arrays.equals(offsets, that.offsets) && Arrays.equals(errors, that.errors);
+        return Arrays.equals(offsets, that.offsets) && Arrays.equals(numbers, that.numbers);
     }
 }

@@ -66,8 +66,8 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     @Test
     public void testExtendedPrecision() {
         final long value = 1000000000000010000L;
-        assertNotEquals(value, StrictMath.round((double) value));
-        final GeneralMatrix m = new GeneralMatrix(1, 1, false, 2);
+        assertNotEquals(value, StrictMath.round((double) value));       // Otherwise the test would be useless.
+        final GeneralMatrix m = new GeneralMatrix(1, 1, false);
         final DoubleDouble ddval = DoubleDouble.of(value);
         m.setNumber(0, 0, ddval);
         assertEquals(value, ddval.longValue());
@@ -76,38 +76,26 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link GeneralMatrix#getExtendedElements(Matrix, int, int, boolean)}.
-     * This test verifies that {@code getExtendedElements} can infer default error
-     * terms for some well known values.
-     *
-     * @see Matrix2Test#testGetExtendedElements()
+     * Tests {@link GeneralMatrix#getElementAsNumbers(boolean)}.
+     * This test verifies that the extra precision is preserved.
      */
     @Test
-    public void testGetExtendedElements() {
-        testGetExtendedElements(new GeneralMatrix(2, 2, new double[] {
-                StrictMath.PI / 180,            // Degrees to radians
-                180 / StrictMath.PI,            // Radians to degrees
-                0.9,                            // Grads to degrees
-                0.1234567}));                   // Random value with no special meaning.
-    }
-
-    /**
-     * Implementation of {@link #testGetExtendedElements()} shared by {@link Matrix2Test}.
-     */
-    static void testGetExtendedElements(final MatrixSIS matrix) {
-        final double[] elements = GeneralMatrix.getExtendedElements(matrix, Matrix2.SIZE, Matrix2.SIZE, false);
-        assertArrayEquals(new double[] {
-                // Same values than in the above matrix.
-                StrictMath.PI / 180,
-                180 / StrictMath.PI,
-                0.9,
-                0.1234567,
-
-                // Most values below this point are error terms copied from DoubleDouble.ERRORS.
-                 2.9486522708701687E-19,
-                -1.9878495670576283E-15,
-                -2.2204460492503132E-17,
-                -2.5483615218035994E-18}, elements, STRICT);
+    public void testGetElementAsNumbers() {
+        final Number[] numbers = {
+                DoubleDouble.DEGREES_TO_RADIANS,
+                DoubleDouble.RADIANS_TO_DEGREES,
+                0,
+                0.1234567   // Random value with no special meaning.
+        };
+        GeneralMatrix matrix = new GeneralMatrix(2, 2, numbers);
+        final Number[] elements = matrix.getElementAsNumbers(true);
+        assertNotSame("Shall be a copy.", numbers, elements);
+        /*
+         * The constructor shall have replaced 0 by null value.
+         */
+        assertEquals(0, numbers[2]);
+        numbers[2] = null;
+        assertArrayEquals(numbers, elements);
     }
 
     /**
@@ -118,8 +106,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testConvertBefore() {
-        testConvertBefore(new GeneralMatrix(3, 3, true, 1), true);    // Double precision
-        testConvertBefore(new GeneralMatrix(3, 3, true, 2), true);    // Double-double precision
+        testConvertBefore(new GeneralMatrix(3, 3, true), true);
     }
 
     /**
@@ -130,8 +117,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testConvertAfter() {
-        testConvertAfter(new GeneralMatrix(3, 3, true, 1));    // Double precision
-        testConvertAfter(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+        testConvertAfter(new GeneralMatrix(3, 3, true));
     }
 
     /**
@@ -142,8 +128,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testMultiplyVector() {
-        testMultiplyVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
-        testMultiplyVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+        testMultiplyVector(new GeneralMatrix(3, 3, true));
     }
 
     /**
@@ -154,7 +139,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testTranslateVector() {
-        testTranslateVector(new GeneralMatrix(3, 3, true, 1));    // Double precision
-        testTranslateVector(new GeneralMatrix(3, 3, true, 2));    // Double-double precision
+        testTranslateVector(new GeneralMatrix(3, 3, true));
     }
 }

@@ -1619,7 +1619,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     final MatrixSIS cornerToCRS(final Envelope env, final long flippedAxes, final int[] sourceDimensions) {
         final int       srcDim = getDimension();
         final int       tgtDim = env.getDimension();
-        final MatrixSIS affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
+        final MatrixSIS affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.CREATE_ZERO);
         for (int j=0; j<tgtDim; j++) {
             final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
             DoubleDouble scale;

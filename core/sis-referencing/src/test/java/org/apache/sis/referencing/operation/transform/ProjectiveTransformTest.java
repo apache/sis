@@ -50,7 +50,7 @@ import org.opengis.test.referencing.AffineTransformTest;
  * this time with NaN values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.5
  */
 @RunWith(TestRunner.class)
@@ -87,7 +87,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
                      * Opportunistically tests `ScaleTransform` together with `ProjectiveTransform`.
                      * We take `ScaleTransform` as a reference implementation because it is simpler.
                      */
-                    tr = new TransformResultComparator(tr, pt, STRICT);
+                    tr = new TransformResultComparator(tr, pt, 1E-12);
                 }
                 return tr;
             }

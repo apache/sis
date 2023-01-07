@@ -1410,7 +1410,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             MatrixSIS matrix = Matrices.copy(MathTransforms.getMatrix(cornerToCRS));
             final boolean isNonLinear = (matrix == null);
             if (isNonLinear) {
-                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.IDENTITY);
+                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.CREATE_IDENTITY);
             }
             /*
              * By dividing the matrix elements directly, we avoid some numerical errors.

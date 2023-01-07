@@ -1505,7 +1505,7 @@ search:         for (int j=domain(); --j >= 0;) {
         final int sourceDim = (sources != null) ? sources.length : gridSize.length;
         final int targetDim = targets.length;
         correlations = new double[targetDim];
-        final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.ZERO);
+        final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.CREATE_ZERO);
         matrix.setElement(targetDim, sourceDim, 1);
         for (int j=0; j < targetDim; j++) {
             final double c;

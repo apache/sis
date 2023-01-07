@@ -26,7 +26,7 @@ import org.apache.sis.util.resources.Errors;
  * is not modified anymore after {@code UnmodifiableMatrix} construction.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.6
  */
 final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
@@ -39,13 +39,21 @@ final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMat
      * The wrapped matrix.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private final Matrix matrix;
+    final Matrix matrix;
 
     /**
      * Creates a unmodifiable view of the given matrix.
      */
     UnmodifiableMatrix(final Matrix matrix) {
         this.matrix = matrix;
+    }
+
+    /**
+     * Returns the most direct matrix that we can use for extended precision.
+     * The returned matrix shall be considered read-only.
+     */
+    final ExtendedPrecisionMatrix asExtendePrecision() {
+        return ExtendedPrecisionMatrix.castOrElse(matrix, this);
     }
 
     /**
@@ -93,15 +101,29 @@ final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMat
     }
 
     /**
-     * Returns elements together with their error terms if available, or just the elements otherwise.
+     * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
+     * Zero values <em>shall</em> be null. Callers can write in the returned array if and only if the
+     * {@code writable} argument is {@code true}.
      */
     @Override
-    public double[] getExtendedElements() {
+    public Number[] getElementAsNumbers(final boolean writable) {
         if (matrix instanceof ExtendedPrecisionMatrix) {
-            return ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
-        } else {
-            return getElements();
+            return ((ExtendedPrecisionMatrix) matrix).getElementAsNumbers(writable);
         }
+        return ExtendedPrecisionMatrix.super.getElementAsNumbers(writable);
+    }
+
+    /**
+     * Retrieves the value at the specified row and column if different than zero.
+     * If the value is zero, then this method <em>shall</em> return {@code null}.
+     */
+    @Override
+    public Number getElementOrNull(final int row, final int column) {
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            return ((ExtendedPrecisionMatrix) matrix).getElementOrNull(row, column);
+        }
+        final double element = matrix.getElement(row, column);
+        return (element != 0) ? element : null;
     }
 
     /**

@@ -55,7 +55,7 @@ import org.apache.sis.math.DecimalFunctions;
  *
  * @since 0.4
  */
-public final class DoubleDouble extends Number {
+public final class DoubleDouble extends Number implements Comparable<DoubleDouble> {
     /**
      * For cross-version compatibility.
      */
@@ -183,6 +183,8 @@ public final class DoubleDouble extends Number {
 
     /**
      * A {@code DoubleDouble} instance for the NaN value.
+     *
+     * @see #isNaN()
      */
     public static final DoubleDouble NaN = new DoubleDouble(Double.NaN, Double.NaN);
 
@@ -215,11 +217,14 @@ public final class DoubleDouble extends Number {
      * {@code DoubleDouble}, {@link BigDecimal}, {@link BigInteger} or {@link Fraction},
      * then the error term will be taken in account.
      *
-     * @param  value    the value.
+     * @param  value    the value, or {@code null}.
      * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
-     * @return the value as a double-double number.
+     * @return the value as a double-double number, or {@code null} if the given number was null.
      */
     public static DoubleDouble of(Number value, final boolean decimal) {
+        if (value == null) {
+            return null;
+        }
         if (value instanceof DoubleDouble) {
             return (DoubleDouble) value;
         }
@@ -236,15 +241,15 @@ public final class DoubleDouble extends Number {
             value = new BigDecimal((BigInteger) value, MathContext.DECIMAL128);
         }
         v = value.doubleValue();
-        if (value instanceof Long) {
+        if (value instanceof Integer) {
+            error = 0;
+        } else if (value instanceof Long) {
             error = value.longValue() - (long) v;       // Need rounding toward zero.
         } else if (value instanceof BigDecimal) {
             // Really need new BigDecimal(value) below, not BigDecimal.valueOf(value).
             error = ((BigDecimal) value).subtract(new BigDecimal(v), MathContext.DECIMAL64).doubleValue();
-        } else if (decimal) {
-            error = errorForWellKnownValue(v);
         } else {
-            error = 0;
+            error = decimal ? errorForWellKnownValue(v) : 0;
         }
         return new DoubleDouble(v, error);
     }
@@ -298,42 +303,6 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Returns an instance for values read from the given array.
-     * This is a convenience method for an operation implemented as below:
-     *
-     * {@snippet lang="java" :
-     *   value = array[index];
-     *   error = array[index + errorOffset];
-     *   }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     * @return the value as a double-double number.
-     */
-    public static DoubleDouble ofPair(final double[] array, final int index, final int errorOffset) {
-        return new DoubleDouble(array[index], array[index + errorOffset]);
-    }
-
-    /**
-     * Stores the {@link #value} and {@link #error} terms in the given array.
-     * This is a convenience method for the following:
-     *
-     * {@snippet lang="java" :
-     *   array[index] = value;
-     *   array[index + errorOffset] = error;
-     *   }
-     *
-     * @param  array        the array where to store the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void storeTo(final double[] array, final int index, final int errorOffset) {
-        array[index] = value;
-        array[index + errorOffset] = error;
-    }
-
-    /**
      * Return value + error. The result should be identical to {@link #value},
      * but we nevertheless do the sum as a safety.
      *
@@ -341,12 +310,14 @@ public final class DoubleDouble extends Number {
      */
     @Override public double doubleValue() {return value + error;}
     @Override public float  floatValue()  {return (float) doubleValue();}
-    @Override public int    intValue()    {return Math.toIntExact(longValue());}
-    @Override public long   longValue() {
-        final long n = Math.round(value) + (long) error;
-        if (Math.abs(value - n) < Math.ulp(value)) return n;
-        throw new ArithmeticException();
-    }
+    @Override public int    intValue()    {return Numerics.clamp(longValue());}
+    @Override public long   longValue()   {return Numerics.saturatingAdd(Math.round(value), (long) error);}
+    /*
+     * Do not override `shortValue()` and `byteValue()` in order to keep a behavior
+     * consistent with all `Number` subclasses provided in the standard JDK: first
+     * a narrowing conversion to `int` followed by discarding the high order bits.
+     * Note than even a direct `(short) value` cast implicitly does above steps.
+     */
 
     /**
      * Suggests an {@link #error} for the given value. The {@code DoubleDouble} class contains a hard-coded list
@@ -366,7 +337,7 @@ public final class DoubleDouble extends Number {
      * @return the error for the given value, or 0 if unknown. In the latter case,
      *         the base 2 representation of the given value is assumed to be accurate enough.
      */
-    public static double errorForWellKnownValue(final double value) {
+    static double errorForWellKnownValue(final double value) {
         if (DISABLED) return 0;
         final int i = Arrays.binarySearch(VALUES, Math.abs(value));
         final double error;
@@ -389,6 +360,17 @@ public final class DoubleDouble extends Number {
      */
     public boolean isZero() {
         return value == 0 && error == 0;
+    }
+
+    /**
+     * Returns {@code true} if this {@code DoubleDouble} is not a number.
+     *
+     * @return {@code true} if this {@code DoubleDouble} is not a number.
+     *
+     * @see #NaN
+     */
+    public boolean isNaN() {
+        return Double.isNaN(value) || Double.isNaN(error);
     }
 
     /**
@@ -696,23 +678,6 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Multiplies this {@code DoubleDouble} by another double-double value stored in the given array.
-     * This is a convenience method for an operation implemented as below:
-     *
-     * {@snippet lang="java" :
-     *   multiply(array[index], array[index + errorOffset]);
-     *   }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     * @return the product of {@code this} with the given number.
-     */
-    public DoubleDouble multiply(final double[] array, final int index, final int errorOffset) {
-        return multiply(array[index], array[index + errorOffset]);
-    }
-
-    /**
      * Divides this {@code DoubleDouble} by another double-double value.
      *
      * @param  other  the other value to by which to divide this value.
@@ -896,13 +861,17 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Returns a hash code value for this number.
+     * Compares this value with the given value for order.
      *
-     * @return a hash code value.
+     * @param   other  the value to be compared.
      */
     @Override
-    public int hashCode() {
-        return Long.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
+    public int compareTo(final DoubleDouble other) {
+        int c = Double.compare(value, other.value);
+        if (c == 0) {
+            c = Double.compare(error, other.error);
+        }
+        return c;
     }
 
     /**
@@ -919,6 +888,16 @@ public final class DoubleDouble extends Number {
                    Numerics.equals(error, other.error);
         }
         return false;
+    }
+
+    /**
+     * Returns a hash code value for this number.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Long.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
     }
 
     /**

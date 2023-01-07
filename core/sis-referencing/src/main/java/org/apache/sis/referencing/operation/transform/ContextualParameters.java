@@ -259,8 +259,8 @@ public class ContextualParameters extends Parameters implements Serializable {
         ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim);
         ArgumentChecks.ensureStrictlyPositive("tgtDim", tgtDim);
         this.descriptor  = descriptor;
-        this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.IDENTITY);
-        this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.IDENTITY);
+        this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
+        this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
         this.values      = new ParameterValue<?>[descriptor.descriptors().size()];
     }
 
@@ -391,8 +391,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * invoked, the matrices returned by this method are {@linkplain Matrices#unmodifiable(Matrix) unmodifiable}.
      *
      *
-     * <div class="note"><b>Application to map projections:</b>
-     * after {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
+     * <h4>Application to map projections</h4>
+     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
      * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
      * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
      *
@@ -406,7 +406,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      *     <td class="sep">{@include formulas.html#DenormalizeCartesian}</td>
      *   </tr>
      * </table>
-     * </div>
      *
      * @param  role  {@code NORMALIZATION} for fetching the <cite>normalization</cite> transform to apply before the kernel,
      *               {@code DENORMALIZATION} for the <cite>denormalization</cite> transform to apply after the kernel, or

@@ -58,15 +58,9 @@ public final class Matrix3Test extends MatrixTestCase {
         initialize(-2078758443421995879L);
         final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix3 matrix = new Matrix3(
-                elements[0],
-                elements[1],
-                elements[2],
-                elements[3],
-                elements[4],
-                elements[5],
-                elements[6],
-                elements[7],
-                elements[8]);
+                elements[0], elements[1], elements[2],
+                elements[3], elements[4], elements[5],
+                elements[6], elements[7], elements[8]);
         validate(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
     }

@@ -288,14 +288,10 @@ public final class Numerics extends Static {
      * @param  y  the value to add to {@code x}.
      * @return {@code x+y} computed with saturation arithmetic.
      */
-    public static long saturatingAdd(final long x, final int y) {
+    public static long saturatingAdd(final long x, final long y) {
         final long result = x + y;
-        if (y >= 0) {
-            if (result < x) return Long.MAX_VALUE;
-        } else {
-            if (result > x) return Long.MIN_VALUE;
-        }
-        return result;
+        if (((x ^ result) & (y ^ result)) >= 0) return result;
+        return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
     }
 
     /**
@@ -306,14 +302,10 @@ public final class Numerics extends Static {
      * @param  y  the value to subtract from {@code x}.
      * @return {@code x-y} computed with saturation arithmetic.
      */
-    public static long saturatingSubtract(final long x, final int y) {
+    public static long saturatingSubtract(final long x, final long y) {
         final long result = x - y;
-        if (y < 0) {
-            if (result < x) return Long.MAX_VALUE;
-        } else {
-            if (result > x) return Long.MIN_VALUE;
-        }
-        return result;
+        if (((x ^ y) & (x ^ result)) >= 0) return result;
+        return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
     }
 
     /**

@@ -30,7 +30,7 @@ import static org.apache.sis.util.Numbers.*;
  * Tests the {@link Numbers} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 public final class NumbersTest extends TestCase {
@@ -80,6 +80,20 @@ public final class NumbersTest extends TestCase {
         assertTrue (isFloat(Fraction  .class));
         assertFalse(isFloat(BigInteger.class));
         assertTrue (isFloat(BigDecimal.class));
+    }
+
+    /**
+     * Tests {@link Numbers#toInteger(Number)}.
+     */
+    @Test
+    public void testToInteger() {
+        assertEquals(123456, Numbers.toInteger(123456.2f));
+        try {
+            Numbers.toInteger(Long.MAX_VALUE * 3d);
+            fail("Expected ArithmeticException");
+        } catch (ArithmeticException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**

@@ -30,16 +30,17 @@ import java.math.BigInteger;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.CollectionsExt;
 
 import static java.lang.Double.doubleToLongBits;
 
 
 /**
- * Static methods working with {@link Number} objects, and a few primitive types by extension.
+ * Static methods working with {@code Number} objects, and a few primitive types by extension.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.math.MathFunctions
  *
@@ -68,21 +69,25 @@ public final class Numbers extends Static {
             BIG_DECIMAL=11, BIG_INTEGER=10, FRACTION=7,
             DOUBLE=9, FLOAT=8, LONG=6, INTEGER=5, SHORT=4, BYTE=3, CHARACTER=2, BOOLEAN=1, OTHER=0;
 
+    /** Undocumented type internal to SIS. */
+    private static final byte DOUBLE_DOUBLE = 12;
+
     /**
      * Mapping between a primitive type and its wrapper, if any.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
      * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
      * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
-     * implementation does not need the chain of objects created by {@code HashMap}.</div>
+     * implementation does not need the chain of objects created by {@code HashMap}.
      */
-    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(12);
+    private static final Map<Class<?>,Numbers> MAPPING = new IdentityHashMap<>(13);
     static {
-        new Numbers(BigDecimal.class, true, false, BIG_DECIMAL);
-        new Numbers(BigInteger.class, false, true, BIG_INTEGER);
-        new Numbers(Fraction  .class, true, false, FRACTION);
+        new Numbers(DoubleDouble.class, true, false, DOUBLE_DOUBLE);
+        new Numbers(BigDecimal  .class, true, false, BIG_DECIMAL);
+        new Numbers(BigInteger  .class, false, true, BIG_INTEGER);
+        new Numbers(Fraction    .class, true, false, FRACTION);
         new Numbers(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE,    'D', Numerics .valueOf(Double.NaN));
         new Numbers(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT,     'F', Float    .valueOf(Float .NaN));
         new Numbers(Long     .TYPE, Long     .class, false, true,  (byte) Long     .SIZE, LONG,      'J', Long     .valueOf(        0L));
@@ -94,14 +99,14 @@ public final class Numbers extends Static {
         new Numbers(Void     .TYPE, Void     .class, false, false, (byte) 0,              OTHER,     'V', null);
     }
 
-    /** The primitive type.                     */ private final Class<?> primitive;
-    /** The wrapper for the primitive type.     */ private final Class<?> wrapper;
-    /** {@code true} for floating point number. */ private final boolean  isFloat;
-    /** {@code true} for integer number.        */ private final boolean  isInteger;
-    /** The size in bits, or -1 if variable.    */ private final byte     size;
-    /** Constant to be used in switch statement.*/ private final byte     ordinal;
-    /** The internal form of the primitive name.*/ private final char     internal;
-    /** The null, NaN, 0 or false value.        */ private final Object   nullValue;
+    /** The primitive type.                      */ private final Class<?> primitive;
+    /** The wrapper for the primitive type.      */ private final Class<?> wrapper;
+    /** {@code true} for floating point number.  */ private final boolean  isFloat;
+    /** {@code true} for integer number.         */ private final boolean  isInteger;
+    /** The size in bits, or -1 if variable.     */ private final byte     size;
+    /** Constant to be used in switch statement. */ private final byte     ordinal;
+    /** The internal form of the primitive name. */ private final char     internal;
+    /** The null, NaN, 0 or false value.         */ private final Object   nullValue;
 
     /**
      * Creates an entry for a type which is not a primitive type.
@@ -144,6 +149,7 @@ public final class Numbers extends Static {
 
     /**
      * Returns the Java letter used for the internal representation of this given primitive type.
+     * This method shall be invoked only when the caller knows that the given type is a primitive.
      */
     static char getInternal(final Class<?> type) {
         return MAPPING.get(type).internal;
@@ -173,6 +179,7 @@ public final class Numbers extends Static {
      * @return {@code true} if {@code type} is an integer type.
      *
      * @see #isFloat(Class)
+     * @see #toInteger(Number)
      */
     public static boolean isInteger(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);
@@ -200,21 +207,63 @@ public final class Numbers extends Static {
 
     /**
      * Returns {@code true} if the given number is null or NaN.
-     * Current implementation recognizes {@link Float} and {@link Double} types.
+     * Current implementation recognizes {@link Float}, {@link Double} and {@link Fraction} types.
      *
      * @param  value  the number to test (may be {@code null}).
      * @return {@code true} if the given number is null or NaN.
      *
      * @see Float#isNaN()
      * @see Double#isNaN()
+     * @see Fraction#isNaN()
      *
      * @since 1.1
      */
     public static boolean isNaN(final Number value) {
         if (value == null) return true;
-        if (value instanceof Double) return ((Double) value).isNaN();
-        if (value instanceof Float)  return ((Float)  value).isNaN();
+        if (value instanceof Double)       return ((Double)       value).isNaN();
+        if (value instanceof Float)        return ((Float)        value).isNaN();
+        if (value instanceof Fraction)     return ((Fraction)     value).isNaN();
+        if (value instanceof DoubleDouble) return ((DoubleDouble) value).isNaN();
         return false;
+    }
+
+    /**
+     * Returns the value of the given number as a {@code long} integer.
+     * This method makes the following choice based on the number type:
+     *
+     * <ul>
+     *   <li>If {@link BigDecimal} or {@link BigInteger}, delegate to its {@code longValueExact()} method.</li>
+     *   <li>If {@linkplain #isInteger(Class) an integer}, delegate to {@link Number#longValue()}.</li>
+     *   <li>Otherwise delegate to {@link Number#doubleValue()}, round the value and verify that
+     *       the result is representable as a {@code long}.</li>
+     * </ul>
+     *
+     * @param  value  the value to return as a long integer.
+     * @return the value as a long integer, possibly rounded to nearest integer.
+     * @throws NullPointerException if the given number is {@code null}.
+     * @throws ArithmeticException if the value can not be represented as a long integer.
+     *
+     * @see BigDecimal#longValueExact()
+     * @see BigInteger#longValueExact()
+     *
+     * @since 1.4
+     */
+    public static long toInteger(final Number value) {
+        final Numbers mapping = MAPPING.get(value.getClass());
+        if (mapping != null) {
+            switch (mapping.ordinal) {
+                case DOUBLE_DOUBLE: return value.longValue();   // Does rounding.
+                case BIG_DECIMAL:   return ((BigDecimal) value).longValueExact();
+                case BIG_INTEGER:   return ((BigInteger) value).longValueExact();
+            }
+            if (mapping.isInteger)  return value.longValue();
+        }
+        final double v = value.doubleValue();
+        final long   n = Math.round(v);
+        if (Math.abs(v - n) <= 0.5) {
+            return n;
+        }
+        throw new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Long.TYPE));
     }
 
     /**

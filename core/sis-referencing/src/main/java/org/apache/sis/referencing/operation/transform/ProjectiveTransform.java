@@ -24,12 +24,14 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 
 
 /**
  * A usually affine, or otherwise a projective transform for the generic cases.
- * This implementation is used for cases other than identity, 1D, 2D or axis swapping.
+ * This implementation is used for cases other than identity, translation only,
+ * scale only, 1D transform, 2D transform or axis swapping.
  *
  * <p>A projective transform is capable of mapping an arbitrary quadrilateral into another arbitrary quadrilateral,
  * while preserving the straightness of lines. In the special case where the transform is affine, the parallelism of
@@ -46,7 +48,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2104496465933824935L;
+    private static final long serialVersionUID = -5616239625370371256L;
 
     /**
      * The number of rows.
@@ -60,11 +62,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
 
     /**
      * Elements of the matrix. Column indices vary fastest.
-     *
-     * <p>This array may have twice the normal length ({@link #numRow} × {@link #numCol}),
-     * in which case the second half contains the error terms in double-double arithmetic.</p>
      */
     private final double[] elt;
+
+    /**
+     * Same numbers than {@link #elt} with potentially extended precision.
+     * Zero values <em>shall</em> be represented by null elements.
+     */
+    private final Number[] numbers;
 
     /**
      * Constructs a transform from the specified matrix.
@@ -75,17 +80,37 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     protected ProjectiveTransform(final Matrix matrix) {
         numRow = matrix.getNumRow();
         numCol = matrix.getNumCol();
+        Number[] numbers = null;
         if (matrix instanceof ExtendedPrecisionMatrix) {
-            elt = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
-            assert (elt.length % (numRow * numCol)) == 0;
-        } else {
-            elt = new double[numRow * numCol];
-            int mix = 0;
-            for (int j=0; j<numRow; j++) {
-                for (int i=0; i<numCol; i++) {
-                    elt[mix++] = matrix.getElement(j,i);
+            numbers = ((ExtendedPrecisionMatrix) matrix).getElementAsNumbers(false);
+        }
+        if (matrix instanceof MatrixSIS) {
+            final MatrixSIS m = (MatrixSIS) matrix;
+            elt = m.getElements();
+            if (elt.length != numRow * numCol) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+            }
+            if (numbers == null) {
+                numbers = new Number[elt.length];
+                for (int i=0; i<numbers.length; i++) {
+                    final Number element = m.getNumber(i / numCol, i % numCol);
+                    if (!ExtendedPrecisionMatrix.isZero(element)) {
+                        numbers[i] = element;
+                    }
                 }
             }
+        } else {
+            elt = new double[numRow * numCol];
+            for (int i=0; i<elt.length; i++) {
+                elt[i] = matrix.getElement(i / numCol, i % numCol);
+            }
+            if (numbers == null) {
+                numbers = wrap(elt);
+            }
+        }
+        this.numbers = numbers;
+        if (elt.length != numbers.length) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
         }
     }
 
@@ -126,9 +151,9 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
             }
         }
         if (isTranslation) {
-            return new TranslationTransform(numRow, elt);
+            return new TranslationTransform(numRow, numbers);
         } else {
-            return new ScaleTransform(numRow, numCol, elt);
+            return new ScaleTransform(numRow, numCol, numbers);
         }
     }
 
@@ -165,11 +190,23 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     }
 
     /**
-     * Returns a copy of matrix elements, including error terms if any.
+     * Returns a copy of all matrix elements in a flat, row-major array. Zero values <em>shall</em> be null.
+     * Callers can write in the returned array if and only if the {@code writable} argument is {@code true}.
      */
     @Override
-    public final double[] getExtendedElements() {
-        return elt.clone();
+    public final Number[] getElementAsNumbers(final boolean writable) {
+        return writable ? numbers.clone() : numbers;
+    }
+
+    /**
+     * Retrieves the value at the specified row and column of the matrix.
+     * If the value is zero, then this method <em>shall</em> return {@code null}.
+     */
+    @Override
+    public final Number getElementOrNull(final int row, final int column) {
+        ArgumentChecks.ensureBetween("row",    0, numRow - 1, row);
+        ArgumentChecks.ensureBetween("column", 0, numCol - 1, column);
+        return numbers[row * numCol + column];
     }
 
     /**
@@ -502,8 +539,9 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     @Override
     protected boolean equalsSameClass(final Object object) {
         final ProjectiveTransform that = (ProjectiveTransform) object;
-        return this.numRow == that.numRow &&
-               this.numCol == that.numCol &&
-               Arrays.equals(this.elt, that.elt);
+        return numRow == that.numRow &&
+               numCol == that.numCol &&
+               Arrays.equals(elt, that.elt) &&
+               Arrays.equals(numbers, that.numbers);
     }
 }

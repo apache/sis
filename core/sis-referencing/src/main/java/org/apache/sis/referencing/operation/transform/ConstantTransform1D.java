@@ -42,21 +42,20 @@ final class ConstantTransform1D extends LinearTransform1D {
     /**
      * A transform for the positive zero constant.
      */
-    static final ConstantTransform1D ZERO = new ConstantTransform1D(0, 0);
+    static final ConstantTransform1D ZERO = new ConstantTransform1D(0);
 
     /**
      * A transform for the one constant.
      */
-    static final ConstantTransform1D ONE = new ConstantTransform1D(1, 0);
+    static final ConstantTransform1D ONE = new ConstantTransform1D(1);
 
     /**
      * Constructs a new constant transform.
      *
-     * @param offset       the {@code offset} term in the linear equation.
-     * @param offsetError  error term of {@code offset} for double-double arithmetic.
+     * @param offset  the {@code offset} term in the linear equation.
      */
-    ConstantTransform1D(final double offset, final double offsetError) {
-        super(0, offset, 0, offsetError);
+    ConstantTransform1D(final Number offset) {
+        super(0, offset);
     }
 
     /**
