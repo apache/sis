@@ -82,7 +82,8 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         numCol = matrix.getNumCol();
         Number[] numbers = null;
         if (matrix instanceof ExtendedPrecisionMatrix) {
-            numbers = ((ExtendedPrecisionMatrix) matrix).getElementAsNumbers(false);
+            // Use `writable = true` because we need a copy protected from changes.
+            numbers = ((ExtendedPrecisionMatrix) matrix).getElementAsNumbers(true);
         }
         if (matrix instanceof MatrixSIS) {
             final MatrixSIS m = (MatrixSIS) matrix;

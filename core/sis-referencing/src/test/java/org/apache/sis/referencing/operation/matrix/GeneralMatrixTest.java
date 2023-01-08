@@ -54,8 +54,8 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      * Ensures that the given matrix is an instance of the expected type.
      */
     @Override
-    void validate(final MatrixSIS matrix) {
-        super.validate(matrix);
+    void validateImplementation(final MatrixSIS matrix) {
+        super.validateImplementation(matrix);
         assertEquals(GeneralMatrix.class, matrix.getClass());
     }
 
@@ -65,14 +65,16 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testExtendedPrecision() {
+        size = 1;
         final long value = 1000000000000010000L;
         assertNotEquals(value, StrictMath.round((double) value));       // Otherwise the test would be useless.
-        final GeneralMatrix m = new GeneralMatrix(1, 1, false);
+        final GeneralMatrix matrix = new GeneralMatrix(1, 1, false);
         final DoubleDouble ddval = DoubleDouble.of(value);
-        m.setNumber(0, 0, ddval);
+        matrix.setNumber(0, 0, ddval);
         assertEquals(value, ddval.longValue());
-        assertEquals(ddval, m.getNumber (0, 0));
-        assertEquals(value, m.getInteger(0, 0));
+        assertEquals(ddval, matrix.getNumber (0, 0));
+        assertEquals(value, matrix.getInteger(0, 0));
+        validateImplementation(matrix);
     }
 
     /**
@@ -81,6 +83,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testGetElementAsNumbers() {
+        size = 2;
         final Number[] numbers = {
                 DoubleDouble.DEGREES_TO_RADIANS,
                 DoubleDouble.RADIANS_TO_DEGREES,
@@ -96,6 +99,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
         assertEquals(0, numbers[2]);
         numbers[2] = null;
         assertArrayEquals(numbers, elements);
+        validateImplementation(matrix);
     }
 
     /**
@@ -106,6 +110,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testConvertBefore() {
+        size = 3;
         testConvertBefore(new GeneralMatrix(3, 3, true), true);
     }
 
@@ -117,6 +122,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testConvertAfter() {
+        size = 3;
         testConvertAfter(new GeneralMatrix(3, 3, true));
     }
 
@@ -128,6 +134,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testMultiplyVector() {
+        size = 3;
         testMultiplyVector(new GeneralMatrix(3, 3, true));
     }
 
@@ -139,6 +146,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testTranslateVector() {
+        size = 3;
         testTranslateVector(new GeneralMatrix(3, 3, true));
     }
 }

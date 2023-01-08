@@ -167,7 +167,8 @@ public enum Arithmetic {
      * @return the inverse result, or {@code null} for zero.
      */
     public static Number inverse(final Number a) {
-        if (isOne(a)) return a;
+        if (a == null) return Double.POSITIVE_INFINITY;
+        if (isOne(a))  return a;
         return INVERSE.apply(a, null);
     }
 

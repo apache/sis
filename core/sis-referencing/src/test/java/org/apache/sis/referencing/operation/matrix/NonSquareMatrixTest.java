@@ -68,8 +68,8 @@ public final class NonSquareMatrixTest extends MatrixTestCase {
      * Ensures that the given matrix is an instance of the expected type.
      */
     @Override
-    void validate(final MatrixSIS matrix) {
-        super.validate(matrix);
+    void validateImplementation(final MatrixSIS matrix) {
+        super.validateImplementation(matrix);
         assertEquals(NonSquareMatrix.class, matrix.getClass());
     }
 

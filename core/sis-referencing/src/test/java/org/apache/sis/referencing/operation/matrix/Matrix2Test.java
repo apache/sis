@@ -43,8 +43,8 @@ public final class Matrix2Test extends MatrixTestCase {
      * Ensures that the given matrix is an instance of the expected type.
      */
     @Override
-    void validate(final MatrixSIS matrix) {
-        super.validate(matrix);
+    void validateImplementation(final MatrixSIS matrix) {
+        super.validateImplementation(matrix);
         assertEquals(Matrix2.class, matrix.getClass());
     }
 
@@ -59,7 +59,7 @@ public final class Matrix2Test extends MatrixTestCase {
         final Matrix2 matrix = new Matrix2(
                 elements[0], elements[1],
                 elements[2], elements[3]);
-        validate(matrix);
+        validateImplementation(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
     }
 }

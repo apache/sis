@@ -76,6 +76,9 @@ public interface ExtendedPrecisionMatrix extends Matrix {
      * If {@code false}, then the returned array shall be considered read-only because it may be a reference
      * to the array stored internally by this matrix.</p>
      *
+     * <p>Note that if the {@code writable} argument is {@code false}, then the values of the returned array
+     * may change if the matrix is mutable. If the caller need a stable array, use {@code true}.</p>
+     *
      * @param  writable  whether the caller may write in the returned array.
      * @return a copy of all current matrix elements in a row-major array.
      */
