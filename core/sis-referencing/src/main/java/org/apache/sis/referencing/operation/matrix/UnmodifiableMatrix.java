@@ -53,7 +53,7 @@ final class UnmodifiableMatrix extends MatrixSIS implements ExtendedPrecisionMat
      * The returned matrix shall be considered read-only.
      */
     final ExtendedPrecisionMatrix asExtendePrecision() {
-        return ExtendedPrecisionMatrix.castOrElse(matrix, this);
+        return (matrix instanceof ExtendedPrecisionMatrix) ? (ExtendedPrecisionMatrix) matrix : this;
     }
 
     /**

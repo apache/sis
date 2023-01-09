@@ -162,7 +162,7 @@ public abstract class MatrixTestCase extends TestCase {
         }
         final int numRow = matrix.getNumRow();
         final int numCol = matrix.getNumCol();
-        final var extend = GeneralMatrix.asExtendedPrecision(matrix);
+        final var extend = MatrixSIS.asExtendedPrecision(matrix);
         final Number[] numbers  = extend.getElementAsNumbers(false);
         final double[] elements = (matrix instanceof MatrixSIS) ? ((MatrixSIS) matrix).getElements() : null;
         assertEquals("getElementAsNumbers", numRow * numCol, numbers.length);

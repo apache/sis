@@ -30,6 +30,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -79,13 +80,14 @@ final class GridSlice {
      *
      * @param  groupToSlice  conversion from source coordinates of {@link GroupByTransform#gridToCRS}
      *                       to grid coordinates of {@link #geometry}.
+     * @throws ArithmeticException if a translation term is NaN or overflows {@code long} integer capacity.
      *
      * @see #getOffset(Map)
      */
     private void setOffset(final MatrixSIS groupToSlice) {
         final int i = groupToSlice.getNumCol() - 1;
         for (int j=0; j<offset.length; j++) {
-            offset[j] = groupToSlice.getInteger(j, i);
+            offset[j] = Numbers.round(groupToSlice.getNumber(j, i));
         }
     }
 
@@ -132,6 +134,7 @@ final class GridSlice {
      * @param  strategy  algorithm to apply when more than one grid coverage can be found at the same grid index.
      * @return group of objects associated to the given transform (never null).
      * @throws NoninvertibleTransformException if the transform is not invertible.
+     * @throws ArithmeticException if a translation term is NaN or overflows {@code long} integer capacity.
      */
     final GroupByTransform getList(final List<GroupByCRS<GroupByTransform>> groups, final MergeStrategy strategy)
             throws NoninvertibleTransformException

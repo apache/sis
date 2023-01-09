@@ -16,8 +16,10 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.math.Fraction;
 
 
 /**
@@ -32,37 +34,43 @@ public enum Arithmetic {
     /**
      * The addition operator.
      */
-    ADD(DoubleDouble::add),
+    ADD(DoubleDouble::add, Fraction::add, Math::addExact),
 
     /**
      * The subtraction operator.
      */
-    SUBTRACT(DoubleDouble::subtract),
+    SUBTRACT(DoubleDouble::subtract, Fraction::subtract, Math::subtractExact),
 
     /**
      * The multiplication operator.
      */
-    MULTIPLY(DoubleDouble::multiply),
+    MULTIPLY(DoubleDouble::multiply, Fraction::multiply, Math::multiplyExact),
 
     /**
      * The division operator.
      */
-    DIVIDE(DoubleDouble::divide),
+    DIVIDE(DoubleDouble::divide, Fraction::divide, Fraction::valueOf),
 
     /**
      * The inverse operation. Operand <var>b</var> is ignored and can be null.
      */
-    INVERSE((a,b) -> a.inverse()),
+    INVERSE((a,b) -> a.inverse(),
+            (a,b) -> a.inverse(),
+            (a,b) -> new Fraction(1, Math.toIntExact(a))),
 
     /**
      * The negation operation. Operand <var>b</var> is ignored and can be null.
      */
-    NEGATE((a,b) -> a.negate()),
+    NEGATE((a,b) -> a.negate(),
+           (a,b) -> a.negate(),
+           (a,b) -> Math.negateExact(a)),
 
     /**
      * The square root operation. Operand <var>b</var> is ignored and can be null.
      */
-    SQRT((a,b) -> a.sqrt());
+    SQRT((a,b) -> a.sqrt(),
+         (a,b) -> DoubleDouble.of(a, false).sqrt(),
+         (a,b) -> DoubleDouble.of(a).sqrt());
 
     /**
      * Whether to assume that {@code float} and {@code double} values
@@ -76,27 +84,82 @@ public enum Arithmetic {
     private final BinaryOperator<DoubleDouble> onDoubleDouble;
 
     /**
+     * The arithmetic operation applied on fractions.
+     * The operation may throw {@link ArithmeticException},
+     * in which case {@link #onDoubleDouble} will be used as fallback.
+     */
+    private final BiFunction<Fraction,Fraction,Number> onFraction;
+
+    /**
+     * The arithmetic operation applied on long integers.
+     * The operation may throw {@link ArithmeticException},
+     * in which case {@link #onDoubleDouble} will be used as fallback.
+     */
+    private final BiFunction<Long,Long,Number> onLong;
+
+    /**
      * Creates a new arithmetic operator.
      */
-    private Arithmetic(final BinaryOperator<DoubleDouble> onDoubleDouble) {
+    private Arithmetic(final BinaryOperator<DoubleDouble> onDoubleDouble,
+                       final BiFunction<Fraction,Fraction,Number> onFraction,
+                       final BiFunction<Long,Long,Number> onLong)
+    {
         this.onDoubleDouble = onDoubleDouble;
+        this.onFraction     = onFraction;
+        this.onLong         = onLong;
+    }
+
+    /**
+     * Returns the value of the given number as a long integer if possible.
+     * If the conversion is not exact, then this method returns {@code null}.
+     *
+     * @param  element  the value to return as a long integer, or {@code null} if zero.
+     * @return the value as a long integer, or {@code null} if it can not be converted.
+     */
+    private static Long tryLongValue(final Number element) {
+        if (element == null || element instanceof Long) {
+            return (Long) element;
+        }
+        final long a = element.longValue();
+        return (a == element.doubleValue()) ? a : null;
     }
 
     /**
      * Applies the operation on the given number.
      *
-     * @todo Current implementation handles only {@link DoubleDouble} values,
-     *       but more types will be added later.
+     * @param  a  the first operand. Shall not be null.
+     * @param  b  the second operation. May be null if it does not apply.
      */
     private Number apply(final Number a, final Number b) {
-        final DoubleDouble result = onDoubleDouble.apply(
-                DoubleDouble.of(a, DECIMAL),
-                DoubleDouble.of(b, DECIMAL));
-
-        if (result.isZero())  return null;
+        Number result = null;
+        try {
+            final Long aLong = tryLongValue(a);
+            final Long bLong = tryLongValue(b);
+            if (aLong != null && (bLong != null || b == null)) {
+                result = onLong.apply(aLong, bLong);
+            } else {
+                Fraction aFrac = (a instanceof Fraction) ? (Fraction) a : null;
+                Fraction bFrac = (b instanceof Fraction) ? (Fraction) b : null;
+                if (aFrac != null || bFrac != null) {
+                    if (aFrac == null && aLong != null) aFrac = new Fraction(Math.toIntExact(aLong), 1);
+                    if (bFrac == null && bLong != null) bFrac = new Fraction(Math.toIntExact(bLong), 1);
+                    if (aFrac != null && (bFrac != null || b == null)) {
+                        result = onFraction.apply(aFrac, bFrac);
+                    }
+                }
+            }
+        } catch (ArithmeticException e) {
+            // Ignore and fallback on double-double precision.
+        }
+        if (result == null) {
+            result = onDoubleDouble.apply(DoubleDouble.of(a, DECIMAL),
+                                          DoubleDouble.of(b, DECIMAL));
+        }
+        if (ExtendedPrecisionMatrix.isZero(result)) return null;
         if (result.equals(a)) return a;
         if (result.equals(b)) return b;
-        return result;
+        final Number simplified = tryLongValue(result);
+        return (simplified != null) ? simplified : result;
     }
 
     /**

@@ -20,9 +20,7 @@ import java.util.Arrays;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Numbers;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.Arithmetic;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 
@@ -232,24 +230,6 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
     }
 
     /**
-     * Retrieves the value at the specified row and column of this matrix, rounded to nearest integer.
-     *
-     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return the current value at the given row and column, rounded to nearest integer.
-     * @throws ArithmeticException if the value is NaN or overflows integer capacity.
-     *
-     * @see DoubleDouble#longValue()
-     *
-     * @since 1.3
-     */
-    @Override
-    public final long getInteger(final int row, final int column) {
-        final Number value = getElementOrNull(row, column);
-        return (value != null) ? Numbers.toInteger(value) : 0;
-    }
-
-    /**
      * Retrieves the value at the specified row and column of this matrix as a {@code Number}.
      *
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
@@ -447,19 +427,6 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
         }
         assert k == elements.length;
         assert isValid();
-    }
-
-    /**
-     * Returns the given matrix as an extended precision matrix.
-     */
-    static ExtendedPrecisionMatrix asExtendedPrecision(final Matrix matrix) {
-        if (matrix instanceof UnmodifiableMatrix) {
-            return ((UnmodifiableMatrix) matrix).asExtendePrecision();
-        } else if (matrix instanceof ExtendedPrecisionMatrix) {
-            return (ExtendedPrecisionMatrix) matrix;
-        } else {
-            return new UnmodifiableMatrix(matrix);
-        }
     }
 
     /**

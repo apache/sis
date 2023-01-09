@@ -46,17 +46,6 @@ public interface ExtendedPrecisionMatrix extends Matrix {
     Number[] CREATE_IDENTITY = new Number[0];
 
     /**
-     * Returns the given matrix as an extended precision matrix if possible, or {@code other} otherwise.
-     *
-     * @param  source  the matrix to cast.
-     * @param  other   the value to return if the source is not an instance of {@code ExtendedPrecisionMatrix}.
-     * @return the given matrix or {@code other}.
-     */
-    static ExtendedPrecisionMatrix castOrElse(final Matrix source, final ExtendedPrecisionMatrix other) {
-        return (source instanceof ExtendedPrecisionMatrix) ? (ExtendedPrecisionMatrix) source : other;
-    }
-
-    /**
      * Returns {@code true} if the given number is zero.
      * This is the criterion used for identifying which {@link Number} elements shall be {@code null}.
      *

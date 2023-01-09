@@ -179,7 +179,7 @@ public final class Numbers extends Static {
      * @return {@code true} if {@code type} is an integer type.
      *
      * @see #isFloat(Class)
-     * @see #toInteger(Number)
+     * @see #round(Number)
      */
     public static boolean isInteger(final Class<?> type) {
         final Numbers mapping = MAPPING.get(type);
@@ -228,41 +228,44 @@ public final class Numbers extends Static {
     }
 
     /**
-     * Returns the value of the given number as a {@code long} integer.
-     * This method makes the following choice based on the number type:
+     * Returns the value of the given number rounded to nearest {@code long} integer.
+     * This method is intended for calculations where fractional parts are rounding errors.
+     * An {@link ArithmeticException} is thrown in the following cases:
      *
      * <ul>
-     *   <li>If {@link BigDecimal} or {@link BigInteger}, delegate to its {@code longValueExact()} method.</li>
-     *   <li>If {@linkplain #isInteger(Class) an integer}, delegate to {@link Number#longValue()}.</li>
-     *   <li>Otherwise delegate to {@link Number#doubleValue()}, round the value and verify that
-     *       the result is representable as a {@code long}.</li>
+     *   <li>If the floating point value is NaN or positive or negative infinity.</li>
+     *   <li>If the value overflows the capacity of {@value Long#SIZE} bits integers.</li>
+     *   <li>If the number is a {@link BigDecimal} with a non-zero fractional part.</li>
      * </ul>
      *
+     * The justification for the last case is that {@link BigDecimal} is used when calculations
+     * should be exact in base 10. In such case, a fractional part would not be a rounding error.
+     *
      * @param  value  the value to return as a long integer.
-     * @return the value as a long integer, possibly rounded to nearest integer.
+     * @return the value rounded to nearest long integer.
      * @throws NullPointerException if the given number is {@code null}.
      * @throws ArithmeticException if the value can not be represented as a long integer.
      *
+     * @see Math#round(double)
      * @see BigDecimal#longValueExact()
      * @see BigInteger#longValueExact()
      *
      * @since 1.4
      */
-    public static long toInteger(final Number value) {
+    public static long round(final Number value) {
         final Numbers mapping = MAPPING.get(value.getClass());
-        if (mapping != null) {
+asLong: if (mapping != null) {
             switch (mapping.ordinal) {
-                case DOUBLE_DOUBLE: return value.longValue();   // Does rounding.
+                case DOUBLE_DOUBLE: break;
                 case BIG_DECIMAL:   return ((BigDecimal) value).longValueExact();
                 case BIG_INTEGER:   return ((BigInteger) value).longValueExact();
+                default:            if (!mapping.isInteger) break asLong;
             }
-            if (mapping.isInteger)  return value.longValue();
+            return value.longValue();       // Does rounding in `DoubleDouble` case.
         }
         final double v = value.doubleValue();
         final long   n = Math.round(v);
-        if (Math.abs(v - n) <= 0.5) {
-            return n;
-        }
+        if (Math.abs(v - n) <= 0.5) return n;
         throw new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Long.TYPE));
     }
 

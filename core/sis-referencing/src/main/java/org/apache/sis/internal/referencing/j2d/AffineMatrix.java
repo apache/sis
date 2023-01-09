@@ -153,6 +153,7 @@ class AffineMatrix extends MatrixSIS implements Serializable, Cloneable {
          *
          * @param transform  the transform to wrap.
          * @param elements   the elements used for creating the matrix.
+         *                   Zero values <em>shall</em> be null.
          */
         ExtendedPrecision(final AffineTransform transform, final Number[] elements) {
             super(transform);
@@ -162,6 +163,7 @@ class AffineMatrix extends MatrixSIS implements Serializable, Cloneable {
         /**
          * Returns all matrix elements in row-major order.
          * Note that this is not the same order than {@link AffineTransform} constructor.
+         * Zero values <em>shall</em> be null.
          */
         @Override
         public Number[] getElementAsNumbers(final boolean writable) {
@@ -178,15 +180,11 @@ class AffineMatrix extends MatrixSIS implements Serializable, Cloneable {
         public Number getElementOrNull(final int row, final int column) {
             ArgumentChecks.ensureBetween("row",    0, AffineTransform2D.DIMENSION, row);
             ArgumentChecks.ensureBetween("column", 0, AffineTransform2D.DIMENSION, column);
-            if (row == AffineTransform2D.DIMENSION) {
-                if (column == AffineTransform2D.DIMENSION) return 1;
+            if (row != AffineTransform2D.DIMENSION) {
+                return elements[row * SIZE + column];
             } else {
-                final Number value = elements[row * SIZE + column];
-                if (!ExtendedPrecisionMatrix.isZero(value)) {
-                    return value;
-                }
+                return (column == AffineTransform2D.DIMENSION) ? 1 : null;
             }
-            return null;
         }
 
         /**

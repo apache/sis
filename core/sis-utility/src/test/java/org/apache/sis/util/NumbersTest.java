@@ -83,13 +83,13 @@ public final class NumbersTest extends TestCase {
     }
 
     /**
-     * Tests {@link Numbers#toInteger(Number)}.
+     * Tests {@link Numbers#round(Number)}.
      */
     @Test
-    public void testToInteger() {
-        assertEquals(123456, Numbers.toInteger(123456.2f));
+    public void testRound() {
+        assertEquals(123456, Numbers.round(123456.2f));
         try {
-            Numbers.toInteger(Long.MAX_VALUE * 3d);
+            Numbers.round(Long.MAX_VALUE * 3d);
             fail("Expected ArithmeticException");
         } catch (ArithmeticException e) {
             assertNotNull(e.getMessage());

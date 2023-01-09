@@ -73,6 +73,22 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     }
 
     /**
+     * Returns the given fraction after simplification.
+     * If the numerator or denominator is still too large for 32 bit integer after simplification,
+     * then an {@link ArithmeticException} is thrown.
+     *
+     * @param  numerator    numerator of the fraction to return.
+     * @param  denominator  denominator of the fraction to return.
+     * @return the simplified fraction.
+     * @throws ArithmeticException if the numerator and denominator can not be represented by 32 bit integers.
+     *
+     * @since 1.4
+     */
+    public static Fraction valueOf(final long numerator, final long denominator) {
+        return simplify(null, numerator, denominator);
+    }
+
+    /**
      * Converts the given IEEE 754 double-precision value to a fraction. If successful, this method returns a fraction
      * such as {@link #doubleValue()} is equal to the given value in the sense of {@link Double#equals(Object)}:
      * infinities, positive and negative zeros are preserved, but various NaN values are collapsed to a single NaN value.
@@ -208,21 +224,22 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * Returns a fraction equivalent to {@code num} / {@code den} after simplification.
-     * If the simplified fraction is equal to {@code this}, then this method returns {@code this}.
+     * If the simplified fraction is equal to {@code f}, then this method returns {@code f}.
      *
      * <p>The arguments given to this method are the results of multiplications and additions of {@code int} values.
      * This method fails if any argument value is {@link Long#MIN_VALUE} because that value cannot be made positive.
      * However, it should never happen. Even in the worst scenario:</p>
      *
-     * {@prefomat java
+     * {@snippet lang="java" :
      *     long n = Math.multiplyFull(Integer.MIN_VALUE, Integer.MAX_VALUE);
      *     n += n;
-     * }
+     *     }
      *
      * Above result still slightly smaller in magnitude than {@code Long.MIN_VALUE}.
      */
     private static Fraction simplify(final Fraction f, long num, long den) {
         if (num == Long.MIN_VALUE || den == Long.MIN_VALUE) {
+            // TODO: replace by use of Math.absExact(…) in JDK15.
             throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
         }
         if (num == 0) {
@@ -263,11 +280,29 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
     }
 
     /**
+     * Returns the inverse value of this fraction.
+     * This method does not simplify the fraction.
+     *
+     * @return the result of {@code 1/this}.
+     * @throws ArithmeticException if the result overflows.
+     *
+     * @since 1.4
+     *
+     * @see #divide(Fraction)
+     */
+    public Fraction inverse() {
+        if (numerator == denominator) return this;
+        return new Fraction(denominator, numerator);
+    }
+
+    /**
      * Returns the negative value of this fraction.
      * This method does not simplify the fraction.
      *
      * @return the result of {@code -this}.
      * @throws ArithmeticException if the result overflows.
+     *
+     * @see #subtract(Fraction)
      */
     public Fraction negate() {
         int n = numerator;
@@ -302,6 +337,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @param  other  the fraction to subtract from this fraction.
      * @return the simplified result of {@code this} - {@code other}.
      * @throws ArithmeticException if the result overflows.
+     *
+     * @see #negate()
      */
     public Fraction subtract(final Fraction other) {
         // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
@@ -328,6 +365,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @param  other  the fraction by which to divide this fraction.
      * @return the simplified result of {@code this} ∕ {@code other}.
      * @throws ArithmeticException if the result overflows.
+     *
+     * @see #inverse()
      */
     public Fraction divide(final Fraction other) {
         return simplify(this, Math.multiplyFull(numerator,   other.denominator),
@@ -433,17 +472,27 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
 
     /**
      * Returns this fraction rounded toward zero.
+     * If the fraction value {@linkplain #isNaN() is NaN}, then this method returns 0.
+     * If the fraction value is positive or negative infinity, then this method returns
+     * {@link Long#MAX_VALUE} or {@link Long#MIN_VALUE} respectively.
      *
      * @return this fraction rounded toward zero.
      */
     @Override
     public long longValue() {
-        return intValue();
+        if (denominator != 0) {
+            return numerator / denominator;
+        }
+        if (numerator < 0) return Long.MIN_VALUE;
+        if (numerator > 0) return Long.MAX_VALUE;
+        return 0;
     }
 
     /**
      * Returns this fraction rounded toward zero.
-     * If the fraction value is NaN, then this method returns 0.
+     * If the fraction value {@linkplain #isNaN() is NaN}, then this method returns 0.
+     * If the fraction value is positive or negative infinity, then this method returns
+     * {@link Integer#MAX_VALUE} or {@link Integer#MIN_VALUE} respectively.
      *
      * @return {@link #numerator} / {@link #denominator} rounded toward zero.
      *
@@ -453,7 +502,12 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     @Override
     public int intValue() {
-        return isNaN() ? 0 : numerator / denominator;
+        if (denominator != 0) {
+            return numerator / denominator;
+        }
+        if (numerator < 0) return Integer.MIN_VALUE;
+        if (numerator > 0) return Integer.MAX_VALUE;
+        return 0;
     }
 
     /*

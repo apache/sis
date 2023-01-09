@@ -329,12 +329,9 @@ public final class Numerics extends Static {
      * @return the fraction as a {@link Fraction} or {@link Double} object.
      */
     public static Number fraction(long numerator, long denominator) {
-        final int simplify = Math.min(Long.numberOfTrailingZeros(numerator), Long.numberOfTrailingZeros(denominator));
-        final int num = (int) (numerator   >>= simplify);
-        final int den = (int) (denominator >>= simplify);
-        if (num == numerator && den == denominator) {
-            return new Fraction(num, den).unique();
-        } else {
+        try {
+            return Fraction.valueOf(numerator, denominator).unique();
+        } catch (ArithmeticException e) {
             return valueOf(numerator / (double) denominator);
         }
     }

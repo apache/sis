@@ -124,7 +124,7 @@ final class Solver implements ExtendedPrecisionMatrix {                 // Not C
         if (numCol != size) {
             throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, size, numCol));
         }
-        return solve(GeneralMatrix.asExtendedPrecision(X), IDENTITY, size, size);
+        return solve(MatrixSIS.asExtendedPrecision(X), IDENTITY, size, size);
     }
 
     /**
@@ -143,8 +143,8 @@ final class Solver implements ExtendedPrecisionMatrix {                 // Not C
         }
         final int innerSize = Y.getNumCol();
         GeneralMatrix.ensureNumRowMatch(size, Y.getNumRow(), innerSize);
-        return solve(GeneralMatrix.asExtendedPrecision(X),
-                     GeneralMatrix.asExtendedPrecision(Y),
+        return solve(MatrixSIS.asExtendedPrecision(X),
+                     MatrixSIS.asExtendedPrecision(Y),
                      size, innerSize);
     }
 

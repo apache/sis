@@ -60,8 +60,8 @@ public final class GeneralMatrixTest extends MatrixTestCase {
     }
 
     /**
-     * Tests {@link GeneralMatrix#getNumber(int, int)} and {@link GeneralMatrix#getInteger(int, int)}
-     * using a value which cannot be stored accurately in a {@code double} type.
+     * Tests {@link GeneralMatrix#getNumber(int, int)} using a value which
+     * cannot be stored accurately in a {@code double} type.
      */
     @Test
     public void testExtendedPrecision() {
@@ -73,7 +73,6 @@ public final class GeneralMatrixTest extends MatrixTestCase {
         matrix.setNumber(0, 0, ddval);
         assertEquals(value, ddval.longValue());
         assertEquals(ddval, matrix.getNumber (0, 0));
-        assertEquals(value, matrix.getInteger(0, 0));
         validateImplementation(matrix);
     }
 

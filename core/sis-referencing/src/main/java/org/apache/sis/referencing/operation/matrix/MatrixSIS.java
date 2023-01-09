@@ -27,6 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -143,6 +144,19 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
+     * Returns the given matrix as an extended precision matrix.
+     */
+    static ExtendedPrecisionMatrix asExtendedPrecision(final Matrix matrix) {
+        if (matrix instanceof UnmodifiableMatrix) {
+            return ((UnmodifiableMatrix) matrix).asExtendePrecision();
+        } else if (matrix instanceof ExtendedPrecisionMatrix) {
+            return (ExtendedPrecisionMatrix) matrix;
+        } else {
+            return new UnmodifiableMatrix(matrix);
+        }
+    }
+
+    /**
      * Retrieves the value at the specified row and column if different than zero.
      * If the value is zero, then this method <em>shall</em> return {@code null}.
      * The use of {@code null} for zero is a way to identify zero easily no matter
@@ -170,19 +184,26 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws ArithmeticException if the value is NaN or overflows integer capacity.
      *
      * @since 1.3
+     *
+     * @deprecated Replaced by {@code Numbers.round(getNumber(row, column))}.
+     * @see Numbers#round(Number)
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public long getInteger(int row, int column) {
-        final double value = getElement(row, column);
-        final long r = Math.round(value);
-        if (Math.abs(r - value) <= 0.5) {
-            return r;
-        }
-        throw new ArithmeticException(Errors.format(Errors.Keys.CanNotConvertValue_2, value, Long.TYPE));
+        return Numbers.round(getNumber(row, column));
     }
 
     /**
      * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}.
      * The {@code Number} type depends on the matrix accuracy.
+     *
+     * <h4>Use case</h4>
+     * This method may be more accurate than {@link #getElement(int, int)} in some implementations
+     * when the value is expected to be an integer, for example in conversions of pixel coordinates.
+     * {@link Number#longValue()} can be more accurate than {@link Number#doubleValue()} because a
+     * {@code long} may have more significant digits than what a {@code double} can contain.
+     * For safety against rounding errors and overflows,
+     * {@link Numbers#round(Number)} should be used instead of {@code Number.longValue()}.
      *
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
@@ -190,6 +211,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
      *
      * @see #getElement(int, int)
+     * @see Numbers#round(Number)
      */
     public Number getNumber(int row, int column) {
         return getElement(row, column);
@@ -265,21 +287,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                            int dstRow, final int dstCol,
                            int numRow, final int numCol)
     {
-        final var exp = ExtendedPrecisionMatrix.castOrElse(source, null);
+        final var exp = asExtendedPrecision(source);
         while (--numRow >= 0) {
             for (int i=0; i<numCol; i++) {
-                double value;
-                if (exp != null) {
-                    final Number n = exp.getElementOrNull(srcRow, srcCol + i);
-                    if (n != null) {
-                        setNumber(dstRow, dstCol + i, n);
-                        continue;
-                    }
-                    value = 0;
+                final int s = srcCol + i;
+                final int t = dstCol + i;
+                final Number n = exp.getElementOrNull(srcRow, s);
+                if (n != null) {
+                    setNumber(dstRow, t, n);
                 } else {
-                    value = source.getElement(srcRow, srcCol + i);
+                    setElement(dstRow, t, source.getElement(srcRow, s));    // Preserve the sign of 0.
                 }
-                setElement(dstRow, dstCol + i, value);
             }
             srcRow++;
             dstRow++;
