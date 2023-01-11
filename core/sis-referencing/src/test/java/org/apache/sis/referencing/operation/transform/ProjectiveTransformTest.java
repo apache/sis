@@ -26,8 +26,12 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
+import org.apache.sis.referencing.operation.matrix.Matrix4;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.math.Fraction;
 
 // Test imports
 import org.opengis.test.Validators;
@@ -75,35 +79,35 @@ public class ProjectiveTransformTest extends AffineTransformTest {
         super(new MathTransformFactoryBase() {
             @Override
             public MathTransform createAffineTransform(final Matrix matrix) {
-                final ProjectiveTransform pt;
+                final ProjectiveTransform tested;
                 if (matrix.getNumRow() == 3 && matrix.getNumCol() == 3) {
-                    pt = new ProjectiveTransform2D(matrix);
+                    tested = new ProjectiveTransform2D(matrix);
                 } else {
-                    pt = new ProjectiveTransform(matrix);
+                    tested = new ProjectiveTransform(matrix);
                 }
-                MathTransform tr = pt.optimize();
-                if (tr != pt) {
+                final MathTransform reference = tested.optimize();
+                if (tested != reference) {
                     /*
                      * Opportunistically tests `ScaleTransform` together with `ProjectiveTransform`.
                      * We take `ScaleTransform` as a reference implementation because it is simpler.
                      */
-                    tr = new TransformResultComparator(tr, pt, 1E-12);
+                    return new TransformResultComparator(reference, tested, 1E-12);
                 }
-                return tr;
+                return tested;
             }
         });
     }
 
     /**
-     * Returns the transform without {@link TransformResultComparator} wrapper.
-     * The transform is the one computed by {@link ProjectiveTransform#optimize()}.
+     * Whether the post-test validation should skip its check for a transform of the given dimension.
+     * {@code ProjectiveTransformTest} needs to skip the case for dimension 1 because there is no
+     * {@code ProjectiveTransform1D} class. However, {@link LinearTransformTest} can do the check
+     * for all dimensions.
+     *
+     * @see #ensureImplementRightInterface()
      */
-    private MathTransform getOptimizedTransform() {
-        MathTransform tr = transform;
-        if (tr instanceof TransformResultComparator) {
-            tr = ((TransformResultComparator) tr).reference;
-        }
-        return tr;
+    boolean skipInterfaceCheckForDimension(final int dimension) {
+        return dimension == 1;
     }
 
     /*
@@ -170,13 +174,48 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     }
 
     /**
-     * {@code true} if {@link #ensureImplementRightInterface()} should skip its check for a transform
-     * of the given dimension. {@code ProjectiveTransformTest} needs to skip the case for dimension 1
-     * because there is no {@code ProjectiveTransform1D} class. However, {@link LinearTransformTest}
-     * can check for all dimensions.
+     * Tests the concatenation of transforms that would result in rounding errors
+     * in extended-precision matrix operations were not used.
+     *
+     * @throws FactoryException if the transform cannot be created.
+     * @throws TransformException if a coordinate conversion failed.
+     *
+     * @since 1.4
      */
-    boolean skipInterfaceCheckForDimension(final int dimension) {
-        return dimension == 1;
+    @Test
+    public void testRoundingErrors() throws FactoryException, TransformException {
+        final Matrix4 num = new Matrix4(); num.m00 =  2; num.m11 = 3.25; num.m22 = -17;
+        final Matrix4 den = new Matrix4(); den.m00 = 37; den.m11 = 1000; den.m22 = 127;
+        transform = TransformResultComparator.concatenate(
+                mtFactory.createAffineTransform(num),
+                mtFactory.createAffineTransform(den).inverse(),
+                mtFactory);
+        matrix = ((LinearTransform) getOptimizedTransform()).getMatrix();
+        /*
+         * Verify matrix elements after inversion and concatenation.
+         * The extended precision types should be used.
+         */
+        final ExtendedPrecisionMatrix m = (ExtendedPrecisionMatrix) matrix;
+        assertEquals(new Fraction(2, 37),                 m.getElementOrNull(0,0));
+        assertEquals(DoubleDouble.of(325).divide(100000), m.getElementOrNull(1,1));
+        assertEquals(new Fraction(-17, 127),              m.getElementOrNull(2,2));
+        /*
+         * Test a transformation, expecting exact result.
+         */
+        verifyTransform(new double[] {2645.5,  19500, 2222.5},
+                        new double[] {   143, 63.375, -297.5});
+    }
+
+    /**
+     * Returns the transform without {@link TransformResultComparator} wrapper.
+     * The transform is the one computed by {@link ProjectiveTransform#optimize()}.
+     */
+    private MathTransform getOptimizedTransform() {
+        MathTransform tr = transform;
+        while (tr instanceof TransformResultComparator) {
+            tr = ((TransformResultComparator) tr).reference;
+        }
+        return tr;
     }
 
     /**
@@ -193,7 +232,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
          * possible types, so the test would fail if checking its result. More complete optimizations
          * are tested in the `LinearTransformTest` subclass.
          */
-        if (transform instanceof TransformResultComparator) {
+        while (transform instanceof TransformResultComparator) {
             transform = ((TransformResultComparator) transform).tested;
         }
         /*
