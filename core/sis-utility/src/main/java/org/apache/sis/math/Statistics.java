@@ -88,7 +88,7 @@ import static java.lang.Double.doubleToLongBits;
  *     }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
@@ -210,19 +210,15 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
             if (!Double.isNaN(mean) || !Double.isNaN(standardDeviation)) {
                 ArgumentChecks.ensureBetween("mean", minimum, maximum, mean);
             }
-            final DoubleDouble sd = DoubleDouble.createAndGuessError(mean);
-            sd.multiply(count);
+            final DoubleDouble sd = DoubleDouble.of(mean, true).multiply(count);
             sum = sd.value;
             lowBits = sd.error;
             /*
              * squareSum = standardDeviation² × (allPopulation ? count : count-1) + sum²/count
              */
-            sd.square();
-            sd.divide(count);
-            final DoubleDouble sq = DoubleDouble.createAndGuessError(standardDeviation);
-            sq.square();
-            sq.multiply(allPopulation ? count : count-1);
-            sq.add(sd);
+            DoubleDouble sq = DoubleDouble.of(standardDeviation, true);
+            sq = sq.square().multiply(allPopulation ? count : count-1);
+            sq = sq.add(sd.square().divide(count));
             squareSum = sq.value;
             squareLowBits = sq.error;
         }
@@ -330,7 +326,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Implementation of {@link #accept(double)} for real (non-NaN) numbers.
      *
-     * @see org.apache.sis.internal.util.DoubleDouble#addKahan(double)
+     * @see <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>
      */
     private void real(double sample) {
         /*

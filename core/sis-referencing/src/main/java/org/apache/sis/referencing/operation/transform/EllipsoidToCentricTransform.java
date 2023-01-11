@@ -96,7 +96,7 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
@@ -287,15 +287,14 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          *   - A "denormalization" transform for scaling (X,Y,Z) to the semi-major axis length.
          */
         context.normalizeGeographicInputs(0);
-        final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);
+        final DoubleDouble a = DoubleDouble.of(semiMajor, true);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         for (int i=0; i<3; i++) {
             denormalize.convertAfter(i, a, null);
         }
         if (withHeight) {
-            a.inverseDivide(1);
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
-            normalize.convertBefore(2, a, null);    // Divide ellipsoidal height by a.
+            normalize.convertBefore(2, a.inverse(), null);          // Divide ellipsoidal height by a.
         }
         inverse = new Inverse(this);
     }

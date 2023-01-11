@@ -266,18 +266,15 @@ public final class MathFunctions extends Static {
         while ((v3 = vector[--i]) == 0);
 
         // Usual magnitude computation, but using double-double arithmetic.
-        final DoubleDouble sum = new DoubleDouble();
-        final DoubleDouble dot = new DoubleDouble();
-        sum.setToProduct(v1, v1);
-        dot.setToProduct(v2, v2); sum.add(dot);
-        dot.setToProduct(v3, v3); sum.add(dot);
+        DoubleDouble sum;
+        sum =         DoubleDouble.product(v1, v1);
+        sum = sum.add(DoubleDouble.product(v2, v2));
+        sum = sum.add(DoubleDouble.product(v3, v3));
         while (i != 0) {
-            v1 = vector[--i];
-            dot.setToProduct(v1, v1);
-            sum.add(dot);
+            final double v = vector[--i];
+            sum = sum.add(DoubleDouble.product(v, v));
         }
-        sum.sqrt();
-        return sum.doubleValue();
+        return sum.sqrt().doubleValue();
     }
 
     /**

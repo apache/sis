@@ -122,7 +122,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
             return ConstantTransform1D.ZERO;
         }
         if (base == 1) {
-            return LinearTransform1D.create(scale, 0);
+            return LinearTransform1D.create(scale, null);
         }
         return new ExponentialTransform1D(base, scale);
     }
@@ -258,7 +258,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
         final double newScale = lnBase / other.lnBase();
         if (applyOtherFirst) {
             return MathTransforms.concatenate(PowerTransform1D.create(newScale),
-                    LinearTransform1D.create(scale * Math.pow(base, other.offset()), 0));
+                    LinearTransform1D.create(scale * Math.pow(base, other.offset()), null));
         } else {
             final double newOffset;
             if (scale > 0) {

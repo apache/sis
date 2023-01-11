@@ -60,7 +60,7 @@ import static java.util.logging.Logger.getLogger;
  * between two coordinate systems.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
  */
 public final class CoordinateSystems extends Static {
@@ -419,14 +419,11 @@ next:   for (final CoordinateSystem cs : targets) {
                     default: throw new IncommensurableException(Resources.format(
                                 Resources.Keys.NonLinearUnitConversion_2, sourceUnit, targetUnit));
                 }
-                final DoubleDouble element = DoubleDouble.castOrCopy(matrix.getNumber(j,i));
-                final DoubleDouble r = new DoubleDouble(element);
-                r.multiplyGuessError(scale);
-                matrix.setNumber(j, i, r);
-                r.setFrom(element);
-                r.multiplyGuessError(offset);
-                r.addGuessError(matrix.getNumber(j, sourceDim));
-                matrix.setNumber(j, sourceDim, r);
+                final boolean decimal = true;   // Whether values were intended to be exact in base 10.
+                final var shift  = DoubleDouble.of(matrix.getNumber(j, sourceDim), decimal);
+                final var factor = DoubleDouble.of(matrix.getNumber(j, i), decimal);
+                matrix.setNumber(j, i,         factor.multiply(scale,  decimal));
+                matrix.setNumber(j, sourceDim, factor.multiply(offset, decimal).add(shift));
             }
         }
         return matrix;

@@ -292,8 +292,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
             if (BigInteger.ZERO.equals(r[1])) {
                 return r[0];
             } else {
-                return new Fraction(r[1].intValueExact(), right.intValueExact()).add(
-                       new Fraction(r[0].intValueExact(), 1));
+                return Fraction.valueOf(r[1].longValueExact(), right.longValueExact())
+                      .add(new Fraction(r[0].intValueExact(),  1));
             }
         }
 
@@ -303,7 +303,7 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
             if (left % right == 0) {
                 return r;
             } else {
-                return new Fraction(Math.toIntExact(left), Math.toIntExact(right));
+                return Fraction.valueOf(left, right);
             }
         }
     }

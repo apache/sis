@@ -20,7 +20,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import org.apache.sis.test.DependsOnMethod;
@@ -35,7 +34,7 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link ScaleTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn(AbstractMathTransformTest.class)
@@ -48,18 +47,18 @@ public final class ScaleTransformTest extends MathTransformTestCase {
      * @param  matrix            the data to use for creating the transform.
      */
     private void create(final int sourceDimensions, final int targetDimensions, final MatrixSIS matrix) {
-        final double[] elements = matrix.getElements();
+        final Number[] elements = ScaleTransform.wrap(matrix.getElements());
         final ScaleTransform tr = new ScaleTransform(matrix.getNumRow(), matrix.getNumCol(), elements);
         assertEquals("sourceDimensions", sourceDimensions, tr.getSourceDimensions());
         assertEquals("targetDimensions", targetDimensions, tr.getTargetDimensions());
         Assert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
-        assertArrayEquals("elements", elements, tr.getExtendedElements(), 0.0);
+        assertArrayEquals("elements", elements, TranslationTransformTest.getElementAsNumbers(tr));
         transform = tr;
         validate();
     }
 
     /**
-     * Tests a transform created from a square matrix with no error terms.
+     * Tests a transform created from a square matrix.
      * In this test, no dimension are dropped.
      *
      * @throws TransformException should never happen.
@@ -117,38 +116,28 @@ public final class ScaleTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Verifies that {@link ScaleTransform} stores the error terms when they exist.
+     * Verifies that {@link ScaleTransform} stores the numbers with their extended precision.
      */
     @Test
     @DependsOnMethod("testConstantDimension")
     public void testExtendedPrecision() {
         final Number O = 0;
         final Number l = 1;
-        final DoubleDouble r = DoubleDouble.createDegreesToRadians();
-        final MatrixSIS matrix = Matrices.create(4, 4, new Number[] {
+        final DoubleDouble r = DoubleDouble.DEGREES_TO_RADIANS;
+        final Number[] elements = {
             r, O, O, O,
             O, r, O, O,
             O, O, l, O,
             O, O, O, l
-        });
-        final double[] elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
-        assertTrue (r.value > r.error);
-        assertFalse(r.error == 0);          // Paranoiac checks for making sure that next assertion will test something.
-        assertArrayEquals(new double[] {    // Paranoiac check for making sure that getExtendedElements() is not broken.
-                r.value, 0, 0, 0,
-                0, r.value, 0, 0,
-                0, 0,       1, 0,
-                0, 0,       0, 1,
-                r.error, 0, 0, 0,
-                0, r.error, 0, 0,
-                0, 0,       0, 0,
-                0, 0,       0, 0}, elements, 0);
-
+        };
+        final MatrixSIS matrix = Matrices.create(4, 4, elements);
         final ScaleTransform tr = new ScaleTransform(4, 4, elements);
         assertEquals("sourceDimensions", 3, tr.getSourceDimensions());
         assertEquals("targetDimensions", 3, tr.getTargetDimensions());
         Assert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
-        assertArrayEquals("elements", elements, tr.getExtendedElements(), 0.0);
+
+        TranslationTransformTest.replaceZeroByNull(elements, O);
+        assertArrayEquals("elements", elements, tr.getElementAsNumbers(false));
         transform = tr;
         validate();
     }

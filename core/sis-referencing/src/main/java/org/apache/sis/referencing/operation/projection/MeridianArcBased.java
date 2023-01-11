@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.Formulas;
 
 import static java.lang.Math.*;
@@ -137,10 +136,10 @@ abstract class MeridianArcBased extends NormalizedProjection {
          */
         rµ = fma(e6, -5./256,
              fma(e4, -3./64,
-             fma(e2, -1./4, 1)));                         // Part of Snyder 7-19 for computing rectifying latitude.
-        DoubleDouble e1 = initializer.axisLengthRatio();
-        e1.ratio_1m_1p();
-        final double ei  = e1.doubleValue();              // Equivalent to [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]   (Snyder 3-24).
+             fma(e2, -1./4, 1)));       // Part of Snyder 7-19 for computing rectifying latitude.
+
+        // Equivalent to [1 - √(1 - ℯ²)] / [1 + √(1 - ℯ²)]   (Snyder 3-24).
+        final double ei  = initializer.axisLengthRatio().ratio_1m_1p().doubleValue();
         final double ei2 = ei*ei;
         final double ei3 = ei*ei2;
         final double ei4 = ei2*ei2;

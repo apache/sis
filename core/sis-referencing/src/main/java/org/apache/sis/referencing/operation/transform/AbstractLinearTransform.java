@@ -71,6 +71,23 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
     }
 
     /**
+     * Wraps the given primitive elements in their wrapper class.
+     * Zero values are replaced by {@code null} elements.
+     * This is mandatory for {@link ExtendedPrecisionMatrix} contract.
+     */
+    static Number[] wrap(final double[] elements) {
+        final Number[] numbers = new Number[elements.length];
+        for (int i=0; i<elements.length; i++) {
+            final double element = elements[i];
+            if (element != 0) {
+                final int vi = (int) element;           // Check if we can store as integer.
+                numbers[i] = (vi == element) ? Integer.valueOf(vi) : Double.valueOf(element);
+            }
+        }
+        return numbers;
+    }
+
+    /**
      * Returns {@code true} if this transform is affine.
      *
      * @return {@code true} if this transform is affine, or {@code false} otherwise.

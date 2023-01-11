@@ -82,8 +82,8 @@ public final class InitializerTest extends TestCase{
          * use the Initializer class.
          */
         final double φ0 = toRadians(initializer.getAndStore(ObliqueStereographic.LATITUDE_OF_ORIGIN));
+        final double rc = initializer.radiusOfConformalSphere(sin(φ0)).doubleValue();
         assertTrue(φ0 > 0);
-        assertEquals("Conformal Sphere Radius", 6382644.571, 6377397.155 *
-                initializer.radiusOfConformalSphere(sin(φ0)), Formulas.LINEAR_TOLERANCE);
+        assertEquals("Conformal Sphere Radius", 6382644.571, 6377397.155 * rc, Formulas.LINEAR_TOLERANCE);
     }
 }

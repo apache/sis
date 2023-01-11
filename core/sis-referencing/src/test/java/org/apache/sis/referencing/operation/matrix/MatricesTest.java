@@ -56,40 +56,22 @@ public final class MatricesTest extends TestCase {
     /**
      * Tests {@link Matrices#create(int, int, Number[])}.
      */
+    @Test
     public void testCreateFromNumbers() {
-        final double SENTINEL_VALUE = Double.MIN_VALUE;
-        final int    SIZE           = Matrix3.SIZE;
+        final int SIZE = Matrix3.SIZE;
         final Matrix3 expected = new Matrix3(
                   1,    2,    3,
-                0.1,  0.2,  0.3,
+                0.1,  0.2,  StrictMath.PI,
                  -1,   -2,   -3);
         final Number[] elements = {
                   1,    2,    3,
-                0.1,  0.2,  0.3,
+                0.1,  0.2,  DoubleDouble.PI,
                  -1,   -2,   -3};
-        /*
-         * Mix of Integer and Double objects but without DoubleDouble objects.
-         * The result shall be a matrix using the standard double Java type.
-         */
-        assertEquals(expected, Matrices.create(SIZE, SIZE, elements));
-        /*
-         * Now put some DoubleDouble instances in the diagonal. We set the error term to
-         * Double.MIN_VALUE in order to differentiate them from automatically calculated
-         * error terms. The result shall use double-double arithmetic, and we should be
-         * able to find back our error terms.
-         */
-        for (int i = 0; i < elements.length; i += SIZE+1) {
-            elements[i] = new DoubleDouble(elements[i].doubleValue(), SENTINEL_VALUE);
-        }
+
         final MatrixSIS matrix = Matrices.create(SIZE, SIZE, elements);
-        assertInstanceOf("Created with DoubleDouble elements", GeneralMatrix.class, matrix);
-        assertFalse(expected.equals(matrix));                                       // Because not the same type.
+        assertExtendedPrecision(matrix);
+        assertFalse(expected.equals(matrix));
         assertTrue(Matrices.equals(expected, matrix, ComparisonMode.BY_CONTRACT));
-        final double[] errors = ((GeneralMatrix) matrix).elements;
-        for (int i = 0; i < SIZE*SIZE; i++) {
-            // Only elements on the diagonal shall be our sentinel value.
-            assertEquals((i % (SIZE+1)) == 0, errors[i + SIZE*SIZE] == SENTINEL_VALUE);
-        }
     }
 
     /**
@@ -256,7 +238,6 @@ public final class MatricesTest extends TestCase {
      */
     private static void assertExtendedPrecision(final Matrix matrix) {
         assertTrue(matrix instanceof GeneralMatrix);
-        assertTrue(((GeneralMatrix) matrix).isExtendedPrecision());
     }
 
     /**
@@ -425,11 +406,12 @@ public final class MatricesTest extends TestCase {
             9, 8, 7, 6, 5,
             4, 3, 2, 1, -1
         });
-        assertEquals(Matrices.create(3, 3, new double[] {
+        // Matrix types are different in following test.
+        assertMatrixEquals("To square matrix", Matrices.create(3, 3, new double[] {
             1, 2, 9,
             3, 4, 8,
             4, 3, -1
-        }), Matrices.resizeAffine(matrix, 3, 3));
+        }), Matrices.resizeAffine(matrix, 3, 3), STRICT);
     }
 
     /**
@@ -520,8 +502,8 @@ public final class MatricesTest extends TestCase {
         /*
          * Mix of values with different precision, ±0, ±1, NaN and infinities.
          * In addition, the first column contains numbers having the maximal number of digits allowed
-         * by the IEEE 754 'double' representation (we put an additional trailing '1' for making sure
-         * that we exceed the 'double' accuracy). Our string representation shall put spaces, not 0,
+         * by the IEEE 754 `double` representation (we put an additional trailing '1' for making sure
+         * that we exceed the `double` accuracy). Our string representation shall put spaces, not 0,
          * for those numbers in order to not give a false sense of accuracy.
          */
         final MatrixSIS matrix = Matrices.create(4, 5, new double[] {
@@ -534,7 +516,7 @@ public final class MatricesTest extends TestCase {
                 "┌                                               ┐\n" +
                 "│  39.519368210697515   -68.5200  -1    1  98.0 │\n" +
                 "│ -66.03586374771822         NaN  43.0  0    -∞ │\n" +
-                "│   2.0741018968776337   83.7260  -0    1  -3.0 │\n" +
+                "│   2.0741018968776337   83.7260   0    1  -3.0 │\n" +     // Sign of zero is lost.
                 "│  91.87961877592006    -18.2674  24.5  0  36.5 │\n" +
                 "└                                               ┘\n", matrix.toString());
     }

@@ -16,21 +16,21 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Matrix;
-import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.referencing.Arithmetic;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ComparisonMode;
 /*
  * We really want to use doubleToRawLongBits, not doubleToLongBits, because the
@@ -61,12 +61,12 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -7595037195668813000L;
+    private static final long serialVersionUID = 4507255773105057855L;
 
     /**
      * A transform that just reverse the sign of input values.
      */
-    static final LinearTransform1D NEGATE = new LinearTransform1D(-1, 0, 0, 0);
+    static final LinearTransform1D NEGATE = new LinearTransform1D(-1, 0);
 
     /**
      * The value which is multiplied to input values.
@@ -79,53 +79,35 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     final double offset;
 
     /**
-     * Error terms of {@link #scale} and {@link #offset} used in double-double arithmetic.
+     * The {@link #scale} and {@link #offset} values as {@code Number} objects, or {@code null} if zero.
      * For performance reasons, those terms are not used in {@code transform(…)} methods.
-     * They are used in {@link #getMatrix()} for making possible to use double-double arithmetic
+     * They are used in {@link #getMatrix()} for making possible to use extended precision
      * during the creation of concatenated or inverse transforms.
      */
-    private final double scaleError, offsetError;
+    private final Number scaleNumber, offsetNumber;
 
     /**
      * The inverse of this transform. Created only when first needed.
+     *
+     * @see #inverse()
      */
-    private transient MathTransform1D inverse;
+    private transient LinearTransform1D inverse;
 
     /**
      * Constructs a new linear transform. This constructor is provided for subclasses only.
      * Instances should be created using the {@linkplain #create(double, double) factory method},
      * which may returns optimized implementations for some particular argument values.
      *
-     * @param scale        the {@code scale}  term in the linear equation.
-     * @param offset       the {@code offset} term in the linear equation.
-     * @param scaleError   error term of {@code scale} for double-double arithmetic.
-     * @param offsetError  error term of {@code offset} for double-double arithmetic.
+     * @param scale   the {@code scale}  term in the linear equation.
+     * @param offset  the {@code offset} term in the linear equation.
      *
      * @see #create(double, double)
      */
-    LinearTransform1D(final double scale, final double offset, final double scaleError, final double offsetError) {
-        this.scale       = scale;
-        this.offset      = offset;
-        this.scaleError  = scaleError;
-        this.offsetError = offsetError;
-    }
-
-    /**
-     * Constructs a new linear transform and remember error terms.
-     *
-     * @param  scale   the {@code scale}  term in the linear equation.
-     * @param  offset  the {@code offset} term in the linear equation.
-     * @return the linear transform for the given scale and offset.
-     */
-    static LinearTransform1D create(final DoubleDouble scale, final DoubleDouble offset) {
-        if (scale.error == 0) {
-            if (offset.error == 0) {
-                return create(scale.value, offset.value);
-            } else if (scale.value == 0) {
-                return new ConstantTransform1D(offset.value, offset.error);
-            }
-        }
-        return new LinearTransform1D(scale.value, offset.value, scale.error, offset.error);
+    LinearTransform1D(final Number scale, final Number offset) {
+        this.scale        = scale .doubleValue();
+        this.offset       = offset.doubleValue();                   // Unconditional because we want to preserve -0.
+        this.scaleNumber  = (this.scale  == 0) ? null : scale;      // SHALL be null instead of zero.
+        this.offsetNumber = (this.offset == 0) ? null : offset;
     }
 
     /**
@@ -137,17 +119,22 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      *
      * @see MathTransforms#linear(double, double)
      */
-    public static LinearTransform1D create(final double scale, final double offset) {
-        if (offset == 0) {
-            if (scale == +1) return IdentityTransform1D.INSTANCE;
-            if (scale == -1) return NEGATE;
+    static LinearTransform1D create(final Number scale, Number offset) {
+        if (ExtendedPrecisionMatrix.isZero(scale)) {
+            if (ExtendedPrecisionMatrix.isZero(offset)) {
+                return ConstantTransform1D.ZERO;
+            } else if (Arithmetic.isOne(offset)) {
+                return ConstantTransform1D.ONE;
+            } else {
+                return new ConstantTransform1D(offset);
+            }
+        } else if (ExtendedPrecisionMatrix.isZero(offset)) {
+            final double s = scale.doubleValue();
+            if (s == +1) return IdentityTransform1D.INSTANCE;
+            if (s == -1) return NEGATE;
+            if (offset == null) offset = 0;
         }
-        if (scale == 0) {
-            if (offset == 0) return ConstantTransform1D.ZERO;
-            if (offset == 1) return ConstantTransform1D.ONE;
-            return new ConstantTransform1D(offset, 0);
-        }
-        return new LinearTransform1D(scale, offset, 0, 0);
+        return new LinearTransform1D(scale, offset);
     }
 
     /**
@@ -156,9 +143,9 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
      * @since 0.7
      */
     static LinearTransform1D constant(final double x, final double y) {
-        final LinearTransform1D tr = create(0, y);
+        final LinearTransform1D tr = create(null, y);
         if (!Double.isNaN(x)) {
-            tr.inverse = create(0, x);
+            tr.inverse = create(null, x);
         }
         return tr;
     }
@@ -172,32 +159,31 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     @Override public final int    getNumRow() {return 2;}
     @Override public final int    getNumCol() {return 2;}
 
-    /** Unsupported operation because this matrix shall be immutable. */
-    @Override public void setElement(int row, int column, double value) {
-        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, Matrix.class));
-    }
-
     /**
      * Retrieves the value at the specified row and column of the matrix.
      * Row and column indices can be only 0 or 1.
+     * If the value is zero, then this method <em>shall</em> return {@code null}.
      */
     @Override
-    public final double getElement(final int row, final int column) {
-        if (((row | column) & ~1) != 0) {
-            throw new IndexOutOfBoundsException();
+    public final Number getElementOrNull(final int row, final int column) {
+        if (((row | column) & ~1) == 0) {
+            switch ((row << 1) | column) {
+                case 0: return scaleNumber;
+                case 1: return offsetNumber;
+                case 2: return null;
+                case 3: return 1;
+            }
         }
-        return (row == 0) ? ((column == 0) ? scale : offset) : column;
+        throw new IndexOutOfBoundsException();
     }
 
     /**
-     * Returns a copy of all matrix elements followed by the error terms for extended-precision arithmetic.
-     * Matrix elements are returned in a flat, row-major (column indices vary fastest) array.
-     *
-     * @return a copy of matrix elements followed by error terms.
+     * Returns a copy of all matrix elements in a flat, row-major array.
+     * Zero values <em>shall</em> be null. Callers can write in the returned array.
      */
     @Override
-    public final double[] getExtendedElements() {
-        return new double[] {scale, offset, 0, 1, scaleError, offsetError, 0, 0};
+    public final Number[] getElementAsNumbers(final boolean writable) {
+        return new Number[] {scaleNumber, offsetNumber, null, 1};
     }
 
     /**
@@ -239,19 +225,16 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
                 if (DoubleDouble.DISABLED) {
                     inverse = create(1/scale, -offset/scale);
                 } else {
-                    final var sd = new DoubleDouble(scale, scaleError);
-                    final var od = new DoubleDouble(sd);
-                    od.inverseDivide(-offset, -offsetError);
-                    sd.inverseDivide(1, 0);
-                    inverse = create(sd, od);
+                    final Number n = Arithmetic.negate(offsetNumber);
+                    inverse = create(Arithmetic.inverse(scaleNumber), Arithmetic.divide(n, scaleNumber));
+                    inverse.inverse = this;
                 }
-                inverse.inverse = this;
                 this.inverse = inverse;
             } else {
-                inverse = super.inverse();              // Throws NoninvertibleTransformException
+                inverse = (LinearTransform1D) super.inverse();              // Throws NoninvertibleTransformException
             }
         }
-        return (LinearTransform1D) inverse;
+        return inverse;
     }
 
     /**
@@ -451,10 +434,10 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     @Override
     protected int computeHashCode() {
         return Long.hashCode(super.computeHashCode() ^
-               (doubleToRawLongBits(offset)           +
-                doubleToRawLongBits(scale)       * 31 +
-                doubleToRawLongBits(offsetError) * 37 +
-                doubleToRawLongBits(scaleError)  * 7));
+               (doubleToRawLongBits(offset)         +
+                doubleToRawLongBits(scale)     * 31 +
+                Objects.hashCode(offsetNumber) * 37 +
+                Objects.hashCode(scaleNumber)  * 7));
     }
 
     /**
@@ -471,10 +454,10 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
             }
         } else if (super.equals(object, mode)) {
             final LinearTransform1D that = (LinearTransform1D) object;
-            return doubleToRawLongBits(scale)       == doubleToRawLongBits(that.scale)      &&
-                   doubleToRawLongBits(offset)      == doubleToRawLongBits(that.offset)     &&
-                   doubleToRawLongBits(scaleError)  == doubleToRawLongBits(that.scaleError) &&
-                   doubleToRawLongBits(offsetError) == doubleToRawLongBits(that.offsetError);
+            return doubleToRawLongBits(scale)  == doubleToRawLongBits(that.scale)  &&
+                   doubleToRawLongBits(offset) == doubleToRawLongBits(that.offset) &&
+                   Objects.equals(scaleNumber,  that.scaleNumber) &&
+                   Objects.equals(offsetNumber, that.offsetNumber);
             /*
              * NOTE: `LinearTransform1D` and `ConstantTransform1D` are extensively used by `SampleDimension`
              * in `org.apache.sis.coverage` package. It is essential for sample dimensions to differentiate

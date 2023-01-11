@@ -278,7 +278,7 @@ public class TransferFunction implements Cloneable, Serializable {
             } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
                 mt = ExponentialTransform1D.create(base, scale);
                 if (offset != 0) {                                          // Rarely occurs in practice.
-                    mt = MathTransforms.concatenate(mt, LinearTransform1D.create(0, offset));
+                    mt = MathTransforms.concatenate(mt, LinearTransform1D.create(null, offset));
                 }
             } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
                 if (scale == 1) {

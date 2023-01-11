@@ -21,17 +21,19 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 import static org.opengis.test.Assert.*;
+import org.opengis.util.FactoryException;
 
 
 /**
  * Compares the results of two {@link MathTransform} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 final class TransformResultComparator implements MathTransform {
@@ -181,5 +183,47 @@ final class TransformResultComparator implements MathTransform {
     @Override
     public String toWKT() {
         return tested.toWKT();
+    }
+
+    /**
+     * Concatenates two transforms that may be comparators.
+     * Instances of {@code TransformResultComparator} are unwrapped before concatenation,
+     * then the concatenation result is re-wrapped in {@code TransformResultComparator}.
+     *
+     * @param  tr1      the first math transform.
+     * @param  tr2      the second math transform.
+     * @param  factory  the factory which is (indirectly) invoking this method, or {@code null} if none.
+     * @return the concatenated transform.
+     */
+    static MathTransform concatenate(final MathTransform tr1, final MathTransform tr2,
+            final MathTransformFactory factory) throws FactoryException
+    {
+        double tolerance;
+        final MathTransform t1, r1, t2, r2;
+        if (tr1 instanceof TransformResultComparator) {
+            final TransformResultComparator c = (TransformResultComparator) tr1;
+            t1 = c.tested;
+            r1 = c.reference;
+            tolerance = c.tolerance;
+        } else {
+            t1 = r1 = tr1;
+            tolerance = 0;
+        }
+        if (tr2 instanceof TransformResultComparator) {
+            final TransformResultComparator c = (TransformResultComparator) tr2;
+            t2 = c.tested;
+            r2 = c.reference;
+            if (c.tolerance > tolerance) {
+                tolerance = c.tolerance;
+            }
+        } else {
+            t2 = r2 = tr2;
+        }
+        final MathTransform tested = ConcatenatedTransform.create(t1, t2, factory);
+        if (r1 == t1 && r2 == t2) {
+            return tested;
+        }
+        final MathTransform reference = ConcatenatedTransform.create(r1, r2, factory);
+        return new TransformResultComparator(reference, tested, tolerance);
     }
 }

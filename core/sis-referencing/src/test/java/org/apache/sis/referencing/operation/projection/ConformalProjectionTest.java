@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * Tests the {@link ConformalProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn(NormalizedProjectionTest.class)
@@ -79,8 +79,7 @@ public final class ConformalProjectionTest extends TransformTestCase {
          * Some checks performed in our projection implementations assume that
          * conversion of 90° to radians give exactly Math.PI/2.
          */
-        final DoubleDouble dd = DoubleDouble.createDegreesToRadians();
-        dd.multiply(90);
+        final DoubleDouble dd = DoubleDouble.DEGREES_TO_RADIANS.multiply(90);
         assertEquals(PI/2, dd.value, 0.0);
         assertEquals(PI/2, toRadians(90), 0.0);
     }
