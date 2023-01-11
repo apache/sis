@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -149,7 +148,7 @@ public final class MathTransforms extends Static {
         final LinearTransform tr;
         switch (factors.length) {
             case 0:  return IdentityTransform.create(0);
-            case 1:  return LinearTransform1D.create(factors[0], 0);
+            case 1:  return LinearTransform1D.create(factors[0], null);
             case 2:  tr = new AffineTransform2D(factors[0], 0, 0, factors[1], 0, 0); break;
             default: tr = new ScaleTransform(factors); break;
         }
@@ -201,18 +200,11 @@ public final class MathTransforms extends Static {
                     case 1: {
                         final MatrixSIS m = MatrixSIS.castOrCopy(matrix);
                         return LinearTransform1D.create(
-                                DoubleDouble.castOrCopy(m.getNumber(0,0)),
-                                DoubleDouble.castOrCopy(m.getNumber(0,1)));
+                                DoubleDouble.of(m.getNumber(0,0), true),
+                                DoubleDouble.of(m.getNumber(0,1), true));
                     }
                     case 2: {
-                        if (matrix instanceof ExtendedPrecisionMatrix) {
-                            return new AffineTransform2D(((ExtendedPrecisionMatrix) matrix));
-                        } else {
-                            return new AffineTransform2D(
-                                    matrix.getElement(0,0), matrix.getElement(1,0),
-                                    matrix.getElement(0,1), matrix.getElement(1,1),
-                                    matrix.getElement(0,2), matrix.getElement(1,2));
-                        }
+                        return AffineTransform2D.create(matrix);
                     }
                 }
             } else if (sourceDimension == 2) {

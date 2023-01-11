@@ -30,7 +30,7 @@ import org.apache.sis.internal.util.Numerics;
  * └     ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Matrix2
  * @see Matrix3
@@ -196,18 +196,7 @@ public class Matrix1 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        final double[] elements = new double[SIZE*SIZE];
-        getElements(elements);
-        return elements;
-    }
-
-    /**
-     * Copies the matrix elements in the given flat array.
-     * The array length shall be at least 1, may also be 2.
-     */
-    @Override
-    final void getElements(final double[] elements) {
-        elements[0] = m00;
+        return new double[] {m00};
     }
 
     /**

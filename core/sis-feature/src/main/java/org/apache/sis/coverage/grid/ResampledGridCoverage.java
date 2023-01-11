@@ -51,7 +51,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 final class ResampledGridCoverage extends DerivedGridCoverage {
@@ -354,7 +354,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
             final int       crsDim     = vectors.getNumRow();                 // Number of dimensions of target CRS.
             final int       gridDim    = target.getDimension();               // Number of dimensions of target grid.
             final int       mappedDim  = Math.min(magnitudes.getNumCol(), Math.min(crsDim, gridDim));
-            final MatrixSIS crsToGrid  = Matrices.create(gridDim + 1, crsDim + 1, ExtendedPrecisionMatrix.ZERO);
+            final MatrixSIS crsToGrid  = Matrices.create(gridDim + 1, crsDim + 1, ExtendedPrecisionMatrix.CREATE_ZERO);
             final int[]     dimSelect  = (gridDim > crsDim && targetExtent != null) ?
                                          targetExtent.getSubspaceDimensions(crsDim) : null;
             /*
@@ -400,15 +400,15 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
                 for (int i=0; i<gridDim; i++) {
                     vectors.setElement(tcDim, i, Double.NaN);   // For preventing this row to be selected again.
                 }
-                final DoubleDouble m = DoubleDouble.castOrCopy(magnitudes.getNumber(0, tgDim));
-                m.inverseDivide(sign);
+                DoubleDouble m = DoubleDouble.of(sign);
+                m = m.divide(magnitudes.getNumber(0, tgDim), false);
                 crsToGrid.setNumber(tgDim, tcDim, m);           // Scale factor from CRS coordinates to grid coordinates.
                 /*
                  * Move the point of interest in a place where conversion to source grid coordinates
                  * will be close to integer. The exact location does not matter; an additional shift
                  * will be applied later for translating to target grid extent.
                  */
-                m.multiply(originToPOI[tcDim] - targetPOI[tcDim]);
+                m = m.multiply(DoubleDouble.sum(originToPOI[tcDim], -targetPOI[tcDim]));
                 crsToGrid.setNumber(tgDim, crsDim, m);
             }
             crsToGrid.setElement(gridDim, crsDim, 1);
@@ -436,18 +436,13 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
              * full "source to target" transform. Compute the scale and offset differences between target and
              * actual extents, then adjust matrix coefficients for compensating those differences.
              */
-            final DoubleDouble scale  = new DoubleDouble();
-            final DoubleDouble offset = new DoubleDouble();
-            final DoubleDouble tmp    = new DoubleDouble();
             for (int j=0; j<gridDim; j++) {
-                tmp.set(targetExtent.getSize(j));
-                scale.set(tentative.getSize(j));
-                scale.inverseDivide(tmp);
+                DoubleDouble span  = DoubleDouble.of(targetExtent.getSize(j));
+                DoubleDouble scale = DoubleDouble.of(tentative.getSize(j));
+                scale = span.divide(scale);
 
-                tmp.set(targetExtent.getLow(j));
-                offset.set(-tentative.getLow(j));
-                offset.multiply(scale);
-                offset.add(tmp);
+                DoubleDouble offset = DoubleDouble.of(targetExtent.getLow(j));
+                offset = offset.subtract(scale.multiply(tentative.getLow(j)));
                 crsToGrid.convertAfter(j, scale, offset);
             }
             targetCenterToCRS = MathTransforms.linear(crsToGrid.inverse());

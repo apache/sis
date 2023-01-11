@@ -40,7 +40,7 @@ final class IdentityTransform1D extends LinearTransform1D {
      * Constructs a new identity transform.
      */
     private IdentityTransform1D() {
-        super(1, 0, 0, 0);
+        super(1, 0);
     }
 
     /**

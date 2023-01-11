@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -38,9 +39,6 @@ import org.apache.sis.internal.referencing.Resources;
 import static java.lang.Math.abs;
 import static org.apache.sis.util.ArgumentChecks.*;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
-
-// Branch-dependent imports
-import java.util.Objects;
 
 
 /**
@@ -123,7 +121,7 @@ import java.util.Objects;
  * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
  * @see <a href="https://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
@@ -139,7 +137,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     /**
      * The conversion factor from <cite>parts per million</cite> to scale minus one.
      */
-    static final double PPM = 1E+6;
+    static final int PPM = 1000000;
 
     /**
      * X-axis translation in metres (EPSG:8605).
@@ -403,9 +401,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Returns the elapsed time from the {@linkplain TimeDependentBWP#getTimeReference() reference time}
-     * to the given date, in millennium. If this {@code BursaWolfParameters} is not time-dependent, then
-     * returns {@code null}.
+     * Returns the elapsed time from the reference time to the given date, or {@code null} if none.
+     * If this {@code BursaWolfParameters} is not time-dependent, then returns {@code null}.
+     *
+     * @return fractional number of tropical years since reference time, or {@code null}.
      */
     DoubleDouble period(final Date time) {
         return null;
@@ -413,12 +412,16 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
-     * then the returned value shall be corrected for the given period.
+     * then the returned value shall be corrected the time elapsed since the reference time.
+     *
+     * The {@code factor} argument shall be the value computed by {@link #period(Date)},
+     * multiplied by 1000 for all {@code index} values except 6.
+     * The 1000 factor is for conversion mm/year to m/year or milli-arc-seconds to arc-seconds.
      *
      * @param  index   0 for {@code tX}, 1 for {@code tY}, <i>etc.</i> in {@code TOWGS84[…]} order.
-     * @param  period  the value computed by {@link #period(Date)}, or {@code null}.
+     * @param  factor  factor by which to multiply the rate of change, or {@code null}.
      */
-    DoubleDouble param(final int index, final DoubleDouble period) {
+    DoubleDouble param(final int index, final DoubleDouble factor) {
         final double p;
         switch (index) {
             case 0: p = tX; break;
@@ -430,7 +433,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
             case 6: p = dS; break;
             default: throw new AssertionError(index);
         }
-        return DoubleDouble.createAndGuessError(p);
+        return DoubleDouble.of(p, true);
     }
 
     /**
@@ -489,22 +492,21 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          * Above was an optimization for the common case where the Bursa-Wolf parameters contain only
          * translation terms. If we have rotation or scale terms, then use double-double arithmetic.
          */
-        final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
-        final DoubleDouble S = param(6, period);
-        S.divide(PPM);
-        S.add(1);                                                   // S = 1 + dS / PPM;
-        RS.multiply(S);                                             // RS = toRadians(1″) * S;
-        final DoubleDouble  X = param(3, period); X.multiply(RS);
-        final DoubleDouble  Y = param(4, period); Y.multiply(RS);
-        final DoubleDouble  Z = param(5, period); Z.multiply(RS);
-        final DoubleDouble mX = new DoubleDouble(X); mX.negate();
-        final DoubleDouble mY = new DoubleDouble(Y); mY.negate();
-        final DoubleDouble mZ = new DoubleDouble(Z); mZ.negate();
+        DoubleDouble mp = (period != null) ? period.divide(1000) : null;    // Convert millimetre to metre.
+        DoubleDouble RS = DoubleDouble.SECONDS_TO_RADIANS;
+        DoubleDouble S = param(6, period).divide(PPM).add(1);       // S = 1 + dS / PPM;
+        RS = RS.multiply(S);                                        // RS = toRadians(1″) * S;
+        final DoubleDouble rX = param(3, mp).multiply(RS);
+        final DoubleDouble rY = param(4, mp).multiply(RS);
+        final DoubleDouble rZ = param(5, mp).multiply(RS);
+        final DoubleDouble mX = rX.negate();
+        final DoubleDouble mY = rY.negate();
+        final DoubleDouble mZ = rZ.negate();
         final Integer       O = 0;                                  // Fetch Integer instance only once.
         return Matrices.create(4, 4, new Number[] {
-                 S,  mZ,   Y,  param(0, period),
-                 Z,   S,  mX,  param(1, period),
-                mY,   X,   S,  param(2, period),
+                 S,  mZ,  rY,  param(0, mp),
+                rZ,   S,  mX,  param(1, mp),
+                mY,  rX,   S,  param(2, mp),
                  O,   O,   O,  1});
     }
 
@@ -549,19 +551,15 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
          * elements should have the same value, but we tolerate slight deviation
          * (this will be verified later).
          */
-        final DoubleDouble S = DoubleDouble.castOrCopy(getNumber(matrix, 0,0));
-        S.addGuessError(getNumber(matrix, 1,1));
-        S.addGuessError(getNumber(matrix, 2,2));
-        S.divide(3);
+        DoubleDouble RS = DoubleDouble.of(getNumber(matrix, 0, 0), true)
+                                     .add(getNumber(matrix, 1, 1), true)
+                                     .add(getNumber(matrix, 2, 2), true).divide(3);
         /*
          * Computes: RS = S * toRadians(1″)
          *           dS = (S-1) * PPM
          */
-        final DoubleDouble RS = DoubleDouble.createSecondsToRadians();
-        RS.multiply(S);
-        S.add(-1);
-        S.multiply(PPM);
-        dS = S.doubleValue();
+        dS = RS.add(-1).multiply(PPM).doubleValue();
+        RS = RS.multiply(DoubleDouble.SECONDS_TO_RADIANS);
         /*
          * Rotation terms. Each rotation terms appear twice, with one value being the negative of the other value.
          * We verify this skew symmetric aspect in the loop. We also opportunistically verify that the scale terms
@@ -572,18 +570,12 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.NonUniformScale));
             }
             for (int i = j+1; i < SIZE-1; i++) {
-                S.setFrom(RS);
-                S.inverseDivideGuessError(getNumber(matrix, j,i));          // Negative rotation term.
-                double value = S.value;
-                double error = S.error;
-                S.setFrom(RS);
-                S.inverseDivideGuessError(getNumber(matrix, i,j));          // Positive rotation term.
-                if (!(abs(value + S.value) <= tolerance)) {                 // We expect r1 ≈ -r2
+                final DoubleDouble mr = DoubleDouble.of(getNumber(matrix, j, i), true).divide(RS);    // Negative rotation term.
+                final DoubleDouble pr = DoubleDouble.of(getNumber(matrix, i, j), true).divide(RS);    // Positive rotation term.
+                if (!(abs(pr.value + mr.value) <= 2*tolerance)) {                                     // We expect mr ≈ -pr.
                     throw new IllegalArgumentException(Resources.format(Resources.Keys.NotASkewSymmetricMatrix));
                 }
-                S.subtract(value, error);
-                S.multiply(0.5);
-                value = S.doubleValue();                                    // Average of the two rotation terms.
+                final double value = pr.subtract(mr).scalb(-1).doubleValue();   // Average of the two rotation terms.
                 switch (j*SIZE + i) {
                     case 1: rZ =  value; break;
                     case 2: rY = -value; break;

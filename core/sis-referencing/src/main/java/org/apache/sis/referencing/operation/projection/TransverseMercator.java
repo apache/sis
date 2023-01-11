@@ -70,7 +70,7 @@ import static org.apache.sis.internal.referencing.provider.TransverseMercator.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see Mercator
  * @see ObliqueMercator
@@ -248,9 +248,8 @@ public class TransverseMercator extends NormalizedProjection {
              *
              *     b/a = √(1 - ℯ²)
              */
-            final DoubleDouble t = initializer.axisLengthRatio();   // t  =  b/a
-            t.ratio_1m_1p();                                        // t  =  (1 - t) / (1 + t)
-            final double n  = t.doubleValue();                      // n = f / (2-f)
+            final var    nd = initializer.axisLengthRatio().ratio_1m_1p();
+            final double n  = nd.doubleValue();                      // n = f / (2-f)
             final double n2 = n  * n;
             final double n3 = n2 * n;
             final double n4 = n2 * n2;
@@ -273,11 +272,7 @@ public class TransverseMercator extends NormalizedProjection {
             /*
              * Compute B  =  (1 + n²/4 + n⁴/64) / (1 + n)
              */
-            B = new DoubleDouble(t);        // B  =  n
-            B.square();
-            B.series(1, 0.25, 1./64);       // B  =  (1 + n²/4 + n⁴/64)
-            t.add(1);
-            B.divide(t);                    // B  =  (1 + n²/4 + n⁴/64) / (1 + n)
+            B = nd.square().series(1, 0.25, 1./64).divide(nd.add(1));
         }
         /*
          * Compute M₀ = B⋅(ξ₁ + ξ₂ + ξ₃ + ξ₄) and negate in anticipation for what will be needed
@@ -291,14 +286,11 @@ public class TransverseMercator extends NormalizedProjection {
          */
         final double Q = asinh(tan(φ0)) - eccentricity * atanh(eccentricity * sin(φ0));
         final double β = atan(sinh(Q));
-        final DoubleDouble M0 = new DoubleDouble();
-        M0.value = cf8 * sin(8*β)
-                 + cf6 * sin(6*β)
-                 + cf4 * sin(4*β)
-                 + cf2 * sin(2*β)
-                 + β;
-        M0.multiply(B);
-        M0.negate();
+        DoubleDouble M0 = B.negate().multiply(
+                β + fma(cf2, sin(2*β),
+                    fma(cf4, sin(4*β),
+                    fma(cf6, sin(6*β),
+                        cf8* sin(8*β)))), false);
         /*
          * At this point, all parameters have been processed. Now store
          * the linear operations in the (de)normalize affine transforms:

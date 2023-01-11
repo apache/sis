@@ -28,7 +28,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix2.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(SolverTest.class)
@@ -43,8 +43,8 @@ public final class Matrix2Test extends MatrixTestCase {
      * Ensures that the given matrix is an instance of the expected type.
      */
     @Override
-    void validate(final MatrixSIS matrix) {
-        super.validate(matrix);
+    void validateImplementation(final MatrixSIS matrix) {
+        super.validateImplementation(matrix);
         assertEquals(Matrix2.class, matrix.getClass());
     }
 
@@ -57,25 +57,9 @@ public final class Matrix2Test extends MatrixTestCase {
         initialize(-8453835559080304420L);
         final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix2 matrix = new Matrix2(
-                elements[0],
-                elements[1],
-                elements[2],
-                elements[3]);
-        validate(matrix);
+                elements[0], elements[1],
+                elements[2], elements[3]);
+        validateImplementation(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
-    }
-
-    /**
-     * Tests {@link GeneralMatrix#getExtendedElements(Matrix, int, int, boolean)}.
-     * This test is a copy of {@link GeneralMatrixTest#testGetExtendedElements()},
-     * but on a {@link Matrix2} instance instead of {@link GeneralMatrix}.
-     */
-    @Test
-    public void testGetExtendedElements() {
-        GeneralMatrixTest.testGetExtendedElements(new Matrix2(
-                StrictMath.PI / 180,        // Degrees to radians
-                180 / StrictMath.PI,        // Radians to degrees
-                0.9,                        // Grads to degrees
-                0.1234567));                // Random value with no special meaning.
     }
 }

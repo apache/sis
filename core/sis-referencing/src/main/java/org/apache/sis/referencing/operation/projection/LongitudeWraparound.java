@@ -64,7 +64,7 @@ import org.apache.sis.measure.Longitude;
  * <p>This transform is hidden in WKT (it does not appear as a concatenation).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.operation.transform.WraparoundTransform
  * @see <a href="https://issues.apache.org/jira/browse/SIS-486">SIS-486</a>
@@ -130,8 +130,8 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
      * @return a bound of the [−n⋅π … n⋅π] range.
      */
     static double boundOfScaledLongitude(final MatrixSIS normalize, final boolean negative) {
-        final DoubleDouble bound = DoubleDouble.castOrCopy(normalize.getNumber(0, 0));
-        bound.multiply(negative ? Longitude.MIN_VALUE : Longitude.MAX_VALUE);
+        DoubleDouble bound = DoubleDouble.of(normalize.getNumber(0, 0), true);
+        bound = bound.multiply(negative ? Longitude.MIN_VALUE : Longitude.MAX_VALUE, false);
         return bound.doubleValue();
     }
 

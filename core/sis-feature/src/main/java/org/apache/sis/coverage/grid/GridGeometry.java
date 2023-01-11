@@ -692,11 +692,10 @@ public class GridGeometry implements LenientComparable, Serializable {
                     resolution = new double[tgtDim];
                     for (int j=0; j<tgtDim; j++) {
                         final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
-                        final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, i);
-                        final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                        DoubleDouble scale  = DoubleDouble.of(affine.getNumber(j, i), true);
+                        DoubleDouble offset = DoubleDouble.of(affine.getNumber(j, srcDim), true);
                         resolution[j] = Math.abs(scale.doubleValue());
-                        scale.multiply(0.5);
-                        offset.add(scale);
+                        offset = offset.add(scale.scalb(-1));
                         affine.setNumber(j, srcDim, offset);
                     }
                     gridToCRS = MathTransforms.linear(affine);
@@ -1411,7 +1410,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             MatrixSIS matrix = Matrices.copy(MathTransforms.getMatrix(cornerToCRS));
             final boolean isNonLinear = (matrix == null);
             if (isNonLinear) {
-                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.IDENTITY);
+                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.CREATE_IDENTITY);
             }
             /*
              * By dividing the matrix elements directly, we avoid some numerical errors.
@@ -1419,16 +1418,14 @@ public class GridGeometry implements LenientComparable, Serializable {
              * Each period value must be multiplied by a full column.
              */
             newResolution = resolution.clone();
-            final DoubleDouble div = new DoubleDouble();
             for (int i = Math.min(srcDim, periods.length); --i >= 0;) {
                 final double p = periods[i];
                 if (p != 1) {
                     newResolution[i] /= p;
+                    final DoubleDouble pd = DoubleDouble.of(p, true);
                     for (int j=0; j<tgtDim; j++) {
-                        div.error = 0;
-                        div.value = p;
-                        div.inverseDivide(DoubleDouble.castOrCopy(matrix.getNumber(j, i)));
-                        matrix.setNumber(j, i, div);
+                        DoubleDouble e = DoubleDouble.of(matrix.getNumber(j, i), true);
+                        matrix.setNumber(j, i, e.divide(pd));
                         changed = true;
                     }
                 }

@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.util.DoubleDouble;
 
 import org.apache.sis.test.DependsOnMethod;
@@ -34,7 +34,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests the {@link TranslationTransform} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 @DependsOn(AbstractMathTransformTest.class)
@@ -46,18 +46,18 @@ public final class TranslationTransformTest extends MathTransformTestCase {
      * @param  matrix      the data to use for creating the transform.
      */
     private void create(final int dimensions, final MatrixSIS matrix) {
-        final double[] elements = matrix.getElements();
+        final Number[] elements = TranslationTransform.wrap(matrix.getElements());
         final TranslationTransform tr = new TranslationTransform(matrix.getNumRow(), elements);
         assertEquals("sourceDimensions", dimensions, tr.getSourceDimensions());
         assertEquals("targetDimensions", dimensions, tr.getTargetDimensions());
         assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
-        assertArrayEquals("elements", elements, tr.getExtendedElements(), 0.0);
+        assertArrayEquals("elements", elements, getElementAsNumbers(tr));
         transform = tr;
         validate();
     }
 
     /**
-     * Tests a transform created from a square matrix with no error terms.
+     * Tests a transform created from a square matrix.
      *
      * @throws TransformException should never happen.
      */
@@ -74,39 +74,58 @@ public final class TranslationTransformTest extends MathTransformTestCase {
     }
 
     /**
-     * Verifies that {@link TranslationTransform} stores the error terms when they exist.
+     * Verifies that {@link TranslationTransform} stores the numbers with their extended precision.
      */
     @Test
     @DependsOnMethod("testConstantDimension")
     public void testExtendedPrecision() {
         final Number O = 0;
         final Number l = 1;
-        final DoubleDouble r = DoubleDouble.createDegreesToRadians();
-        final MatrixSIS matrix = Matrices.create(4, 4, new Number[] {
+        final DoubleDouble r = DoubleDouble.DEGREES_TO_RADIANS;
+        final Number[] elements = {
             l, O, O, r,
             O, l, O, r,
             O, O, l, O,
             O, O, O, l
-        });
-        final double[] elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
-        assertTrue (r.value > r.error);
-        assertFalse(r.error == 0);          // Paranoiac checks for making sure that next assertion will test something.
-        assertArrayEquals(new double[] {    // Paranoiac check for making sure that getExtendedElements() is not broken.
-                1, 0, 0, r.value,
-                0, 1, 0, r.value,
-                0, 0, 1, 0,
-                0, 0, 0, 1,
-                0, 0, 0, r.error,
-                0, 0, 0, r.error,
-                0, 0, 0, 0,
-                0, 0, 0, 0}, elements, 0);
-
+        };
+        final MatrixSIS matrix = Matrices.create(4, 4, elements);
         final TranslationTransform tr = new TranslationTransform(4, elements);
         assertEquals("sourceDimensions", 3, tr.getSourceDimensions());
         assertEquals("targetDimensions", 3, tr.getTargetDimensions());
         assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
-        assertArrayEquals("elements", elements, tr.getExtendedElements(), 0.0);
+
+        replaceZeroByNull(elements, O);
+        assertArrayEquals("elements", elements, tr.getElementAsNumbers(false));
         transform = tr;
         validate();
+    }
+
+    /**
+     * Replaces all occurrences of the specified zero value by {@code null}.
+     * This is required before an array of expected elements can be compared
+     * with {@link LinearTransform1D#getElementAsNumbers(boolean)}.
+     */
+    static void replaceZeroByNull(final Number[] elements, final Number zero) {
+        for (int i=0; i<elements.length; i++) {
+            if (elements[i] == zero) {
+                elements[i] = null;
+            }
+        }
+    }
+
+    /**
+     * Returns {@code tr.getElementAsNumbers(true)} will all instances
+     * of {@link Integer} replaced by instances of {@link Double}.
+     * This is required before to compare with expected values.
+     */
+    static Number[] getElementAsNumbers(final ExtendedPrecisionMatrix tr) {
+        final Number[] elements = tr.getElementAsNumbers(true);
+        for (int i=0; i<elements.length; i++) {
+            final Number e = elements[i];
+            if (e instanceof Integer) {
+                elements[i] = Double.valueOf(e.intValue());
+            }
+        }
+        return elements;
     }
 }

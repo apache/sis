@@ -34,7 +34,6 @@ import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -81,7 +80,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @author  Rueben Schulz (UBC)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see TransverseMercator
  * @see ObliqueMercator
@@ -262,13 +261,13 @@ public class Mercator extends ConformalProjection {
          * if they really want, since we sometimes see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
-        final Number k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
+        final Number k0 = initializer.scaleAtφ(sin(φ1), cos(φ1));
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, new DoubleDouble(-log(expΨ(φ0, eccentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, -log(expΨ(φ0, eccentricity * sin(φ0))));
         }
         /*
          * Variants of the Mercator projection which can be handled by scale factors.
@@ -284,7 +283,7 @@ public class Mercator extends ConformalProjection {
             normalize  .convertBefore(1, 0.80, null);
             denormalize.convertBefore(1, 1.25, null);
         } else if (variant == Variant.AUXILIARY) {
-            DoubleDouble ratio = null;
+            final Number ratio;
             final int type = initializer.getAndStore(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE, 0);
             switch (type) {
                 default: {
@@ -292,9 +291,9 @@ public class Mercator extends ConformalProjection {
                             MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE.getName().getCode(), type));
                 }
                 case AuthalicMercator.TYPE:
-                case 2: ratio = new DoubleDouble(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().value)); break;
+                case 2: ratio = initializer.authalicRadius();  break;
                 case 1: ratio = initializer.axisLengthRatio(); break;
-                case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
+                case 0: ratio = null; break;      // Same as "Popular Visualisation Pseudo Mercator".
             }
             denormalize.convertAfter(0, ratio, null);
             denormalize.convertAfter(1, ratio, null);
@@ -323,7 +322,7 @@ public class Mercator extends ConformalProjection {
          * those remaning lines of code.
          */
         if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
-            final Number reverseSign = new DoubleDouble(-1d);
+            final Number reverseSign = DoubleDouble.of(-1);
             normalize  .convertBefore(1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);        // Must be before false easting/northing.
         }

@@ -39,6 +39,7 @@ import static java.lang.StrictMath.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.ReferencingAssert;
+import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 import static org.opengis.test.Assert.*;
 
 
@@ -149,6 +150,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
             assertFalse("transform instanceof MathTransform2D:", transform instanceof MathTransform2D);
         }
         assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
+        MatrixTestCase.validate(MathTransforms.getMatrix(transform));
     }
 
     /**

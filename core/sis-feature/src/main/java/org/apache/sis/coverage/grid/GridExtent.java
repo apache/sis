@@ -1572,30 +1572,25 @@ public class GridExtent implements Serializable, LenientComparable {
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
     final MatrixSIS cornerToCRS(final Envelope env, final long flippedAxes, final int[] sourceDimensions) {
-        final int          srcDim = getDimension();
-        final int          tgtDim = env.getDimension();
-        final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
-        final DoubleDouble scale  = new DoubleDouble();
-        final DoubleDouble offset = new DoubleDouble();
+        final int       srcDim = getDimension();
+        final int       tgtDim = env.getDimension();
+        final MatrixSIS affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.CREATE_ZERO);
         for (int j=0; j<tgtDim; j++) {
             final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+            DoubleDouble scale;
             if (i < srcDim) {
                 final boolean flip = (flippedAxes & Numerics.bitmask(j)) != 0;
-                offset.set(coordinates[i]);
-                scale.set(coordinates[i + srcDim]);
-                scale.subtract(offset);
-                scale.add(1);                                   // == getSize(j) but without overflow.
-                scale.inverseDivideGuessError(env.getSpan(j));  // == (envelope span) / (grid size).
-                if (flip) scale.negate();
+                DoubleDouble offset = DoubleDouble.of(coordinates[i]);
+                DoubleDouble size   = DoubleDouble.of(coordinates[i+srcDim]).subtract(offset).add(1);
+                scale = DoubleDouble.of(env.getSpan(j), true).divide(size);
+                if (flip) scale = scale.negate();
                 if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
-                    offset.multiply(scale);
-                    offset.negate();
+                    offset = offset.multiply(scale).negate();
                 }
-                offset.addGuessError(flip ? env.getMaximum(j) : env.getMinimum(j));
+                offset = offset.add(flip ? env.getMaximum(j) : env.getMinimum(j), true);
                 affine.setNumber(j, srcDim, offset);
             } else {
-                scale.value = Double.NaN;
-                scale.error = Double.NaN;
+                scale = DoubleDouble.NaN;
             }
             affine.setNumber(j, i, scale);
         }

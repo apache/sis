@@ -23,43 +23,29 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.util.ArgumentChecks;
 
 
 /**
- * The matrix of an {@link AffineTransform}, optionally with storage for the error terms
- * used in double-double arithmetic.
+ * The matrix of an {@link AffineTransform}, optionally with storage for terms with extended precision.
+ * This is implemented in a class separated from {@link AffineTransform2D} for avoiding a conflict
+ * between {@link AffineTransform#clone()} and {@link Matrix#clone()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
-final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Cloneable {
+class AffineMatrix extends MatrixSIS implements Serializable, Cloneable {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 1605578645060388327L;
+    private static final long serialVersionUID = 8659316010184028768L;
 
     /**
      * The number of rows and columns of this matrix.
      */
-    private static final int SIZE = 3;
-
-    /**
-     * The length of an array containing all matrix elements.
-     */
-    private static final int LENGTH = SIZE * SIZE;
-
-    /**
-     * The length of an array containing only the matrix elements to be stored.
-     * The last row is omitted because it is assumed to contain (0 0 1).
-     */
-    private static final int LENGTH_STORED = (SIZE - 1) * SIZE;
-
-    /**
-     * The length of an array containing all matrix elements together with error terms.
-     */
-    private static final int LENGTH_EXTENDED = 2 * LENGTH;
+    private static final int SIZE = AffineTransform2D.DIMENSION + 1;
 
     /**
      * The transform from which to get the matrix terms.
@@ -67,50 +53,19 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
     private final AffineTransform transform;
 
     /**
-     * The error terms, or {@code null} if none.
-     * If non-null, then the length of this array shall be 6.
-     */
-    private final double[] errors;
-
-    /**
-     * Creates a new matrix wrapping the given transform without error terms.
+     * Creates a new matrix wrapping the given transform.
      *
      * @param transform  the transform to wrap.
      */
     AffineMatrix(final AffineTransform transform) {
         this.transform = transform;
-        errors = null;
-    }
-
-    /**
-     * Creates a new matrix wrapping the given transform.
-     *
-     * @param transform  the transform to wrap.
-     * @param elements   the elements used for creating the matrix (optionally with error terms).
-     */
-    AffineMatrix(final AffineTransform transform, final double[] elements) {
-        this.transform = transform;
-        if (elements.length == LENGTH_EXTENDED) {
-            errors = Arrays.copyOfRange(elements, LENGTH, LENGTH + LENGTH_STORED);
-            /*
-             * At this point we could check:
-             *
-             *   assert Arrays.equals(elements, getExtendedElements());
-             *
-             * but we do not, because the terms in the last row may not be exactly 0 or 1
-             * because of rounding errors.
-             */
-        } else {
-            assert elements.length == LENGTH;
-            errors = null;
-        }
     }
 
     /**
      * Gets the number of rows in the matrix.
      */
     @Override
-    public int getNumRow() {
+    public final int getNumRow() {
         return SIZE;
     }
 
@@ -118,7 +73,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      * Gets the number of columns in the matrix.
      */
     @Override
-    public int getNumCol() {
+    public final int getNumCol() {
         return SIZE;
     }
 
@@ -126,78 +81,127 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      * Returns {@code true} if the backing affine transform is the identity transform.
      */
     @Override
-    public boolean isIdentity() {
+    public final boolean isIdentity() {
         return transform.isIdentity();
     }
 
     /**
-     * Returns all matrix elements in row-major order.
-     * Note that this is not the same order than {@link AffineTransform} constructor.
-     */
-    @Override
-    public double[] getExtendedElements() {
-        final double[] elements = new double[errors != null ? LENGTH_EXTENDED : LENGTH];
-        if (errors != null) {
-            System.arraycopy(errors, 0, elements, LENGTH, LENGTH_STORED);
-        }
-        elements[0] = transform.getScaleX();
-        elements[1] = transform.getShearX();
-        elements[2] = transform.getTranslateX();
-        elements[3] = transform.getShearY();
-        elements[4] = transform.getScaleY();
-        elements[5] = transform.getTranslateY();
-        elements[8] = 1;
-        return elements;
-    }
-
-    /**
      * Returns the matrix element at the given index.
+     *
+     * @param  row     the row number to be retrieved.
+     * @param  column  the column number to be retrieved.
+     * @return the value at the indexed element.
+     * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
      */
     @Override
     public final double getElement(final int row, final int column) {
-        ArgumentChecks.ensureBetween("row",    0, SIZE, row);
-        ArgumentChecks.ensureBetween("column", 0, SIZE, column);
+        ArgumentChecks.ensureBetween("row",    0, AffineTransform2D.DIMENSION, row);
+        ArgumentChecks.ensureBetween("column", 0, AffineTransform2D.DIMENSION, column);
         switch (row * SIZE + column) {
-            case 0: return transform.getScaleX();
-            case 1: return transform.getShearX();
-            case 2: return transform.getTranslateX();
-            case 3: return transform.getShearY();
-            case 4: return transform.getScaleY();
-            case 5: return transform.getTranslateY();
-            case 6: // Fallthrough
-            case 7: return 0;
-            case 8: return 1;
-            default: throw new AssertionError();
+            case 0:  return transform.getScaleX();
+            case 1:  return transform.getShearX();
+            case 2:  return transform.getTranslateX();
+            case 3:  return transform.getShearY();
+            case 4:  return transform.getScaleY();
+            case 5:  return transform.getTranslateY();
+            case 8:  return 1;
+            default: return 0;
         }
     }
 
     /**
-     * Unsupported operation, since this matrix is unmodifiable.
+     * Unsupported operation because this matrix is unmodifiable.
      */
     @Override
-    public final void setElement(final int row, final int column, final double value) {
+    public final void setElement(int row, int column, double value) {
         throw new UnsupportedOperationException(Resources.format(Resources.Keys.UnmodifiableAffineTransform));
     }
 
     /**
-     * Returns a copy of the matrix that user can modify.
+     * Unsupported operation because this matrix is unmodifiable.
      */
     @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
-    public final Matrix clone() {
-        return Matrices.copy(this);
+    public final void transpose() {
+        throw new UnsupportedOperationException(Resources.format(Resources.Keys.UnmodifiableAffineTransform));
     }
 
     /**
-     * Compares this matrix with the given object for equality, including error terms (if any).
+     * An {@code AffineMatrix} providing matrix elements with extended precision.
      */
-    @Override
-    public boolean equals(final Object obj) {
-        if (obj instanceof AffineMatrix) {
-            final AffineMatrix other = (AffineMatrix) obj;
-            return transform.equals(other.transform) && Arrays.equals(errors, other.errors);
+    @SuppressWarnings("CloneableImplementsClone")
+    static final class ExtendedPrecision extends AffineMatrix implements ExtendedPrecisionMatrix {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -4887280720125030417L;
+
+        /**
+         * The length of an array containing only the matrix elements to be stored.
+         * The last row is omitted because it is assumed to contain (0 0 1).
+         */
+        private static final int LENGTH_STORED = (SIZE - 1) * SIZE;
+
+        /**
+         * The terms with extended prevision.
+         * The length of this array shall be {@value #LENGTH_STORED}.
+         */
+        private final Number[] elements;
+
+        /**
+         * Creates a new matrix wrapping the given transform.
+         * This constructor shall not modify the given array.
+         *
+         * @param transform  the transform to wrap.
+         * @param elements   the elements used for creating the matrix.
+         *                   Zero values <em>shall</em> be null.
+         */
+        ExtendedPrecision(final AffineTransform transform, final Number[] elements) {
+            super(transform);
+            this.elements = Arrays.copyOf(elements, LENGTH_STORED);
         }
-        return false;
+
+        /**
+         * Returns all matrix elements in row-major order.
+         * Note that this is not the same order than {@link AffineTransform} constructor.
+         * Zero values <em>shall</em> be null.
+         */
+        @Override
+        public Number[] getElementAsNumbers(final boolean writable) {
+            final Number[] numbers = Arrays.copyOf(elements, SIZE*SIZE);
+            numbers[SIZE*SIZE - 1] = 1;
+            return numbers;
+        }
+
+        /**
+         * Retrieves the value at the specified row and column if different than zero.
+         * If the value is zero, then this method <em>shall</em> return {@code null}.
+         */
+        @Override
+        public Number getElementOrNull(final int row, final int column) {
+            ArgumentChecks.ensureBetween("row",    0, AffineTransform2D.DIMENSION, row);
+            ArgumentChecks.ensureBetween("column", 0, AffineTransform2D.DIMENSION, column);
+            if (row != AffineTransform2D.DIMENSION) {
+                return elements[row * SIZE + column];
+            } else {
+                return (column == AffineTransform2D.DIMENSION) ? 1 : null;
+            }
+        }
+
+        /**
+         * Returns a hash code value for this matrix.
+         */
+        @Override
+        public int hashCode() {
+            return super.hashCode() + Arrays.hashCode(elements);
+        }
+
+        /**
+         * Compares this matrix with the given object for equality, including error terms (if any).
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            return super.equals(obj) && Arrays.equals(elements, ((ExtendedPrecision) obj).elements);
+        }
     }
 
     /**
@@ -205,7 +209,27 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      */
     @Override
     public int hashCode() {
-        return (transform.hashCode() * 31 + Arrays.hashCode(errors)) ^ (int) serialVersionUID;
+        return transform.hashCode() ^ (int) serialVersionUID;
+    }
+
+    /**
+     * Compares this matrix with the given object for equality, including error terms (if any).
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        if (obj != null && obj.getClass() == getClass()) {
+            return transform.equals(((AffineMatrix) obj).transform);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a copy of the matrix that user can modify.
+     */
+    @Override
+    @SuppressWarnings("CloneDoesntCallSuperClone")
+    public final MatrixSIS clone() {
+        return Matrices.copy(this);
     }
 
     /**
@@ -214,7 +238,7 @@ final class AffineMatrix implements ExtendedPrecisionMatrix, Serializable, Clone
      * @return a string representation of this matrix.
      */
     @Override
-    public String toString() {
+    public final String toString() {
         return Matrices.toString(this);
     }
 }

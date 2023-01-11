@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.Matrix;
  * └             ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Matrix1
  * @see Matrix2
@@ -236,20 +236,11 @@ public class Matrix3 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        final double[] elements = new double[SIZE*SIZE];
-        getElements(elements);
-        return elements;
-    }
-
-    /**
-     * Copies the matrix elements in the given flat array.
-     * The array length shall be at least 9, may also be 18.
-     */
-    @Override
-    final void getElements(final double[] elements) {
-        elements[0] = m00;    elements[1] = m01;    elements[2] = m02;
-        elements[3] = m10;    elements[4] = m11;    elements[5] = m12;
-        elements[6] = m20;    elements[7] = m21;    elements[8] = m22;
+        return new double[] {
+            m00, m01, m02,
+            m10, m11, m12,
+            m20, m21, m22
+        };
     }
 
     /**

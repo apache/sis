@@ -231,7 +231,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
              * If it happens anyway, put the fractional amount of seconds in the converter instead of adding another
              * field in this class for such very rare situation. Accuracy should be okay since the offset is small.
              */
-            UnitConverter c = Units.converter(null, new Fraction((int) t, MILLIS_PER_SECOND).simplify());
+            UnitConverter c = Units.converter(null, Fraction.valueOf(t, MILLIS_PER_SECOND));
             toSeconds = c.concatenate(toSeconds);
         }
     }

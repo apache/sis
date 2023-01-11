@@ -73,7 +73,7 @@ import org.apache.sis.math.Vector;
  * So compared to the {@code CELL_CORNER} case, the {@code CELL_CENTER} case has a translation of +0.5 × scale.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 final class GridGeometryBuilder extends GeoKeysLoader {
@@ -230,14 +230,13 @@ final class GridGeometryBuilder extends GeoKeysLoader {
              *                          scale  =  affine(i,i)  —  on the diagonal
              */
             if (distance != Double.POSITIVE_INFINITY) {
-                final DoubleDouble t = new DoubleDouble();
+                final boolean decimal = true;               // Whether values were intended to be exact in base 10.
                 final int numDim = affine.getNumRow() - 1;
                 final int trCol  = affine.getNumCol() - 1;
                 for (int j=0; j<numDim; j++) {
-                    t.value = -modelTiePoints.doubleValue(nearest + j);
-                    t.error = DoubleDouble.errorForWellKnownValue(t.value);
-                    t.multiplyGuessError(affine.getNumber(j, j));
-                    t.addGuessError(modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / 2));
+                    final double src = -modelTiePoints.doubleValue(nearest + j);
+                    final double tgt =  modelTiePoints.doubleValue(nearest + j + Localization.RECORD_LENGTH / 2);
+                    var t = DoubleDouble.of(src, decimal).multiply(affine.getNumber(j,j), decimal).add(tgt, decimal);
                     affine.setNumber(j, trCol, t);
                 }
                 return true;

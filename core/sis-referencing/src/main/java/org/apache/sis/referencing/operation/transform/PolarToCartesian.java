@@ -54,7 +54,7 @@ import static java.lang.Math.*;
  * is dropping the <var>z</var> axis.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 final class PolarToCartesian extends CoordinateSystemTransform implements Serializable {
@@ -83,7 +83,7 @@ final class PolarToCartesian extends CoordinateSystemTransform implements Serial
     private PolarToCartesian() {
         super("Polar to Cartesian", "Cylindrical to Cartesian", 2);
         context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION)
-               .convertBefore(1, DoubleDouble.createDegreesToRadians(), null);
+               .convertBefore(1, DoubleDouble.DEGREES_TO_RADIANS, null);
     }
 
     /**

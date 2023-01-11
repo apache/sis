@@ -288,14 +288,10 @@ public final class Numerics extends Static {
      * @param  y  the value to add to {@code x}.
      * @return {@code x+y} computed with saturation arithmetic.
      */
-    public static long saturatingAdd(final long x, final int y) {
+    public static long saturatingAdd(final long x, final long y) {
         final long result = x + y;
-        if (y >= 0) {
-            if (result < x) return Long.MAX_VALUE;
-        } else {
-            if (result > x) return Long.MIN_VALUE;
-        }
-        return result;
+        if (((x ^ result) & (y ^ result)) >= 0) return result;
+        return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
     }
 
     /**
@@ -306,14 +302,10 @@ public final class Numerics extends Static {
      * @param  y  the value to subtract from {@code x}.
      * @return {@code x-y} computed with saturation arithmetic.
      */
-    public static long saturatingSubtract(final long x, final int y) {
+    public static long saturatingSubtract(final long x, final long y) {
         final long result = x - y;
-        if (y < 0) {
-            if (result < x) return Long.MAX_VALUE;
-        } else {
-            if (result > x) return Long.MIN_VALUE;
-        }
-        return result;
+        if (((x ^ y) & (x ^ result)) >= 0) return result;
+        return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
     }
 
     /**
@@ -337,12 +329,9 @@ public final class Numerics extends Static {
      * @return the fraction as a {@link Fraction} or {@link Double} object.
      */
     public static Number fraction(long numerator, long denominator) {
-        final int simplify = Math.min(Long.numberOfTrailingZeros(numerator), Long.numberOfTrailingZeros(denominator));
-        final int num = (int) (numerator   >>= simplify);
-        final int den = (int) (denominator >>= simplify);
-        if (num == numerator && den == denominator) {
-            return new Fraction(num, den).unique();
-        } else {
+        try {
+            return Fraction.valueOf(numerator, denominator).unique();
+        } catch (ArithmeticException e) {
             return valueOf(numerator / (double) denominator);
         }
     }
