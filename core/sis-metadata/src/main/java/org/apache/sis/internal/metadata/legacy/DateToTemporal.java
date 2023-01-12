@@ -29,7 +29,7 @@ import java.util.Iterator;
  * This adapter may be deleted after deprecated metadata methods have been removed from Apache SIS.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class DateToTemporal extends AbstractCollection<Temporal> {
@@ -82,5 +82,28 @@ public final class DateToTemporal extends AbstractCollection<Temporal> {
                 dates.remove();
             }
         };
+    }
+
+    /**
+     * Returns a hash code value for this collection.
+     * The hash code is determined by the backing collection.
+     *
+     * @return a hash code value for this collection.
+     */
+    @Override
+    public int hashCode() {
+        return source.hashCode() ^ 1137016072;
+    }
+
+    /**
+     * Compares the specified object with this collection for equality.
+     * Two {@code DateToTemporal} collections are equal if their backing collection are equal.
+     *
+     * @param  obj  the other object to compare to.
+     * @return whether the two collections are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+        return (obj instanceof DateToTemporal) && source.equals(((DateToTemporal) obj).source);
     }
 }
