@@ -33,7 +33,7 @@ import static java.util.logging.Logger.getLogger;
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.7
  */
 public enum DataDirectory {
@@ -227,26 +227,5 @@ public enum DataDirectory {
             }
         }
         return directory;
-    }
-
-    /**
-     * If the given path is relative, returns the path as a child of the directory represented by this enum.
-     * If no valid directory is configured by the {@code SIS_DATA} environment variable, then the relative
-     * path is returned as-is.
-     *
-     * <p>This method is invoked for files that may be user-specified, for example datum shift file specified
-     * in {@link org.opengis.parameter.ParameterValue}.</p>
-     *
-     * @param  file  the path to resolve, or {@code null}.
-     * @return the path to use, or {@code null} if the given path was null.
-     */
-    public Path resolve(Path file) {
-        if (file != null && !file.isAbsolute()) {
-            final Path dir = getDirectory();
-            if (dir != null) {
-                return dir.resolve(file);
-            }
-        }
-        return file;
     }
 }

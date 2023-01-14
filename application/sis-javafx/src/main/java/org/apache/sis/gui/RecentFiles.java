@@ -121,7 +121,7 @@ final class RecentFiles implements EventHandler<ActionEvent> {
         try {
             file = path.toFile();
         } catch (UnsupportedOperationException e) {
-            // Future version may have an "recently used URI" section. We don't do that for now.
+            // Recently used URIs are not saved here.
             return;
         }
         final int size = items.size();

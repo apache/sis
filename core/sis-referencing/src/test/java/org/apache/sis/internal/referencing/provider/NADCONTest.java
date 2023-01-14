@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Locale;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Files;
@@ -40,7 +41,7 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 public final class NADCONTest extends DatumShiftTestCase {
@@ -91,7 +92,7 @@ public final class NADCONTest extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point.
      * The point used for this test is given by {@link #samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
+     * @throws URISyntaxException if the URL to the test file is not valid.
      * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
@@ -113,21 +114,21 @@ public final class NADCONTest extends DatumShiftTestCase {
      * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
-    public static void testNADCON(final Path latitudeShifts, final Path longitudeShifts)
+    public static void testNADCON(final URI latitudeShifts, final URI longitudeShifts)
             throws FactoryException, TransformException
     {
         testNADCON(latitudeShifts, longitudeShifts, -131, -63, 20, 50);
     }
 
     /**
-     * Implementation of {@link #testLoader()} and {@link #testNADCON(Path, Path)}.
+     * Implementation of {@link #testLoader()} and {@link #testNADCON(URI, URI)}.
      *
      * @param  xmin  westmost longitude.
      * @param  xmax  eastmost longitude.
      * @param  ymin  southmost latitude.
      * @param  ymax  northmost latitude.
      */
-    private static void testNADCON(final Path latitudeShifts, final Path longitudeShifts,
+    private static void testNADCON(final URI latitudeShifts, final URI longitudeShifts,
             final double xmin, final double xmax, final double ymin, final double ymax)
             throws FactoryException, TransformException
     {

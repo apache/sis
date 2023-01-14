@@ -17,18 +17,25 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.EOFException;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.Channels;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.factory.FactoryDataException;
@@ -37,12 +44,13 @@ import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 
 /**
  * Base class of datum shift grid loaders.
+ * This loader uses {@link ReadableByteChannel}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
-class DatumShiftGridLoader {
+abstract class DatumShiftGridLoader {
     /**
      * Conversion factor from degrees to seconds.
      */
@@ -68,7 +76,7 @@ class DatumShiftGridLoader {
     /**
      * The file to load, used for parameter declaration and if we have errors to report.
      */
-    final Path file;
+    final URI file;
 
     /**
      * The channel opened on the file.
@@ -93,7 +101,7 @@ class DatumShiftGridLoader {
      * @param  buffer   the buffer to use.
      * @param  file     path to the longitude or latitude difference file. Used for parameter declaration and error reporting.
      */
-    DatumShiftGridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final Path file) throws IOException {
+    DatumShiftGridLoader(final ReadableByteChannel channel, final ByteBuffer buffer, final URI file) throws IOException {
         this.file    = file;
         this.buffer  = buffer;
         this.channel = channel;
@@ -144,11 +152,44 @@ class DatumShiftGridLoader {
     }
 
     /**
+     * If the given URI is not absolute, tries to make it absolute
+     * with a path to the common directory of datum shift grid files.
+     *
+     * @param  path  the URI to make absolute.
+     * @return an absolute (if possible) URI to the data.
+     */
+    static URI toAbsolutePath(final URI path) {
+        if (!path.isAbsolute() && !path.isOpaque()) {
+            final Path dir = DataDirectory.DATUM_CHANGES.getDirectory();
+            if (dir != null) {
+                return dir.resolve(path.getPath()).toUri();
+            }
+        }
+        return path;
+    }
+
+    /**
+     * Creates a channel for reading bytes from the file at the specified path.
+     *
+     * @param  path  the path from where to read bytes.
+     * @return a channel for reading bytes from the given path.
+     * @throws IOException if the channel can not be created.
+     */
+    static ReadableByteChannel newByteChannel(final URI path) throws IOException {
+        try {
+            return Files.newByteChannel(Paths.get(path));
+        } catch (FileSystemNotFoundException e) {
+            Logging.ignorableException(Logger.getLogger(Modules.REFERENCING), DatumShiftGridLoader.class, "newByteChannel", e);
+        }
+        return Channels.newChannel(path.toURL().openStream());
+    }
+
+    /**
      * Logs a message about a grid which is about to be loaded.
      *
      * @param  caller  the provider to logs as the source class.
      *                 the source method will be set to {@code "createMathTransform"}.
-     * @param  file    the grid file, as a {@link String} or a {@link Path}.
+     * @param  file    the grid file, as a {@link String} or a {@link URI}.
      */
     static void startLoading(final Class<?> caller, final Object file) {
         log(caller, Resources.forLocale(null).getLogRecord(Level.FINE, Resources.Keys.LoadingDatumShiftFile_1, file));
@@ -173,7 +214,7 @@ class DatumShiftGridLoader {
      * @param  file    the grid file that the subclass tried to load.
      * @param  cause   the cause of the failure to load the grid file.
      */
-    static FactoryException canNotLoad(final String format, final Path file, final Exception cause) {
+    static FactoryException canNotLoad(final String format, final URI file, final Exception cause) {
         if (!datumDirectoryLogged.get()) {
             final Path directory = DataDirectory.DATUM_CHANGES.getDirectory();
             if (directory != null && !datumDirectoryLogged.getAndSet(true)) {

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.test.integration;
 
-import java.nio.file.Path;
+import java.net.URI;
 import java.io.IOException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -37,7 +37,7 @@ import static org.apache.sis.test.Assume.*;
  * directory.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({
@@ -56,7 +56,7 @@ public final class DatumShiftTest extends TestCase {
      */
     @Test
     public void testRGF93() throws IOException, FactoryException, TransformException {
-        final Path file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb");
+        final URI file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb");
         NTv2Test.testRGF93(file);
     }
 
@@ -70,8 +70,8 @@ public final class DatumShiftTest extends TestCase {
      */
     @Test
     public void testNADCON() throws IOException, FactoryException, TransformException {
-        final Path latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las");
-        final Path longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los");
+        final URI latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las");
+        final URI longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los");
         NADCONTest.testNADCON(latitudeShifts, longitudeShifts);
     }
 }
