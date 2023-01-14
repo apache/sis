@@ -186,6 +186,11 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     public void testRoundingErrors() throws FactoryException, TransformException {
         final Matrix4 num = new Matrix4(); num.m00 =  2; num.m11 = 3.25; num.m22 = -17;
         final Matrix4 den = new Matrix4(); den.m00 = 37; den.m11 = 1000; den.m22 = 127;
+
+        // Add translation terms.
+        num.m03 =  4*37; num.m13 = 17; num.m23 = -2*127;
+        den.m03 = -3*37; den.m13 = 65; den.m23 =  7*127;
+
         transform = TransformResultComparator.concatenate(
                 mtFactory.createAffineTransform(num),
                 mtFactory.createAffineTransform(den).inverse(),
@@ -203,7 +208,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
          * Test a transformation, expecting exact result.
          */
         verifyTransform(new double[] {2645.5,  19500, 2222.5},
-                        new double[] {   143, 63.375, -297.5});
+                        new double[] {   150, 63.327, -306.5});
     }
 
     /**
