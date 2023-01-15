@@ -19,9 +19,9 @@ package org.apache.sis.util.logging;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
-import org.apache.sis.util.Configuration;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -79,7 +79,11 @@ public final class PerformanceLevel extends Level {
 
     /**
      * The minimal duration (in nanoseconds) for logging the record.
+     *
+     * @see #getMinDuration(TimeUnit)
+     * @see #setMinDuration(long, TimeUnit)
      */
+    @Configuration(writeAccess = Configuration.Access.INSTANCE)
     private volatile long minDuration;
 
     /**
@@ -142,7 +146,6 @@ public final class PerformanceLevel extends Level {
      * @param  unit      the unit of the given duration value.
      * @throws IllegalArgumentException if the given duration is zero or negative.
      */
-    @Configuration
     @SuppressWarnings("fallthrough")
     public void setMinDuration(long duration, final TimeUnit unit) throws IllegalArgumentException {
         ArgumentChecks.ensureStrictlyPositive("duration", duration);

@@ -28,6 +28,7 @@ import org.apache.sis.gui.dataset.ResourceEvent;
 import org.apache.sis.gui.dataset.ResourceExplorer;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.RecentChoices;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -42,6 +43,7 @@ final class RecentFiles implements EventHandler<ActionEvent> {
     /**
      * Maximum number of items to show.
      */
+    @Configuration
     static final int MAX_COUNT = 10;
 
     /**

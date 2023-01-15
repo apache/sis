@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.math.Fraction;
 
@@ -76,6 +77,7 @@ public enum Arithmetic {
      * Whether to assume that {@code float} and {@code double} values
      * were intended to be exact in base 10.
      */
+    @Configuration
     public static final boolean DECIMAL = true;
 
     /**

@@ -55,6 +55,7 @@ import org.apache.sis.internal.simple.SimpleCitation;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -111,11 +112,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Any operation that take longer than this amount of time to execute will have a message logged.
      * The log level depends on the execution duration as specified in {@link PerformanceLevel}.
      *
-     * <div class="note"><b>Rational:</b>
-     * we do not unconditionally log all creation messages because they are redundant with more detailed
+     * <h4>Rational</h4>
+     * We do not unconditionally log all creation messages because they are redundant with more detailed
      * logs produced by {@link GeodeticObjectFactory}. Their only additional information is the creation
-     * duration, which is not very useful if too close to zero.</div>
+     * duration, which is not very useful if too close to zero.
      */
+    @Configuration
     private static final long DURATION_FOR_LOGGING = 10_000_000L;       // 10 milliseconds.
 
     /**
@@ -263,7 +265,9 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Every access to this field must be performed in a block synchronized on {@link #availableDAOs}.
      *
      * @see #getTimeout(TimeUnit)
+     * @see #setTimeout(long, TimeUnit)
      */
+    @Configuration(writeAccess = Configuration.Access.INSTANCE)
     private long timeout = 60_000_000_000L;     // 1 minute
 
     /**

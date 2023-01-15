@@ -60,6 +60,7 @@ import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -133,12 +134,14 @@ public class MetadataSource implements AutoCloseable {
      *
      * @see #closeExpired()
      */
+    @Configuration
     private static final long TIMEOUT = 2000_000000;
 
     /**
      * An extra delay to add to the {@link #TIMEOUT} in order to increase the chances to
      * close many statements at once.
      */
+    @Configuration
     private static final int EXTRA_DELAY = 500_000000;
 
     /**

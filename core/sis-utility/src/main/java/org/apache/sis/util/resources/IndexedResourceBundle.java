@@ -43,6 +43,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.Strings;
@@ -95,6 +96,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Resource strings are never cut to this length. However, text replacing {@code "{0}"} in a string like
      * {@code "Parameter name is {0}"} will be cut to this length.
      */
+    @Configuration
     private static final int MAX_STRING_LENGTH = 200;
 
     /**

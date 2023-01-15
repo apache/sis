@@ -36,11 +36,11 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AutoMessageFormat;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
@@ -184,6 +184,7 @@ public class MonolineFormatter extends Formatter {
     /**
      * Maximal amount of causes to print in stack traces. This is an arbitrary limit.
      */
+    @Configuration
     private static final int MAX_CAUSES = 10;
 
     /**
@@ -978,7 +979,7 @@ loop:   for (int i=0; ; i++) {
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
      * @throws SecurityException if this method does not have the permission to install the formatter.
      */
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.STATIC)
     public static MonolineFormatter install() throws SecurityException {
         return install(Logger.getLogger(""), null);
     }
@@ -1023,7 +1024,7 @@ loop:   for (int i=0; ; i++) {
      * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Debug
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.STATIC)
     public static MonolineFormatter install(final Logger logger, final Level level) throws SecurityException {
         ArgumentChecks.ensureNonNull("logger", logger);
         MonolineFormatter monoline = null;

@@ -23,6 +23,8 @@ import java.math.MathContext;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -76,6 +78,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
      * implementation. Since JAMA uses {@code double} arithmetic, SIS needs to disable double-double
      * arithmetic if the results are to be compared for strict equality.</p>
      */
+    @Debug
     public static final boolean DISABLED = false;
 
     /**
@@ -84,6 +87,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
      * if the amount of non-zero significand bits is equal or lower than {@code ZERO_THRESHOLD+1},
      * consider the result as zero.
      */
+    @Configuration
     private static final int ZERO_THRESHOLD = 2;
 
     /**

@@ -34,6 +34,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
@@ -112,6 +113,7 @@ public class MetadataStandard implements Serializable {
      * than GeoAPI, but have a slight performance cost at construction time. Performance
      * after construction should be the same.</p>
      */
+    @Configuration
     static final boolean IMPLEMENTATION_CAN_ALTER_API = false;
 
     /**

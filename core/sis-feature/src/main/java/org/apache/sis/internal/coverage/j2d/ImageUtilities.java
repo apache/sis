@@ -31,6 +31,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.Numbers;
@@ -60,6 +61,7 @@ public final class ImageUtilities extends Static {
     /**
      * Default width and height of tiles, in pixels.
      */
+    @Configuration
     public static final int DEFAULT_TILE_SIZE = 256;
 
     /**
@@ -67,6 +69,7 @@ public final class ImageUtilities extends Static {
      * keeping the most recently used tiles up to 10 Mb of memory. This is not for sophisticated caching mechanism;
      * instead the "real" caching should be done by {@link org.apache.sis.image.ComputedImage}.
      */
+    @Configuration
     public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
 
     /**
@@ -76,6 +79,7 @@ public final class ImageUtilities extends Static {
      *
      * @see #prepareTransferRegion(Rectangle, int)
      */
+    @Configuration
     private static final int BUFFER_SIZE = 32 * DEFAULT_TILE_SIZE * Byte.SIZE;
 
     /**

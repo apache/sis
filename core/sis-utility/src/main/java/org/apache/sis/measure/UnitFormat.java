@@ -33,6 +33,7 @@ import java.io.UncheckedIOException;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -88,6 +89,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     /**
      * Whether the parsing of authority codes such as {@code "EPSG:9001"} is allowed.
      */
+    @Configuration
     private static final boolean PARSE_AUTHORITY_CODES = true;
 
     /**

@@ -33,6 +33,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
 
@@ -49,6 +50,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
     /**
      * Maximal number of log records stored by this class.
      */
+    @Configuration
     private static final int LIMIT = 1000;
 
     /**

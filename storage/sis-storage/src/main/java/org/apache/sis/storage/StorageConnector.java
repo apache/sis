@@ -64,6 +64,7 @@ import org.apache.sis.internal.storage.io.ChannelImageOutputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
@@ -113,10 +114,15 @@ public class StorageConnector implements Serializable {
      * The default size (in bytes) of {@link ByteBuffer}s created by storage connectors.
      * Those buffers are typically created when the specified storage object is a
      * {@link File}, {@link Path}, {@link URL} or {@link URI}.
-     * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
+     * The default buffer size is arbitrary and may change in any future Apache SIS version.
+     *
+     * <p>Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.</p>
+     *
+     * @see OptionKey#BYTE_BUFFER
      *
      * @since 1.4
      */
+    @Configuration
     public static final int DEFAULT_BUFFER_SIZE = 16 * 1024;
 
     /**

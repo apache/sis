@@ -28,6 +28,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -57,6 +58,7 @@ public final class Logging extends Static {
      * Consequently, we will ignore the stack traces of recoverable failures, but will report
      * stack traces that may impact performance, configuration, or correctness.</p>
      */
+    @Configuration
     private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;
 
     /**

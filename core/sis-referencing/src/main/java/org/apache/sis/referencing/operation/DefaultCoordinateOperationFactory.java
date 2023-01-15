@@ -57,6 +57,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -90,6 +91,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * Whether this class is allowed to use the EPSG authority factory for searching coordinate operation paths.
      * This flag should always be {@code true}, except temporarily for testing purposes.
      */
+    @Debug
     static final boolean USE_EPSG_FACTORY = true;
 
     /**

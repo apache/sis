@@ -33,6 +33,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Configuration;
 
 import static java.util.logging.Logger.getLogger;
 
@@ -82,6 +83,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      *
      * @see #isValidSymbol(String, boolean, boolean)
      */
+    @Configuration
     private static final int MAX_OPERATIONS_IN_SYMBOL = 1;
 
     /**

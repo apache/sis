@@ -37,13 +37,13 @@ import javax.naming.event.NamingEvent;
 import javax.naming.event.NamingExceptionEvent;
 import javax.naming.event.ObjectChangeListener;
 import org.apache.sis.setup.InstallationResources;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.Configuration;
 
 import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
@@ -227,7 +227,7 @@ public abstract class Initializer {
      *
      * @since 1.0
      */
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.GLOBAL)
     public static synchronized boolean setDefault(final Supplier<DataSource> ds) {
         if (source == null) {
             supplier = ds;
