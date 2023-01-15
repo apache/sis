@@ -117,6 +117,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * The files from which the grid has been loaded. This is not used directly by this class
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
      * transform for setting the parameter values. Shall never be null and never empty.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-569">SIS-569</a>
      */
     private final URI[] files;
 

@@ -255,7 +255,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      *
      * @param  symbols  the string representation of a unit.
      * @return the unit with the given string representation,
-     *         or {@code null} if the give symbols can not be parsed.
+     *         or {@code null} if the give symbols cannot be parsed.
      */
     @Override
     public Unit<?> getUnit(final String symbols) {

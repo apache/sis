@@ -32,6 +32,7 @@ import javafx.scene.input.ClipboardContent;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 
@@ -42,7 +43,7 @@ import org.apache.sis.storage.Resource;
  * or open the containing folder using native file browser.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 final class PathAction implements EventHandler<ActionEvent> {
@@ -69,8 +70,15 @@ final class PathAction implements EventHandler<ActionEvent> {
     /**
      * Whether the "Open containing folder" operation is disabled.
      */
-    static final boolean isBrowseDisabled = !(Desktop.isDesktopSupported() &&
+    private static final boolean isBrowseDisabled = !(Desktop.isDesktopSupported() &&
             Desktop.getDesktop().isSupported(Desktop.Action.BROWSE_FILE_DIR));
+
+    /**
+     * Returns {@code true} if {@code PathAction} cannot handle the given path for browsing.
+     */
+    static boolean isBrowseDisabled(final Object path) {
+        return PathAction.isBrowseDisabled || IOUtilities.toPathOrNull(path) == null;
+    }
 
     /**
      * Invoked when the user selected "Copy file path" item in the contextual menu of a {@link ResourceTree} cell.

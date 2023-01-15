@@ -17,7 +17,6 @@
 package org.apache.sis.gui;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.util.Set;
 import java.util.StringJoiner;
 import javafx.event.ActionEvent;
@@ -36,7 +35,7 @@ import org.apache.sis.util.ArraysExt;
  * Manages a list of recently opened files. The list of files is initialized from user preferences.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 final class RecentFiles implements EventHandler<ActionEvent> {
@@ -116,11 +115,8 @@ final class RecentFiles implements EventHandler<ActionEvent> {
      * the latest item is discarded.
      */
     private void touched(final ResourceEvent event, final boolean closed) {
-        final Path path = event.getResourcePath();
-        final File file;
-        try {
-            file = path.toFile();
-        } catch (UnsupportedOperationException e) {
+        final File file = event.getResourceFile().orElse(null);
+        if (file == null) {
             // Recently used URIs are not saved here.
             return;
         }

@@ -336,7 +336,7 @@ public abstract class DataStoreProvider {
             final Class<S> type, final Prober<? super S> prober) throws DataStoreException
     {
         ArgumentChecks.ensureNonNull("prober", prober);
-        boolean undetermined = false;
+        boolean undetermined;
         /*
          * Synchronization is not a documented feature for now because the policy may change in future version.
          * Current version uses the storage source as the synchronization lock because using `StorageConnector`
@@ -446,7 +446,7 @@ public abstract class DataStoreProvider {
                  */
                 final ProbeInputStream stream = new ProbeInputStream(connector, (InputStream) input);
                 result = prober.test(type.cast(stream));
-                stream.close();                 // Reset (not close) the wrapped stream.
+                stream.close();     // No "try with resource". See `ProbeInputStream.close()` contract.
             } else if (input instanceof RewindableLineReader) {
                 /*
                  * `Reader` supports at most one mark. So we keep it for ourselves and prevent users
@@ -458,9 +458,9 @@ public abstract class DataStoreProvider {
                 result = prober.test(input);
                 r.protectedReset();
             } else if (input instanceof Reader) {
-                final Reader stream = new ProbeReader(connector, (Reader) input);
+                final ProbeReader stream = new ProbeReader(connector, (Reader) input);
                 result = prober.test(type.cast(stream));
-                stream.close();                 // Reset (not close) the wrapped reader.
+                stream.close();     // No "try with resource". See `ProbeReader.close()` contract.
             } else {
                 /*
                  * All other cases are objects like File, URL, etc. which can be used without mark/reset.

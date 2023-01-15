@@ -202,27 +202,6 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns the given path as a {@link File}, or {@code null} if it cannot be converted.
-     *
-     * @param  path  the object to convert to a {@link File}. Can be {@code null}.
-     * @return the given path as a {@link File}, or {@code null} if it cannot be converted.
-     */
-    public static File toFile(final Object path) {
-        if (path instanceof File) {
-            return (File) path;
-        } else if (path instanceof Path) try {
-            return ((Path) path).toFile();
-        } catch (UnsupportedOperationException e) {
-            // Ignore.
-        } else if (path instanceof URI) try {
-            return new File((URI) path);
-        } catch (IllegalArgumentException e) {
-            // Ignore.
-        }
-        return null;
-    }
-
-    /**
      * Converts the given {@link URI} to a {@link URL} with the same path except for the file extension,
      * which is replaced by the given extension. This method is used for opening auxiliary files such as
      * {@code "*.prj"} and {@code "*.tfw"} files that come with e.g. TIFF files.

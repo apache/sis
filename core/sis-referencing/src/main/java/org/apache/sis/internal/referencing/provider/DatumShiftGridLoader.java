@@ -173,7 +173,7 @@ abstract class DatumShiftGridLoader {
      *
      * @param  path  the path from where to read bytes.
      * @return a channel for reading bytes from the given path.
-     * @throws IOException if the channel can not be created.
+     * @throws IOException if the channel cannot be created.
      */
     static ReadableByteChannel newByteChannel(final URI path) throws IOException {
         try {

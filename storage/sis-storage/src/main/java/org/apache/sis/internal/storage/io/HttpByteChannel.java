@@ -77,7 +77,7 @@ final class HttpByteChannel extends FileCacheByteChannel {
      *
      * @param  name  data store name to report in case of failure.
      * @param  path  URL to the file to read.
-     * @throws IOException if the temporary file can not be created.
+     * @throws IOException if the temporary file cannot be created.
      */
     public HttpByteChannel(final String name, final URI path) throws IOException {
         super("http-");

@@ -114,7 +114,7 @@ public enum Arithmetic {
      * If the conversion is not exact, then this method returns {@code null}.
      *
      * @param  element  the value to return as a long integer, or {@code null} if zero.
-     * @return the value as a long integer, or {@code null} if it can not be converted.
+     * @return the value as a long integer, or {@code null} if it cannot be converted.
      */
     private static Long tryLongValue(final Number element) {
         if (element == null || element instanceof Long) {

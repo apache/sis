@@ -80,7 +80,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @param  numerator    numerator of the fraction to return.
      * @param  denominator  denominator of the fraction to return.
      * @return the simplified fraction.
-     * @throws ArithmeticException if the numerator and denominator can not be represented by 32 bit integers.
+     * @throws ArithmeticException if the numerator and denominator cannot be represented by 32 bit integers.
      *
      * @since 1.4
      */

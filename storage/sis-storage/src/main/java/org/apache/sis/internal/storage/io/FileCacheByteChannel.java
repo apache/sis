@@ -285,7 +285,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * The source of bytes will be provided by {@link #openConnection(long, long)}.
      *
      * @param  prefix  prefix of the temporary file to create.
-     * @throws IOException if the temporary file can not be created.
+     * @throws IOException if the temporary file cannot be created.
      */
     protected FileCacheByteChannel(final String prefix) throws IOException {
         rangesOfAvailableBytes = RangeSet.create(Long.class, true, false);
@@ -313,7 +313,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * @param  end    position of the last byte to read with the returned stream (inclusive),
      *                or {@link Long#MAX_VALUE} for end of stream.
      * @return information about the input stream providing the bytes to read starting at the given start position.
-     * @throws IOException if the connection can not be established.
+     * @throws IOException if the connection cannot be established.
      */
     protected abstract Connection openConnection(long start, long end) throws IOException;
 
@@ -410,7 +410,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * {@link #position} (it may be 0).
      *
      * @return the opened connection (never {@code null}).
-     * @throws IOException if the connection can not be established.
+     * @throws IOException if the connection cannot be established.
      */
     private Connection openConnection() throws IOException {
         long end = endOfInterest;
@@ -510,7 +510,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         }
         /*
          * At this point we need to download data from the input stream.
-         * If previous connection can not be used, open a new one for the range of bytes to read.
+         * If previous connection cannot be used, open a new one for the range of bytes to read.
          * Then skip all bytes between the current position and the requested position.
          * Those bytes will be saved in the cache.
          */
@@ -693,7 +693,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     /**
      * Notifies that the connection has been used and should not be closed before some timeout.
      * This method may schedule a task to be executed in a background thread after the timeout.
-     * If the connection can not read sub-ranges of bytes, then this method does nothing because
+     * If the connection cannot read sub-ranges of bytes, then this method does nothing because
      * reopening a new connection would be costly.
      */
     private void usedConnection() {

@@ -158,7 +158,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      *
      * @param  source  the text to parse.
      * @return the quantity parsed from the specified text.
-     * @throws MeasurementParseException if the given text can not be parsed.
+     * @throws MeasurementParseException if the given text cannot be parsed.
      * @since  1.4
      */
     @Override
@@ -173,7 +173,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  source  the text, part of which should be parsed.
      * @param  pos     index and error index information.
      * @return the quantity parsed from the specified character sub-sequence.
-     * @throws MeasurementParseException if the given text can not be parsed.
+     * @throws MeasurementParseException if the given text cannot be parsed.
      * @since  1.4
      */
     @Override
