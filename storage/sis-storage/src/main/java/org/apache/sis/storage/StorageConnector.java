@@ -110,17 +110,22 @@ public class StorageConnector implements Serializable {
     private static final long serialVersionUID = 2524083964906593093L;
 
     /**
-     * The default size of the {@link ByteBuffer} to be created.
+     * The default size (in bytes) of {@link ByteBuffer}s created by storage connectors.
+     * Those buffers are typically created when the specified storage object is a
+     * {@link File}, {@link Path}, {@link URL} or {@link URI}.
      * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
      *
-     * <p>This buffer capacity is also used as read-ahead limit for mark operations.
-     * The rational is to allow as many bytes as contained in buffers of default size.
-     * For increasing the chances to meet that goal, this size should be the same than
-     * {@link java.io.BufferedInputStream} default buffer size.</p>
-     *
-     * @see RewindableLineReader#BUFFER_SIZE
+     * @since 1.4
      */
-    static final int DEFAULT_BUFFER_SIZE = 8192;
+    public static final int DEFAULT_BUFFER_SIZE = 16 * 1024;
+
+    /**
+     * The read-ahead limit for mark operations.
+     * We try to allow as many bytes as contained in buffers of default size.
+     * For increasing the chances to meet that goal, this size should be the
+     * same than {@link BufferedInputStream} default buffer size.
+     */
+    static final int READ_AHEAD_LIMIT = 8 * 1024;
 
     /**
      * The minimal size of the {@link ByteBuffer} to be created. This size is used only
@@ -962,7 +967,7 @@ public class StorageConnector implements Serializable {
          */
         reset();
         if (storage instanceof InputStream) {
-            ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
+            ((InputStream) storage).mark(READ_AHEAD_LIMIT);
         }
         if (storage instanceof ByteBuffer) {
             final ChannelDataInput asDataInput = new ChannelImageInputStream(getStorageName(), (ByteBuffer) storage);
@@ -1256,7 +1261,7 @@ public class StorageConnector implements Serializable {
             addView(Reader.class, null);                                        // Remember that there is no view.
             return null;
         }
-        input.mark(DEFAULT_BUFFER_SIZE);
+        input.mark(READ_AHEAD_LIMIT);
         final Reader in = new RewindableLineReader(input, getOption(OptionKey.ENCODING));
         addView(Reader.class, in, InputStream.class, (byte) (CLEAR_ON_RESET | CASCADE_ON_RESET));
         return in;

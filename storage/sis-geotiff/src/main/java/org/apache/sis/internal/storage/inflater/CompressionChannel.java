@@ -24,6 +24,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.StorageConnector;
 
 
 /**
@@ -39,9 +40,10 @@ import org.apache.sis.storage.event.StoreListeners;
 abstract class CompressionChannel extends PixelChannel {
     /**
      * Desired size of the buffer where to temporarily copy decompressed data.
-     * The actual buffer size may be larger, but should not be smaller.
+     * The actual buffer size may become larger (but not smaller)
+     * because we try to use a multiple of scanline stride.
      */
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
 
     /**
      * The source of data to decompress.

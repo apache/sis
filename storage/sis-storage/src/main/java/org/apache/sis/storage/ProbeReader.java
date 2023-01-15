@@ -48,7 +48,7 @@ final class ProbeReader extends FilterReader {
         if (!input.markSupported()) {
             throw new DataStoreException(Resources.format(Resources.Keys.MarkNotSupported_1, owner.getStorageName()));
         }
-        input.mark(StorageConnector.DEFAULT_BUFFER_SIZE);
+        input.mark(StorageConnector.READ_AHEAD_LIMIT);
     }
 
     /**

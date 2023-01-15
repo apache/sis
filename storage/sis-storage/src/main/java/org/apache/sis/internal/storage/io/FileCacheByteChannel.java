@@ -25,6 +25,7 @@ import java.nio.file.StandardOpenOption;
 import java.nio.channels.FileChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.NonWritableChannelException;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
@@ -61,7 +62,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     /**
      * Size of the transfer buffer, in number of bytes.
      */
-    private static final int BUFFER_SIZE = 8 * 1024;
+    private static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE;
 
     /**
      * Threshold for implementing a change of position by closing current connection and opening a new one.
