@@ -93,11 +93,11 @@ public class MarshallerPool {
      * The provider of {@code AdapterReplacement} instances.
      * <strong>Every usage of this service loader must be synchronized.</strong>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * Each {@code MarshallerPool} has its own service loader instance rather than using a system-wide instance
      * because the {@link ClassLoader} used by the service loader is the <cite>context class loader</cite>,
      * which depends on the thread that created the pool. So two pools in two different applications could have
-     * two different set of replacements.</div>
+     * two different set of replacements.
      */
     private final ServiceLoader<AdapterReplacement> replacements;
 

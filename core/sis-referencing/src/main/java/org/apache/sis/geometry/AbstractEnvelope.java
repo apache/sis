@@ -1117,9 +1117,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Returns {@code true} if the specified object is an envelope of the same class
      * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
-     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.</div>
+     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.
      *
      * @param  object  the object to compare with this envelope.
      * @return {@code true} if the given object is equal to this envelope.

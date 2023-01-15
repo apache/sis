@@ -130,10 +130,10 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Likewise if the concatenation result works with one-dimensional input and output points,
      * then the returned transform will implement {@link MathTransform1D}.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * {@code ConcatenatedTransform} implementations are available in two versions: direct and non-direct.
      * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
-     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.</div>
+     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.
      *
      * @param  tr1      the first math transform.
      * @param  tr2      the second math transform.

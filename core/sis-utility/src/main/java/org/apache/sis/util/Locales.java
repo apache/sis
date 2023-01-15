@@ -96,11 +96,11 @@ public final class Locales extends Static {
      * for compactness (conversions is done by {@link #toNumber(String, short)}) and for avoiding references
      * to {@code String} instances.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * OpenJDK 8 implementation computes the 3-letters codes on-the-fly instead of holding references
      * to pre-existing strings. If we were holding string references here, we would prevent the garbage
      * collector to collect the strings for all languages and countries. This would probably be a waste
-     * of resources.</div>
+     * of resources.
      */
     private static final short[] ISO3, ISO2;
     static {

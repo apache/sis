@@ -284,10 +284,10 @@ final class Verifier {
      * Same as {@link #ensureValidValue(Class, Set, Range, Object)}, used as a fallback when
      * the descriptor is not an instance of {@link DefaultParameterDescriptor}.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * At the difference of {@code ensureValidValue(…, Range, …)}, this method does not need to verify array elements
      * because the type returned by {@link ParameterDescriptor#getMinimumValue()} and {@code getMaximumValue()}
-     * methods (namely {@code Comparable<T>}) does not allow usage with arrays.</div>
+     * methods (namely {@code Comparable<T>}) does not allow usage with arrays.
      *
      * @param convertedValue  the value <em>converted to the units specified by the descriptor</em>.
      *        This is not necessarily the user-provided value.

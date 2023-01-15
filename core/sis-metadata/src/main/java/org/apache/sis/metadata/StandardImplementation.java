@@ -60,12 +60,12 @@ final class StandardImplementation extends MetadataStandard {
     /**
      * Implementations for a given interface, computed when first needed then cached.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
      * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
      * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
-     * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
+     * implementation doesn't need the chain of objects created by {@code HashMap}.
      */
     private final transient Map<Class<?>,Class<?>> implementations;     // written by reflection on deserialization.
 

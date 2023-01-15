@@ -489,9 +489,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     /**
      * Returns the code spaces of all factories given to the constructor.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * the current implementation may be relatively costly since it implies instantiation of all factories.
-     * </div>
+     * <h4>Performance note</h4>
+     * The current implementation may be relatively costly because it implies instantiation of all factories.
      *
      * @return the code spaces of all factories.
      */

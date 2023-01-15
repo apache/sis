@@ -859,9 +859,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * The given {@code parameters} must have the descriptor returned by {@link #getParameterDescriptors()}.
      * The matrices, tensors or file names are stored in the given {@code parameters} instance.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * this method is invoked by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
-     * and other transforms for initializing the values of their parameter group.</div>
+     * <h4>Implementation note</h4>
+     * This method is invoked by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
+     * and other transforms for initializing the values of their parameter group.
      *
      * @param  parameters  the parameter group where to set the values.
      *

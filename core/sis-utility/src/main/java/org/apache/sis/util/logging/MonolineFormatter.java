@@ -970,9 +970,9 @@ loop:   for (int i=0; ; i++) {
      *       root logger.</li>
      * </ul>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Limitations</h4>
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
-     * and does not check if any child logger has a {@code ConsoleHandler}.</div>
+     * and does not check if any child logger has a {@code ConsoleHandler}.
      *
      * @return the new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
@@ -1006,9 +1006,9 @@ loop:   for (int i=0; ; i++) {
      *     </ul></li>
      * </ul>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Limitations</h4>
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
-     * and does not check if any child logger has a {@code ConsoleHandler}.</div>
+     * and does not check if any child logger has a {@code ConsoleHandler}.
      *
      * <h4>Specifying a log level</h4>
      * This method can opportunistically set the handler level. If the given level is non-null,

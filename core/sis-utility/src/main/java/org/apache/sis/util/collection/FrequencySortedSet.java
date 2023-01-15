@@ -71,13 +71,13 @@ public class FrequencySortedSet<E> extends AbstractSet<E> implements SortedSet<E
      * The intent is to store negative numbers in the {@link #count} map if this {@code FrequencySortedSet}
      * has been created for reverse order.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we could have used {@code +1} and {@code -1} for the usual and reverse order respectively, and store the
+     * <h4>Implementation note</h4>
+     * We could have used {@code +1} and {@code -1} for the usual and reverse order respectively, and store the
      * multiplication result {@code n * order} in the {@link #count} map. We rather use XOR for two reasons:
      * first, XOR is a simpler operation for the CPU than multiplication. Second, XOR guarantees us that all
      * negative numbers can be made positive in {@link #frequencies()}, by applying again {@code n ^ order}.
      * By contrast, the multiplication approach (or just the {@code -n} negation) would fail to convert
-     * {@link Integer#MIN_VALUE}.</div>
+     * {@link Integer#MIN_VALUE}.
      */
     private final int order;
 

@@ -91,11 +91,11 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
      * if none. This is very rarely needed, but we need this field in case a code list has
      * more than 64 elements.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The standard {@link java.util.EnumSet} class uses different implementations depending on whether
      * the enumeration contains more or less than 64 elements. We cannot apply the same strategy for
      * {@code CodeListSet}, because new code list elements can be created at runtime. Consequently, this
-     * implementation needs to be able to growth its capacity.</div>
+     * implementation needs to be able to growth its capacity.
      */
     private BitSet supplementary;
 
