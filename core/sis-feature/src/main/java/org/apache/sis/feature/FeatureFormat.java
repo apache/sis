@@ -47,11 +47,8 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
-
-import static java.util.logging.Logger.getLogger;
 
 // Branch-dependent imports
 import org.opengis.feature.IdentifiedType;
@@ -92,7 +89,7 @@ import org.opengis.feature.Operation;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 public class FeatureFormat extends TabularFormat<Object> {
@@ -586,7 +583,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 final int bits = Float.floatToRawIntBits(f);
                                                 if (bits != illegalNaN) {
                                                     illegalNaN = bits;
-                                                    Logging.recoverableException(getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                    Logging.recoverableException(AbstractIdentifiedType.LOGGER, FeatureFormat.class, "format", e);
                                                 }
                                             }
                                         }

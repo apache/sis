@@ -19,6 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
+import java.util.logging.Logger;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
@@ -43,14 +44,12 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * Base class for all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @XmlTransient
@@ -59,6 +58,11 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1165868434518724597L;
+
+    /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
 
     /**
      * The base interface of the {@code CoordinateOperation} instances that use this method.
@@ -317,6 +321,6 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * @param  e       the error that occurred.
      */
     static void recoverableException(final Class<? extends AbstractProvider> caller, Exception e) {
-        Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION), caller, "createMathTransform", e);
+        Logging.recoverableException(LOGGER, caller, "createMathTransform", e);
     }
 }

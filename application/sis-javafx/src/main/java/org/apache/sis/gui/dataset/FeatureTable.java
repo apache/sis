@@ -44,14 +44,13 @@ import org.opengis.feature.FeatureAssociationRole;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.gui.IdentityValueFactory;
 import org.apache.sis.internal.gui.ExceptionReporter;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -80,7 +79,7 @@ import static java.util.logging.Logger.getLogger;
  * @author  Johann Sorel (Geomatys)
  * @author  Smaniotto Enzo (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 @DefaultProperty("features")
@@ -483,13 +482,13 @@ public class FeatureTable extends TableView<Feature> {
      * public API (if possible) invoking the method where the exception is caught.
      */
     static void unexpectedException(final String method, final Throwable exception) {
-        Logging.unexpectedException(getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
+        Logging.unexpectedException(LOGGER, FeatureTable.class, method, exception);
     }
 
     /**
      * Reports an exception that we choose to ignore.
      */
     static void recoverableException(final String method, final Exception exception) {
-        Logging.recoverableException(getLogger(Modules.APPLICATION), FeatureTable.class, method, exception);
+        Logging.recoverableException(LOGGER, FeatureTable.class, method, exception);
     }
 }

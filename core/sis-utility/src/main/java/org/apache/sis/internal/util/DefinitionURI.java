@@ -416,7 +416,11 @@ public final class DefinitionURI {
                                 sequenceNumber = Integer.parseInt(trimWhitespaces(uri, splitAt+1, s).toString());
                                 splitAt = s;                      // Set only on success.
                             } catch (NumberFormatException e) {
-                                // Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
+                                /*
+                                 * Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
+                                 * Current version assumes that the URN was identifying a CRS, but future version
+                                 * could choose the logger in a more dynamic way.
+                                 */
                                 Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
                             }
                             orderedComponents.put(sequenceNumber, parse(uri, isURN, splitAt, next));

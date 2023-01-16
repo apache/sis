@@ -36,7 +36,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.internal.storage.StoreUtilities;
@@ -395,7 +394,7 @@ public class StoreListeners implements Localized {
      *   <li>the {@code LogRecord} does not {@linkplain LogRecord#getLoggerName() specify a logger}.</li>
      * </ul>
      *
-     * @return the logger where to send the warnings when there are no other destinations.
+     * @return the logger where to send the warnings when there is no other destination.
      *
      * @see DataStoreProvider#getLogger()
      *
@@ -599,7 +598,7 @@ public class StoreListeners implements Localized {
      * @param  error   the exception that occurred.
      */
     static void canNotNotify(final String method, final ExecutionException error) {
-        Logging.unexpectedException(Logger.getLogger(Modules.STORAGE), StoreListeners.class, method, error);
+        Logging.unexpectedException(StoreUtilities.LOGGER, StoreListeners.class, method, error);
     }
 
     /**

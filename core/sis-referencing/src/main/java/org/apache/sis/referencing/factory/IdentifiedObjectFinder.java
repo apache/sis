@@ -29,7 +29,6 @@ import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.logging.Logging;
@@ -58,7 +57,7 @@ import org.apache.sis.util.Utilities;
  * is thread-safe. If concurrent searches are desired, then a new instance should be created for each thread.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
  * @see IdentifiedObjects#newFinder(String)
@@ -592,8 +591,7 @@ public class IdentifiedObjectFinder {
          * use `getMessage()` instead of `getLocalizedMessage()` for
          * giving preference to the locale of system administrator.
          */
-        final LogRecord record = new LogRecord(Level.FINER, exception.getMessage());
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(IdentifiedObjectFinder.class, "find", record);
+        Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER, IdentifiedObjectFinder.class,
+                               "find", new LogRecord(Level.FINER, exception.getMessage()));
     }
 }

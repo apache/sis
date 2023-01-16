@@ -130,7 +130,7 @@ public final class DefinitionVerifier {
             final LogRecord record = verification.warning(true);
             if (record != null) {
                 record.setLoggerName(logger);
-                Logging.log(classe, method, record);
+                Logging.completeAndLog(null, classe, method, record);
             }
         }
     }

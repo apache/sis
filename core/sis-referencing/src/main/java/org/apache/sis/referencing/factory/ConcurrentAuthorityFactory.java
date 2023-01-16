@@ -57,14 +57,11 @@ import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Shutdown;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -98,7 +95,7 @@ import static java.util.logging.Logger.getLogger;
  * Subclasses should select the interfaces that they choose to implement.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
@@ -502,8 +499,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 } else {
                     record = resources.getLogRecord(level, Messages.Keys.CreateDuration_2, type, duration);
                 }
-                record.setLoggerName(Loggers.CRS_FACTORY);
-                Logging.log(getClass(), caller, record);
+                Logging.completeAndLog(LOGGER, getClass(), caller, record);
             }
         }
         assert usage.depth >= 0 : usage;
@@ -663,8 +659,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @param  exception  the exception that occurred while closing a Data Access Object.
      */
     static void unexpectedException(final String method, final Exception exception) {
-        Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY),
-                ConcurrentAuthorityFactory.class, method, exception);
+        Logging.unexpectedException(LOGGER, ConcurrentAuthorityFactory.class, method, exception);
     }
 
     /**
@@ -758,8 +753,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             if (!(e instanceof UnavailableFactoryException)) {
                 record.setThrown(e);
             }
-            record.setLoggerName(Loggers.CRS_FACTORY);
-            Logging.log(ConcurrentAuthorityFactory.class, "getAuthority", record);
+            Logging.completeAndLog(LOGGER, ConcurrentAuthorityFactory.class, "getAuthority", record);
             c = null;
         }
         return c;

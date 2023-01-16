@@ -44,7 +44,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -502,9 +501,10 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
                             if (!interp.matches("(?i)INTERPOLATION[^A-Z]+BILINEAIRE")) {
                                 final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
                                         Level.WARNING, Errors.Keys.UnsupportedInterpolation_1, interp);
-                                record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                                Logging.log(FranceGeocentricInterpolation.class, "createMathTransform", record);
+
                                 // We declare `createMathTransform(…)` method because it is closer to public API.
+                                Logging.completeAndLog(LOGGER, FranceGeocentricInterpolation.class,
+                                                       "createMathTransform", record);
                             }
                             break;
                         }

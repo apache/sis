@@ -31,9 +31,6 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -262,7 +259,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
         try {
             return Units.valueOf(symbols);
         } catch (MeasurementParseException e) {
-            Logging.ignorableException(getLogger(Loggers.MEASURE), UnitRegistry.class, "getUnit", e);
+            Logging.ignorableException(AbstractUnit.LOGGER, UnitRegistry.class, "getUnit", e);
             return null;
         }
     }

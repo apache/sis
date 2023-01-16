@@ -18,6 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.util.logging.Logger;
 import java.io.ObjectStreamException;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Classifier;
@@ -26,14 +27,13 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
  * Information about an Apache SIS metadata standard implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 final class StandardImplementation extends MetadataStandard {
@@ -41,6 +41,11 @@ final class StandardImplementation extends MetadataStandard {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 855786625369724248L;
+
+    /**
+     * The logger for metadata.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.METADATA);
 
     /**
      * The root packages for metadata implementations, or {@code null} if none.
@@ -159,7 +164,7 @@ final class StandardImplementation extends MetadataStandard {
                         implementations.put(type, candidate);
                         return candidate.asSubclass(type);
                     } catch (ClassNotFoundException e) {
-                        Logging.recoverableException(getLogger(Modules.METADATA), MetadataStandard.class, "getImplementation", e);
+                        Logging.recoverableException(LOGGER, MetadataStandard.class, "getImplementation", e);
                     }
                     implementations.put(type, Void.TYPE);                       // Marker for "class not found".
                 }

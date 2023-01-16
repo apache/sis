@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.lang.reflect.Array;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.nio.file.Path;
 import java.io.Serializable;
 import java.io.File;
@@ -57,7 +58,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.UnconvertibleObjectException;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -118,7 +118,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -139,6 +139,11 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -5837826787089486776L;
+
+    /**
+     * The logger for parameters.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.PARAMETER);
 
     /**
      * The definition of this parameter.
@@ -601,8 +606,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                      * Level.FINE (not WARNING) because this log duplicates the exception
                      * that `setValue(Object, Unit)` may throw (with a better message).
                      */
-                    Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
-                            DefaultParameterValue.class, "setValue", e);
+                    Logging.recoverableException(LOGGER, DefaultParameterValue.class, "setValue", e);
                 } else {
                     /*
                      * If the given value is an array, verify if array elements need to be converted

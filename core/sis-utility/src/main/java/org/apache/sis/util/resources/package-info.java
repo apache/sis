@@ -82,7 +82,7 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see java.util.ResourceBundle
  * @see java.text.MessageFormat

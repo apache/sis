@@ -43,7 +43,6 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -54,7 +53,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
@@ -63,7 +61,7 @@ import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_
  * This is used for finding the EPSG code of a given Coordinate Reference System or other geodetic object.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.7
  */
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
@@ -143,9 +141,9 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             for (final IdentifiedObject dep : find) {
                 Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
                 if (id != null) try {                                                   // Should never be null, but let be safe.
-                    filters.add(Integer.parseInt(id.getCode()));
+                    filters.add(Integer.valueOf(id.getCode()));
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGCodeFinder.class, "getCodeCandidates", e);
+                    Logging.recoverableException(EPSGDataAccess.LOGGER, EPSGCodeFinder.class, "getCodeCandidates", e);
                 }
             }
             if (!filters.isEmpty()) {

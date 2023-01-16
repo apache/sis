@@ -55,10 +55,17 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.6
  */
 abstract class AbstractParser implements Parser {
+    /**
+     * The logger for Well Known Text operations.
+     *
+     * @see #log(LogRecord)
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.WKT);
+
     /**
      * A mode for the {@link Element#pullElement(int, String...)} method meaning that only the first element
      * should be checked. If the name of the first element does not match one of the specified names, then
@@ -214,11 +221,10 @@ abstract class AbstractParser implements Parser {
      * or when the information is not worth to report as a warning.
      */
     final void log(final LogRecord record) {
-        Logger logger = Logger.getLogger(Loggers.WKT);
         record.setSourceClassName (getPublicFacade());
         record.setSourceMethodName(getFacadeMethod());
-        record.setLoggerName(logger.getName());
-        logger.log(record);
+        record.setLoggerName(Loggers.WKT);
+        LOGGER.log(record);
     }
 
     /**

@@ -42,15 +42,12 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -686,7 +683,7 @@ forDim: switch (axes.length) {
                                     break forDim;
                                 }
                             } catch (IncommensurableException e) {      // Should never happen since we checked that units are angular.
-                                Logging.unexpectedException(getLogger(Modules.REFERENCING), CoordinateSystems.class, "getEpsgCode", e);
+                                Logging.unexpectedException(AbstractCS.LOGGER, CoordinateSystems.class, "getEpsgCode", e);
                                 break forDim;
                             }
                         }

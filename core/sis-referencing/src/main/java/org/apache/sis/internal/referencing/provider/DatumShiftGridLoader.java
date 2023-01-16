@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.EOFException;
@@ -34,8 +33,6 @@ import java.nio.channels.Channels;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.referencing.factory.FactoryDataException;
@@ -179,7 +176,7 @@ abstract class DatumShiftGridLoader {
         try {
             return Files.newByteChannel(Paths.get(path));
         } catch (FileSystemNotFoundException e) {
-            Logging.ignorableException(Logger.getLogger(Modules.REFERENCING), DatumShiftGridLoader.class, "newByteChannel", e);
+            Logging.ignorableException(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "newByteChannel", e);
         }
         return Channels.newChannel(path.toURL().openStream());
     }
@@ -200,11 +197,10 @@ abstract class DatumShiftGridLoader {
      *
      * @param  caller  the provider to logs as the source class.
      *                 the source method will be set to {@code "createMathTransform"}.
-     * @param record   the record to log.
+     * @param  record  the record to complete and log.
      */
     static void log(final Class<?> caller, final LogRecord record) {
-        record.setLoggerName(Loggers.COORDINATE_OPERATION);
-        Logging.log(caller, "createMathTransform", record);
+        Logging.completeAndLog(AbstractProvider.LOGGER, caller, "createMathTransform", record);
     }
 
     /**
@@ -220,8 +216,9 @@ abstract class DatumShiftGridLoader {
             if (directory != null && !datumDirectoryLogged.getAndSet(true)) {
                 final LogRecord record = Resources.forLocale(null).getLogRecord(
                         Level.INFO, Resources.Keys.DatumChangesDirectory_1, directory);
-                record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                Logging.log(DatumShiftGridLoader.class, "readGrid", record);        // "readGrid" is actually defined by subclasses.
+
+                // "readGrid" is actually defined by subclasses.
+                Logging.completeAndLog(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "readGrid", record);
             }
         }
         final boolean notFound = (cause instanceof NoSuchFileException);

@@ -45,7 +45,6 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -1509,8 +1508,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          */
         final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
+        Logging.completeAndLog(LOGGER, MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
         return super.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);
     }
 

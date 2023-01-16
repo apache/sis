@@ -119,7 +119,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Adrian Custer (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 package org.apache.sis.metadata;

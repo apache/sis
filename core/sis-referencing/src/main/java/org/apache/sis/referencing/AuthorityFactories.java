@@ -21,6 +21,7 @@ import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.sql.SQLTransientException;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.cs.CSAuthorityFactory;
@@ -46,10 +47,15 @@ import org.apache.sis.util.logging.Logging;
  * future SIS version (this may require more help from {@link ServiceLoader}).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
+    /**
+     * The logger to use for reporting object creations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
+
     /**
      * An array containing only the EPSG factory. Content of this array is initially null.
      * The EPSG factory will be created when first needed by {@link #initialValues()}.
@@ -196,8 +202,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
         if (isWarning && !(e instanceof UnavailableFactoryException)) {
             record.setThrown(e);
         }
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(CRS.class, "getAuthorityFactory", record);
+        Logging.completeAndLog(LOGGER, CRS.class, "getAuthorityFactory", record);
     }
 
     /**

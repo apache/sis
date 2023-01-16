@@ -36,14 +36,13 @@ import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.WriteSupport;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
 
 
 /**
@@ -66,7 +65,7 @@ import static java.util.logging.Logger.getLogger;
  * In such case, writing converted values will cause the corresponding source values to be updated too.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 class BandedSampleConverter extends ComputedImage {
@@ -217,7 +216,7 @@ class BandedSampleConverter extends ComputedImage {
             }
             return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses);
         } catch (NoninvertibleTransformException e) {
-            Logging.recoverableException(getLogger(Modules.RASTER), ImageProcessor.class, "convert", e);
+            Logging.recoverableException(LOGGER, ImageProcessor.class, "convert", e);
         }
         return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters);
     }

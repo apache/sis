@@ -50,7 +50,7 @@ import org.apache.sis.util.collection.TreeTable;
  * eventually perform some operations like clearing a cache.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.3
  */
 public final class Supervisor extends StandardMBean implements SupervisorMBean {
@@ -100,8 +100,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
             } catch (SecurityException e) {
                 record = new LogRecord(Level.CONFIG, e.toString());
             }
-            record.setLoggerName(Loggers.SYSTEM);
-            Logging.log(Supervisor.class, "register", record);
+            Logging.completeAndLog(SystemListener.LOGGER, Supervisor.class, "register", record);
         }
     }
 

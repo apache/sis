@@ -29,7 +29,6 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -38,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.RangeSet;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.storage.StoreUtilities.LOGGER;
 
 
 /**
@@ -752,7 +751,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
                     } else try {
                         drainAndAbort();
                     } catch (IOException e) {
-                        Logging.unexpectedException(getLogger(Modules.STORAGE), IdleConnectionCloser.class, "run", e);
+                        Logging.unexpectedException(LOGGER, IdleConnectionCloser.class, "run", e);
                     }
                 }
             }

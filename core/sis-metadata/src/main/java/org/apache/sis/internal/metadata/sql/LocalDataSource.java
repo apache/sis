@@ -37,8 +37,6 @@ import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Strings;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * A data source for a database stored locally in the {@code $SIS_DATA} directory.
@@ -46,10 +44,15 @@ import static java.util.logging.Logger.getLogger;
  * It provides our {@linkplain #initialize() starting point} for initiating the system-wide connection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public final class LocalDataSource implements DataSource, Comparable<LocalDataSource> {
+    /**
+     * Where to log warnings.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.SQL);
+
     /**
      * The property name for the home of Derby databases.
      */
@@ -129,7 +132,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                     path = Paths.get(home).relativize(path);
                 } catch (IllegalArgumentException | SecurityException e) {
                     // The path cannot be relativized. This is okay.
-                    Logging.recoverableException(getLogger(Loggers.SQL), LocalDataSource.class, "<init>", e);
+                    Logging.recoverableException(LOGGER, LocalDataSource.class, "<init>", e);
                 }
                 path   = path.normalize();
                 dbFile = path.toString().replace(path.getFileSystem().getSeparator(), "/");
@@ -295,8 +298,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                 record.setLevel(Level.WARNING);
                 record.setThrown(e);
             }
-            record.setLoggerName(Loggers.SQL);
-            Logging.log(LocalDataSource.class, "shutdown", record);
+            Logging.completeAndLog(LOGGER, LocalDataSource.class, "shutdown", record);
         }
     }
 

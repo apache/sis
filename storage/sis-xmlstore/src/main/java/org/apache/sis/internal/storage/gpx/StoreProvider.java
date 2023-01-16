@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
@@ -48,6 +49,13 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * The format name.
      */
     public static final String NAME = "GPX";
+
+    /**
+     * The logger used by GPX stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.gpx");
 
     /**
      * The "1.0" version.
@@ -109,5 +117,13 @@ public final class StoreProvider extends StaxDataStoreProvider {
     @Override
     protected JAXBContext getJAXBContext() throws JAXBException {
         return JAXBContext.newInstance(Metadata.class);
+    }
+
+    /**
+     * {@return the logger used by GPX stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

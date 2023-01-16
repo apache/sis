@@ -23,11 +23,9 @@ import java.util.Properties;
 import java.io.InputStream;
 import java.io.IOException;
 import org.opengis.metadata.Metadata;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -35,7 +33,7 @@ import static java.util.logging.Logger.getLogger;
  * Provided in a separated class for loading only when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
 final class LegacyCodes {
@@ -55,7 +53,7 @@ final class LegacyCodes {
         try (InputStream in = Metadata.class.getResourceAsStream("2003/charset-codes.properties")) {
             codes.load(in);
         } catch (IOException e) {
-            Logging.unexpectedException(getLogger(Loggers.XML), ValueConverter.class, "toCharset[Code]", e);
+            Logging.unexpectedException(Context.LOGGER, ValueConverter.class, "toCharset[Code]", e);
         }
         final int capacity = Containers.hashMapCapacity(codes.size());
         IANA_TO_LEGACY = new HashMap<>(capacity);

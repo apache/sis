@@ -33,7 +33,6 @@ import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
@@ -47,8 +46,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * The base class of operation methods performing a translation, rotation and/or scale in geocentric coordinates.
@@ -60,7 +57,7 @@ import static java.util.logging.Logger.getLogger;
  * "Geocentric translations" is an operation name defined by EPSG.</div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient
@@ -461,7 +458,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
                          * Should not occur, except sometimes on inverse transform of relatively complex datum shifts
                          * (more than just translation terms). We can fallback on formatting the full matrix.
                          */
-                        Logging.recoverableException(getLogger(Loggers.WKT), GeocentricAffine.class, "asDatumShift", e);
+                        Logging.recoverableException(WKTUtilities.LOGGER, GeocentricAffine.class, "asDatumShift", e);
                         continue;
                     }
                     final boolean isTranslation = parameters.isTranslation();

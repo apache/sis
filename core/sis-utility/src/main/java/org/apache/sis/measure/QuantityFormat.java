@@ -25,13 +25,10 @@ import java.io.IOException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.FinalFieldSetter;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -227,7 +224,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
                     return Quantities.create(value.doubleValue(), unit);
                 }
             } catch (MeasurementParseException e) {
-                Logging.ignorableException(getLogger(Loggers.MEASURE), QuantityFormat.class, "parseObject", e);
+                Logging.ignorableException(AbstractUnit.LOGGER, QuantityFormat.class, "parseObject", e);
             }
             pos.setIndex(start);        // By `Format.parseObject(…)` method contract.
         }

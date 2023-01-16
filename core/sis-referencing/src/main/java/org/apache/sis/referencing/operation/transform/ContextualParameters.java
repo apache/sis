@@ -40,7 +40,6 @@ import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
@@ -56,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.referencing.WKTUtilities.LOGGER;
 
 
 /**
@@ -982,6 +981,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * transform.</p>
      */
     private static void unexpectedException(final IllegalStateException e) {
-        Logging.unexpectedException(getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
+        Logging.unexpectedException(LOGGER, ConcatenatedTransform.class, "formatTo", e.getCause());
     }
 }

@@ -68,7 +68,6 @@ import org.apache.sis.internal.referencing.provider.Providers;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
@@ -87,8 +86,6 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -998,7 +995,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      * from another implementation. We can safely abandon our attempt to set the inverse flattening value,
                      * since it was redundant with semi-minor axis length.
                      */
-                    Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
+                    Logging.recoverableException(AbstractMathTransform.LOGGER,
                             DefaultMathTransformFactory.class, "createParameterizedTransform", e);
                 }
                 /*
@@ -1010,8 +1007,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                             Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                             mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
-                    record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                    Logging.log(DefaultMathTransformFactory.class, "createParameterizedTransform", record);
+                    Logging.completeAndLog(AbstractMathTransform.LOGGER,
+                            DefaultMathTransformFactory.class, "createParameterizedTransform", record);
                 }
             }
             return failure;
@@ -1231,7 +1228,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     throw exception;
                 }
                 method = getOperationMethod(methodName);
-                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
+                Logging.recoverableException(AbstractMathTransform.LOGGER,
                         DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
             }
             if (!(method instanceof MathTransformProvider)) {

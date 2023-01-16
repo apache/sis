@@ -28,11 +28,10 @@ import java.util.IllformedLocaleException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;
 
 
 /**
@@ -82,7 +81,7 @@ public final class Locales extends Static {
              * Not a big deal if this operation fails (this is actually just an
              * optimization for reducing memory usage). Log a warning and stop.
              */
-            Logging.unexpectedException(getLogger(Loggers.LOCALIZATION), Locales.class, "<clinit>", exception);
+            Logging.unexpectedException(LOGGER, Locales.class, "<clinit>", exception);
         }
     }
 

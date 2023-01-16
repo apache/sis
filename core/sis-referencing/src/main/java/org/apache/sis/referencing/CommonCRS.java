@@ -73,7 +73,6 @@ import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Vocabulary;
@@ -86,7 +85,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 
-import static java.util.logging.Logger.getLogger;
 import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -145,7 +143,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * </table></blockquote>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.factory.CommonAuthorityFactory
  *
@@ -524,7 +522,7 @@ public enum CommonCRS {
             if (code != null) try {
                 epsg = Integer.parseInt(code);
             } catch (NumberFormatException e) {
-                Logging.recoverableException(getLogger(Modules.REFERENCING), CommonCRS.class, "forDatum", e);
+                Logging.recoverableException(AuthorityFactories.LOGGER, CommonCRS.class, "forDatum", e);
             }
         }
         for (final CommonCRS c : values()) {
@@ -2050,7 +2048,6 @@ public enum CommonCRS {
             // Append the stack trace only if the exception is the the one we expect when the factory is not available.
             record.setThrown(e);
         }
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(caller.getClass(), method, record);
+        Logging.completeAndLog(AuthorityFactories.LOGGER, caller.getClass(), method, record);
     }
 }

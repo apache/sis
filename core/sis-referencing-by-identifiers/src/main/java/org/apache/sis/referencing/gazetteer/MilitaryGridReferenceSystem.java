@@ -72,15 +72,12 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
-
-import static java.util.logging.Logger.getLogger;
 
 // Branch-dependent imports
 import org.opengis.metadata.citation.Party;
@@ -142,7 +139,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
@@ -303,8 +300,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             party = MetadataSource.getProvided().lookup(Party.class, "{org}NATO");
         } catch (MetadataStoreException e) {
             party = null;
-            Logging.unexpectedException(getLogger(Modules.REFERENCING_BY_IDENTIFIERS),
-                    MilitaryGridReferenceSystem.class, "<init>", e);
+            Logging.unexpectedException(LOGGER, MilitaryGridReferenceSystem.class, "<init>", e);
         }
         NamedIdentifier name = new NamedIdentifier(null, "NATO", Resources.formatInternational(Resources.Keys.MGRS), null, null);
         return properties(name, IDENTIFIER, party);

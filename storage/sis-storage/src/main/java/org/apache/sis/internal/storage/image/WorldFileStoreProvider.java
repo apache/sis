@@ -18,6 +18,7 @@ package org.apache.sis.internal.storage.image;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.logging.Logger;
 import java.io.IOException;
 import javax.imageio.spi.ImageReaderSpi;
 import org.apache.sis.storage.DataStoreException;
@@ -36,7 +37,7 @@ import org.apache.sis.util.ArraysExt;
  * The provider of {@link WorldFileStore} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 @StoreMetadata(formatName    = WorldFileStoreProvider.NAME,
@@ -60,6 +61,13 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
      * It is not clear if we should include JPEG in this list or not.
      */
     private static final String[] SINGLE_IMAGE_FORMATS = {"PNG", "BMP", "WBMP", "JPEG"};
+
+    /**
+     * The logger used by image stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.image");
 
     /**
      * Whether the provider is allowed to create {@link GridCoverageResource} instances
@@ -164,5 +172,13 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
             return new ProbeResult(true, types[0], null);
         }
         return ProbeResult.SUPPORTED;
+    }
+
+    /**
+     * {@return the logger used by image stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

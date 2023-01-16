@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.MissingResourceException;
+import java.util.logging.Logger;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import javax.measure.Unit;
@@ -35,7 +36,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Configuration;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -70,6 +70,11 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -5559950920796714303L;
+
+    /**
+     * The logger for units of measurement.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.MEASURE);
 
     /**
      * The multiplication and division symbols used for Unicode representation.
@@ -304,7 +309,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
         if (symbol != null) try {
             return UnitFormat.getBundle(Locale.getDefault()).getString(symbol);
         } catch (MissingResourceException e) {
-            Logging.ignorableException(getLogger(Loggers.MEASURE), AbstractUnit.class, "getName", e);
+            Logging.ignorableException(LOGGER, AbstractUnit.class, "getName", e);
             // Ignore as per this method contract.
         }
         return null;

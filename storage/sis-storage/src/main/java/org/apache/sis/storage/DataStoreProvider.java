@@ -65,7 +65,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 public abstract class DataStoreProvider {
@@ -113,16 +113,6 @@ public abstract class DataStoreProvider {
      * @see #getOpenParameters()
      */
     public static final String CREATE = "create";
-
-    /**
-     * The logger where to reports warnings or change events. Created when first needed and kept
-     * by strong reference for avoiding configuration lost if the logger is garbage collected.
-     * This strategy assumes that {@code DataStoreProvider} instances are kept alive for the
-     * duration of JVM lifetime, which is the case with {@link DataStoreRegistry}.
-     *
-     * @see #getLogger()
-     */
-    private volatile Logger logger;
 
     /**
      * Creates a new provider.
@@ -640,10 +630,6 @@ public abstract class DataStoreProvider {
      * @since 1.0
      */
     public Logger getLogger() {
-        Logger lg = logger;
-        if (lg == null) {
-            logger = lg = Logging.getLogger(getClass());
-        }
-        return lg;
+        return Logging.getLogger(getClass());
     }
 }

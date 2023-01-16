@@ -21,8 +21,6 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.BlockingQueue;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * A thread executing short tasks after some (potentially zero nanosecond) delay.
@@ -53,7 +51,7 @@ import static java.util.logging.Logger.getLogger;
  * {@code CacheTest.stress()} tests suggests that the lightweight solution is faster.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
  *
@@ -135,7 +133,7 @@ public final class DelayedExecutor extends DaemonThread {
                  * We need to test 'isKillRequested()' below.
                  */
             } catch (Throwable exception) {
-                Logging.unexpectedException(getLogger(Loggers.SYSTEM), getClass(), "run", exception);
+                Logging.unexpectedException(SystemListener.LOGGER, getClass(), "run", exception);
             }
             if (isKillRequested()) {
                 queue.clear();

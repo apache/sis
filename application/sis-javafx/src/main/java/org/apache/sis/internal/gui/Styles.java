@@ -30,10 +30,9 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.Static;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -44,7 +43,7 @@ import static java.util.logging.Logger.getLogger;
  * <p>This class also opportunistically provides a few utility methods related to appearance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public final class Styles extends Static {
@@ -154,7 +153,7 @@ public final class Styles extends Static {
             error = e;
         }
         if (error != null) {
-            Logging.unexpectedException(getLogger(Modules.APPLICATION), caller, method, error);
+            Logging.unexpectedException(LOGGER, caller, method, error);
         }
         return image;
     }

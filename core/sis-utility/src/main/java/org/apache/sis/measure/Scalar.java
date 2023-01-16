@@ -21,13 +21,10 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
 import javax.measure.UnconvertibleException;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -344,7 +341,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
                 return value == r.doubleValue();
             }
         } catch (UnconvertibleException e) {
-            Logging.ignorableException(getLogger(Loggers.MEASURE), Scalar.class, "isEquivalentTo", e);
+            Logging.ignorableException(AbstractUnit.LOGGER, Scalar.class, "isEquivalentTo", e);
             // Non-convertible quantities are not equivalent.
         }
         return false;

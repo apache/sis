@@ -17,6 +17,7 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Arrays;
+import java.util.logging.Logger;
 import java.awt.Rectangle;
 import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
@@ -44,7 +45,6 @@ import static java.lang.Math.floorDiv;
 import static java.lang.Math.addExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
 
 
@@ -54,7 +54,7 @@ import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
  * (see {@code *Factory} classes for creating those objects).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public final class ImageUtilities extends Static {
@@ -81,6 +81,11 @@ public final class ImageUtilities extends Static {
      */
     @Configuration
     private static final int BUFFER_SIZE = 32 * DEFAULT_TILE_SIZE * Byte.SIZE;
+
+    /**
+     * The logger for operations on images and rasters.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Modules.RASTER);
 
     /**
      * Do not allow instantiation of this class.
@@ -373,7 +378,7 @@ public final class ImageUtilities extends Static {
                 }
                 if (!Arrays.equals(m1, m2)) {
                     // If this logging happen, we should revisit this method and improve it.
-                    getLogger(Modules.RASTER).warning("Band names may be in wrong order.");
+                    LOGGER.warning("Band names may be in wrong order.");
                 }
             }
         }

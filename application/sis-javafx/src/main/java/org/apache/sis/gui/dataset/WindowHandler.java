@@ -18,7 +18,6 @@ package org.apache.sis.gui.dataset;
 
 import java.util.Locale;
 import java.util.Optional;
-import java.util.logging.Logger;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -41,10 +40,11 @@ import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.PrivateAccess;
 import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -54,7 +54,7 @@ import org.apache.sis.util.resources.Errors;
  * It may also be a tile in a mosaic of windows.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public abstract class WindowHandler {
@@ -113,7 +113,7 @@ public abstract class WindowHandler {
             text = DataStoreOpener.findLabel(getResource(), manager.locale, true);
         } catch (DataStoreException | RuntimeException e) {
             text = Vocabulary.getResources(manager.locale).getString(Vocabulary.Keys.Unknown);
-            Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), WindowHandler.class, "<init>", e);
+            Logging.recoverableException(LOGGER, WindowHandler.class, "<init>", e);
         }
         title.set(text);
         manager.modifiableWindowList.add(this);

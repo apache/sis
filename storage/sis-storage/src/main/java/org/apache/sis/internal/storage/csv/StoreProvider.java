@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.csv;
 
+import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -45,7 +46,7 @@ import org.apache.sis.util.ArgumentChecks;
  * the part of the caller. However, the {@link Store} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
@@ -57,6 +58,13 @@ public final class StoreProvider extends URIDataStore.Provider {
      * The format names for static features and moving features.
      */
     static final String NAME = "CSV", MOVING = "CSV-MF";
+
+    /**
+     * The logger used by CSV stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.csv");
 
     /**
      * The object to use for verifying if the first keyword is the expected one.
@@ -153,7 +161,7 @@ public final class StoreProvider extends URIDataStore.Provider {
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        return new Peek().probeContent(this, connector);
+        return Peek.INSTANCE.probeContent(this, connector);
     }
 
     /**
@@ -192,5 +200,13 @@ public final class StoreProvider extends URIDataStore.Provider {
     @Override
     protected ParameterDescriptorGroup build(final ParameterBuilder builder) {
         return builder.createGroup(LOCATION_PARAM, ENCODING, FOLIATION);
+    }
+
+    /**
+     * {@return the logger used by CSV stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

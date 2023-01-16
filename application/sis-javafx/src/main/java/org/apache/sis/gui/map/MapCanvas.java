@@ -75,7 +75,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.gui.BackgroundThreads;
@@ -90,7 +89,7 @@ import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 import org.apache.sis.referencing.IdentifiedObjects;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 
@@ -130,7 +129,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public abstract class MapCanvas extends PlanarCanvas {
@@ -1515,7 +1514,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Invoked when an unexpected exception occurred but it is okay to continue despite it.
      */
     private static void unexpectedException(final String method, final Exception e) {
-        Logging.unexpectedException(getLogger(Modules.APPLICATION), MapCanvas.class, method, e);
+        Logging.unexpectedException(LOGGER, MapCanvas.class, method, e);
     }
 
     /**

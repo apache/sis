@@ -29,6 +29,7 @@ import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
 import javax.measure.Unit;
@@ -50,7 +51,6 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -79,10 +79,15 @@ import static java.util.logging.Logger.getLogger;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
+    /**
+     * The logger for localization events.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.LOCALIZATION);
+
     /**
      * Key used in properties map for localizing some aspects of the operation being executed.
      * The {@code getResources(Map<?,?>)} methods defined in some sub-classes will look for this property.
@@ -306,7 +311,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     final String    baseName   = getClass().getCanonicalName();
                     final String    methodName = (key != null) ? "getObject" : "getKeys";
                     final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
-                    record.setLoggerName(Loggers.LOCALIZATION);
                     /*
                      * Loads resources from the UTF file.
                      */
@@ -322,7 +326,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         record.setLevel  (Level.WARNING);
                         record.setMessage(exception.getMessage());              // For administrator, use system locale.
                         record.setThrown (exception);
-                        Logging.log(IndexedResourceBundle.class, methodName, record);
+                        Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
                         throw (MissingResourceException) new MissingResourceException(
                                 Exceptions.getLocalizedMessage(exception, locale),   // For users, use requested locale.
                                 baseName, key).initCause(exception);
@@ -341,7 +345,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         language = "<root>";
                     }
                     record.setParameters(new String[] {language, baseName});
-                    Logging.log(IndexedResourceBundle.class, methodName, record);
+                    Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
                     resources = null;                                           // Not needed anymore, let GC do its job.
                 }
                 this.values = values;
@@ -377,7 +381,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 keyID = getKeyConstants().getKeyValue(key);
             } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
-                Logging.recoverableException(getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
+                Logging.recoverableException(LOGGER, getClass(), "handleGetObject", e);
                 return null;                // This is okay as of 'handleGetObject' contract.
             }
         }

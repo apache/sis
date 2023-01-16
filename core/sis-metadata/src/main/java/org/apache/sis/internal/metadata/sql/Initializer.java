@@ -40,12 +40,11 @@ import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DataDirectory;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Shutdown;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
 
 
@@ -66,7 +65,7 @@ import static org.apache.sis.internal.util.MetadataServices.EMBEDDED;
  * All other methods are related to getting the {@code DataSource} instance, through JNDI or otherwise.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 public abstract class Initializer {
@@ -100,7 +99,7 @@ public abstract class Initializer {
     private static DataSource source;
 
     /**
-     * {@code true} if {@link #connected(DatabaseMetaData)} has been invoked at least once.
+     * {@code true} if {@link #connected(DatabaseMetaData, Class, String)} has been invoked at least once.
      * This is reset to {@code false} if the {@link #source} is changed.
      * We use this information for logging purpose.
      */
@@ -190,7 +189,7 @@ public abstract class Initializer {
                  * automatically by other kinds of JNDI events. Even if the listener is not unregistered,
                  * it will not hurt too badly: the DataSource would only be fetched more often than necessary.
                  */
-                Logging.recoverableException(getLogger(Loggers.SYSTEM), Listener.class, "objectChanged", e);
+                Logging.recoverableException(SystemListener.LOGGER, Listener.class, "objectChanged", e);
             }
             for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
                 init.dataSourceChanged();
@@ -204,7 +203,7 @@ public abstract class Initializer {
          */
         @Override
         public void namingExceptionThrown(NamingExceptionEvent event) {
-            Logging.unexpectedException(getLogger(Loggers.SYSTEM),
+            Logging.unexpectedException(SystemListener.LOGGER,
                     Listener.class, "namingExceptionThrown", event.getException());
             objectChanged(null);
         }
@@ -291,8 +290,9 @@ public abstract class Initializer {
             } catch (NoInitialContextException | NameNotFoundException e) {
                 final LogRecord record = Messages.getResources(null).getLogRecord(
                         Level.CONFIG, Messages.Keys.JNDINotSpecified_1, JNDI);
-                record.setLoggerName(Loggers.SQL);
-                Logging.log(null, null, record);                // Let Logging.log(…) infers the public caller.
+
+                // The null arguments let `Logging` infers the public caller.
+                Logging.completeAndLog(LocalDataSource.LOGGER, null, null, record);
             }
             /*
              * At this point we determined that there is no JNDI context or no object binded to "jdbc/SpatialMetadata".
@@ -386,7 +386,7 @@ public abstract class Initializer {
                     }
                 }
             } catch (IOException e) {
-                Logging.unexpectedException(getLogger(Loggers.SQL), Initializer.class, "getDataSource", e);
+                Logging.unexpectedException(LocalDataSource.LOGGER, Initializer.class, "getDataSource", e);
                 // Continue - the system will fallback on the hard-coded subset of EPSG definitions.
             }
         }
@@ -399,12 +399,15 @@ public abstract class Initializer {
      * the record level is set to {@link Level#CONFIG}. On next calls, the level become {@link Level#FINE}.
      *
      * @param  metadata  the value of {@code DataSource.getConnection().getMetaData()} or equivalent.
-     * @return the record to log. Caller should set the source class name and source method name.
+     * @param  classe    the class to report as the source of the logging message.
+     * @param  method    the method to report as the source of the logging message.
      * @throws SQLException if an error occurred while fetching the database URL.
      *
      * @since 0.8
      */
-    public static LogRecord connected(final DatabaseMetaData metadata) throws SQLException {
+    public static void connected(final DatabaseMetaData metadata, final Class<?> classe, final String method)
+            throws SQLException
+    {
         final Level level;
         synchronized (Initializer.class) {
             level = connected ? Level.FINE : Level.CONFIG;
@@ -412,8 +415,7 @@ public abstract class Initializer {
         }
         final LogRecord record = Messages.getResources(null).getLogRecord(level,
                 Messages.Keys.ConnectedToGeospatialDatabase_1, SQLUtilities.getSimplifiedURL(metadata));
-        record.setLoggerName(Loggers.SYSTEM);
-        return record;
+        Logging.completeAndLog(SystemListener.LOGGER, classe, method, record);
     }
 
     /**
