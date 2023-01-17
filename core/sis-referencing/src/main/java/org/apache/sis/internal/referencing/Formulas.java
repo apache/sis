@@ -110,7 +110,7 @@ public final class Formulas extends Static {
      * but come at a high cost on older machines without hardware support.
      */
     @Configuration
-    public static final boolean USE_FMA = true;
+    public static final boolean USE_FMA = false;
 
     /**
      * Do not allow instantiation of this class.
