@@ -43,10 +43,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -77,7 +74,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 final class CoordinateOperationFinder implements Supplier<double[]> {
@@ -745,6 +742,6 @@ apply:          if (forwardChangeOfCRS == null) {
      * @param  e       the ignorable exception.
      */
     private static void recoverableException(final String caller, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.RASTER), CoordinateOperationFinder.class, caller, e);
+        Logging.recoverableException(GridExtent.LOGGER, CoordinateOperationFinder.class, caller, e);
     }
 }

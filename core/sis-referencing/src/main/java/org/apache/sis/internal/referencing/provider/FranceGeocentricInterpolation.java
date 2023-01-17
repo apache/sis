@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.net.URI;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Locale;
@@ -23,12 +24,11 @@ import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.concurrent.Callable;
 import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.Files;
+import java.io.InputStreamReader;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -44,8 +44,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.Loggers;
-import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -54,7 +52,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.Cache;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
@@ -87,7 +84,7 @@ import static org.apache.sis.internal.util.Constants.DIM;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient
@@ -95,7 +92,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4707304160205218546L;
+    private static final long serialVersionUID = -298193260915837911L;
 
     /**
      * Geocentric translation parameters to use as a first guess before to use the grid in France.
@@ -137,7 +134,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * Name of the default grid file, as mentioned in the NTG_88 document.
      * We use the 5 first characters ({@code "gr3df"}) as a sentinel value for French grid file.
      *
-     * @see #isRecognized(Path)
+     * @see #isRecognized(URI)
      */
     private static final String DEFAULT = "gr3df97a.txt";
 
@@ -154,7 +151,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      *   <li>Default value: {@code gr3df97a.txt}</li>
      * </ul>
      */
-    public static final ParameterDescriptor<Path> FILE;
+    public static final ParameterDescriptor<URI> FILE;
 
     /**
      * The operation parameter descriptor for the <cite>EPSG code for Interpolation CRS</cite> parameter value.
@@ -197,7 +194,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
         FILE = builder
                 .addIdentifier("8727")
                 .addName("Geocentric translation file")
-                .create(Path.class, Paths.get(DEFAULT));
+                .create(URI.class, URI.create(DEFAULT));
         INTERPOLATION_CRS = builder
                 .addIdentifier("1048")
                 .addName("EPSG code for Interpolation CRS")
@@ -258,8 +255,10 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * @param  file  the grid file.
      * @return {@code true} if the given file looks like a fie from the French mapping agency.
      */
-    public static boolean isRecognized(final Path file) {
-        return file.getFileName().toString().regionMatches(true, 0, DEFAULT, 0, 5);
+    public static boolean isRecognized(final URI file) {
+        final String filename = file.getPath();
+        final int s = filename.lastIndexOf('/') + 1;
+        return filename.regionMatches(true, s, DEFAULT, 0, 5);
     }
 
     /**
@@ -326,7 +325,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
             default: throw new InvalidParameterValueException(Errors.format(
                             Errors.Keys.IllegalArgumentValue_2, DIM, dim), DIM, dim);
         }
-        final Path file = pg.getMandatoryValue(FILE);
+        final URI file = pg.getMandatoryValue(FILE);
         final DatumShiftGridFile<Angle,Length> grid = getOrLoad(file,
                 isRecognized(file) ? new double[] {TX, TY, TZ} : null, PRECISION);
 
@@ -361,176 +360,206 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
      * Returns the grid of the given name. This method returns the cached instance if it still exists,
      * or load the grid otherwise.
      *
-     * @param  file      name of the datum shift grid file to load.
+     * @param  file      an absolute or relative reference to the datum shift grid file to load.
      * @param  averages  an "average" value for the offset in each dimension, or {@code null} if unknown.
      * @param  scale     the factor by which to multiply each compressed value before to add to the average value.
      */
-    static DatumShiftGridFile<Angle,Length> getOrLoad(final Path file, final double[] averages, final double scale)
+    static DatumShiftGridFile<Angle,Length> getOrLoad(final URI file, final double[] averages, final double scale)
             throws FactoryException
     {
-        final Path resolved = DataDirectory.DATUM_CHANGES.resolve(file).toAbsolutePath();
-        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(resolved);
-        if (grid == null) {
-            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(resolved);
-            try {
-                grid = handler.peek();
-                if (grid == null) {
-                    try (BufferedReader in = Files.newBufferedReader(resolved)) {
-                        DatumShiftGridLoader.startLoading(FranceGeocentricInterpolation.class, file);
-                        final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
-                        grid = DatumShiftGridCompressed.compress(g, averages, scale);
-                    } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
-                        // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
-                        throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
-                    }
-                    grid = grid.useSharedData();
-                }
-            } finally {
-                handler.putAndUnlock(grid);
-            }
-        }
-        return grid.castTo(Angle.class, Length.class);
+        final URI resolved = DatumShiftGridLoader.toAbsolutePath(file);
+        return DatumShiftGridFile.getOrLoad(resolved, null, new Loader(resolved, averages, scale))
+                                 .castTo(Angle.class, Length.class);
     }
 
     /**
-     * Unconditionally loads the grid for the given file without in-memory compression.
-     *
-     * @param  in    reader of the RGF93 datum shift file.
-     * @param  file  path to the file being read, used for parameter declaration and error reporting.
-     * @throws IOException if an I/O error occurred.
-     * @throws NumberFormatException if a number cannot be parsed.
-     * @throws NoSuchElementException if a data line is missing a value.
-     * @throws FactoryException if an problem is found with the file content.
-     * @throws ArithmeticException if the width or the height exceed the integer capacity.
+     * Temporary object created for loading gridded data if not present in the cache.
+     * The data are provided in a text file, which is read with {@link BufferedReader}.
      */
-    static DatumShiftGridFile.Float<Angle,Length> load(final BufferedReader in, final Path file)
-            throws IOException, FactoryException, NoninvertibleTransformException
-    {
-        DatumShiftGridFile.Float<Angle,Length> grid = null;
-        double x0 = 0;
-        double xf = 0;
-        double y0 = 0;
-        double yf = 0;
-        double Δx = 0;
-        double Δy = 0;
-        int    nx = 0;
-        int    ny = 0;
-        /*
-         * The header should be like below, but the only essential line for this class is the one
-         * starting with "GR3D1". We also check that "GR3D2" declares the expected interpolation.
+    static final class Loader implements Callable<DatumShiftGridFile<?,?>> {
+        /** The file to load. */
+        private final URI file;
+
+        /** An "average" value for the offset in each dimension, or {@code null} if unknown. */
+        private final double[] averages;
+
+        /** The factor by which to multiply each compressed value before to add to the average value. */
+        private final double scale;
+
+        /** Creates a new loader for the given file. */
+        Loader(final URI file, final double[] averages, final double scale) {
+            this.file     = file;
+            this.averages = averages;
+            this.scale    = scale;
+        }
+
+        /** Returns the reader for the specified URI. */
+        static BufferedReader newBufferedReader(final URI file) throws IOException {
+            return new BufferedReader(new InputStreamReader(file.toURL().openStream()));
+        }
+
+        /**
+         * Invoked when the gridded data are not in the cache.
+         * This method load grid data from the file specified at construction time.
          *
-         *     GR3D  002024 024 20370201
-         *     GR3D1   -5.5000  10.0000  41.0000  52.0000    .1000    .1000
-         *     GR3D2 INTERPOLATION BILINEAIRE
-         *     GR3D3 PREC CM 01:5 02:10 03:20 04:50 99>100
+         * @return the loaded grid data.
+         * @throws FactoryException if an error occurred while loading the grid data.
          */
-        String line;
-        while (true) {
-            line = in.readLine();
-            if (line == null) {
-                throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfFile_1, file));
+        @Override
+        public DatumShiftGridFile<?,?> call() throws FactoryException {
+            final DatumShiftGridFile<?,?> grid;
+            try (BufferedReader in = newBufferedReader(file)) {
+                DatumShiftGridLoader.startLoading(FranceGeocentricInterpolation.class, file);
+                final DatumShiftGridFile.Float<Angle,Length> g = load(in, file);
+                grid = DatumShiftGridCompressed.compress(g, averages, scale);
+            } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
+                // NumberFormatException, ArithmeticException, NoSuchElementException, possibly other.
+                throw DatumShiftGridLoader.canNotLoad(HEADER, file, e);
             }
-            final int length = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
-            if (length <= 0) {
-                continue;   // Skip empty lines.
-            }
-            int p = CharSequences.skipLeadingWhitespaces(line, 0, length);
-            if (line.charAt(p) == '#') {
-                continue;   // Skip comment lines (not officially part of the format).
-            }
-            if (!line.regionMatches(true, p, HEADER, 0, HEADER.length())) {
-                break;      // End of header.
-            }
-            if ((p += HEADER.length()) < length) {
-                final char c = line.charAt(p);
-                p = CharSequences.skipLeadingWhitespaces(line, p+1, length);
-                switch (c) {
-                    case '1': {
-                        if (grid != null) {
-                            throw new FactoryException(Errors.format(Errors.Keys.DuplicatedElement_1, HEADER));
-                        }
-                        final double[] gridGeometry = CharSequences.parseDoubles(line.substring(p, length), ' ');
-                        if (gridGeometry.length == 6) {
-                            x0 = gridGeometry[0];
-                            xf = gridGeometry[1];
-                            y0 = gridGeometry[2];
-                            yf = gridGeometry[3];
-                            Δx = gridGeometry[4];
-                            Δy = gridGeometry[5];
-                            nx = Math.toIntExact(Math.round((xf - x0) / Δx + 1));
-                            ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
-                            grid = new DatumShiftGridFile.Float<>(3,
-                                    Units.DEGREE, Units.METRE, false,
-                                    x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
-                            grid.accuracy = Double.NaN;
-                            for (final float[] data : grid.offsets) {
-                                Arrays.fill(data, Float.NaN);
+            return grid.useSharedData();
+        }
+
+        /**
+         * Unconditionally loads the grid for the given file without in-memory compression.
+         *
+         * @param  in    reader of the RGF93 datum shift file.
+         * @param  file  path to the file being read, used for parameter declaration and error reporting.
+         * @throws IOException if an I/O error occurred.
+         * @throws NumberFormatException if a number cannot be parsed.
+         * @throws NoSuchElementException if a data line is missing a value.
+         * @throws FactoryException if an problem is found with the file content.
+         * @throws ArithmeticException if the width or the height exceed the integer capacity.
+         */
+        static DatumShiftGridFile.Float<Angle,Length> load(final BufferedReader in, final URI file)
+                throws IOException, FactoryException, NoninvertibleTransformException
+        {
+            DatumShiftGridFile.Float<Angle,Length> grid = null;
+            double x0 = 0;
+            double xf = 0;
+            double y0 = 0;
+            double yf = 0;
+            double Δx = 0;
+            double Δy = 0;
+            int    nx = 0;
+            int    ny = 0;
+            /*
+             * The header should be like below, but the only essential line for this class is the one
+             * starting with "GR3D1". We also check that "GR3D2" declares the expected interpolation.
+             *
+             *     GR3D  002024 024 20370201
+             *     GR3D1   -5.5000  10.0000  41.0000  52.0000    .1000    .1000
+             *     GR3D2 INTERPOLATION BILINEAIRE
+             *     GR3D3 PREC CM 01:5 02:10 03:20 04:50 99>100
+             */
+            String line;
+            while (true) {
+                line = in.readLine();
+                if (line == null) {
+                    throw new EOFException(Errors.format(Errors.Keys.UnexpectedEndOfFile_1, file));
+                }
+                final int length = CharSequences.skipTrailingWhitespaces(line, 0, line.length());
+                if (length <= 0) {
+                    continue;   // Skip empty lines.
+                }
+                int p = CharSequences.skipLeadingWhitespaces(line, 0, length);
+                if (line.charAt(p) == '#') {
+                    continue;   // Skip comment lines (not officially part of the format).
+                }
+                if (!line.regionMatches(true, p, HEADER, 0, HEADER.length())) {
+                    break;      // End of header.
+                }
+                if ((p += HEADER.length()) < length) {
+                    final char c = line.charAt(p);
+                    p = CharSequences.skipLeadingWhitespaces(line, p+1, length);
+                    switch (c) {
+                        case '1': {
+                            if (grid != null) {
+                                throw new FactoryException(Errors.format(Errors.Keys.DuplicatedElement_1, HEADER));
                             }
+                            final double[] gridGeometry = CharSequences.parseDoubles(line.substring(p, length), ' ');
+                            if (gridGeometry.length == 6) {
+                                x0 = gridGeometry[0];
+                                xf = gridGeometry[1];
+                                y0 = gridGeometry[2];
+                                yf = gridGeometry[3];
+                                Δx = gridGeometry[4];
+                                Δy = gridGeometry[5];
+                                nx = Math.toIntExact(Math.round((xf - x0) / Δx + 1));
+                                ny = Math.toIntExact(Math.round((yf - y0) / Δy + 1));
+                                grid = new DatumShiftGridFile.Float<>(3,
+                                        Units.DEGREE, Units.METRE, false,
+                                        x0, y0, Δx, Δy, nx, ny, PARAMETERS, file);
+                                grid.accuracy = Double.NaN;
+                                for (final float[] data : grid.offsets) {
+                                    Arrays.fill(data, Float.NaN);
+                                }
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case '2': {
-                        final String interp = line.substring(p, length);
-                        if (!interp.matches("(?i)INTERPOLATION[^A-Z]+BILINEAIRE")) {
-                            final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
-                                    Level.WARNING, Errors.Keys.UnsupportedInterpolation_1, interp);
-                            record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                            Logging.log(FranceGeocentricInterpolation.class, "createMathTransform", record);
-                            // We declare `createMathTransform(…)` method because it is closer to public API.
+                        case '2': {
+                            final String interp = line.substring(p, length);
+                            if (!interp.matches("(?i)INTERPOLATION[^A-Z]+BILINEAIRE")) {
+                                final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
+                                        Level.WARNING, Errors.Keys.UnsupportedInterpolation_1, interp);
+
+                                // We declare `createMathTransform(…)` method because it is closer to public API.
+                                Logging.completeAndLog(LOGGER, FranceGeocentricInterpolation.class,
+                                                       "createMathTransform", record);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
             }
+            if (grid == null) {
+                throw new FactoryException(Resources.format(Resources.Keys.FileNotFound_2, HEADER, file));
+            }
+            /*
+             * Loads the data with the sign of all offsets reversed. Data columns are
+             *
+             *     (unknown), longitude, latitude, tX, tY, tZ, accuracy code, data sheet (ignored)
+             *
+             * where the longitude and latitude values are in RGF93 system.
+             * Example:
+             *
+             *     00002   -5.500000000   41.000000000  -165.027   -67.100   315.813  99  -0158
+             *     00002   -5.500000000   41.100000000  -165.169   -66.948   316.007  99  -0157
+             *     00002   -5.500000000   41.200000000  -165.312   -66.796   316.200  99  -0157
+             *
+             * Translation values in the IGN file are from NTF to RGF93, but Apache SIS implementation needs
+             * the opposite direction (from RGF93 to NTF). The reason is that SIS expect the source datum to
+             * be the datum in which longitude and latitude values are expressed.
+             */
+            final float[] tX = grid.offsets[0];
+            final float[] tY = grid.offsets[1];
+            final float[] tZ = grid.offsets[2];
+            do {
+                final StringTokenizer t = new StringTokenizer(line.trim());
+                t.nextToken();                                                      // Ignored
+                final double x = Double.parseDouble(t.nextToken());                 // Longitude in degrees
+                final double y = Double.parseDouble(t.nextToken());                 // Latitude in degrees
+                final int    i = Math.toIntExact(Math.round((x - x0) / Δx));        // Column index
+                final int    j = Math.toIntExact(Math.round((y - y0) / Δy));        // Row index
+                if (i < 0 || i >= nx) {
+                    throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "x", x, x0, xf));
+                }
+                if (j < 0 || j >= ny) {
+                    throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "y", y, y0, yf));
+                }
+                final int p = j*nx + i;
+                if (!Double.isNaN(tX[p]) || !Double.isNaN(tY[p]) || !Double.isNaN(tZ[p])) {
+                    throw new FactoryException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, x + ", " + y));
+                }
+                tX[p] = -parseFloat(t.nextToken());     // See javadoc for the reason why we reverse the sign.
+                tY[p] = -parseFloat(t.nextToken());
+                tZ[p] = -parseFloat(t.nextToken());
+                final double accuracy = ACCURACY[Math.min(ACCURACY.length - 1,
+                        Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
+                if (!(accuracy >= grid.accuracy)) {     // Use `!` for replacing the initial NaN.
+                    grid.accuracy = accuracy;
+                }
+            } while ((line = in.readLine()) != null);
+            return grid;
         }
-        if (grid == null) {
-            throw new FactoryException(Resources.format(Resources.Keys.FileNotFound_2, HEADER, file));
-        }
-        /*
-         * Loads the data with the sign of all offsets reversed. Data columns are
-         *
-         *     (unknown), longitude, latitude, tX, tY, tZ, accuracy code, data sheet (ignored)
-         *
-         * where the longitude and latitude values are in RGF93 system.
-         * Example:
-         *
-         *     00002   -5.500000000   41.000000000  -165.027   -67.100   315.813  99  -0158
-         *     00002   -5.500000000   41.100000000  -165.169   -66.948   316.007  99  -0157
-         *     00002   -5.500000000   41.200000000  -165.312   -66.796   316.200  99  -0157
-         *
-         * Translation values in the IGN file are from NTF to RGF93, but Apache SIS implementation needs
-         * the opposite direction (from RGF93 to NTF). The reason is that SIS expect the source datum to
-         * be the datum in which longitude and latitude values are expressed.
-         */
-        final float[] tX = grid.offsets[0];
-        final float[] tY = grid.offsets[1];
-        final float[] tZ = grid.offsets[2];
-        do {
-            final StringTokenizer t = new StringTokenizer(line.trim());
-            t.nextToken();                                                      // Ignored
-            final double x = Double.parseDouble(t.nextToken());                 // Longitude in degrees
-            final double y = Double.parseDouble(t.nextToken());                 // Latitude in degrees
-            final int    i = Math.toIntExact(Math.round((x - x0) / Δx));        // Column index
-            final int    j = Math.toIntExact(Math.round((y - y0) / Δy));        // Row index
-            if (i < 0 || i >= nx) {
-                throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "x", x, x0, xf));
-            }
-            if (j < 0 || j >= ny) {
-                throw new FactoryException(Errors.format(Errors.Keys.ValueOutOfRange_4, "y", y, y0, yf));
-            }
-            final int p = j*nx + i;
-            if (!Double.isNaN(tX[p]) || !Double.isNaN(tY[p]) || !Double.isNaN(tZ[p])) {
-                throw new FactoryException(Errors.format(Errors.Keys.ValueAlreadyDefined_1, x + ", " + y));
-            }
-            tX[p] = -parseFloat(t.nextToken());     // See javadoc for the reason why we reverse the sign.
-            tY[p] = -parseFloat(t.nextToken());
-            tZ[p] = -parseFloat(t.nextToken());
-            final double accuracy = ACCURACY[Math.min(ACCURACY.length - 1,
-                    Math.max(0, Integer.parseInt(t.nextToken()) - 1))];
-            if (!(accuracy >= grid.accuracy)) {     // Use `!` for replacing the initial NaN.
-                grid.accuracy = accuracy;
-            }
-        } while ((line = in.readLine()) != null);
-        return grid;
     }
 }

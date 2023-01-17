@@ -30,6 +30,7 @@ import org.apache.sis.image.ComputedImage;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -48,7 +49,10 @@ public class ImageLayout {
      * <p>Tiles of 180×180 pixels consume about 127 kB, assuming 4 bytes per pixel. This is about half
      * the consumption of tiles of 256×256 pixels. We select a size which is a multiple of 90 because
      * images are often used with a resolution of e.g. ½° per pixel.</p>
+     *
+     * @see ImageUtilities#DEFAULT_TILE_SIZE
      */
+    @Configuration
     private static final int MIN_TILE_SIZE = 180;
 
     /**

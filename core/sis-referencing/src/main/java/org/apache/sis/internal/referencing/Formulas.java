@@ -16,10 +16,11 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.internal.util.Numerics;
-import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 
 import static java.lang.Math.*;
@@ -51,6 +52,7 @@ public final class Formulas extends Static {
      * @see #ANGULAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
+    @Configuration
     public static final double LINEAR_TOLERANCE = 0.01;
 
     /**
@@ -63,6 +65,7 @@ public final class Formulas extends Static {
      * @see #LINEAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
+    @Configuration
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);
 
     /**
@@ -70,6 +73,7 @@ public final class Formulas extends Static {
      * assuming that the unit of measurement is second. Current value is arbitrary
      * and may change in any future Apache SIS version.
      */
+    @Configuration
     public static final double TEMPORAL_TOLERANCE = 60;             // One minute.
 
     /**
@@ -96,6 +100,7 @@ public final class Formulas extends Static {
      *
      * <p>Current value has been determined empirically for allowing {@code GeodesicsOnEllipsoidTest} to pass.</p>
      */
+    @Configuration
     public static final int MAXIMUM_ITERATIONS = 18;
 
     /**
@@ -104,6 +109,7 @@ public final class Formulas extends Static {
      * Use of FMA brings performance benefits on machines having hardware support,
      * but come at a high cost on older machines without hardware support.
      */
+    @Configuration
     public static final boolean USE_FMA = true;
 
     /**

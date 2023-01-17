@@ -43,9 +43,9 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * definition were found for a XML element identified by {@code xlink} or {@code uuidref}
  * attributes.
  *
- * <div class="note"><b>Implementation note:</b>
+ * <h4>Implementation note</h4>
  * The same handler could be used for every proxy having the same XLink.
- * For now, it doesn't seem worth to cache the handlers.</div>
+ * For now, it doesn't seem worth to cache the handlers.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

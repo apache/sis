@@ -31,7 +31,7 @@
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 package org.apache.sis.referencing.gazetteer;

@@ -26,17 +26,16 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 import org.apache.sis.internal.jaxb.TypeRegistration;
+import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -61,7 +60,7 @@ import static java.util.logging.Logger.getLogger;
  * from multiple threads.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see XML
  * @see <a href="http://jaxb.java.net/guide/Performance_and_thread_safety.html">JAXB Performance and thread-safety</a>
@@ -74,6 +73,7 @@ public class MarshallerPool {
      * This is a very rough value: actual timeout will not be shorter,
      * but may be twice longer.
      */
+    @Configuration
     private static final long TIMEOUT = 15000000000L;           // 15 seconds.
 
     /**
@@ -93,11 +93,11 @@ public class MarshallerPool {
      * The provider of {@code AdapterReplacement} instances.
      * <strong>Every usage of this service loader must be synchronized.</strong>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * Each {@code MarshallerPool} has its own service loader instance rather than using a system-wide instance
      * because the {@link ClassLoader} used by the service loader is the <cite>context class loader</cite>,
      * which depends on the thread that created the pool. So two pools in two different applications could have
-     * two different set of replacements.</div>
+     * two different set of replacements.
      */
     private final ServiceLoader<AdapterReplacement> replacements;
 
@@ -210,7 +210,7 @@ public class MarshallerPool {
              * Not expected to happen because we are supposed
              * to reset the properties to their initial values.
              */
-            Logging.unexpectedException(getLogger(Loggers.XML), MarshallerPool.class, "recycle", exception);
+            Logging.unexpectedException(Context.LOGGER, MarshallerPool.class, "recycle", exception);
             return;
         }
         queue.push(marshaller);

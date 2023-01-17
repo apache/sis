@@ -58,6 +58,7 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      * If the number of tasks is greater than this parallelism value,
      * extraneous tasks will be queued.
      */
+    @Configuration
     public static final int PARALLELISM = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1);
 
     /**

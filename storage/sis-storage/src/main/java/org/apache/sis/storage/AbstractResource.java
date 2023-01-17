@@ -103,9 +103,9 @@ public abstract class AbstractResource implements Resource {
      * The default implementation returns an empty value.
      * Subclasses are strongly encouraged to override if they can provide a value.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * the default implementation of {@link #createMetadata()} uses this identifier for initializing
-     * the {@code metadata/identificationInfo/citation/title} property.</div>
+     * <h4>Relationship with metadata</h4>
+     * The default implementation of {@link #createMetadata()} uses this identifier for initializing
+     * the {@code metadata/identificationInfo/citation/title} property.
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -117,9 +117,9 @@ public abstract class AbstractResource implements Resource {
      * of resource such as {@link FeatureSet}. But the method is provided in this base class for convenience.
      * The default implementation gives an empty value.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * the default implementation of {@link #createMetadata()} uses this identifier for initializing
-     * the {@code metadata/identificationInfo/extent/geographicElement} property.</div>
+     * <h4>Implementation note</h4>
+     * The default implementation of {@link #createMetadata()} uses this identifier for initializing
+     * the {@code metadata/identificationInfo/extent/geographicElement} property.
      *
      * @return the spatiotemporal resource extent.
      * @throws DataStoreException if an error occurred while reading or computing the envelope.

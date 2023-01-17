@@ -52,10 +52,10 @@ import org.apache.sis.util.resources.Errors;
  *       to {@code TreeNodeList} (we need the slower path implemented in {@code AbstractList}).</li>
  * </ul>
  *
- * <div class="note"><b>Implementation note:</b>
+ * <h3>Note on serialization</h3>
  * Being serializable may seem contradictory with the non-cloneable requirement.
  * But serializing {@code TreeNodeList} will also serialize the parent, thus
- * creating new copy on deserialization. So the parents should not be mixed.</div>
+ * creating new copy on deserialization. So the parents should not be mixed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

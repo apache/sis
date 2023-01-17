@@ -43,7 +43,6 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -54,7 +53,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
@@ -63,7 +61,7 @@ import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_
  * This is used for finding the EPSG code of a given Coordinate Reference System or other geodetic object.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.7
  */
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
@@ -110,14 +108,13 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      * Returns a description of the condition to put in a {@code WHERE} clause for an object having
      * the given dependency.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The {@code super.find(…)} method performs a check (not documented in public API) for detecting
      * when it is invoked recursively, which is the case here. Consequently, the {@code super.find(…)}
      * behavior below is slightly different than usual: since invoked recursively, {@code super.find(…)}
      * checks the cache of the {@link ConcurrentAuthorityFactory} wrapper. If found, the dependency will
      * also be stored in the cache. This is desirable because this method may be invoked (indirectly) in
      * a loop for many CRS objects sharing the same {@link CoordinateSystem} or {@link Datum} dependencies.
-     * </div>
      *
      * @param  column      column in the SQL query containing EPSG codes of dependency.
      * @param  type        GeoAPI interface implemented by the dependency to search.
@@ -144,9 +141,9 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             for (final IdentifiedObject dep : find) {
                 Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
                 if (id != null) try {                                                   // Should never be null, but let be safe.
-                    filters.add(Integer.parseInt(id.getCode()));
+                    filters.add(Integer.valueOf(id.getCode()));
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGCodeFinder.class, "getCodeCandidates", e);
+                    Logging.recoverableException(EPSGDataAccess.LOGGER, EPSGCodeFinder.class, "getCodeCandidates", e);
                 }
             }
             if (!filters.isEmpty()) {

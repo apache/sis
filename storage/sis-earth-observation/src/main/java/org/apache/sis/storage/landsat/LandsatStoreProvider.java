@@ -19,6 +19,7 @@ package org.apache.sis.storage.landsat;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.Files;
+import java.util.logging.Logger;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -42,7 +43,7 @@ import org.apache.sis.internal.storage.wkt.FirstKeywordPeek;
  * the part of the caller. However, the {@link LandsatStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 @StoreMetadata(formatName    = LandsatStoreProvider.NAME,
@@ -53,6 +54,13 @@ public class LandsatStoreProvider extends DataStoreProvider {
      * The format name.
      */
     static final String NAME = "Landsat";
+
+    /**
+     * The logger used by Landsat stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.landsat");
 
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
@@ -216,5 +224,13 @@ public class LandsatStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new LandsatStore(this, connector);
+    }
+
+    /**
+     * {@return the logger used by Landsat stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

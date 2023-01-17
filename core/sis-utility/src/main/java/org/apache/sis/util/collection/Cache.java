@@ -1046,10 +1046,10 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         /**
          * Do nothing (except checking for programming error), since we don't hold any lock.
          *
-         * <div class="note"><b>Implementation note:</b>
+         * <h4>Implementation note</h4>
          * An alternative would have been to store the result in the map anyway.
          * But doing so is unsafe because we have no lock; we have no guarantee that nothing
-         * has happened in another thread between {@code peek} and {@code putAndUnlock}.</div>
+         * has happened in another thread between {@code peek} and {@code putAndUnlock}.
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
@@ -1161,10 +1161,10 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
             /**
              * Do nothing (except checking for programming error), since we don't hold any lock.
              *
-             * <div class="note"><b>Implementation note:</b>
+             * <h4>Implementation note</h4>
              * An alternative would have been to store the result in the map anyway.
              * But doing so is unsafe because we have no lock; we have no guarantee that nothing
-             * has happened in another thread between {@code peek} and {@code putAndUnlock}.</div>
+             * has happened in another thread between {@code peek} and {@code putAndUnlock}.
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {

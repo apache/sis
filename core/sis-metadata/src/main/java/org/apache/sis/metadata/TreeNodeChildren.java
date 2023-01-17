@@ -226,9 +226,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Returns {@code true} if the type at the given index is a collection or a map.
      * The given {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * We do not test {@code (value instanceof Collection)} because the value could be any user's implementation.
-     * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.</div>
+     * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.
      *
      * @param  index  the index in the accessor (<em>not</em> the index in this collection).
      * @return {@code true} if the value at the given index is a collection.

@@ -36,6 +36,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -60,6 +61,7 @@ public class MultiResolutionCoverageLoader {
      * This is used by {@link #defaultResolutions(GridGeometry, double[])} when no
      * resolution levels are explicitly given by the {@linkplain #resource}.
      */
+    @Configuration
     private static final int DEFAULT_SIZE = 512;
 
     /**

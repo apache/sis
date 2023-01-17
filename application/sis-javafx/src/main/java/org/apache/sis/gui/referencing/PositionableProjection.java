@@ -28,7 +28,6 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -40,7 +39,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -48,7 +47,7 @@ import static java.util.logging.Logger.getLogger;
  * The point of interest is typically determined by mouse location.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 @SuppressWarnings("serial")         // We do not guarantee serialization compatibility.
@@ -113,8 +112,7 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
             try {
                 cd = CommonCRS.forDatum(baseCRS);
             } catch (IllegalArgumentException e) {
-                Logging.recoverableException(getLogger(Modules.APPLICATION),
-                            PositionableProjection.class, "createProjectedCRS", e);
+                Logging.recoverableException(LOGGER, PositionableProjection.class, "createProjectedCRS", e);
                 cd = CommonCRS.WGS84;
             }
             return cd.universal(latitude, longitude);

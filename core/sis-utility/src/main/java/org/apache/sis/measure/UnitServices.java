@@ -31,13 +31,11 @@ import javax.measure.spi.SystemOfUnits;
 import javax.measure.spi.SystemOfUnitsService;
 import javax.measure.spi.FormatService;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -183,7 +181,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
             style = org.apache.sis.measure.UnitFormat.Style.valueOf(name);
         } catch (IllegalArgumentException e) {
             // JSR-385 specification mandate that we return null.
-            Logging.recoverableException(getLogger(Loggers.MEASURE), UnitServices.class, "getUnitFormat", e);
+            Logging.recoverableException(AbstractUnit.LOGGER, UnitServices.class, "getUnitFormat", e);
             return null;
         }
         org.apache.sis.measure.UnitFormat f = new org.apache.sis.measure.UnitFormat(locale);

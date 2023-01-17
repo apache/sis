@@ -97,10 +97,10 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * implementation for storing values in a single flat array. After creation, this
      * map shall be read-only since many {@code Node} instances may share it.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * This field and the {@link #columns} field could be computed from each other.
      * But we serialize this field anyway because children nodes will typically hold
-     * a reference to that map, and we want to preserve the references tree.</div>
+     * a reference to that map, and we want to preserve the references tree.
      *
      * @see DefaultTreeTable.Node#columnIndices
      */
@@ -684,12 +684,13 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * parent}. This method can be used for determining if two branches of a same tree or of two
          * different trees are identical.
          *
-         * <div class="note"><b>Implementation note:</b> This method ignores the parent because:
+         * <h4>Implementation note</h4>
+         * This method ignores the parent because:
          * <ul>
          *   <li>When comparing the children recursively, comparing the parents would cause infinite recursivity.</li>
          *   <li>For consistency with the {@link #clone()} method, which cannot clone the parent.</li>
          *   <li>For making possible to compare branches instead of only whole trees.</li>
-         * </ul></div>
+         * </ul>
          *
          * @param  other  the object to compare with this node.
          * @return {@code true} if the two objects are equal, ignoring the parent node.

@@ -166,10 +166,10 @@ public class Orthographic extends NormalizedProjection {
      * Implementation of {@link #transform(double[], int, double[], int, boolean)}
      * with possibility to recycle an existing matrix instance.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * in other map projections, we use a different class for ellipsoidal formulas.
      * But the orthographic projection is a bit different; for this one it is more
-     * convenient to use {@code if} statements.</div>
+     * convenient to use {@code if} statements.
      *
      * @param  derivative  where to store the Jacobian matrix, or {@code null} if none.
      *         If this matrix is an {@link Inverter} instance, we take that as a flag

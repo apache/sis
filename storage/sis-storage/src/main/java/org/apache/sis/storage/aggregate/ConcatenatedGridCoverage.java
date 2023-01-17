@@ -18,7 +18,6 @@ package org.apache.sis.storage.aggregate;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Logger;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
@@ -30,10 +29,11 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.storage.Resources;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.logging.Logging;
+
+import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;
@@ -44,7 +44,7 @@ import org.opengis.coverage.CannotEvaluateException;
  * All components must have the same "grid to CRS" transform, except for a translation term.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 final class ConcatenatedGridCoverage extends GridCoverage {
@@ -334,8 +334,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
             try {
                 final RenderedImage image = coverage.render(locator.toSliceExtent(extent, index));
                 if (failure != null) {
-                    Logging.ignorableException(Logger.getLogger(Modules.STORAGE),
-                            ConcatenatedGridCoverage.class, "render", failure);
+                    Logging.ignorableException(LOGGER, ConcatenatedGridCoverage.class, "render", failure);
                 }
                 return image;
             } catch (DisjointExtentException e) {

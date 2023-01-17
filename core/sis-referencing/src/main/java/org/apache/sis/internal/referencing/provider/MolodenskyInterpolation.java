@@ -47,6 +47,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTran
  */
 @XmlTransient
 @Deprecated(since="1.4", forRemoval=true)
+// Note: after removal, delete overrideable method in parent class.
 public final class MolodenskyInterpolation extends FranceGeocentricInterpolation {
     /**
      * Serial number for inter-operability with different versions.

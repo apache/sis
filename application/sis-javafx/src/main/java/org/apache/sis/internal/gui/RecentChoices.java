@@ -25,6 +25,7 @@ import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.FrequencySortedSet;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -42,6 +43,7 @@ public final class RecentChoices {
      *
      * @see #useReferenceSystem(String)
      */
+    @Configuration
     public static final int MAXIMUM_REFERENCE_SYSTEMS = 20;
 
     /**

@@ -48,7 +48,7 @@ final class ProbeReader extends FilterReader {
         if (!input.markSupported()) {
             throw new DataStoreException(Resources.format(Resources.Keys.MarkNotSupported_1, owner.getStorageName()));
         }
-        input.mark(StorageConnector.DEFAULT_BUFFER_SIZE);
+        input.mark(StorageConnector.READ_AHEAD_LIMIT);
     }
 
     /**
@@ -77,6 +77,8 @@ final class ProbeReader extends FilterReader {
 
     /**
      * Closes this reader and resets the wrapped reader to its original position.
+     * The wrapped reader is <em>not</em> closed, so this method does not really
+     * release any resource. Closing the wrapped reader is caller's responsibility.
      */
     @Override
     public void close() throws IOException {

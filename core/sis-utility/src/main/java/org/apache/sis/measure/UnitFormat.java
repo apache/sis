@@ -33,7 +33,7 @@ import java.io.UncheckedIOException;
 import javax.measure.Dimension;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
 import org.apache.sis.internal.util.FinalFieldSetter;
@@ -47,8 +47,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -88,6 +86,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     /**
      * Whether the parsing of authority codes such as {@code "EPSG:9001"} is allowed.
      */
+    @Configuration
     private static final boolean PARSE_AUTHORITY_CODES = true;
 
     /**
@@ -651,7 +650,7 @@ appPow: if (unit == null) {
                     try {
                         label = names.getString(label);
                     } catch (MissingResourceException e) {
-                        Logging.ignorableException(getLogger(Loggers.MEASURE), UnitFormat.class, "format", e);
+                        Logging.ignorableException(AbstractUnit.LOGGER, UnitFormat.class, "format", e);
                         // Name not found; use the symbol as a fallback.
                     }
                     return toAppendTo.append(label);

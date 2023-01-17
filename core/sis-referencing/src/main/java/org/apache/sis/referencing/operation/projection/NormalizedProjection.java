@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.logging.Logger;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.metadata.Identifier;
@@ -63,7 +64,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 import static java.lang.Math.*;
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -996,9 +996,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                     }
                 }
             } catch (NoninvertibleTransformException e) {
-                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
-                        (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
-                        "tryConcatenate", e);
+                final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);   // Defined in base class but field is inaccessible.
+                final Class<?> caller = (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass();
+                Logging.recoverableException(LOGGER, caller, "tryConcatenate", e);
             }
         }
         return null;

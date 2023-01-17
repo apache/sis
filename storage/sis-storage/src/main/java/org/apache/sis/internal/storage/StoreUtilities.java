@@ -46,6 +46,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -80,6 +81,7 @@ public final class StoreUtilities extends Static {
      * have different sample value ranges for each coverage, which cause {@code CoverageAggregator} to consider
      * that that cannot be aggregated together.</p>
      */
+    @Configuration
     public static final boolean ALLOW_LAST_RESORT_STATISTICS = false;
 
     /**

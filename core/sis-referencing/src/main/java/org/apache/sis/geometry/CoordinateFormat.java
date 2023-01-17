@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.UncheckedIOException;
@@ -70,7 +71,6 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.referencing.CRS;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -101,7 +101,7 @@ import static java.util.logging.Logger.getLogger;
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
@@ -110,6 +110,11 @@ import static java.util.logging.Logger.getLogger;
  * @since 0.8
  */
 public class CoordinateFormat extends CompoundFormat<DirectPosition> {
+    /**
+     * The logger for units of measurement.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.MEASURE);
+
     /**
      * Serial number for cross-version compatibility.
      */
@@ -1819,13 +1824,14 @@ checkDirection: if (direction != null) {
     }
 
     /**
-     * Invoked when an expected error occurred but continuation is still possible.
+     * Invoked when an unexpected error occurred but continuation is still possible.
+     * This method is invoked in the context of units of measurement.
      *
      * @param  method  the public method to report as the source of the log record.
      * @param  error   the error that occurred.
      */
     private static void unexpectedException(final String method, final Exception error) {
-        Logging.unexpectedException(getLogger(Loggers.MEASURE), CoordinateFormat.class, method, error);
+        Logging.unexpectedException(LOGGER, CoordinateFormat.class, method, error);
     }
 
     /**

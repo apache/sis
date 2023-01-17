@@ -19,11 +19,13 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.io.Serializable;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.Types;
@@ -38,7 +40,7 @@ import org.opengis.feature.IdentifiedType;
  * Identification and description information inherited by property types and feature types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.5
  */
 public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Serializable {
@@ -46,6 +48,11 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 277130188958446740L;
+
+    /**
+     * The logger used by feature implementations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.FEATURE);
 
     /**
      * Key for the <code>{@value}</code> property to be given to the constructor.

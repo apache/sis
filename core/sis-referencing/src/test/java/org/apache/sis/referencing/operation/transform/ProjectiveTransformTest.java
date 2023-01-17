@@ -177,6 +177,13 @@ public class ProjectiveTransformTest extends AffineTransformTest {
      * Tests the concatenation of transforms that would result in rounding errors
      * in extended-precision matrix operations were not used.
      *
+     * Actually there is two sources of rounding errors tested by this method.
+     * The first source is rounding errors caused by matrix multiplications.
+     * The other source is rounding errors inside the {@code transform(…)} methods,
+     * which is reduced by a denominator column in {@link ProjectiveTransform#elt}.
+     * For demonstrating the latter rounding errors, it may be necessary to set the
+     * {@link org.apache.sis.internal.referencing.Formulas#USE_FMA} flag to {@code false}.
+     *
      * @throws FactoryException if the transform cannot be created.
      * @throws TransformException if a coordinate conversion failed.
      *
@@ -186,6 +193,11 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     public void testRoundingErrors() throws FactoryException, TransformException {
         final Matrix4 num = new Matrix4(); num.m00 =  2; num.m11 = 3.25; num.m22 = -17;
         final Matrix4 den = new Matrix4(); den.m00 = 37; den.m11 = 1000; den.m22 = 127;
+
+        // Add translation terms.
+        num.m03 =  4*37; num.m13 = 17; num.m23 = -2*127;
+        den.m03 = -3*37; den.m13 = 65; den.m23 =  7*127;
+
         transform = TransformResultComparator.concatenate(
                 mtFactory.createAffineTransform(num),
                 mtFactory.createAffineTransform(den).inverse(),
@@ -199,11 +211,16 @@ public class ProjectiveTransformTest extends AffineTransformTest {
         assertEquals(new Fraction(2, 37),                 m.getElementOrNull(0,0));
         assertEquals(DoubleDouble.of(325).divide(100000), m.getElementOrNull(1,1));
         assertEquals(new Fraction(-17, 127),              m.getElementOrNull(2,2));
+        assertNull  (                                     m.getElementOrNull(0,1));
+        assertEquals(         0, m.getElement(0,1), STRICT);
+        assertEquals(  2d /  37, m.getElement(0,0), 1E-15);
+        assertEquals(   0.00325, m.getElement(1,1), 1E-15);
+        assertEquals(-17d / 127, m.getElement(2,2), 1E-15);
         /*
          * Test a transformation, expecting exact result.
          */
         verifyTransform(new double[] {2645.5,  19500, 2222.5},
-                        new double[] {   143, 63.375, -297.5});
+                        new double[] {   150, 63.327, -306.5});
     }
 
     /**

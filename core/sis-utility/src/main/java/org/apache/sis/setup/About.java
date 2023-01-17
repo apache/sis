@@ -80,7 +80,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  */
 public enum About {
@@ -758,7 +758,7 @@ pathTree:   for (int j=0; ; j++) {
         try {
             return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
-            Logging.ignorableException(getLogger(Loggers.LOCALIZATION), About.class, "configuration", e);
+            Logging.ignorableException(Vocabulary.LOGGER, About.class, "configuration", e);
             return null;
         }
     }

@@ -18,8 +18,10 @@ package org.apache.sis.portrayal;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.logging.Logger;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
@@ -36,10 +38,15 @@ import org.apache.sis.util.ArraysExt;
  *       like the index of the element modified in a list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 abstract class Observable {
+    /**
+     * The logger for portrayal.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.PORTRAYAL);
+
     /**
      * The registered listeners for each property, created when first needed.
      *

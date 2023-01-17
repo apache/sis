@@ -29,14 +29,11 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.simple.SimpleIdentifier;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -48,16 +45,16 @@ import static java.util.logging.Logger.getLogger;
  * <p>This class implements also the {@link org.opengis.metadata.Identifier} and {@link CheckedContainer} interfaces.
  * Those features are not directly used by this class, but is published in the {@link MetadataStandard} javadoc.</p>
  *
- * <div class="note"><b>API note:</b>
+ * <h2>API note</h2>
  * The rational for implementing {@code CheckedContainer} is to consider each {@code ExtendedElementInformation}
  * instance as the set of all possible values for the property. If the information had a {@code contains(E)} method,
- * it would return {@code true} if the given value is valid for that property.</div>
+ * it would return {@code true} if the given value is valid for that property.
  *
  * <h2>Immutability and thread safety</h2>
  * This final class is immutable and thus thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  *
  * @param <E>  the value type, either the method return type if not a collection,
  *             or the type of elements in the collection otherwise.
@@ -273,7 +270,7 @@ final class PropertyInformation<E> extends SimpleIdentifier           // Impleme
                      * to have an IllegalArgumentException while he didn't provided any argument.
                      * Returning null as a fallback is compliant with the method contract.
                      */
-                    Logging.unexpectedException(getLogger(Modules.METADATA), PropertyInformation.class, "getDomainValue", e);
+                    Logging.unexpectedException(StandardImplementation.LOGGER, PropertyInformation.class, "getDomainValue", e);
                     domain = null;
                 }
                 domainValue = domain;

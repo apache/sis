@@ -536,9 +536,9 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     /**
      * Appends the given code or version number as an integer if possible, or as a text otherwise.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
-     * because handling version numbers like "8.2" as floating point numbers can be confusing.</div>
+     * because handling version numbers like "8.2" as floating point numbers can be confusing.
      */
     private static void appendCode(final Formatter formatter, final String text) {
         if (text != null) {

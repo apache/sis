@@ -19,7 +19,7 @@
  * {@link org.apache.sis.storage.DataStore} implementation for a folder containing an arbitrary number of data files.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 package org.apache.sis.internal.storage.folder;

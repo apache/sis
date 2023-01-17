@@ -60,7 +60,7 @@ import org.apache.sis.internal.util.X364;
  * See {@link org.apache.sis.console} package javadoc for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  */
 final class AboutCommand extends CommandRunner {
@@ -145,7 +145,7 @@ final class AboutCommand extends CommandRunner {
                 final LogRecord record = Messages.getResources(locale).getLogRecord(Level.INFO,
                         Messages.Keys.ConfigurationOf_3, address, new Date(), delay);
                 record.setLoggerName(Loggers.APPLICATION);
-                Logging.log(Command.class, "main", record);
+                Logging.completeAndLog(null, Command.class, "main", record);
                 /*
                  * Replace the root node label from "Local configuration" to "Remote configuration"
                  * before to get the string representation of the configuration as a tree-table.

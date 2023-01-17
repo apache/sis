@@ -436,11 +436,11 @@ public final class NilReason implements Serializable {
      * <p><b>Reminder:</b> If more special cases are added, do not forget to update the {@link #mayBeNil(Object)}
      * method and to update the {@link #createNilObject(Class)} and {@link #forObject(Object)} javadoc.</p>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * There is no special case for {@link Character} because Java {@code char}s are not really full Unicode characters.
      * They are parts of UTF-16 encoding instead. If there is a need to represent a single Unicode character, we should
      * probably still use a {@link String} where the string contain 1 or 2 Java characters. This may also facilitate the
-     * encoding in the XML files, since many files use another encoding than UTF-16 anyway.</div>
+     * encoding in the XML files, since many files use another encoding than UTF-16 anyway.
      *
      * @throws IllegalArgumentException if the given type is not a supported type.
      */

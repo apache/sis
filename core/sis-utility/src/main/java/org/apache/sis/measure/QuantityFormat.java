@@ -25,13 +25,10 @@ import java.io.IOException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.FinalFieldSetter;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -158,7 +155,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      *
      * @param  source  the text to parse.
      * @return the quantity parsed from the specified text.
-     * @throws MeasurementParseException if the given text can not be parsed.
+     * @throws MeasurementParseException if the given text cannot be parsed.
      * @since  1.4
      */
     @Override
@@ -173,7 +170,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  source  the text, part of which should be parsed.
      * @param  pos     index and error index information.
      * @return the quantity parsed from the specified character sub-sequence.
-     * @throws MeasurementParseException if the given text can not be parsed.
+     * @throws MeasurementParseException if the given text cannot be parsed.
      * @since  1.4
      */
     @Override
@@ -227,7 +224,7 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
                     return Quantities.create(value.doubleValue(), unit);
                 }
             } catch (MeasurementParseException e) {
-                Logging.ignorableException(getLogger(Loggers.MEASURE), QuantityFormat.class, "parseObject", e);
+                Logging.ignorableException(AbstractUnit.LOGGER, QuantityFormat.class, "parseObject", e);
             }
             pos.setIndex(start);        // By `Format.parseObject(…)` method contract.
         }

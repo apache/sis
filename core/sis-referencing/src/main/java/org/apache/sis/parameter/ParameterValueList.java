@@ -43,11 +43,11 @@ import org.apache.sis.internal.referencing.Resources;
  * This class performs checks on the parameter values to be added or removed.
  * This implementation supports {@code set(…)}, {@code add(…)} and {@code remove(…)} operations.
  *
- * <div class="note"><b>Implementation note:</b>
- * this class reproduces some {@link java.util.ArrayList} functionalities.
+ * <h4>Implementation note</h4>
+ * This class reproduces some {@link java.util.ArrayList} functionalities.
  * However, we do <strong>not</strong> extend {@code ArrayList} because we really need the default method
  * implementations provided by {@code AbstractList} — the optimizations performed by {@code ArrayList}
- * are not suitable here.</div>
+ * are not suitable here.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4

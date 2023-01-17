@@ -106,15 +106,15 @@ public final class Geographic3Dto2D extends GeographicRedimension {
     /**
      * Returns the transform.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * creating a transform that drop a dimension is trivial. We even have a helper method for that:
+     * <h4>Implementation note</h4>
+     * Creating a transform that drop a dimension is trivial. We even have a helper method for that:
      * {@link Matrices#createDimensionSelect}  The difficulty is that the inverse of that transform
      * will set the height to NaN, while we want zero. The trick is to first create the transform for
      * the inverse transform with the zero that we want, then get the inverse of that inverse transform.
      * The transform that we get will remember where it come from (its inverse).
      *
      * <p>This work with SIS implementation, but is not guaranteed to work with other implementations.
-     * For that reason, this method does not use the given {@code factory}.</p></div>
+     * For that reason, this method does not use the given {@code factory}.</p>
      *
      * @param  factory  ignored (can be null).
      * @param  values   ignored.

@@ -23,9 +23,11 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.Arithmetic;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.Fraction;
 
 
 /**
@@ -48,7 +50,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5616239625370371256L;
+    private static final long serialVersionUID = -4813507361303377148L;
 
     /**
      * The number of rows.
@@ -61,12 +63,26 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     private final int numCol;
 
     /**
-     * Elements of the matrix. Column indices vary fastest.
+     * Number of columns for coefficients other than scales and shears in the {@link #elt} array.
+     * There is one column for translation terms and one column for denominators.
+     */
+    private static final int NON_SCALE_COLUMNS = 2;
+
+    /**
+     * Elements of the matrix augmented with one column containing common denominators.
+     * Column indices vary fastest.
+     *
+     * <h4>Denominator column</h4>
+     * An additional column is appended after the translation column.
+     * That column contains a denominator inferred from fractional values found on the row.
+     * All elements in the matrix row shall be multiplied by that denominator.
+     * The intend is to increase the chances that matrix elements are integer values.
+     * If no fractional value is found, the default denominator value is 1.
      */
     private final double[] elt;
 
     /**
-     * Same numbers than {@link #elt} with potentially extended precision.
+     * Same numbers than {@link #elt} excluding the denominators and with potentially extended precision.
      * Zero values <em>shall</em> be represented by null elements.
      */
     private final Number[] numbers;
@@ -74,45 +90,108 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     /**
      * Constructs a transform from the specified matrix.
      * The matrix is usually square and affine, but this is not enforced.
+     * Non-affine transforms (e.g. projective transforms) are accepted but may not be invertible.
      *
-     * @param matrix  the matrix.
+     * @param matrix  the matrix containing the coefficients of this projective transform.
      */
     protected ProjectiveTransform(final Matrix matrix) {
         numRow = matrix.getNumRow();
         numCol = matrix.getNumCol();
-        Number[] numbers = null;
+        /*
+         * Get the matrix elements as `Number` instances if possible.
+         * Those instances allow better precision than `double` values.
+         * Those numbers are available only through SIS-specific API.
+         */
+        final boolean hasNumbers;
         if (matrix instanceof ExtendedPrecisionMatrix) {
             // Use `writable = true` because we need a copy protected from changes.
             numbers = ((ExtendedPrecisionMatrix) matrix).getElementAsNumbers(true);
-        }
-        if (matrix instanceof MatrixSIS) {
+            hasNumbers = true;
+        } else if (matrix instanceof MatrixSIS) {
             final MatrixSIS m = (MatrixSIS) matrix;
-            elt = m.getElements();
-            if (elt.length != numRow * numCol) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
-            }
-            if (numbers == null) {
-                numbers = new Number[elt.length];
-                for (int i=0; i<numbers.length; i++) {
-                    final Number element = m.getNumber(i / numCol, i % numCol);
-                    if (!ExtendedPrecisionMatrix.isZero(element)) {
-                        numbers[i] = element;
-                    }
+            numbers = new Number[numRow * numCol];
+            for (int i=0; i<numbers.length; i++) {
+                final Number e = m.getNumber(i / numCol, i % numCol);
+                if (!ExtendedPrecisionMatrix.isZero(e)) {
+                    numbers[i] = e;
                 }
             }
+            hasNumbers = true;
         } else {
-            elt = new double[numRow * numCol];
-            for (int i=0; i<elt.length; i++) {
-                elt[i] = matrix.getElement(i / numCol, i % numCol);
+            numbers = new Number[numRow * numCol];
+            hasNumbers = false;
+        }
+        /*
+         * Get the matrix elements as `double` values through the standard matrix API.
+         * We do that as a way to preserve negative zero, which is lost in `numbers`.
+         * The `numbers` array is either completed or compared for consistency.
+         */
+        final int dstDim    = numRow - 1;               // Last row is [0 0 … 1] in an affine transform.
+        final int rowStride = numCol + 1;               // The `elt` array has an extra column for denominators.
+        elt = new double[numRow * rowStride - 1];       // We don't need the denominator of the [0 0 … 1] row.
+        for (int k=0,i=0; i < numRow; i++) {
+            for (int j=0; j < numCol; j++) {
+                final double e = matrix.getElement(i, j);
+                elt[k++] = e;                           // May be negative zero.
+                if (hasNumbers) {
+                    assert epsilonEqual(e, numbers[i*numCol + j]);
+                } else if (e != 0) {
+                    final int v = (int) e;              // Check if we can store as integer.
+                    numbers[i*numCol + j] = (v == e) ? Integer.valueOf(v) : Double.valueOf(e);
+                }
             }
-            if (numbers == null) {
-                numbers = wrap(elt);
+            if (i != dstDim) {
+                elt[k++] = 1;
+            } else {
+                assert k == elt.length;
             }
         }
-        this.numbers = numbers;
-        if (elt.length != numbers.length) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+        /*
+         * At this point, this `ProjectiveTransform` is initialized and valid.
+         * Optionally update the elements values for reducing rounding errors
+         * when a denominator can be identified. This is where the denominator
+         * column in the `elt` array may get values different than 1.
+         */
+        if (hasNumbers) {
+            for (int row=0; row < dstDim; row++) {
+                final int lower = numCol * row;
+                final int upper = numCol + lower;
+                final Integer denominator;
+                try {
+                    Fraction sum = null;
+                    for (int i=lower; i<upper; i++) {
+                        final Number element = numbers[i];
+                        if (element instanceof Fraction) {
+                            final Fraction f = (Fraction) element;
+                            sum = (sum != null) ? sum.add(f) : f;
+                        }
+                    }
+                    if (sum == null) {
+                        continue;
+                    }
+                    denominator = sum.denominator;
+                } catch (ArithmeticException e) {
+                    continue;
+                }
+                int k = row * rowStride;
+                for (int i=lower; i<upper; i++) {
+                    final Number element = Arithmetic.multiply(numbers[i], denominator);
+                    if (element != null) {
+                        elt[k] = element.doubleValue();
+                    }
+                    k++;
+                }
+                elt[k] = denominator.doubleValue();
+            }
         }
+    }
+
+    /**
+     * Returns whether the given number are equal, with a tolerance of 1 ULP.
+     * A null {@code Number} is interpreted as zero.
+     */
+    private static boolean epsilonEqual(final double e, final Number v) {
+        return Numerics.epsilonEqual(e, (v != null) ? v.doubleValue() : 0, Math.ulp(e));
     }
 
     /**
@@ -125,7 +204,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         }
         final int n = (numRow - 1) * numCol;
         for (int i = 0; i < numCol;) {
-            if (elt[n + i] != (++i == numCol ? 1 : 0)) {
+            if (!isIdentity(numbers[n + i], ++i == numCol)) {
                 return this;            // Transform is not affine (ignoring if square or not).
             }
         }
@@ -142,11 +221,11 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         boolean isTranslation = (numRow == numCol);         // TranslationTransform is restricted to square matrix.
         final int lastColumn  = numCol - 1;
         for (int i=0; i<n; i++) {
-            final double v = elt[i];
+            final Number element = numbers[i];
             final int row  = (i / numCol);
             final int col  = (i % numCol);
-            isScale       &= (col == row)        || (v == 0);
-            isTranslation &= (col == lastColumn) || (v == (col == row ? 1 : 0));
+            if (col != row)        isScale       &= (element == null);
+            if (col != lastColumn) isTranslation &= isIdentity(element, col == row);
             if (!(isScale | isTranslation)) {
                 return this;
             }
@@ -156,6 +235,19 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         } else {
             return new ScaleTransform(numRow, numCol, numbers);
         }
+    }
+
+    /**
+     * Returns {@code true} if the given element has the expected value of an identity matrix.
+     *
+     * @param  element   the element to test.
+     * @param  diagonal  whether the element is on the diagonal.
+     * @return whether the given element is an element of an identity matrix.
+     *
+     * @see #isIdentity()
+     */
+    private static boolean isIdentity(final Number element, final boolean diagonal) {
+        return diagonal ? (element != null && element.doubleValue() == 1) : (element == null);
     }
 
     /**
@@ -217,28 +309,35 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
     public final double getElement(final int row, final int column) {
         ArgumentChecks.ensureBetween("row",    0, numRow - 1, row);
         ArgumentChecks.ensureBetween("column", 0, numCol - 1, column);
-        return elt[row * numCol + column];
+        final Number element = numbers[row * numCol + column];
+        if (element != null) {
+            return element.doubleValue();
+        }
+        /*
+         * Fallback on the `elt` array only for 0 values for avoiding the need to divide by the denominator.
+         * Do not return a hard-coded 0 value in order to preserve the sign of negative zero.
+         */
+        final int rowStride = numCol + 1;
+        return elt[row * rowStride + column];
     }
 
     /**
      * Tests whether this transform does not move any points.
      *
-     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * <h4>Note</h4>
+     * This method should always returns {@code false}, because
      * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead of using a factory method.</div>
+     * instead of using a factory method.
      */
     @Override
     public final boolean isIdentity() {
         if (numRow != numCol) {
             return false;
         }
-        int mix = 0;
-        for (int j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                if (elt[mix++] != (i == j ? 1 : 0)) {
-                    return false;
-                }
+        for (int i=0; i < numbers.length; i++) {
+            if (!isIdentity(numbers[i], (i / numCol) == (i % numCol))) {
+                return false;
             }
         }
         return true;
@@ -328,12 +427,15 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                     }
                 }
                 buffer[j] = sum;
-                mix++;
+                mix += NON_SCALE_COLUMNS;       // Skip the translation column and the denominator column.
             }
+            int k = numCol;
+            final int rowStride = numCol + 1;
             final double w = buffer[dstDim];
             for (int j=0; j<dstDim; j++) {
                 // `w` is equal to 1 if the transform is affine.
-                dstPts[dstOff + j] = buffer[j] / w;
+                dstPts[dstOff + j] = buffer[j] / (w * elt[k]);
+                k += rowStride;
             }
             srcOff += srcInc;
             dstOff += dstInc;
@@ -396,11 +498,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                     }
                 }
                 buffer[j] = sum;
-                mix++;
+                mix += NON_SCALE_COLUMNS;
             }
+            int k = numCol;
+            final int rowStride = numCol + 1;
             final double w = buffer[dstDim];
             for (int j=0; j<dstDim; j++) {
-                dstPts[dstOff + j] = (float) (buffer[j] / w);
+                dstPts[dstOff + j] = (float) (buffer[j] / (w * elt[k]));
+                k += rowStride;
             }
             srcOff += srcInc;
             dstOff += dstInc;
@@ -436,11 +541,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                     }
                 }
                 buffer[j] = sum;
-                mix++;
+                mix += NON_SCALE_COLUMNS;
             }
+            int k = numCol;
+            final int rowStride = numCol + 1;
             final double w = buffer[dstDim];
             for (int j=0; j<dstDim; j++) {
-                dstPts[dstOff++] = (float) (buffer[j] / w);
+                dstPts[dstOff++] = (float) (buffer[j] / (w * elt[k]));
+                k += rowStride;
             }
             srcOff += srcDim;
         }
@@ -475,11 +583,14 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
                     }
                 }
                 buffer[j] = sum;
-                mix++;
+                mix += NON_SCALE_COLUMNS;
             }
+            int k = numCol;
+            final int rowStride = numCol + 1;
             final double w = buffer[dstDim];
             for (int j=0; j<dstDim; j++) {
-                dstPts[dstOff++] = buffer[j] / w;
+                dstPts[dstOff++] = buffer[j] / (w * elt[k]);
+                k += rowStride;
             }
             srcOff += srcDim;
         }
@@ -494,14 +605,15 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      */
     @Override
     public final Matrix derivative(final DirectPosition point) {
-        final int srcDim = numCol - 1;
-        final int dstDim = numRow - 1;
+        final int srcDim    = numCol - 1;
+        final int dstDim    = numRow - 1;
+        final int rowStride = numCol + 1;
         /*
          * In the `transform(…)` method, all coordinate values are divided by a `w` coefficient
          * which depends on the position. We need to reproduce that division here. Note that `w`
          * coefficient is different than 1 only if the transform is non-affine.
          */
-        int mix = dstDim * numCol;
+        int mix = dstDim * rowStride;
         double w = elt[mix + srcDim];                   // `w` is equal to 1 if the transform is affine.
         for (int i=0; i<srcDim; i++) {
             final double e = elt[mix++];
@@ -514,12 +626,15 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
          * with last row and last column omitted.
          */
         mix = 0;
+        int k = numCol;
         final MatrixSIS matrix = Matrices.createZero(dstDim, srcDim);
         for (int j=0; j<dstDim; j++) {
+            final double r = w * elt[k];
             for (int i=0; i<srcDim; i++) {
-                matrix.setElement(j, i, elt[mix++] / w);
+                matrix.setElement(j, i, elt[mix++] / r);
             }
-            mix++;                                      // Skip translation column.
+            mix += NON_SCALE_COLUMNS;       // Skip the translation column and the denominator column.
+            k += rowStride;
         }
         return matrix;
     }

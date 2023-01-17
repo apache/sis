@@ -25,14 +25,11 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.WKTKeywords;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -46,7 +43,7 @@ import static java.util.logging.Logger.getLogger;
  * ISO 19162:2015 §7.5.4(iv) - WKT 2 formatting.
  *
  * @author  Martin Desruisseaux (IRD)
- * @version 1.2
+ * @version 1.4
  * @since   0.4
  */
 final class DirectionAlongMeridian extends FormattableObject implements Comparable<DirectionAlongMeridian> {
@@ -124,7 +121,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
         try {
             candidate = parse(direction.name());
         } catch (IllegalArgumentException e) {
-            Logging.recoverableException(getLogger(Modules.REFERENCING), DirectionAlongMeridian.class, "parse", e);
+            Logging.recoverableException(AbstractCS.LOGGER, DirectionAlongMeridian.class, "parse", e);
             return null;
         }
         if (candidate != null) {

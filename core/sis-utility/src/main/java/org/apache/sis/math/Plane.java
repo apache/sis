@@ -82,6 +82,8 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * <div class="note"><b>Note:</b>
      * A similar constant exists in {@code org.apache.sis.referencing.operation.matrix.GeneralMatrix}.
      * </div>
+     *
+     * @see Numerics#COMPARISON_THRESHOLD
      */
     private static final double ZERO_THRESHOLD = 1E-14;
 

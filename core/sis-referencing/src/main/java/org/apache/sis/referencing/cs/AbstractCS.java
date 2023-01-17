@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -51,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 
@@ -75,7 +75,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
@@ -98,6 +98,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
     DefaultUserDefinedCS.class
 })
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
+    /**
+     * The logger for referencing operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.REFERENCING);
+
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -421,7 +426,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                  * Other exceptions would probably be more serious errors, but it still non-fatal
                  * for this method since we can continue with what Normalizer created.
                  */
-                Logging.recoverableException(getLogger(Modules.REFERENCING), getClass(), "forConvention", e);
+                Logging.recoverableException(LOGGER, getClass(), "forConvention", e);
             }
         }
         return this;

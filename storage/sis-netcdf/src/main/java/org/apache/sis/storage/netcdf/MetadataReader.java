@@ -65,6 +65,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
@@ -119,6 +120,7 @@ final class MetadataReader extends MetadataBuilder {
      * Whether the reader should include experimental fields.
      * They are fields for which we are unsure of the proper ISO 19115 location.
      */
+    @Configuration
     private static final boolean EXPERIMENTAL = true;
 
     /**

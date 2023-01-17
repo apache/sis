@@ -18,7 +18,6 @@ package org.apache.sis.internal.feature;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -32,7 +31,7 @@ import org.apache.sis.util.logging.Logging;
  * <p>Note: we can bring this code back into {@link Geometries} if JEP 8209964 is implemented.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class GeometryFactories {
@@ -61,8 +60,7 @@ final class GeometryFactories {
         } catch (ReflectiveOperationException | LinkageError e) {
             LogRecord record = Resources.forLocale(null).getLogRecord(Level.CONFIG,
                     Resources.Keys.OptionalLibraryNotFound_2, name, e.toString());
-            record.setLoggerName(Loggers.GEOMETRY);
-            Logging.log(Geometries.class, "register", record);
+            Logging.completeAndLog(Geometries.LOGGER, Geometries.class, "register", record);
             return previous;
         }
         factory.fallback = previous;

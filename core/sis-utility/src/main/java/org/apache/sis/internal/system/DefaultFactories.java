@@ -25,8 +25,6 @@ import java.util.ServiceConfigurationError;
 import java.util.function.Consumer;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * Default factories defined in the {@code sis-utility} module.
@@ -183,8 +181,7 @@ public final class DefaultFactories extends SystemListener {
              * We were not allowed to invoke Thread.currentThread().getContextClassLoader().
              * But ServiceLoader.load(Class) may be allowed to, since it is part of JDK.
              */
-            Logging.recoverableException(getLogger(Loggers.SYSTEM),
-                    DefaultFactories.class, "createServiceLoader", e);
+            Logging.recoverableException(SystemListener.LOGGER, DefaultFactories.class, "createServiceLoader", e);
             return ServiceLoader.load(service);
         }
     }

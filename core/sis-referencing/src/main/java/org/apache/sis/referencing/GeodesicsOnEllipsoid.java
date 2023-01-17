@@ -22,6 +22,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 
@@ -78,11 +79,12 @@ import static java.lang.Math.*;
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
-     * Whether to include code used for JUnit tests only. This field should be
-     * set to {@code true} during development and to {@code false} in releases.
+     * Whether to include code used for JUnit tests only. This field can be set to
+     * {@code true} during debugging and should be set to {@code false} in releases.
      *
      * @see #snapshot()
      */
+    @Debug
     static final boolean STORE_LOCAL_VARIABLES = false;
 
     /**

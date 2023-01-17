@@ -38,7 +38,6 @@ import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 
@@ -64,7 +63,7 @@ import org.apache.sis.internal.util.Constants;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public abstract class InstallationScriptProvider extends InstallationResources {
@@ -263,8 +262,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * {@code EPSGFactory.install(…)} because it is the public API using this class.
      */
     static void log(final LogRecord record) {
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(EPSGFactory.class, "install", record);
+        Logging.completeAndLog(EPSGDataAccess.LOGGER, EPSGFactory.class, "install", record);
     }
 
 

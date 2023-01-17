@@ -308,10 +308,10 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * the {@link java.util.Set#hashCode()} one and ensures that the hash code value is
      * insensitive to the ordering of properties.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * This method does not cache the value because current implementation has no notification mechanism
      * for tracking changes in children properties. If this metadata is known to be immutable,
-     * then subclasses may consider caching the hash code value if performance is important.</div>
+     * then subclasses may consider caching the hash code value if performance is important.
      *
      * @see MetadataStandard#hashCode(Object)
      */

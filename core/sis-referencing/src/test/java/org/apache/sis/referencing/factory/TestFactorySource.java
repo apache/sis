@@ -21,13 +21,11 @@ import java.util.HashMap;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
-import static java.util.logging.Logger.getLogger;
 import static org.junit.Assume.*;
 import static org.opengis.test.Assert.*;
 
@@ -56,7 +54,7 @@ import static org.opengis.test.Assert.*;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 public final class TestFactorySource {
@@ -115,7 +113,7 @@ public final class TestFactorySource {
             assertNotNull(factory.createGeographicCRS("4326"));
         } catch (UnavailableFactoryException e) {
             isUnavailable = true;
-            getLogger(Loggers.CRS_FACTORY).warning(e.toString());
+            GeodeticAuthorityFactory.LOGGER.warning(e.toString());
             assumeNoException("No connection to EPSG dataset.", e);
         }
         return (EPSGFactory) factory;
@@ -149,7 +147,7 @@ public final class TestFactorySource {
                     factory = af;                                                           // Must be last.
                 } catch (UnavailableFactoryException e) {
                     isUnavailable = true;
-                    getLogger(Loggers.CRS_FACTORY).warning(e.toString());
+                    GeodeticAuthorityFactory.LOGGER.warning(e.toString());
                 } finally {
                     if (factory != af) {
                         af.close();

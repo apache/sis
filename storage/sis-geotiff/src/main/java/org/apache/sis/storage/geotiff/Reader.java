@@ -114,9 +114,9 @@ final class Reader extends GeoTIFF {
      * Entries having a value that cannot be read immediately, but instead have a pointer
      * to a value stored elsewhere in the file. Those values will be read only when needed.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we use a {@code LinkedList} because we will perform frequent additions and removals,
-     * but no random access.</div>
+     * <h4>Implementation note</h4>
+     * We use a {@code LinkedList} because we will perform frequent additions and removals,
+     * but no random access.
      */
     private final LinkedList<DeferredEntry> deferredEntries = new LinkedList<>();
 

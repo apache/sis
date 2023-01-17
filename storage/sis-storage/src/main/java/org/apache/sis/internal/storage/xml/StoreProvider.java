@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.xml;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -41,6 +42,13 @@ public final class StoreProvider extends AbstractProvider {
      * The format name.
      */
     public static final String NAME = "XML";
+
+    /**
+     * The logger used by XML stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.xml");
 
     /**
      * Creates a new provider.
@@ -77,5 +85,13 @@ public final class StoreProvider extends AbstractProvider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new Store(this, connector);
+    }
+
+    /**
+     * {@return the logger used by XML stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

@@ -28,12 +28,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import org.apache.sis.gui.DataViewer;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Threads;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Exceptions;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -49,7 +48,7 @@ import static java.util.logging.Logger.getLogger;
  * Users should not rely on this implementation details.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 @SuppressWarnings("serial")                         // Not intended to be serialized.
@@ -198,6 +197,6 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * @param  e       the exception that interrupted the waiting process.
      */
     private static void interrupted(final String method, final InterruptedException e) {
-        Logging.unexpectedException(getLogger(Modules.APPLICATION), BackgroundThreads.class, method, e);
+        Logging.unexpectedException(LOGGER, BackgroundThreads.class, method, e);
     }
 }

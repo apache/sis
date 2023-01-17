@@ -25,10 +25,9 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
 import javax.xml.bind.annotation.XmlTransient;
@@ -44,13 +43,11 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -63,7 +60,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient
@@ -87,7 +84,7 @@ public final class NTv2 extends AbstractProvider {
      *   <li>No default value</li>
      * </ul>
      */
-    static final ParameterDescriptor<Path> FILE;
+    static final ParameterDescriptor<URI> FILE;
 
     /**
      * The group of all parameters expected by this coordinate operation.
@@ -98,7 +95,7 @@ public final class NTv2 extends AbstractProvider {
         FILE = builder
                 .addIdentifier("8656")
                 .addName("Latitude and longitude difference file")
-                .create(Path.class, null);
+                .create(URI.class, null);
         PARAMETERS = builder
                 .addIdentifier("9615")
                 .addName("NTv2")
@@ -151,38 +148,29 @@ public final class NTv2 extends AbstractProvider {
     }
 
     /**
-     * Returns the grid of the given name. This method returns the cached instance if it still exists,
-     * or load the grid otherwise.
+     * Returns the grid of the given name.
+     * This method returns the cached instance if it still exists, or load the grid otherwise.
      *
      * @param  provider  the provider which is creating a transform.
-     * @param  file      name of the datum shift grid file to load.
+     * @param  file      relative or absolute path of the datum shift grid file to load.
      * @param  version   the expected version (1 or 2).
      */
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
-            final Path file, final int version) throws FactoryException
+            final URI file, final int version) throws FactoryException
     {
-        final Path resolved = DataDirectory.DATUM_CHANGES.resolve(file).toAbsolutePath();
-        DatumShiftGridFile<?,?> grid = DatumShiftGridFile.CACHE.peek(resolved);
-        if (grid == null) {
-            final Cache.Handler<DatumShiftGridFile<?,?>> handler = DatumShiftGridFile.CACHE.lock(resolved);
-            try {
-                grid = handler.peek();
-                if (grid == null) {
-                    try (ReadableByteChannel in = Files.newByteChannel(resolved)) {
-                        DatumShiftGridLoader.startLoading(provider, file);
-                        final Loader loader = new Loader(in, file, version);
-                        grid = loader.readAllGrids();
-                        loader.report(provider);
-                    } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
-                        throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
-                    }
-                    grid = grid.useSharedData();
-                }
-            } finally {
-                handler.putAndUnlock(grid);
+        final URI resolved = Loader.toAbsolutePath(file);
+        return DatumShiftGridFile.getOrLoad(resolved, null, () -> {
+            final DatumShiftGridFile<?,?> grid;
+            try (ReadableByteChannel in = Loader.newByteChannel(resolved)) {
+                DatumShiftGridLoader.startLoading(provider, file);
+                final Loader loader = new Loader(in, file, version);
+                grid = loader.readAllGrids();
+                loader.report(provider);
+            } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
+                throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
             }
-        }
-        return grid.castTo(Angle.class, Angle.class);
+            return grid.useSharedData();
+        }).castTo(Angle.class, Angle.class);
     }
 
 
@@ -321,7 +309,7 @@ public final class NTv2 extends AbstractProvider {
          * @param  version  the expected version (1 or 2).
          * @throws FactoryException if a data record cannot be parsed.
          */
-        Loader(final ReadableByteChannel channel, final Path file, int version) throws IOException, FactoryException {
+        Loader(final ReadableByteChannel channel, final URI file, int version) throws IOException, FactoryException {
             super(channel, ByteBuffer.allocate(4096), file);
             header = new LinkedHashMap<>();
             ensureBufferContains(RECORD_LENGTH);

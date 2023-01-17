@@ -31,7 +31,6 @@ import org.opengis.parameter.InvalidParameterValueException;
 import org.apache.sis.internal.referencing.EPSGParameterDomain;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
@@ -47,7 +46,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * In such case, the error message is given by {@link #message(Map, String, Object)}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 final class Verifier {
@@ -224,9 +223,8 @@ final class Verifier {
                 if (!Semaphores.query(Semaphores.SUSPEND_PARAMETER_CHECK)) {
                     throw new InvalidParameterValueException(message, name, value);
                 } else {
-                    final LogRecord record = new LogRecord(Level.WARNING, message);
-                    record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                    Logging.log(DefaultParameterValue.class, "setValue", record);
+                    Logging.completeAndLog(DefaultParameterValue.LOGGER, DefaultParameterValue.class,
+                                           "setValue", new LogRecord(Level.WARNING, message));
                 }
             }
         }
@@ -284,10 +282,10 @@ final class Verifier {
      * Same as {@link #ensureValidValue(Class, Set, Range, Object)}, used as a fallback when
      * the descriptor is not an instance of {@link DefaultParameterDescriptor}.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * At the difference of {@code ensureValidValue(…, Range, …)}, this method does not need to verify array elements
      * because the type returned by {@link ParameterDescriptor#getMinimumValue()} and {@code getMaximumValue()}
-     * methods (namely {@code Comparable<T>}) does not allow usage with arrays.</div>
+     * methods (namely {@code Comparable<T>}) does not allow usage with arrays.
      *
      * @param convertedValue  the value <em>converted to the units specified by the descriptor</em>.
      *        This is not necessarily the user-provided value.

@@ -874,9 +874,10 @@ search:     for (;;) {
      * The returned view will contain the values from index {@code lower} inclusive to
      * {@code upper} exclusive.
      *
-     * <div class="note"><b>Implementation note:</b> this method delegates its work
+     * <h4>Implementation note</h4>
+     * This method delegates its work
      * <code>{@linkplain #subSampling(int,int,int) subSampling}(lower, 1, upper - lower)</code>.
-     * This method is declared final in order to force subclasses to override {@code subSampling(…)} instead.</div>
+     * This method is declared final in order to force subclasses to override {@code subSampling(…)} instead.
      *
      * @param  lower  index of the first value to be included in the returned view.
      * @param  upper  index after the last value to be included in the returned view.
@@ -1342,9 +1343,10 @@ search:     for (;;) {
     /**
      * Returns a view which contains the values of this vector in reverse order.
      *
-     * <div class="note"><b>Implementation note:</b> this method delegates its work
+     * <h4>Implementation note</h4>
+     * This method delegates its work
      * to <code>{@linkplain #subSampling(int,int,int) subSampling}(size-1, -1, {@linkplain #size() size})</code>.
-     * This method is declared final in order to force subclasses to override {@code subSampling(…)} instead.</div>
+     * This method is declared final in order to force subclasses to override {@code subSampling(…)} instead.
      *
      * @return the vector values in reverse order.
      */

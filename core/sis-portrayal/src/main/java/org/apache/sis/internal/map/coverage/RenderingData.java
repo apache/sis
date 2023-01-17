@@ -29,6 +29,7 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -71,8 +72,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * The {@code RenderedImage} to draw in a {@link PlanarCanvas} together with transforms from pixel coordinates
@@ -104,10 +103,15 @@ import static java.util.logging.Logger.getLogger;
  * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public class RenderingData implements Cloneable {
+    /**
+     * The logger for portrayal.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Modules.PORTRAYAL);
+
     /**
      * The {@value} value, for identifying code that assume two-dimensional objects.
      *
@@ -828,7 +832,7 @@ public class RenderingData implements Cloneable {
      * This method pretends that the warning come from {@link PlanarCanvas} class since it is the public API.
      */
     private static void recoverableException(final Exception e) {
-        Logging.recoverableException(getLogger(Modules.PORTRAYAL), PlanarCanvas.class, "render", e);
+        Logging.recoverableException(LOGGER, PlanarCanvas.class, "render", e);
     }
 
     /**

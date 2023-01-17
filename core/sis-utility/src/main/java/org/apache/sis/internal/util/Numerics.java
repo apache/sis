@@ -35,6 +35,7 @@ import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
 import static java.lang.Math.ulp;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -114,7 +115,9 @@ public final class Numerics extends Static {
      *
      * @see org.apache.sis.internal.referencing.Formulas#LINEAR_TOLERANCE
      * @see org.apache.sis.internal.referencing.Formulas#ANGULAR_TOLERANCE
+     * @see org.apache.sis.referencing.operation.matrix.GeneralMatrix#ZERO_THRESHOLD
      */
+    @Configuration
     public static final double COMPARISON_THRESHOLD = 1E-13;
 
     /**

@@ -42,7 +42,6 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
@@ -51,7 +50,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 
@@ -60,7 +58,7 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
@@ -579,7 +577,7 @@ public final class IdentifiedObjects extends Static {
      * Logs a warning for a non-critical error. The callers should have a fallback.
      */
     private static void warning(final String method, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.REFERENCING), IdentifiedObjects.class, method, e);
+        Logging.recoverableException(CRS.LOGGER, IdentifiedObjects.class, method, e);
     }
 
     /**

@@ -45,11 +45,10 @@ import org.apache.sis.internal.gui.DataStoreOpener;
 import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.Resources;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -72,7 +71,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public class ResourceTree extends TreeView<Resource> {
@@ -467,13 +466,13 @@ public class ResourceTree extends TreeView<Resource> {
      * Reports an ignorable exception in the given method.
      */
     private static void recoverableException(final String method, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
+        Logging.recoverableException(LOGGER, ResourceTree.class, method, e);
     }
 
     /**
      * Reports an unexpected but non-fatal exception in the given method.
      */
     static void unexpectedException(final String method, final Exception e) {
-        Logging.unexpectedException(getLogger(Modules.APPLICATION), ResourceTree.class, method, e);
+        Logging.unexpectedException(LOGGER, ResourceTree.class, method, e);
     }
 }

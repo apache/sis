@@ -43,6 +43,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.util.Callback;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -64,6 +65,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * back to video card memory. I'm not aware of a way to perform direct transfer from AWT to JavaFX.
      * Consequently before to enable this acceleration, we should benchmark to see if it is worth.
      */
+    @Configuration
     private static final boolean NATIVE_ACCELERATION = false;
 
     /**
@@ -79,6 +81,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
     /**
      * Default value of {@link #imageMargin}.
      */
+    @Configuration
     private static final Insets DEFAULT_MARGIN = new Insets(SCROLL_EVENT_SIZE);
 
     /**

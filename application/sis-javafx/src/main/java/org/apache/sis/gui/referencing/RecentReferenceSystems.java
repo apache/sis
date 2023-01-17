@@ -62,11 +62,10 @@ import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.internal.gui.OptionalDataDownloader;
 import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -1078,7 +1077,7 @@ next:       for (int i=0; i<count; i++) {
      */
     protected void errorOccurred(final FactoryException e) {
         OptionalDataDownloader.reportIfInstalling(e);
-        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "getReferenceSystems", e);
+        Logging.recoverableException(LOGGER, RecentReferenceSystems.class, "getReferenceSystems", e);
     }
 
     /**
@@ -1089,6 +1088,6 @@ next:       for (int i=0; i<count; i++) {
      * @param  e  the error that occurred.
      */
     static void errorOccurred(final String caller, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, caller, e);
+        Logging.recoverableException(LOGGER, RecentReferenceSystems.class, caller, e);
     }
 }

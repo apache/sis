@@ -71,7 +71,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -81,7 +80,6 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -106,7 +104,7 @@ import static java.util.logging.Logger.getLogger;
  * then {@link CoordinateOperationFinder} will use its own fallback.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 class CoordinateOperationRegistry {
@@ -1325,17 +1323,16 @@ class CoordinateOperationRegistry {
         if (record == null) {
             record = new LogRecord(Level.WARNING, exception.getLocalizedMessage());
         }
-        record.setLoggerName(Loggers.COORDINATE_OPERATION);
         /*
-         * We usually do not log the stack trace since this method should be invoked only for exceptions
-         * like NoSuchAuthorityCodeException or MissingFactoryResourceException, for which the message
-         * is descriptive enough. But we make a special case for NoninvertibleTransformException since
+         * We usually do not log the stack trace because this method should be invoked only for exceptions
+         * such as NoSuchAuthorityCodeException or MissingFactoryResourceException, for which the message
+         * is descriptive enough. But we make a special case for NoninvertibleTransformException because
          * its cause may have deeper root.
          */
         if (exception instanceof NoninvertibleTransformException) {
             record.setThrown(exception);
         }
-        Logging.log(CoordinateOperationFinder.class, "createOperations", record);
+        Logging.completeAndLog(AbstractCoordinateOperation.LOGGER, CoordinateOperationFinder.class, "createOperations", record);
     }
 
     /**
@@ -1347,7 +1344,7 @@ class CoordinateOperationRegistry {
      * @param  exception  the exception which occurred, or {@code null} if a {@code record} is specified instead.
      */
     static void recoverableException(final String method, final Exception exception) {
-        Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
+        Logging.recoverableException(AbstractCoordinateOperation.LOGGER,
                 CoordinateOperationFinder.class, method, exception);
     }
 }

@@ -16,6 +16,8 @@
  */
 package org.apache.sis.gui.dataset;
 
+import java.io.File;
+import java.util.Optional;
 import java.nio.file.Path;
 import javafx.event.Event;
 import javafx.event.EventType;
@@ -24,10 +26,10 @@ import javafx.event.EventType;
 /**
  * Event sent when a resource is loaded or closed. The {@linkplain #getSource() source}
  * of this event are the {@link ResourceTree} instance on which handlers are registered.
- * The event contains a {@link Path} to the resource opened or closed.
+ * The event contains a {@link File} to the resource opened or closed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see ResourceTree#onResourceLoaded
  * @see ResourceTree#onResourceClosed
@@ -39,7 +41,7 @@ public class ResourceEvent extends Event {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -425980517754215310L;
+    private static final long serialVersionUID = 1363812583271647542L;
 
     /**
      * The type for load events.
@@ -56,12 +58,9 @@ public class ResourceEvent extends Event {
     static final EventType<ResourceEvent> CLOSED = new EventType<>("CLOSED");
 
     /**
-     * Path to the resource being loaded or closed.
-     *
-     * @todo The default implementation provided by the JDK is not serializable.
-     *       We have no workaround at this time.
+     * Path to the resource being opened or closed, or {@code null} if unknown.
      */
-    private final Path path;
+    private final File file;
 
     /**
      * Creates a new event.
@@ -72,15 +71,23 @@ public class ResourceEvent extends Event {
      */
     ResourceEvent(final ResourceTree source, final Path path, final EventType<ResourceEvent> type) {
         super(source, null, type);
-        this.path = path;
+        File f;
+        try {
+            f = path.toFile();
+        } catch (UnsupportedOperationException e) {
+            f = null;
+        }
+        file = f;
     }
 
     /**
-     * Returns the path to the resource being loaded or closed.
+     * Returns the path to the resource being opened or closed.
      *
-     * @return path to the resource being loaded or closed.
+     * @return path to the resource being opened or closed.
+     *
+     * @since 1.4
      */
-    public Path getResourcePath() {
-        return path;
+    public Optional<File> getResourceFile() {
+        return Optional.ofNullable(file);
     }
 }

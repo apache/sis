@@ -28,12 +28,11 @@ import java.lang.annotation.RetentionPolicy;
  * must be in the same class than the annotated method. Transitive dependencies do not
  * need to be declared, but the dependency graph shall not contain cycle.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * {@code ResponsibleParty.individualName} is now deprecated and replaced by the first {@code Individual.name} value
  * found in {@code Responsibility.party} list. Consequently, the {@code DefaultResponsibleParty.getIndividualName()}
  * method is annotated with {@code @Dependencies("getParties")} where {@code getParties()} is a method inherited from
  * the parent class.
- * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

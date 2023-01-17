@@ -33,6 +33,7 @@ import org.apache.sis.util.Characters;
 
 /**
  * Inspects the type of a text file based on the first keyword.
+ * This base class is immutable and thread-safe (but subclasses may not be).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

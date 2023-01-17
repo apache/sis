@@ -492,7 +492,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
     /**
      * Provides the transform equations for the spherical case of the Mercator projection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * this class contains an explicit check for latitude values at a pole. If floating point arithmetic had infinite
      * precision, such checks would not be necessary since the formulas lead naturally to infinite values at poles,
      * which is the correct answer. In practice the infinite value emerges by itself at only one pole, and the other
@@ -506,7 +506,6 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      *       other values we could let the math do their "natural" work.</li>
      *   <li>For φ = -π/2 our arithmetic already produces negative infinity.</li>
      * </ul>
-     * </div>
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  Rueben Schulz (UBC)

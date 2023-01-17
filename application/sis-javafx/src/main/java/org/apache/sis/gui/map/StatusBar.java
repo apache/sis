@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.util.function.Predicate;
 import java.awt.image.RenderedImage;
 import java.beans.PropertyChangeEvent;
@@ -96,10 +95,11 @@ import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.Styles;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
+
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -1679,6 +1679,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * Logs an error considered too minor for reporting on the status bar.
      */
     private static void recoverableException(final String caller, final Exception e) {
-        Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), StatusBar.class, caller, e);
+        Logging.recoverableException(LOGGER, StatusBar.class, caller, e);
     }
 }

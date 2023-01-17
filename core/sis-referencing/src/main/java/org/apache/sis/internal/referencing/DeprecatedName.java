@@ -26,11 +26,10 @@ import org.apache.sis.util.Deprecable;
  * A deprecated name.
  * This is used mostly for names which were used in legacy versions of the EPSG database.
  *
- * <div class="note"><b>Implementation note:</b>
- * this class opportunistically recycles the {@linkplain #getDescription() description} property into a
- * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)}
- * and {@link #hashCode()} implementations without adding code in this class for taking in account a
- * new field.</div>
+ * <h2>Implementation note</h2>
+ * This class opportunistically recycles the {@linkplain #getDescription() description} property into a
+ * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)} and
+ * {@link #hashCode()} implementations without adding code in this class for taking in account a new field.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7

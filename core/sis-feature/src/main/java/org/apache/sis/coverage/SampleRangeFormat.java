@@ -26,6 +26,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.util.resources.Vocabulary;
@@ -44,6 +45,7 @@ final class SampleRangeFormat extends RangeFormat {
      * Maximum value for {@link #numFractionDigits}. This is the number
      * of significant digits to allow when formatting real values.
      */
+    @Configuration
     private static final int MAX_DIGITS = 6;
 
     /**

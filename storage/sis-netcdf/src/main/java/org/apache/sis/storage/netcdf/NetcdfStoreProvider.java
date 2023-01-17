@@ -17,6 +17,7 @@
 package org.apache.sis.storage.netcdf;
 
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -65,7 +66,7 @@ import org.apache.sis.util.Version;
  * the part of the caller. However, the {@link NetcdfStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see NetcdfStore
  *
@@ -444,8 +445,7 @@ public class NetcdfStoreProvider extends DataStoreProvider {
             }
             final LogRecord record = Resources.forLocale(null).getLogRecord(severity, Resources.Keys.CanNotUseUCAR);
             record.setThrown(cause);
-            record.setLoggerName(Modules.NETCDF);
-            Logging.log(NetcdfStoreProvider.class, open ? "open" : "probeContent", record);
+            Logging.completeAndLog(Decoder.LOGGER, NetcdfStoreProvider.class, open ? "open" : "probeContent", record);
         }
     }
 
@@ -458,5 +458,13 @@ public class NetcdfStoreProvider extends DataStoreProvider {
         canOpenFromPath = null;
         createFromUCAR  = null;
         createFromPath  = null;
+    }
+
+    /**
+     * {@return the logger used by netCDF stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return Decoder.LOGGER;
     }
 }

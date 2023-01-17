@@ -31,7 +31,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.ArgumentChecks;
@@ -39,7 +38,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.feature.Geometries.LOGGER;
 
 
 /**
@@ -52,7 +51,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 public final class JTS extends Static {
@@ -217,7 +216,7 @@ public final class JTS extends Static {
                 bbox.setBounds(env);
             } catch (TransformException ex) {
                 bbox = null;
-                Logging.ignorableException(getLogger(Loggers.GEOMETRY), JTS.class, "transform", ex);
+                Logging.ignorableException(LOGGER, JTS.class, "transform", ex);
             }
         }
         return CRS.findOperation(sourceCRS, targetCRS, bbox);
