@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URI;
 import java.net.URL;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -423,12 +424,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     text = ((InternationalString) element).toString(getLocale());
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
-            } else if (element instanceof Throwable) {
-                String message = Exceptions.getLocalizedMessage((Throwable) element, getLocale());
-                if (message == null) {
-                    message = Classes.getShortClassName(element);
-                }
-                replacement = message;
+            } else if (element instanceof URI) {
+                replacement = ((URI) element).getPath();        // For decoding encoded characters.
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof CodeList<?>) {
@@ -442,6 +439,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 replacement = s;
             } else if (element.getClass().isArray()) {
                 replacement = Utilities.deepToString(element);
+            } else if (element instanceof Throwable) {
+                String message = Exceptions.getLocalizedMessage((Throwable) element, getLocale());
+                if (message == null) {
+                    message = Classes.getShortClassName(element);
+                }
+                replacement = message;
             }
             /*
              * No need to check for Numbers or Dates instances, since they are

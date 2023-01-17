@@ -2732,8 +2732,12 @@ next:                   while (r.next()) {
                 String reference;
                 if (Double.isNaN(value)) {
                     /*
-                     * If no numeric values were provided in the database, then the values should be
-                     * in some external file. It may be a file in the $SIS_DATA/DatumChanges directory.
+                     * If no numeric value was provided in the database, then the values should be in
+                     * an external file. It may be a file in the "$SIS_DATA/DatumChanges" directory.
+                     * The reference file should be relative and _not_ encoded for valid URI syntax.
+                     * The encoding will be applied by invoking an `URI` multi-argument constructor.
+                     * Note that we must use a multi-arguments constructor, not URI(String), because
+                     * the latter assumes an encoded string (which is not the case in EPSG database).
                      */
                     reference = getString(operation, result, 3);
                 } else {
@@ -2748,13 +2752,14 @@ next:                   while (r.next()) {
                 }
                 try {
                     if (reference != null) {
-                        param.setValue(reference);
+                        param.setValue(new URI(null, reference, null));     // See above comment.
                     } else if (unit != null) {
                         param.setValue(value, unit);
                     } else {
                         param.setValue(value);
                     }
-                } catch (RuntimeException exception) {  // Catch InvalidParameterValueException, ArithmeticException and others.
+                } catch (RuntimeException | URISyntaxException exception) {
+                    // Catch InvalidParameterValueException, ArithmeticException and others.
                     throw new FactoryDataException(error().getString(Errors.Keys.CanNotSetParameterValue_1, name), exception);
                 }
             }
