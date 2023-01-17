@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -39,6 +40,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -81,7 +83,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
@@ -91,6 +93,11 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
 {
+    /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+
     /**
      * Maximum buffer size when creating temporary arrays. Must not be too big, otherwise the
      * cost of allocating the buffer may be greater than the benefit of transforming array of

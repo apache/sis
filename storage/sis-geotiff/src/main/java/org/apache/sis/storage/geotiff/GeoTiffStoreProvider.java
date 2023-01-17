@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.logging.Logger;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.Version;
 import org.apache.sis.storage.Aggregate;
@@ -42,7 +43,7 @@ import org.apache.sis.internal.util.Constants;
  * the part of the caller. However, the {@link GeoTiffStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see GeoTiffStore
  *
@@ -62,6 +63,13 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
      * The TIFF version.
      */
     private static final Version VERSION = new Version("6.0");
+
+    /**
+     * The logger used by GeoTIFF stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.geotiff");
 
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
@@ -137,5 +145,13 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new GeoTiffStore(this, connector);
+    }
+
+    /**
+     * {@return the logger used by GeoTIFF stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

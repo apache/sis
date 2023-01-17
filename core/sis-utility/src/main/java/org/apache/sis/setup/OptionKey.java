@@ -349,7 +349,7 @@ public class OptionKey<T> implements Serializable {
             /*
              * This may happen if we are deserializing a stream produced by a more recent SIS library
              * than the one running in this JVM. This class should be robust to this situation, since
-             * we override the 'equals' and 'hashCode' methods. This option is likely to be ignored,
+             * we override the `equals` and `hashCode` methods. This option is likely to be ignored,
              * but options are expected to be optional...
              */
             Logging.recoverableException(getLogger(Modules.UTILITIES), OptionKey.class, "readResolve", e);

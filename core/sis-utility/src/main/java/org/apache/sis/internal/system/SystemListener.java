@@ -18,6 +18,7 @@ package org.apache.sis.internal.system;
 
 import java.util.Arrays;
 import java.util.EventListener;
+import java.util.logging.Logger;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -27,10 +28,15 @@ import org.apache.sis.util.ArraysExt;
  * to keep the SIS library OSGi-independent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.3
  */
 public abstract class SystemListener implements EventListener {
+    /**
+     * The logger for system events.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.SYSTEM);
+
     /**
      * The listeners, or {@code null} if none.
      */

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -35,7 +36,6 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -49,7 +49,7 @@ import static org.apache.sis.internal.referencing.provider.DatumShiftGridLoader.
  * It will also indirectly tests {@link DatumShiftGridGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  *
@@ -79,7 +79,7 @@ public final class NTv2Test extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point. The point used for
      * this test is given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
+     * @throws URISyntaxException if the URL to the test file is not valid.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
@@ -103,19 +103,19 @@ public final class NTv2Test extends DatumShiftTestCase {
      * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
-    public static void testRGF93(final Path file) throws FactoryException, TransformException {
+    public static void testRGF93(final URI file) throws FactoryException, TransformException {
         testRGF93(file, -19800, 36000, 147600, 187200);
     }
 
     /**
-     * Implementation of {@link #testLoader()} and {@link #testRGF93(Path)}.
+     * Implementation of {@link #testLoader()} and {@link #testRGF93(URI)}.
      *
      * @param  xmin  negative of value of {@code "W_LONG"} record.
      * @param  xmax  negative of value of {@code "E_LONG"} record.
      * @param  ymin  value of the {@code "S_LAT"} record.
      * @param  ymax  value of the {@code "N_LAT"} record.
      */
-    private static void testRGF93(final Path file, final double xmin, final double xmax,
+    private static void testRGF93(final URI file, final double xmin, final double xmax,
             final double ymin, final double ymax) throws FactoryException, TransformException
     {
         final double cellSize = 360;
@@ -176,14 +176,15 @@ public final class NTv2Test extends DatumShiftTestCase {
      * to be present in the {@code $SIS_DATA/DatumChanges} directory. This test is executed only if the
      * {@link #RUN_EXTENSIVE_TESTS} flag is set.
      *
+     * @throws URISyntaxException if the URL to the test file is not valid.
      * @throws FactoryException if an error occurred while loading or computing the grid.
      * @throws TransformException if an error occurred while computing the envelope or testing the point.
      */
     @Test
-    public void testMultiGrids() throws FactoryException, TransformException {
+    public void testMultiGrids() throws URISyntaxException, FactoryException, TransformException {
         assumeTrue(RUN_EXTENSIVE_TESTS);
-        final Path file = DataDirectory.DATUM_CHANGES.resolve(Paths.get(MULTIGRID_TEST_FILE));
-        assumeTrue(Files.exists(file));
+        final URI file = DatumShiftGridLoader.toAbsolutePath(new URI(MULTIGRID_TEST_FILE));
+        assumeTrue(Files.exists(Paths.get(file)));
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should contain many grids.", DatumShiftGridGroup.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());

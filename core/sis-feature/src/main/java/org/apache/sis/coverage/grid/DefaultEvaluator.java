@@ -42,12 +42,9 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 // Branch-dependent imports
 import org.apache.sis.coverage.CannotEvaluateException;
@@ -67,7 +64,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see GridCoverage#evaluator()
  *
@@ -652,6 +649,6 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @param  exception  the exception that occurred.
      */
     private static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(getLogger(Modules.RASTER), DefaultEvaluator.class, caller, exception);
+        Logging.recoverableException(GridExtent.LOGGER, DefaultEvaluator.class, caller, exception);
     }
 }

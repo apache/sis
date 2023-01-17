@@ -21,7 +21,6 @@ import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
-import java.util.logging.Logger;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.GridPane;
@@ -52,7 +51,6 @@ import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.gui.Widget;
@@ -64,6 +62,8 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
+
 
 /**
  * A control for selecting a two-dimensional slice in a grid extent having more than 2 dimensions.
@@ -71,7 +71,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * a slider for selecting a slice on the time axis.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public class GridSliceSelector extends Widget {
@@ -387,7 +387,7 @@ public class GridSliceSelector extends Widget {
                     }
                 }
             } catch (FactoryException | ClassCastException e) {
-                Logging.ignorableException(Logger.getLogger(Modules.APPLICATION), GridSliceSelector.class,
+                Logging.ignorableException(LOGGER, GridSliceSelector.class,
                         "setGridGeometry", e);              // "gridGeometry.set(…)" is the public API.
             }
             /*

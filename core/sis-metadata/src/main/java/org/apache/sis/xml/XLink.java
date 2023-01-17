@@ -29,9 +29,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Loggers;
-
-import static java.util.logging.Logger.getLogger;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -74,7 +72,7 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
@@ -864,7 +862,7 @@ public class XLink implements Serializable {
                 }
             } catch (NoSuchFieldException e) {
                 // Should never happen with Enums. But if it happen anyway, this is not a fatal error.
-                Logging.unexpectedException(getLogger(Loggers.XML), XLink.class, "toString", e);
+                Logging.unexpectedException(Context.LOGGER, XLink.class, "toString", e);
             }
             buffer.append(label).append("=\"").append(value).append('"');
         }

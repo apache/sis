@@ -29,6 +29,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -47,6 +48,7 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<AbstractFeat
      *
      * @see FeatureList#nextPageLoader
      */
+    @Configuration
     private static final int PAGE_SIZE = 100;
 
     /**

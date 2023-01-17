@@ -36,6 +36,7 @@ import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.Workaround;
+import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 import static org.apache.sis.math.MathFunctions.asinh;
@@ -117,6 +118,7 @@ public class TransverseMercator extends NormalizedProjection {
      *
      * @see #identityEquals(double, double)
      */
+    @Debug
     private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**

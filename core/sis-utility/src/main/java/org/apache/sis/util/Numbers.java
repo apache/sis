@@ -244,7 +244,7 @@ public final class Numbers extends Static {
      * @param  value  the value to return as a long integer.
      * @return the value rounded to nearest long integer.
      * @throws NullPointerException if the given number is {@code null}.
-     * @throws ArithmeticException if the value can not be represented as a long integer.
+     * @throws ArithmeticException if the value cannot be represented as a long integer.
      *
      * @see Math#round(double)
      * @see BigDecimal#longValueExact()

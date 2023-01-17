@@ -30,12 +30,10 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.WraparoundAxesFinder;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -47,7 +45,7 @@ import static java.util.logging.Logger.getLogger;
  * <p>{@code WraparoundAdjustment} instances are not thread-safe.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public class WraparoundAdjustment {
@@ -190,7 +188,7 @@ public class WraparoundAdjustment {
             geographicDomainKnown = true;                       // Shall be set even in case of failure.
             geographicDomain = ReferencingServices.getInstance().setBounds(domainOfValidity, null, null);
         } catch (TransformException e) {
-            Logging.ignorableException(getLogger(Loggers.COORDINATE_OPERATION), WraparoundAdjustment.class, "<init>", e);
+            Logging.ignorableException(Envelopes.LOGGER, WraparoundAdjustment.class, "<init>", e);
             // No more attempt will be done.
         }
         try {

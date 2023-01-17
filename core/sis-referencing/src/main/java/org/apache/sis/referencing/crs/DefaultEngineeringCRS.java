@@ -293,7 +293,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * Used by JAXB only (invoked by reflection).
      * Only one of {@code getFooCS()} methods can return a non-null value.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
      *
      * {@snippet lang="java" :
@@ -313,7 +313,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * }
      *
      * However, our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
-     * for an unknown reason, the unmarshalled CS object is empty.</div>
+     * for an unknown reason, the unmarshalled CS object is empty.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */

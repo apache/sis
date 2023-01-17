@@ -41,6 +41,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -60,14 +61,17 @@ import org.apache.sis.util.iso.DefaultNameFactory;
  * Synchronizations are caller's responsibility.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public abstract class Decoder extends ReferencingFactoryContainer implements Closeable {
     /**
      * The logger to use for messages other than warnings specific to the file being read.
+     * This is rarely used directly because {@code listeners.getLogger()} should be preferred.
+     *
+     * @see #listeners
      */
-    static final Logger LOGGER = Logger.getLogger(Modules.NETCDF);
+    public static final Logger LOGGER = Logger.getLogger(Modules.NETCDF);
 
     /**
      * The format name to use in error message. We use lower-case "n" because it seems to be what the netCDF community uses.
@@ -508,13 +512,11 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     final void performance(final Class<?> caller, final String method, final short resourceKey, long time) {
         time = System.nanoTime() - time;
         final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
-        if (LOGGER.isLoggable(level)) {
+        final Logger logger = listeners.getLogger();
+        if (logger.isLoggable(level)) {
             final LogRecord record = resources().getLogRecord(level, resourceKey,
                     getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
-            record.setLoggerName(Modules.NETCDF);
-            record.setSourceClassName(caller.getCanonicalName());
-            record.setSourceMethodName(method);
-            LOGGER.log(record);
+            Logging.completeAndLog(logger, caller, method, record);
         }
     }
 

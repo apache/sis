@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
+import java.util.logging.Logger;
 import java.time.Instant;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -60,7 +61,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.MathFunctions;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 
 
@@ -100,7 +100,7 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.metadata.iso.extent.Extents
  * @see CRS
@@ -108,6 +108,11 @@ import static org.apache.sis.util.StringBuilders.trimFractionalPart;
  * @since 0.3
  */
 public final class Envelopes extends Static {
+    /**
+     * The logger for geometry operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.GEOMETRY);
+
     /**
      * Fraction of the axis span to accept as close enough to an envelope boundary. This is used for coordinates
      * that are suppose to be on a boundary, for checking if it is really on the boundary side where it should be.
@@ -272,7 +277,7 @@ public final class Envelopes extends Static {
                      * Note: we may succeed to transform `source` and fail to transform `target` to geographic bounding box,
                      * but the opposite is unlikely because `source` should not have less dimensions than `target`.
                      */
-                    Logging.recoverableException(getLogger(Loggers.GEOMETRY), Envelopes.class, "findOperation", e);
+                    Logging.recoverableException(LOGGER, Envelopes.class, "findOperation", e);
                 }
                 return CRS.findOperation(sourceCRS, targetCRS, areaOfInterest);
             }
@@ -285,7 +290,7 @@ public final class Envelopes extends Static {
      * Those exceptions must be minor enough that they can be silently ignored in most cases.
      */
     static void recoverableException(final Class<? extends Static> caller, final TransformException exception) {
-        Logging.recoverableException(getLogger(Loggers.GEOMETRY), caller, "transform", exception);
+        Logging.recoverableException(LOGGER, caller, "transform", exception);
     }
 
     /**

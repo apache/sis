@@ -75,6 +75,7 @@ import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.internal.referencing.WKTKeywords;
@@ -117,12 +118,14 @@ public class Formatter implements Localized {
      * Accuracy of geographic bounding boxes, in number of fraction digits.
      * We use the accuracy recommended by ISO 19162.
      */
+    @Configuration
     static final int BBOX_ACCURACY = 2;
 
     /**
      * Maximal accuracy of vertical extents, in number of fraction digits.
      * The value used here is arbitrary and may change in any future SIS version.
      */
+    @Configuration
     private static final int VERTICAL_ACCURACY = 9;
 
     /**

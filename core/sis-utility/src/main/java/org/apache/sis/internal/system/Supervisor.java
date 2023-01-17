@@ -37,7 +37,6 @@ import javax.management.InstanceAlreadyExistsException;
 import java.lang.management.ManagementFactory;
 
 import org.apache.sis.setup.About;
-import org.apache.sis.util.Configuration;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
@@ -51,7 +50,7 @@ import org.apache.sis.util.collection.TreeTable;
  * eventually perform some operations like clearing a cache.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.3
  */
 public final class Supervisor extends StandardMBean implements SupervisorMBean {
@@ -59,6 +58,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      * Whatever JMX agent is enabled. Setting this variable to {@code false} allows the
      * Java compiler to omit any dependency to this {@code Supervisor} class.
      */
+    @Configuration
     static final boolean ENABLED = false;
 
     /**
@@ -81,7 +81,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      * and the MBean will not be registered. This method does not propagate the exception
      * because the MBean is not a mandatory part of SIS library.</p>
      */
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.INTERNAL)
     public static synchronized void register() {
         if (name == null) {
             name = ObjectName.WILDCARD;                         // In case of failure.
@@ -100,8 +100,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
             } catch (SecurityException e) {
                 record = new LogRecord(Level.CONFIG, e.toString());
             }
-            record.setLoggerName(Loggers.SYSTEM);
-            Logging.log(Supervisor.class, "register", record);
+            Logging.completeAndLog(SystemListener.LOGGER, Supervisor.class, "register", record);
         }
     }
 
@@ -112,7 +111,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
      *
      * @throws JMException if an error occurred during unregistration.
      */
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.INTERNAL)
     static synchronized void unregister() throws JMException {
         final ObjectName n = name;
         if (n != null) {

@@ -44,7 +44,6 @@ import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
@@ -53,8 +52,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.SimpleInternationalString;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -311,7 +308,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             code = parsed.localCode;
             code = parsed.isNumeric ? format(Integer.parseInt(code)) : format(code);
         } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
-            Logging.ignorableException(getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
+            Logging.ignorableException(LOGGER, CommonAuthorityFactory.class, "reformat", e);
             return null;
         }
         return code;

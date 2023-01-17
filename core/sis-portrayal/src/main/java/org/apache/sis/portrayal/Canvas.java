@@ -122,13 +122,14 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * (typically) the center of the display area, but also to specify which slice to select in all dimensions
  * not shown by the display device.</p>
  *
- * <div class="note"><b>Example:</b> if some data have (<var>x</var>,<var>y</var>,<var>z</var>) dimensions and
+ * <h3>Example</h3>
+ * If some data have (<var>x</var>,<var>y</var>,<var>z</var>) dimensions and
  * other data have (<var>x</var>,<var>y</var>,<var>t</var>) dimensions, then the point of interest shall contain
  * coordinate values for at least all of the (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) dimensions
  * (i.e. it must be 4-dimensional, even if all data in this example are 3-dimensional). If the display device
  * is a two-dimensional screen showing map in the (<var>x</var>,<var>y</var>) dimensions (horizontal plane),
  * then the point of interest defines the <var>z</var> value (elevation or depth) and the <var>t</var> value
- * (date and time) of the slice to show.</div>
+ * (date and time) of the slice to show.
  *
  * <h2>Display device size</h2>
  * The geographic extent of data to be rendered is constrained by the zoom level and the display device size.

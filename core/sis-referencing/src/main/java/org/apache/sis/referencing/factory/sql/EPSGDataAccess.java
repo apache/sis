@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -117,7 +118,6 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
@@ -162,7 +162,7 @@ import org.apache.sis.internal.referencing.ServicesForMetadata;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -171,6 +171,11 @@ import org.apache.sis.internal.referencing.ServicesForMetadata;
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
+    /**
+     * The logger for factory operation.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
+
     /**
      * The vertical datum type, which is fixed to a hard-coded value for all vertical datum for now.
      * Note that vertical datum type is no longer part of ISO 19111:2007.
@@ -494,7 +499,7 @@ addURIs:    for (int i=0; ; i++) {
                     r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
                     // May happen if there is spaces in the URI.
-                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, "getAuthority", exception);
+                    Logging.recoverableException(LOGGER, EPSGDataAccess.class, "getAuthority", exception);
                 }
                 r.setFunction(function);
                 r.setDescription(description);
@@ -1097,8 +1102,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         if (!quiet) {
             LogRecord record = Resources.forLocale(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
                     Constants.EPSG + Constants.DEFAULT_SEPARATOR + code, replacedBy, reason);
-            record.setLoggerName(Loggers.CRS_FACTORY);
-            Logging.log(EPSGDataAccess.class, method, record);
+            Logging.completeAndLog(LOGGER, EPSGDataAccess.class, method, record);
         }
         return (String) replacedBy;
     }
@@ -1973,8 +1977,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         // Log a warning and create the ellipsoid using the inverse flattening.
                         final LogRecord record = resources().getLogRecord(Level.WARNING,
                                 Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
-                        record.setLoggerName(Loggers.CRS_FACTORY);
-                        Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
+                        Logging.completeAndLog(LOGGER, EPSGDataAccess.class, "createEllipsoid", record);
                     }
                     ellipsoid = owner.datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
                 }
@@ -3339,7 +3342,7 @@ next:                   while (r.next()) {
      * @param exception  the exception to log.
      */
     private static void unexpectedException(final String method, final Exception exception) {
-        Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, method, exception);
+        Logging.unexpectedException(LOGGER, EPSGDataAccess.class, method, exception);
     }
 
     /**

@@ -128,11 +128,11 @@ public class LinearTransformBuilder extends TransformBuilder {
      * Example: {x[], y[], z[]}.
      * This is {@code null} if not yet specified.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we could use a flat array with (x₀, y₀), (x₁, y₁), (x₂, y₂), <i>etc.</i> coordinate tuples instead.
+     * <h4>Implementation note</h4>
+     * We could use a flat array with (x₀, y₀), (x₁, y₁), (x₂, y₂), <i>etc.</i> coordinate tuples instead.
      * Such flat array would be more convenient for some coordinate conversions with {@link MathTransform}.
      * But using array of arrays is more convenient for other calculations working on one dimension at time,
-     * make data more local for CPU, and also allows handling of more points.</div>
+     * make data more local for CPU, and also allows handling of more points.
      */
     private double[][] targets;
 

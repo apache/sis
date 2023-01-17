@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.util.Collection;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.Unmarshaller;
@@ -73,7 +74,6 @@ import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 
@@ -105,7 +105,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
@@ -127,6 +127,11 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 1237358357729193885L;
+
+    /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
 
     /**
      * The source CRS, or {@code null} if not available.
@@ -896,8 +901,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                                                                        this.getTargetCRS().getCoordinateSystem()));
                             tr2 = MathTransforms.concatenate(before, tr2, after);
                         } catch (IncommensurableException | RuntimeException e) {
-                            Logging.ignorableException(getLogger(Loggers.COORDINATE_OPERATION),
-                                    AbstractCoordinateOperation.class, "equals", e);
+                            Logging.ignorableException(LOGGER, AbstractCoordinateOperation.class, "equals", e);
                         }
                         if (deepEquals(tr1, tr2, mode)) return true;
                         assert !debug || deepEquals(tr1, tr2, ComparisonMode.DEBUG);        // For locating the mismatch.

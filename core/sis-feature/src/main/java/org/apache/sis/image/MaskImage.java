@@ -24,10 +24,9 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
 
 
 /**
@@ -35,7 +34,7 @@ import static java.util.logging.Logger.getLogger;
  * This is the implementation of {@value ResampledImage#MASK_KEY} property value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see ResampledImage#getProperty(String)
  * @see ResampledImage#MASK_KEY
@@ -61,7 +60,7 @@ final class MaskImage extends SourceAlignedImage {
             converter = ((Visualization.InterpConvert) image.interpolation).converter.inverse();
         } catch (NoninvertibleTransformException e) {
             // ResampledImage.getProperty("org.apache.sis.Mask") is the public caller of this constructor.
-            Logging.unexpectedException(getLogger(Modules.RASTER), ResampledImage.class, "getProperty", e);
+            Logging.unexpectedException(LOGGER, ResampledImage.class, "getProperty", e);
         }
         this.converter = converter;
     }

@@ -16,12 +16,11 @@
  */
 package org.apache.sis.image;
 
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.internal.system.Modules;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -60,12 +59,12 @@ enum ErrorAction implements ErrorHandler {
             final LogRecord record = details.getDescription();
             if (record != null) {
                 if (this == LOG) {
-                    String logger = record.getLoggerName();
-                    if (logger == null) {
-                        logger = Modules.RASTER;
-                        record.setLoggerName(logger);
+                    String loggerName = record.getLoggerName();
+                    if (loggerName == null) {
+                        loggerName = Modules.RASTER;
+                        record.setLoggerName(loggerName);
                     }
-                    getLogger(logger).log(record);
+                    Logger.getLogger(loggerName).log(record);
                 } else {
                     final Throwable ex = record.getThrown();
                     if (ex instanceof Error) {

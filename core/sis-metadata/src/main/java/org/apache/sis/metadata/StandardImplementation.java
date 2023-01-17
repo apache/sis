@@ -18,20 +18,20 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.util.logging.Logger;
 import java.io.ObjectStreamException;
 import org.opengis.annotation.UML;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
  * Information about an Apache SIS metadata standard implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 final class StandardImplementation extends MetadataStandard {
@@ -39,6 +39,11 @@ final class StandardImplementation extends MetadataStandard {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 855786625369724248L;
+
+    /**
+     * The logger for metadata.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.METADATA);
 
     /**
      * The root packages for metadata implementations, or {@code null} if none.
@@ -64,12 +69,12 @@ final class StandardImplementation extends MetadataStandard {
     /**
      * Implementations for a given interface, computed when first needed then cached.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * In the particular case of {@code Class} keys, {@code IdentityHashMap} and {@code HashMap} have identical
      * behavior since {@code Class} is final and does not override the {@code equals(Object)} and {@code hashCode()}
      * methods. The {@code IdentityHashMap} Javadoc claims that it is faster than the regular {@code HashMap}.
      * But maybe the most interesting property is that it allocates less objects since {@code IdentityHashMap}
-     * implementation doesn't need the chain of objects created by {@code HashMap}.</div>
+     * implementation doesn't need the chain of objects created by {@code HashMap}.
      */
     private final transient Map<Class<?>,Class<?>> implementations;     // written by reflection on deserialization.
 
@@ -151,8 +156,7 @@ final class StandardImplementation extends MetadataStandard {
                         try {
                             candidate = Class.forName(classname);
                         } catch (ClassNotFoundException e) {
-                            Logging.recoverableException(getLogger(Modules.METADATA),
-                                    MetadataStandard.class, "getImplementation", e);
+                            Logging.recoverableException(LOGGER, MetadataStandard.class, "getImplementation", e);
                             length = p.length();
                             continue;
                         }

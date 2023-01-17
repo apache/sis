@@ -35,7 +35,6 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -78,7 +77,7 @@ import org.apache.sis.util.Classes;
  * if they intent to cache {@code IdentifiedObjectSet} instances.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @param <T>  the type of objects to be included in this set.
  *
@@ -299,13 +298,12 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                 }
                 final LogRecord record = Messages.getResources(getLocale()).getLogRecord(Level.WARNING,
                         Messages.Keys.CanNotInstantiateForIdentifier_3, type, code, getCause(exception));
-                record.setLoggerName(Loggers.CRS_FACTORY);
-                Logging.log(IdentifiedObjectSet.class, "createObject", record);
+                Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER, IdentifiedObjectSet.class, "createObject", record);
             }
             synchronized (objects) {
                 if (success) {
                     /*
-                     * The check for 'containsKey' is a paranoiac check in case the element has been removed
+                     * The check for `containsKey` is a paranoiac check in case the element has been removed
                      * in another thread while we were creating the object. This is likely to be unnecessary
                      * in the vast majority of cases where the set of codes is never modified after this set
                      * has been published. However if someone decided to do such concurrent modifications,

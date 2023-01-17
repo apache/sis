@@ -80,8 +80,8 @@ abstract class AbstractLinearTransform extends AbstractMathTransform implements 
         for (int i=0; i<elements.length; i++) {
             final double element = elements[i];
             if (element != 0) {
-                final int vi = (int) element;           // Check if we can store as integer.
-                numbers[i] = (vi == element) ? Integer.valueOf(vi) : Double.valueOf(element);
+                final int ie = (int) element;           // Check if we can store as integer.
+                numbers[i] = (ie == element) ? Integer.valueOf(ie) : Double.valueOf(element);
             }
         }
         return numbers;

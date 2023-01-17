@@ -64,7 +64,7 @@ public final class FileCacheByteChannelTest extends TestCase {
          *
          * @param  test  a name to use for identifying the test in error messages.
          * @param  rg    generator of random numbers for controlling the behavior of this channel.
-         * @throws IOException if the temporary file can not be created.
+         * @throws IOException if the temporary file cannot be created.
          */
         Implementation(final String test, final Random rg) throws IOException {
             super("Test-");

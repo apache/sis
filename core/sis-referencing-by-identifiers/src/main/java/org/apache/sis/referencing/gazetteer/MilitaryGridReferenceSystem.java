@@ -76,7 +76,6 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
-
 // Branch-dependent imports
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 
@@ -135,7 +134,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * are not thread-safe; it is recommended to create a new {@code Coder} instance for each thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see CommonCRS#universal(double, double)
  * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>

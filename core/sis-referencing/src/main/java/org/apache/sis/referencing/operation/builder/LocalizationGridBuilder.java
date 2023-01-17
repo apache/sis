@@ -38,6 +38,7 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Vocabulary;
@@ -130,6 +131,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * precision has been specified. The {@code sourceToGrid} transform shall not be applied on this value.
      * This default precision may change in any future SIS version.
      */
+    @Configuration
     private static final double DEFAULT_PRECISION = 1E-7;
 
     /**

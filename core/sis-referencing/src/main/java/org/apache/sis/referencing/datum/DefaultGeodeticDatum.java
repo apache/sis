@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.time.Instant;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -51,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.io.wkt.Formatter;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -127,7 +127,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
@@ -142,6 +142,13 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 })
 @XmlRootElement(name = "GeodeticDatum")
 public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum {
+    /**
+     * The logger for coordinate operations.
+     *
+     * @see #getPositionVectorTransformation(GeodeticDatum, Extent)
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -299,7 +306,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         ellipsoid     = datum.getEllipsoid();
         primeMeridian = datum.getPrimeMeridian();
         bursaWolf     = (datum instanceof DefaultGeodeticDatum) ? ((DefaultGeodeticDatum) datum).bursaWolf : null;
-        // No need to clone the 'bursaWolf' array since it is read only.
+        // No need to clone the `bursaWolf` array since it is read only.
     }
 
     /**
@@ -440,10 +447,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 /*
                  * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
-                 * returning 'null' is allowed by this method's contract.
+                 * returning `null` is allowed by this method's contract.
                  */
-                Logging.unexpectedException(getLogger(Loggers.COORDINATE_OPERATION),
-                        DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                Logging.unexpectedException(LOGGER, DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
             /*
              * No direct tranformation found. Search for a path through an intermediate datum.
@@ -476,8 +482,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                                     Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
                                     return AnnotatedMatrix.indirect(m, useAOI);
                                 } catch (NoninvertibleMatrixException e) {
-                                    Logging.unexpectedException(getLogger(Loggers.COORDINATE_OPERATION),
-                                            DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                                    Logging.unexpectedException(LOGGER, DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
                                 }
                             }
                         }
@@ -709,7 +714,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         bursaWolf = null;
         /*
          * Ellipsoid and PrimeMeridian are mandatory for SIS working. We do not verify their presence here
-         * (because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * (because the verification would have to be done in an `afterMarshal(…)` method and throwing an
          * exception in that method causes the whole unmarshalling to fail). But the CD_GeodeticDatum
          * adapter does some verifications.
          */

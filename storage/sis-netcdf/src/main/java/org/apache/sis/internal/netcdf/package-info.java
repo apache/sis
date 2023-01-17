@@ -38,7 +38,7 @@
  * consistent vocabulary (more similar to the rest of Apache SIS).</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 package org.apache.sis.internal.netcdf;

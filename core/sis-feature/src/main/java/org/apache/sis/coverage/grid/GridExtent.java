@@ -22,6 +22,7 @@ import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
+import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -68,8 +69,6 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * A range of grid coverage coordinates, also known as "grid envelope".
@@ -100,6 +99,12 @@ public class GridExtent implements Serializable, LenientComparable {
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4717353677844056017L;
+
+    /**
+     * The logger for operations on grid coverages. Declared in this {@code GridExtent}
+     * class because it is among the first ones in the chain of dependencies.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.RASTER);
 
     /**
      * The dimension name types for given coordinate system axis directions.
@@ -1165,7 +1170,7 @@ public class GridExtent implements Serializable, LenientComparable {
             }
         } catch (FactoryException e) {
             // "toEnvelope" is the closest public method that may invoke this method.
-            Logging.recoverableException(getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
+            Logging.recoverableException(LOGGER, GridExtent.class, "toEnvelope", e);
         }
     }
 

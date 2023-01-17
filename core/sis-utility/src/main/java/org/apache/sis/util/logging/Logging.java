@@ -28,6 +28,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -57,6 +58,7 @@ public final class Logging extends Static {
      * Consequently, we will ignore the stack traces of recoverable failures, but will report
      * stack traces that may impact performance, configuration, or correctness.</p>
      */
+    @Configuration
     private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;
 
     /**
@@ -86,33 +88,56 @@ public final class Logging extends Static {
 
     /**
      * Logs the given record to the logger associated to the given class.
-     * This convenience method performs the following steps:
      *
-     * <ul>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceClassName(String) set the source class name}
-     *       to the {@linkplain Class#getCanonicalName() canonical name} of the given class;</li>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceMethodName(String) set the source method name}
-     *       to the given value;</li>
-     *   <li>Get the logger for the {@linkplain LogRecord#getLoggerName() logger name} if specified,
-     *       or for the {@code classe} package name otherwise;</li>
-     *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name} of the given record,
-     *       if not already set;</li>
-     *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record.</li>
-     * </ul>
+     * @deprecated Replaced by {@code completeAndLog(null, record, classe, method)} for encouraging
+     * the use of static {@link Logger} constants. Also the new name makes clear that the record is
+     * modified.
      *
      * @param  classe  the class to report as the source of the logging message.
      * @param  method  the method to report as the source of the logging message.
      * @param  record  the record to log.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public static void log(final Class<?> classe, final String method, final LogRecord record) {
+        completeAndLog(null, classe, method, record);
+    }
+
+    /**
+     * Completes the properties of the given record, then logs to the specified or inferred logger.
+     * If the {@code logger} argument is {@code null}, the logger is inferred from the other arguments.
+     * This convenience method performs the following steps:
+     *
+     * <ul>
+     *   <li>{@linkplain LogRecord#setSourceClassName(String) Set the source class name}
+     *       to the {@linkplain Class#getCanonicalName() canonical name} of the given class.</li>
+     *   <li>{@linkplain LogRecord#setSourceMethodName(String) Set the source method name}
+     *       to the given value.</li>
+     *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name}
+     *       to the {@linkplain Logger#getName() name} of the given logger if non null.
+     *       Otherwise use the {@linkplain Class#getPackageName() package name of the class}.</li>
+     *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record to the specified {@code logger} if non null,
+     *       or to the logger specified by the {@linkplain LogRecord#getLoggerName() logger name} otherwise.</li>
+     * </ul>
+     *
+     * @param  logger  the logger where to log, or {@code null} for inferring from the logger or package name.
+     * @param  classe  the class to report as the source of the logging message.
+     * @param  method  the method to report as the source of the logging message.
+     * @param  record  the record to complete and log.
+     *
+     * @since 1.4
+     */
+    public static void completeAndLog(Logger logger, final Class<?> classe, final String method, final LogRecord record) {
         ArgumentChecks.ensureNonNull("record", record);
-        final String loggerName = record.getLoggerName();
-        Logger logger;
-        if (loggerName == null) {
-            logger = getLogger(classe);
+        if (logger != null) {
             record.setLoggerName(logger.getName());
         } else {
-            logger = Logger.getLogger(loggerName);
+            final String loggerName = record.getLoggerName();
+            if (loggerName == null) {
+                logger = getLogger(classe);
+                record.setLoggerName(logger.getName());
+            } else {
+                logger = Logger.getLogger(loggerName);
+            }
         }
         if (classe != null && method != null) {
             record.setSourceClassName(classe.getCanonicalName());

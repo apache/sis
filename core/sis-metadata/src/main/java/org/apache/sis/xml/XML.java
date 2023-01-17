@@ -403,11 +403,11 @@ public final class XML extends Static {
     /**
      * Returns the default (un)marshaller pool used by all methods in this class.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * Current implementation uses the double-check idiom. This is usually a deprecated practice
      * (the recommended alterative is to use static class initialization), but in this particular
      * case the field may be reset to {@code null} if modules are loaded or unloaded by a container,
-     * so static class initialization would be a little bit too rigid.</div>
+     * so static class initialization would be a little bit too rigid.
      */
     @SuppressWarnings("DoubleCheckedLocking")
     private static MarshallerPool getPool() throws JAXBException {

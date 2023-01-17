@@ -58,6 +58,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.XML;
 
 
@@ -187,7 +188,7 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
@@ -315,10 +316,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                         (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
                                      : Messages.Keys.CreatedNamedObject_2,
                         c.getInterface(), c.getName().getCode(), id);
-                record.setSourceClassName(GeodeticObjectFactory.class.getCanonicalName());
-                record.setSourceMethodName(caller);
-                record.setLoggerName(LOGGER.getName());
-                LOGGER.log(record);
+
+                Logging.completeAndLog(LOGGER, GeodeticObjectFactory.class, caller, record);
             }
         }
         return c;

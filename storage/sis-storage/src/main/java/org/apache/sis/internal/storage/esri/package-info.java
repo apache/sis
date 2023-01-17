@@ -46,7 +46,7 @@
  * Sub-setting parameters are ignored.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/esri-ascii-raster-format.htm">Esri ASCII raster format</a>
  * @see <a href="https://desktop.arcgis.com/en/arcmap/latest/manage-data/raster-and-images/bil-bip-and-bsq-raster-files.htm">BIL, BIP, and BSQ raster files</a>

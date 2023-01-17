@@ -19,9 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.net.URISyntaxException;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
+import java.net.URI;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
@@ -38,7 +36,10 @@ import static org.opengis.test.Assert.*;
  * Tests {@link FranceGeocentricInterpolation}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
+ *
+ * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
+ *
  * @since 0.7
  */
 public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase {
@@ -86,14 +87,16 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     public static final double ANGULAR_TOLERANCE = (0.0001 / 60 / 60) / 2;
 
     /**
-     * Tests {@link FranceGeocentricInterpolation#isRecognized(Path)}.
+     * Tests {@link FranceGeocentricInterpolation#isRecognized(URI)}.
+     *
+     * @throws URISyntaxException if the URL to the test file is not valid.
      */
     @Test
-    public void testIsRecognized() {
-        assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get("GR3DF97A.txt")));
-        assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get("gr3df")));
-        assertFalse(FranceGeocentricInterpolation.isRecognized(Paths.get("gr3d")));
-        assertTrue (FranceGeocentricInterpolation.isRecognized(Paths.get(TEST_FILE)));
+    public void testIsRecognized() throws URISyntaxException {
+        assertTrue (FranceGeocentricInterpolation.isRecognized(new URI("GR3DF97A.txt")));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(new URI("gr3df")));
+        assertFalse(FranceGeocentricInterpolation.isRecognized(new URI("gr3d")));
+        assertTrue (FranceGeocentricInterpolation.isRecognized(new URI(TEST_FILE)));
     }
 
     /**
@@ -107,7 +110,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     /**
      * Tests a small grid file with interpolations in geocentric coordinates.
      *
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
+     * @throws URISyntaxException if the URL to the test file is not valid.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -124,7 +127,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * The next method is {@link #testGridAsShorts(DatumShiftGridFile)}.</p>
      *
      * @return the loaded grid with values as {@code float}.
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
+     * @throws URISyntaxException if the URL to the test file is not valid.
      * @throws IOException if an error occurred while loading the grid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope.
@@ -133,10 +136,10 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     private static DatumShiftGridFile<Angle,Length> testGridAsFloats()
             throws URISyntaxException, IOException, FactoryException, TransformException
     {
-        final Path file = getResource(TEST_FILE);
+        final URI file = getResource(TEST_FILE);
         final DatumShiftGridFile.Float<Angle,Length> grid;
-        try (BufferedReader in = Files.newBufferedReader(file)) {
-            grid = FranceGeocentricInterpolation.load(in, file);
+        try (BufferedReader in = FranceGeocentricInterpolation.Loader.newBufferedReader(file)) {
+            grid = FranceGeocentricInterpolation.Loader.load(in, file);
         }
         assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);
         assertEquals("getCellMean",  168.2587, grid.getCellMean(0), 0.0001);
@@ -215,9 +218,9 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     }
 
     /**
-     * Tests the {@link FranceGeocentricInterpolation#getOrLoad(Path, double[], double)} method and its cache.
+     * Tests the {@link FranceGeocentricInterpolation#getOrLoad(URI, double[], double)} method and its cache.
      *
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
+     * @throws URISyntaxException if the URL to the test file is not valid.
      * @throws FactoryException if an error occurred while computing the grid.
      * @throws TransformException if an error occurred while computing the envelope.
      */

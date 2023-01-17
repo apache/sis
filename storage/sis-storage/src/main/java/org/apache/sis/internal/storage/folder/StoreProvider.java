@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.folder;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -61,7 +62,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.8
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
@@ -73,6 +74,13 @@ public final class StoreProvider extends DataStoreProvider {
      * A short name or abbreviation for the data format.
      */
     static final String NAME = "folder";
+
+    /**
+     * The logger used by folder stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.folder");
 
     /**
      * Description of the parameter for formatting conventions of dates and numbers.
@@ -283,5 +291,13 @@ public final class StoreProvider extends DataStoreProvider {
             options.add(StandardOpenOption.CREATE);
         }
         return open(connector, pg.getValue(FORMAT), options);
+    }
+
+    /**
+     * {@return the logger used by folder stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

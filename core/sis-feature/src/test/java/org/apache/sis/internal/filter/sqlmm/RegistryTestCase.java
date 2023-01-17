@@ -26,12 +26,10 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.math.Vector;
-
-import static java.util.logging.Logger.getLogger;
 
 // Test dependencies
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -57,7 +55,7 @@ import org.apache.sis.internal.geoapi.filter.Literal;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <G> root class of geometry implementation.
  *
@@ -110,7 +108,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      * @see #assertNoUnexpectedLog()
      */
     @Rule
-    public final LoggingWatcher loggings = new LoggingWatcher(getLogger(Loggers.FILTER));
+    public final LoggingWatcher loggings = new LoggingWatcher(Node.LOGGER);
 
     /**
      * Creates a new test case.

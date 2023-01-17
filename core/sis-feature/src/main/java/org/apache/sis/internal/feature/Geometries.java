@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -32,6 +33,7 @@ import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
@@ -55,7 +57,7 @@ import org.apache.sis.util.Classes;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 public abstract class Geometries<G> implements Serializable {
@@ -63,6 +65,11 @@ public abstract class Geometries<G> implements Serializable {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 1856503921463395122L;
+
+    /**
+     * The logger for operations on geometries.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.GEOMETRY);
 
     /**
      * The {@value} value, used by subclasses for identifying code that assume two- or three-dimensional objects.

@@ -37,13 +37,12 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -60,7 +59,7 @@ import static java.util.logging.Logger.getLogger;
  * This policy may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 final class ImageConverter extends Task<Statistics[]> {
@@ -211,7 +210,7 @@ final class ImageConverter extends Task<Statistics[]> {
             return processor.visualize((RenderedImage) mask, MASK_TRANSPARENCY);
         } catch (IllegalArgumentException e) {
             // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
-            Logging.recoverableException(getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);
+            Logging.recoverableException(LOGGER, PropertyView.class, "setImage", e);
         }
         return null;
     }

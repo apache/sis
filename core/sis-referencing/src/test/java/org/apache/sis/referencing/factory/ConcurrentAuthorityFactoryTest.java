@@ -23,12 +23,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.logging.Logger.getLogger;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
@@ -37,7 +35,7 @@ import static org.junit.Assume.assumeTrue;
  * Tests {@link ConcurrentAuthorityFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn(AuthorityFactoryProxyTest.class)
@@ -184,7 +182,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
         int n = 3;
         while (factory.isCleanScheduled()) {
-            getLogger(Loggers.CRS_FACTORY)
+            ConcurrentAuthorityFactory.LOGGER
                     .warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
             Thread.sleep(TIMEOUT);
             System.gc();

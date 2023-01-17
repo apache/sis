@@ -45,7 +45,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
@@ -454,7 +453,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
-            Logging.log(EPSGFactory.class, "newDataAccess", Initializer.connected(connection.getMetaData()));
+            Initializer.connected(connection.getMetaData(), EPSGFactory.class, "newDataAccess");
             SQLTranslator tr = translator;
             if (tr == null) {
                 synchronized (this) {

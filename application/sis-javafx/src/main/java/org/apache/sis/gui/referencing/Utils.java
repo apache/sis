@@ -27,20 +27,19 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.geometry.ImmutableEnvelope;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
  * Utility methods shared by classes in this package only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class Utils {
@@ -74,7 +73,7 @@ final class Utils {
             bbox.setBounds(areaOfInterest);
             return new ImmutableEnvelope(bbox);
         } catch (TransformException e) {
-            Logging.recoverableException(getLogger(Modules.APPLICATION), caller, method, e);
+            Logging.recoverableException(LOGGER, caller, method, e);
         }
         return null;
     }

@@ -60,7 +60,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see ModifiableLocationType
  * @see AbstractLocation
@@ -93,10 +93,16 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
     private static final long serialVersionUID = 5353942546043471933L;
 
     /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.REFERENCING_BY_IDENTIFIERS);
+
+    /**
      * Property used to characterize the spatial reference system.
      *
      * @see #getTheme()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString theme;
 
     /**
@@ -386,7 +392,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
          * @param e       the transformation error.
          */
         static void recoverableException(final Class<?> caller, final String method, final Exception e) {
-            Logging.recoverableException(Logger.getLogger(Modules.REFERENCING_BY_IDENTIFIERS), caller, method, e);
+            Logging.recoverableException(LOGGER, caller, method, e);
         }
     }
 

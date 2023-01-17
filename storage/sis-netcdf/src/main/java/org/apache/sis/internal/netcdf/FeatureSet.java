@@ -37,6 +37,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.feature.MovingFeatures;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStore;
@@ -82,6 +83,7 @@ final class FeatureSet extends DiscreteSampling {
      * We do not read all features at once neither because it consumes a lot of memory if the netCDF file is large.
      * This value is a compromise between reducing I/O operations and reducing memory consumption.
      */
+    @Configuration
     private static final int PAGE_SIZE = 512;
 
     /**

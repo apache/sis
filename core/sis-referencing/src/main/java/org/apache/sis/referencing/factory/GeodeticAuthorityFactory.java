@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.measure.Unit;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -30,6 +31,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -67,10 +69,15 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
+    /**
+     * The logger to use for reporting object creations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
+
     /**
      * Creates a new authority factory for geodetic objects.
      */

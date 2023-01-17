@@ -59,9 +59,9 @@ public final class HexFormat {
      * Returns the numerical value of the given hexadecimal digit.
      * The hexadecimal digit can be the decimal digits 0 to 9, or the letters A to F ignoring case.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we do not use {@link Character#digit(char, int)} because that method handled a large
-     * range of Unicode characters, which is a wider scope than what is intended here.</div>
+     * <h4>Implementation note</h4>
+     * We do not use {@link Character#digit(char, int)} because that method handled a large
+     * range of Unicode characters, which is a wider scope than what is intended here.
      *
      * @param  c  the hexadecimal digit.
      * @throws NumberFormatException if the given character is not a hexadecimal digit.

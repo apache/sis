@@ -33,9 +33,8 @@ import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -45,7 +44,7 @@ import static java.util.logging.Logger.getLogger;
  * done in a background thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 abstract class OperationFinder extends Task<MathTransform> {
@@ -130,7 +129,7 @@ abstract class OperationFinder extends Task<MathTransform> {
             bbox.setBounds(areaOfInterest);
         } catch (TransformException e) {
             bbox = null;
-            Logging.recoverableException(getLogger(Modules.APPLICATION), getCallerClass(), getCallerMethod(), e);
+            Logging.recoverableException(LOGGER, getCallerClass(), getCallerMethod(), e);
         }
         MathTransform before = null;
         MathTransform after  = null;
