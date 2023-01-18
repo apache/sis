@@ -63,6 +63,7 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Numerics;
@@ -88,7 +89,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see GeoKeys
  * @see GeoKeysLoader
@@ -1254,6 +1255,29 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
+     * Returns the code of the operation method to request.
+     * This method tries to resolves some ambiguities in the way operation methods are defined.
+     * For example there is an ambiguity between Polar Stereographic (variant A) and (variant B).
+     */
+    private String methodCode() {
+        final String code = getMandatoryString(GeoKeys.CoordTrans);
+        try {
+            switch (Integer.parseInt(code)) {
+                case GeoCodes.PolarStereographic: {
+                    if (geoKeys.containsKey(GeoCodes.StdParallel1)) {
+                        return Constants.EPSG + ':' + PolarStereographicB.IDENTIFIER;
+                    }
+                    break;
+                }
+                // More cases may be added in the future.
+            }
+        } catch (NumberFormatException e) {
+            return code;
+        }
+        return Constants.GEOTIFF + ':' + code;
+    }
+
+    /**
      * Creates a defining conversion from an EPSG code or from user-defined parameters.
      *
      * @param  angularUnit  the angular unit of the latitude and longitude values.
@@ -1275,8 +1299,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             }
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
-                final String              type        = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
+                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(methodCode());
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.

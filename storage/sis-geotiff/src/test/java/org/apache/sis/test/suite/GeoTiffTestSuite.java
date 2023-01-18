@@ -35,6 +35,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.geotiff.TypeTest.class,
     org.apache.sis.storage.geotiff.TagsTest.class,
     org.apache.sis.storage.geotiff.GeoKeysTest.class,
+    org.apache.sis.storage.geotiff.GeoCodesTest.class,
     org.apache.sis.storage.geotiff.CRSBuilderTest.class,
     org.apache.sis.storage.geotiff.XMLMetadataTest.class,
     org.apache.sis.storage.geotiff.SelfConsistencyTest.class

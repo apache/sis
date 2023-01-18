@@ -23,7 +23,7 @@ package org.apache.sis.storage.geotiff;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 final class GeoCodes {
@@ -81,4 +81,17 @@ final class GeoCodes {
      */
     public static final short RasterPixelIsArea  = 1;
     public static final short RasterPixelIsPoint = 2;
+
+    /**
+     * The code for polar stereographic map projection.
+     * This is handled as a special case for distinguishing between variants.
+     */
+    public static final short PolarStereographic = 15;
+
+    /**
+     * The code for standard parallel map projection parameters.
+     * This is used as a sentinel value for distinguishing between
+     * different variants of a map projection.
+     */
+    public static final short StdParallel1 = 3078;
 }
