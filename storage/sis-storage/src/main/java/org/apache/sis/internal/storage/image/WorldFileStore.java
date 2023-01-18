@@ -556,6 +556,7 @@ loop:   for (int convention=0;; convention++) {
      * Returns all images in this store. Note that fetching the size of the list is a potentially costly operation.
      *
      * @return list of images in this store.
+     * @throws DataStoreException if an error occurred while fetching components.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
