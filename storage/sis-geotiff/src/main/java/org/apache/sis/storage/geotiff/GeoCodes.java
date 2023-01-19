@@ -87,11 +87,4 @@ final class GeoCodes {
      * This is handled as a special case for distinguishing between variants.
      */
     public static final short PolarStereographic = 15;
-
-    /**
-     * The code for standard parallel map projection parameters.
-     * This is used as a sentinel value for distinguishing between
-     * different variants of a map projection.
-     */
-    public static final short StdParallel1 = 3078;
 }

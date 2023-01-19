@@ -44,11 +44,16 @@ public final class GeoCodesTest extends TestCase {
      */
     @Test
     public void verifyPolarStereographic() throws FactoryException {
-        ParameterDescriptorGroup parameters = parameters("Polar Stereographic (Variant A)");
+        ParameterDescriptorGroup parameters = parameters("Polar Stereographic (Variant B)");
         assertEquals(GeoCodes.PolarStereographic, parseCode(parameters));
+        /*
+         * Following are testing `GeoKeys` rather than `GeoCodes`,
+         * but we do that as an additional consistency check.
+         */
+        ParameterDescriptorGroup alternative = parameters("Polar Stereographic (Variant A)");
+        assertEquals(GeoKeys.StdParallel1, parseCode(parameters .descriptor("Latitude of standard parallel")));
+        assertEquals(GeoKeys.NatOriginLat, parseCode(alternative.descriptor("Latitude of natural origin")));
 
-        parameters = parameters("Polar Stereographic (Variant B)");
-        assertEquals(GeoCodes.StdParallel1, parseCode(parameters.descriptor("Latitude of standard parallel")));
     }
 
     /**
