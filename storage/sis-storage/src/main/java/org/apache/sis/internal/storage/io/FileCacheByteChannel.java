@@ -47,7 +47,7 @@ import static org.apache.sis.internal.storage.StoreUtilities.LOGGER;
  *
  * <ul>
  *   <li>Bytes read from the input stream are cached in a temporary file for making backward seeks possible.</li>
- *   <li>The number of bytes of interest {@linkplain #endOfInterest(long) can be specified}.
+ *   <li>The range of bytes of interest {@linkplain #rangeOfInterest(long, long) can be specified}.
  *       It makes possible to specify the range of bytes to download with HTTP connections.</li>
  *   <li>This implementation is thread-safe.</li>
  *   <li>Current implementation is read-only.</li>
@@ -193,7 +193,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          * @param  start  position of the first byte to read (inclusive).
          * @param  end    position of the last byte to read with the returned stream (inclusive),
          *                or {@link Long#MAX_VALUE} for end of stream.
-         * @return
+         * @return the "Range" value to put in an HTTP header.
          */
         public static String formatRange(final long start, final long end) {
             final boolean hasEnd = (end > start) && (end != Long.MAX_VALUE);
@@ -261,12 +261,13 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     private long position;
 
     /**
-     * Position after the last requested byte, or ≤ {@linkplain #position} if unknown.
-     * It can be used for specifying the range of bytes to download from an HTTP connection.
+     * Ranges of requested bytes, for choosing the ranges to request in new connections.
+     * Ranges are added by calls to {@link #rangeOfInterest(long, long)} and removed
+     * when the connection is created.
      *
-     * @see #endOfInterest(long)
+     * @see #rangeOfInterest(long, long)
      */
-    private long endOfInterest;
+    private final RangeSet<Long> rangesOfInterest;
 
     /**
      * Ranges of bytes in the {@linkplain #file} where data are valid.
@@ -288,6 +289,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * @throws IOException if the temporary file cannot be created.
      */
     protected FileCacheByteChannel(final String prefix) throws IOException {
+        rangesOfInterest       = RangeSet.create(Long.class, true, false);
         rangesOfAvailableBytes = RangeSet.create(Long.class, true, false);
         file = FileChannel.open(Files.createTempFile(prefix, null),
                 StandardOpenOption.READ,
@@ -386,42 +388,79 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
             ArgumentChecks.ensurePositive("newPosition", newPosition);
         }
         position = newPosition;
-        if (endOfInterest - newPosition < SKIP_THRESHOLD) {
-            endOfInterest = 0;      // Read until end of stream.
-        }
         return this;
     }
 
     /**
-     * Specifies the position after the last byte which is expected to be read.
-     * The number of bytes is only a hint and may be ignored, depending on subclasses.
+     * Specifies a range of bytes which is expected to be read.
+     * The range of bytes is only a hint and may be ignored, depending on subclasses.
      * Reading more bytes than specified is okay, only potentially less efficient.
-     * Values ≤ {@linkplain #position() position} means to read until the end of stream.
      *
-     * @param  end  position after the last desired byte, or a value ≤ position for reading until the end of stream.
+     * @param  lower  position (inclusive) of the first byte to be requested.
+     * @param  upper  position (exclusive) of the last byte to be requested.
      */
-    final synchronized void endOfInterest(final long end) {
-        endOfInterest = end;
+    final synchronized void rangeOfInterest(final long lower, final long upper) {
+        if (upper > lower) {
+            rangesOfInterest.add(lower, upper);
+        }
     }
 
     /**
      * Opens a connection on the range of bytes determined by the current channel position.
-     * The {@link #endOfInterest} position is considered unspecified if not greater than
-     * {@link #position} (it may be 0).
+     * The range of bytes of interest is specified in the {@link #rangesOfInterest} set.
+     * If no range is specified, this method requests all bytes until the end of stream.
+     * If some ranges are specified, this method finds the smallest "end of range" after
+     * the current position. If the gab between ranges is less than {@link #SKIP_THRESHOLD},
+     * the ranges will be merged in a single request.
      *
      * @return the opened connection (never {@code null}).
      * @throws IOException if the connection cannot be established.
      */
     private Connection openConnection() throws IOException {
-        long end = endOfInterest;
-        if (end > position) end--;      // Make inclusive.
-        else end = (length > 0) ? length-1 : Long.MAX_VALUE;
-        var c = openConnection(position, end);
+        int i = Math.max(rangesOfInterest.indexOfMin(position), 0);
+        final int size = rangesOfInterest.size();
+        long end;
+        do {                    // Should be executed exactly 1 or 2 times.
+            if (i >= size) {
+                end = (length > 0) ? length-1 : Long.MAX_VALUE;
+                break;
+            }
+            end = rangesOfInterest.getMaxLong(i) - 1;       // Inclusive
+            i++;
+        } while (end < position);
+        /*
+         * At this point we found the smallest "end of range" position.
+         * If the gab with next range is small enough, merge the ranges
+         * in order to make a single connection request.
+         */
+        while (i < size) {
+            if (rangesOfInterest.getMinLong(i) - end >= SKIP_THRESHOLD) {
+                break;
+            }
+            end = rangesOfInterest.getMaxLong(i) - 1;       // Inclusive
+            i++;
+        }
+        /*
+         * Send the HTTP or S3 request for the range of bytes.
+         * Prepare the cache file to receive those bytes.
+         * Save the stream length if it is known.
+         */
+        final Connection c = openConnection(position, end);
         file.position(c.start);
         if (c.length >= 0) {
             length = c.length;
         }
         connection = c;                 // Set only on success.
+        /*
+         * Remove the requested range from the list of ranges of interest.
+         * The range to remove is determined on the assumption that caller
+         * makes a best effort for reading bytes in sequential order, and
+         * that if the connection provides less bytes, the missing bytes
+         * will probably be requested later.
+         */
+        end = Math.min(c.end, end);
+        if (end != Long.MAX_VALUE) end++;       // Make exclusive.
+        rangesOfInterest.remove(Math.min(position, c.start), end);
         return c;
     }
 
@@ -763,6 +802,8 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      */
     @Override
     public synchronized String toString() {
-        return Strings.toString(getClass(), "filename", filename(), "position", position, "rangeCount", rangesOfAvailableBytes.size());
+        return Strings.toString(getClass(), "filename", filename(), "position", position,
+                "rangesOfAvailableBytes", rangesOfAvailableBytes.size(),
+                "rangesOfInterest", rangesOfInterest.size());
     }
 }

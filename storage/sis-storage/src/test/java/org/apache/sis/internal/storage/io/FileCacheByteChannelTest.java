@@ -181,7 +181,7 @@ public final class FileCacheByteChannelTest extends TestCase {
                     end = t;
                 }
                 channel.position(position);
-                channel.endOfInterest(end + 1);
+                channel.rangeOfInterest(position, end + 1);
             }
             channel.readInRandomRegion(buffer);
             while (buffer.hasRemaining()) {

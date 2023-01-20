@@ -949,18 +949,18 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
-     * Specifies the position after the last byte which is expected to be read.
-     * The number of bytes is only a hint and may be ignored, depending on the channel.
+     * Specifies a range of bytes which is expected to be read.
+     * The range of bytes is only a hint and may be ignored, depending on subclasses.
      * Reading more bytes than specified is okay, only potentially less efficient.
-     * Values ≤ {@linkplain #position() position} means to read until the end of stream.
      *
-     * @param  position  position after the last desired byte,
-     *         or a value ≤ current position for reading until the end of stream.
+     * @param  lower  position (inclusive) of the first byte to be requested.
+     * @param  upper  position (exclusive) of the last byte to be requested.
      */
-    public final void endOfInterest(final long position) {
+    public final void rangeOfInterest(long lower, long upper) {
         if (channel instanceof FileCacheByteChannel) {
-            ((FileCacheByteChannel) channel).endOfInterest(position + channelOffset);
-            // Overflow is okay as value ≤ position means "read until end of stream".
+            lower = Math.addExact(lower, channelOffset);
+            upper = Math.addExact(upper, channelOffset);
+            ((FileCacheByteChannel) channel).rangeOfInterest(lower, upper);
         }
     }
 
