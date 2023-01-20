@@ -543,10 +543,10 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          * Transfer bytes from the input stream to the buffer. The bytes are also copied to the temporary file.
          * We try to use `dst` instead of `buffer` in call to `cache(…)` because the former may be a direct buffer.
          */
-        final ByteBuffer slice = dst.slice();
         count = c.input.read(buffer.array(), Math.addExact(buffer.arrayOffset(), buffer.position()), buffer.remaining());
         if (count > 0) {
             position += count;
+            final ByteBuffer slice = dst.slice();
             if (buffer != dst) {
                 dst.put(buffer.limit(count));               // Transfer from temporary buffer to destination buffer.
             } else {

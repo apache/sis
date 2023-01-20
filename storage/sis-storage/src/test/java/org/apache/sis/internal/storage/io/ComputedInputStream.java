@@ -113,8 +113,8 @@ final class ComputedInputStream extends InputStream {
             return -1;
         }
         if (count != 0) {
-            final int end = Math.min(offset + random.nextInt(count) + 1, length);
-            count = end - offset;
+            count = Math.min(random.nextInt(count) + 1, length - position);
+            final int end = offset + count;
             while (offset < end) {
                 bytes[offset++] = valueAt(position++);
             }
