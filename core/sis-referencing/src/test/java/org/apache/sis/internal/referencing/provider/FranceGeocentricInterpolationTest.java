@@ -221,13 +221,11 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     /**
      * Tests the {@link FranceGeocentricInterpolation#getOrLoad(URI, double[], double)} method and its cache.
      *
-     * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
     @DependsOnMethod("testGrid")
-    public void testGetOrLoad() throws URISyntaxException, FactoryException, TransformException {
+    public void testGetOrLoad() throws Exception {
         final DatumShiftGridFile<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
                 getResource(TEST_FILE), new double[] {
                         FranceGeocentricInterpolation.TX,

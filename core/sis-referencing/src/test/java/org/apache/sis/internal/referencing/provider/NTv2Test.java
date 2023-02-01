@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -29,13 +28,13 @@ import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -80,13 +79,10 @@ public final class NTv2Test extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point. The point used for
      * this test is given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws IOException if an error occurred while loading the grid.
-     * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testLoader() throws URISyntaxException, IOException, FactoryException, TransformException {
+    public void testLoader() throws Exception {
         testRGF93(getResource(TEST_FILE),
                  36000 - 360 * (72 + 5),    // Subgrid of RGF93 beginning at gridX = 72
                  36000 - 360 * (72),        // Subgrid uses 6 cells along longitude axis
@@ -101,10 +97,9 @@ public final class NTv2Test extends DatumShiftTestCase {
      * explicitly if they can provide a path to the {@code "NTF_R93.gsb"} file.
      *
      * @param  file  path to the official {@code "NTF_R93.gsb"} file.
-     * @throws FactoryException if an error occurred while loading or computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
-    public static void testRGF93(final URI file) throws FactoryException, TransformException {
+    public static void testRGF93(final URI file) throws Exception {
         testRGF93(file, -19800, 36000, 147600, 187200);
     }
 
@@ -117,7 +112,7 @@ public final class NTv2Test extends DatumShiftTestCase {
      * @param  ymax  value of the {@code "N_LAT"} record.
      */
     private static void testRGF93(final URI file, final double xmin, final double xmax,
-            final double ymin, final double ymax) throws FactoryException, TransformException
+            final double ymin, final double ymax) throws Exception
     {
         final double cellSize = 360;
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
@@ -177,13 +172,12 @@ public final class NTv2Test extends DatumShiftTestCase {
      * to be present in the {@code $SIS_DATA/DatumChanges} directory. This test is executed only if the
      * {@link #RUN_EXTENSIVE_TESTS} flag is set.
      *
-     * @throws URISyntaxException if the URL to the test file is not valid.
-     * @throws FactoryException if an error occurred while loading or computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testMultiGrids() throws URISyntaxException, FactoryException, TransformException {
+    public void testMultiGrids() throws Exception {
         assumeTrue(RUN_EXTENSIVE_TESTS);
+        assumeTrue(DataDirectory.getenv() != null);
         final URI file = DatumShiftGridLoader.toAbsolutePath(new URI(MULTIGRID_TEST_FILE));
         assumeTrue(Files.exists(Paths.get(file)));
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
