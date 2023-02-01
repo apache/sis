@@ -395,7 +395,7 @@ public class FranceGeocentricInterpolation extends GeodeticOperation {
 
         /** Returns the reader for the specified URI. */
         static BufferedReader newBufferedReader(final URI file) throws IOException {
-            return new BufferedReader(new InputStreamReader(file.toURL().openStream()));
+            return new BufferedReader(new InputStreamReader(DatumShiftGridLoader.toURL(file).openStream()));
         }
 
         /**

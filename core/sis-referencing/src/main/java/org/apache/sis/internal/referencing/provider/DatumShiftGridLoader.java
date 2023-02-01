@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -166,6 +167,25 @@ abstract class DatumShiftGridLoader {
     }
 
     /**
+     * Converts the given path to a URL, throwing a {@link NoSuchFileException} if the URL is not absolute.
+     * This specific exception type is necessary for letting the caller know that the coordinate operation is
+     * probably valid but can not be constructed because an optional configuration is missing.
+     * It is typically because the {@code SIS_DATA} environment variable has not been set.
+     *
+     * @param  path  the path to convert to a URL.
+     * @return the given path as an URL.
+     * @throws NoSuchFileException if the URI is not absolute.
+     * @throws java.net.MalformedURLException if some error occurred during the conversion.
+     */
+    static URL toURL(final URI path) throws IOException {
+        try {
+            return path.toURL();
+        } catch (IllegalArgumentException e) {
+            throw new NoSuchFileException(path.toString(), null, e.getMessage());
+        }
+    }
+
+    /**
      * Creates a channel for reading bytes from the file at the specified path.
      *
      * @param  path  the path from where to read bytes.
@@ -178,7 +198,7 @@ abstract class DatumShiftGridLoader {
         } catch (FileSystemNotFoundException e) {
             Logging.ignorableException(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "newByteChannel", e);
         }
-        return Channels.newChannel(path.toURL().openStream());
+        return Channels.newChannel(toURL(path).openStream());
     }
 
     /**
