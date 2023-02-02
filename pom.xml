@@ -985,13 +985,6 @@
       </releases>
     </pluginRepository>
   </pluginRepositories>
-  <repositories>
-    <repository>
-      <id>geoapi.staging</id>
-      <name>GeoAPI staging repository</name>
-      <url>https://oss.sonatype.org/content/repositories/orgopengis-1182/</url>
-    </repository>
-  </repositories>
 
 
   <!-- ==============================================================
