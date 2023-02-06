@@ -43,7 +43,7 @@ import static java.lang.Math.multiplyFull;
 
 /**
  * Base class of {@link RenderedImage} implementations in Apache SIS.
- * The "Planar" part in the class name emphases that this image is a representation
+ * The "Planar" part in the class name emphasizes that this image is a representation
  * of two-dimensional data and should not contain an image with three-dimensional effects.
  * Planar images can be used as data storage for {@link org.apache.sis.coverage.grid.GridCoverage2D}.
  *
