@@ -177,7 +177,7 @@ final class MaskedImage extends SourceAlignedImage {
      *     int pixel   = (element >>> shift) & 1;
      *     }
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * The {@link #getMaskTiles()} method must have been invoked at least once before this method.
      */
     private synchronized ByteBuffer getMask() {

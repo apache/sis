@@ -482,7 +482,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                      final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
-        final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by pre-conditions.
+        final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by preconditions.
         final long width  = subtractExact(upper[X_DIMENSION], lower[X_DIMENSION]);
         final long height = subtractExact(upper[Y_DIMENSION], lower[Y_DIMENSION]);
         /*

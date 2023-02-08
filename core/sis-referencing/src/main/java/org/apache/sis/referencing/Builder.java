@@ -216,6 +216,8 @@ public abstract class Builder<B extends Builder<B>> {
 
     /**
      * Creates a new builder.
+     *
+     * @throws AssertionError if assertions are enabled and the {@code <B>} type is not the type of {@code this}.
      */
     protected Builder() {
         assert verifyParameterizedType(getClass());

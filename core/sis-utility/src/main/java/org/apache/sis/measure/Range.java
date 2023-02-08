@@ -23,6 +23,7 @@ import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
@@ -132,24 +133,26 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Creates a new range bounded by the given endpoint values.
      * If the given minimum value is greater than the maximum value, then the range {@linkplain #isEmpty() is empty}.
      *
-     * <div class="note"><b>Assertion:</b>
+     * <h4>Assertion</h4>
      * This constructor verifies the {@code minValue} and {@code maxValue} arguments type if Java assertions
      * are enabled. This verification is not performed in normal execution because theoretically unnecessary
-     * unless Java generic types have been tricked.</div>
+     * unless Java generic types have been tricked.
      *
      * @param  elementType    the base type of the range elements.
      * @param  minValue       the minimal value, or {@code null} if none.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.
      * @param  maxValue       the maximal value, or {@code null} if none.
      * @param  isMaxIncluded  {@code true} if the maximal value is inclusive, or {@code false} if exclusive.
+     * @throws AssertionError if assertions are enabled and the given values are not compatible with the given type.
      */
+    @ArgumentCheckByAssertion
     public Range(final Class<E> elementType,
             final E minValue, final boolean isMinIncluded,
             final E maxValue, final boolean isMaxIncluded)
     {
         ArgumentChecks.ensureNonNull("elementType", elementType);
         /*
-         * The 'isMin/Maxincluded' flags must be forced to 'false' if 'minValue' or 'maxValue'
+         * The `isMin/Maxincluded` flags must be forced to `false` if `minValue` or `maxValue`
          * are null. This is required for proper working of algorithms implemented in this class.
          */
         this.elementType   = elementType;
@@ -164,11 +167,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Creates a new range using the same element type than this range. This method will
      * be overridden by subclasses in order to create a range of a more specific type.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * This method is invoked by all operations (union, intersection, <i>etc.</i>) that may create a new range.
      * But despite this fact, the return type of those methods are nailed down to {@code Range} (i.e. subclasses
      * shall not override the above-cited operations with covariant return type) because those operations may return
-     * the given argument directly, and we have no guarantees on the type of those arguments.</div>
+     * the given argument directly, and we have no guarantees on the type of those arguments.
      */
     Range<E> create(final E minValue, final boolean isMinIncluded,
                     final E maxValue, final boolean isMaxIncluded)
@@ -268,9 +271,9 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * {@linkplain #getMaxValue() maximum value}, or if they are equal while
      * at least one of them is exclusive.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * This method is final because often used by the internal implementation.
-     * Making the method final ensures that the other methods behave consistently.</div>
+     * Making the method final ensures that the other methods behave consistently.
      *
      * @return {@code true} if this range is empty.
      */
@@ -326,8 +329,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
          * We consistently use min/maxValue.compareTo(value) in this class rather than
          * the opposite argument order (namely value.compareTo(min/maxValue)) in the
          * hope to reduce the risk of inconsistent behavior if usera pass different
-         * sub-classes for the 'value' argument with different implementations of the
-         * 'compareTo' method. Intead than using those user implementations, we always
+         * sub-classes for the `value` argument with different implementations of the
+         * `compareTo` method. Intead than using those user implementations, we always
          * use the implementations provided by min/maxValue.
          */
         if (minValue != null) {
@@ -372,8 +375,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
          *
          * However, we still have a little bit of additional checks to perform for the
          * inclusion status of both ranges.  Since the same checks will be needed for
-         * intersection methods,  we factor out the comparisons in 'compareMinTo' and
-         * 'compareMaxTo' methods.
+         * intersection methods,  we factor out the comparisons in `compareMinTo` and
+         * `compareMaxTo` methods.
          */
         return (compareMinTo(range.minValue, range.isMinIncluded ? 0 : -1) <= 0) &&
                (compareMaxTo(range.maxValue, range.isMaxIncluded ? 0 : +1) >= 0);
@@ -411,7 +414,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
          * so instead of extracting the minimal and maximal values directly, we will
          * find which range contains the highest minimal value, and which range contains
          * the smallest maximal value. If we find the same range in both case (which can
-         * be either 'this' or 'range), return that range. Otherwise we need to create a
+         * be either `this` or `range`), return that range. Otherwise we need to create a
          * new one.
          */
         final Range<E> intersect, min, max;
@@ -469,8 +472,8 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      */
     public Range<E>[] subtract(final Range<E> range) {
         /*
-         * Implementation note: never store the 'range' argument value in the array
-         * returned by 'newArray(int)', otherwise we may get an ArrayStoreException.
+         * Implementation note: never store the `range` argument value in the array
+         * returned by `newArray(int)`, otherwise we may get an ArrayStoreException.
          */
         final Range<E> subtract;
         if (!intersects(range)) {
@@ -524,7 +527,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
     private int compareMinTo(final E value, int position) {
         /*
          * Check for infinite values.  If the given value is infinite, it can be either positive or
-         * negative infinity, which we can infer from the 'position' argument. Note that 'position'
+         * negative infinity, which we can infer from the `position` argument. Note that `position`
          * cannot be 0 in such case, since infinities are always exclusive in this class.
          */
         if (minValue == null) {
@@ -543,14 +546,14 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             return c;
         }
         /*
-         * The two values are equal. If the 'minValue' of this range is inclusive, then the given
-         * 'value' is directly at the "right" place (the beginning of the interior of this range),
-         * so the 'position' argument gives directly the position of the "true minValue" relative
+         * The two values are equal. If the `minValue` of this range is inclusive, then the given
+         * `value` is directly at the "right" place (the beginning of the interior of this range),
+         * so the `position` argument gives directly the position of the "true minValue" relative
          * to the interior of the other range.
          *
-         * But if 'minValue' is exclusive, then the "true minValue" of this range is one position
+         * But if `minValue` is exclusive, then the "true minValue" of this range is one position
          * to the right  (where "position" is a counter for an infinitely small quantity, similar
-         * to 'dx' in calculus). The effect is to return 0 if the given 'value' is also exclusive
+         * to `dx` in calculus). The effect is to return 0 if the given `value` is also exclusive
          * and lower than the interior of the other range (position == -1),  and a positive value
          * in all other cases.
          */
