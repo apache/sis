@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.storage.io;
 
+import java.util.Collection;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -126,15 +127,15 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          *
          * @param  input          the input stream for reading the bytes.
          * @param  contentLength  length of the response content, or -1 if unknown.
-         * @param  acceptRanges   value of "Accept-Ranges" in HTTP header.
+         * @param  rangeUnits     value of "Accept-Ranges" in HTTP header, which lists the accepted units.
          * @throws IllegalArgumentException if the start, end or length cannot be parsed.
          */
-        public Connection(final InputStream input, final long contentLength, final Iterable<String> acceptRanges) {
-            this.input  = input;
-            this.start  = 0;
-            this.end    = (contentLength > 0) ? contentLength - 1 : Long.MAX_VALUE;
-            this.length = contentLength;
-            this.acceptRanges = acceptRanges(acceptRanges);
+        public Connection(final InputStream input, final long contentLength, final Iterable<String> rangeUnits) {
+            this.input   = input;
+            this.start   = 0;
+            this.end     = (contentLength > 0) ? contentLength - 1 : Long.MAX_VALUE;
+            this.length  = contentLength;
+            acceptRanges = acceptRanges(rangeUnits);
         }
 
         /**
@@ -144,12 +145,12 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          *
          * <p>Example of content range value: {@code "Content-Range: bytes 25000-75000/100000"}.</p>
          *
-         * @param  input          the input stream for reading the bytes.
-         * @param  contentRange   value of "Content-Range" in HTTP header, or {@code null} if none.
-         * @param  acceptRanges   value of "Accept-Ranges" in HTTP header.
+         * @param  input         the input stream for reading the bytes.
+         * @param  contentRange  value of "Content-Range" in HTTP header.
+         * @param  rangeUnits    value of "Accept-Ranges" in HTTP header, which lists the accepted units.
          * @throws IllegalArgumentException if the start, end or length cannot be parsed.
          */
-        public Connection(final InputStream input, String contentRange, final Iterable<String> acceptRanges) {
+        public Connection(final InputStream input, String contentRange, final Collection<String> rangeUnits) {
             this.input = input;
             long contentLength = -1;
             contentRange = contentRange.trim();
@@ -168,7 +169,12 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
             if (rs < 0) rs = ls;
             start = Long.parseLong(contentRange.substring(s, rs).trim());
             end = (rs < ls) ? Long.parseLong(contentRange.substring(rs+1, ls).trim()) : length;
-            this.acceptRanges = acceptRanges(acceptRanges);
+            /*
+             * By default Apache server repeats the information about accepted range units,
+             * while Nginx does not. If that information is not provided, assume that the
+             * supported units did not changed.
+             */
+            acceptRanges = rangeUnits.isEmpty() || acceptRanges(rangeUnits);
         }
 
         /**
