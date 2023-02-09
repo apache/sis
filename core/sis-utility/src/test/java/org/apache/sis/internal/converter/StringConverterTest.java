@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.lang.annotation.ElementType;
@@ -264,7 +263,7 @@ public final class StringConverterTest extends TestCase {
     public void testPath() {
         final ObjectConverter<String,Path> c = new StringConverter.Path();
         final String path = "home/user/index.txt".replace('/', File.separatorChar);
-        runInvertibleConversion(c, path, Paths.get(path));
+        runInvertibleConversion(c, path, Path.of(path));
         assertSerializedEquals(c);
     }
 

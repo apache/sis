@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UncheckedIOException;
@@ -112,7 +111,7 @@ public final class Doclet extends StandardDoclet {
     public boolean run(final DocletEnvironment environment) {
         final boolean success = super.run(environment);
         if (success && outputDirectory != null) try {
-            final Path output = Paths.get(outputDirectory);
+            final Path output = Path.of(outputDirectory);
             final Path resources = resources(output);
             copyResources(resources, output);
             final Rewriter r = new Rewriter();

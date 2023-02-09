@@ -26,7 +26,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -129,7 +128,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  */
                 Path path = dir.resolve(database);
                 if (home != null) try {
-                    path = Paths.get(home).relativize(path);
+                    path = Path.of(home).relativize(path);
                 } catch (IllegalArgumentException | SecurityException e) {
                     // The path cannot be relativized. This is okay.
                     Logging.recoverableException(LOGGER, LocalDataSource.class, "<init>", e);
@@ -137,7 +136,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                 path   = path.normalize();
                 dbFile = path.toString().replace(path.getFileSystem().getSeparator(), "/");
                 switch (dialect) {
-                    case HSQL: path = Paths.get(path.toString() + ".data"); break;
+                    case HSQL: path = Path.of(path.toString() + ".data"); break;
                     // More cases may be added in the future.
                 }
                 create = !Files.exists(path);
@@ -148,7 +147,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  * if the database does not exist in that directory, because otherwise users could define
                  * SIS_DATA and get the impression that their setting is ignored.
                  */
-                final Path path = Paths.get(home);
+                final Path path = Path.of(home);
                 create = !Files.exists(path.resolve(database)) && Files.isDirectory(path);
                 dbFile = database;
             } else {

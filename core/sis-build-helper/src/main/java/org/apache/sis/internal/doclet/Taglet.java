@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.util.List;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import javax.tools.Diagnostic;
 import javax.lang.model.element.Element;
 import jdk.javadoc.doclet.DocletEnvironment;
@@ -120,7 +119,7 @@ abstract class Taglet implements jdk.javadoc.doclet.Taglet {
             final TreePath path = trees.getPath(element);
             if (path != null) {
                 // Following methods do not document 'null' as a possible return value.
-                return Paths.get(path.getCompilationUnit().getSourceFile().toUri());
+                return Path.of(path.getCompilationUnit().getSourceFile().toUri());
             }
         }
         return null;

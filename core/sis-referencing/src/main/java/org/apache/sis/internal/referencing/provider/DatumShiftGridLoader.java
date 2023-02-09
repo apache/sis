@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
@@ -191,7 +190,7 @@ abstract class DatumShiftGridLoader {
      */
     static ReadableByteChannel newByteChannel(final URI path) throws IOException {
         try {
-            return Files.newByteChannel(Paths.get(path));
+            return Files.newByteChannel(Path.of(path));
         } catch (FileSystemNotFoundException e) {
             Logging.ignorableException(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "newByteChannel", e);
         }

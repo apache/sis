@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 
 /**
@@ -106,7 +105,7 @@ public class Initializer {
     public Initializer() throws IOException {
         final String file = System.getProperty("java.util.logging.config.file");
         if (file != null) {
-            final Path path = Paths.get(file).normalize();
+            final Path path = Path.of(file).normalize();
             final StringBuilder buffer = new StringBuilder(600);
             for (String line : Files.readAllLines(path)) {
                 if (!(line = line.trim()).isEmpty() && line.charAt(0) != '#') {

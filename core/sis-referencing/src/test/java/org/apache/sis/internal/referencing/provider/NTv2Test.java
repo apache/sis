@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.channels.WritableByteChannel;
@@ -179,7 +178,7 @@ public final class NTv2Test extends DatumShiftTestCase {
         assumeTrue(RUN_EXTENSIVE_TESTS);
         assumeTrue(DataDirectory.getenv() != null);
         final URI file = DatumShiftGridLoader.toAbsolutePath(new URI(MULTIGRID_TEST_FILE));
-        assumeTrue(Files.exists(Paths.get(file)));
+        assumeTrue(Files.exists(Path.of(file)));
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should contain many grids.", DatumShiftGridGroup.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());

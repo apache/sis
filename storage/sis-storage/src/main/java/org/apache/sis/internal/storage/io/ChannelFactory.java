@@ -33,7 +33,6 @@ import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.FileSystemNotFoundException;
@@ -234,7 +233,7 @@ public abstract class ChannelFactory {
                     }
                 };
             } else try {
-                storage = Paths.get(uri);
+                storage = Path.of(uri);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 try {
                     storage = uri.toURL();

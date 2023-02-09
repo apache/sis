@@ -92,7 +92,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *     public final class MyCRS extends WKTDictionary implements CRSAuthorityFactory {
  *         MyCRS() throws IOException, FactoryException {
  *             super(new DefaultCitation("MyAuthority"));
- *             try (BufferedReader source = Files.newBufferedReader(Paths.get("MyCRS.txt"))) {
+ *             try (BufferedReader source = Files.newBufferedReader(Path.of("MyCRS.txt"))) {
  *                 load(source);
  *             }
  *         }

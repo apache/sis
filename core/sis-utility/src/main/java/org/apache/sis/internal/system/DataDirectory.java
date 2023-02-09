@@ -19,7 +19,6 @@ package org.apache.sis.internal.system;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -171,7 +170,7 @@ public enum DataDirectory {
             if (dir == null || dir.isEmpty()) {
                 warning(null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {
-                final Path path = Paths.get(dir);
+                final Path path = Path.of(dir);
                 if (!Files.isDirectory(path)) {
                     warning(null, Messages.Keys.DataDirectoryDoesNotExist_2, ENV, path);
                 } else if (!Files.isReadable(path)) {

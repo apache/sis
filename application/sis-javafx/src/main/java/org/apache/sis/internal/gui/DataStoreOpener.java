@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URL;
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Locale;
@@ -135,7 +134,7 @@ public final class DataStoreOpener extends Task<DataStore> {
                     source = ((URL) source).toURI();                // May throw URISyntaxException.
                 }
                 if (source instanceof URI) {                        // May be the result of above URL.toURI().
-                    source = Paths.get((URI) source);               // May throw FileSystemNotFoundException.
+                    source = Path.of((URI) source);                 // May throw FileSystemNotFoundException.
                 }
                 if (source instanceof Path) {                       // May be the result of a previous block.
                     source = ((Path) source).toRealPath();          // May throw IOException.
