@@ -61,7 +61,10 @@ import org.apache.sis.internal.storage.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
- * @since   0.3
+ *
+ * @see org.apache.sis.io.IO
+ *
+ * @since 0.3
  */
 public final class IOUtilities extends Static {
     /**

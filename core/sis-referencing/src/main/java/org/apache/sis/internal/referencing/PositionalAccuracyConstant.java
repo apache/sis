@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Pre-defined positional accuracy resulting from some coordinate operations.
+ * Predefined positional accuracy resulting from some coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
