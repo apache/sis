@@ -86,6 +86,9 @@ public class ChannelDataInput extends ChannelData {
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
+     * <p><b>Tip:</b>
+     * for building a data input from an input stream, see {@link InputStreamArrayGetter}.</p>
+     *
      * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read.
      * @param  buffer    the buffer where to copy the data.
@@ -106,18 +109,6 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
-     * Creates a new input stream from the given {@code ChannelDataInput}.
-     * This constructor is invoked when we need to change the implementation class.
-     * The old input should not be used anymore after this constructor has been invoked.
-     *
-     * @param  input  the existing instance from which to takes the channel and buffer.
-     */
-    ChannelDataInput(final ChannelDataInput input) {
-        super(input);
-        channel = input.channel;
-    }
-
-    /**
      * Creates a new instance for a buffer filled with the bytes to use.
      * This constructor uses an independent, read-only view of the given buffer.
      * No reference to the given buffer will be retained.
@@ -128,6 +119,18 @@ public class ChannelDataInput extends ChannelData {
     public ChannelDataInput(final String filename, final ByteBuffer data) {
         super(filename, data);
         channel = new NullChannel();
+    }
+
+    /**
+     * Creates a new input stream from the given {@code ChannelDataInput}.
+     * This constructor is invoked when we need to change the implementation class.
+     * The old input should not be used anymore after this constructor has been invoked.
+     *
+     * @param  input  the existing instance from which to takes the channel and buffer.
+     */
+    ChannelDataInput(final ChannelDataInput input) {
+        super(input);
+        channel = input.channel;
     }
 
     /**
