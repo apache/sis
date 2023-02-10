@@ -59,7 +59,7 @@ import static org.apache.sis.internal.storage.StoreUtilities.LOGGER;
  * @version 1.4
  * @since   1.4
  */
-public abstract class FileCacheByteChannel implements SeekableByteChannel {
+public abstract class FileCacheByteChannel extends ByteRangeChannel {
     /**
      * Size of the transfer buffer, in number of bytes.
      */
@@ -488,7 +488,8 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * @param  lower  position (inclusive) of the first byte to be requested.
      * @param  upper  position (exclusive) of the last byte to be requested.
      */
-    final synchronized void rangeOfInterest(final long lower, final long upper) {
+    @Override
+    public final synchronized void rangeOfInterest(final long lower, final long upper) {
         if (upper > lower) {
             rangesOfInterest.add(lower, upper);
         }

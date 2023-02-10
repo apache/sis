@@ -40,6 +40,7 @@ import javafx.util.Duration;
 import org.apache.sis.measure.Range;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.RangeSet;
+import org.apache.sis.internal.storage.io.ByteRangeChannel;
 
 
 /**
@@ -420,7 +421,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     /**
      * Wrapper around a {@link SeekableByteChannel} which will observe the ranges of bytes read or written.
      */
-    final class Observer implements SeekableByteChannel {
+    final class Observer extends ByteRangeChannel {
         /**
          * The channel doing the actual read or write operations.
          */
@@ -432,6 +433,20 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         Observer(final SeekableByteChannel channel) throws IOException {
             this.channel = channel;
             fileSize = channel.size();
+        }
+
+        /**
+         * Specifies a range of bytes which is expected to be read.
+         * This method may do nothing if the backed channel does not support this operation.
+         *
+         * @param  lower  position (inclusive) of the first byte to be requested.
+         * @param  upper  position (exclusive) of the last byte to be requested.
+         */
+        @Override
+        public void rangeOfInterest(final long lower, final long upper) {
+            if (channel instanceof ByteRangeChannel) {
+                ((ByteRangeChannel) channel).rangeOfInterest(lower, upper);
+            }
         }
 
         /**

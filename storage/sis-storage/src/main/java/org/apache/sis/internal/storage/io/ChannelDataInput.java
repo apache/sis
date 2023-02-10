@@ -960,10 +960,10 @@ public class ChannelDataInput extends ChannelData {
      * @param  upper  position (exclusive) of the last byte to be requested.
      */
     public final void rangeOfInterest(long lower, long upper) {
-        if (channel instanceof FileCacheByteChannel) {
+        if (channel instanceof ByteRangeChannel) {
             lower = Math.addExact(lower, channelOffset);
             upper = Math.addExact(upper, channelOffset);
-            ((FileCacheByteChannel) channel).rangeOfInterest(lower, upper);
+            ((ByteRangeChannel) channel).rangeOfInterest(lower, upper);
         }
     }
 
