@@ -47,7 +47,10 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
- * @since   1.1
+ *
+ * @see org.apache.sis.storage.aggregate.CoverageAggregator
+ *
+ * @since 1.1
  */
 public class TileOrganizer {
     /**

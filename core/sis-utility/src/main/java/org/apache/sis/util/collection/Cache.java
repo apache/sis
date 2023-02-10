@@ -209,7 +209,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * {@linkplain Reference weak or soft references}.</p>
      *
      * @param initialCapacity  the initial capacity.
-     * @param costLimit        the maximum cost of objects to keep by strong reference.
+     * @param costLimit        the maximum cost (inclusive) of objects to keep by strong reference.
      * @param soft             if {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
      */
     public Cache(int initialCapacity, final long costLimit, final boolean soft) {

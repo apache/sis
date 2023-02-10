@@ -292,10 +292,6 @@ public class GeodeticCalculator {
      * or return value will use that specified CRS.
      * That CRS is the value returned by {@link #getPositionCRS()}.
      *
-     * <h4>Limitations</h4>
-     * Current implementation uses only spherical formulas.
-     * Implementation using ellipsoidal formulas will be provided in a future Apache SIS release.
-     *
      * @param  crs  the reference system for the {@link Position} objects.
      * @return a new geodetic calculator using the specified CRS.
      */
