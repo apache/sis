@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.io;
 
 import java.util.Collection;
+import java.util.function.UnaryOperator;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,8 +87,17 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         /** The unit of ranges used in HTTP connections. */
         private static final String RANGES_UNIT = "bytes";
 
-        /** The input stream for reading the bytes. */
-        final InputStream input;
+        /**
+         * The input stream without filtering, as specified at construction time.
+         * This is the same instance than {@link #input} when no filtering is applied.
+         */
+        public final InputStream rawInput;
+
+        /**
+         * The input stream for reading the bytes. It may be a wrapper around the input stream
+         * specified at construction time if {@linkplain #setFilter a filter has been set}.
+         */
+        public final InputStream input;
 
         /** Position of the first byte read by the input stream (inclusive). */
         final long start;
@@ -104,6 +114,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         /**
          * Creates information about a connection.
          *
+         * @param owner         the channel which is opening this connection, or {@code null} if none.
          * @param input         the input stream for reading the bytes.
          * @param start         position of the first byte read by the input stream (inclusive).
          * @param end           position of the last byte read by the input stream (inclusive).
@@ -112,12 +123,15 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          *
          * @see #openConnection(long, long)
          */
-        public Connection(final InputStream input, final long start, final long end, final long length, final boolean acceptRanges) {
-            this.input  = input;
+        public Connection(final FileCacheByteChannel owner, final InputStream input,
+                final long start, final long end, final long length, final boolean acceptRanges)
+        {
+            rawInput    = input;
             this.start  = start;
             this.end    = end;
             this.length = length;
             this.acceptRanges = acceptRanges;
+            this.input  = filter(owner, input);     // Must be last.
         }
 
         /**
@@ -125,17 +139,21 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          * The "Content-Length" header value is useful to this class only if the connection was
          * opened for the full file.
          *
+         * @param  owner          the channel which is opening this connection, or {@code null} if none.
          * @param  input          the input stream for reading the bytes.
          * @param  contentLength  length of the response content, or -1 if unknown.
          * @param  rangeUnits     value of "Accept-Ranges" in HTTP header, which lists the accepted units.
          * @throws IllegalArgumentException if the start, end or length cannot be parsed.
          */
-        public Connection(final InputStream input, final long contentLength, final Iterable<String> rangeUnits) {
-            this.input   = input;
+        public Connection(final FileCacheByteChannel owner, final InputStream input,
+                          final long contentLength, final Iterable<String> rangeUnits)
+        {
+            rawInput     = input;
             this.start   = 0;
             this.end     = (contentLength > 0) ? contentLength - 1 : Long.MAX_VALUE;
             this.length  = contentLength;
             acceptRanges = acceptRanges(rangeUnits);
+            this.input   = filter(owner, input);
         }
 
         /**
@@ -145,13 +163,16 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
          *
          * <p>Example of content range value: {@code "Content-Range: bytes 25000-75000/100000"}.</p>
          *
+         * @param  owner         the channel which is opening this connection, or {@code null} if none.
          * @param  input         the input stream for reading the bytes.
          * @param  contentRange  value of "Content-Range" in HTTP header.
          * @param  rangeUnits    value of "Accept-Ranges" in HTTP header, which lists the accepted units.
          * @throws IllegalArgumentException if the start, end or length cannot be parsed.
          */
-        public Connection(final InputStream input, String contentRange, final Collection<String> rangeUnits) {
-            this.input = input;
+        public Connection(final FileCacheByteChannel owner, final InputStream input,
+                          String contentRange, final Collection<String> rangeUnits)
+        {
+            rawInput = input;
             long contentLength = -1;
             contentRange = contentRange.trim();
             int s = contentRange.indexOf(' ');
@@ -175,6 +196,25 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
              * supported units did not changed.
              */
             acceptRanges = rangeUnits.isEmpty() || acceptRanges(rangeUnits);
+            this.input = filter(owner, input);
+        }
+
+        /**
+         * If an optional filtering has been specified, applied it on the given input stream.
+         * This method should be invoked last in constructor, because it needs other fields.
+         *
+         * @param  owner  the channel which is opening a connection, or {@code null} if none.
+         * @param  input  the input stream created for a new connection.
+         * @return the filtered input stream, or {@code input} if there is no filtering.
+         *
+         * @see #setFilter(UnaryOperator)
+         */
+        private InputStream filter(final FileCacheByteChannel owner, InputStream input) {
+            final Filter filter;
+            if (owner != null && (filter = owner.filter) != null) {
+                input = filter.apply(input, start, end);
+            }
+            return input;
         }
 
         /**
@@ -234,6 +274,36 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
      * @see #abort(InputStream)
      */
     private Connection connection;
+
+    /**
+     * An optional filter to apply on the input stream opened for a connections.
+     * A filter may be installed for example for being notified of the ranges of
+     * bytes that are read, or for transforming the data.
+     *
+     * @see #setFilter(Filter)
+     * @see java.io.FilterInputStream
+     * @see java.io.FilterOutputStream
+     */
+    public interface Filter {
+        /**
+         * Invoked when an input stream is created for a new connection.
+         *
+         * @param  input  the input stream for the new connection.
+         * @param  start  position of the first byte to be returned by the input stream.
+         * @param  end    position (inclusive) of the last byte to be returned.
+         * @return the input stream to use for reading data.
+         *
+         * @see java.io.FilterInputStream
+         */
+        InputStream apply(InputStream input, long start, long end);
+    }
+
+    /**
+     * Optional filters to apply on the streams opened for a connection.
+     *
+     * @see #setFilter(Filter)
+     */
+    private Filter filter;
 
     /**
      * Input/output channel on the temporary or cached file where data are copied.
@@ -306,6 +376,19 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     }
 
     /**
+     * Applies an optional filter on the streams opened for each new connection.
+     * A filter may be installed for example for being notified of the ranges of
+     * bytes that are read, or for transforming the data.
+     *
+     * @param  filter  a function which receives in argument the stream created
+     *         for a new connection, and returns the stream to use.
+     *         A {@code null} function remove filtering.
+     */
+    public final void setFilter(final Filter filter) {
+        this.filter = filter;
+    }
+
+    /**
      * Returns the filename to use in error messages.
      *
      * @return a filename for error messages.
@@ -328,24 +411,24 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
     /**
      * Invoked when this channel is no longer interested in reading bytes from the specified stream.
      * This method is invoked for example when this channel needs to skip an arbitrarily large number
-     * of bytes because the {@linkplain #position(long) position changed}. The {@code input} argument
-     * is the value in the record returned by a previous call to {@link #openConnection(long, long)}.
+     * of bytes because the {@linkplain #position(long) position changed}. The {@code connection}
+     * argument is the value returned by a previous call to {@link #openConnection(long, long)}.
      * The boolean return value tells what this method has done:
      *
      * <ul class="verbose">
-     *   <li>If this method returns {@code true}, then the given stream has been closed by this method and this
+     *   <li>If this method returns {@code true}, then the input stream has been closed by this method and this
      *       channel is ready to create a new stream on the next call to {@link #openConnection(long, long)}.</li>
-     *   <li>If this method returns {@code false}, then the given stream is still alive and should continue to be used.
+     *   <li>If this method returns {@code false}, then the input stream is still alive and should continue to be used.
      *       The {@link #openConnection(long, long)} method will <em>not</em> be invoked.
      *       Instead, bytes will be skipped by reading them from the current input stream and caching them.</li>
      * </ul>
      *
-     * @param  input  the input stream to eventually close.
-     * @return whether the given input stream has been closed by this method. If {@code false},
+     * @param  connection  container of the input stream to eventually close.
+     * @return whether the input stream has been closed by this method. If {@code false},
      *         then this channel should continue to use that input stream instead of opening a new connection.
      * @throws IOException if an error occurred while closing the stream or preparing for next read operations.
      */
-    protected boolean abort(InputStream input) throws IOException {
+    protected boolean abort(Connection connection) throws IOException {
         return false;
     }
 
@@ -673,7 +756,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
             cache(buffer.limit(n));
             count += n;
         }
-        if (abort(input)) {
+        if (abort(connection)) {
             connection = null;
         }
         return count;
@@ -729,7 +812,7 @@ public abstract class FileCacheByteChannel implements SeekableByteChannel {
         transfer    = null;
         idleHandler = null;
         try (file) {
-            if (c != null && !abort(c.input)) {
+            if (c != null && !abort(c)) {
                 c.input.close();
             }
         }

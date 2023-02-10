@@ -18,7 +18,10 @@ package org.apache.sis.internal.gui.io;
 
 import java.util.List;
 import java.util.ListIterator;
+import java.util.EnumMap;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.SeekableByteChannel;
 import javafx.application.Platform;
@@ -35,6 +38,7 @@ import javafx.scene.shape.StrokeType;
 import javafx.animation.FadeTransition;
 import javafx.util.Duration;
 import org.apache.sis.measure.Range;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.RangeSet;
 
 
@@ -43,7 +47,7 @@ import org.apache.sis.util.collection.RangeSet;
  * This is a row in the table shown by {@link FileAccessView} table.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
@@ -61,16 +65,6 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
      * Number of pixels between cell right border and background border.
      */
     private static final int MARGIN_RIGHT = 6;
-
-    /**
-     * Color to use for filling the rectangles.
-     */
-    private static final Color FILL_COLOR = Color.LIGHTSEAGREEN;
-
-    /**
-     * Color to use for rectangles border.
-     */
-    private static final Color BORDER_COLOR = FILL_COLOR.darker();
 
     /**
      * Width of the cursor in pixels.
@@ -100,9 +94,33 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
     final String filename;
 
     /**
-     * Range of bytes on which a read or write operation has been performed.
+     * The access mode. Rendering are done in enumeration order.
      */
-    private final RangeSet<Long> accessRanges;
+    private enum Mode {
+        /** Cache a range of bytes. */ CACHE(Color.LIGHTGRAY),
+        /** Read  a range of bytes. */ READ(Color.LIGHTSEAGREEN),
+        /** Write a range of bytes. */ WRITE(Color.LIGHTCORAL);
+
+        /** The color to use for rendering the rectangle. */
+        private final Color border, fill;
+
+        /** Creates a new enumeration value. */
+        private Mode(final Color fill) {
+            this.fill = fill;
+            border = fill.darker();
+        }
+
+        /** Sets the colors of the given rectangle for representing this mode. */
+        final void colorize(final Rectangle r) {
+            r.setStroke(border);
+            r.setFill(fill);
+        }
+    }
+
+    /**
+     * Range of bytes on which read or write operations have been performed.
+     */
+    private final EnumMap<Mode, RangeSet<Long>> accessRanges;
 
     /**
      * Visual representation of {@link #accessRanges}.
@@ -159,7 +177,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         staticGroup   = staticView.getChildren();
         seeksGroup    = seeksView .getChildren();
         accessView    = new Pane(staticView, seeksView);
-        accessRanges  = RangeSet.create(Long.class, true, false);
+        accessRanges  = new EnumMap<>(Mode.class);
         staticView.setAutoSizeChildren(false);
         /*
          * Background rectangle.
@@ -167,7 +185,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         final Rectangle background = new Rectangle();
         background.setY(MARGIN_TOP);
         background.setHeight(HEIGHT);
-        background.setStroke(FILL_COLOR.brighter());
+        background.setStroke(Mode.READ.fill.brighter());
         background.setFill(Color.TRANSPARENT);
         background.setStrokeType(StrokeType.INSIDE);
         staticGroup.add(background);
@@ -218,35 +236,58 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
      * Reports a read or write operation on a range of bytes.
      * This method must be invoked from JavaFX thread.
      *
-     * @param  position  offset of the first byte read or written.
-     * @param  count     number of bytes read or written.
-     * @param  write     {@code false} for a read operation, or {@code true} for a write operation.
+     * @param  lower  offset of the first byte read or written.
+     * @param  count  offset after the last byte read or written.
+     * @param  mode   whether a read, write or cache operation is performed.
+     *
+     * @see #addRangeLater(long, long, Mode)
      */
-    private void addRange(final long position, final int count, final boolean write) {
-        cursorPosition = position;
-        final boolean add = accessRanges.add(position, position + count);
+    private void addRange(final long lower, final long upper, final Mode mode) {
+        cursorPosition = lower;
+        /*
+         * Add the range for the specified mode and remove it for all other modes.
+         * Consequently the visual component will show the last access mode for
+         * the specified range of bytes.
+         */
+        RangeSet<Long> ranges = accessRanges.get(mode);
+        if (ranges == null) {
+            ranges = RangeSet.create(Long.class, true, false);
+            accessRanges.put(mode, ranges);
+        }
+        boolean add = ranges.add(lower, upper);
+        for (final RangeSet<Long> other : accessRanges.values()) {
+            if (other != null && other != ranges) {
+                add |= other.remove(lower, upper);
+            }
+        }
+        /*
+         * Update the visual component showing the position of last operation.
+         * An animation effect is used.
+         */
         final double scale = columnWidth / fileSize;
         if (Double.isFinite(scale)) {
             if (add) {
                 adjustSizes(scale, false);
             }
-            final Rectangle r;
-            if (cursor == null) {
-                r = new Rectangle(0, MARGIN_TOP, CURSOR_WIDTH, HEIGHT);
-                r.setArcWidth(CURSOR_WIDTH/2 - 1);
-                r.setArcHeight(HEIGHT/2 - 2);
-                r.setStroke(Color.ORANGE);
-                r.setFill(Color.YELLOW);
-                accessView.getChildren().add(r);
-                cursor = new FadeTransition(CURSOR_DURATION, r);
-                cursor.setOnFinished(this);
-                cursor.setFromValue(1);
-                cursor.setToValue(0);
-            } else {
-                r = (Rectangle) cursor.getNode();
+            if (mode != Mode.CACHE) {
+                final Rectangle r;
+                if (cursor == null) {
+                    r = new Rectangle(0, MARGIN_TOP, CURSOR_WIDTH, HEIGHT);
+                    r.setArcWidth(CURSOR_WIDTH/2 - 1);
+                    r.setArcHeight(HEIGHT/2 - 2);
+                    r.setStroke(Color.ORANGE);
+                    r.setFill(Color.YELLOW);
+                    accessView.getChildren().add(r);
+                    cursor = new FadeTransition(CURSOR_DURATION, r);
+                    cursor.setOnFinished(this);
+                    cursor.setFromValue(1);
+                    cursor.setToValue(0);
+                } else {
+                    r = (Rectangle) cursor.getNode();
+                }
+                r.setX(Math.max(0, Math.min(scale*lower - CURSOR_WIDTH/2, columnWidth - CURSOR_WIDTH)));
+                cursor.playFromStart();
             }
-            r.setX(Math.max(0, Math.min(scale*position - CURSOR_WIDTH/2, columnWidth - CURSOR_WIDTH)));
-            cursor.playFromStart();
         }
     }
 
@@ -287,34 +328,93 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         /*
          * Adjust the position and width of all rectangles.
          */
-        for (final Range<Long> range : accessRanges) {
-            final long min = range.getMinValue();
-            final long max = range.getMaxValue();
-            final double x = scale * min;
-            final double width = scale * (max - min);
-            if (bars.hasNext()) {
-                final Rectangle r = (Rectangle) bars.next();
-                if (resized || r.getX() + r.getWidth() >= x) {
-                    r.setX(x);
-                    r.setWidth(width);
-                    continue;
+        for (final EnumMap.Entry<Mode, RangeSet<Long>> entry : accessRanges.entrySet()) {
+            final Mode mode = entry.getKey();
+            for (final Range<Long> range : entry.getValue()) {
+                final long min = range.getMinValue();
+                final long max = range.getMaxValue();
+                final double x = scale * min;
+                final double width = scale * (max - min);
+                if (bars.hasNext()) {
+                    final Rectangle r = (Rectangle) bars.next();
+                    if (resized || r.getX() + r.getWidth() >= x) {
+                        r.setX(x);
+                        r.setWidth(width);
+                        mode.colorize(r);
+                        continue;
+                    }
+                    /*
+                     * Newly added range may have merged two or more ranges in a single one.
+                     * Discard all ranges that are fully on the left side of current range.
+                     * This is not really mandatory, but we do that in an effort to keep the
+                     * most "relevant" rectangles (before change) for the new set of ranges.
+                     */
+                    bars.remove();
                 }
-                /*
-                 * Newly added range may have merged two or more ranges in a single one.
-                 * Discard all ranges that are fully on the left side of current range.
-                 * This is not really mandatory, but we do that in an effort to keep the
-                 * most "relevant" rectangles (before change) for the new set of ranges.
-                 */
-                bars.remove();
+                final Rectangle r = new Rectangle(x, MARGIN_TOP, width, HEIGHT);
+                r.setStrokeType(StrokeType.INSIDE);
+                mode.colorize(r);
+                bars.add(r);
             }
-            final Rectangle r = new Rectangle(x, MARGIN_TOP, width, HEIGHT);
-            r.setStrokeType(StrokeType.INSIDE);
-            r.setStroke(BORDER_COLOR);
-            r.setFill(FILL_COLOR);
-            bars.add(r);
         }
         // Remove all remaining children, if any.
         staticGroup.remove(bars.nextIndex(), staticGroup.size());
+    }
+
+    /**
+     * A range of bytes determined from the background thread and to be consumed in the JavaFX thread.
+     * This range can be updated as long as it has not been consumed. Those modifications reduce the
+     * amount of events to be consumed by the JavaFX thread.
+     */
+    private final class NextAddRange implements Runnable {
+        /** Whether the range of bytes has been read, written or cached. */
+        private final Mode mode;
+
+        /** The range of bytes, modifiable as long as the event has not been consumed. */
+        long lower, upper;
+
+        /** Creates a new range of bytes for the given access mode. */
+        NextAddRange(final Mode mode) {
+            this.mode = mode;
+        }
+
+        /** Invoked in the JavaFX thread for saving the range in {@link #accessRanges}. */
+        @Override public void run() {
+            synchronized (FileAccessItem.this) {
+                if (next == this) {
+                    next = null;
+                }
+            }
+            addRange(lower, upper, mode);
+        }
+    }
+
+    /**
+     * The next range of bytes to be merged into {@link #accessRanges}.
+     * Accesses to this field must be synchronized on {@code this}.
+     * The instance is created in a background thread and consumed in the JavaFX thread.
+     */
+    private NextAddRange next;
+
+    /**
+     * Reports a read or write operation on a range of bytes.
+     * This method should be invoked from a background thread.
+     *
+     * @param  lower  offset of the first byte read or written.
+     * @param  count  number of bytes read or written.
+     * @param  mode   whether a read, write or cache operation is performed.
+     */
+    private synchronized void addRangeLater(long lower, final long count, final Mode mode) {
+        long upper = Numerics.saturatingAdd(lower, count);
+        if (next != null && next.mode == mode && next.upper >= lower && next.lower <= upper) {
+            lower = Math.min(next.lower, lower);
+            upper = Math.max(next.upper, upper);
+        } else {
+            next = new NextAddRange(mode);
+            Platform.runLater(next);
+        }
+        next.lower = lower;
+        next.upper = upper;
     }
 
     /**
@@ -341,7 +441,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         public int read(final ByteBuffer dst) throws IOException {
             final long position = position();
             final int count = channel.read(dst);
-            Platform.runLater(() -> addRange(position, count, false));
+            addRangeLater(position, count, Mode.READ);
             return count;
         }
 
@@ -352,7 +452,7 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         public int write(final ByteBuffer src) throws IOException {
             final long position = position();
             final int count = channel.write(src);
-            Platform.runLater(() -> addRange(position, count, true));
+            addRangeLater(position, count, Mode.WRITE);
             return count;
         }
 
@@ -406,6 +506,130 @@ final class FileAccessItem implements Runnable, EventHandler<ActionEvent> {
         public void close() throws IOException {
             Platform.runLater(FileAccessItem.this);
             channel.close();
+        }
+    }
+
+    /**
+     * Wrapper around an {@link InputStream} which will observe the ranges of bytes read.
+     * It can be used directly when the input is an {@link InputStream}, or indirectly
+     * when the channel observed by {@link Observer} is itself wrapping an input stream.
+     * In such case, the bytes read from the input stream are typically cached in some temporary file.
+     *
+     * <h2>Implementation note</h2>
+     * We do not extend {@link java.io.FilterInputStream} because we override almost all methods anyway.
+     * This implementation avoids using a non-final {@code volatile} field for the wrapped input stream.
+     */
+    final class InputObserver extends InputStream {
+        /** The source input stream. */
+        private final InputStream in;
+
+        /** The mode, either read or cache. */
+        private final Mode mode;
+
+        /** Position of the stream, current and marked. */
+        private long position, mark;
+
+        /** Creates a new observer for the given input stream. */
+        InputObserver(final InputStream in) {
+            this.in   = in;
+            this.mode = Mode.READ;
+        }
+
+        /** Creates a new observer for the given input stream used as a cache. */
+        InputObserver(final InputStream in, final long start) {
+            this.in   = in;
+            this.mode = Mode.CACHE;
+            position  = start;
+        }
+
+        /**
+         * Declares that a range of bytes has been read.
+         * This method update the rectangles in the JavaFX view.
+         *
+         * @param  count  number of bytes that have been read.
+         * @param  mode   the mode, usually {@link #mode}.
+         */
+        private void range(final long count, final Mode mode) {
+            if (count > 0) {
+                addRangeLater(position, count, mode);
+                if (position > (position += count)) {
+                    position = Long.MAX_VALUE;
+                }
+            }
+        }
+
+        /**
+         * Declares that a range of bytes has been read.
+         * This method update the rectangles in the JavaFX view.
+         *
+         * @param  count  number of bytes that have been read.
+         */
+        private void range(final long count) {
+            range(count, mode);
+        }
+
+        /** Returns the next byte or -1 on EOF. */
+        @Override public int read() throws IOException {
+            final int b = in.read();
+            if (b >= 0) range(1);
+            return b;
+        }
+
+        /** Stores a sequence of bytes in the specified array. */
+        @Override public int read(final byte[] b, final int off, int len) throws IOException {
+            range(len = in.read(b, off, len));
+            return len;
+        }
+
+        /** Stores a sequence of bytes in a newly allocated array. */
+        @Override public byte[] readNBytes(final int len) throws IOException {
+            final byte[] b = in.readNBytes(len);
+            range(b.length);
+            return b;
+        }
+
+        /** Stores a sequence of bytes in the specified output stream. */
+        @Override public long transferTo(final OutputStream out) throws IOException {
+            final long n = in.transferTo(out);
+            range(n);
+            return n;
+        }
+
+        /** Skips some bytes without reporting them as read. */
+        @Override public long skip(long n) throws IOException {
+            range(n = in.skip(n), Mode.CACHE);
+            return n;
+        }
+
+        /** Returns an estimate of the number of bytes that can be read. */
+        @Override public int available() throws IOException {
+            return in.available();
+        }
+
+        /** Tells whether the input stream supports marks. */
+        @Override public boolean markSupported() {
+            return in.markSupported();
+        }
+
+        /** Marks the current position in this input stream. */
+        @Override public void mark(final int readlimit) {
+            in.mark(readlimit);
+            mark = position;
+        }
+
+        /** Repositions this stream to the position of the last mark. */
+        @Override public void reset() throws IOException {
+            in.reset();
+            position = mark;
+        }
+
+        /** Closes the wrapped input stream. */
+        @Override public void close() throws IOException {
+            if (mode == Mode.READ) {
+                Platform.runLater(FileAccessItem.this);
+                // Otherwise will be removed by `Observer`.
+            }
+            in.close();
         }
     }
 

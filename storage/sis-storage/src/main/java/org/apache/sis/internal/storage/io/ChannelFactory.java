@@ -22,7 +22,6 @@ import java.util.HashSet;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.function.UnaryOperator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -132,36 +131,10 @@ public abstract class ChannelFactory {
      *                         If the URL is not encoded, then {@code null}. This argument is ignored if the given
      *                         input does not need to be converted from URL to {@code File}.
      * @param  options         the options to use for creating a new byte channel. Can be null or empty for read-only.
-     * @param  wrapper         a function for creating wrapper around the factory, or {@code null} if none.
-     *                         It can be used for installing listener or for transforming data on the fly.
      * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException if an error occurred while processing the given input.
      */
-    public static ChannelFactory prepare(
-            final Object storage, final boolean allowWriteOnly,
-            final String encoding, final OpenOption[] options,
-            final UnaryOperator<ChannelFactory> wrapper) throws IOException
-    {
-        ChannelFactory factory = prepare(storage, allowWriteOnly, encoding, options);
-        if (factory != null && wrapper != null) {
-            factory = wrapper.apply(factory);
-        }
-        return factory;
-    }
-
-    /**
-     * Returns a byte channel factory without wrappers, or {@code null} if unsupported.
-     * This method performs the same work than {@linkplain #prepare(Object, boolean, String,
-     * OpenOption[], UnaryOperator, UnaryOperator) above method}, but without wrappers.
-     *
-     * @param  storage         the stream or the file to open, or {@code null}.
-     * @param  allowWriteOnly  whether to allow wrapping {@link WritableByteChannel} and {@link OutputStream}.
-     * @param  encoding        if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
-     * @param  options         the options to use for creating a new byte channel. Can be null or empty for read-only.
-     * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
-     * @throws IOException if an error occurred while processing the given input.
-     */
-    private static ChannelFactory prepare(Object storage, final boolean allowWriteOnly,
+    public static ChannelFactory prepare(Object storage, final boolean allowWriteOnly,
             final String encoding, final OpenOption[] options) throws IOException
     {
         /*
