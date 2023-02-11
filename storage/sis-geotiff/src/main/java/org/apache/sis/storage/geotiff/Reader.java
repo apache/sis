@@ -453,6 +453,7 @@ final class Reader extends GeoTIFF {
 
     /**
      * Closes this reader.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws IOException if an error occurred while closing this reader.
      */

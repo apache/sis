@@ -61,16 +61,13 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The netCDF file to read.
      * This file is set at construction time.
-     *
-     * <p>This {@code DecoderWrapper} class does <strong>not</strong> close this file.
-     * Closing this file after usage is the user responsibility.</p>
      */
     private final NetcdfFile file;
 
@@ -93,7 +90,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * The discrete sampling features or grids found by UCAR library, or {@code null} if none.
-     * This reference is kept for making possible to close it in {@link #close()}.
+     * This reference is kept for making possible to close it in {@link #close(DataStore)}.
      *
      * @see #getDiscreteSampling(Object)
      */
@@ -668,15 +665,18 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Closes the netCDF file.
      *
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
      * @throws IOException if an error occurred while closing the file.
      */
     @Override
-    public void close() throws IOException {
-        if (features != null) {
-            features.close();
-            features = null;
+    public void close(final DataStore lock) throws IOException {
+        synchronized (lock) {
+            if (features != null) {
+                features.close();
+                features = null;
+            }
+            file.close();
         }
-        file.close();
     }
 
     /**

@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import org.apache.sis.gui.DataViewer;
 import org.apache.sis.internal.system.Threads;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.Exceptions;
 
@@ -171,20 +172,16 @@ public final class BackgroundThreads extends AtomicInteger implements ThreadFact
      * This method returns soon but the background threads may continue for some time if they did not finished
      * their task yet.
      *
-     * @throws Exception if an error occurred while closing at least one data store.
+     * @throws DataStoreException if an error occurred while closing at least one data store.
      */
-    public static void stop() throws Exception {
-        EXECUTOR.shutdown();
+    public static void stop() throws DataStoreException {
+        EXECUTOR.shutdown();            // Prevent scheduling of more tasks.
+        DataStoreOpener.closeAll();     // Throws AsynchronousCloseException in threads that are reading.
         try {
             EXECUTOR.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
-            /*
-             * Someone does not want to wait for termination.
-             * Closes the data stores now even if some of them may still be in use.
-             */
             interrupted("stop", e);
         }
-        DataStoreOpener.closeAll();
     }
 
     /**

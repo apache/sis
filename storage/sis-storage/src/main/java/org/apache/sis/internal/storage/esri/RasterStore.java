@@ -508,7 +508,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
 
     /**
      * Closes this data store and releases any underlying resources.
-     * Shall be overridden by subclasses in a synchronized method.
+     * Shall be overridden by subclasses inside a synchronized block.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */

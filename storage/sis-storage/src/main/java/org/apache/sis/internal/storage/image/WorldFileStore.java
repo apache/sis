@@ -111,7 +111,7 @@ import org.apache.sis.setup.OptionKey;
  * is known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
  */
 public class WorldFileStore extends PRJDataStore {
@@ -166,7 +166,7 @@ public class WorldFileStore extends PRJDataStore {
      *
      * @see #reader()
      */
-    private ImageReader reader;
+    private volatile ImageReader reader;
 
     /**
      * The object to close when {@code WorldFileStore} is closed. It may be a different object than
@@ -286,6 +286,7 @@ public class WorldFileStore extends PRJDataStore {
      * does not support the locale, the reader's default locale will be used.
      */
     private void configureReader() {
+        final ImageReader reader = this.reader;
         try {
             reader.setLocale(listeners.getLocale());
         } catch (IllegalArgumentException e) {
@@ -432,6 +433,7 @@ loop:   for (int convention=0;; convention++) {
      * @return the requested names, or an empty array if none or unknown.
      */
     public String[] getImageFormat(final boolean asMimeType) {
+        final ImageReader reader = this.reader;
         if (reader != null) {
             final ImageReaderSpi provider = reader.getOriginatingProvider();
             if (provider != null) {
@@ -804,34 +806,38 @@ loop:   for (int convention=0;; convention++) {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * If a read operation is in progress, it will be aborted.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
+    public void close() throws DataStoreException {
         listeners.close();                  // Should never fail.
         final ImageReader codec = reader;
-        final Closeable  stream = toClose;
-        reader       = null;
-        toClose      = null;
-        metadata     = null;
-        components   = null;
-        gridGeometry = null;
-        try {
-            Object input = null;
-            if (codec != null) {
-                input = codec.getInput();
-                codec.setInput(null);
-                codec.dispose();
-                if (input instanceof AutoCloseable) {
-                    ((AutoCloseable) input).close();
+        if (codec != null) codec.abort();
+        synchronized (this) {
+            final Closeable  stream = toClose;
+            reader       = null;
+            toClose      = null;
+            metadata     = null;
+            components   = null;
+            gridGeometry = null;
+            try {
+                Object input = null;
+                if (codec != null) {
+                    input = codec.getInput();
+                    codec.reset();
+                    codec.dispose();
+                    if (input instanceof AutoCloseable) {
+                        ((AutoCloseable) input).close();
+                    }
                 }
+                if (stream != null && stream != input) {
+                    stream.close();
+                }
+            } catch (Exception e) {
+                throw new DataStoreException(e);
             }
-            if (stream != null && stream != input) {
-                stream.close();
-            }
-        } catch (Exception e) {
-            throw new DataStoreException(e);
         }
     }
 }

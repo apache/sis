@@ -273,7 +273,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
      * @see #openConnection(long, long)
      * @see #abort(InputStream)
      */
-    private Connection connection;
+    private volatile Connection connection;
 
     /**
      * An optional filter to apply on the input stream opened for a connections.
@@ -747,17 +747,18 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     private long drainAndAbort() throws IOException {
         assert Thread.holdsLock(this);
         long count = 0;
-        final InputStream input = connection.input;
-        for (int c; (c = input.available()) > 0;) {
+        final Connection c = connection;
+        final InputStream input = c.input;
+        for (int r; (r = input.available()) > 0;) {
             final ByteBuffer buffer = transfer();
             buffer.clear();
-            if (c < BUFFER_SIZE) buffer.limit(c);
+            if (r < BUFFER_SIZE) buffer.limit(r);
             final int n = input.read(buffer.array(), 0, buffer.limit());
             if (n < 0) break;
             cache(buffer.limit(n));
             count += n;
         }
-        if (abort(connection)) {
+        if (abort(c)) {
             connection = null;
         }
         return count;
@@ -803,18 +804,22 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
 
     /**
      * Closes this channel and releases resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws IOException if an error occurred while closing the channel.
      */
     @Override
-    public synchronized void close() throws IOException {
+    public void close() throws IOException {
         final Connection c = connection;
-        connection  = null;
-        transfer    = null;
-        idleHandler = null;
         try (file) {
             if (c != null && !abort(c)) {
                 c.input.close();
+            }
+        } finally {
+            synchronized (this) {
+                transfer    = null;
+                idleHandler = null;
+                connection  = null;
             }
         }
     }

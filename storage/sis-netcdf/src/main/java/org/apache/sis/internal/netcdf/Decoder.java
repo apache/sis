@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opengis.util.NameSpace;
@@ -61,7 +60,7 @@ import ucar.nc2.constants.CF;
  * @version 1.4
  * @since   0.3
  */
-public abstract class Decoder extends ReferencingFactoryContainer implements Closeable {
+public abstract class Decoder extends ReferencingFactoryContainer {
     /**
      * The logger to use for messages other than warnings specific to the file being read.
      * This is rarely used directly because {@code listeners.getLogger()} should be preferred.
@@ -525,4 +524,12 @@ public abstract class Decoder extends ReferencingFactoryContainer implements Clo
     final Resources resources() {
         return Resources.forLocale(listeners.getLocale());
     }
+
+    /**
+     * Closes this decoder and releases resources.
+     *
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
+     * @throws IOException if an error occurred while closing the decoder.
+     */
+    public abstract void close(DataStore lock) throws IOException;
 }

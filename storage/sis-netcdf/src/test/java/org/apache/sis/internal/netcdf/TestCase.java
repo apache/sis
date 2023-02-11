@@ -27,6 +27,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.internal.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.DataStoreMock;
 import org.opengis.test.dataset.TestData;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.NetcdfFile;
@@ -42,7 +43,7 @@ import static org.junit.Assert.*;
  * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 public abstract class TestCase extends org.apache.sis.test.TestCase {
@@ -175,13 +176,14 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      */
     @AfterClass
     public static void closeAllDecoders() throws IOException {
+        final var ds = new DataStoreMock("lock");
         Throwable failure = null;
         synchronized (DECODERS) {               // Paranoiac safety.
             final Iterator<Decoder> it = DECODERS.values().iterator();
             while (it.hasNext()) {
                 final Decoder decoder = it.next();
                 try {
-                    decoder.close();
+                    decoder.close(ds);
                 } catch (Throwable e) {
                     if (failure == null) {
                         failure = e;
