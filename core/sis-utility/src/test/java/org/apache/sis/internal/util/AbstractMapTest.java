@@ -17,7 +17,6 @@
 package org.apache.sis.internal.util;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -38,16 +37,15 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-public final strictfp class AbstractMapTest extends TestCase {
+public final class AbstractMapTest extends TestCase {
     /**
      * A dummy implementation of {@link AbstractMap} which will contain the English words
      * for numbers 1 to 4 inclusive. This implementation does not check argument validity
      * or consistency.
      */
     private static final class Count extends AbstractMap<Integer,String> {
-        private final List<String> values = new ArrayList<>(Arrays.asList("one", "two", "three"));
+        private final List<String> values = new ArrayList<>(List.of("one", "two", "three"));
 
         @Override public    void    clear   ()                    {       values.clear();}
         @Override public    String  get     (Object  k)           {return values.get(((Integer) k) - 1);}

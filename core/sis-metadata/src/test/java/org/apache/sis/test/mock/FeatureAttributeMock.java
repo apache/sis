@@ -30,7 +30,6 @@ import org.opengis.util.LocalName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @XmlType(name = "FC_FeatureAttribute_Type", namespace = LegacyNamespaces.GFC)
 @XmlRootElement(name = "FC_FeatureAttribute", namespace = LegacyNamespaces.GFC)

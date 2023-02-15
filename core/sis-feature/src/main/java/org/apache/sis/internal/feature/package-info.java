@@ -28,8 +28,7 @@
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
- * @module
  */
 package org.apache.sis.internal.feature;

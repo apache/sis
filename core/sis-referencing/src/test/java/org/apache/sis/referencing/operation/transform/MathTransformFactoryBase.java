@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
@@ -41,9 +40,8 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-strictfp class MathTransformFactoryBase implements MathTransformFactory {
+class MathTransformFactoryBase implements MathTransformFactory {
     /**
      * The message for all exception.
      */
@@ -64,7 +62,7 @@ strictfp class MathTransformFactoryBase implements MathTransformFactory {
     /** Default implementation returns an empty set. */
     @Override
     public Set<OperationMethod> getAvailableMethods(Class<? extends SingleOperation> type) {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /** Default implementation unconditionally returns {@code null}. */

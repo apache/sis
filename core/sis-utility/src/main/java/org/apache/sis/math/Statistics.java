@@ -65,18 +65,18 @@ import static java.lang.Double.doubleToLongBits;
  * The following examples assume that a <var>y</var>=<var>f</var>(<var>x</var>) function
  * is defined. A simple usage is:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Statistics stats = new Statistics("y");
  *     for (int i=0; i<numberOfValues; i++) {
  *         stats.accept(f(i));
  *     }
  *     System.out.println(stats);
- * }
+ *     }
  *
  * Following example computes the statistics on the first and second derivatives
  * in addition to the statistics on the sample values:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     final double x₀ = ...; // Put here the x value at i=0
  *     final double Δx = ...; // Put here the interval between x values
  *     Statistics stats = Statistics.forSeries("y", "∂y/∂x", "∂²y/∂x²");
@@ -85,12 +85,11 @@ import static java.lang.Double.doubleToLongBits;
  *     }
  *     stats.differences().scale(1/Δx);
  *     System.out.println(stats);
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Serializable {
     /**
@@ -105,6 +104,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      *
      * @see #name()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString name;
 
     /**
@@ -210,19 +210,15 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
             if (!Double.isNaN(mean) || !Double.isNaN(standardDeviation)) {
                 ArgumentChecks.ensureBetween("mean", minimum, maximum, mean);
             }
-            final DoubleDouble sd = DoubleDouble.createAndGuessError(mean);
-            sd.multiply(count);
+            final DoubleDouble sd = DoubleDouble.of(mean, true).multiply(count);
             sum = sd.value;
             lowBits = sd.error;
             /*
              * squareSum = standardDeviation² × (allPopulation ? count : count-1) + sum²/count
              */
-            sd.square();
-            sd.divide(count);
-            final DoubleDouble sq = DoubleDouble.createAndGuessError(standardDeviation);
-            sq.square();
-            sq.multiply(allPopulation ? count : count-1);
-            sq.add(sd);
+            DoubleDouble sq = DoubleDouble.of(standardDeviation, true);
+            sq = sq.square().multiply(allPopulation ? count : count-1);
+            sq = sq.add(sd.square().divide(count));
             squareSum = sq.value;
             squareLowBits = sq.error;
         }
@@ -239,9 +235,9 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * interval. In order to get the discrete derivatives, the following method needs to be invoked
      * <em>after</em> all sample values have been added:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     statistics.differences().scale(1/Δx);
-     * }
+     *     }
      *
      * The maximal "derivative" order is determined by the length of the {@code differenceNames} array:
      *
@@ -330,7 +326,7 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
     /**
      * Implementation of {@link #accept(double)} for real (non-NaN) numbers.
      *
-     * @see org.apache.sis.internal.util.DoubleDouble#addKahan(double)
+     * @see <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>
      */
     private void real(double sample) {
         /*
@@ -545,12 +541,12 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * where Δ<var>x</var> is the constant interval between the <var>x</var> values of the
      * <var>y</var>=<var>f</var>(<var>x</var>) function:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Statistics derivative = statistics.differences();
      *     derivative.scale(1/Δx); // Shall be invoked only once.
      *     Statistics secondDerivative = derivative.differences();
      *     // Do not invoke scale(1/Δx) again.
-     * }
+     *     }
      *
      * This method returns a non-null value only if this {@code Statistics} instance has been created by a
      * call to the {@link #forSeries forSeries(…)} method with a non-empty {@code differenceNames} array.
@@ -571,14 +567,13 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * Returns a string representation of this statistics. This string will span
      * multiple lines, one for each statistical value. For example:
      *
-     * {@preformat text
+     * <pre class="text">
      *     Number of values:     8726
      *     Minimum value:       6.853
      *     Maximum value:       8.259
      *     Mean value:          7.421
      *     Root Mean Square:    7.846
-     *     Standard deviation:  6.489
-     * }
+     *     Standard deviation:  6.489</pre>
      *
      * @return a string representation of this statistics object.
      *
@@ -649,7 +644,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private static final class WithDelta extends Statistics {
         /**
@@ -680,9 +674,9 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
          * {@link #delta} statistics. This constructor allows chaining different kind of
          * statistics objects. For example, one could write:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     new Statistics.Delta(new Statistics.Delta());
-         * }
+         *     }
          *
          * which would compute statistics of sample values, statistics of difference between
          * consecutive sample values, and statistics of difference of difference between

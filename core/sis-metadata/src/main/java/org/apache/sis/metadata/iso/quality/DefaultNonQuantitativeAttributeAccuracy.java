@@ -28,11 +28,10 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  *
  * @deprecated Renamed {@link DefaultNonQuantitativeAttributeCorrectness} for following a renaming in ISO 19157:2013.
  */
-@Deprecated
+@Deprecated(since="1.3")
 @XmlType(name = "DQ_NonQuantitativeAttributeAccuracy_Type", namespace = LegacyNamespaces.GMD)
 @XmlRootElement(name = "DQ_NonQuantitativeAttributeAccuracy", namespace = LegacyNamespaces.GMD)
 public class DefaultNonQuantitativeAttributeAccuracy extends DefaultNonQuantitativeAttributeCorrectness

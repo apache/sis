@@ -33,7 +33,6 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -44,7 +43,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.8
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -152,6 +150,12 @@ public final class Resources extends IndexedResourceBundle {
          * A randomized process such as error diffusion has been applied to the image data.
          */
         public static final short RandomizedProcessApplied = 15;
+
+        /**
+         * Interpreted parameter “{0}” as “{1}” because the former is invalid for the “{2}” map
+         * projection.
+         */
+        public static final short ReassignedParameter_3 = 32;
 
         /**
          * The “{0}” GeoTIFF file does not specify the values format.

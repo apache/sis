@@ -16,10 +16,9 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.lang.reflect.Field;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
@@ -42,10 +41,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(UnitDimensionTest.class)
-public final strictfp class SystemUnitTest extends TestCase {
+public final class SystemUnitTest extends TestCase {
     /**
      * Verifies the {@link SystemUnit#related} array content of all system units declared in {@link Units}.
      * This tests verify that the array has been fully populated and that the converter of all units are
@@ -131,11 +129,11 @@ public final strictfp class SystemUnitTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("METRE",  Units.METRE .getBaseUnits());      // Null value as per JSR-363 specification.
+        assertNull("METRE",  Units.METRE .getBaseUnits());      // Null value as per JSR-385 specification.
         assertNull("SECOND", Units.SECOND.getBaseUnits());
         assertTrue("UNITY",  Units.UNITY .getBaseUnits().isEmpty());
 
-        assertMapEquals(Collections.singletonMap(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
+        assertMapEquals(Map.of(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
 
         final Map<Unit<?>,Integer> expected = new HashMap<>(4);
         assertNull(expected.put(Units.KILOGRAM, 1));
@@ -200,7 +198,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertTrue (Units.RADIAN.isCompatible(Units.RADIAN));
         assertFalse(Units.RADIAN.isCompatible(Units.METRE ));
         assertFalse(Units.METRE .isCompatible(Units.RADIAN));
-        assertTrue (Units.UNITY .isCompatible(Units.RADIAN));   // Really true (not false) as per JSR-363 specification.
+        assertTrue (Units.UNITY .isCompatible(Units.RADIAN));   // Really true (not false) as per JSR-385 specification.
         assertTrue (Units.RADIAN.isCompatible(Units.UNITY ));
     }
 
@@ -310,7 +308,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         /*
          * Verify that the unit cannot be casted to an incompatible units.
          */
-        for (final Unit<Length> unit : Arrays.asList(Units.METRE, anonymous, otherName)) {
+        for (final Unit<Length> unit : List.of(Units.METRE, anonymous, otherName)) {
             try {
                 unit.asType(Time.class);
                 fail("Expected an exception for incompatible quantity types.");
@@ -338,7 +336,7 @@ public final strictfp class SystemUnitTest extends TestCase {
         assertEquals("Should have a name since we invoked 'alternate'.", "strange", named.getSymbol());
         assertSame  ("Should prefer the named instance.", named, Units.METRE.asType(Strange.class));
         assertSame  ("Go back to the fundamental unit.",  Units.METRE, named.asType(Length.class));
-        for (final Unit<Strange> unit : Arrays.asList(strange, named)) {
+        for (final Unit<Strange> unit : List.of(strange, named)) {
             try {
                 unit.asType(Time.class);
                 fail("Expected an exception for incompatible quantity types.");

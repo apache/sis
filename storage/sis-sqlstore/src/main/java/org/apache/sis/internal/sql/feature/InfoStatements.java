@@ -73,7 +73,6 @@ import org.apache.sis.util.Utilities;
  * @see <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access — Part 2: SQL option</a>
  *
  * @version 1.1
- * @module
  */
 public class InfoStatements implements Localized, AutoCloseable {
     /**

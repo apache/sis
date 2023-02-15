@@ -18,7 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -42,7 +41,6 @@ import org.opengis.filter.LogicalOperatorName;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
     /**
@@ -53,7 +51,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     /**
      * The filter on which to apply the logical operator.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Filter<? super R>[] operands;
 
     /**
@@ -64,7 +62,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     @SuppressWarnings({"unchecked", "rawtypes"})
     LogicalFilter(final Collection<? extends Filter<? super R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
-        operands = op.toArray(new Filter[op.size()]);
+        operands = op.toArray(Filter[]::new);
         if (operands.length < 2) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.TooFewArguments_2, 2, operands.length));
         }
@@ -221,7 +219,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         private static final long serialVersionUID = -1296823195138427781L;
 
         /** The filter to negate. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final Filter<? super R> operand;
 
         /** Creates a new operator. */
@@ -247,7 +245,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
         /** Returns the singleton filter used by this operation. */
         @Override public List<Filter<? super R>> getOperands() {
-            return Collections.singletonList(operand);
+            return List.of(operand);
         }
 
         /** Evaluates this filter on the given object. */

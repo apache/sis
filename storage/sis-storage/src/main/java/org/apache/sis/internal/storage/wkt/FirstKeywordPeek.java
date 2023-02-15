@@ -33,11 +33,11 @@ import org.apache.sis.util.Characters;
 
 /**
  * Inspects the type of a text file based on the first keyword.
+ * This base class is immutable and thread-safe (but subclasses may not be).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public abstract class FirstKeywordPeek {
     /**
@@ -198,7 +198,7 @@ public abstract class FirstKeywordPeek {
                 do n = channel.read(buffer);
                 while (n >= 0 && buffer.hasRemaining());
             }
-            return probeContent((ByteBuffer) buffer.flip().mark(), null);        // TODO: remove cast in JDK9.
+            return probeContent(buffer.flip().mark(), null);
         } catch (IOException e) {
             throw new DataStoreException(e);
         }

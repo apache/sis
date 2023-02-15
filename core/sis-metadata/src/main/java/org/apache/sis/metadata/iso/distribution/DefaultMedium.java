@@ -67,7 +67,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_Medium_Type", propOrder = {
     "identifier",           // New in ISO 19115-3
@@ -242,7 +241,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      * @return density at which the data is recorded, or {@code null}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getDensity")
     @XmlElement(name = "density", namespace = LegacyNamespaces.GMD)
     public Collection<Double> getDensities() {
@@ -276,7 +275,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
      *
      * @param  newValues  the new densities.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDensities(final Collection<? extends Double> newValues) {
         setDensity(LegacyPropertyAdapter.getSingleton(newValues, Double.class, null, DefaultMedium.class, "setDensities"));
     }

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.io.wkt;
 
-import java.util.Collections;
+import java.util.Map;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
@@ -59,7 +59,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn({
     MathTransformParserTest.class,
@@ -74,7 +73,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
     org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class,
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class
 })
-public final strictfp class GeodeticObjectParserTest extends TestCase {
+public final class GeodeticObjectParserTest extends TestCase {
     /**
      * The parser to use for the test.
      */
@@ -84,7 +83,7 @@ public final strictfp class GeodeticObjectParserTest extends TestCase {
      * Instantiates the parser to test.
      */
     private void newParser(final Convention convention) {
-        parser = new GeodeticObjectParser(Symbols.getDefault(), Collections.emptyMap(),
+        parser = new GeodeticObjectParser(Symbols.getDefault(), Map.of(),
                 null, null, null, convention, Transliterator.DEFAULT, null, new ReferencingFactoryContainer());
         assertEquals(GeodeticObjectFactory.class.getCanonicalName(), parser.getPublicFacade());
     }

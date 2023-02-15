@@ -55,9 +55,10 @@
  *   <li>{@code createProjectedCRS("NTF (Paris) / Lambert zone II")}</li>
  * </ul>
  *
- * <div class="note"><b>Note:</b> names may be ambiguous since the same name may be used for more than one object.
- * This is the case of <cite>"WGS 84"</cite> for example. If such an ambiguity is found, an exception will be thrown.
- * For more determinism, the numerical codes are preferred.</div>
+ * Note that names may be ambiguous since the same name may be used for more than one object.
+ * This is the case of <cite>"WGS 84"</cite> for example.
+ * If such an ambiguity is found, an exception will be thrown.
+ * For more determinism, the numerical codes are preferred.
  *
  *
  * <h2>How deprecated entries are handled</h2>
@@ -82,11 +83,10 @@
  * @author  Jody Garnett (Refractions)
  * @author  Didier Richard (IGN)
  * @author  John Grange
- * @version 1.2
+ * @version 1.4
  *
  * @see org.apache.sis.metadata.sql
  *
  * @since 0.7
- * @module
  */
 package org.apache.sis.referencing.factory.sql;

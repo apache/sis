@@ -44,9 +44,8 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public strictfp class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {
+public class MathTransformWrapper extends FormattableObject implements MathTransform, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -192,7 +191,7 @@ public strictfp class MathTransformWrapper extends FormattableObject implements 
     /**
      * Returns a <cite>Well Known Text</cite> (WKT) for this transform.
      *
-     * @throws UnsupportedOperationException if this object can't be formatted as WKT.
+     * @throws UnsupportedOperationException if this object cannot be formatted as WKT.
      */
     @Override
     public final String toWKT() throws UnsupportedOperationException {

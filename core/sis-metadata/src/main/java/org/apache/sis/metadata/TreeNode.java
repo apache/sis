@@ -16,11 +16,11 @@
  */
 package org.apache.sis.metadata;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.NoSuchElementException;
 import java.util.ConcurrentModificationException;
@@ -65,7 +65,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 class TreeNode implements Node {
     /**
@@ -76,7 +75,7 @@ class TreeNode implements Node {
      * does not implement the {@link List} interface. So we are better to never give to the user
      * a collection implementing {@code List} in order to signal incorrect casts sooner.</p>
      */
-    private static final Collection<Node> LEAF = Collections.emptySet();
+    private static final Collection<Node> LEAF = Set.of();
 
     /**
      * The table for which this node is an element. Contains information like
@@ -385,21 +384,19 @@ class TreeNode implements Node {
          * returns the subtype name (<a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>).
          * For example, instead of:</p>
          *
-         * {@preformat text
+         * <pre class="text">
          *   Citation
          *    └─Cited responsible party
          *       └─Party
-         *          └─Name ……………………………… Jon Smith
-         * }
+         *          └─Name ……………………………… Jon Smith</pre>
          *
          * we format:
          *
-         * {@preformat
+         * <pre class="text">
          *   Citation
          *    └─Cited responsible party
          *       └─Individual
-         *          └─Name ……………………………… Jon Smith
-         * }
+         *          └─Name ……………………………… Jon Smith</pre>
          */
         @Override
         CharSequence getName() {
@@ -713,13 +710,13 @@ class TreeNode implements Node {
      * The user shall set the identifier and the value, in that order, before
      * any other operation on the new child. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     TreeTable.Node node = ...;
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");
      *     // Nothing else to do - node has been added.
-     * }
+     *     }
      *
      * Do not keep a reference to the returned node for a long time, since it is only
      * a proxy toward the real node to be created once the identifier is known.

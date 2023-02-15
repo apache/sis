@@ -34,7 +34,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @XmlTransient
 public final class PolarStereographicNorth extends AbstractStereographic {
@@ -50,8 +49,7 @@ public final class PolarStereographicNorth extends AbstractStereographic {
     static {
         List<GeneralParameterDescriptor> sp = PolarStereographicSouth.PARAMETERS.descriptors();
         sp = sp.subList(2, sp.size());  // Skip the "semi-major" and "semi-minor" parameters.
-        @SuppressWarnings("SuspiciousToArrayCall") // We know PolarStereographicSouth content.
-        ParameterDescriptor<?>[] parameters = sp.toArray(new ParameterDescriptor<?>[sp.size()]);
+        ParameterDescriptor<?>[] parameters = sp.toArray(ParameterDescriptor<?>[]::new);
 
         // Replace the "Standard Parallel" parameter from [-90 … 0]° domain to [0 … 90]° domain.
         final ParameterBuilder builder = builder();

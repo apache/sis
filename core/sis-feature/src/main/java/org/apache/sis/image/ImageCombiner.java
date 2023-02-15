@@ -29,7 +29,6 @@ import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
 
@@ -64,7 +63,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class ImageCombiner implements Consumer<RenderedImage> {
     /**
@@ -260,8 +258,8 @@ public class ImageCombiner implements Consumer<RenderedImage> {
         final long tileGridYOffset = destination.getTileGridYOffset();
         final int  minTileX        = Math.toIntExact(Math.floorDiv((bounds.x - tileGridXOffset), tileWidth));
         final int  minTileY        = Math.toIntExact(Math.floorDiv((bounds.y - tileGridYOffset), tileHeight));
-        final int  minX            = Math.toIntExact(JDK9.multiplyFull(minTileX, tileWidth)  + tileGridXOffset);
-        final int  minY            = Math.toIntExact(JDK9.multiplyFull(minTileY, tileHeight) + tileGridYOffset);
+        final int  minX            = Math.toIntExact(Math.multiplyFull(minTileX, tileWidth)  + tileGridXOffset);
+        final int  minY            = Math.toIntExact(Math.multiplyFull(minTileY, tileHeight) + tileGridYOffset);
         /*
          * Expand the target bounds until it contains an integer number of tiles, computed using the size
          * of destination tiles. We have to do that because the resample operation below is not free to

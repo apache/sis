@@ -16,8 +16,8 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.List;
 import java.util.Locale;
-import java.util.Collections;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
@@ -51,7 +51,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class CoverageControls extends ViewAndControls {
     /**
@@ -149,7 +148,7 @@ final class CoverageControls extends ViewAndControls {
         {   // Block for making variables locale to this scope.
             final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
             isolines = new IsolineRenderer(view);
-            isolines.setIsolineTables(Collections.singletonList(mapper.getSteps()));
+            isolines.setIsolineTables(List.of(mapper.getSteps()));
             final Region view = mapper.getView();
             VBox.setVgrow(view, Priority.ALWAYS);
             isolinesPane = new VBox(view);                          // TODO: add band selector

@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @see <a href="http://geotiff.maptools.org/proj_list/polyconic.html">GeoTIFF parameters for Polyconic</a>
  *
  * @since 1.0
- * @module
  */
 @XmlTransient
 public class Polyconic extends MapProjection {

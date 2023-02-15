@@ -21,7 +21,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,9 +33,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
-public final strictfp class WKTKeywordsTest extends TestCase {
+public final class WKTKeywordsTest extends TestCase {
     /**
      * Ensures that all constants are equal to the name of the field that declare it.
      * The intent is to avoid misleading constant names when reading code.
@@ -83,10 +81,10 @@ public final strictfp class WKTKeywordsTest extends TestCase {
      */
     @SafeVarargs
     private static <T> void verifyTypeHierarchy(final Class<T> base, final Class<? extends T>... subtypes) {
-        final Set<String> all = JDK9.setOf(WKTKeywords.forType(base));
+        final Set<String> all = Set.of(WKTKeywords.forType(base));
         assertNotNull(base.getName(), all);
         for (final Class<? extends T> subtype : subtypes) {
-            final Set<String> specialized = JDK9.setOf(WKTKeywords.forType(subtype));
+            final Set<String> specialized = Set.of(WKTKeywords.forType(subtype));
             final String name = subtype.getName();
             assertNotNull(name, specialized);
             assertTrue(name, all.size() > specialized.size());

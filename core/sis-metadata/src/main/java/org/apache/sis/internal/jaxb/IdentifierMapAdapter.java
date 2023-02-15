@@ -21,10 +21,8 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.AbstractMap;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -88,7 +86,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @see org.apache.sis.xml.IdentifiedObject
  *
  * @since 0.3
- * @module
  */
 public class IdentifierMapAdapter extends AbstractMap<Citation,String> implements IdentifierMap, Serializable {
     /**
@@ -99,14 +96,14 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     /**
      * An immutable empty instance.
      */
-    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Collections.emptySet());
+    public static final IdentifierMap EMPTY = new IdentifierMapAdapter(Set.of());
 
     /**
      * The identifiers to wrap in a map view.
      *
      * @see #getIdentifiers(Class)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     public final Collection<Identifier> identifiers;
 
     /**
@@ -132,10 +129,10 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
     public final Collection<Identifier> getIdentifiers(final Class<?> type) {
         if (!type.isInstance(identifiers)) {
             if (type.isAssignableFrom(Set.class)) {
-                return new HashSet<>(identifiers);      // TODO: use Set.copyOf in JDK10.
+                return Set.copyOf(identifiers);
             }
             if (type.isAssignableFrom(List.class)) {
-                return new ArrayList<>(identifiers);    // TODO: use List.copyOf in JDK10.
+                return List.copyOf(identifiers);
             }
         }
         return identifiers;
@@ -422,7 +419,6 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.3
-     * @module
      */
     @SuppressWarnings("serial")                 // Not intended to be serialized.
     private static final class Iter extends HashMap<Citation,Boolean> implements Iterator<Entry<Citation,String>> {

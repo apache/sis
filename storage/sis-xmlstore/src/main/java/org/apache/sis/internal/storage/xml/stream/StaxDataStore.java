@@ -24,6 +24,7 @@ import java.util.logging.Filter;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.charset.Charset;
 import java.nio.file.StandardOpenOption;
@@ -60,9 +61,8 @@ import org.apache.sis.storage.UnsupportedStorageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
- * @module
  */
 public abstract class StaxDataStore extends URIDataStore {
     /**
@@ -122,7 +122,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * stream or channel opened for that path.
      *
      * <p>We keep this reference as long as possible in order to use {@link #mark()} and {@link #reset()}
-     * instead of creating new streams for re-reading the data.  If we cannot reset the stream but can
+     * instead of creating new streams for re-reading the data. If we cannot reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
      * done only in last resort, when there is no way to reuse the existing stream. This is because the
      * streams created by {@link ChannelFactory#inputStream(String, StoreListeners)} are not of the same
@@ -130,7 +130,7 @@ public abstract class StaxDataStore extends URIDataStore {
      *
      * @see #close()
      */
-    private AutoCloseable stream;
+    private volatile AutoCloseable stream;
 
     /**
      * Position of the first byte to read in the {@linkplain #stream}, or a negative value if unknown.
@@ -395,7 +395,7 @@ public abstract class StaxDataStore extends URIDataStore {
     /**
      * Returns the factory for StAX writers. The same instance is returned for all {@code StaxDataStore} lifetime.
      *
-     * <p>This method is indirectly invoked by {@link #createWriter(StaxStreamWriter)},
+     * <p>This method is indirectly invoked by {@link #createWriter(StaxStreamWriter, Object)},
      * through a call to {@link OutputType#create(StaxDataStore, Object)}.</p>
      */
     final XMLOutputFactory outputFactory() {
@@ -515,55 +515,65 @@ public abstract class StaxDataStore extends URIDataStore {
      * whether this method will succeed in creating a new writer depends on the storage type
      * (e.g. file or output stream).
      *
-     * @param  target  the writer which will store the {@code XMLStreamWriter} reference.
+     * @param  target     the writer which will store the {@code XMLStreamWriter} reference.
+     * @param  temporary  the temporary stream where to write, or {@code null} for the main storage.
      * @return a new writer for writing the XML data.
      * @throws DataStoreException if the output type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
-    final synchronized XMLStreamWriter createWriter(final StaxStreamWriter target)
+    final synchronized XMLStreamWriter createWriter(final StaxStreamWriter target, final OutputStream temporary)
             throws DataStoreException, XMLStreamException, IOException
     {
-        Object outputOrFile = storage;
-        if (outputOrFile == null) {
-            throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.WRITE);
-        }
-        switch (state) {
-            default:       throw new AssertionError(state);
-            case READING:  throw new ConcurrentReadException (getLocale(), getDisplayName());
-            case WRITING:  throw new ConcurrentWriteException(getLocale(), getDisplayName());
-            case START:    break;         // Stream already at the data start; nothing to do.
-            case FINISHED: {
-                if (reset()) break;
-                throw new ForwardOnlyStorageException(getLocale(), getDisplayName(), StandardOpenOption.WRITE);
+        AutoCloseable output;
+        Object outputOrFile;
+        OutputType outputType;
+        if (temporary == null) {
+            output       = stream;
+            outputOrFile = storage;
+            outputType   = storageToWriter;
+            if (outputOrFile == null) {
+                throw new DataStoreClosedException(getLocale(), getFormatName(), StandardOpenOption.WRITE);
             }
-        }
-        /*
-         * If the storage given by the user was not one of OutputStream, Writer or other type recognized
-         * by OutputType, then maybe that storage was a Path, File or URL, in which case the constructor
-         * should have opened an InputStream (not an OutputStream) for it. In some cases (e.g. reading a
-         * channel opened on a file), the input stream can be converted to an output stream.
-         */
-        AutoCloseable output = stream;
-        OutputType type = storageToWriter;
-        if (type == null) {
-            type   = OutputType.STREAM;
-            output = IOUtilities.toOutputStream(output);
-            if (output == null) {
-                throw new UnsupportedStorageException(getLocale(), getFormatName(), storage, StandardOpenOption.WRITE);
+            switch (state) {
+                default:       throw new AssertionError(state);
+                case READING:  throw new ConcurrentReadException (getLocale(), getDisplayName());
+                case WRITING:  throw new ConcurrentWriteException(getLocale(), getDisplayName());
+                case START:    break;         // Stream already at the data start; nothing to do.
+                case FINISHED: {
+                    if (reset()) break;
+                    throw new ForwardOnlyStorageException(getLocale(), getDisplayName(), StandardOpenOption.WRITE);
+                }
             }
-            outputOrFile = output;
-            if (output != stream) {
-                stream = output;
-                mark();
+            /*
+             * If the storage given by the user was not one of OutputStream, Writer or other type recognized
+             * by OutputType, then maybe that storage was a Path, File or URL, in which case the constructor
+             * should have opened an InputStream (not an OutputStream) for it. In some cases (e.g. reading a
+             * channel opened on a file), the input stream can be converted to an output stream.
+             */
+            if (outputType == null) {
+                outputType = OutputType.STREAM;
+                outputOrFile = output = IOUtilities.toOutputStream(output);
+                if (output == null) {
+                    throw new UnsupportedStorageException(getLocale(), getFormatName(), outputOrFile, StandardOpenOption.WRITE);
+                }
+                if (output != stream) {
+                    stream = output;
+                    mark();
+                }
             }
+        } else {
+            outputType = OutputType.STREAM;
+            outputOrFile = output = temporary;
         }
-        XMLStreamWriter writer = type.create(this, outputOrFile);
+        XMLStreamWriter writer = outputType.create(this, outputOrFile);
         if (indentation >= 0) {
             writer = new FormattedWriter(writer, indentation);
         }
         target.stream = output;
-        state = WRITING;
+        if (temporary == null) {
+            state = WRITING;
+        }
         return writer;
     }
 
@@ -594,16 +604,21 @@ public abstract class StaxDataStore extends URIDataStore {
      * @throws DataStoreException if an error occurred while closing the input or output stream.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        final AutoCloseable s = stream;
-        stream        = null;
-        storage       = null;
-        inputFactory  = null;
-        outputFactory = null;
-        if (s != null) try {
-            s.close();
+    public void close() throws DataStoreException {
+        try {
+            final AutoCloseable s = stream;
+            if (s != null) s.close();
+        } catch (DataStoreException e) {
+            throw e;
         } catch (Exception e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                outputFactory = null;
+                inputFactory  = null;
+                storage       = null;
+                stream        = null;
+            }
         }
     }
 }

@@ -19,8 +19,8 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.logging.Filter;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
@@ -91,8 +91,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Static;
 
-import static java.util.logging.Logger.getLogger;
-
 // Branch-dependent imports
 import org.opengis.geometry.Geometry;
 
@@ -113,19 +111,19 @@ import org.opengis.geometry.Geometry;
  * (see the <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">Apache SIS™ Coordinate
  * Reference System (CRS) codes</a> page for the complete list of EPSG codes):
  *
- * {@preformat java
- *   CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
- *   CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
- *   CoordinateOperation operation = CRS.findOperation(source, target, null);
- *   if (CRS.getLinearAccuracy(operation) > 100) {
- *       // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
- *       // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
- *   }
- *   MathTransform mt = operation.getMathTransform();
- *   DirectPosition position = new DirectPosition2D(20, 30);            // 20°N 30°E   (watch out axis order!)
- *   position = mt.transform(position, position);
- *   System.out.println(position);
- * }
+ * {@snippet lang="java" :
+ *     CoordinateReferenceSystem source = CRS.forCode("EPSG:4326");                   // WGS 84
+ *     CoordinateReferenceSystem target = CRS.forCode("EPSG:3395");                   // WGS 84 / World Mercator
+ *     CoordinateOperation operation = CRS.findOperation(source, target, null);
+ *     if (CRS.getLinearAccuracy(operation) > 100) {
+ *         // If the accuracy is coarser than 100 metres (or any other threshold at application choice)
+ *         // maybe the operation is not suitable. Decide here what to do (throw an exception, etc).
+ *     }
+ *     MathTransform mt = operation.getMathTransform();
+ *     DirectPosition position = new DirectPosition2D(20, 30);            // 20°N 30°E   (watch out axis order!)
+ *     position = mt.transform(position, position);
+ *     System.out.println(position);
+ *     }
  *
  * <h2>Note on kinds of CRS</h2>
  * The {@link #getSingleComponents(CoordinateReferenceSystem)} method decomposes an arbitrary CRS into a flat
@@ -142,11 +140,15 @@ import org.opengis.geometry.Geometry;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class CRS extends Static {
+    /**
+     * The logger for referencing operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.REFERENCING);
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -155,9 +157,10 @@ public final class CRS extends Static {
 
     /**
      * Returns the Coordinate Reference System for the given authority code.
-     * The set of available codes depends on the {@link CRSAuthorityFactory} instances available on the classpath.
-     * There is many thousands of <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">CRS
-     * defined by EPSG authority or by other authorities</a>.
+     * There is <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">many thousands
+     * of reference systems</a> defined by the EPSG authority or by other authorities.
+     * Whether those codes are recognized or not depends on whether the
+     * <a href="https://sis.apache.org/epsg.html">EPSG dataset is installed</a>.
      * The following table lists a small subset of codes which are guaranteed to be available
      * on any installation of Apache SIS:
      *
@@ -167,14 +170,15 @@ public final class CRS extends Static {
      *   <tr><td>CRS:27</td>        <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>Like EPSG:4267 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:83</td>        <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>Like EPSG:4269 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
      *   <tr><td>CRS:84</td>        <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>Like EPSG:4326 except for (<var>longitude</var>, <var>latitude</var>) axis order</td></tr>
+     *   <tr><td>CRS:88</td>        <td>{@link CommonCRS.Vertical#NAVD88 NAVD88}</td><td>Vertical</td><td>North American Vertical Datum 1988 height</td></tr>
      *   <tr><td>EPSG:4230</td>     <td>{@link CommonCRS#ED50   ED50}</td>   <td>Geographic</td>      <td>European Datum 1950</td></tr>
-     *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4258</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic</td>      <td>European Terrestrial Reference System 1989</td></tr>
      *   <tr><td>EPSG:4267</td>     <td>{@link CommonCRS#NAD27  NAD27}</td>  <td>Geographic</td>      <td>North American Datum 1927</td></tr>
      *   <tr><td>EPSG:4269</td>     <td>{@link CommonCRS#NAD83  NAD83}</td>  <td>Geographic</td>      <td>North American Datum 1983</td></tr>
      *   <tr><td>EPSG:4322</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geographic</td>      <td>World Geodetic System 1972</td></tr>
      *   <tr><td>EPSG:4326</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic</td>      <td>World Geodetic System 1984</td></tr>
-     *   <tr><td>EPSG:4936</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geocentric</td>      <td>European Terrestrial Reference Frame 1989</td></tr>
-     *   <tr><td>EPSG:4937</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic 3D</td>   <td>European Terrestrial Reference Frame 1989</td></tr>
+     *   <tr><td>EPSG:4936</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geocentric</td>      <td>European Terrestrial Reference System 1989</td></tr>
+     *   <tr><td>EPSG:4937</td>     <td>{@link CommonCRS#ETRS89 ETRS89}</td> <td>Geographic 3D</td>   <td>European Terrestrial Reference System 1989</td></tr>
      *   <tr><td>EPSG:4978</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geocentric</td>      <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4979</td>     <td>{@link CommonCRS#WGS84  WGS84}</td>  <td>Geographic 3D</td>   <td>World Geodetic System 1984</td></tr>
      *   <tr><td>EPSG:4984</td>     <td>{@link CommonCRS#WGS72  WGS72}</td>  <td>Geocentric</td>      <td>World Geodetic System 1972</td></tr>
@@ -188,8 +192,14 @@ public final class CRS extends Static {
      *   <tr><td>EPSG:5714</td>     <td>{@link CommonCRS.Vertical#MEAN_SEA_LEVEL MEAN_SEA_LEVEL}</td> <td>Vertical</td> <td>Mean Sea Level height</td></tr>
      *   <tr><td>EPSG:5715</td>     <td>{@link CommonCRS.Vertical#DEPTH  DEPTH}</td>  <td>Vertical</td> <td>Mean Sea Level depth</td></tr>
      *   <tr><td>OGC:JulianDate</td><td>{@link CommonCRS.Temporal#JULIAN JULIAN}</td> <td>Temporal</td> <td>Julian date (days)</td></tr>
+     *   <tr><td>OGC:TruncatedJulianDate</td><td>{@link CommonCRS.Temporal#TRUNCATED_JULIAN TRUNCATED_JULIAN}</td> <td>Temporal</td> <td>Truncated Julian date (days)</td></tr>
      *   <tr><td>OGC:UnixTime</td>  <td>{@link CommonCRS.Temporal#UNIX   UNIX}</td>   <td>Unix</td>     <td>Unix time (seconds)</td></tr>
      * </table></blockquote>
+     *
+     * For codes in above table, the EPSG geodetic database is used when available,
+     * otherwise Apache SIS fallbacks on definitions from public sources with no EPSG metadata except the identifiers.
+     * If the EPSG geodetic dataset has been used, the {@linkplain NamedIdentifier#getAuthority() authority} title
+     * will be something like <cite>"EPSG geodetic dataset"</cite>, otherwise it will be <cite>"Subset of EPSG"</cite>.
      *
      * <h4>URI forms</h4>
      * This method accepts also the URN and URL syntaxes.
@@ -254,10 +264,11 @@ public final class CRS extends Static {
      * The default {@linkplain org.apache.sis.io.wkt Apache SIS parser} understands both
      * version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162) of the WKT format.
      *
-     * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
+     * <h4>Example</h4>
+     * Below is a slightly simplified WKT 2 string for a Mercator projection.
      * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
      *     BaseGeodCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
@@ -273,9 +284,9 @@ public final class CRS extends Static {
      *       Axis["northing (N)", north],
      *       LengthUnit["metre", 1],
      *     Id["EPSG",5641]]
-     * }
-     * </div>
+     *   }
      *
+     * <h4>Logging</h4>
      * If the parsing produced warnings, they will be reported in a logger named {@code "org.apache.sis.io.wkt"}.
      * In particular, this method verifies if the description provided by the WKT matches the description provided
      * by the authority ({@code "EPSG:5641"} in above example) and reports discrepancies.
@@ -429,7 +440,7 @@ public final class CRS extends Static {
                         record.setSourceClassName(CRS.class.getName());
                         record.setSourceMethodName("fromAuthority");
                         if (warningFilter.isLoggable(record)) {
-                            getLogger(Modules.REFERENCING).log(record);
+                            LOGGER.log(record);
                         }
                     }
                 }
@@ -696,7 +707,7 @@ public final class CRS extends Static {
             if (AuthorityFactories.failure(e)) {
                 throw e;
             } else try {
-                return Collections.singletonList(factory.createOperation(sourceCRS, targetCRS, context));
+                return List.of(factory.createOperation(sourceCRS, targetCRS, context));
             } catch (FactoryException ex) {
                 ex.addSuppressed(e);
                 throw ex;
@@ -977,25 +988,7 @@ public final class CRS extends Static {
         }
         final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
-        return compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
-    }
-
-    /**
-     * Gets or creates a coordinate reference system with a subset of the dimensions of the given CRS.
-     *
-     * @param  crs         the CRS to reduce the dimensionality.
-     * @param  dimensions  the dimensions to retain.
-     * @return a coordinate reference system for the given dimensions.
-     * @throws FactoryException if the geodetic factory failed to create a compound CRS.
-     *
-     * @since 1.0
-     *
-     * @deprecated Renamed {@link #selectDimensions(CoordinateReferenceSystem, int...)} for clarity and consistency with
-     *             {@link org.apache.sis.coverage.grid.GridExtent} and {@link org.apache.sis.coverage.grid.GridGeometry}.
-     */
-    @Deprecated
-    public static CoordinateReferenceSystem reduce(final CoordinateReferenceSystem crs, final int... dimensions) throws FactoryException {
-        return selectDimensions(crs, dimensions);
+        return compound(components.toArray(CoordinateReferenceSystem[]::new));
     }
 
     /**
@@ -1329,7 +1322,7 @@ public final class CRS extends Static {
     public static List<SingleCRS> getSingleComponents(final CoordinateReferenceSystem crs) {
         final List<SingleCRS> singles;
         if (crs == null) {
-            singles = Collections.emptyList();
+            singles = List.of();
         } else if (crs instanceof CompoundCRS) {
             if (crs instanceof DefaultCompoundCRS) {
                 singles = ((DefaultCompoundCRS) crs).getSingleComponents();
@@ -1340,7 +1333,7 @@ public final class CRS extends Static {
             }
         } else {
             // Intentional CassCastException here if the crs is not a SingleCRS.
-            singles = Collections.singletonList((SingleCRS) crs);
+            singles = List.of((SingleCRS) crs);
         }
         return singles;
     }
@@ -1441,9 +1434,7 @@ check:  while (lower != 0 || upper != dimension) {
      * implementation with a public no-argument constructor, and declaring the fully-qualified name of that class
      * in a file at the following location:</p>
      *
-     * {@preformat text
-     *     META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory
-     * }
+     * <pre class="text">META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory</pre>
      *
      * @param  authority  the authority of the desired factory (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for the {@link org.apache.sis.referencing.factory.MultiAuthoritiesFactory}
@@ -1468,6 +1459,6 @@ check:  while (lower != 0 || upper != dimension) {
      * <strong>must</strong> have a reasonable fallback (otherwise it should propagate the exception).
      */
     private static void unexpectedException(final String methodName, final Exception exception) {
-        Logging.unexpectedException(getLogger(Modules.REFERENCING), CRS.class, methodName, exception);
+        Logging.unexpectedException(LOGGER, CRS.class, methodName, exception);
     }
 }

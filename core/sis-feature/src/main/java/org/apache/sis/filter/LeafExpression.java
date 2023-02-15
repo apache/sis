@@ -48,7 +48,6 @@ import org.opengis.filter.Expression;
  * @param  <V>  the type of value computed by the expression.
  *
  * @since 1.1
- * @module
  */
 abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V> {
     /**
@@ -68,7 +67,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
      */
     @Override
     public final List<Expression<? super R, ?>> getParameters() {
-        return Collections.emptyList();
+        return List.of();
     }
 
 
@@ -96,6 +95,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
 
         /** For {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations. */
         @Override protected Collection<?> getChildren() {
+            // Not `List.of(…)` because value may be null.
             return Collections.singleton(value);
         }
 
@@ -185,7 +185,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         private static final long serialVersionUID = -5120203649333919221L;
 
         /** The original expression. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final Expression<R,?> original;
 
         /** Creates a new literal holding the given constant value. */

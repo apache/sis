@@ -68,7 +68,6 @@ import org.apache.sis.internal.referencing.provider.Providers;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
@@ -81,15 +80,12 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -170,13 +166,12 @@ import static java.util.logging.Logger.getLogger;
  * There is typically only one {@code MathTransformFactory} instance for the whole application.
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
- * @version 1.3
+ * @version 1.4
  *
  * @see MathTransformProvider
  * @see AbstractMathTransform
  *
  * @since 0.6
- * @module
  */
 public class DefaultMathTransformFactory extends AbstractFactory implements MathTransformFactory, Parser {
     /*
@@ -258,9 +253,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
      * The {@link OperationMethod} implementations shall be listed in the following file:
      *
-     * {@preformat text
-     *     META-INF/services/org.opengis.referencing.operation.OperationMethod
-     * }
+     * <pre class="text">META-INF/services/org.opengis.referencing.operation.OperationMethod</pre>
      *
      * {@code DefaultMathTransformFactory} parses the above-cited files in all JAR files in order to find all available
      * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
@@ -305,13 +298,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *   <li>All {@code OperationMethod} instances shall be thread-safe.</li>
      *   <li>The {@code Iterable} itself does not need to be thread-safe since all usages will be synchronized as below:
      *
-     *       {@preformat java
+     *       {@snippet lang="java" :
      *           synchronized (methods) {
      *               for (OperationMethod method : methods) {
      *                   // Use the method here.
      *               }
      *           }
-     *       }
+     *           }
      *   </li>
      * </ul>
      *
@@ -468,8 +461,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      */
     public OperationMethod getOperationMethod(String identifier) throws NoSuchIdentifierException {
-        identifier = CharSequences.trimWhitespaces(identifier);
-        ArgumentChecks.ensureNonEmpty("identifier", identifier);
+        ArgumentChecks.ensureNonEmpty("identifier", identifier = identifier.strip());
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
             synchronized (methods) {
@@ -528,7 +520,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *             where the {@code Context} argument can be null.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
@@ -561,9 +553,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   0.7
-     * @module
      */
-    @SuppressWarnings("serial")         // Fields are not statically typed as Serializable.
+    @SuppressWarnings("serial")         // All field values are usually serializable instances.
     public static class Context implements Serializable {
         /**
          * For cross-version compatibility.
@@ -621,29 +612,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Sets the source coordinate system and its associated ellipsoid to the given value.
-         *
-         * <div class="note"><b>Design note:</b>
-         * ellipsoidal coordinate systems and ellipsoids are associated indirectly, through a geodetic CRS.
-         * However, this method expects those two components to be given explicitly instead of inferring
-         * them from a {@code CoordinateReferenceSystem} for making clear that {@code MathTransformFactory}
-         * does not perform any {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
-         * datum} analysis. For coordinate operations that take datum changes in account (including change
-         * of prime meridian), see {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory}.
-         * This policy helps to enforce a separation of concerns.</div>
-         *
-         * @param  cs         the coordinate system to set as the source, or {@code null}.
-         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
-         *
-         * @deprecated Replaced by {@link #setSource(GeodeticCRS)}.
-         */
-        @Deprecated
-        public void setSource(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
-            sourceCS = cs;
-            sourceEllipsoid = ellipsoid;
-        }
-
-        /**
          * Sets the source coordinate system and related ellipsoid to the components of given CRS.
          * The {@link Ellipsoid}, fetched from the geodetic datum, is often used together with an {@link EllipsoidalCS},
          * but not necessarily. The geodetic CRS may also be associated with a spherical or Cartesian coordinate system,
@@ -675,23 +643,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         public void setTarget(final CoordinateSystem cs) {
             targetCS = cs;
             targetEllipsoid = null;
-        }
-
-        /**
-         * Sets the target coordinate system and its associated ellipsoid to the given value.
-         *
-         * <div class="note"><b>Design note:</b>
-         * see {@link #setSource(EllipsoidalCS, Ellipsoid)}.</div>
-         *
-         * @param  cs         the coordinate system to set as the source, or {@code null}.
-         * @param  ellipsoid  the ellipsoid associated to the given coordinate system, or {@code null}.
-         *
-         * @deprecated Replaced by {@link #setTarget(GeodeticCRS)}.
-         */
-        @Deprecated
-        public void setTarget(final EllipsoidalCS cs, final Ellipsoid ellipsoid) {
-            targetCS = cs;
-            targetEllipsoid = ellipsoid;
         }
 
         /**
@@ -1044,7 +995,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                      * from another implementation. We can safely abandon our attempt to set the inverse flattening value,
                      * since it was redundant with semi-minor axis length.
                      */
-                    Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
+                    Logging.recoverableException(AbstractMathTransform.LOGGER,
                             DefaultMathTransformFactory.class, "createParameterizedTransform", e);
                 }
                 /*
@@ -1056,8 +1007,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                             Resources.Keys.MismatchedEllipsoidAxisLength_3, ellipsoid.getName().getCode(),
                             mismatchedParam.getDescriptor().getName().getCode(), mismatchedValue);
-                    record.setLoggerName(Loggers.COORDINATE_OPERATION);
-                    Logging.log(DefaultMathTransformFactory.class, "createParameterizedTransform", record);
+                    Logging.completeAndLog(AbstractMathTransform.LOGGER,
+                            DefaultMathTransformFactory.class, "createParameterizedTransform", record);
                 }
             }
             return failure;
@@ -1081,7 +1032,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @see #getCompletedParameters()
          */
-        @SuppressWarnings("null")
         final RuntimeException completeParameters(final DefaultMathTransformFactory factory, OperationMethod method,
                 final ParameterValueGroup userParams) throws FactoryException, IllegalArgumentException
         {
@@ -1206,12 +1156,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
      * Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
      *     group.parameter("semi_major").setValue(6378137.000);
      *     group.parameter("semi_minor").setValue(6356752.314);
      *     MathTransform mt = factory.createParameterizedTransform(group, null);
-     * }
+     *     }
      *
      * Sometimes the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
      * but rather inferred from the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
@@ -1278,7 +1228,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                     throw exception;
                 }
                 method = getOperationMethod(methodName);
-                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
+                Logging.recoverableException(AbstractMathTransform.LOGGER,
                         DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
             }
             if (!(method instanceof MathTransformProvider)) {
@@ -1523,7 +1473,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @deprecated Replaced by {@link #createParameterizedTransform(ParameterValueGroup, Context)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
             final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
             throws NoSuchIdentifierException, FactoryException
@@ -1666,10 +1616,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * The resulting transform will have the following dimensions:
      *
-     * {@preformat java
-     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
-     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
-     * }
+     * {@snippet lang="java" :
+     *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
+     *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
+     *     }
      *
      * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
      * @param  subTransform             transform to use for affected coordinates.

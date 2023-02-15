@@ -42,9 +42,8 @@ import static org.apache.sis.internal.referencing.provider.LambertAzimuthalEqual
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 public class LambertAzimuthalEqualArea extends AuthalicConversion {
     /**
@@ -132,16 +131,6 @@ public class LambertAzimuthalEqualArea extends AuthalicConversion {
             denormalize.convertBefore(0,     D, null);
             denormalize.convertBefore(1, Rq2/D, null);
         }
-    }
-
-    /**
-     * Creates a new projection initialized to the same parameters than the given one.
-     */
-    LambertAzimuthalEqualArea(final LambertAzimuthalEqualArea other) {
-        super(other);
-        sinβ0 = other.sinβ0;
-        cosβ0 = other.cosβ0;
-        polar = other.polar;
     }
 
     /**

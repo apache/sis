@@ -77,7 +77,6 @@ import static java.lang.Character.*;
  * @see StringBuilders
  *
  * @since 0.3
- * @module
  */
 public final class CharSequences extends Static {
     /**
@@ -287,9 +286,9 @@ public final class CharSequences extends Static {
      * except that this method works on arbitrary {@link CharSequence} objects instead of
      * {@link String}s only, and that the upper limit can be specified:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return text.indexOf(part, fromIndex);
-     * }
+     *     }
      *
      * There is no restriction on the value of {@code fromIndex}. If negative or greater
      * than {@code toIndex}, then the behavior of this method is as if the search started
@@ -691,9 +690,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * </ul>
      *
      * <div class="note"><b>Performance note:</b>
-     * Prior JDK8 this method was usually cheap because all string instances created by
+     * Prior Java 8 this method was usually cheap because all string instances created by
      * {@link String#substring(int,int)} shared the same {@code char[]} internal array.
-     * However, since JDK8, the new {@code String} implementation copies the data in new arrays.
+     * However, since Java 8, the new {@code String} implementation copies the data in new arrays.
      * Consequently, it is better to use index rather than this method for splitting large {@code String}s.
      * However, this method still useful for other {@link CharSequence} implementations providing an efficient
      * {@code subSequence(int,int)} method.</div>
@@ -961,8 +960,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * @return a string with leading and trailing whitespaces removed, or {@code null} is the given
      *         text was null.
      *
-     * @todo To be replaced by {@link String#strip()} in JDK 11.
+     * @deprecated Replaced by {@link String#strip()} in JDK 11.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public static String trimWhitespaces(String text) {
         if (text != null) {
             final int length = text.length();
@@ -1001,9 +1001,9 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * except that the {@link CharSequence#subSequence(int, int) subSequence} method is
      * invoked only once instead of two times:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     text = trimWhitespaces(text.subSequence(lower, upper));
-     * }
+     *     }
      *
      * @param  text   the text from which to remove leading and trailing white spaces.
      * @param  lower  index of the first character to consider for inclusion in the sub-sequence.
@@ -1619,9 +1619,9 @@ cmp:    while (ia < lga) {
      * In particular, spaces and punctuation characters like {@code '_'} and {@code '-'} are
      * ignored:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assert equalsFiltered("WGS84", "WGS_84", Characters.Filter.LETTERS_AND_DIGITS, true) == true;
-     * }
+     *     }
      *
      * @param  s1          the first characters sequence to compare, or {@code null}.
      * @param  s2          the second characters sequence to compare, or {@code null}.
@@ -1766,9 +1766,9 @@ cmp:    while (ia < lga) {
      * except that this method works on arbitrary {@link CharSequence} objects instead of
      * {@link String}s only:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return text.regionMatches(offset, part, 0, part.length());
-     * }
+     *     }
      *
      * This method does not thrown {@code IndexOutOfBoundsException}. Instead, if
      * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},
@@ -1806,9 +1806,9 @@ cmp:    while (ia < lga) {
      * except that this method works on arbitrary {@link CharSequence} objects instead of
      * {@link String}s only:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return text.regionMatches(ignoreCase, offset, part, 0, part.length());
-     * }
+     *     }
      *
      * This method does not thrown {@code IndexOutOfBoundsException}. Instead, if
      * {@code fromIndex < 0} or {@code fromIndex + part.length() > text.length()},

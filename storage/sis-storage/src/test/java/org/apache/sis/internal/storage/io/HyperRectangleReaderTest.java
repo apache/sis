@@ -40,10 +40,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn(ChannelDataInputTest.class)
-public final strictfp class HyperRectangleReaderTest extends TestCase {
+public final class HyperRectangleReaderTest extends TestCase {
     /**
      * The hyper-cube dimensions.
      */

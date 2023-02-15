@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Date;
 import java.text.DateFormat;
@@ -75,6 +74,7 @@ import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.simple.SimpleExtent;
 import org.apache.sis.internal.metadata.Resources;
 import org.apache.sis.internal.referencing.WKTKeywords;
@@ -111,19 +111,20 @@ import org.apache.sis.math.Vector;
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  *
  * @since 0.4
- * @module
  */
 public class Formatter implements Localized {
     /**
      * Accuracy of geographic bounding boxes, in number of fraction digits.
      * We use the accuracy recommended by ISO 19162.
      */
+    @Configuration
     static final int BBOX_ACCURACY = 2;
 
     /**
      * Maximal accuracy of vertical extents, in number of fraction digits.
      * The value used here is arbitrary and may change in any future SIS version.
      */
+    @Configuration
     private static final int VERTICAL_ACCURACY = 9;
 
     /**
@@ -779,12 +780,12 @@ public class Formatter implements Localized {
      * If formatted, the {@code ID} element will be by default on the same line than the enclosing
      * element (e.g. {@code SPHEROID["Clarke 1866", …, ID["EPSG", 7008]]}). Other example:</p>
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *   PROJCS["NAD27 / Idaho Central",
      *     GEOGCS[...etc...],
      *     ...etc...
      *     ID["EPSG", 26769]]
-     * }
+     *   }
      *
      * For non-internal conventions, all elements other than {@code ID[…]} are formatted
      * only for {@link CoordinateOperation} and root {@link ReferenceSystem} instances,
@@ -798,7 +799,6 @@ public class Formatter implements Localized {
      * A {@code <remark>} can be included within the descriptions of source and target CRS embedded within
      * a coordinate transformation as well as within the coordinate transformation itself.</blockquote>
      */
-    @SuppressWarnings("null")
     private void appendComplement(final IdentifiedObject object, final FormattableObject parent, final FormattableObject gp) {
         isComplement = true;
         final boolean showIDs;      // Whether to format ID[…] elements.
@@ -857,7 +857,7 @@ public class Formatter implements Localized {
                 if (filterID) {
                     for (final Identifier id : identifiers) {
                         if (Citations.identifierMatches(authority, id.getAuthority())) {
-                            identifiers = Collections.singleton(id);
+                            identifiers = Set.of(id);
                             break;
                         }
                     }
@@ -1040,8 +1040,8 @@ public class Formatter implements Localized {
     private void appendOnNewLine(final String keyword, final InternationalString text, final ElementKind type) {
         ArgumentChecks.ensureNonNull("keyword", keyword);
         if (text != null) {
-            final String localized = CharSequences.trimWhitespaces(text.toString(locale));
-            if (localized != null && !localized.isEmpty()) {
+            String localized = text.toString(locale);
+            if (localized != null && !(localized = localized.strip()).isEmpty()) {
                 openElement(true, keyword);
                 quote(localized, type);
                 closeElement(true);
@@ -1600,9 +1600,9 @@ public class Formatter implements Localized {
      * Invoking this method is equivalent to first verifying the {@code other} class,
      * then delegating as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return other.formatTo(this);
-     * }
+     *     }
      *
      * This method is useful for {@code FormattableObject} which are wrapper around another object.
      * It allows to delegate the WKT formatting to the wrapped object.
@@ -1679,11 +1679,11 @@ public class Formatter implements Localized {
      * Restores the contextual unit to its previous state before the call to {@link #addContextualUnit(Unit)}.
      * This method is used in the following pattern:
      *
-     * {@preformat java
-     *   final Unit<?> previous = formatter.addContextualUnit(unit);
-     *   // ... format some WKT elements here.
-     *   formatter.restoreContextualUnit(unit, previous);
-     * }
+     * {@snippet lang="java" :
+     *     final Unit<?> previous = formatter.addContextualUnit(unit);
+     *     // ... format some WKT elements here.
+     *     formatter.restoreContextualUnit(unit, previous);
+     *     }
      *
      * @param  unit      the value given in argument to {@code addContextualUnit(unit)} (can be {@code null}).
      * @param  previous  the value returned by {@code addContextualUnit(unit)} (can be {@code null}).
@@ -1761,7 +1761,7 @@ public class Formatter implements Localized {
      */
     private Warnings warnings() {
         if (warnings == null) {
-            warnings = new Warnings(errorLocale, false, Collections.emptyMap());
+            warnings = new Warnings(errorLocale, false, Map.of());
         }
         return warnings;
     }

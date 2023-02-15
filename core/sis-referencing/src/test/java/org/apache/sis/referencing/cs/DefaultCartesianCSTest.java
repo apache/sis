@@ -28,7 +28,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.ReferencingAssert.*;
@@ -40,13 +39,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
     AbstractCSTest.class
 })
-public final strictfp class DefaultCartesianCSTest extends TestCase {
+public final class DefaultCartesianCSTest extends TestCase {
     /**
      * An XML file in this package containing a Cartesian coordinate system definition.
      */
@@ -57,7 +55,7 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
      */
     @Test
     public void testConstructor() {
-        final Map<String,?> properties = singletonMap(DefaultCartesianCS.NAME_KEY, "Test");
+        final Map<String,?> properties = Map.of(DefaultCartesianCS.NAME_KEY, "Test");
         DefaultCartesianCS cs;
         /*
          * (E,N) : legal axes for the usual projected CRS.
@@ -87,7 +85,7 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
      */
     @Test
     public void testConstructorArgumentChecks() {
-        final Map<String,?> properties = singletonMap(DefaultCartesianCS.NAME_KEY, "Test");
+        final Map<String,?> properties = Map.of(DefaultCartesianCS.NAME_KEY, "Test");
         /*
          * (λ,φ) : illegal units.
          */
@@ -131,7 +129,7 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
         if (c.equals(AxisDirection.EAST))  return HardCodedAxes.EASTING;
         if (c.equals(AxisDirection.SOUTH)) return HardCodedAxes.SOUTHING;
         if (c.equals(AxisDirection.WEST))  return HardCodedAxes.WESTING;
-        return new DefaultCoordinateSystemAxis(singletonMap(NAME_KEY, c.name()), "?", c, Units.METRE);
+        return new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, c.name()), "?", c, Units.METRE);
     }
 
     /**
@@ -144,7 +142,7 @@ public final strictfp class DefaultCartesianCSTest extends TestCase {
         final DefaultCoordinateSystemAxis xAxis = createAxis(x);
         final DefaultCoordinateSystemAxis yAxis = createAxis(y);
         final String name = xAxis.getName().getCode() + ", " + yAxis.getName().getCode();
-        return new DefaultCartesianCS(singletonMap(NAME_KEY, name), xAxis, yAxis);
+        return new DefaultCartesianCS(Map.of(NAME_KEY, name), xAxis, yAxis);
     }
 
     /**

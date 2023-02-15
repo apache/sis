@@ -17,7 +17,6 @@
 package org.apache.sis.index.tree;
 
 import java.util.Arrays;
-import java.io.Serializable;
 
 
 /**
@@ -44,16 +43,10 @@ import java.io.Serializable;
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
- * @module
  */
-abstract class PointTreeNode implements Cloneable, Serializable {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = -5911043832415017844L;
-
+abstract class PointTreeNode implements Cloneable {
     /**
      * Constructs an initially empty {@link PointTree} node.
      */
@@ -96,7 +89,7 @@ abstract class PointTreeNode implements Cloneable, Serializable {
     static void enterQuadrant(final double[] region, final int quadrant) {
         final int n = region.length >>> 1;
         for (int i = n; --i >= 0;) {
-            region[i] += factor(quadrant, i) * (region[i+n] *= 0.5);    // TODO: use Math.fma with JDK9.
+            region[i] = Math.fma(factor(quadrant, i), region[i+n] *= 0.5, region[i]);
         }
     }
 
@@ -181,11 +174,6 @@ abstract class PointTreeNode implements Cloneable, Serializable {
      * the cost of arrays creation should be less significant compared to array length.
      */
     static final class Default extends PointTreeNode {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = 5726750714534959859L;
-
         /**
          * The nodes or element values in each quadrant/octant of this node.
          * Each array element can be null or an instance of one of the classes

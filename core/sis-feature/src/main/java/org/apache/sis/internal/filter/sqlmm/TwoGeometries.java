@@ -17,7 +17,6 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.List;
-import java.util.Arrays;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.filter.Optimization;
@@ -44,7 +43,6 @@ import org.opengis.filter.ValueReference;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class TwoGeometries<R,G> extends SpatialFunction<R> {
     /**
@@ -55,6 +53,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
     /**
      * The expression giving the geometries.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, GeometryWrapper<G>> geometry1, geometry2;
 
     /**
@@ -95,7 +94,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
                         final GeometryWrapper<G> tr = literal.transform(targetCRS);
                         if (tr != literal) {
                             @SuppressWarnings({"unchecked","rawtypes"})
-                            final Expression<? super R, ?>[] effective = getParameters().toArray(new Expression[0]);  // TODO: use generator in JDK9.
+                            final Expression<? super R, ?>[] effective = getParameters().toArray(Expression[]::new);
                             effective[1] = Optimization.literal(tr);
                             return recreate(effective);
                         }
@@ -121,7 +120,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Arrays.asList(unwrap(geometry1), unwrap(geometry2));     // TODO: use List.of(…) with JDK9.
+        return List.of(unwrap(geometry1), unwrap(geometry2));
     }
 
     /**
@@ -153,6 +152,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
         /**
          * The first argument after the geometries.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final Expression<? super R, ?> argument;
 
         /**
@@ -177,7 +177,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
          */
         @Override
         public List<Expression<? super R, ?>> getParameters() {
-            return Arrays.asList(unwrap(geometry1), unwrap(geometry2), argument);   // TODO: use List.of(…) with JDK9.
+            return List.of(unwrap(geometry1), unwrap(geometry2), argument);
         }
 
         /**

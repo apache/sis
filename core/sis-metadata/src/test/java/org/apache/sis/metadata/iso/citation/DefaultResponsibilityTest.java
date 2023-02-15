@@ -16,13 +16,13 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 
 
@@ -33,9 +33,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.1
  * @since   0.5
- * @module
  */
-public final strictfp class DefaultResponsibilityTest extends TestCase {
+public final class DefaultResponsibilityTest extends TestCase {
     /**
      * Tests marshalling with replacement of {@link DefaultResponsibility} by {@link DefaultResponsibleParty}.
      *
@@ -46,7 +45,7 @@ public final strictfp class DefaultResponsibilityTest extends TestCase {
         final DefaultIndividual  party = new DefaultIndividual("An author", null, null);
         final DefaultResponsibility  r = new DefaultResponsibility(Role.AUTHOR, null, party);
         final DefaultCitation citation = new DefaultCitation();
-        citation.setCitedResponsibleParties(singleton(r));
+        citation.setCitedResponsibleParties(Set.of(r));
         final String xml = marshal(citation, VERSION_2007);
         assertXmlEquals("<gmd:CI_Citation xmlns:gco=\"" + LegacyNamespaces.GCO + '"' +
                                         " xmlns:gmd=\"" + LegacyNamespaces.GMD + "\">\n" +

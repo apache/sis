@@ -33,6 +33,8 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
 
@@ -42,14 +44,19 @@ import org.apache.sis.util.CharSequences;
  * This class maintains both a global (system) list and a list of log records specific to each resource.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public final class LogHandler extends Handler implements StoreListener<WarningEvent> {
     /**
+     * The logger for the JavaFX application.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Modules.APPLICATION);
+
+    /**
      * Maximal number of log records stored by this class.
      */
+    @Configuration
     private static final int LIMIT = 1000;
 
     /**

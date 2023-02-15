@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -45,13 +45,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn({
     DefaultTransformationTest.class,
     SingleOperationMarshallingTest.class
 })
-public final strictfp class DefaultConcatenatedOperationTest extends TestCase {
+public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */
@@ -66,16 +65,16 @@ public final strictfp class DefaultConcatenatedOperationTest extends TestCase {
         final MathTransformFactory mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
         final DefaultTransformation op = DefaultTransformationTest.createGeocentricTranslation();
 
-        final DefaultConversion before = new DefaultConversion(
-                Collections.singletonMap(DefaultConversion.NAME_KEY, "Geographic to geocentric"),
+        final var before = new DefaultConversion(
+                Map.of(DefaultConversion.NAME_KEY, "Geographic to geocentric"),
                 HardCodedCRS.TOKYO,             // SourceCRS
                 op.getSourceCRS(),              // TargetCRS
                 null,                           // InterpolationCRS
                 DefaultOperationMethodTest.create("Geographic/geocentric conversions", "9602", "EPSG guidance note #7-2", 3),
                 EllipsoidToCentricTransform.createGeodeticConversion(mtFactory, HardCodedDatum.TOKYO.getEllipsoid(), true));
 
-        final DefaultConversion after = new DefaultConversion(
-                Collections.singletonMap(DefaultConversion.NAME_KEY, "Geocentric to geographic"),
+        final var after = new DefaultConversion(
+                Map.of(DefaultConversion.NAME_KEY, "Geocentric to geographic"),
                 op.getTargetCRS(),              // SourceCRS
                 HardCodedCRS.JGD2000,           // TargetCRS
                 null,                           // InterpolationCRS
@@ -83,7 +82,7 @@ public final strictfp class DefaultConcatenatedOperationTest extends TestCase {
                 EllipsoidToCentricTransform.createGeodeticConversion(mtFactory, HardCodedDatum.JGD2000.getEllipsoid(), true).inverse());
 
         return new DefaultConcatenatedOperation(
-                Collections.singletonMap(DefaultConversion.NAME_KEY, "Tokyo to JGD2000"),
+                Map.of(DefaultConversion.NAME_KEY, "Tokyo to JGD2000"),
                 new AbstractSingleOperation[] {before, op, after}, mtFactory);
     }
 

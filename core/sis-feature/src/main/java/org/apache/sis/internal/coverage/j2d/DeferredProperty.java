@@ -17,7 +17,6 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
-import java.util.Collections;
 import java.util.function.Function;
 import java.awt.image.RenderedImage;
 import org.apache.sis.image.PlanarImage;
@@ -36,7 +35,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class DeferredProperty {
     /**
@@ -84,8 +82,7 @@ public final class DeferredProperty {
      * @return a deferred property for computing the grid geometry of an image.
      */
     public static Map<String,Object> forGridGeometry(final GridGeometry grid, final int[] dimensions) {
-        return Collections.singletonMap(PlanarImage.GRID_GEOMETRY_KEY,
-                new DeferredProperty(new ImageGeometry(grid, dimensions)));
+        return Map.of(PlanarImage.GRID_GEOMETRY_KEY, new DeferredProperty(new ImageGeometry(grid, dimensions)));
     }
 
     /**

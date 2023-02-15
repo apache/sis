@@ -56,9 +56,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
- * @module
  */
 final class Initializer {
     /**
@@ -86,11 +85,6 @@ final class Initializer {
      * {@link NormalizedProjection} parameters.</p>
      */
     final DoubleDouble eccentricitySquared;
-
-    /**
-     * Sign of central meridian: -1 if negative, 0 if zero, +1 if positive.
-     */
-    private final byte signum_λ0;
 
     /**
      * Map projection variant, or {@code null} if none.
@@ -134,75 +128,64 @@ final class Initializer {
         final double fn = getAndStore(roles.get(ParameterRole.FALSE_NORTHING))
                         - getAndStore(roles.get(ParameterRole.FALSE_SOUTHING));
 
-        signum_λ0 = (λ0 > 0) ? (byte) +1 :
-                    (λ0 < 0) ? (byte) -1 : 0;
-        eccentricitySquared = new DoubleDouble();
-        DoubleDouble k = DoubleDouble.createAndGuessError(a);  // The value by which to multiply all results of normalized projection.
-        if (a != b) {
-            if (variant != null && variant.useAuthalicRadius()) {
-                k.value = Formulas.getAuthalicRadius(a, b);
-                k.error = 0;
+        DoubleDouble k = DoubleDouble.of(a, true);  // The value by which to multiply all results of normalized projection.
+        if (a == b) {
+            eccentricitySquared = DoubleDouble.ZERO;
+        } else if (variant != null && variant.useAuthalicRadius()) {
+            k = DoubleDouble.of(Formulas.getAuthalicRadius(a, b), false);
+            eccentricitySquared = DoubleDouble.ZERO;
+        } else {
+            /*
+             * (1) Using axis lengths:  ℯ² = 1 - (b/a)²
+             * (2) Using flattening;    ℯ² = 2f - f²     where f is the (NOT inverse) flattening factor.
+             *
+             * If the inverse flattening factor is the definitive factor for the ellipsoid, we use (2).
+             * Otherwise use (1). With double-double arithmetic, this makes a difference in the 3 last
+             * digits for the WGS84 ellipsoid.
+             */
+            boolean isIvfDefinitive;
+            try {
+                isIvfDefinitive = parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue();
+            } catch (ParameterNotFoundException e) {
+                /*
+                 * Should never happen with Apache SIS implementation, but may happen if the given parameters come
+                 * from another implementation. We can safely abandon our attempt to get the inverse flattening value,
+                 * since it was redundant with semi-minor axis length.
+                 */
+                isIvfDefinitive = false;
+            }
+            /*
+             * The ellipsoid parameters (a, b or ivf) are assumed accurate in base 10 rather than in base 2,
+             * because they are defined by authorities. For example, the semi-major axis length of the WGS84
+             * ellipsoid is equal to exactly 6378137 metres by definition of that ellipsoid. The DoubleDouble
+             * constructor applies corrections for making those values more accurate in base 10 rather than 2.
+             */
+            if (isIvfDefinitive) {
+                var f = DoubleDouble.of(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue(), true).inverse();
+                eccentricitySquared = f.scalb(1).subtract(f.square());
             } else {
+                eccentricitySquared = DoubleDouble.ONE.subtract(DoubleDouble.of(b, true).divide(k).square());
+            }
+            final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
+            if (radius != null) {
                 /*
-                 * (1) Using axis lengths:  ℯ² = 1 - (b/a)²
-                 * (2) Using flattening;    ℯ² = 2f - f²     where f is the (NOT inverse) flattening factor.
+                 * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
+                 * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
+                 * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
+                 * for Rc given in section 1.2, table 3.
                  *
-                 * If the inverse flattening factor is the definitive factor for the ellipsoid, we use (2).
-                 * Otherwise use (1). With double-double arithmetic, this makes a difference in the 3 last
-                 * digits for the WGS84 ellipsoid.
+                 * Table 3 gives:
+                 * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
+                 *
+                 * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
+                 *
+                 * Equivalent Java code:
+                 *
+                 *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
+                 *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
                  */
-                boolean isIvfDefinitive;
-                try {
-                    isIvfDefinitive = parameters.parameter(Constants.IS_IVF_DEFINITIVE).booleanValue();
-                } catch (ParameterNotFoundException e) {
-                    /*
-                     * Should never happen with Apache SIS implementation, but may happen if the given parameters come
-                     * from another implementation. We can safely abandon our attempt to get the inverse flattening value,
-                     * since it was redundant with semi-minor axis length.
-                     */
-                    isIvfDefinitive = false;
-                }
-                /*
-                 * The ellipsoid parameters (a, b or ivf) are assumed accurate in base 10 rather than in base 2,
-                 * because they are defined by authorities. For example, the semi-major axis length of the WGS84
-                 * ellipsoid is equal to exactly 6378137 metres by definition of that ellipsoid. The DoubleDouble
-                 * constructor applies corrections for making those values more accurate in base 10 rather than 2.
-                 */
-                if (isIvfDefinitive) {
-                    final DoubleDouble f = DoubleDouble.createAndGuessError(parameters.parameter(Constants.INVERSE_FLATTENING).doubleValue());
-                    f.inverseDivide(1);
-                    eccentricitySquared.setFrom(f);
-                    eccentricitySquared.multiply(2);
-                    f.square();
-                    eccentricitySquared.subtract(f);
-                } else {
-                    final DoubleDouble rs = DoubleDouble.createAndGuessError(b);
-                    rs.divide(k);                                       // rs = b/a
-                    rs.square();
-                    eccentricitySquared.value = 1;
-                    eccentricitySquared.subtract(rs);
-                }
-                final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
-                if (radius != null) {
-                    /*
-                     * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
-                     * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
-                     * as the radius of the conformal sphere at the projection origin at latitude φ₀ using the formula
-                     * for Rc given in section 1.2, table 3.
-                     *
-                     * Table 3 gives:
-                     * Radius of conformal sphere Rc = a √(1 – ℯ²) / (1 – ℯ²⋅sin²φ)
-                     *
-                     * Using √(1 – ℯ²) = b/a we rewrite as: Rc = b / (1 – ℯ²⋅sin²φ)
-                     *
-                     * Equivalent Java code:
-                     *
-                     *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
-                     *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
-                     */
-                    k = rν2(sin(toRadians(parameters.doubleValue(radius))));
-                    k.inverseDivide(b);
-                }
+                k = rν2(sin(toRadians(parameters.doubleValue(radius))));
+                k = DoubleDouble.of(b, true).divide(k);
             }
         }
         /*
@@ -212,7 +195,7 @@ final class Initializer {
          */
         final ParameterDescriptor<? extends Number> scaleFactor = roles.get(ParameterRole.SCALE_FACTOR);
         if (scaleFactor != null) {
-            k.multiplyGuessError(getAndStore(scaleFactor));
+            k = k.multiply(getAndStore(scaleFactor), true);
         }
         /*
          * Set meridian rotation, scale factor, false easting and false northing parameter values
@@ -220,8 +203,8 @@ final class Initializer {
          */
         context.normalizeGeographicInputs(λ0);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        denormalize.convertAfter(0, k, DoubleDouble.createAndGuessError(fe));
-        denormalize.convertAfter(1, k, DoubleDouble.createAndGuessError(fn));
+        denormalize.convertAfter(0, k, DoubleDouble.of(fe, true));
+        denormalize.convertAfter(1, k, DoubleDouble.of(fn, true));
     }
 
     /**
@@ -290,10 +273,14 @@ final class Initializer {
      * invoke {@link DoubleDouble#ratio_1m_1p()} on the returned value.</p>
      */
     final DoubleDouble axisLengthRatio() {
-        final DoubleDouble b = new DoubleDouble(1d);
-        b.subtract(eccentricitySquared);
-        b.sqrt();
-        return b;
+        return DoubleDouble.ONE.subtract(eccentricitySquared).sqrt();
+    }
+
+    /**
+     * Returns the radius of a hypothetical sphere having the same surface than the ellipsoid.
+     */
+    final double authalicRadius() {
+        return Formulas.getAuthalicRadius(1, axisLengthRatio().doubleValue());
     }
 
     /**
@@ -303,12 +290,18 @@ final class Initializer {
      * <blockquote>ν = 1 / √(1 - ℯ²⋅sin²φ)</blockquote>
      *
      * This method returns 1/ν², which is the (1 - ℯ²⋅sin²φ) part of above equation.
-     * Special cases:
+     * In other words, the radius of curvature is 1 / √[rν²(sinφ)].
+     *
+     * <h4>Special cases</h4>
      * <ul>
      *   <li>If φ is 0°, then <var>m</var> is 1.</li>
      *   <li>If φ is ±90°, then <var>m</var> is 0 provided that we are not in the spherical case
      *       (otherwise we get {@link Double#NaN}).</li>
      * </ul>
+     *
+     * <h4>Accuracy</h4>
+     * The accuracy is only a few digits more than {@code double} value, not the full double-double precision.
+     * This extra accuracy come from the (1 - <var>small value</var>) part of the equation.
      *
      * @param  sinφ  the sine of the φ latitude.
      * @return reciprocal squared of the radius of curvature of the ellipsoid
@@ -316,32 +309,13 @@ final class Initializer {
      */
     final DoubleDouble rν2(final double sinφ) {
         if (DoubleDouble.DISABLED) {
-            return new DoubleDouble(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ));
+            return DoubleDouble.of(1 - eccentricitySquared.doubleValue() * (sinφ*sinφ), false);
         }
-        final DoubleDouble t = new DoubleDouble(sinφ);
-        t.square();
-        t.multiply(eccentricitySquared);
         /*
-         * Compute 1 - ℯ²⋅sin²φ.  Since  ℯ²⋅sin²φ  may be small,
+         * Compute 1 - ℯ²⋅sin²φ.  Because ℯ²⋅sin²φ  may be small,
          * this is where double-double arithmetic has more value.
          */
-        t.negate();
-        t.add(1);
-        return t;
-    }
-
-    /**
-     * Returns the radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     * This is {@code 1/sqrt(rν2(sinφ))}.
-     *
-     * @param  sinφ  the sine of the φ latitude.
-     * @return radius of curvature of the ellipsoid perpendicular to the meridian at latitude φ.
-     */
-    final double radiusOfCurvature(final double sinφ) {
-        final DoubleDouble rν2 = rν2(sinφ);
-        rν2.sqrt();
-        rν2.inverseDivide(1);
-        return rν2.doubleValue();
+        return DoubleDouble.ONE.subtract(eccentricitySquared.multiply(DoubleDouble.product(sinφ, sinφ)));
     }
 
     /**
@@ -355,22 +329,23 @@ final class Initializer {
      * the use of φ₀ (or φ₁ as relevant to method) for φ is suggested, except if the projection is
      * equal area when the radius of authalic sphere should be used.
      *
+     * <h4>Accuracy</h4>
+     * The accuracy is only a few digits more than {@code double} value, not the full double-double precision.
+     * This extra accuracy come from the (1 - <var>small value</var>) parts in both numerator and denominator.
+     *
      * @param  sinφ  the sine of the φ latitude.
      * @return radius of the conformal sphere at latitude φ.
      */
-    final double radiusOfConformalSphere(final double sinφ) {
-        final DoubleDouble Rc = new DoubleDouble(1d);
-        Rc.subtract(eccentricitySquared);       //  1 - ℯ²
-        Rc.sqrt();                              //  √(1 - ℯ²)
-        Rc.divide(rν2(sinφ));                   //  √(1 - ℯ²) / (1 - ℯ²sin²φ)
-        return Rc.doubleValue();
+    final DoubleDouble radiusOfConformalSphere(final double sinφ) {
+        return DoubleDouble.ONE.subtract(eccentricitySquared).sqrt().divide(rν2(sinφ));
     }
 
     /**
      * Returns the scale factor at latitude φ (Snyder 14-15). This is computed as:
      *
-     * <blockquote>cosφ / sqrt(rν2(sinφ))</blockquote>
+     * <blockquote>cosφ / √[rν²(sinφ)]</blockquote>
      *
+     * <h4>Accuracy</h4>
      * The result is returned as a {@code double} because the limited precision of {@code sinφ} and {@code cosφ}
      * makes the error term meaningless. We use double-double arithmetic only for intermediate calculation.
      *
@@ -379,9 +354,6 @@ final class Initializer {
      * @return scale factor at latitude φ.
      */
     final double scaleAtφ(final double sinφ, final double cosφ) {
-        final DoubleDouble s = rν2(sinφ);
-        s.sqrt();
-        s.inverseDivide(cosφ);
-        return s.doubleValue();
+        return DoubleDouble.of(cosφ, false).divide(rν2(sinφ).sqrt()).doubleValue();
     }
 }

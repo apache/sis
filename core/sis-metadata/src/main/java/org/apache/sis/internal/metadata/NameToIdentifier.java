@@ -44,7 +44,6 @@ import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 public final class NameToIdentifier implements Identifier {
     /**

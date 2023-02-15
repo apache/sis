@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.time.Instant;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -51,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.io.wkt.Formatter;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
@@ -116,9 +116,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  *
  * <b>Example:</b> the following code gets a <cite>World Geodetic System 1984</cite> datum:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     GeodeticDatum datum = CommonCRS.WGS84.datum();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself),
@@ -127,7 +127,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
@@ -135,7 +135,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticDatum(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "GeodeticDatumType", propOrder = {
     "primeMeridian",
@@ -143,6 +142,13 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
 })
 @XmlRootElement(name = "GeodeticDatum")
 public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum {
+    /**
+     * The logger for coordinate operations.
+     *
+     * @see #getPositionVectorTransformation(GeodeticDatum, Extent)
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -167,6 +173,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @see #getEllipsoid()
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private Ellipsoid ellipsoid;
 
     /**
@@ -177,6 +184,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *
      * @see #getPrimeMeridian()
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private PrimeMeridian primeMeridian;
 
     /**
@@ -298,7 +306,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         ellipsoid     = datum.getEllipsoid();
         primeMeridian = datum.getPrimeMeridian();
         bursaWolf     = (datum instanceof DefaultGeodeticDatum) ? ((DefaultGeodeticDatum) datum).bursaWolf : null;
-        // No need to clone the 'bursaWolf' array since it is read only.
+        // No need to clone the `bursaWolf` array since it is read only.
     }
 
     /**
@@ -439,10 +447,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 /*
                  * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
-                 * returning 'null' is allowed by this method's contract.
+                 * returning `null` is allowed by this method's contract.
                  */
-                Logging.unexpectedException(getLogger(Loggers.COORDINATE_OPERATION),
-                        DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                Logging.unexpectedException(LOGGER, DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
             /*
              * No direct tranformation found. Search for a path through an intermediate datum.
@@ -475,8 +482,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                                     Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
                                     return AnnotatedMatrix.indirect(m, useAOI);
                                 } catch (NoninvertibleMatrixException e) {
-                                    Logging.unexpectedException(getLogger(Loggers.COORDINATE_OPERATION),
-                                            DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                                    Logging.unexpectedException(LOGGER, DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
                                 }
                             }
                         }
@@ -622,22 +628,22 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
      *
-     * <div class="note"><b>Example:</b> Well-Known Text of a WGS 84 datum.
+     * <h4>Example</h4>
+     * Well-Known Text of a WGS 84 datum.
      *
-     * {@preformat wkt
-     *      Datum["World Geodetic System 1984",
-     *        Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
-     *      Id["EPSG", 6326, Citation["IOGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
-     * }
+     * {@snippet lang="wkt" :
+     *   Datum["World Geodetic System 1984",
+     *     Ellipsoid["WGS84", 6378137.0, 298.257223563, LengthUnit["metre", 1]],
+     *   Id["EPSG", 6326, Citation["IOGP"], URI["urn:ogc:def:datum:EPSG::6326"]]]
+     *   }
      *
      * <p>Same datum using WKT 1.</p>
      *
-     * {@preformat wkt
-     *      DATUM["World Geodetic System 1984"
-     *        SPHEROID["WGS84", 6378137.0, 298.257223563],
-     *      AUTHORITY["EPSG", "6326"]]
-     * }
-     * </div>
+     * {@snippet lang="wkt" :
+     *   DATUM["World Geodetic System 1984"
+     *     SPHEROID["WGS84", 6378137.0, 298.257223563],
+     *   AUTHORITY["EPSG", "6326"]]
+     *   }
      *
      * Note that the {@linkplain #getPrimeMeridian() prime meridian} shall be formatted by the caller
      * as a separated element after the geodetic datum (for compatibility with WKT 1).
@@ -708,7 +714,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         bursaWolf = null;
         /*
          * Ellipsoid and PrimeMeridian are mandatory for SIS working. We do not verify their presence here
-         * (because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * (because the verification would have to be done in an `afterMarshal(…)` method and throwing an
          * exception in that method causes the whole unmarshalling to fail). But the CD_GeodeticDatum
          * adapter does some verifications.
          */

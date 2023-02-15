@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.io.Serializable;
 
 import org.opengis.referencing.operation.Matrix;
@@ -44,26 +43,27 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * This class provides also a few {@code translate(…)} convenience methods,
  * which apply the translation on a given {@link MathTransform} instance.
  *
- * <div class="note"><b>Example:</b>
- * if the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
+ * <h2>Example</h2>
+ * In the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
  * <cite>grid cell</cite> coordinates (typically pixel coordinates) to some arbitrary CRS coordinates.
  * In this example, the transform maps pixels {@linkplain PixelOrientation#CENTER center},
  * while the {@linkplain PixelOrientation#UPPER_LEFT upper left} corner is desired.
  * This code will switch the affine transform from the <cite>pixel center</cite> to
  * <cite>upper left corner</cite> convention:
  *
- * {@preformat java
- *   final AffineTransform  gridToCRS = ...;
- *   final PixelOrientation current   = PixelOrientation.CENTER;
- *   final PixelOrientation desired   = PixelOrientation.UPPER_LEFT;
+ * {@snippet lang="java" :
+ *     public AffineTransform getGridToPixelCorner() {
+ *         AffineTransform  gridToCRS = ...;
+ *         PixelOrientation current   = PixelOrientation.CENTER;
+ *         PixelOrientation desired   = PixelOrientation.UPPER_LEFT;
  *
- *   // Switch the transform from 'current' to 'desired' convention.
- *   final PixelTranslation source = getPixelTranslation(current);
- *   final PixelTranslation target = getPixelTranslation(desired);
- *   gridToCRS.translate(target.dx - source.dx,
- *                       target.dy - source.dy);
+ *         // Switch the transform from 'current' to 'desired' convention.
+ *         PixelTranslation source = getPixelTranslation(current);
+ *         PixelTranslation target = getPixelTranslation(desired);
+ *         return gridToCRS.translate(target.dx - source.dx,
+ *                                    target.dy - source.dy);
+ *     }
  * }
- * </div>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
@@ -72,7 +72,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @see PixelOrientation
  *
  * @since 1.0
- * @module
  */
 public final class PixelTranslation extends Static implements Serializable {
     /**
@@ -108,20 +107,18 @@ public final class PixelTranslation extends Static implements Serializable {
     /**
      * The offset for various pixel orientations. Keys must be upper-case names.
      */
-    private static final Map<PixelOrientation, PixelTranslation> ORIENTATIONS = new HashMap<>(12);
-    static {
-        add(CENTER,       0.0,  0.0);
-        add(UPPER_LEFT,  -0.5, -0.5);
-        add(UPPER_RIGHT,  0.5, -0.5);
-        add(LOWER_LEFT,  -0.5,  0.5);
-        add(LOWER_RIGHT,  0.5,  0.5);
-    }
+    private static final Map<PixelOrientation, PixelTranslation> ORIENTATIONS = Map.ofEntries(
+            entry(CENTER,       0.0,  0.0),
+            entry(UPPER_LEFT,  -0.5, -0.5),
+            entry(UPPER_RIGHT,  0.5, -0.5),
+            entry(LOWER_LEFT,  -0.5,  0.5),
+            entry(LOWER_RIGHT,  0.5,  0.5));
 
     /** For {@link #ORIENTATIONS} construction only. */
-    private static void add(final PixelOrientation orientation, final double dx, final double dy) {
-        if (ORIENTATIONS.put(orientation, new PixelTranslation(orientation, dx, dy)) != null) {
-            throw new AssertionError();
-        }
+    private static Map.Entry<PixelOrientation, PixelTranslation> entry(
+                    PixelOrientation orientation, double dx, double dy)
+    {
+        return Map.entry(orientation, new PixelTranslation(orientation, dx, dy));
     }
 
     /**

@@ -19,7 +19,6 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Collections;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;             // For javadoc
 import java.net.URL;
@@ -88,7 +87,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public final class XML extends Static {
     /**
@@ -266,12 +264,12 @@ public final class XML extends Static {
      * database. Users can define their search algorithm by subclassing {@link ReferenceResolver} and configuring
      * a unmarshaller as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ReferenceResolver  myResolver = ...;
      *     Map<String,Object> properties = new HashMap<>();
      *     properties.put(XML.RESOLVER, myResolver);
      *     Object obj = XML.unmarshal(source, properties);
-     * }
+     *     }
      *
      * @see Unmarshaller#setProperty(String, Object)
      * @see ReferenceResolver
@@ -290,17 +288,17 @@ public final class XML extends Static {
      * for replacing an erroneous URL by a fixed URL. See the {@link ValueConverter} javadoc for
      * more details.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * the following example collects the failures in a list without stopping the (un)marshalling process.
+     * <h4>Example</h4>
+     * The following example collects the failures in a list without stopping the (un)marshalling process.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     class WarningCollector extends ValueConverter {
      *         // The warnings collected during (un)marshalling.
      *         List<String> messages = new ArrayList<String>();
      *
      *         // Override the default implementation in order to
      *         // collect the warnings and allow the process to continue.
-     *         &#64;Override
+     *         @Override
      *         protected <T> boolean exceptionOccured(MarshalContext context,
      *                 T value, Class<T> sourceType, Class<T> targetType, Exception e)
      *         {
@@ -320,7 +318,6 @@ public final class XML extends Static {
      *         // Report here the warnings to the user.
      *     }
      * }
-     * </div>
      *
      * @see Unmarshaller#setProperty(String, Object)
      * @see ValueConverter
@@ -341,7 +338,7 @@ public final class XML extends Static {
      * <div class="note"><b>Example:</b>
      * INSPIRE compliant language code shall be formatted like below (details may vary):
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gmd:language>
      *     <gmd:LanguageCode
      *         codeList="http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#LanguageCode"
@@ -352,7 +349,7 @@ public final class XML extends Static {
      * However if this property contains the "{@code language}" value, then the marshaller will format
      * the language code like below (which is legal according OGC schemas, but is not INSPIRE compliant):
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <lan:language>
      *     <gco:CharacterString>fra</gco:CharacterString>
      *   </lan:language>
@@ -378,8 +375,8 @@ public final class XML extends Static {
      * The field name uses the uppercase convention because this field is almost constant:
      * this field is initially null, then created by {@link #getPool()} when first needed.
      * Once created the field value usually doesn't change. However, the field may be reset
-     * to {@code null} in an OSGi context when modules are loaded or unloaded, because the
-     * set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
+     * to {@code null} when modules are loaded or unloaded by a container such as OSGi,
+     * because the set of classes returned by {@link TypeRegistration#load(boolean)} may have changed.
      *
      * @see #getPool()
      */
@@ -406,11 +403,11 @@ public final class XML extends Static {
     /**
      * Returns the default (un)marshaller pool used by all methods in this class.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * Current implementation uses the double-check idiom. This is usually a deprecated practice
      * (the recommended alterative is to use static class initialization), but in this particular
-     * case the field may be reset to {@code null} if OSGi modules are loaded or unloaded, so static
-     * class initialization would be a little bit too rigid.</div>
+     * case the field may be reset to {@code null} if modules are loaded or unloaded by a container,
+     * so static class initialization would be a little bit too rigid.
      */
     @SuppressWarnings("DoubleCheckedLocking")
     private static MarshallerPool getPool() throws JAXBException {
@@ -419,7 +416,7 @@ public final class XML extends Static {
             synchronized (XML.class) {
                 pool = POOL;                            // Double-check idiom: see javadoc.
                 if (pool == null) {
-                    POOL = pool = new MarshallerPool(Collections.singletonMap(LENIENT_UNMARSHAL, Boolean.TRUE));
+                    POOL = pool = new MarshallerPool(Map.of(LENIENT_UNMARSHAL, Boolean.TRUE));
                 }
             }
         }
@@ -522,7 +519,7 @@ public final class XML extends Static {
             }
         }
         /*
-         * STAX results are not handled by JAXB as of JDK 8. We have to handle those cases ourselves.
+         * STAX results are not handled by JAXB. We have to handle those cases ourselves.
          * This workaround should be removed if a future JDK version handles those cases.
          */
         if (output instanceof StAXResult) {
@@ -650,7 +647,7 @@ public final class XML extends Static {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
         final Object object;
         /*
-         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation as of JDK 8.
+         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation.
          * We have to handle those cases ourselves. This workaround should be removed if a future JDK version handles
          * those cases.
          */

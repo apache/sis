@@ -120,13 +120,14 @@ import org.apache.sis.coverage.grid.GridExtent;
  * (typically) the center of the display area, but also to specify which slice to select in all dimensions
  * not shown by the display device.</p>
  *
- * <div class="note"><b>Example:</b> if some data have (<var>x</var>,<var>y</var>,<var>z</var>) dimensions and
+ * <h3>Example</h3>
+ * If some data have (<var>x</var>,<var>y</var>,<var>z</var>) dimensions and
  * other data have (<var>x</var>,<var>y</var>,<var>t</var>) dimensions, then the point of interest shall contain
  * coordinate values for at least all of the (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) dimensions
  * (i.e. it must be 4-dimensional, even if all data in this example are 3-dimensional). If the display device
  * is a two-dimensional screen showing map in the (<var>x</var>,<var>y</var>) dimensions (horizontal plane),
  * then the point of interest defines the <var>z</var> value (elevation or depth) and the <var>t</var> value
- * (date and time) of the slice to show.</div>
+ * (date and time) of the slice to show.
  *
  * <h2>Display device size</h2>
  * The geographic extent of data to be rendered is constrained by the zoom level and the display device size.
@@ -143,9 +144,8 @@ import org.apache.sis.coverage.grid.GridExtent;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public class Canvas extends Observable implements Localized {
     /**
@@ -610,16 +610,16 @@ public class Canvas extends Observable implements Localized {
     private static MathTransform orthogonalTangent(final MathTransform newToOld, final double[] poiInNew)
             throws TransformException, RenderException
     {
-        final double[]     poiInOld   = new double[newToOld.getTargetDimensions()];
-        final MatrixSIS    derivative = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(newToOld, poiInNew, 0, poiInOld, 0));
-        final MatrixSIS    magnitudes = derivative.normalizeColumns();
-        final MatrixSIS    affine     = Matrices.createAffine(derivative, new DirectPositionView.Double(poiInOld));
-        final int          srcDim     = magnitudes.getNumCol();
-        final DoubleDouble scale      = new DoubleDouble();             // Will be set to average magnitude value.
+        final double[]  poiInOld   = new double[newToOld.getTargetDimensions()];
+        final MatrixSIS derivative = MatrixSIS.castOrCopy(MathTransforms.derivativeAndTransform(newToOld, poiInNew, 0, poiInOld, 0));
+        final MatrixSIS magnitudes = derivative.normalizeColumns();
+        final MatrixSIS affine     = Matrices.createAffine(derivative, new DirectPositionView.Double(poiInOld));
+        final int       srcDim     = magnitudes.getNumCol();
+        DoubleDouble    scale      = DoubleDouble.ZERO;             // Will be set to average magnitude value.
         for (int i=0; i<srcDim; i++) {
-            scale.add(DoubleDouble.castOrCopy(magnitudes.getNumber(0, i)));
+            scale = scale.add(magnitudes.getNumber(0, i), false);
         }
-        scale.divide(srcDim);
+        scale = scale.divide(srcDim);
         /*
          * Following code assumes a two-dimensional rotation matrix. We have not yet explored how
          * to generalize to n-dimensional case (Gram–Schmidt process may be a path to explore).
@@ -972,7 +972,7 @@ public class Canvas extends Observable implements Localized {
                      */
                     supplementalDimensions = CanvasExtent.findSupplementalDimensions(crs,
                             multidimToObjective.derivative(pointOfInterest), components);
-                    augmentedObjectiveCRS = CRS.compound(components.toArray(new CoordinateReferenceSystem[components.size()]));
+                    augmentedObjectiveCRS = CRS.compound(components.toArray(CoordinateReferenceSystem[]::new));
                     if (Utilities.equalsIgnoreMetadata(augmentedObjectiveCRS, crs)) {
                         augmentedObjectiveCRS = crs;
                     }

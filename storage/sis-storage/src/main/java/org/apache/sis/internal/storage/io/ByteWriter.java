@@ -25,7 +25,6 @@ import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.ShortBuffer;
 import org.apache.sis.math.Vector;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -35,9 +34,8 @@ import org.apache.sis.internal.jdk9.JDK9;
  * can be invoked in a loop until all data have been transferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
- * @module
  */
 public abstract class ByteWriter {
     /**
@@ -72,7 +70,7 @@ public abstract class ByteWriter {
      */
     public static ByteWriter create(Buffer source, final ByteBuffer target) {
         if (source.limit() != source.capacity()) {
-            source = JDK9.slice(source);
+            source = source.slice();
         }
         if (source instanceof DoubleBuffer) return new Doubles ((DoubleBuffer) source, target);
         if (source instanceof  FloatBuffer) return new Floats  ( (FloatBuffer) source, target);

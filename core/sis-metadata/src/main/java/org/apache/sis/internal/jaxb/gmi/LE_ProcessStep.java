@@ -32,7 +32,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "LE_ProcessStep_Type", namespace = Namespaces.MRL)
 @XmlRootElement(name = "LE_ProcessStep", namespace = Namespaces.MRL)

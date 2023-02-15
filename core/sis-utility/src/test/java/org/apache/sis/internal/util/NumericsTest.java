@@ -17,6 +17,7 @@
 package org.apache.sis.internal.util;
 
 import java.util.Random;
+import java.math.BigInteger;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -34,12 +35,11 @@ import static org.junit.Assert.*;
  * Tests the {@link Numerics} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
-public final strictfp class NumericsTest extends TestCase {
+public final class NumericsTest extends TestCase {
     /**
      * Verifies the value of {@link Numerics#LONG_SHIFT} and {@link Numerics#INT_SHIFT}.
      */
@@ -82,6 +82,38 @@ public final strictfp class NumericsTest extends TestCase {
         assertEquals(-4L, ceilDiv(-12L, 3L));
         assertEquals(-2,  ceilDiv( -8,  3 ));
         assertEquals(-2L, ceilDiv( -8L, 3L));
+    }
+
+    /**
+     * Tests {@link Numerics#multiplyDivide(long, long, long)}.
+     * This method uses {@link BigInteger} as a reference.
+     */
+    @Test
+    public void testMultiplyDivide() {
+        final Random random = TestUtilities.createRandomNumberGenerator();
+        for (int i=0; i<10; i++) {
+            final long value      = random.nextLong();
+            final long multiplier = random.nextLong();
+            final long divisor    = random.nextLong();              // Accepted also 0.
+            final long expected;
+            try {
+                // ArithmeticException may occur because of overflow or division by 0.
+                expected = BigInteger.valueOf(value).multiply(BigInteger.valueOf(multiplier))
+                                     .divide(BigInteger.valueOf(divisor)).longValueExact();
+            } catch (ArithmeticException e) {
+                // If BigInteger fails, then `multiplyDivide(…)` shall also fail.
+                try {
+                    Numerics.multiplyDivide(value, multiplier, divisor);
+                    fail("Expected " + e);
+                } catch (ArithmeticException ex) {
+                    // Expected exception.
+                    continue;
+                }
+                throw e;
+            }
+            final long actual = Numerics.multiplyDivide(value, multiplier, divisor);
+            assertEquals(expected, actual);
+        }
     }
 
     /**

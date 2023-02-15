@@ -17,7 +17,6 @@
 package org.apache.sis.internal.storage.gpx;
 
 import java.util.List;
-import java.util.Arrays;
 import java.time.Instant;
 import java.net.URI;
 import java.io.UncheckedIOException;
@@ -46,17 +45,16 @@ import org.opengis.feature.Feature;
 
 /**
  * Tests (indirectly) the {@link Writer} class.
- * This class creates a {@link Store} instance and uses it in write mode.
+ * This class creates a {@link WritableStore} instance and uses it in write mode.
  * The {@link Reader} is used for verifying the content.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 @DependsOn({MetadataTest.class, ReaderTest.class})
-public final strictfp class WriterTest extends TestCase {
+public final class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */
@@ -86,10 +84,10 @@ public final strictfp class WriterTest extends TestCase {
     /**
      * Creates a new GPX data store which will read and write in memory.
      */
-    private Store create() throws DataStoreException {
+    private WritableStore create() throws DataStoreException {
         final StorageConnector connector = new StorageConnector(output);
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
-        return new Store(provider, connector);
+        return new WritableStore(provider, connector);
     }
 
     /**
@@ -137,7 +135,7 @@ public final strictfp class WriterTest extends TestCase {
      */
     private void testMetadata(final Version version, final String expected) throws Exception {
         final Metadata metadata = MetadataTest.create();
-        try (Store store = create()) {
+        try (WritableStore store = create()) {
             store.setVersion(version);
             store.write(metadata, null);
         }
@@ -233,7 +231,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param expected  name of a test file containing the expected XML result.
      */
     private void testFeatures(final Version version, final Type type, final String expected) throws Exception {
-        try (Store store = create()) {
+        try (WritableStore store = create()) {
             store.version = version;
             testFeatures(store, type);
         }
@@ -247,7 +245,7 @@ public final strictfp class WriterTest extends TestCase {
      * @param store  the store where to write.
      * @param type   the kind of feature to write: way point, route or track.
      */
-    private void testFeatures(final Store store, final Type type) throws Exception {
+    private void testFeatures(final WritableStore store, final Type type) throws Exception {
         final Types types = store.types;
         /*
          * Way Points as defined in "waypoint.xml" test file.
@@ -272,9 +270,9 @@ public final strictfp class WriterTest extends TestCase {
         point1.setPropertyValue("ageofdgpsdata", 55.55);
         point1.setPropertyValue("dgpsid",        256);
         point1.setPropertyValue("fix",           Fix.NONE);
-        point1.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://first-address1.org")),
-                                                               new Link(new URI("http://first-address2.org")),
-                                                               new Link(new URI("http://first-address3.org"))));
+        point1.setPropertyValue("link",          List.of(new Link(new URI("http://first-address1.org")),
+                                                         new Link(new URI("http://first-address2.org")),
+                                                         new Link(new URI("http://first-address3.org"))));
         final Feature point3 = types.wayPoint.newInstance();
         point3.setPropertyValue("sis:geometry",  new Point(35, 30));
         point3.setPropertyValue("time",          Instant.parse("2010-01-30T00:00:00Z"));
@@ -294,11 +292,11 @@ public final strictfp class WriterTest extends TestCase {
         point3.setPropertyValue("ageofdgpsdata", 85.55);
         point3.setPropertyValue("dgpsid",        456);
         point3.setPropertyValue("fix",           Fix.THREE_DIMENSIONAL);
-        point3.setPropertyValue("link",          Arrays.asList(new Link(new URI("http://third-address1.org")),
-                                                               new Link(new URI("http://third-address2.org"))));
+        point3.setPropertyValue("link",          List.of(new Link(new URI("http://third-address1.org")),
+                                                         new Link(new URI("http://third-address2.org"))));
         final Feature point2 = types.wayPoint.newInstance();
         point2.setPropertyValue("sis:geometry", new Point(25, 20));
-        final List<Feature> wayPoints = Arrays.asList(point1, point2, point3);
+        final List<Feature> wayPoints = List.of(point1, point2, point3);
         final List<Feature> features;
         switch (type) {
             case WAY_POINT: {
@@ -314,11 +312,11 @@ public final strictfp class WriterTest extends TestCase {
                 route1.setPropertyValue("type",   "Route type");
                 route1.setPropertyValue("number", 7);
                 route1.setPropertyValue("rtept",  wayPoints);
-                route1.setPropertyValue("link",   Arrays.asList(new Link(new URI("http://route-address1.org")),
-                                                                new Link(new URI("http://route-address2.org")),
-                                                                new Link(new URI("http://route-address3.org"))));
+                route1.setPropertyValue("link",   List.of(new Link(new URI("http://route-address1.org")),
+                                                          new Link(new URI("http://route-address2.org")),
+                                                          new Link(new URI("http://route-address3.org"))));
                 final Feature route2 = types.route.newInstance();
-                features = Arrays.asList(route1, route2);
+                features = List.of(route1, route2);
                 break;
             }
             case TRACK: {
@@ -333,12 +331,12 @@ public final strictfp class WriterTest extends TestCase {
                 track1.setPropertyValue("src",    "Track source");
                 track1.setPropertyValue("type",   "Track type");
                 track1.setPropertyValue("number", 7);
-                track1.setPropertyValue("trkseg", Arrays.asList(seg1, seg2));
-                track1.setPropertyValue("link",   Arrays.asList(new Link(new URI("http://track-address1.org")),
-                                                                new Link(new URI("http://track-address2.org")),
-                                                                new Link(new URI("http://track-address3.org"))));
+                track1.setPropertyValue("trkseg", List.of(seg1, seg2));
+                track1.setPropertyValue("link",   List.of(new Link(new URI("http://track-address1.org")),
+                                                          new Link(new URI("http://track-address2.org")),
+                                                          new Link(new URI("http://track-address3.org"))));
                 final Feature track2 = types.track.newInstance();
-                features = Arrays.asList(track1, track2);
+                features = List.of(track1, track2);
                 break;
             }
             default: throw new AssertionError(type);
@@ -370,7 +368,7 @@ public final strictfp class WriterTest extends TestCase {
         final StorageConnector connector = new StorageConnector(
                 TestUtilities.createTemporaryFile(ReaderTest.class, "1.1/metadata.xml"));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
-        try (Store store = new Store(provider, connector)) {
+        try (WritableStore store = new WritableStore(provider, connector)) {
             /*
              * Read part of the file. We verify its content as a matter of principle,
              * but the main purpose of following code is to advance in the stream.

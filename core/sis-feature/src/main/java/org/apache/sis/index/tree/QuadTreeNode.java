@@ -25,16 +25,10 @@ package org.apache.sis.index.tree;
  *
  * @author  Chris Mattmann
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.1
- * @module
  */
 final class QuadTreeNode extends PointTreeNode {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 3860185925702742700L;
-
     /**
      * The 4 quadrants of a {@link QuadTreeNode}: North-West (NW), North-East (NE),
      * South-West (SW) and South-East (SE). Numerical values follow this bit pattern:
@@ -91,7 +85,7 @@ final class QuadTreeNode extends PointTreeNode {
             case NE: child = ne; break;
             case SW: child = sw; break;
             case SE: child = se; break;
-            default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
+            default: throw new IndexOutOfBoundsException(quadrant);
         }
         return child;
     }
@@ -109,7 +103,7 @@ final class QuadTreeNode extends PointTreeNode {
             case NE: ne = child; break;
             case SW: sw = child; break;
             case SE: se = child; break;
-            default: throw new IndexOutOfBoundsException(/*quadrant*/);     // TODO: uncomment with JDK9.
+            default: throw new IndexOutOfBoundsException(quadrant);
         }
     }
 

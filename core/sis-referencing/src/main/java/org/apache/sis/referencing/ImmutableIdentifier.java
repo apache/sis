@@ -31,13 +31,13 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
 
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
 
 
@@ -67,9 +67,9 @@ import static org.apache.sis.util.collection.Containers.property;
  * If there is no code space, then the {@linkplain #getAuthority() authority} abbreviation is used as a fallback.
  * Example:
  *
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   AUTHORITY["EPSG", "4326"]
- * }
+ *   }
  *
  * </li><li><b><cite>Well Known Text</cite> (WKT) version 2</b><br>
  * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
@@ -78,15 +78,15 @@ import static org.apache.sis.util.collection.Containers.property;
  * (the URN syntax is described in the next item below).
  * Example:
  *
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   ID["EPSG", 4326, URI["urn:ogc:def:crs:EPSG::4326"]]
- * }
+ *   }
  *
  * </li><li><b>XML in referencing objects</b><br>
  * The <cite>Definition identifier URNs in OGC namespace</cite> paper defines a syntax for identifiers commonly
  * found in Geographic Markup Language (GML) documents. Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gml:identifier codeSpace="IOGP">urn:ogc:def:crs:EPSG::4326</gml:identifier>
  * }
  *
@@ -108,7 +108,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)
  *
  * @since 1.0
- * @module
  */
 @TitleProperty(name = "code")
 public class ImmutableIdentifier extends FormattableObject implements Identifier, Serializable {
@@ -122,6 +121,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      *
      * @see #getAuthority()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Citation authority;
 
     /**
@@ -151,6 +151,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Natural language description of the meaning of the code value.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString description;
 
     /**
@@ -265,8 +266,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
         ensureNonNull("properties", properties);
-        code        = trimWhitespaces(  property (properties, CODE_KEY,    String.class));
-        version     = trimWhitespaces(  property (properties, VERSION_KEY, String.class));
+        code        = Strings.trimOrNull(property(properties, CODE_KEY,    String.class));
+        version     = Strings.trimOrNull(property(properties, VERSION_KEY, String.class));
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);
         /*
          * Map String authority to one of the predefined constants (typically EPSG or OGC).
@@ -289,7 +290,7 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
         if (value == null) {
             codeSpace = Citations.toCodeSpace(authority);
         } else if (value instanceof String) {
-            codeSpace = trimWhitespaces((String) value);
+            codeSpace = Strings.trimOrNull((String) value);
         } else {
             throw illegalPropertyType(properties, CODESPACE_KEY, value);
         }
@@ -301,9 +302,10 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      */
     private void validate(final Map<String,?> properties) {
         if (code == null || code.isEmpty()) {
+            boolean missing = (code == null) || (properties != null && properties.get(CODE_KEY) == null);
             throw new IllegalArgumentException(Errors.getResources(properties)
-                    .getString((code == null) ? Errors.Keys.MissingValueForProperty_1
-                                              : Errors.Keys.EmptyProperty_1, CODE_KEY));
+                    .getString(missing ? Errors.Keys.MissingValueForProperty_1
+                                       : Errors.Keys.EmptyProperty_1, CODE_KEY));
         }
     }
 
@@ -533,9 +535,9 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Appends the given code or version number as an integer if possible, or as a text otherwise.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * ISO 19162 specifies "number or text". In Apache SIS, we restrict the numbers to integers
-     * because handling version numbers like "8.2" as floating point numbers can be confusing.</div>
+     * because handling version numbers like "8.2" as floating point numbers can be confusing.
      */
     private static void appendCode(final Formatter formatter, final String text) {
         if (text != null) {

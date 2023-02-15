@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
@@ -46,13 +46,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn({
     DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.
     DefaultConversionTest.class
 })
-public final strictfp class DefaultDerivedCRSTest extends TestCase {
+public final class DefaultDerivedCRSTest extends TestCase {
     /**
      * An XML file in this package containing a projected CRS definition.
      */
@@ -105,7 +104,7 @@ public final strictfp class DefaultDerivedCRSTest extends TestCase {
      */
     private static DefaultDerivedCRS createLongitudeRotation() {
         final DefaultConversion conversion = DefaultConversionTest.createLongitudeRotation(false);
-        return new DefaultDerivedCRS(Collections.singletonMap(DefaultDerivedCRS.NAME_KEY, conversion.getTargetCRS().getName()),
+        return new DefaultDerivedCRS(Map.of(DefaultDerivedCRS.NAME_KEY, conversion.getTargetCRS().getName()),
                 (SingleCRS) conversion.getSourceCRS(), conversion, HardCodedCS.GEODETIC_φλ);
     }
 

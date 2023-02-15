@@ -46,7 +46,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Scope;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractMD_SpatialRepresentation_Type")
 @XmlRootElement(name = "AbstractMD_SpatialRepresentation")
@@ -83,6 +82,9 @@ public class AbstractSpatialRepresentation extends ISOMetadata implements Spatia
      */
     public AbstractSpatialRepresentation(final SpatialRepresentation object) {
         super(object);
+        if (object != null) {
+            scope = object.getScope();
+        }
     }
 
     /**

@@ -42,7 +42,6 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @see DefaultAssociationRole
  *
  * @since 0.5
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")     // AbstractAssociation.clone() contract is to return a shallow copy.
 final class SingletonAssociation extends AbstractAssociation {
@@ -54,6 +53,7 @@ final class SingletonAssociation extends AbstractAssociation {
     /**
      * The associated feature.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Feature value;
 
     /**

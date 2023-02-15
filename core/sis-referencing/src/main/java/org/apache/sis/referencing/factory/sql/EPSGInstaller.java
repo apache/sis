@@ -49,17 +49,16 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.7
- * @module
  */
 final class EPSGInstaller extends ScriptRunner {
     /**
      * The pattern for an {@code "UPDATE … SET … REPLACE"} instruction.
      * Example:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     UPDATE epsg_datum
      *     SET datum_name = replace(datum_name, CHAR(182), CHAR(10));
-     * }
+     *     }
      *
      * Note: this regular expression use a capturing group.
      */

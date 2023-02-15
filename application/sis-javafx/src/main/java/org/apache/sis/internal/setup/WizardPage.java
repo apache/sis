@@ -24,7 +24,6 @@ package org.apache.sis.internal.setup;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 enum WizardPage {
     /**

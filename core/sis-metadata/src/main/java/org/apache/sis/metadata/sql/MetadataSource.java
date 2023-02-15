@@ -60,6 +60,7 @@ import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.metadata.sql.Reflection;
 import org.apache.sis.internal.metadata.sql.SQLBuilder;
 import org.apache.sis.internal.metadata.ReferencingServices;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
@@ -82,10 +83,10 @@ import org.apache.sis.util.iso.Types;
  * or another database specified at construction time.
  * Metadata instances can be obtained as in the example below:
  *
- * {@preformat java
- *   MetadataSource metadata = MetadataSource.getProvided();
- *   Format format = source.lookup(Format.class, "PNG");
- * }
+ * {@snippet lang="java" :
+ *     MetadataSource metadata = MetadataSource.getProvided();
+ *     Format format = source.lookup(Format.class, "PNG");
+ *     }
  *
  * where {@code id} is the primary key value for the desired record in the {@code Format} table.
  *
@@ -110,9 +111,8 @@ import org.apache.sis.util.iso.Types;
  *
  * @author  Touraïvane (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 public class MetadataSource implements AutoCloseable {
     /**
@@ -134,12 +134,14 @@ public class MetadataSource implements AutoCloseable {
      *
      * @see #closeExpired()
      */
+    @Configuration
     private static final long TIMEOUT = 2000_000000;
 
     /**
      * An extra delay to add to the {@link #TIMEOUT} in order to increase the chances to
      * close many statements at once.
      */
+    @Configuration
     private static final int EXTRA_DELAY = 500_000000;
 
     /**
@@ -178,7 +180,7 @@ public class MetadataSource implements AutoCloseable {
      * because a single JDBC connection cannot be assumed thread-safe.
      *
      * <p>Usage example:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Class<?> type = …;
      *     synchronized (this) {
      *         // Get an entry, or create a new one if no entry is available.
@@ -191,7 +193,7 @@ public class MetadataSource implements AutoCloseable {
      *         Object value = statement.getValue(…);
      *         preferredIndex = recycle(statement, preferredIndex);
      *     }
-     * }
+     *     }
      *
      * @see #prepareStatement(Class, String, int)
      * @see #recycle(CachedStatement, int)
@@ -343,8 +345,7 @@ public class MetadataSource implements AutoCloseable {
                 }
             }
             if (warning != null) {
-                warning.setLoggerName(Loggers.SYSTEM);
-                Logging.log(MetadataSource.class, "getProvided", warning);
+                Logging.completeAndLog(SystemListener.LOGGER, MetadataSource.class, "getProvided", warning);
             }
             if (!isTransient) {
                 instance = ms;
@@ -483,7 +484,7 @@ public class MetadataSource implements AutoCloseable {
         Connection c = connection;
         if (c == null) {
             connection = c = dataSource.getConnection();
-            Logging.log(MetadataSource.class, "lookup", Initializer.connected(c.getMetaData()));
+            Initializer.connected(c.getMetaData(), MetadataSource.class, "lookup");
             scheduleCloseTask();
         }
         return c;

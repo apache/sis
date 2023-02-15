@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -45,7 +44,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   1.1
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -181,10 +179,10 @@ public final class Resources extends IndexedResourceBundle {
         public static final short GridEnvelopeMustBeNDimensional_1 = 22;
 
         /**
-         * Envelope is outside grid coverage. Indices [{3,number} … {4,number}] in dimension {0} do not
-         * intersect the [{1,number} … {2,number}] grid extent.
+         * The specified grid extent is outside the domain. Indices [{3,number} … {4,number}] specified
+         * in dimension {0} do not intersect the [{1,number} … {2,number}] grid extent.
          */
-        public static final short GridEnvelopeOutsideCoverage_5 = 23;
+        public static final short GridExtentsAreDisjoint_5 = 23;
 
         /**
          * Sample value range {1} for “{0}” category is illegal.
@@ -504,7 +502,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  properties  the map of properties, or {@code null} if none.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      *
      * @since 0.4
      */
@@ -601,7 +599,6 @@ public final class Resources extends IndexedResourceBundle {
     private static final class International extends ResourceInternationalString {
         private static final long serialVersionUID = -667435900917846518L;
 
-        International(short key)                           {super(key);}
         International(short key, Object args)              {super(key, args);}
         @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override protected IndexedResourceBundle getBundle(final Locale locale) {

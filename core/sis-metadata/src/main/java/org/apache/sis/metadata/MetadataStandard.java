@@ -34,6 +34,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.CheckedContainer;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.SystemListener;
@@ -95,7 +96,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * @see AbstractMetadata
  *
  * @since 0.3
- * @module
  */
 public class MetadataStandard implements Serializable {
     /**
@@ -113,6 +113,7 @@ public class MetadataStandard implements Serializable {
      * than GeoAPI, but have a slight performance cost at construction time. Performance
      * after construction should be the same.</p>
      */
+    @Configuration
     static final boolean IMPLEMENTATION_CAN_ALTER_API = false;
 
     /**
@@ -175,7 +176,7 @@ public class MetadataStandard implements Serializable {
      *
      * @see #getCitation()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Citation citation;
 
     /**
@@ -442,7 +443,7 @@ public class MetadataStandard implements Serializable {
         }
         /*
          * At this point, all cached values (including those in dependencies) have been checked.
-         * Performs the 'findInterface' computation only in last resort. Current implementation
+         * Performs the `findInterface(…)` computation only in last resort. Current implementation
          * does not store negative results in order to avoid filling the cache with unrelated classes.
          */
         final Class<?> standardType = findInterface(key);
@@ -489,7 +490,7 @@ public class MetadataStandard implements Serializable {
             }
         } else {
             /*
-             * Gets every interfaces from the supplied package in declaration order,
+             * Gets every interfaces from the supplied class in declaration order,
              * including the ones declared in the super-class.
              */
             final Set<Class<?>> interfaces = new LinkedHashSet<>();
@@ -517,7 +518,7 @@ public class MetadataStandard implements Serializable {
                 }
                 /*
                  * Found more than one interface; we don't know which one to pick.
-                 * Returns 'null' for now; the caller will thrown an exception.
+                 * Returns `null` for now; the caller will thrown an exception.
                  */
             } else if (IMPLEMENTATION_CAN_ALTER_API) {
                 /*
@@ -687,16 +688,15 @@ public class MetadataStandard implements Serializable {
      * {@linkplain KeyNamePolicy#METHOD_NAME method names} or {@linkplain KeyNamePolicy#SENTENCE
      * sentences} (usually in English).
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following code prints <code>"alternateTitle<u>s</u>"</code> (note the plural):
      *
-     * {@preformat java
-     *   MetadataStandard standard = MetadataStandard.ISO_19115;
-     *   Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
-     *   String value = names.get("alternateTitle");
-     *   System.out.println(value);                   // alternateTitles
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     MetadataStandard standard = MetadataStandard.ISO_19115;
+     *     Map<String, String> names = standard.asNameMap(Citation.class, UML_IDENTIFIER, JAVABEANS_PROPERTY);
+     *     String value = names.get("alternateTitle");
+     *     System.out.println(value);                   // alternateTitles
+     *     }
      *
      * The {@code keyPolicy} argument specify only the string representation of keys returned by the iterators.
      * No matter the key name policy, the {@code key} argument given to any {@link Map} method can be any of the
@@ -725,16 +725,15 @@ public class MetadataStandard implements Serializable {
      * {@linkplain TypeValuePolicy#ELEMENT_TYPE element type} or the
      * {@linkplain TypeValuePolicy#DECLARING_INTERFACE declaring interface} among others.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * the following code prints the {@link org.opengis.util.InternationalString} class name:
      *
-     * {@preformat java
-     *   MetadataStandard  standard = MetadataStandard.ISO_19115;
-     *   Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
-     *   Class<?> value = types.get("alternateTitle");
-     *   System.out.println(value);                       // class org.opengis.util.InternationalString
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     MetadataStandard  standard = MetadataStandard.ISO_19115;
+     *     Map<String,Class<?>> types = standard.asTypeMap(Citation.class, UML_IDENTIFIER, ELEMENT_TYPE);
+     *     Class<?> value = types.get("alternateTitle");
+     *     System.out.println(value);                       // class org.opengis.util.InternationalString
+     *     }
      *
      * @param  type         the interface or implementation class of a metadata.
      * @param  keyPolicy    determines the string representation of map keys.
@@ -939,13 +938,13 @@ public class MetadataStandard implements Serializable {
      * to have their {@code IDENTIFIER} set before any other operation. For example, the following code
      * adds a title to a citation:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     TreeTable.Node node = ...;                               // The node for a DefaultCitation.
      *     TreeTable.Node child = node.newChild();
      *     child.setValue(TableColumn.IDENTIFIER, "title");
      *     child.setValue(TableColumn.VALUE, "Le petit prince");
      *     // Nothing else to do - the child node has been added.
-     * }
+     *     }
      *
      * Nodes can be removed by invoking the {@link java.util.Iterator#remove()} method on the
      * {@linkplain org.apache.sis.util.collection.TreeTable.Node#getChildren() children} iterator.
@@ -1049,7 +1048,7 @@ public class MetadataStandard implements Serializable {
             }
         } else {
             /*
-             * If we get here, a cycle has been found. Returns 'true' in order to allow the caller to continue
+             * If we get here, a cycle has been found. Returns `true` in order to allow the caller to continue
              * comparing other properties. It is okay because someone else is comparing those two same objects,
              * and that later comparison will do the actual check for property values.
              */
@@ -1074,7 +1073,7 @@ public class MetadataStandard implements Serializable {
             final Integer hash = HashCode.getOrCreate().walk(this, null, metadata, true);
             if (hash != null) return hash;
             /*
-             * 'hash' may be null if a cycle has been found. Example: A depends on B which depends on A,
+             * `hash` may be null if a cycle has been found. Example: A depends on B which depends on A,
              * in which case the null value is returned for the second occurrence of A (not the first one).
              * We cannot compute a hash code value here, but it should be okay since that metadata is part
              * of a bigger metadata object, and that enclosing object should have other properties for computing

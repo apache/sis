@@ -44,9 +44,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class PropertyInformationTest extends TestCase {
+public final class PropertyInformationTest extends TestCase {
     /**
      * Creates a property information instance for the given method of the {@link Citation} interface.
      *

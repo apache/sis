@@ -30,7 +30,6 @@ import org.opengis.metadata.constraint.Releasability;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.0
  * @version 1.0
- * @module
  */
 public class MD_Releasability extends PropertyType<MD_Releasability, Releasability> {
     /**

@@ -50,7 +50,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 public final class VerticalOffset extends GeodeticOperation {
@@ -100,11 +99,11 @@ public final class VerticalOffset extends GeodeticOperation {
      * this method detects that the target axis is oriented toward down. This orientation is detected by a
      * negative sign for the <var>m₀₀</var> coefficient in the given 2×2 affine transform matrix.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * for now we define this method as a static one because it is the only special case handled by
+     * <h4>Implementation note</h4>
+     * For now we define this method as a static one because it is the only special case handled by
      * {@code DefaultMathTransformFactory}. But if there is more special cases in a future SIS version,
      * then we should make this method non-static and declare an overrideable {@code postCreate} method
-     * in {@link AbstractProvider} instead.</div>
+     * in {@link AbstractProvider} instead.
      *
      * @param  parameterized  the transform created by {@code createMathTransform(…)}.
      * @param  after  the matrix for the operation to be concatenated after {@code parameterized}.

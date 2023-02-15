@@ -37,9 +37,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
-public final strictfp class TransliteratorTest extends TestCase {
+public final class TransliteratorTest extends TestCase {
     /**
      * Verify the value of the {@link Transliterator#SPACES} constant.
      */

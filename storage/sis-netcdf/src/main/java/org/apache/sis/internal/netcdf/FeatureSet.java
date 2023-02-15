@@ -37,6 +37,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.feature.MovingFeatures;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.storage.DataStore;
@@ -67,7 +68,6 @@ import org.opengis.feature.Attribute;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 final class FeatureSet extends DiscreteSampling {
     /**
@@ -83,6 +83,7 @@ final class FeatureSet extends DiscreteSampling {
      * We do not read all features at once neither because it consumes a lot of memory if the netCDF file is large.
      * This value is a compromise between reducing I/O operations and reducing memory consumption.
      */
+    @Configuration
     private static final int PAGE_SIZE = 512;
 
     /**
@@ -355,7 +356,7 @@ final class FeatureSet extends DiscreteSampling {
                 addFeatureSet(features, decoder, null, dimension, dimension, lock);
             }
         }
-        return features.toArray(new FeatureSet[features.size()]);
+        return features.toArray(FeatureSet[]::new);
     }
 
     /**
@@ -363,7 +364,7 @@ final class FeatureSet extends DiscreteSampling {
      * Those variable contains the actual data. For example if the sample dimension name
      * is "points", then we may have:
      *
-     * {@preformat text
+     * <pre class="text">
      *     double longitude(points);
      *         longitude:axis = "X";
      *         longitude:standard_name = "longitude";
@@ -376,8 +377,7 @@ final class FeatureSet extends DiscreteSampling {
      *         time:axis = "T";
      *         time:standard_name = "time";
      *         time:units = "minutes since 2014-11-29 00:00:00";
-     *     short myCustomProperty(points);
-     * }
+     *     short myCustomProperty(points);</pre>
      *
      * @param  features          where to add the {@code FeatureSet} instance.
      * @param  decoder           the source of the features to create.

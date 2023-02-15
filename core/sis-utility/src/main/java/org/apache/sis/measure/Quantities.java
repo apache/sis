@@ -24,7 +24,7 @@ import javax.measure.UnitConverter;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
@@ -44,7 +44,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public final class Quantities extends Static {
     /**
@@ -61,7 +60,7 @@ public final class Quantities extends Static {
      * @param  value  the quantity magnitude.
      * @param  unit   symbol of the unit of measurement associated to the given value.
      * @return a quantity of the given type for the given value and unit of measurement.
-     * @throws ParserException if the given symbol cannot be parsed.
+     * @throws MeasurementParseException if the given symbol cannot be parsed.
      */
     public static Quantity<?> create(final double value, final String unit) {
         return create(value, Units.valueOf(unit));

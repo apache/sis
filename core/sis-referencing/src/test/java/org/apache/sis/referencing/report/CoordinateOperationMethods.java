@@ -68,11 +68,10 @@ import org.opengis.metadata.Identifier;
  * first, no HTML characters to escape in non-EPSG identifiers, etc.).</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   0.6
- * @module
  */
-public strictfp class CoordinateOperationMethods extends HTMLGenerator {
+public class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Generates the HTML report.
      *
@@ -154,7 +153,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
      */
     public CoordinateOperationMethods() throws IOException {
         super("CoordinateOperationMethods.html", "Apache SIS Coordinate Operation Methods", "authority-codes.css");
-        domainOfValidity = Collections.emptyMap();      // TODO: not yet available.
+        domainOfValidity = Map.of();                // TODO: not yet available.
         rangeFormat = new RangeFormat(LOCALE);
         final int header = openTag("header");
         println("h1", "Apache SIS™ Coordinate Operation Methods");
@@ -556,7 +555,7 @@ public strictfp class CoordinateOperationMethods extends HTMLGenerator {
         if (id == null) {
             id = method.getName().getCode();
         }
-        return id.replace(" ", "_");
+        return id.replace(" ", "_").replace("(", "").replace(")", "");
     }
 
     /**

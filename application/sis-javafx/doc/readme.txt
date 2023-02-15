@@ -12,8 +12,6 @@ NetBeans Ant project, open the following file:
 
 And add the following lines:
 
-    javac.source     = 17
-    javac.target     = 17
     javac.modulepath = /path/to/my/install/javafx-sdk/lib
     javafx.options   = --add-modules javafx.graphics,javafx.controls,javafx.web
     src.javafx.dir   = ${project.root}/application/sis-javafx/src/main/java

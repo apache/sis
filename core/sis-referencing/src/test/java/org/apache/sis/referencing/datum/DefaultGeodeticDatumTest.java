@@ -48,14 +48,13 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultPrimeMeridianTest.class,
     DefaultEllipsoidTest.class,
     BursaWolfParametersTest.class
 })
-public final strictfp class DefaultGeodeticDatumTest extends TestCase {
+public final class DefaultGeodeticDatumTest extends TestCase {
     /**
      * An XML file in this package containing a geodetic datum definition.
      */

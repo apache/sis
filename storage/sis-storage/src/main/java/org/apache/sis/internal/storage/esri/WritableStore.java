@@ -51,7 +51,6 @@ import org.opengis.coverage.grid.SequenceType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 final class WritableStore extends AsciiGridStore implements WritableGridCoverageResource {
     /**
@@ -290,6 +289,9 @@ final class WritableStore extends AsciiGridStore implements WritableGridCoverage
 
     /**
      * Closes this data store and releases any underlying resources.
+     * If a read or write operation is in progress in another thread,
+     * then this method blocks until that operation completed.
+     * This restriction is for avoiding data lost.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */

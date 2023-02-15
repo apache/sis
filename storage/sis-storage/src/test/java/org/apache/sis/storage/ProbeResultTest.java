@@ -29,9 +29,8 @@ import static org.apache.sis.storage.ProbeResult.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.3
- * @module
  */
-public final strictfp class ProbeResultTest extends TestCase {
+public final class ProbeResultTest extends TestCase {
     /**
      * Tests serialization of predefined constants.
      */

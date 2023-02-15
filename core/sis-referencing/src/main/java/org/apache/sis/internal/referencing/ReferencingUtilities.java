@@ -56,8 +56,6 @@ import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
 
-import static java.util.Collections.singletonMap;
-
 
 /**
  * A set of static methods working on GeoAPI referencing objects.
@@ -69,7 +67,6 @@ import static java.util.Collections.singletonMap;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 public final class ReferencingUtilities extends Static {
     /**
@@ -387,7 +384,7 @@ public final class ReferencingUtilities extends Static {
                 return (GeographicCRS) crs;
             }
             return new DefaultGeographicCRS(
-                    singletonMap(DefaultGeographicCRS.NAME_KEY, NilReferencingObject.UNNAMED),
+                    Map.of(DefaultGeographicCRS.NAME_KEY, NilReferencingObject.UNNAMED),
                     ((GeodeticCRS) crs).getDatum(), normalizedCS);
         }
         if (crs instanceof CompoundCRS) {

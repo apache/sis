@@ -16,9 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
-import java.util.Arrays;
 import java.util.Set;
-import java.util.HashSet;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Party;
@@ -42,13 +40,12 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
-public final strictfp class MetadataFallbackVerifier {
+public final class MetadataFallbackVerifier {
     /**
      * Identifier for which {@link MetadataFallback} does not provide hard-coded values.
      */
-    private static final Set<String> EXCLUDES = new HashSet<>(Arrays.asList("NetCDF", "GeoTIFF", "ArcGIS", "MapInfo"));
+    private static final Set<String> EXCLUDES = Set.of("NetCDF", "GeoTIFF", "ArcGIS", "MapInfo");
 
     /**
      * Creates a temporary database for comparing {@link MetadataFallback} content with database content.

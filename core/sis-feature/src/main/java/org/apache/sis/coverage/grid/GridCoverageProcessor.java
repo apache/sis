@@ -41,12 +41,9 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.FinalFieldSetter;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -56,12 +53,11 @@ import static java.util.logging.Logger.getLogger;
  * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.image.ImageProcessor
  *
  * @since 1.1
- * @module
  */
 public class GridCoverageProcessor implements Cloneable {
     /**
@@ -560,7 +556,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  ex      the ignorable exception.
      */
     static void recoverableException(final String caller, final Exception ex) {
-        Logging.recoverableException(getLogger(Modules.RASTER), GridCoverageProcessor.class, caller, ex);
+        Logging.recoverableException(GridExtent.LOGGER, GridCoverageProcessor.class, caller, ex);
     }
 
     /**

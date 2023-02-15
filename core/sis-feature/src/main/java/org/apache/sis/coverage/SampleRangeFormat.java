@@ -26,6 +26,7 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.util.resources.Vocabulary;
@@ -37,14 +38,14 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
-@SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})           // Not intended to serialized.
 final class SampleRangeFormat extends RangeFormat {
     /**
      * Maximum value for {@link #numFractionDigits}. This is the number
      * of significant digits to allow when formatting real values.
      */
+    @Configuration
     private static final int MAX_DIGITS = 6;
 
     /**
@@ -188,7 +189,7 @@ final class SampleRangeFormat extends RangeFormat {
      * Formats a string representation of the given list of categories.
      * This method formats a table like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   ┌────────────┬────────────────┬─────────────┐
      *   │   Values   │    Measures    │    Name     │
      *   ╞════════════╧════════════════╧═════════════╡
@@ -198,8 +199,7 @@ final class SampleRangeFormat extends RangeFormat {
      *   │         1  │ NaN #1         │ Clouds      │
      *   │         5  │ NaN #5         │ Lands       │
      *   │ [10 … 200) │ [6.0 … 25.0)°C │ Temperature │
-     *   └────────────┴────────────────┴─────────────┘
-     * }
+     *   └────────────┴────────────────┴─────────────┘</pre>
      *
      * @param dimensions  the list of sample dimensions to format.
      */

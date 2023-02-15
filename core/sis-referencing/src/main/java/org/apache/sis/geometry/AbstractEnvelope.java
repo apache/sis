@@ -44,6 +44,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.TemporalAccessor;
+import org.apache.sis.internal.util.ArgumentCheckByAssertion;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
@@ -119,7 +120,6 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @XmlTransient
 public abstract class AbstractEnvelope extends FormattableObject implements Envelope, Emptiable {
@@ -268,11 +268,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * For example in the following code, {@code NaN} values were implicitly checked by
      * the {@code (a < b)} comparison:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (a < b && isNegativeUnsafe(a)) {
      *         // ... do some stuff
      *     }
-     * }
+     *     }
      */
     static boolean isNegativeUnsafe(final double value) {
         return (Double.doubleToRawLongBits(value) & SIGN_BIT_MASK) != 0;
@@ -427,9 +427,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Returns the median coordinate along the specified dimension.
      * In most cases, the result is equal (minus rounding error) to:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     median = (getUpper(dimension) + getLower(dimension)) / 2;
-     * }
+     *     }
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If <var>upper</var> &lt; <var>lower</var> and the
@@ -480,9 +480,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Returns the envelope span (typically width or height) along the specified dimension.
      * In most cases, the result is equal (minus rounding error) to:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     span = getUpper(dimension) - getLower(dimension);
-     * }
+     *     }
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * If <var>upper</var> &lt; <var>lower</var> and the
@@ -535,7 +535,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @param  unit  the unit for the return value.
      * @return the span in terms of the given unit.
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
-     * @throws IncommensurableException if the length can't be converted to the specified units.
+     * @throws IncommensurableException if the length cannot be converted to the specified units.
      */
     public double getSpan(final int dimension, final Unit<?> unit)
             throws IndexOutOfBoundsException, IncommensurableException
@@ -602,7 +602,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         final int dimension = getDimension();
         for (int i=0; i!=dimension; i++) {
             final double span = getUpper(i) - getLower(i);  // Do not use getSpan(i).
-            if (!(span > 0)) {                              // Use '!' for catching NaN.
+            if (!(span > 0)) {                              // Use `!` for catching NaN.
                 if (!isNegative(span)) {
                     return EMPTY;                           // Span is positive zero.
                 }
@@ -652,11 +652,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             }
             /*
              * Assign the minimum and maximum coordinate values in the dimension where a wraparound has been found.
-             * The 'for' loop below iterates only over the 'i' values for which the 'isWrapAround' bit is set to 1.
+             * The `for` loop below iterates only over the `i` values for which the `isWrapAround` bit is set to 1.
              */
             int mask = 1;               // For identifying whether we need to set the lower or the upper coordinate.
-            @SuppressWarnings("null")
-            final CoordinateSystem cs = crs.getCoordinateSystem();            // Should not be null at this point.
+            @SuppressWarnings("null")   // CRS should not be null at this point.
+            final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i; (i = Long.numberOfTrailingZeros(isWrapAround)) != Long.SIZE; isWrapAround &= ~(1L << i)) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double min = axis.getMinimumValue();
@@ -700,7 +700,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             return true;
         }
         for (int i=0; i<dimension; i++) {
-            if (!(getSpan(i) > 0)) {                            // Use '!' in order to catch NaN
+            if (!(getSpan(i) > 0)) {            // Use `!` in order to catch NaN
                 return true;
             }
         }
@@ -746,7 +746,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * If it least one coordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -761,6 +761,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @throws MismatchedDimensionException if the specified point does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
+    @ArgumentCheckByAssertion
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
         final int dimension = getDimension();
@@ -779,7 +780,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                 if (isNegative(upper - lower)) {
                     /*
                      * "Crossing the anti-meridian" case: if we reach this point, then the
-                     * [upper...lower] range  (note the 'lower' and 'upper' interchanging)
+                     * [upper...lower] range  (note the `lower` and `upper` interchanging)
                      * is actually a space outside the envelope and we have checked that
                      * the coordinate value is outside that space.
                      */
@@ -797,7 +798,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <blockquote><pre>{@linkplain #contains(Envelope, boolean) contains}(envelope, <b>true</b>)</pre></blockquote>
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -817,6 +818,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @since 0.4
      */
+    @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope) throws MismatchedDimensionException {
         return contains(envelope, true);
     }
@@ -827,7 +829,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * envelope, then this method returns {@code true} only if {@code edgesInclusive}
      * is {@code true}.
      *
-     * <p>This method is subject to the same pre-conditions than {@link #contains(Envelope)},
+     * <p>This method is subject to the same preconditions than {@link #contains(Envelope)},
      * and handles envelopes crossing the anti-meridian in the same way.</p>
      *
      * @param  envelope        the envelope to test for inclusion.
@@ -838,6 +840,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @see #intersects(Envelope, boolean)
      */
+    @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
@@ -925,7 +928,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <blockquote><pre>{@linkplain #intersects(Envelope, boolean) intersects}(envelope, <b>false</b>)</pre></blockquote>
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -942,6 +945,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @since 0.4
      */
+    @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope) throws MismatchedDimensionException {
         return intersects(envelope, false);
     }
@@ -959,7 +963,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *       <em>or</em> touch each other.</li>
      * </ul>
      *
-     * This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
+     * This method is subject to the same preconditions than {@link #intersects(Envelope)},
      * and handles envelopes crossing the anti-meridian in the same way.
      *
      * @param  envelope  the envelope to test for intersection.
@@ -972,6 +976,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see #contains(Envelope, boolean)
      * @see #equals(Envelope, double, boolean)
      */
+    @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope, final boolean touch) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
@@ -1118,9 +1123,9 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * Returns {@code true} if the specified object is an envelope of the same class
      * with equals coordinates and {@linkplain #getCoordinateReferenceSystem() CRS}.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * This implementation requires that the provided {@code object} argument is of the same class than this envelope.
-     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.</div>
+     * We do not relax this rule since not every implementations in the SIS code base follow the same contract.
      *
      * @param  object  the object to compare with this envelope.
      * @return {@code true} if the given object is equal to this envelope.
@@ -1286,7 +1291,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {
         private static final long serialVersionUID = -4868610696294317932L;

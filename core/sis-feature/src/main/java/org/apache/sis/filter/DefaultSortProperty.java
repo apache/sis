@@ -39,7 +39,6 @@ import org.opengis.filter.ValueReference;
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
  *
  * @since 1.1
- * @module
  */
 final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
     /**
@@ -50,7 +49,7 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
     /**
      * The property on which to apply sorting.
      */
-    @SuppressWarnings("serial")     // Not statically typed as Serializable.
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private final ValueReference<? super R, ?> property;
 
     /**

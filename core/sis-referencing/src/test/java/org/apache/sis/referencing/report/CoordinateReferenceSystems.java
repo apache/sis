@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.report;
 
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
@@ -78,9 +77,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
-public final strictfp class CoordinateReferenceSystems extends AuthorityCodesReport {
+public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * The titles of some sections where to group CRS. By default CRS are grouped by datum names.
      * But if a name is listed in this map, then that alternative name will be used for grouping purpose.
@@ -265,8 +263,8 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * The datums from the above list which are deprecated, but that we do not want to replace by the non-deprecated
      * datum. We disable some replacements when they allow better sorting of deprecated CRS.
      */
-    private static final Set<String> KEEP_DEPRECATED_DATUM = new HashSet<>(Arrays.asList(
-        "Dealul Piscului 1970"));           // Datum does not exist but is an alias for S-42 in Romania.
+    private static final Set<String> KEEP_DEPRECATED_DATUM = Set.of(
+        "Dealul Piscului 1970");            // Datum does not exist but is an alias for S-42 in Romania.
 
     /**
      * Shortcut for {@link #SECTION_TITLES} initialization.
@@ -279,7 +277,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     /**
      * Words to ignore in a datum name in order to detect if a CRS name is the acronym of the datum name.
      */
-    private static final Set<String> DATUM_WORDS_TO_IGNORE = new HashSet<>(Arrays.asList(
+    private static final Set<String> DATUM_WORDS_TO_IGNORE = Set.of(
             "of",           // VIVD:   Virgin Islands Vertical Datum of 2009
             "de",           // RRAF:   Reseau de Reference des Antilles Francaises
             "des",          // RGAF:   Reseau Geodesique des Antilles Francaises
@@ -288,7 +286,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
             "para",         // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
             "del",          // SIRGAS: Sistema de Referencia Geocentrico para America del Sur 1995
             "las",          // SIRGAS: Sistema de Referencia Geocentrico para las AmericaS 2000
-            "Tides"));      // MLWS:   Mean Low Water Spring Tides
+            "Tides");       // MLWS:   Mean Low Water Spring Tides
 
     /**
      * The keywords before which to cut the CRS names when sorting by alphabetical order.
@@ -622,10 +620,9 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
      * We use only the part of the name prior some keywords (e.g. {@code "zone"}).
      * For example if the following codes:
      *
-     * {@preformat text
+     * <pre class="text">
      *    EPSG:32609    WGS 84 / UTM zone 9N
-     *    EPSG:32610    WGS 84 / UTM zone 10N
-     * }
+     *    EPSG:32610    WGS 84 / UTM zone 10N</pre>
      *
      * We compare only the "WGS 84 / UTM" string, then the code. This is a reasonably easy way to keep a more
      * natural ordering ("9" sorted before "10", "UTM North" projections kept together and same for South).
@@ -774,7 +771,7 @@ public final strictfp class CoordinateReferenceSystems extends AuthorityCodesRep
     protected void sortRows() {
         super.sortRows();
         @SuppressWarnings("SuspiciousToArrayCall")
-        final ByName[] data = rows.toArray(new ByName[rows.size()]);
+        final ByName[] data = rows.toArray(ByName[]::new);
         final Map<String,String> sections = new TreeMap<>();
         for (final ByName row : data) {
             final String section = row.section;

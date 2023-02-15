@@ -52,15 +52,14 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link StandardDefinitions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.internal.referencing.provider.TransverseMercatorTest.class
 })
-public final strictfp class StandardDefinitionsTest extends TestCase {
+public final class StandardDefinitionsTest extends TestCase {
     /**
      * Verifies value of the {@link StandardDefinitions#GREENWICH} code.
      * This method is for ensuring consistency between hard-coded constants.

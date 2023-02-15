@@ -50,7 +50,6 @@ import org.apache.sis.util.ArraysExt;
  * @see org.apache.sis.referencing.EllipsoidalHeightSeparator
  *
  * @since 0.8
- * @module
  */
 public final class EllipsoidalHeightCombiner {
     /**

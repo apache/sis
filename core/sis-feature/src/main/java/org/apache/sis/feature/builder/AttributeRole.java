@@ -43,7 +43,6 @@ import org.apache.sis.feature.FeatureOperations;
  * @see AttributeTypeBuilder#addRole(AttributeRole)
  *
  * @since 0.8
- * @module
  */
 public enum AttributeRole {
     /**

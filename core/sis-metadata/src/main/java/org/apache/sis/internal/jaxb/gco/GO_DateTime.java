@@ -55,9 +55,11 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter
  *
  * @since 0.3
- * @module
+ *
+ * @todo This adapter may be deleted in favor of {@link GO_Temporal} after all usages
+ *       of {@link Date} have been replaced by {@link java.time.temporal.Temporal}.
  */
-@XmlType(name = "Date_PropertyType")
+@XmlType(name = "DateTime_PropertyType")
 public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
     /**
      * The date and time value using the {@code code "DateTime"} name.
@@ -111,7 +113,7 @@ public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
      * Returns the current date, or {@code null} if none. If both fields are defined,
      * then {@link #dateTime} has precedence since it is assumed more accurate.
      */
-    final Date getDate() {
+    private Date getDate() {
         return XmlUtilities.toDate(Context.current(), dateTime != null ? dateTime : date);
     }
 

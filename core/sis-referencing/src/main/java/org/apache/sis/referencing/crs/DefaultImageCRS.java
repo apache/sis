@@ -58,7 +58,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",
@@ -80,6 +79,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private ImageDatum datum;
 
     /**
@@ -292,14 +292,14 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * Used by JAXB only (invoked by reflection).
      * Only one of {@code getCartesianCS()} and {@link #getAffineCS()} can return a non-null value.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
      *
-     * {@preformat java
-     *     &#64;Override
-     *     &#64;XmlElements({
-     *       &#64;XmlElement(name = "cartesianCS", type = DefaultCartesianCS.class),
-     *       &#64;XmlElement(name = "affineCS",    type = DefaultAffineCS.class)
+     * {@snippet lang="java" :
+     *     @Override
+     *     @XmlElements({
+     *       @XmlElement(name = "cartesianCS", type = DefaultCartesianCS.class),
+     *       @XmlElement(name = "affineCS",    type = DefaultAffineCS.class)
      *     })
      *     public AffineCS getCoordinateSystem() {
      *         return super.getCoordinateSystem();
@@ -307,7 +307,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * }
      *
      * However, our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
-     * for an unknown reason, the unmarshalled CS object is empty.</div>
+     * for an unknown reason, the unmarshalled CS object is empty.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */

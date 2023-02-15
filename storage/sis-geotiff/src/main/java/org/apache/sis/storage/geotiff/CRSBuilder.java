@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -64,6 +63,8 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.NilReferencingObject;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
+import org.apache.sis.internal.referencing.provider.PolarStereographicA;
+import org.apache.sis.internal.referencing.provider.PolarStereographicB;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Numerics;
@@ -76,6 +77,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
@@ -89,13 +91,12 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see GeoKeys
  * @see GeoKeysLoader
  *
  * @since 0.8
- * @module
  */
 final class CRSBuilder extends ReferencingFactoryContainer {
     /**
@@ -104,9 +105,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * its components. But some GeoTIFF files encode the names of all components in the value associated to
      * that key, as in the following example:
      *
-     * {@preformat text
-     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
-     * }
+     * <pre class="text">
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|</pre>
      *
      * In such case, we will split the name into the components names to be stored in an array at indices
      * given by {@code GCRS}, {@code DATUM}, {@code ELLIPSOID} and {@code PRIMEM}.
@@ -223,7 +223,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
         } else if (lastName != null && lastName.getCode().equals(name)) {
             name = lastName;
         }
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**
@@ -384,6 +384,31 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
+     * Moves the value of a projection parameter to a new GeoKey.
+     * This is used for handling erroneous map projection definitions.
+     * A warning is emitted.
+     *
+     * @param  projection  name of the map projection to report in the warning.
+     * @param  oldKey      old map projection key.
+     * @param  newKey      new map projection key, or 0 if none.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-572">SIS-572</a>
+     */
+    private void moveParameter(final String projection, final short oldKey, final short newKey) {
+        final Object value = geoKeys.remove(oldKey);
+        if (value != null) {
+            final Object name;
+            if (newKey != 0) {
+                geoKeys.put(newKey, value);
+                name = GeoKeys.name(newKey);
+            } else {
+                name = Vocabulary.formatInternational(Vocabulary.Keys.None);
+            }
+            warning(Resources.Keys.ReassignedParameter_3, GeoKeys.name(oldKey), name, projection);
+        }
+    }
+
+    /**
      * Verifies that a value found in the GeoTIFF file is approximately equal to the expected value.
      * This method is invoked when a CRS component is defined both explicitly and by EPSG code,
      * in which case we expect the given value to be equal to the value fetched from the EPSG database.
@@ -467,7 +492,6 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * @throws ClassCastException if an object defined by an EPSG code is not of the expected type.
      * @throws FactoryException if an error occurred during objects creation with the factories.
      */
-    @SuppressWarnings("null")
     public CoordinateReferenceSystem build(final GeoKeysLoader source) throws FactoryException {
         try {
             source.logger = this;
@@ -494,7 +518,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             default: invalidValue(GeoKeys.RasterType, code); break;
         }
         /*
-         * First create the main coordinate reference system, as determined by 'ModelType'.
+         * First create the main coordinate reference system, as determined by `ModelType`.
          * Then if a vertical CRS exists and the main CRS is not geocentric (in which case
          * adding a vertical CRS would make no sense), create a three-dimensional compound CRS.
          */
@@ -513,7 +537,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                 if (crs == null) {
                     missingValue(GeoKeys.GeographicType);
                 } else {
-                    crs = getCRSFactory().createCompoundCRS(Collections.singletonMap(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
+                    crs = getCRSFactory().createCompoundCRS(Map.of(IdentifiedObject.NAME_KEY, crs.getName()), crs, vertical);
                 }
             }
         }
@@ -535,7 +559,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Returns all remaining keys, sorted in increasing order.
      */
     private Short[] remainingKeys() {
-        final Short[] keys = geoKeys.keySet().toArray(new Short[geoKeys.size()]);
+        final Short[] keys = geoKeys.keySet().toArray(Short[]::new);
         Arrays.sort(keys);
         return keys;
     }
@@ -899,9 +923,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      * Splits the {@link GeoKeys#GeogCitation} value into its prime meridian, ellipsoid, datum and CRS name components.
      * This method is intended to parse geographic CRS names written like below:
      *
-     * {@preformat text
-     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|
-     * }
+     * <pre class="text">
+     *   GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|</pre>
      *
      * The keywords of both Well Known Text (WKT) version 1 and 2 are accepted as keys for the datum, ellipsoid and
      * prime meridian names. All other keys are presumed to be for the geographic CRS name. If the given string does
@@ -1259,6 +1282,45 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
+     * Returns the code of the operation method to request.
+     * This method tries to resolves some ambiguities in the way operation methods are defined.
+     * For example there is an ambiguity between Polar Stereographic (variant A) and (variant B).
+     */
+    private String methodCode() {
+        final String code = getMandatoryString(GeoKeys.CoordTrans);
+        try {
+            switch (Integer.parseInt(code)) {
+                case GeoCodes.PolarStereographic: {
+                    /*
+                     * Some GeoTIFF producers wrongly interpreted GeoTIFF projection #15
+                     * as "Polar Stereographic (Variant A)" while it should be variant B.
+                     * In those files, the "Latitude of true scale" parameter is wrongly
+                     * named "Latitude of natural origin" because the former is a member
+                     * of variant A while the latter is a member of variant B. This code
+                     * does the substitution.
+                     *
+                     * https://issues.apache.org/jira/browse/SIS-572
+                     */
+                    if (geoKeys.containsKey(GeoKeys.StdParallel1)) {
+                        break;      // Assume a valid map projection.
+                    }
+                    Object value = geoKeys.get(GeoKeys.ScaleAtNatOrigin);
+                    if (value instanceof Number && ((Number) value).doubleValue() != 1) {
+                        return Constants.EPSG + ':' + PolarStereographicA.IDENTIFIER;
+                    }
+                    moveParameter(PolarStereographicB.NAME, GeoKeys.NatOriginLat, GeoKeys.StdParallel1);
+                    moveParameter(PolarStereographicB.NAME, GeoKeys.ScaleAtNatOrigin, (short) 0);
+                    break;
+                }
+                // More cases may be added in the future.
+            }
+        } catch (NumberFormatException e) {
+            return code;
+        }
+        return Constants.GEOTIFF + ':' + code;
+    }
+
+    /**
      * Creates a defining conversion from an EPSG code or from user-defined parameters.
      *
      * @param  angularUnit  the angular unit of the latitude and longitude values.
@@ -1280,8 +1342,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
             }
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createUnit(GeoKeys.AzimuthUnits, (short) 0, Angle.class, Units.DEGREE);
-                final String              type        = getMandatoryString(GeoKeys.CoordTrans);
-                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(Constants.GEOTIFF + ':' + type);
+                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(methodCode());
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.

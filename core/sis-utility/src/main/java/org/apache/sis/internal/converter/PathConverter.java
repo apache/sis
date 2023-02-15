@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.EnumSet;
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
@@ -39,7 +38,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.3
- * @module
  */
 abstract class PathConverter<S,T> extends SystemConverter<S,T> {
     /**
@@ -195,7 +193,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
         @Override public ObjectConverter<URL,Path> unique()  {return INSTANCE;}
         @Override public ObjectConverter<Path,URL> inverse() {return PathURL.INSTANCE;}
         @Override public Path doConvert(final URL source) throws URISyntaxException {
-            return Paths.get(source.toURI());
+            return Path.of(source.toURI());
         }
     }
 
@@ -210,7 +208,7 @@ abstract class PathConverter<S,T> extends SystemConverter<S,T> {
         @Override public ObjectConverter<URI,Path> unique()  {return INSTANCE;}
         @Override public ObjectConverter<Path,URI> inverse() {return PathURI.INSTANCE;}
         @Override public Path doConvert(final URI source) throws IllegalArgumentException {
-            return Paths.get(source);
+            return Path.of(source);
         }
     }
 

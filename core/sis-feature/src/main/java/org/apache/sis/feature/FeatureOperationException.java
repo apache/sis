@@ -29,7 +29,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class FeatureOperationException extends IllegalStateException implements LocalizedException {
     /**
@@ -40,6 +39,7 @@ final class FeatureOperationException extends IllegalStateException implements L
     /**
      * A description of the computation error.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final InternationalString message;
 
     /**

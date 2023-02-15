@@ -62,9 +62,9 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * <p>Coordinate reference systems can have an arbitrary number of dimensions.
  * The actual dimension of a given instance can be determined as below:</p>
  *
- * {@preformat java
- *   int dimension = crs.getCoordinateSystem().getDimension();
- * }
+ * {@snippet lang="java" :
+ *     int dimension = crs.getCoordinateSystem().getDimension();
+ *     }
  *
  * However, most subclasses restrict the allowed number of dimensions.
  *
@@ -87,7 +87,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.datum.AbstractDatum
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "AbstractCRSType", propOrder = {
     "domainOfValidity",
@@ -118,7 +117,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * @see #getCoordinateSystem()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private CoordinateSystem coordinateSystem;
 
     /**

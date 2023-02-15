@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Objects;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -56,7 +55,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.6
- * @module
  */
 @XmlType(name = "ConcatenatedOperationType")
 @XmlRootElement(name = "ConcatenatedOperation")
@@ -72,7 +70,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setSteps(CoordinateOperation[])}</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private List<? extends CoordinateOperation> operations;
 
     /**
@@ -145,7 +143,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
          * At this point we should have flattened.size() >= 2, except if some operations
          * were omitted because their associated math transform were identity operation.
          */
-        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(new CoordinateOperation[flattened.size()]));
+        this.operations = UnmodifiableArrayList.wrap(flattened.toArray(CoordinateOperation[]::new));
     }
 
     /**
@@ -236,8 +234,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             }
             if (op instanceof ConcatenatedOperation) {
                 final List<? extends CoordinateOperation> children = ((ConcatenatedOperation) op).getOperations();
-                @SuppressWarnings("SuspiciousToArrayCall")
-                final CoordinateOperation[] asArray = children.toArray(new CoordinateOperation[children.size()]);
+                final CoordinateOperation[] asArray = children.toArray(CoordinateOperation[]::new);
                 initialize(properties, asArray, flattened, (step == null) ? mtFactory : null, false, setAccuracy, setDomain);
             } else if (!step.isIdentity()) {
                 flattened.add(op);
@@ -413,7 +410,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultConcatenatedOperation() {
-        operations = Collections.emptyList();
+        operations = List.of();
     }
 
     /**
@@ -423,7 +420,7 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     @XmlElement(name = "coordOperation", required = true)
     private CoordinateOperation[] getSteps() {
         final List<? extends CoordinateOperation> operations = getOperations();
-        return (operations != null) ? operations.toArray(new CoordinateOperation[operations.size()]) : null;
+        return (operations != null) ? operations.toArray(CoordinateOperation[]::new) : null;
     }
 
     /**

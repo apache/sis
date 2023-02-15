@@ -18,6 +18,7 @@ package org.apache.sis.internal.system;
 
 import java.util.Arrays;
 import java.util.EventListener;
+import java.util.logging.Logger;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -27,11 +28,15 @@ import org.apache.sis.util.ArraysExt;
  * to keep the SIS library OSGi-independent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public abstract class SystemListener implements EventListener {
+    /**
+     * The logger for system events.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.SYSTEM);
+
     /**
      * The listeners, or {@code null} if none.
      */
@@ -94,12 +99,11 @@ public abstract class SystemListener implements EventListener {
 
     /**
      * Removes all listeners for the module of the given name.
-     * This method is invoked by {@link OSGiActivator}.
      *
      * @param  name  the name of the module for which to remove listeners, or {@code null} if the module
      *         to uninstall does not have symbolic name (in which case it is probably not a SIS module).
      */
-    static synchronized void removeModule(final String name) {
+    public static synchronized void removeModule(final String name) {
         if (name != null) {
             final SystemListener[] list = listeners;
             if (list != null) {

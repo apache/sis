@@ -33,7 +33,6 @@ import org.apache.sis.coverage.SampleDimension;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     /**
@@ -47,7 +46,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
      * @param  ranges  the sample dimensions of this group.
      */
     private GroupBySample(final List<SampleDimension> ranges) {
-        this.ranges = ranges;       // TODO: use List.copyOf(…) with JDK10.
+        this.ranges = List.copyOf(ranges);
     }
 
     /**

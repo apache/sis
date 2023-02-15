@@ -30,7 +30,6 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 final class Filenames {
     /**
@@ -104,7 +103,7 @@ final class Filenames {
         final File outDirectory = new File(new File(rootDirectory, TARGET_DIRECTORY), DISTRIBUTION_DIRECTORY);
         if (!outDirectory.isDirectory()) {
             if (!outDirectory.mkdir()) {
-                throw new MojoExecutionException("Can't create the \"" + DISTRIBUTION_DIRECTORY + "\" directory.");
+                throw new MojoExecutionException("Cannot create the \"" + DISTRIBUTION_DIRECTORY + "\" directory.");
             }
         }
         return new File(outDirectory, filename);

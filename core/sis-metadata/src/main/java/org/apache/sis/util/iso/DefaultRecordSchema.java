@@ -77,7 +77,6 @@ import org.apache.sis.internal.util.Strings;
  * @see DefaultRecord
  *
  * @since 0.5
- * @module
  */
 public class DefaultRecordSchema implements RecordSchema {
     /**

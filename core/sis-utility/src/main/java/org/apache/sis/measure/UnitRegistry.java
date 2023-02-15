@@ -26,9 +26,11 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.Dimension;
 import javax.measure.spi.SystemOfUnits;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakValueHashMap;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -37,9 +39,8 @@ import org.apache.sis.util.collection.WeakValueHashMap;
  * rather uses the static methods directly since we define all units in terms of SI.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 final class UnitRegistry implements SystemOfUnits, Serializable {
     /**
@@ -105,10 +106,10 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * Values are stored by weak references and garbage collected when no longer used.
      * Key and value types are the same than the one described in {@link #HARD_CODED}.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we separate hard-coded values from user-defined values because the amount of hard-coded values is relatively
+     * <h4>Implementation note</h4>
+     * We separate hard-coded values from user-defined values because the amount of hard-coded values is relatively
      * large, using weak references for them is useless, and most applications will not define any custom values.
-     * This map will typically stay empty.</div>
+     * This map will typically stay empty.
      */
     private static final WeakValueHashMap<Object,Object> USER_DEFINED = new WeakValueHashMap<>(Object.class);
 
@@ -243,6 +244,24 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
     @Override
     public <Q extends Quantity<Q>> Unit<Q> getUnit(final Class<Q> type) {
         return Units.get(type);
+    }
+
+    /**
+     * Returns a unit with the given string representation,
+     * or {@code null} if none is found in this unit system.
+     *
+     * @param  symbols  the string representation of a unit.
+     * @return the unit with the given string representation,
+     *         or {@code null} if the give symbols cannot be parsed.
+     */
+    @Override
+    public Unit<?> getUnit(final String symbols) {
+        try {
+            return Units.valueOf(symbols);
+        } catch (MeasurementParseException e) {
+            Logging.ignorableException(AbstractUnit.LOGGER, UnitRegistry.class, "getUnit", e);
+            return null;
+        }
     }
 
     /**

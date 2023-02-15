@@ -70,7 +70,6 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  * @see <a href="https://mathworld.wolfram.com/AffineTransformation.html">Affine transformation on MathWorld</a>
  *
  * @since 0.4
- * @module
  */
 public interface LinearTransform extends MathTransform {
     /**

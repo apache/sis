@@ -45,7 +45,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 final class DataStoreRegistry {
     /**
@@ -312,7 +311,7 @@ search:     for (int ci=0; ci < categories.length; ci++) {
             }
         }
         if (open && selected == null) {
-            @SuppressWarnings("null")
+            @SuppressWarnings("null")                       // `connector` is null only if `selected` is non-null.
             final String name = connector.getStorageName();
             throw new UnsupportedStorageException(null, Resources.Keys.UnknownFormatFor_1, name);
         }

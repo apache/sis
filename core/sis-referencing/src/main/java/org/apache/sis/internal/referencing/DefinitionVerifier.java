@@ -64,7 +64,6 @@ import org.apache.sis.util.Utilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final class DefinitionVerifier {
     /**
@@ -131,7 +130,7 @@ public final class DefinitionVerifier {
             final LogRecord record = verification.warning(true);
             if (record != null) {
                 record.setLoggerName(logger);
-                Logging.log(classe, method, record);
+                Logging.completeAndLog(null, classe, method, record);
             }
         }
     }

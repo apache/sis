@@ -18,7 +18,6 @@ package org.apache.sis.internal.unopkg;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
 import java.nio.file.SimpleFileVisitor;
@@ -46,7 +45,6 @@ import org.apache.maven.plugins.annotations.Parameter;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 @Mojo(name = "javamaker", defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public final class JavaMaker extends AbstractMojo {
@@ -108,8 +106,8 @@ public final class JavaMaker extends AbstractMojo {
          * @param outputDirectory  directory where the output Java files will be located.
          */
         Copier(final String baseDirectory, final String outputDirectory) {
-            source = Paths.get(baseDirectory).resolve(UnoPkg.SOURCE_DIRECTORY);
-            target = Paths.get(outputDirectory);
+            source = Path.of(baseDirectory).resolve(UnoPkg.SOURCE_DIRECTORY);
+            target = Path.of(outputDirectory);
         }
 
         /**

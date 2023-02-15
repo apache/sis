@@ -30,9 +30,8 @@ import java.util.Arrays;
  * those values to NaN. Overwriting NaN by the constant value is required by {@link org.apache.sis.coverage}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
- * @module
  */
 final class ConstantTransform1D extends LinearTransform1D {
     /**
@@ -55,7 +54,7 @@ final class ConstantTransform1D extends LinearTransform1D {
      *
      * @param offset  the {@code offset} term in the linear equation.
      */
-    ConstantTransform1D(final double offset) {
+    ConstantTransform1D(final Number offset) {
         super(0, offset);
     }
 

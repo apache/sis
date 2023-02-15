@@ -18,7 +18,6 @@ package org.apache.sis.internal.util;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.Collections;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
@@ -112,7 +111,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>
  *
  * @since 0.4
- * @module
  */
 public final class DefinitionURI {
     /**
@@ -175,7 +173,7 @@ public final class DefinitionURI {
      * If new entries are added, then see the TODO comment in the {@link #codeForGML(String, String, String, int,
      * DefinitionURI)} method.</p>
      */
-    private static final Map<String,String> PATHS = Collections.singletonMap("crs", "//" + DOMAIN + "/gml/srs/");
+    private static final Map<String,String> PATHS = Map.of("crs", "//" + DOMAIN + "/gml/srs/");
 
     /**
      * A version number to be considered as if no version were provided.
@@ -330,7 +328,7 @@ public final class DefinitionURI {
                  * in addition to "ogc" in URN.
                  */
                 case 0: {
-                    if (regionMatches("http", uri, lower, upper)) {
+                    if (regionMatches(Constants.HTTP, uri, lower, upper)) {
                         result = new DefinitionURI();
                         result.isHTTP = true;
                         if (codeForGML(null, null, uri, ++upper, result) != null) {
@@ -418,13 +416,17 @@ public final class DefinitionURI {
                                 sequenceNumber = Integer.parseInt(trimWhitespaces(uri, splitAt+1, s).toString());
                                 splitAt = s;                      // Set only on success.
                             } catch (NumberFormatException e) {
-                                // Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
+                                /*
+                                 * Ignore. The URN is likely to be invalid, but we let parse(…) determines that.
+                                 * Current version assumes that the URN was identifying a CRS, but future version
+                                 * could choose the logger in a more dynamic way.
+                                 */
                                 Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), DefinitionURI.class, "parse", e);
                             }
                             orderedComponents.put(sequenceNumber, parse(uri, isURN, splitAt, next));
                             splitAt = next;
                         } while (hasMore);
-                        result.components = orderedComponents.values().toArray(new DefinitionURI[orderedComponents.size()]);
+                        result.components = orderedComponents.values().toArray(DefinitionURI[]::new);
                     }
                     // Fall through
                 }
@@ -585,9 +587,11 @@ public final class DefinitionURI {
             if (path == null) {
                 return null;
             }
-            // TODO: For now do nothing since PATHS is a singleton. However if a future SIS version
-            //       defines more PATHS entries, then we should replace here the `paths` reference by
-            //       a new Collections.singletonMap containing only the entry of interest.
+            /*
+             * TODO: For now do nothing because PATHS is a singleton. However if a future SIS version
+             *       defines more PATHS entries, then we should replace here the `paths` reference by
+             *       a new `Map.of(…)` containing only the entry of interest.
+             */
         }
         for (final Map.Entry<String,String> entry : paths.entrySet()) {
             final String path = entry.getValue();
@@ -650,7 +654,7 @@ public final class DefinitionURI {
         if (isGML) {
             final String path = PATHS.get(type);
             if (path != null) {
-                return Constants.HTTP + path + authority + ".xml#" + code;
+                return Constants.HTTP + ':' + path + authority + ".xml#" + code;
             }
         }
         final StringBuilder buffer = new StringBuilder(40);
@@ -670,7 +674,7 @@ public final class DefinitionURI {
      */
     private void appendStringTo(final StringBuilder buffer, char separator) {
         if (isHTTP) {
-            buffer.append(Constants.HTTP + "//").append(DOMAIN).append("/def");
+            buffer.append(Constants.HTTP + "://").append(DOMAIN).append("/def");
             separator = '/';
         }
         int n = 4;

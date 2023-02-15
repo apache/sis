@@ -47,13 +47,12 @@ import static java.lang.Math.ulp;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @author  Howard Freeland (MPO, for algorithmic inspiration)
- * @version 1.0
+ * @version 1.4
  *
  * @see Line
  * @see org.apache.sis.referencing.operation.builder.LinearTransformBuilder
  *
  * @since 0.5
- * @module
  */
 public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
     /**
@@ -83,6 +82,8 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * <div class="note"><b>Note:</b>
      * A similar constant exists in {@code org.apache.sis.referencing.operation.matrix.GeneralMatrix}.
      * </div>
+     *
+     * @see Numerics#COMPARISON_THRESHOLD
      */
     private static final double ZERO_THRESHOLD = 1E-14;
 
@@ -383,19 +384,14 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * The second pass can also opportunistically checks if some small coefficients can be replaced by zero.
      */
     private static final class Fit {
-        private final DoubleDouble sum_x  = new DoubleDouble();
-        private final DoubleDouble sum_y  = new DoubleDouble();
-        private final DoubleDouble sum_z  = new DoubleDouble();
-        private final DoubleDouble sum_xx = new DoubleDouble();
-        private final DoubleDouble sum_yy = new DoubleDouble();
-        private final DoubleDouble sum_xy = new DoubleDouble();
-        private final DoubleDouble sum_zx = new DoubleDouble();
-        private final DoubleDouble sum_zy = new DoubleDouble();
-        private final DoubleDouble xx     = new DoubleDouble();
-        private final DoubleDouble yy     = new DoubleDouble();
-        private final DoubleDouble xy     = new DoubleDouble();
-        private final DoubleDouble zx     = new DoubleDouble();
-        private final DoubleDouble zy     = new DoubleDouble();
+        private DoubleDouble sum_x  = DoubleDouble.ZERO;
+        private DoubleDouble sum_y  = DoubleDouble.ZERO;
+        private DoubleDouble sum_z  = DoubleDouble.ZERO;
+        private DoubleDouble sum_xx = DoubleDouble.ZERO;
+        private DoubleDouble sum_yy = DoubleDouble.ZERO;
+        private DoubleDouble sum_xy = DoubleDouble.ZERO;
+        private DoubleDouble sum_zx = DoubleDouble.ZERO;
+        private DoubleDouble sum_zy = DoubleDouble.ZERO;
         private final int n;
 
         /** Solution of the plane equation. */ DoubleDouble sx, sy, z0;
@@ -416,19 +412,14 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                 final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
                 final double y = p.getOrdinate(1); if (Double.isNaN(y)) continue;
                 final double z = p.getOrdinate(2); if (Double.isNaN(z)) continue;
-                xx.setToProduct(x, x);
-                yy.setToProduct(y, y);
-                xy.setToProduct(x, y);
-                zx.setToProduct(z, x);
-                zy.setToProduct(z, y);
-                sum_x .add(x );
-                sum_y .add(y );
-                sum_z .add(z );
-                sum_xx.add(xx);
-                sum_yy.add(yy);
-                sum_xy.add(xy);
-                sum_zx.add(zx);
-                sum_zy.add(zy);
+                sum_x  = sum_x .add(x, false);
+                sum_y  = sum_y .add(y, false);
+                sum_z  = sum_z .add(z, false);
+                sum_xx = sum_xx.add(DoubleDouble.product(x, x));
+                sum_yy = sum_yy.add(DoubleDouble.product(y, y));
+                sum_xy = sum_xy.add(DoubleDouble.product(x, y));
+                sum_zx = sum_zx.add(DoubleDouble.product(z, x));
+                sum_zy = sum_zy.add(DoubleDouble.product(z, y));
                 n++;
             }
             this.n = n;
@@ -456,19 +447,17 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                     if (Double.isNaN(z)) {
                         throw new IllegalArgumentException(Errors.format(Errors.Keys.NotANumber_1, Strings.toIndexed("z", n)));
                     }
-                    zx.setToProduct(z, x);
-                    zy.setToProduct(z, y);
-                    sum_z .add(z );
-                    sum_zx.add(zx);
-                    sum_zy.add(zy);
+                    sum_z  = sum_z .add(z, false);
+                    sum_zx = sum_zx.add(DoubleDouble.product(z, x));
+                    sum_zy = sum_zy.add(DoubleDouble.product(z, y));
                     n++;
                 }
             }
-            sum_x .value = n/2d;  sum_x .multiply(nx-1);                     // Division by 2 is exact.
-            sum_y .value = n/2d;  sum_y .multiply(ny-1);
-            sum_xx.value = n;     sum_xx.multiply(nx-0.5);  sum_xx.multiply(nx-1);  sum_xx.divide(3);
-            sum_yy.value = n;     sum_yy.multiply(ny-0.5);  sum_yy.multiply(ny-1);  sum_yy.divide(3);
-            sum_xy.value = n/4d;  sum_xy.multiply(ny-1);    sum_xy.multiply(nx-1);
+            sum_x  = DoubleDouble.of(n/2d, false).multiply(nx-1);       // Division by 2 is exact.
+            sum_y  = DoubleDouble.of(n/2d, false).multiply(ny-1);
+            sum_xx = DoubleDouble.of(n)          .multiply(nx-0.5, false).multiply(nx-1).divide(3);
+            sum_yy = DoubleDouble.of(n)          .multiply(ny-0.5, false).multiply(ny-1).divide(3);
+            sum_xy = DoubleDouble.of(n/4d, false).multiply(ny-1)         .multiply(nx-1);
             this.n = n;
         }
 
@@ -480,32 +469,23 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
              *    ( sum_zx - sum_z⋅sum_x )  =  sx⋅(sum_xx - sum_x⋅sum_x) + sy⋅(sum_xy - sum_x⋅sum_y)
              *    ( sum_zy - sum_z⋅sum_y )  =  sx⋅(sum_xy - sum_x⋅sum_y) + sy⋅(sum_yy - sum_y⋅sum_y)
              */
-            zx.setFrom(sum_x); zx.divide(-n); zx.multiply(sum_z); zx.add(sum_zx);    // zx = sum_zx - sum_z⋅sum_x/n
-            zy.setFrom(sum_y); zy.divide(-n); zy.multiply(sum_z); zy.add(sum_zy);    // zy = sum_zy - sum_z⋅sum_y/n
-            xx.setFrom(sum_x); xx.divide(-n); xx.multiply(sum_x); xx.add(sum_xx);    // xx = sum_xx - sum_x⋅sum_x/n
-            xy.setFrom(sum_y); xy.divide(-n); xy.multiply(sum_x); xy.add(sum_xy);    // xy = sum_xy - sum_x⋅sum_y/n
-            yy.setFrom(sum_y); yy.divide(-n); yy.multiply(sum_y); yy.add(sum_yy);    // yy = sum_yy - sum_y⋅sum_y/n
+            var zx = sum_zx.subtract(sum_z.multiply(sum_x).divide(n));      // zx = sum_zx - sum_z⋅sum_x/n
+            var zy = sum_zy.subtract(sum_z.multiply(sum_y).divide(n));      // zy = sum_zy - sum_z⋅sum_y/n
+            var xx = sum_xx.subtract(sum_x.multiply(sum_x).divide(n));      // xx = sum_xx - sum_x⋅sum_x/n
+            var xy = sum_xy.subtract(sum_x.multiply(sum_y).divide(n));      // xy = sum_xy - sum_x⋅sum_y/n
+            var yy = sum_yy.subtract(sum_y.multiply(sum_y).divide(n));      // yy = sum_yy - sum_y⋅sum_y/n
             /*
              * den = (xy⋅xy - xx⋅yy)
              */
-            final DoubleDouble tmp = new DoubleDouble(xx); tmp.multiply(yy);
-            final DoubleDouble den = new DoubleDouble(xy); den.multiply(xy);
-            den.subtract(tmp);
+            final DoubleDouble den = xy.square().subtract(xx.multiply(yy));
             /*
              * sx = (zy⋅xy - zx⋅yy) / den
              * sy = (zx⋅xy - zy⋅xx) / den
              * z₀ = (sum_z - (sx⋅sum_x + sy⋅sum_y)) / n
              */
-            sx = new DoubleDouble(zy); sx.multiply(xy); tmp.setFrom(zx); tmp.multiply(yy); sx.subtract(tmp); sx.divide(den);
-            sy = new DoubleDouble(zx); sy.multiply(xy); tmp.setFrom(zy); tmp.multiply(xx); sy.subtract(tmp); sy.divide(den);
-            z0 = new DoubleDouble(sy);
-            z0.multiply(sum_y);
-            tmp.setFrom(sx);
-            tmp.multiply(sum_x);
-            tmp.add(z0);
-            z0.setFrom(sum_z);
-            z0.subtract(tmp);
-            z0.divide(n);
+            sx = zy.multiply(xy).subtract(zx.multiply(yy)).divide(den);
+            sy = zx.multiply(xy).subtract(zy.multiply(xx)).divide(den);
+            z0 = sum_z.subtract(sx.multiply(sum_x).add(sy.multiply(sum_y))).divide(n);
         }
 
         /**
@@ -569,9 +549,9 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                 if (detectZeroSy && abs(y) >= ulp(x * ZERO_THRESHOLD)) detectZeroSy = false;
                 if (detectZeroZ0 && offset >= ulp(s * ZERO_THRESHOLD)) detectZeroZ0 = false;
             }
-            if (detectZeroSx) this.sx.clear();
-            if (detectZeroSy) this.sy.clear();
-            if (detectZeroZ0) this.z0.clear();
+            if (detectZeroSx) this.sx = DoubleDouble.ZERO;
+            if (detectZeroSy) this.sy = DoubleDouble.ZERO;
+            if (detectZeroZ0) this.z0 = DoubleDouble.ZERO;
             return Math.min(sum_dsz / sqrt(sum_ds2 * sum_dz2), 1);
         }
     }

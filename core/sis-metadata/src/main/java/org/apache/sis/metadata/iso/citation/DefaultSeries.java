@@ -41,7 +41,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "CI_Series_Type", propOrder = {
     "name",

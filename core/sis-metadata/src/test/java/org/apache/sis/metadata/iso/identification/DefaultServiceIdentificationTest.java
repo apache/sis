@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDirection;
@@ -33,7 +34,6 @@ import org.apache.sis.xml.NilReason;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -45,13 +45,12 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @DependsOn({
     DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class
 })
-public final strictfp class DefaultServiceIdentificationTest extends TestUsingFile {
+public final class DefaultServiceIdentificationTest extends TestUsingFile {
     /**
      * An XML file containing a service identification.
      */
@@ -63,15 +62,15 @@ public final strictfp class DefaultServiceIdentificationTest extends TestUsingFi
     private static DefaultServiceIdentification create() {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         final DefaultCoupledResource resource = DefaultCoupledResourceTest.create(factory);
-        resource.setResourceReferences(singleton(new DefaultCitation("WMS specification")));
+        resource.setResourceReferences(Set.of(new DefaultCitation("WMS specification")));
         final DefaultServiceIdentification id = new DefaultServiceIdentification(
                 factory.createGenericName(null, "Web Map Server"),      // serviceType
                 NilReason.MISSING.createNilObject(Citation.class),      // citation
                 "A dummy service for testing purpose.");                // abstract
-        id.setServiceTypeVersions(singleton("1.0"));
-        id.setCoupledResources(singleton(resource));
+        id.setServiceTypeVersions(Set.of("1.0"));
+        id.setCoupledResources(Set.of(resource));
         id.setCouplingType(CouplingType.LOOSE);
-        id.setContainsOperations(singleton(resource.getOperation()));
+        id.setContainsOperations(Set.of(resource.getOperation()));
         return id;
     }
 

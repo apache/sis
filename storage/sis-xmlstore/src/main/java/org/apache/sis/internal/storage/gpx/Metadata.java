@@ -63,7 +63,7 @@ import org.opengis.metadata.citation.Responsibility;
  * At most one such element may appear in the document.
  * The XML content is like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <metadata>
  *     <name> String </name>
  *     <desc> String </desc>
@@ -75,7 +75,7 @@ import org.opengis.metadata.citation.Responsibility;
  *     <bounds> Envelope </bounds>
  *     <extensions> any object known to JAXB </extensions>
  *   </metadata>
- * }
+ *   }
  *
  * Those properties can be read or modified directly. All methods defined in this class are bridges to
  * the ISO 19115 metadata model and can be ignored if the user only wants to manipulate the GPX model.
@@ -84,7 +84,6 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final class Metadata extends SimpleMetadata {
     /**
@@ -306,7 +305,7 @@ public final class Metadata extends SimpleMetadata {
     @Override
     public Collection<Keywords> getDescriptiveKeywords() {
         if (keywords != null) {
-            return Collections.singletonList(new DefaultKeywords(keywords.toArray(new String[keywords.size()])));
+            return Collections.singletonList(new DefaultKeywords(keywords.toArray(String[]::new)));
         }
         return Collections.emptyList();
     }

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
-import java.util.Arrays;
+import java.util.Map;
+import java.util.List;
 import java.util.Locale;
-import java.util.Collections;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
@@ -45,9 +45,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
-public final strictfp class CodeListMarshallingTest extends TestCase {
+public final class CodeListMarshallingTest extends TestCase {
     /**
      * Returns a XML string to use for testing purpose.
      * Note that responsible party exists only in legacy ISO 19115:2003 model.
@@ -127,7 +126,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
         final MarshallerPool pool = getMarshallerPool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
-        marshaller.setProperty(XML.SCHEMAS, Collections.singletonMap("gmd",
+        marshaller.setProperty(XML.SCHEMAS, Map.of("gmd",
                 "http://standards.iso.org/ittf/PubliclyAvailableStandards/ISO_19139_Schemas"));     // Intentionally omit trailing '/'.
         final String actual = marshal(marshaller, rp);
         pool.recycle(marshaller);
@@ -196,7 +195,7 @@ public final strictfp class CodeListMarshallingTest extends TestCase {
     @Test
     public void testExtraCodes() throws JAXBException {
         final DefaultCitation id = new DefaultCitation();
-        id.setPresentationForms(Arrays.asList(
+        id.setPresentationForms(List.of(
                 PresentationForm.valueOf("IMAGE_DIGITAL"),      // Existing code with UML id="imageDigital"
                 PresentationForm.valueOf("test")));             // New code
 

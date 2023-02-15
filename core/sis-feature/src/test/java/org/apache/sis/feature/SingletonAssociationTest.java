@@ -16,16 +16,12 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
-
-// Branch-dependent imports
-import org.opengis.feature.Feature;
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -34,13 +30,12 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn({
     DefaultAssociationRoleTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class SingletonAssociationTest extends TestCase {
+public final class SingletonAssociationTest extends TestCase {
     /**
      * Returns an association to use for testing purpose.
      *
@@ -48,10 +43,10 @@ public final strictfp class SingletonAssociationTest extends TestCase {
      * and Le Mans, France in 836.” — source: Wikipedia</blockquote>
      */
     static AbstractAssociation twinTown() {
-        final Feature twinTown = DefaultFeatureTypeTest.city().newInstance();
+        final var twinTown = DefaultFeatureTypeTest.city().newInstance();
         twinTown.setPropertyValue("city", "Le Mans");
-        twinTown.setPropertyValue("population", 143240); // In 2011.
-        final AbstractAssociation association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown(false));
+        twinTown.setPropertyValue("population", 143240);        // In 2011.
+        final var association = new SingletonAssociation(DefaultAssociationRoleTest.twinTown(false));
         association.setValue(twinTown);
         return association;
     }
@@ -61,10 +56,9 @@ public final strictfp class SingletonAssociationTest extends TestCase {
      */
     @Test
     public void testWrongValue() {
-        final AbstractAssociation association  = twinTown();
-        final PropertyType population   = association.getRole().getValueType().getProperty("population");
-        final Feature      otherFeature = new DefaultFeatureType(
-                singletonMap(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
+        final var association  = twinTown();
+        final var population   = association.getRole().getValueType().getProperty("population");
+        final var otherFeature = new DefaultFeatureType(Map.of(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
         try {
             association.setValue(otherFeature);
         } catch (IllegalArgumentException e) {

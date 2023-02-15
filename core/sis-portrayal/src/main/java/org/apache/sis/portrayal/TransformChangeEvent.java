@@ -17,7 +17,6 @@
 package org.apache.sis.portrayal;
 
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
 import org.opengis.geometry.DirectPosition;
@@ -27,7 +26,6 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -49,7 +47,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see Canvas#OBJECTIVE_TO_DISPLAY_PROPERTY
  *
  * @since 1.3
- * @module
  */
 public class TransformChangeEvent extends PropertyChangeEvent {
     /**
@@ -372,7 +369,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
     private void canNotCompute(final String method, final Exception e) {
         if (error == null) {
             error = e;
-            Logging.recoverableException(Logger.getLogger(Modules.PORTRAYAL), TransformChangeEvent.class, method, e);
+            Logging.recoverableException(Observable.LOGGER, TransformChangeEvent.class, method, e);
         } else {
             error.addSuppressed(e);
         }

@@ -35,9 +35,8 @@ import org.apache.sis.util.logging.Logging;
  * However, we also have a few more specialized loggers, which are listed here.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.6
- * @module
  */
 public final class Loggers extends Static {
     /**
@@ -105,6 +104,11 @@ public final class Loggers extends Static {
      */
     public static final String COORDINATE_OPERATION = "org.apache.sis.referencing.operation";
 
+    /**
+     * The logger name for operation related to parameters.
+     */
+    public static final String PARAMETER = "org.apache.sis.parameter";
+
     /*
      * For operations related to the sis-referencing modules that do not fit into
      * the CRS_FACTORY or COORDINATE_OPERATION categories, use Modules.REFERENCING.
@@ -146,7 +150,7 @@ public final class Loggers extends Static {
                  * In such case forget the problematic fields and search the next one. This is okay
                  * since this method is only for information purpose.
                  */
-                Logging.unexpectedException(Logger.getLogger(SYSTEM), Loggers.class, "getEffectiveLevels", e);
+                Logging.unexpectedException(SystemListener.LOGGER, Loggers.class, "getEffectiveLevels", e);
             }
         }
         /*

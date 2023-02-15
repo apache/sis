@@ -38,7 +38,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator_south_oriented.html">GeoTIFF parameters for Transverse Mercator (South Oriented)</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class TransverseMercatorSouth extends AbstractMercator {

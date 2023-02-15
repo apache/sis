@@ -34,16 +34,15 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class ChannelData implements Markable {
     /**
      * Number of bits needed for storing the bit offset in {@link #bitPosition}.
      * The following condition must hold:
      *
-     * {@preformat java
-     *     (1 << BIT_OFFSET_SIZE) == Byte.SIZE
-     * }
+     * {@snippet lang="java" :
+     *     assert (1 << BIT_OFFSET_SIZE) == Byte.SIZE;
+     *     }
      */
     private static final int BIT_OFFSET_SIZE = 3;
 
@@ -123,6 +122,22 @@ public abstract class ChannelData implements Markable {
         this.filename      = filename;
         this.buffer        = buffer;
         this.channelOffset = (channel instanceof SeekableByteChannel) ? ((SeekableByteChannel) channel).position() : 0;
+    }
+
+    /**
+     * Creates a new instance from the given {@code ChannelData}.
+     * This constructor is invoked when we need to change the implementation class.
+     * The old {@code ChannelData} should not be used anymore after this constructor.
+     *
+     * @param  old  the existing instance from which to takes the channel and buffer.
+     */
+    ChannelData(final ChannelData old) {
+        filename      = old.filename;
+        buffer        = old.buffer;
+        channelOffset = old.channelOffset;
+        bufferOffset  = old.bufferOffset;
+        bitPosition   = old.bitPosition;
+        mark          = old.mark;
     }
 
     /**
@@ -311,7 +326,8 @@ public abstract class ChannelData implements Markable {
     }
 
     /**
-     * Moves to the given position in the stream, relative to the stream position at construction time.
+     * Moves to the given position in the stream. The given position is relative to
+     * the position that the stream had at {@code ChannelData} construction time.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.

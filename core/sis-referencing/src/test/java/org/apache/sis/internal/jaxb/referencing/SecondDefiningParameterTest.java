@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
@@ -32,9 +32,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
-public final strictfp class SecondDefiningParameterTest extends TestCase {
+public final class SecondDefiningParameterTest extends TestCase {
     /**
      * XML of an ellipsoid defined by semi-major and semi-minor axes.
      * The numerical values used for this test is the ones of Clarke 1866 (EPSG:7008).
@@ -63,9 +62,10 @@ public final strictfp class SecondDefiningParameterTest extends TestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
-                DefaultEllipsoid.NAME_KEY, "Clarke 1866"), 6378206.4, 6356583.8, Units.METRE);
-        final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
+        final var ellipsoid = DefaultEllipsoid.createEllipsoid(
+                Map.of(DefaultEllipsoid.NAME_KEY, "Clarke 1866"),
+                6378206.4, 6356583.8, Units.METRE);
+        final var sdp = new SecondDefiningParameter(ellipsoid, false);
         assertXmlEquals(ELLIPSOID, marshal(sdp), "xmlns:*", "xsi:schemaLocation");
     }
 
@@ -89,9 +89,10 @@ public final strictfp class SecondDefiningParameterTest extends TestCase {
      */
     @Test
     public void testMarshallingSphere() throws JAXBException {
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(Collections.singletonMap(
-                DefaultEllipsoid.NAME_KEY, "Sphere"), 6371000, 6371000, Units.METRE);
-        final SecondDefiningParameter sdp = new SecondDefiningParameter(ellipsoid, false);
+        final var ellipsoid = DefaultEllipsoid.createEllipsoid(
+                Map.of(DefaultEllipsoid.NAME_KEY, "Sphere"),
+                6371000, 6371000, Units.METRE);
+        final var sdp = new SecondDefiningParameter(ellipsoid, false);
         assertXmlEquals(SPHERE, marshal(sdp), "xmlns:*", "xsi:schemaLocation");
     }
 

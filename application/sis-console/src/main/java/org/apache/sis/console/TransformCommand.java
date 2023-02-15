@@ -18,7 +18,6 @@ package org.apache.sis.console;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Locale;
 import java.io.IOException;
@@ -84,7 +83,6 @@ import static java.util.logging.Logger.getLogger;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 final class TransformCommand extends FormattedOutputCommand {
     /**
@@ -202,7 +200,7 @@ final class TransformCommand extends FormattedOutputCommand {
          * This will be used when searching for a coordinate operation.
          */
         GeographicBoundingBox areaOfInterest = null;
-        List<double[]> points = Collections.emptyList();
+        List<double[]> points = List.of();
         final boolean useStandardInput = useStandardInput();
         if (useStandardInput || !files.isEmpty()) {
             if (useStandardInput) {

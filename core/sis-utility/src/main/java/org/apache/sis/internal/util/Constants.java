@@ -31,9 +31,8 @@ import org.apache.sis.util.Static;
  * creates itself the instance to be tested.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
- * @module
  */
 public final class Constants extends Static {
     /**
@@ -53,9 +52,9 @@ public final class Constants extends Static {
     public static final byte DEFAULT_INDENTATION = 2;
 
     /**
-     * The {@value} protocol. Used in XML namespaces.
+     * The {@value} protocol.
      */
-    public static final String HTTP = "http:";
+    public static final String HTTP = "http", HTTPS = "https";
 
     /**
      * The {@value} code space.

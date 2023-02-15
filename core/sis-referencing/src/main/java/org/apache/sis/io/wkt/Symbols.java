@@ -79,7 +79,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see WKTFormat#setSymbols(Symbols)
  *
  * @since 0.4
- * @module
  */
 public class Symbols implements Localized, Cloneable, Serializable {
     /**
@@ -352,13 +351,13 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Each string shall contain exactly two code points (usually two characters).
      * The first code point is taken as the opening bracket, and the second code point as the closing bracket.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following code will instruct the WKT formatter to use the (…) pair of brackets at formatting time,
      * but still accept the more common […] pair of brackets at parsing time:
      *
-     * {@preformat java
-     *   symbols.setPairedBrackets("()", "[]");
-     * }</div>
+     * {@snippet lang="java" :
+     *     symbols.setPairedBrackets("()", "[]");
+     *     }
      *
      * @param  preferred     the preferred pair of opening and closing quotes, used at formatting time.
      * @param  alternatives  alternative pairs of opening and closing quotes accepted at parsing time.
@@ -430,14 +429,14 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * Each string shall contain exactly two code points (usually two characters).
      * The first code point is taken as the opening quote, and the second code point as the closing quote.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following code will instruct the WKT formatter to use the prettier “…” quotation marks at formatting time
      * (especially useful for {@code String} constants in Java code), but still accept the standard "…" quotation marks
      * at parsing time:
      *
-     * {@preformat java
-     *   symbols.setPairedQuotes("“”", "\"\"");
-     * }</div>
+     * {@snippet lang="java" :
+     *     symbols.setPairedQuotes("“”", "\"\"");
+     *     }
      *
      * @param  preferred     the preferred pair of opening and closing quotes, used at formatting time.
      * @param  alternatives  alternative pairs of opening and closing quotes accepted at parsing time.
@@ -541,10 +540,8 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public void setSeparator(final String separator) {
         checkWritePermission();
-        final String s = CharSequences.trimWhitespaces(separator.trim());
-        ensureNonEmpty("separator", s);
+        ensureNonEmpty("separator", trimmedSeparator = separator.trim().strip());
         this.separator = separator;
-        trimmedSeparator = s;
     }
 
     /**
@@ -766,7 +763,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
             if (equals(CURLY_BRACKETS))  return CURLY_BRACKETS;
         }
         quote = String.valueOf(Character.toChars(quotes[1]));
-        trimmedSeparator = CharSequences.trimWhitespaces(separator.trim());
+        trimmedSeparator = separator.trim().strip();
         return this;
     }
 }

@@ -41,8 +41,7 @@
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
- * @module
  */
 package org.apache.sis.test;

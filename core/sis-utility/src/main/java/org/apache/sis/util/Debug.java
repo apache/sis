@@ -37,7 +37,6 @@ import java.lang.annotation.RetentionPolicy;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @Documented
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})

@@ -54,7 +54,6 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.storage.StoreResource;
@@ -70,7 +69,6 @@ import org.apache.sis.internal.storage.StoreResource;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
     /**
@@ -131,9 +129,9 @@ public final class RasterResource extends AbstractGridCoverageResource implement
      * except if bands are stored as one variable dimension ({@link #bandDimension} ≥ 0) in which case the length shall be exactly 1.
      * Accesses to this array need to take in account that the length may be only 1. Example:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Variable v = data[bandDimension >= 0 ? 0 : index];
-     * }
+     *     }
      */
     private final Variable[] data;
 
@@ -200,7 +198,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         identifier       = decoder.nameFactory.createLocalName(decoder.namespace, name);
         visibleBand      = decoder.convention().getVisibleBand();
         sampleDimensions = new SampleDimension[numBands];
-        data             = bands.toArray(new Variable[bands.size()]);
+        data             = bands.toArray(Variable[]::new);
         assert data.length == (bandDimension >= 0 ? 1 : sampleDimensions.length);
     }
 
@@ -706,7 +704,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
                 sampleValues = new Buffer[bands.length];
                 for (int i=0; i<sampleValues.length; i++) {
                     if (i != 0) {
-                        values = JDK9.duplicate(values);
+                        values = values.duplicate();
                         final int p = values.limit();
                         values.position(p).limit(Math.addExact(p, stride));
                     }

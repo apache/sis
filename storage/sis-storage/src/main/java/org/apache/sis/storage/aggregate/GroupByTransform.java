@@ -24,6 +24,7 @@ import java.text.FieldPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -39,7 +40,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class GroupByTransform extends Group<GridSlice> {
     /**
@@ -148,16 +148,20 @@ final class GroupByTransform extends Group<GridSlice> {
      * @param  sampleDimensions  the sample dimensions of the resource to build.
      * @return the concatenated resource.
      */
-    final GridCoverageResource createResource(final StoreListeners parentListeners, final List<SampleDimension> ranges) {
+    final Resource createResource(final StoreListeners parentListeners, final List<SampleDimension> ranges) {
         final int n = members.size();
         if (n == 1) {
             return members.get(0).resource;
         }
+        final var slices = new GridCoverageResource[n];
+        final String name = getName(parentListeners);
         final int[] dimensions = findConcatenatedDimensions();
-        final GridCoverageResource[] slices  = new GridCoverageResource[n];
-        final GridSliceLocator       locator = new GridSliceLocator(members, dimensions[0], slices);
-        final GridGeometry           domain  = locator.union(geometry, members, GridSlice::getGridExtent);
-        return new ConcatenatedGridResource(getName(parentListeners), parentListeners,
-                                            domain, ranges, slices, locator, strategy);
+        if (dimensions.length == 0) {
+            for (int i=0; i<n; i++) slices[i] = members.get(i).resource;
+            return new GroupAggregate(parentListeners, name, slices, ranges);
+        }
+        final GridSliceLocator locator = new GridSliceLocator(members, dimensions[0], slices);
+        final GridGeometry     domain  = locator.union(geometry, members, GridSlice::getGridExtent);
+        return new ConcatenatedGridResource(name, parentListeners, domain, ranges, slices, locator, strategy);
     }
 }

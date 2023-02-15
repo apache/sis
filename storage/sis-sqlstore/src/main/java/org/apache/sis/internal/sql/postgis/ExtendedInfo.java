@@ -33,7 +33,6 @@ import org.apache.sis.internal.sql.feature.InfoStatements;
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.2
  * @version 1.1
- * @module
  */
 final class ExtendedInfo extends InfoStatements {
     /**

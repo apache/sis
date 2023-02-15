@@ -30,11 +30,10 @@ import static org.apache.sis.util.Numbers.*;
  * Tests the {@link Numbers} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
- * @module
  */
-public final strictfp class NumbersTest extends TestCase {
+public final class NumbersTest extends TestCase {
     /**
      * Tests {@link Numbers#isInteger(Class)}.
      */
@@ -81,6 +80,20 @@ public final strictfp class NumbersTest extends TestCase {
         assertTrue (isFloat(Fraction  .class));
         assertFalse(isFloat(BigInteger.class));
         assertTrue (isFloat(BigDecimal.class));
+    }
+
+    /**
+     * Tests {@link Numbers#round(Number)}.
+     */
+    @Test
+    public void testRound() {
+        assertEquals(123456, Numbers.round(123456.2f));
+        try {
+            Numbers.round(Long.MAX_VALUE * 3d);
+            fail("Expected ArithmeticException");
+        } catch (ArithmeticException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**

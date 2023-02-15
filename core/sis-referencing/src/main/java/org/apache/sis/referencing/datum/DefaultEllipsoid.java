@@ -93,9 +93,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <b>Example:</b> the following code gets the WGS84 ellipsoid:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Ellipsoid e = CommonCRS.WGS84.ellipsoid();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -104,13 +104,12 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.CommonCRS#ellipsoid()
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEllipsoid(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "EllipsoidType", propOrder = {
     "semiMajorAxisMeasure",
@@ -158,6 +157,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     /**
      * The units of the semi-major and semi-minor axis values.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Unit<Length> unit;
 
     /**
@@ -407,9 +407,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @return ℯ, the eccentricity of this ellipsoid.
      */
     public double getEccentricity() {
-        final DoubleDouble e = eccentricitySquared();
-        e.sqrt();
-        return e.doubleValue();
+        return eccentricitySquared().sqrt().doubleValue();
     }
 
     /**
@@ -431,18 +429,14 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     /**
      * Computes the square of the eccentricity value with ℯ² = 2f - f².
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we use the flattening factor for this computation because the inverse flattening factor is usually the
+     * <h4>Implementation note</h4>
+     * We use the flattening factor for this computation because the inverse flattening factor is usually the
      * second defining parameter.  But even if the second defining parameter of this ellipsoid was rather the
-     * semi-minor axis, the fact that we use double-double arithmetic should give the same result anyway.</div>
+     * semi-minor axis, the fact that we use double-double arithmetic should give the same result anyway.
      */
     private DoubleDouble eccentricitySquared() {
         final DoubleDouble f = flattening(this);
-        final DoubleDouble eccentricitySquared = new DoubleDouble(f);
-        eccentricitySquared.multiply(2);
-        f.square();
-        eccentricitySquared.subtract(f);
-        return eccentricitySquared;
+        return f.scalb(1).subtract(f.square());
     }
 
     /**
@@ -458,18 +452,13 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * </div>
      */
     private static DoubleDouble flattening(final Ellipsoid e) {
-        final DoubleDouble f;
+        final boolean decimal = true;       // Parameters are presumed accurate in base 10 (not 2) by definition.
         if (e.isIvfDefinitive()) {
-            f = DoubleDouble.createAndGuessError(e.getInverseFlattening());   // Presumed accurate in base 10 (not 2) by definition.
-            f.inverseDivide(1);
+            return DoubleDouble.ONE.divide(e.getInverseFlattening(), decimal);
         } else {
-            f = DoubleDouble.createAndGuessError(e.getSemiMajorAxis());       // Presumed accurate in base 10 (not 2) by definition.
-            final double value = f.value;
-            final double error = f.error;
-            f.subtractGuessError(e.getSemiMinorAxis());                       // Presumed accurate in base 10 (not 2) by definition.
-            f.divide(value, error);
+            var a = DoubleDouble.of(e.getSemiMajorAxis(), decimal);
+            return a.subtract(e.getSemiMinorAxis(), decimal).divide(a);
         }
-        return f;
     }
 
     /**
@@ -534,9 +523,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     public double semiMajorAxisDifference(final Ellipsoid other) {
         double semiMajor = other.getSemiMajorAxis();
         semiMajor = other.getAxisUnit().getConverterTo(getAxisUnit()).convert(semiMajor);            // Often a no-op.
-        final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);     // Presumed accurate in base 10 if no unit conversion.
-        a.subtractGuessError(getSemiMajorAxis());                               // Presumed accurate in base 10 (not 2) by definition.
-        return a.doubleValue();
+        // Presumed accurate in base 10 (not 2) by definition.
+        final DoubleDouble a = DoubleDouble.of(semiMajor, true);
+        return a.subtract(getSemiMajorAxis(), true).doubleValue();
     }
 
     /**
@@ -553,9 +542,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * @since 0.7
      */
     public double flatteningDifference(final Ellipsoid other) {
-        final DoubleDouble f = flattening(other);
-        f.subtract(flattening(this));
-        return f.doubleValue();
+        return flattening(other).subtract(flattening(this)).doubleValue();
     }
 
     /**

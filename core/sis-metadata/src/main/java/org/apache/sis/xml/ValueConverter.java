@@ -27,11 +27,10 @@ import java.util.UUID;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Locales;
-
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
 /**
@@ -45,9 +44,9 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * document to fail. An application may want to change this behavior by replacing URLs that
  * are known to be erroneous by fixed versions of those URLs. Example:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     class URLFixer extends ValueConverter {
- *         &#64;Override
+ *         @Override
  *         public URL toURL(MarshalContext context, URI uri) throws MalformedURLException {
  *             try {
  *                 return super.toURL(context, uri);
@@ -60,7 +59,7 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  *             }
  *         }
  *     }
- * }
+ *     }
  *
  * See the {@link XML#CONVERTER} javadoc for an example of registering a custom
  * {@code ValueConverter} to a (un)marshaller.
@@ -68,7 +67,6 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public class ValueConverter {
     /**
@@ -98,7 +96,7 @@ public class ValueConverter {
      *
      * @param  <T>         the compile-time type of the {@code sourceType} argument.
      * @param  context     context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
-     * @param  value       the value that can't be converted.
+     * @param  value       the value that cannot be converted.
      * @param  sourceType  the base type of the value to convert. This is determined by the argument type of the method
      *                     that caught the exception. For example, the source type is always {@code URI.class}
      *                     if the exception has been caught by the {@link #toURL(MarshalContext, URI)} method.
@@ -262,8 +260,8 @@ public class ValueConverter {
      * @see Locales#parse(String)
      */
     public Locale toLocale(final MarshalContext context, String value) throws IllformedLocaleException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return Locales.parse(value);
         } catch (IllformedLocaleException e) {
             if (!exceptionOccured(context, value, String.class, Locale.class, e)) {
@@ -289,8 +287,8 @@ public class ValueConverter {
      * @since 0.5
      */
     public Charset toCharset(final MarshalContext context, String value) throws IllegalCharsetNameException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) {
+        value = Strings.trimOrNull(value);
+        if (value != null) {
             value = LegacyCodes.toIANA(value);
             try {
                 return Charset.forName(value);
@@ -324,8 +322,8 @@ public class ValueConverter {
      * @see Units#valueOf(String)
      */
     public Unit<?> toUnit(final MarshalContext context, String value) throws IllegalArgumentException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             /*
              * First, check for X-Paths like below:
              *
@@ -357,7 +355,7 @@ public class ValueConverter {
                 }
             }
             return Units.valueOf(value);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             if (!exceptionOccured(context, value, String.class, Unit.class, e)) {
                 throw e;
             }
@@ -370,9 +368,9 @@ public class ValueConverter {
      * is as below, omitting the check for null value and the call to {@link #exceptionOccured
      * exceptionOccured(…)} in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return UUID.fromString(value);
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a UUID, or {@code null}.
@@ -383,8 +381,8 @@ public class ValueConverter {
      * @see UUID#fromString(String)
      */
     public UUID toUUID(final MarshalContext context, String value) throws IllegalArgumentException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return UUID.fromString(value);
         } catch (IllegalArgumentException e) {
             if (!exceptionOccured(context, value, String.class, UUID.class, e)) {
@@ -399,9 +397,9 @@ public class ValueConverter {
      * (omitting the check for null value and the call to {@link #exceptionOccured
      * exceptionOccured(…)} in case of error):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new URI(value);
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a URI, or {@code null}.
@@ -412,8 +410,8 @@ public class ValueConverter {
      * @see URI#URI(String)
      */
     public URI toURI(final MarshalContext context, String value) throws URISyntaxException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return new URI(value);
         } catch (URISyntaxException e) {
             if (!exceptionOccured(context, value, String.class, URI.class, e)) {
@@ -428,9 +426,9 @@ public class ValueConverter {
      * the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
      * in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return value.toURI();
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the URL to convert to a URI, or {@code null}.
@@ -456,9 +454,9 @@ public class ValueConverter {
      * the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
      * in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return value.toURL();
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the URI to convert to a URL, or {@code null}.
@@ -484,9 +482,9 @@ public class ValueConverter {
      * omitting the check for null value and the call to {@link #exceptionOccured exceptionOccured(…)}
      * in case of error:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return NilReason.valueOf(value);
-     * }
+     *     }
      *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  value    the string to convert to a nil reason, or {@code null}.
@@ -497,8 +495,8 @@ public class ValueConverter {
      * @see NilReason#valueOf(String)
      */
     public NilReason toNilReason(final MarshalContext context, String value) throws URISyntaxException {
-        value = trimWhitespaces(value);
-        if (value != null && !value.isEmpty()) try {
+        value = Strings.trimOrNull(value);
+        if (value != null) try {
             return NilReason.valueOf(value);
         } catch (URISyntaxException e) {
             if (!exceptionOccured(context, value, String.class, URI.class, e)) {

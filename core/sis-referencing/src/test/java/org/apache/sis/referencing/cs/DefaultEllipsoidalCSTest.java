@@ -38,10 +38,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractCSTest.class)
-public final strictfp class DefaultEllipsoidalCSTest extends TestCase {
+public final class DefaultEllipsoidalCSTest extends TestCase {
     /**
      * An XML file in this package containing an ellipsoidal coordinate system definition.
      */

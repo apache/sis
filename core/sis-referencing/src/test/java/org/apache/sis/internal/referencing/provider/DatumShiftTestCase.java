@@ -16,11 +16,9 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
+import java.net.URI;
 import java.net.URL;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.test.TestCase;
 
 import static org.junit.Assert.*;
@@ -30,14 +28,13 @@ import static org.junit.Assume.assumeFalse;
 /**
  * Base class of tests that need to load a datum shift grid. This base class provides a
  * {@link #getResourceAsConvertibleURL(String)} method for fetching the data in a form
- * convertible to {@link Path}.
+ * convertible to {@link URI}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
- * @module
  */
-public abstract strictfp class DatumShiftTestCase extends TestCase {
+public abstract class DatumShiftTestCase extends TestCase {
     /**
      * For subclass constructors only.
      */
@@ -45,7 +42,7 @@ public abstract strictfp class DatumShiftTestCase extends TestCase {
     }
 
     /**
-     * Finds resource of the given name as a URL convertible to a {@link Path}.
+     * Finds resource of the given name as a URL convertible to a {@link URI}.
      * If the URL is not convertible, then this method declares the test as ignored.
      *
      * @param  name  name of the resource to get.
@@ -62,22 +59,17 @@ public abstract strictfp class DatumShiftTestCase extends TestCase {
     }
 
     /**
-     * Finds resource of the given name as a path. If the resource cannot be obtained because
+     * Finds resource of the given name as an URI. If the resource cannot be obtained because
      * the grid file is inside a JAR file, declares the test as ignored instead of failed.
      *
      * @param  name  name of the resource to get.
      * @return the requested resources.
      */
-    static Path getResource(final String name) throws URISyntaxException {
-        final URL file = DatumShiftTestCase.class.getResource(name);
+    static URI getResource(final String name) throws URISyntaxException {
+        final URL file = getResourceAsConvertibleURL(name);
         if (file == null) {
-            fail("Test file \"" + name + "\" not found.");
-        } else try {
-            return Paths.get(file.toURI());
-        } catch (FileSystemNotFoundException e) {
             assumeFalse("Cannot read grid data in a JAR file.", "jar".equals(file.getProtocol()));
-            throw e;
         }
-        return null;
+        return file.toURI();
     }
 }

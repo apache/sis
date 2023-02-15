@@ -103,7 +103,6 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
  * @author  John Grange
  * @version 1.0
  * @since   0.7
- * @module
  */
 public class SQLTranslator implements Function<String,String> {
     /**

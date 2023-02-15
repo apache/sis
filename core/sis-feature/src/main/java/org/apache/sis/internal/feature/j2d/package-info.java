@@ -30,6 +30,5 @@
  * @see org.apache.sis.internal.referencing.j2d
  *
  * @since 1.0
- * @module
  */
 package org.apache.sis.internal.feature.j2d;

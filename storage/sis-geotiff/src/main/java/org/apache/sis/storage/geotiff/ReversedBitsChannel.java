@@ -33,7 +33,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChannel {
     /**
@@ -68,7 +67,7 @@ final class ReversedBitsChannel implements ReadableByteChannel, SeekableByteChan
     static ChannelDataInput wrap(final ChannelDataInput input) throws IOException {
         final ChannelDataInput output = new ChannelDataInput(
                 input.filename, new ReversedBitsChannel(input),
-                (ByteBuffer) ByteBuffer.allocate(2048).order(input.buffer.order()).limit(0), true);     // TODO! remove cast widh JDK9.
+                ByteBuffer.allocate(2048).order(input.buffer.order()).limit(0), true);
         output.setStreamPosition(input.getStreamPosition());
         return output;
     }

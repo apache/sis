@@ -36,7 +36,6 @@ import java.lang.annotation.Target;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

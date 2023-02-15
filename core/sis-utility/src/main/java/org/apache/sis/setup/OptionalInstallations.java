@@ -17,7 +17,6 @@
 package org.apache.sis.setup;
 
 import java.util.Set;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.ServiceLoader;
 import java.net.URL;
@@ -51,16 +50,15 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * This is useful as a workaround if a URL is no longer accessible.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class OptionalInstallations extends InstallationResources implements Localized {
     /**
      * Where to download the EPSG scripts after user has approved the terms of use.
      */
     private static final String EPSG_DOWNLOAD_URL =
-            "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.2/sis-epsg-1.2.jar";
+            "https://repo1.maven.org/maven2/org/apache/sis/non-free/sis-epsg/1.3/sis-epsg-1.3.jar";
 
     /**
      * Estimation of the EPSG database size after installation, in megabytes.
@@ -142,7 +140,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
      */
     @Override
     public Set<String> getAuthorities() {
-        return (destinationDirectory != null) ? Collections.singleton(EPSG) : Collections.emptySet();
+        return (destinationDirectory != null) ? Set.of(EPSG) : Set.of();
     }
 
     /**

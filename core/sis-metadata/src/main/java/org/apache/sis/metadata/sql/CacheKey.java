@@ -26,7 +26,6 @@ import java.util.Objects;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class CacheKey {
     /**

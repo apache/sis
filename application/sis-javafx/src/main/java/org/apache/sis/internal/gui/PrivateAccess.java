@@ -31,7 +31,6 @@ import org.apache.sis.gui.dataset.WindowHandler;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class PrivateAccess {
     /**

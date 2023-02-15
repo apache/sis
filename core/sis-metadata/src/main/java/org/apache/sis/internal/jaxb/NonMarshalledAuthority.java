@@ -29,7 +29,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.simple.CitationConstant;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.xml.IdentifierSpace;
 
 
@@ -54,11 +53,11 @@ import org.apache.sis.xml.IdentifierSpace;
  * In the current SIS library, there is different places where identifiers are filtered on the
  * basis of this class, as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     if (identifier.getAuthority() instanceof NonMarshalledAuthority<?>) {
  *         // Omit that identifier.
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -68,7 +67,6 @@ import org.apache.sis.xml.IdentifierSpace;
  * @see IdentifierSpace
  *
  * @since 0.3
- * @module
  */
 public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<T> {
     /**
@@ -218,7 +216,6 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
      *
      * @see #setMarshallable(Collection, Identifier)
      */
-    @SuppressWarnings("null")
     public static Collection<? extends Identifier> setMarshallables(
             final Collection<Identifier> identifiers, final Collection<? extends Identifier> newValues)
     {
@@ -265,11 +262,13 @@ public final class NonMarshalledAuthority<T> extends CitationConstant.Authority<
         }
         /*
          * Wraps in an unmodifiable list in case the caller is creating an unmodifiable metadata.
+         * Use `Collections` instead of `List.of(…)` for consistency with `UnmodifiableArrayList`
+         * which accepts `List.contains(null)`.
          */
         switch (merged.size()) {
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(merged.get(0));
-            default: return Containers.unmodifiableList(CollectionsExt.toArray(merged, Identifier.class));
+            default: return UnmodifiableArrayList.wrap(merged.toArray(Identifier[]::new));
         }
     }
 

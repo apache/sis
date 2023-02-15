@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
@@ -36,7 +37,6 @@ import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.XML;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.junit.Assert.*;
 
 
@@ -49,9 +49,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
-public final strictfp class CustomMetadataTest extends TestCase {
+public final class CustomMetadataTest extends TestCase {
     /**
      * Tests the marshalling of a metadata implemented by {@link Proxy}.
      *
@@ -110,7 +109,7 @@ public final strictfp class CustomMetadataTest extends TestCase {
             @Override public Collection<Extent>        getExtents()            {return null;}
         };
         final DefaultMetadata data = new DefaultMetadata();
-        data.setIdentificationInfo(singleton(identification));
+        data.setIdentificationInfo(Set.of(identification));
         final String xml = XML.marshal(data);
         /*
          * A few simple checks.

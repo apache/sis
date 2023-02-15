@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import org.opengis.referencing.IdentifiedObject;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -43,7 +44,6 @@ import org.apache.sis.internal.util.StandardDateFormat;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ReferenceKeeper {
     /**
@@ -51,11 +51,13 @@ final class ReferenceKeeper {
      * is not designed for large collections. Note that the number of unique entries may be lower
      * because this class does not try to avoid duplicated references.
      */
+    @Configuration
     private static final int CAPACITY = 40;
 
     /**
      * Time to wait before to remove entries from this map. Current value is 5 minutes.
      */
+    @Configuration
     private static final long EXPIRATION_TIME = 5L * 60 * StandardDateFormat.NANOS_PER_SECOND;
 
     /**

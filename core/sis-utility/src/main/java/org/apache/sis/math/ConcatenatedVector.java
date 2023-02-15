@@ -28,7 +28,6 @@ import org.apache.sis.util.Numbers;
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class ConcatenatedVector extends Vector implements Serializable {
     /**
@@ -39,6 +38,7 @@ final class ConcatenatedVector extends Vector implements Serializable {
     /**
      * The vectors to concatenate.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Vector first, second;
 
     /**

@@ -29,7 +29,6 @@ import org.apache.sis.internal.util.PropertyFormat;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class PropertyValueFormatter extends PropertyFormat {
     /**

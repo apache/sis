@@ -92,7 +92,6 @@ import org.opengis.referencing.operation.TransformException;
  * @see <a href="https://en.wikipedia.org/wiki/Interval_%28mathematics%29">Wikipedia: Interval</a>
  *
  * @since 0.3
- * @module
  */
 public class NumberRange<E extends Number & Comparable<? super E>> extends Range<E> {
     /**

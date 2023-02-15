@@ -41,8 +41,7 @@
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
- * @module
  */
 package org.apache.sis.coverage.grid;

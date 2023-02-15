@@ -38,7 +38,6 @@ import org.apache.sis.internal.coverage.j2d.TilePlaceholder;
  * @see <a href="https://bugs.openjdk.java.net/browse/JDK-8275345">JDK-8275345</a>
  *
  * @since 1.2
- * @module
  */
 public final class RenderingWorkaround implements RenderedImage {
     /**

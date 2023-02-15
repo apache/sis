@@ -42,16 +42,14 @@ import org.apache.sis.internal.util.Numerics;
  * By default, newly created {@code StatisticsFormat} instances will format statistical values
  * in a tabular format using spaces as the column separator.
  *
- * <div class="note"><b>Example:</b>
- * {@preformat text
+ * <h2>Example</h2>
+ * <pre class="text">
  *     Number of values:     8726
  *     Minimum value:       6.853
  *     Maximum value:       8.259
  *     Mean value:          7.421
  *     Root Mean Square:    7.846
- *     Standard deviation:  6.489
- * }
- * </div>
+ *     Standard deviation:  6.489</pre>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -65,7 +63,6 @@ import org.apache.sis.internal.util.Numerics;
  * @see Statistics#toString()
  *
  * @since 0.3
- * @module
  */
 public class StatisticsFormat extends TabularFormat<Statistics> {
     /**
@@ -272,7 +269,7 @@ public class StatisticsFormat extends TabularFormat<Statistics> {
             list.add(stats);
             stats = stats.differences();
         }
-        format(list.toArray(new Statistics[list.size()]), toAppendTo);
+        format(list.toArray(Statistics[]::new), toAppendTo);
     }
 
     /**

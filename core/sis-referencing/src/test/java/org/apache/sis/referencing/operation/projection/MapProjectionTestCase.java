@@ -44,9 +44,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
-abstract strictfp class MapProjectionTestCase extends MathTransformTestCase {
+abstract class MapProjectionTestCase extends MathTransformTestCase {
     /**
      * Axis length of WGS84 ellipsoid.
      */

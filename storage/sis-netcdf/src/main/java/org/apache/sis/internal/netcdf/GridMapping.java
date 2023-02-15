@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -90,7 +89,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="http://cfconventions.org/cf-conventions/cf-conventions.html#grid-mappings-and-projections">CF-conventions</a>
  *
  * @since 1.0
- * @module
  */
 final class GridMapping {
     /**
@@ -415,7 +413,7 @@ final class GridMapping {
                 name = fallback.toString();
             }
         }
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**
@@ -424,10 +422,10 @@ final class GridMapping {
      * transforms or TFW files. The relationship from pixel/line (P,L) coordinates
      * to CRS are:
      *
-     * {@preformat math
+     * {@snippet lang="java" :
      *     X = c[0] + P*c[1] + L*c[2];
      *     Y = c[3] + P*c[4] + L*c[5];
-     * }
+     *     }
      *
      * @param  mapping  the variable that contains attributes giving CRS definition.
      * @return the mapping, or {@code null} if this method did not found grid geometry attributes.

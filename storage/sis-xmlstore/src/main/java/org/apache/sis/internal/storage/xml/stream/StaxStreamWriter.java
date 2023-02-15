@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Date;
 import java.util.function.Consumer;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import javax.xml.namespace.QName;
@@ -46,29 +47,29 @@ import org.opengis.feature.Feature;
  * the following example:</p>
  *
  * <p>Example:</p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class UserObjectWriter extends StaxStreamWriter {
  *         UserObjectWriter(StaxDataStore owner, Metadata metadata) throws ... {
  *             super(owner);
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public void writeStartDocument() throws Exception {
  *             super.writeStartDocument();
  *             // Write header (typically metadata) here.
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public void write(Feature f) throws Exception {
  *             // Actual STAX write operations.
  *             writer.writeStartElement(…);
  *         }
  *     }
- * }
+ *     }
  *
  * Writers can be used like below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     try (UserObjectWriter writer = new UserObjectWriter(dataStore, metadata)) {
  *         writer.writeStartDocument();
  *         writer.write(feature1);
@@ -77,7 +78,7 @@ import org.opengis.feature.Feature;
  *         // etc.
  *         writer.writeEndDocument();
  *     }
- * }
+ *     }
  *
  * <h2>Multi-threading</h2>
  * This class and subclasses are not tread-safe. Synchronization shall be done by the {@code DataStore}
@@ -85,9 +86,8 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.8
- * @module
  */
 public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<Feature> {
     /**
@@ -106,15 +106,18 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
     /**
      * Creates a new XML writer for the given data store.
      *
-     * @param  owner  the data store for which this writer is created.
+     * @param  owner      the data store for which this writer is created.
+     * @param  temporary  the temporary stream where to write, or {@code null} for the main storage.
      * @throws DataStoreException if the output type is not recognized or the data store is closed.
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
     @SuppressWarnings("ThisEscapedInObjectConstruction")
-    protected StaxStreamWriter(final StaxDataStore owner) throws DataStoreException, XMLStreamException, IOException {
+    protected StaxStreamWriter(final StaxDataStore owner, final OutputStream temporary)
+            throws DataStoreException, XMLStreamException, IOException
+    {
         super(owner);
-        writer = owner.createWriter(this);      // Okay because will not store the 'this' reference.
+        writer = owner.createWriter(this, temporary);      // Okay because will not store the `this` reference.
     }
 
     /**
@@ -126,8 +129,8 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * the features. The overwritten method shall begin by a call to {@code super.writeStartDocument()}.
      * Example:</p>
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public void writeStartDocument() throws Exception {
      *         super.writeStartDocument();
      *         writer.setDefaultNamespace(namespace);

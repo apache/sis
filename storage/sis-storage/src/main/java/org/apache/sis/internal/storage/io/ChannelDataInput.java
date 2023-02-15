@@ -60,9 +60,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureBetween;
  * {@link javax.imageio} is needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public class ChannelDataInput extends ChannelData {
     /**
@@ -86,6 +85,9 @@ public class ChannelDataInput extends ChannelData {
      * Creates a new data input for the given channel and using the given buffer.
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
+     *
+     * <p><b>Tip:</b>
+     * for building a data input from an input stream, see {@link InputStreamArrayGetter}.</p>
      *
      * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read.
@@ -117,6 +119,18 @@ public class ChannelDataInput extends ChannelData {
     public ChannelDataInput(final String filename, final ByteBuffer data) {
         super(filename, data);
         channel = new NullChannel();
+    }
+
+    /**
+     * Creates a new input stream from the given {@code ChannelDataInput}.
+     * This constructor is invoked when we need to change the implementation class.
+     * The old input should not be used anymore after this constructor has been invoked.
+     *
+     * @param  input  the existing instance from which to takes the channel and buffer.
+     */
+    ChannelDataInput(final ChannelDataInput input) {
+        super(input);
+        channel = input.channel;
     }
 
     /**
@@ -304,9 +318,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads the next unsigned byte value (8 bits) from the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Byte.toUnsignedInt(readByte());
-     * }
+     *     }
      *
      * @return the value of the next unsigned byte from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -332,9 +346,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads the next unsigned short value (16 bits) from the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Short.toUnsignedInt(readShort());
-     * }
+     *     }
      *
      * @return the value of the next unsigned short from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -373,9 +387,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads the next unsigned integer value (32 bits) from the stream.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Integer.toUnsignedLong(readInt());
-     * }
+     *     }
      *
      * @return the value of the next unsigned integer from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -525,9 +539,9 @@ public class ChannelDataInput extends ChannelData {
      * Reads {@code dest.length} bytes from the stream, and stores them into
      * {@code dest} starting at index 0. The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return readFully(dest, 0, dest.length);
-     * }
+     *     }
      *
      * @param  dest An array of bytes to be written to.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -887,7 +901,8 @@ public class ChannelDataInput extends ChannelData {
     }
 
     /**
-     * Moves to the given position in the stream, relative to the stream position at construction time.
+     * Moves to the given position in the stream. The given position is relative to
+     * the position that the stream had at {@code ChannelDataInput} construction time.
      *
      * @param  position  the position where to move.
      * @throws IOException if the stream cannot be moved to the given position.
@@ -903,9 +918,7 @@ public class ChannelDataInput extends ChannelData {
         } else if ((p < 0 || p - buffer.limit() >= SEEK_THRESHOLD) && channel instanceof SeekableByteChannel) {
             /*
              * Requested position is outside the current limits of the buffer,
-             * but we can set the new position directly in the channel. Note
-             * that StorageConnector.rewind() needs the buffer content to be
-             * valid as a result of this seek, so we reload it immediately.
+             * but we can set the new position directly in the channel.
              */
             ((SeekableByteChannel) channel).position(Math.addExact(channelOffset, position));
             bufferOffset = position;
@@ -936,6 +949,22 @@ public class ChannelDataInput extends ChannelData {
             throw new InvalidSeekException(Resources.format(Resources.Keys.StreamIsForwardOnly_1, filename));
         }
         clearBitOffset();
+    }
+
+    /**
+     * Specifies a range of bytes which is expected to be read.
+     * The range of bytes is only a hint and may be ignored, depending on subclasses.
+     * Reading more bytes than specified is okay, only potentially less efficient.
+     *
+     * @param  lower  position (inclusive) of the first byte to be requested.
+     * @param  upper  position (exclusive) of the last byte to be requested.
+     */
+    public final void rangeOfInterest(long lower, long upper) {
+        if (channel instanceof ByteRangeChannel) {
+            lower = Math.addExact(lower, channelOffset);
+            upper = Math.addExact(upper, channelOffset);
+            ((ByteRangeChannel) channel).rangeOfInterest(lower, upper);
+        }
     }
 
     /**

@@ -19,11 +19,9 @@ package org.apache.sis.internal.storage.io;
 import java.util.Set;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Collections;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.function.UnaryOperator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -34,7 +32,6 @@ import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.FileSystemNotFoundException;
@@ -70,9 +67,8 @@ import org.apache.sis.storage.event.StoreListeners;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 public abstract class ChannelFactory {
     /**
@@ -135,36 +131,10 @@ public abstract class ChannelFactory {
      *                         If the URL is not encoded, then {@code null}. This argument is ignored if the given
      *                         input does not need to be converted from URL to {@code File}.
      * @param  options         the options to use for creating a new byte channel. Can be null or empty for read-only.
-     * @param  wrapper         a function for creating wrapper around the factory, or {@code null} if none.
-     *                         It can be used for installing listener or for transforming data on the fly.
      * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
      * @throws IOException if an error occurred while processing the given input.
      */
-    public static ChannelFactory prepare(
-            final Object storage, final boolean allowWriteOnly,
-            final String encoding, final OpenOption[] options,
-            final UnaryOperator<ChannelFactory> wrapper) throws IOException
-    {
-        ChannelFactory factory = prepare(storage, allowWriteOnly, encoding, options);
-        if (factory != null && wrapper != null) {
-            factory = wrapper.apply(factory);
-        }
-        return factory;
-    }
-
-    /**
-     * Returns a byte channel factory without wrappers, or {@code null} if unsupported.
-     * This method performs the same work than {@linkplain #prepare(Object, boolean, String,
-     * OpenOption[], UnaryOperator, UnaryOperator) above method}, but without wrappers.
-     *
-     * @param  storage         the stream or the file to open, or {@code null}.
-     * @param  allowWriteOnly  whether to allow wrapping {@link WritableByteChannel} and {@link OutputStream}.
-     * @param  encoding        if the input is an encoded URL, the character encoding (normally {@code "UTF-8"}).
-     * @param  options         the options to use for creating a new byte channel. Can be null or empty for read-only.
-     * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
-     * @throws IOException if an error occurred while processing the given input.
-     */
-    private static ChannelFactory prepare(Object storage, final boolean allowWriteOnly,
+    public static ChannelFactory prepare(Object storage, final boolean allowWriteOnly,
             final String encoding, final OpenOption[] options) throws IOException
     {
         /*
@@ -173,7 +143,7 @@ public abstract class ChannelFactory {
          */
         final Set<OpenOption> optionSet;
         if (options == null || options.length == 0) {
-            optionSet = Collections.singleton(StandardOpenOption.READ);
+            optionSet = Set.of(StandardOpenOption.READ);
         } else {
             optionSet = new HashSet<>(Arrays.asList(options));
             optionSet.add(StandardOpenOption.READ);
@@ -225,14 +195,24 @@ public abstract class ChannelFactory {
                  * so we are better to check now and provide a more appropriate exception for this method.
                  */
                 throw new IOException(Resources.format(Resources.Keys.MissingSchemeInURI_1, uri));
+            }
+            if (IOUtilities.isHTTP(uri.getScheme())) {
+                return new ChannelFactory(true) {
+                    @Override public ReadableByteChannel readable(String filename, StoreListeners listeners) throws IOException {
+                        return new HttpByteChannel(filename, uri);
+                    }
+                    @Override public WritableByteChannel writable(String filename, StoreListeners listeners) throws IOException {
+                        return Channels.newChannel(uri.toURL().openConnection().getOutputStream());
+                    }
+                };
             } else try {
-                storage = Paths.get(uri);
+                storage = Path.of(uri);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 try {
                     storage = uri.toURL();
                 } catch (MalformedURLException ioe) {
-                    ioe.addSuppressed(e);
-                    throw ioe;
+                    e.addSuppressed(ioe);
+                    throw e;
                 }
                 /*
                  * We have been able to convert to URL, but the given OpenOptions may not be used.

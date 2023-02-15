@@ -49,7 +49,6 @@ import org.opengis.feature.Feature;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class InputFeatureStream extends InputStream {
     /** Logger. */

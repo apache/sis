@@ -16,19 +16,17 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
@@ -49,16 +47,15 @@ import static org.apache.sis.internal.referencing.provider.DatumShiftGridLoader.
  * It will also indirectly tests {@link DatumShiftGridGroup} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  *
  * @since 0.7
- * @module
  */
 @DependsOn(DatumShiftGridFileTest.class)
-public final strictfp class NTv2Test extends DatumShiftTestCase {
+public final class NTv2Test extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.
      * The amount of data in this test file is less than 0.14% of the original file.
@@ -81,13 +78,10 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point. The point used for
      * this test is given by {@link FranceGeocentricInterpolationTest#samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
-     * @throws IOException if an error occurred while loading the grid.
-     * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testLoader() throws URISyntaxException, IOException, FactoryException, TransformException {
+    public void testLoader() throws Exception {
         testRGF93(getResource(TEST_FILE),
                  36000 - 360 * (72 + 5),    // Subgrid of RGF93 beginning at gridX = 72
                  36000 - 360 * (72),        // Subgrid uses 6 cells along longitude axis
@@ -102,23 +96,22 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * explicitly if they can provide a path to the {@code "NTF_R93.gsb"} file.
      *
      * @param  file  path to the official {@code "NTF_R93.gsb"} file.
-     * @throws FactoryException if an error occurred while loading or computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
-    public static void testRGF93(final Path file) throws FactoryException, TransformException {
+    public static void testRGF93(final URI file) throws Exception {
         testRGF93(file, -19800, 36000, 147600, 187200);
     }
 
     /**
-     * Implementation of {@link #testLoader()} and {@link #testRGF93(Path)}.
+     * Implementation of {@link #testLoader()} and {@link #testRGF93(URI)}.
      *
      * @param  xmin  negative of value of {@code "W_LONG"} record.
      * @param  xmax  negative of value of {@code "E_LONG"} record.
      * @param  ymin  value of the {@code "S_LAT"} record.
      * @param  ymax  value of the {@code "N_LAT"} record.
      */
-    private static void testRGF93(final Path file, final double xmin, final double xmax,
-            final double ymin, final double ymax) throws FactoryException, TransformException
+    private static void testRGF93(final URI file, final double xmin, final double xmax,
+            final double ymin, final double ymax) throws Exception
     {
         final double cellSize = 360;
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
@@ -178,14 +171,14 @@ public final strictfp class NTv2Test extends DatumShiftTestCase {
      * to be present in the {@code $SIS_DATA/DatumChanges} directory. This test is executed only if the
      * {@link #RUN_EXTENSIVE_TESTS} flag is set.
      *
-     * @throws FactoryException if an error occurred while loading or computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testMultiGrids() throws FactoryException, TransformException {
+    public void testMultiGrids() throws Exception {
         assumeTrue(RUN_EXTENSIVE_TESTS);
-        final Path file = DataDirectory.DATUM_CHANGES.resolve(Paths.get(MULTIGRID_TEST_FILE));
-        assumeTrue(Files.exists(file));
+        assumeTrue(DataDirectory.getenv() != null);
+        final URI file = DatumShiftGridLoader.toAbsolutePath(new URI(MULTIGRID_TEST_FILE));
+        assumeTrue(Files.exists(Path.of(file)));
         final DatumShiftGridFile<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
         assertInstanceOf("Should contain many grids.", DatumShiftGridGroup.class, grid);
         assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());

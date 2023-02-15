@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.ObjectConverter;
@@ -46,7 +46,6 @@ import org.opengis.feature.FeatureType;
  * @see org.apache.sis.internal.filter.GeometryConverter
  *
  * @since 1.1
- * @module
  */
 final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
         implements FeatureExpression<R,V>, Optimization.OnExpression<R,V>
@@ -64,7 +63,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     /**
      * The converter to use.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ObjectConverter<? super S, ? extends V> converter;
 
     /**
@@ -126,7 +125,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      */
     @Override
     protected Collection<?> getChildren() {
-        return Arrays.asList(expression, converter.getSourceClass(), converter.getTargetClass());
+        return List.of(expression, converter.getSourceClass(), converter.getTargetClass());
     }
 
     /**

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.feature.jts;
 
+import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import org.apache.sis.util.Classes;
@@ -39,7 +39,6 @@ import org.locationtech.jts.geom.Point;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class PathIteratorAdapter implements PathIterator {
     /**
@@ -178,9 +177,9 @@ final class PathIteratorAdapter implements PathIterator {
     private static Iterator<CoordinateSequence> iterator(final Geometry geometry) {
         final Collection<CoordinateSequence> sequences;
         if (geometry instanceof LineString) {
-            sequences = Collections.singleton(((LineString) geometry).getCoordinateSequence());
+            sequences = List.of(((LineString) geometry).getCoordinateSequence());
         } else if (geometry instanceof Point) {
-            sequences = Collections.singleton(((Point) geometry).getCoordinateSequence());
+            sequences = List.of(((Point) geometry).getCoordinateSequence());
         } else if (geometry instanceof Polygon) {
             return new RingIterator((Polygon) geometry);
         } else if (geometry instanceof GeometryCollection) {

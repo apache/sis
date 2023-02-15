@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.sql.Statement;
@@ -114,7 +113,6 @@ import org.opengis.util.ControlledVocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public class MetadataWriter extends MetadataSource {
     /**
@@ -303,11 +301,11 @@ public class MetadataWriter extends MetadataSource {
                 }
                 /*
                  * We have found a column to add. Check if the column actually needs to be added to the parent table
-                 * (if such parent exists). In most case, the answer is "no" and 'addTo' is equal to 'table'.
+                 * (if such parent exists). In most case, the answer is "no" and `addTo` is equal to `table`.
                  */
                 String addTo = table;
                 if (helper.dialect.supportsTableInheritance) {
-                    @SuppressWarnings("null")
+                    @SuppressWarnings("null")     // `colTables` is initialized in same time than `colTypes`.
                     final Class<?> declaring = colTables.get(column);
                     if (!interfaceType.isAssignableFrom(declaring)) {
                         addTo = getTableName(declaring);
@@ -404,7 +402,7 @@ public class MetadataWriter extends MetadataSource {
         /*
          * Process all dependencies now. This block may invoke this method recursively.
          * Once a dependency has been added to the database, the corresponding value in
-         * the 'asMap' HashMap is replaced by the identifier of the dependency we just added.
+         * the `asMap` HashMap is replaced by the identifier of the dependency we just added.
          */
         Map<String,FKey> referencedTables = null;
         for (final Map.Entry<String,Object> entry : asSingletons.entrySet()) {
@@ -635,9 +633,9 @@ public class MetadataWriter extends MetadataSource {
      * Returns the SQL statement for creating the given table with the given primary key.
      * This method returns a string of the following form:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     CREATE TABLE "schema"."table" (primaryKey VARCHAR(20) NOT NULL PRIMARY KEY)
-     * }
+     *     }
      */
     private String createTable(final String table, final String primaryKey) throws SQLException {
         return helper().clear().append("CREATE TABLE ").appendIdentifier(schema(), table)
@@ -698,11 +696,11 @@ public class MetadataWriter extends MetadataSource {
         String identifier = null;
         final Collection<? extends Identifier> identifiers;
         if (metadata instanceof Identifier) {
-            identifiers = Collections.singleton((Identifier) metadata);
+            identifiers = Set.of((Identifier) metadata);
         } else if (metadata instanceof IdentifiedObject) {
             identifiers = ((IdentifiedObject) metadata).getIdentifiers();
         } else {
-            identifiers = Collections.emptySet();
+            identifiers = Set.of();
         }
         for (final Identifier id : identifiers) {
             identifier = Strings.trimOrNull(id.getCode());

@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
-public final strictfp class LoggersTest extends TestCase {
+public final class LoggersTest extends TestCase {
     /**
      * Verifies some logger names.
      */

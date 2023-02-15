@@ -50,7 +50,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "date")
 @XmlType(name = "CI_Date_Type", propOrder = {

@@ -39,7 +39,6 @@ import org.apache.sis.referencing.operation.projection.ZonedGridSystem;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @XmlTransient
 public final class ZonedTransverseMercator extends AbstractProvider {

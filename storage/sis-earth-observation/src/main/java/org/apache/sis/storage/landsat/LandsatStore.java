@@ -19,6 +19,7 @@ package org.apache.sis.storage.landsat;
 import java.util.Map;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.io.LineNumberReader;
@@ -45,6 +46,7 @@ import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.URIDataStore;
+import org.apache.sis.internal.storage.folder.ConcurrentCloser;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.setup.OptionKey;
@@ -55,7 +57,7 @@ import org.apache.sis.setup.OptionKey;
  * Landsat data are distributed as a collection of TIFF files,
  * together with a single text file like below:
  *
- * {@preformat text
+ * <pre class="text">
  * GROUP = L1_METADATA_FILE
  *   GROUP = METADATA_FILE_INFO
  *     ORIGIN = "Image courtesy of the U.S. Geological Survey"
@@ -71,17 +73,15 @@ import org.apache.sis.setup.OptionKey;
  *     OUTPUT_FORMAT = "GEOTIFF"
  *     SPACECRAFT_ID = "LANDSAT_8"
  *     SENSOR_ID = "OLI_TIRS"
- *     etc...
- * }
+ *     etc...</pre>
  *
  * This class reads the content from the given input until the first occurrence of the {@code END} keyword.
  * Lines beginning with the {@code #} character (ignoring spaces) are treated as comment lines and ignored.
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public class LandsatStore extends DataStore implements Aggregate {
     /**
@@ -113,7 +113,8 @@ public class LandsatStore extends DataStore implements Aggregate {
      * The array of aggregates for each Landsat band group, or {@code null} if not yet created.
      * This array is created together with {@linkplain #metadata} and is unmodifiable.
      */
-    private BandGroup[] components;
+    @SuppressWarnings("VolatileArrayField")     // Array elements are not modified after creation.
+    private volatile BandGroup[] components;
 
     /**
      * Creates a new Landsat store from the given file, URL, stream or character reader.
@@ -205,7 +206,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      * Parses the main Landsat text file.
      * Also creates the array of components, but without loading GeoTIFF data yet.
      */
-    private void loadMetadata() throws DataStoreException {
+    private BandGroup[] loadMetadata() throws DataStoreException {
         if (source == null) {
             throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
         }
@@ -236,10 +237,12 @@ public class LandsatStore extends DataStore implements Aggregate {
         } catch (FactoryException e) {
             throw new DataStoreReferencingException(e);
         }
-        components = BandGroup.group(listeners, resources, count);
-        for (final BandGroup c : components) {
+        final BandGroup[] bands = BandGroup.group(listeners, resources, count);
+        for (final BandGroup c : bands) {
             c.identifier = factory.createLocalName(scope, c.group.name());
         }
+        components = bands;
+        return bands;
     }
 
     /**
@@ -268,10 +271,11 @@ public class LandsatStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized List<Aggregate> components() throws DataStoreException {
-        if (components == null) {
-            loadMetadata();
+        BandGroup[] bands = components;
+        if (bands == null) {
+            bands = loadMetadata();
         }
-        return UnmodifiableArrayList.wrap(components);
+        return UnmodifiableArrayList.wrap(bands);
     }
 
     /**
@@ -289,26 +293,32 @@ public class LandsatStore extends DataStore implements Aggregate {
 
     /**
      * Closes this Landsat store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing the Landsat file.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
+    public void close() throws DataStoreException {
         listeners.close();                  // Should never fail.
-        metadata = null;
-        DataStoreException error = null;
-        for (final Band band : BandGroup.bands(components)) {
-            try {
-                band.closeDataStore();
-            } catch (DataStoreException e) {
-                if (error == null) {
-                    error = e;
-                } else {
-                    error.addSuppressed(e);
-                }
+        try {
+            CLOSER.closeAll(BandGroup.bands(components));
+        } finally {
+            synchronized (this) {
+                metadata = null;
+                components = null;
             }
         }
-        components = null;
-        if (error != null) throw error;
     }
+
+    /**
+     * Helper for closing concurrently the images for each band.
+     */
+    private static final ConcurrentCloser<Band> CLOSER = new ConcurrentCloser<>() {
+        @Override protected Callable<?> closer(final Band r) {
+            return () -> {
+                r.closeDataStore();
+                return null;
+            };
+        }
+    };
 }

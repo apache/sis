@@ -25,8 +25,7 @@
  * Synchronization, if desired, must be done by the caller.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 package org.apache.sis.portrayal;

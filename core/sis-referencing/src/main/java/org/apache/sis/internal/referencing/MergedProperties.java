@@ -29,7 +29,6 @@ import org.apache.sis.internal.util.AbstractMap;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 public class MergedProperties extends AbstractMap<String,Object> {
     /**

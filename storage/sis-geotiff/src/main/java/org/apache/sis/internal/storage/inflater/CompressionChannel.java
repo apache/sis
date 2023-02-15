@@ -24,6 +24,7 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.StorageConnector;
 
 
 /**
@@ -33,16 +34,16 @@ import org.apache.sis.storage.event.StoreListeners;
  * <p>The {@link #close()} method shall be invoked when this channel is no longer used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 abstract class CompressionChannel extends PixelChannel {
     /**
      * Desired size of the buffer where to temporarily copy decompressed data.
-     * The actual buffer size may be larger, but should not be smaller.
+     * The actual buffer size may become larger (but not smaller)
+     * because we try to use a multiple of scanline stride.
      */
-    private static final int BUFFER_SIZE = 4096;
+    private static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
 
     /**
      * The source of data to decompress.
@@ -83,6 +84,7 @@ abstract class CompressionChannel extends PixelChannel {
     public void setInputRegion(final long start, final long byteCount) throws IOException {
         endPosition = Math.addExact(start, byteCount);
         input.seek(start);
+        input.rangeOfInterest(start, endPosition);
     }
 
     /**
@@ -104,10 +106,13 @@ abstract class CompressionChannel extends PixelChannel {
      *
      * @param  channel         the channel to wrap. This is {@code this} unless a {@link Predictor} is applied.
      * @param  scanlineStride  the scanline stride of the image to read. Used for choosing a buffer size.
+     * @param  directBuffer    whether the use of direct buffer is preferred to heap buffer.
      * @throws IOException if an error occurred while filling the buffer with initial data.
      * @return the data input for uncompressed data.
      */
-    final ChannelDataInput createDataInput(final PixelChannel channel, final int scanlineStride) throws IOException {
+    final ChannelDataInput createDataInput(final PixelChannel channel, final int scanlineStride, final boolean directBuffer)
+            throws IOException
+    {
         final int capacity;
         if (scanlineStride > BUFFER_SIZE) {
             final int[] divisors = MathFunctions.divisors(scanlineStride);
@@ -117,8 +122,8 @@ abstract class CompressionChannel extends PixelChannel {
         } else {
             capacity = Numerics.ceilDiv(BUFFER_SIZE, scanlineStride) * scanlineStride;      // ≥ BUFFER_SIZE
         }
-        // TODO: remove cast with JDK9.
-        final ByteBuffer buffer = (ByteBuffer) ByteBuffer.allocate(capacity).order(input.buffer.order()).limit(0);
+        ByteBuffer buffer = directBuffer ? ByteBuffer.allocateDirect(capacity) : ByteBuffer.allocate(capacity);
+        buffer = buffer.order(input.buffer.order()).limit(0);
         return new ChannelDataInput(input.filename, channel, buffer, true);
     }
 

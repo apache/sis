@@ -47,7 +47,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 final class SparseFeature extends AbstractFeature implements Cloneable {
     /**
@@ -78,6 +77,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
      * <p>We use those indices as {@link #properties} keys instead of using directly the property names
      * in order to resolve aliases.</p>
      */
+    @SuppressWarnings("serial")                     // Can be various serializable implementations.
     private final Map<String, Integer> indices;
 
     /**

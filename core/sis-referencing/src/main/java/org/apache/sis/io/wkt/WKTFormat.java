@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.function.Function;
 import java.io.IOException;
@@ -50,8 +50,8 @@ import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.StandardDateFormat;
@@ -81,7 +81,7 @@ import org.apache.sis.referencing.ImmutableIdentifier;
  * After fragments have been added, any call to a parsing method will replace all occurrences (except in
  * quoted text) of tokens like {@code $foo} by the WKT fragment named "foo".
  *
- * <div class="note"><b>Example:</b>
+ * <h3>Example</h3>
  * In the example below, the {@code $WGS84} substring which appear in the argument given to the
  * {@code parseObject(…)} method will be expanded into the full {@code GeodeticCRS[“WGS84”, …]}
  * string before the parsing proceed.
@@ -98,7 +98,6 @@ import org.apache.sis.referencing.ImmutableIdentifier;
  *
  * Note that the parsing of WKT fragment does not always produce the same object.
  * In particular, the default linear and angular units depend on the context in which the WKT fragment appears.
- * </div>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -117,15 +116,19 @@ import org.apache.sis.referencing.ImmutableIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Eve (IRD)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  *
  * @since 0.4
- * @module
  */
 public class WKTFormat extends CompoundFormat<Object> {
+    /**
+     * The logger for Well Known Text operations.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.WKT);
+
     /**
      * For cross-version compatibility.
      */
@@ -170,7 +173,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * The preferred authority for objects or parameter names. A {@code null} value
      * means that the authority shall be inferred from the {@linkplain #convention}.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Citation authority;
 
     /**
@@ -228,8 +231,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      *
      * @see #fragments(boolean)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
-    private Map<String,StoredTree> fragments;
+    private TreeMap<String,StoredTree> fragments;
 
     /**
      * {@code true} if the {@link #fragments} map is shared by two or more {@code WKTFormat} instances.
@@ -311,7 +313,7 @@ public class WKTFormat extends CompoundFormat<Object> {
         if (fragments == null) {
             if (!modifiable) {
                 // Most common cases: invoked before to parse a WKT and no fragments specified.
-                return Collections.emptyMap();
+                return Map.of();
             }
             fragments = new TreeMap<>();
             isCloned  = false;
@@ -772,20 +774,19 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Adds a fragment of Well Know Text (WKT). The {@code wkt} argument given to this method
      * can contains itself other fragments specified in some previous calls to this method.
      *
-     * <div class="note"><b>Example</b>
-     * if the following method is invoked:
+     * <h4>Example</h4>
+     * If the following method is invoked:
      *
-     * {@preformat java
-     *   addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
-     * }
+     * {@snippet lang="java" :
+     *     addFragment("MyEllipsoid", "Ellipsoid[“Bessel 1841”, 6377397.155, 299.1528128, ID[“EPSG”,“7004”]]");
+     *     }
      *
      * Then other WKT strings parsed by this {@code WKTFormat} instance can refer to the above fragment as below
      * (WKT after the ellipsoid omitted for brevity):
      *
-     * {@preformat java
-     *   Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     Object crs = parseObject("GeodeticCRS[“Tokyo”, Datum[“Tokyo”, $MyEllipsoid], …]");
+     *     }
      *
      * For removing a fragment, use <code>{@linkplain #getFragmentNames()}.remove(name)</code>.
      *
@@ -1115,8 +1116,7 @@ public class WKTFormat extends CompoundFormat<Object> {
              * reference for long, so we do not need to copy the `AbstractParser.ignoredElements` map.
              */
             final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
-            record.setLoggerName(Loggers.WKT);
-            Logging.log(classe, method, record);
+            Logging.completeAndLog(LOGGER, classe, method, record);
         }
     }
 

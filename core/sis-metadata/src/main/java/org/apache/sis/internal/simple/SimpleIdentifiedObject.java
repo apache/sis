@@ -41,7 +41,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @see org.apache.sis.referencing.AbstractIdentifiedObject
  *
  * @since 0.5
- * @module
  */
 public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparable, Serializable {
     /**
@@ -52,6 +51,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     /**
      * The primary name by which this object is identified.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected Identifier name;
 
     /**

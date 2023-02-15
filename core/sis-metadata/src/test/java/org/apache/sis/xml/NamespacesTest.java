@@ -30,9 +30,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class NamespacesTest extends TestCase {
+public final class NamespacesTest extends TestCase {
     /**
      * Tests {@link Namespaces#getPreferredPrefix(String, String)}.
      */

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.logging.Logger;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.metadata.Identifier;
@@ -63,7 +64,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 import static java.lang.Math.*;
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -136,7 +136,6 @@ import static java.util.logging.Logger.getLogger;
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6
- * @module
  */
 public abstract class NormalizedProjection extends AbstractMathTransform2D implements Serializable {
     /**
@@ -237,7 +236,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * construction time). In addition this field is part of serialization form in order to preserve the
      * references graph.</div>
      */
-    private final MathTransform2D inverse;
+    private final Inverse inverse;
 
     /**
      * Maps the parameters to be used for initializing {@link NormalizedProjection} and its
@@ -256,7 +255,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @see NormalizedProjection#NormalizedProjection(OperationMethod, Parameters, Map)
      *
      * @since 0.6
-     * @module
      */
     protected enum ParameterRole {
         /**
@@ -510,9 +508,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * changes in axis order} are <strong>not</strong> managed by the returned transform.
      *
      * <p>The default implementation is as below:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return getContextualParameters().completeTransform(factory, this);
-     * }
+     *     }
      *
      * Subclasses can override this method if they wish to use alternative implementations under some circumstances.
      * For example, many subclasses will replace {@code this} by a specialized implementation if they detect that the
@@ -830,7 +828,6 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.6
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**
@@ -999,9 +996,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
                     }
                 }
             } catch (NoninvertibleTransformException e) {
-                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
-                        (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass(),
-                        "tryConcatenate", e);
+                final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);   // Defined in base class but field is inaccessible.
+                final Class<?> caller = (projection instanceof NormalizedProjection) ? NormalizedProjection.class : projection.getClass();
+                Logging.recoverableException(LOGGER, caller, "tryConcatenate", e);
             }
         }
         return null;

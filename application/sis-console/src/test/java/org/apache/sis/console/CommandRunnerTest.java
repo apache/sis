@@ -35,9 +35,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class CommandRunnerTest extends TestCase {
+public final class CommandRunnerTest extends TestCase {
     /**
      * A dummy sub-command for testing purpose.
      */

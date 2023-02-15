@@ -20,13 +20,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.regex.Pattern;
 import java.util.function.Function;
 import java.awt.Color;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -56,7 +55,7 @@ import ucar.nc2.constants.CF;
  * for decoding <cite>Shikisai</cite> GCOM-C files produced by Japan Aerospace Exploration Agency (JAXA), version 1.00.
  * The file format is HDF5 and variables are like below (simplified):
  *
- * {@preformat text
+ * <pre class="text">
  *     group: Geometry_data {
  *         variables:
  *             float Latitude(161, 126)
@@ -96,8 +95,7 @@ import ucar.nc2.constants.CF;
  *         string :Contact_point = "JAXA/Earth Observation Research Center (EORC)"
  *         string :Processing_organization = "JAXA/GCOM-C science project"
  *         string :Processing_UT = "20181202 04:42:09"
- *     }
- * }
+ *     }</pre>
  *
  * Observations:
  * <ul class="verbose">
@@ -124,7 +122,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 public final class GCOM_C extends Convention {
     /**
@@ -147,23 +144,19 @@ public final class GCOM_C extends Convention {
      * the corner minimal and maximal coordinates is not guaranteed to encompass the whole data,
      * and may even contain no data at all.
      */
-    private static final Map<String,String> ATTRIBUTES;
-    static {
-        final Map<String,String> m = new HashMap<>(16);
-        m.put(AttributeNames.TITLE,               "Product_name");             // identification­Info / citation / title
-        m.put(AttributeNames.PRODUCT_VERSION,     "Product_version");          // identification­Info / citation / edition
-        m.put(AttributeNames.IDENTIFIER.TEXT,     "Product_file_name");        // identification­Info / citation / identifier / code
-        m.put(AttributeNames.DATE_CREATED,        "Processing_UT");            // identification­Info / citation / date
-        m.put(AttributeNames.CREATOR.INSTITUTION, "Processing_organization");  // identification­Info / citation / citedResponsibleParty
-        m.put(AttributeNames.SUMMARY,             "Dataset_description");      // identification­Info / abstract
-        m.put(AttributeNames.PLATFORM.TEXT,       "Satellite");                // acquisition­Information / platform / identifier
-        m.put(AttributeNames.INSTRUMENT.TEXT,     "Sensor");                   // acquisition­Information / platform / instrument / identifier
-        m.put(AttributeNames.PROCESSING_LEVEL,    "Product_level");            // content­Info / processing­Level­Code
-        m.put(AttributeNames.SOURCE,              "Input_files");              // data­Quality­Info / lineage / source / description
-        m.put(AttributeNames.TIME.MINIMUM,        "Scene_start_time");         // identification­Info / extent / temporal­Element / extent
-        m.put(AttributeNames.TIME.MAXIMUM,        "Scene_end_time");           // identification­Info / extent / temporal­Element / extent
-        ATTRIBUTES = m;
-    }
+    private static final Map<String,String> ATTRIBUTES = Map.ofEntries(
+        Map.entry(AttributeNames.TITLE,               "Product_name"),              // identification­Info / citation / title
+        Map.entry(AttributeNames.PRODUCT_VERSION,     "Product_version"),           // identification­Info / citation / edition
+        Map.entry(AttributeNames.IDENTIFIER.TEXT,     "Product_file_name"),         // identification­Info / citation / identifier / code
+        Map.entry(AttributeNames.DATE_CREATED,        "Processing_UT"),             // identification­Info / citation / date
+        Map.entry(AttributeNames.CREATOR.INSTITUTION, "Processing_organization"),   // identification­Info / citation / citedResponsibleParty
+        Map.entry(AttributeNames.SUMMARY,             "Dataset_description"),       // identification­Info / abstract
+        Map.entry(AttributeNames.PLATFORM.TEXT,       "Satellite"),                 // acquisition­Information / platform / identifier
+        Map.entry(AttributeNames.INSTRUMENT.TEXT,     "Sensor"),                    // acquisition­Information / platform / instrument / identifier
+        Map.entry(AttributeNames.PROCESSING_LEVEL,    "Product_level"),             // content­Info / processing­Level­Code
+        Map.entry(AttributeNames.SOURCE,              "Input_files"),               // data­Quality­Info / lineage / source / description
+        Map.entry(AttributeNames.TIME.MINIMUM,        "Scene_start_time"),          // identification­Info / extent / temporal­Element / extent
+        Map.entry(AttributeNames.TIME.MAXIMUM,        "Scene_end_time"));           // identification­Info / extent / temporal­Element / extent
 
     /**
      * Name of the group defining map projection parameters, localization grid, <i>etc</i>.
@@ -343,7 +336,7 @@ public final class GCOM_C extends Convention {
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
+        return Set.of(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
     }
 
     /**
@@ -365,7 +358,7 @@ public final class GCOM_C extends Convention {
      * Returns the map projection definition for the given data variable.
      * This method expects the following attribute names in the {@value #GEOMETRY_DATA} group:
      *
-     * {@preformat text
+     * <pre class="text">
      *     group: Geometry_data {
      *         // group attributes:
      *         string Image_projection      = "EQA (sinusoidal equal area) projection from 0-deg longitude"
@@ -377,8 +370,7 @@ public final class GCOM_C extends Convention {
      *         float  Lower_left_latitude   =  70.0
      *         float  Lower_right_longitude =  87.714134
      *         float  Lower_right_latitude  =  70.0
-     *     }
-     * }
+     *     }</pre>
      *
      * @param  node  the group of variables from which to read attributes.
      * @return the map projection definition as a modifiable map, or {@code null} if none.
@@ -573,10 +565,10 @@ public final class GCOM_C extends Convention {
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol cannot be parsed.
+     * @throws MeasurementParseException if the unit symbol cannot be parsed.
      */
     @Override
-    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+    public Unit<?> getUnitFallback(final Variable data) throws MeasurementParseException {
         if ("Image_data".equals(data.getGroupName())) {
             final String symbol = data.getAttributeAsString("Unit");
             if (symbol != null && !symbol.equalsIgnoreCase("NA")) {

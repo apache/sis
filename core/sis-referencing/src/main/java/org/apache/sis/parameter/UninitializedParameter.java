@@ -32,7 +32,6 @@ import org.apache.sis.internal.util.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 final class UninitializedParameter implements GeneralParameterValue, Serializable {     // Intentionally non-Cloneable.
     /**
@@ -43,7 +42,7 @@ final class UninitializedParameter implements GeneralParameterValue, Serializabl
     /**
      * The descriptor of the parameter to initialize.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GeneralParameterDescriptor descriptor;
 
     /**

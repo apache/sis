@@ -17,7 +17,6 @@
 package org.apache.sis.portrayal;
 
 import java.util.Optional;
-import java.util.logging.Logger;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
@@ -36,7 +35,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -62,7 +60,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
@@ -165,12 +162,12 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * but not necessarily immediately after (it is okay to defer until first needed).
      * The default implementation registers the following listeners:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
      *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_CRS_PROPERTY, this);
      *     source.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
      *     target.addPropertyChangeListener(PlanarCanvas.OBJECTIVE_TO_DISPLAY_PROPERTY, this);
-     * }
+     *     }
      *
      * This method is idempotent (it is okay to invoke it twice).
      *
@@ -514,7 +511,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * @param  e  the exception that occurred.
      */
     private static void canNotCompute(final String caller, final Exception e) {
-        Logging.recoverableException(Logger.getLogger(Modules.PORTRAYAL), CanvasFollower.class, caller, e);
+        Logging.recoverableException(Observable.LOGGER, CanvasFollower.class, caller, e);
     }
 
     /**

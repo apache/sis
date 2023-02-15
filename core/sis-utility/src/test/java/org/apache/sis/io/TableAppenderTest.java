@@ -29,13 +29,12 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn({
   org.apache.sis.util.CharSequencesTest.class,
   org.apache.sis.internal.util.X364Test.class,
   LineAppenderTest.class})
-public final strictfp class TableAppenderTest extends AppenderTestCase {
+public final class TableAppenderTest extends AppenderTestCase {
     /**
      * The table appender to test. May not be same instance than {@link #appender},
      * because the super-class will wraps it in a {@link SingleCharAppendable} in

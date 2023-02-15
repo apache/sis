@@ -37,7 +37,6 @@ import org.opengis.feature.InvalidPropertyValueException;
  * @see Features#validate(Feature)
  *
  * @since 0.7
- * @module
  */
 final class InvalidFeatureException extends InvalidPropertyValueException implements LocalizedException {
     /**
@@ -48,6 +47,7 @@ final class InvalidFeatureException extends InvalidPropertyValueException implem
     /**
      * A description of the illegal feature.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final InternationalString message;
 
     /**

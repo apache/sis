@@ -16,10 +16,8 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Random;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
-import org.apache.sis.measure.Longitude;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
@@ -31,15 +29,14 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * Tests the {@link DefaultEllipsoid} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
- * @module
  */
 @DependsOn({
     org.apache.sis.internal.referencing.FormulasTest.class,
     org.apache.sis.internal.jaxb.referencing.SecondDefiningParameterTest.class
 })
-public final strictfp class DefaultEllipsoidTest extends TestCase {
+public final class DefaultEllipsoidTest extends TestCase {
     /**
      * An XML file in this package containing an ellipsoid definition.
      */
@@ -49,24 +46,6 @@ public final strictfp class DefaultEllipsoidTest extends TestCase {
      * An XML file in this package containing a sphere definition.
      */
     private static final String SPHERE_FILE = "Sphere.xml";
-
-    /**
-     * Half of a minute of angle, in degrees.
-     */
-    private static final double HM = 0.5 / 60;
-
-    /**
-     * Tolerances in metres for the tests using on spheres.
-     * Those tests are usually more accurate than the tests on ellipsoid.
-     */
-    private static final double SPHERICAL_TOLERANCE = 0.001;
-
-    /**
-     * Returns a random longitude (in degrees) using the given random number generator.
-     */
-    private static double nextLongitude(final Random random) {
-        return (Longitude.MAX_VALUE - Longitude.MIN_VALUE) * random.nextDouble() + Longitude.MIN_VALUE;
-    }
 
     /**
      * Tests {@link DefaultEllipsoid#getEccentricity()}.

@@ -18,7 +18,6 @@ package org.apache.sis.internal.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.util.ScopedName;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -52,7 +51,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @see org.apache.sis.filter.ConvertFunction
  *
  * @since 1.1
- * @module
  */
 final class GeometryConverter<R,G> extends Node implements Optimization.OnExpression<R, GeometryWrapper<G>> {
     /**
@@ -75,7 +73,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      *
      * @see #getParameters()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, ?> expression;
 
     /**
@@ -114,7 +112,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Collections.singletonList(expression);
+        return List.of(expression);
     }
 
     /**

@@ -29,6 +29,7 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -71,8 +72,6 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.portrayal.PlanarCanvas;       // For javadoc.
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * The {@code RenderedImage} to draw in a {@link PlanarCanvas} together with transforms from pixel coordinates
@@ -104,11 +103,15 @@ import static java.util.logging.Logger.getLogger;
  * We wait to see if this class works well in the general case before doing special cases.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public class RenderingData implements Cloneable {
+    /**
+     * The logger for portrayal.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Modules.PORTRAYAL);
+
     /**
      * The {@value} value, for identifying code that assume two-dimensional objects.
      *
@@ -133,6 +136,7 @@ public class RenderingData implements Cloneable {
 
     /**
      * The pyramid level of {@linkplain #data} loaded by the {@linkplain #coverageLoader}.
+     * Value 0 is finest resolution.
      */
     private int currentPyramidLevel;
 
@@ -390,7 +394,7 @@ public class RenderingData implements Cloneable {
             domain = r.getImageGeometry(BIDIMENSIONAL);
             xyDims = r.getXYDimensions();
         }
-        setImageSpace(domain, ranges, xyDims);
+        setImageSpace(domain, ranges, xyDims);      // Implies `dataGeometry = domain`.
         currentSlice = sliceExtent;
         data = image;
         /*
@@ -417,12 +421,32 @@ public class RenderingData implements Cloneable {
                     toOld = toNew.inverse();
                 }
             }
-            final MathTransform forward = concatenate(PixelInCell.CELL_CORNER, dataGeometry, old, toOld);
-            final MathTransform inverse = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
-            cornerToObjective = MathTransforms.concatenate(forward, cornerToObjective);
-            objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, inverse);
+            /*
+             * `inverse` is the transform from new grid coordinates to old grid coordinates.
+             * `forward` is the converse, with the addition of half-pixel translation terms.
+             */
+            final MathTransform inverse = concatenate(PixelInCell.CELL_CORNER, dataGeometry, old, toOld);
+            final MathTransform forward = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
+            cornerToObjective = MathTransforms.concatenate(inverse, cornerToObjective);
+            objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, forward);
         }
         return true;
+        /*
+         * Note: the `forward` transform above is of particular interest and may be returned in a future version.
+         * It is the transform from new pixel coordinates to old pixel coordinates of the data before resampling
+         * (i.e. ignoring changes caused by user's zoom or pan gestures on the map). Typical values are:
+         *
+         * • An identity transform, meaning that the data changed but the new data uses the same pixel coordinates
+         *   than the previous data. For example the user may have selected a new slice in a three-dimensional cube.
+         * • An affine transform represented by a diagonal matrix, i.e. with only scale factors and no translation.
+         *   It happens when there is a change of resolution between the previous data and the new one, for example
+         *   because a zoom change caused a change of pyramid level in `MultiResolutionCoverageLoader`.
+         *   In such case the scale factors are typically 0.5 (after zoom-in) or 2 (after zoom out).
+         *
+         * That transform has already been applied to `RenderingData` internal state,
+         * but maybe some caller will need to apply that change to its own data.
+         * We wait to see if such need happens.
+         */
     }
 
     /**
@@ -829,7 +853,7 @@ public class RenderingData implements Cloneable {
      * This method pretends that the warning come from {@link PlanarCanvas} class since it is the public API.
      */
     private static void recoverableException(final Exception e) {
-        Logging.recoverableException(getLogger(Modules.PORTRAYAL), PlanarCanvas.class, "render", e);
+        Logging.recoverableException(LOGGER, PlanarCanvas.class, "render", e);
     }
 
     /**

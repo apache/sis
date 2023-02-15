@@ -57,7 +57,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
- * @module
  */
 public final class TestRunner extends BlockJUnit4ClassRunner {
     /**
@@ -232,8 +231,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     private FrameworkMethod[] getFilteredChildren() {
         if (filteredChildren == null) {
-            final List<FrameworkMethod> children = super.getChildren();
-            filteredChildren = children.toArray(new FrameworkMethod[children.size()]);
+            filteredChildren = super.getChildren().toArray(FrameworkMethod[]::new);
             sortDependantTestsLast(filteredChildren);
         }
         return filteredChildren;

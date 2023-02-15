@@ -43,7 +43,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see DefaultFeatureType
  *
  * @since 0.5
- * @module
  */
 final class DenseFeature extends AbstractFeature implements Cloneable {
     /**
@@ -56,6 +55,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * {@link DefaultFeatureType#indices} map (potentially shared by many feature instances) and shall not be
      * modified.
      */
+    @SuppressWarnings("serial")                     // Can be various serializable implementations.
     private final Map<String, Integer> indices;
 
     /**
@@ -66,6 +66,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
      * property is requested. The intent is to reduce the amount of allocated objects as much as possible,
      * because typical SIS applications may create a very large amount of features.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private Object[] properties;
 
     /**

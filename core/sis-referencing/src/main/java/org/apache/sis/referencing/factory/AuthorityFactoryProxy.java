@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.*;
@@ -46,21 +45,20 @@ import org.apache.sis.internal.util.Strings;
  * It may also be used as a workaround for authority factories that do not implement the {@code createObject(String)}
  * method.</p>
  *
- * <div class="note"><b>Example:</b>
- * the following code creates a proxy which will delegates its work to the
+ * <h2>Example</h2>
+ * The following code creates a proxy which will delegates its work to the
  * {@link GeodeticAuthorityFactory#createGeographicCRS createGeographicCRS} method.
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     String code = ...;
  *     AuthorityFactory factory = ...;
  *     AuthorityFactoryProxy proxy = AuthorityFactoryProxy.getInstance(GeographicCRS.class);
  *     GeographicCRS crs = proxy.create(factory, code); // Invokes factory.createGeographicCRS(code);
- * }</div>
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 abstract class AuthorityFactoryProxy<T> {
     /**
@@ -568,23 +566,19 @@ abstract class AuthorityFactoryProxy<T> {
      *
      * <p>Keys must be in lower case.</p>
      */
-    private static final Map<String, AuthorityFactoryProxy<?>> BY_URN_TYPE;
-    static {
-        final Map<String, AuthorityFactoryProxy<?>> map = new HashMap<>(16);
-        map.put("crs",                  CRS);
-        map.put("crs-compound",         CRS);
-        map.put("datum",                DATUM);
-        map.put("ellipsoid",            ELLIPSOID);
-        map.put("meridian",             PRIME_MERIDIAN);
-        map.put("cs",                   COORDINATE_SYSTEM);
-        map.put("axis",                 AXIS);
-        map.put("coordinateoperation",  OPERATION);
-        map.put("method",               METHOD);
-        map.put("parameter",            PARAMETER);
-        map.put("referencesystem",      CRS);
-        map.put("uom",                  UNIT);
-        BY_URN_TYPE = map;
-    }
+    private static final Map<String, AuthorityFactoryProxy<?>> BY_URN_TYPE = Map.ofEntries(
+            Map.entry("crs",                  CRS),
+            Map.entry("crs-compound",         CRS),
+            Map.entry("datum",                DATUM),
+            Map.entry("ellipsoid",            ELLIPSOID),
+            Map.entry("meridian",             PRIME_MERIDIAN),
+            Map.entry("cs",                   COORDINATE_SYSTEM),
+            Map.entry("axis",                 AXIS),
+            Map.entry("coordinateoperation",  OPERATION),
+            Map.entry("method",               METHOD),
+            Map.entry("parameter",            PARAMETER),
+            Map.entry("referencesystem",      CRS),
+            Map.entry("uom",                  UNIT));
 
     /**
      * Returns the instance for the given type. The {@code type} argument can be a GeoAPI interface

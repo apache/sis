@@ -142,7 +142,7 @@ import org.apache.sis.measure.Units;
  * NTv2 should be preferred.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param <C>  dimension of the coordinate unit (usually {@link javax.measure.quantity.Angle}).
  * @param <T>  dimension of the translation unit (usually {@link javax.measure.quantity.Angle}
@@ -151,7 +151,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.operation.transform.DatumShiftTransform
  *
  * @since 0.7
- * @module
  */
 public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T>> implements Serializable {
     /**
@@ -183,6 +182,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #getCoordinateUnit()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Unit<C> coordinateUnit;
 
     /**
@@ -191,6 +191,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #getCoordinateToGrid()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final LinearTransform coordinateToGrid;
 
     /**
@@ -198,6 +199,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * @see #getTranslationUnit()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Unit<T> translationUnit;
 
     /**
@@ -394,13 +396,12 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *
      * The {@code coordinateToGrid} transform for the above formulas can be represented by the following matrix:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                      ┐
      *   │ 1/Δx      0   -x₀/Δx │
      *   │    0   1/Δy   -y₀/Δy │
      *   │    0      0        1 │
-     *   └                      ┘
-     * }
+     *   └                      ┘</pre>
      *
      * @return conversion from the "real world" coordinates to grid indices including fractional parts.
      */
@@ -494,12 +495,11 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * one computed by {@link #derivativeInCell(double, double)}, opportunistically computed here for performance reasons.
      * The matrix layout is as below, where <var>t₀</var> and <var>t₁</var> are the coordinates after translation.
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                   ┐         ┌                             ┐
      *   │  ∂t₀/∂x   ∂t₀/∂y  │    =    │  vector[n+0]   vector[n+1]  │
      *   │  ∂t₁/∂x   ∂t₁/∂y  │         │  vector[n+2]   vector[n+3]  │
-     *   └                   ┘         └                             ┘
-     * }
+     *   └                   ┘         └                             ┘</pre>
      *
      * <h4>Default implementation</h4>
      * The default implementation performs the following steps for each dimension <var>dim</var>,
@@ -553,8 +553,8 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
             final double r01 = getCellValue(dim, ix+1, iy  );       // Naming convention: ryx (row index first, like matrix).
             final double r10 = getCellValue(dim, ix,   iy+1);
             final double r11 = getCellValue(dim, ix+1, iy+1);
-            final double r0x = r00 + gridX * (dx = r01 - r00);      // TODO: use Math.fma on JDK9.
-            final double r1x = r10 + gridX * (dy = r11 - r10);      // Not really "dy" measurement yet, will become dy later.
+            final double r0x = Math.fma(gridX, dx = r01 - r00, r00);
+            final double r1x = Math.fma(gridX, dy = r11 - r10, r10);    // Not really "dy" measurement yet, will become dy later.
             vector[dim] = gridY * (r1x - r0x) + r0x;
             if (derivative) {
                 /*
@@ -592,12 +592,11 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * {@code tₐ(x,y)} an abbreviation for {@code interpolateInCell(gridX, gridY, …)[a]} and for <var>x</var>
      * and <var>y</var> integers, the derivative is:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌                   ┐         ┌                                                        ┐
      *   │  ∂t₀/∂x   ∂t₀/∂y  │    =    │  t₀(x+1,y) - t₀(x,y) + 1      t₀(x,y+1) - t₀(x,y)      │
      *   │  ∂t₁/∂x   ∂t₁/∂y  │         │  t₁(x+1,y) - t₁(x,y)          t₁(x,y+1) - t₁(x,y) + 1  │
-     *   └                   ┘         └                                                        ┘
-     * }
+     *   └                   ┘         └                                                        ┘</pre>
      *
      * <h4>Extrapolations</h4>
      * Derivatives must be consistent with {@link #interpolateInCell(double, double, double[])} even when the
@@ -703,12 +702,12 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @return a translation value close to the average for the given dimension.
      */
     public double getCellMean(final int dim) {
-        final DoubleDouble sum = new DoubleDouble();
+        DoubleDouble sum = DoubleDouble.ZERO;
         final int nx = gridSize[0];
         final int ny = gridSize[1];
         for (int gridY=0; gridY<ny; gridY++) {
             for (int gridX=0; gridX<nx; gridX++) {
-                sum.addKahan(getCellValue(dim, gridX, gridY));
+                sum = sum.add(getCellValue(dim, gridX, gridY), false);
             }
         }
         return sum.doubleValue() / (nx * ny);
@@ -786,19 +785,19 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * So the period to add or remove is the number of cells that the grid would have if it was spanning 360° of
      * longitude.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * if longitude values are mapped to {@code gridX} coordinates (in dimension 0), and if a shift of 360° in
+     * <h4>Example</h4>
+     * If longitude values are mapped to {@code gridX} coordinates (in dimension 0), and if a shift of 360° in
      * longitude values is equivalent to a shift of {@code periodX} cells in the grid, then this method can be
      * implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private final double periodX = ...;      // Number of grid cells in 360° of longitude.
      *
-     *     &#64;Override
+     *     @Override
      *     protected void replaceOutsideGridCoordinates(double[] gridCoordinates) {
      *         gridCoordinates[0] = Math.IEEEremainder(gridCoordinates[0], periodX);
      *     }
-     * }</div>
+     * }
      *
      * This method receives all grid coordinates in the {@code gridCoordinates} argument and can modify any
      * of them, possibly many at once. The reason is because a shift of 360° of longitude (for example) may
@@ -860,9 +859,9 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * The given {@code parameters} must have the descriptor returned by {@link #getParameterDescriptors()}.
      * The matrices, tensors or file names are stored in the given {@code parameters} instance.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * this method is invoked by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
-     * and other transforms for initializing the values of their parameter group.</div>
+     * <h4>Implementation note</h4>
+     * This method is invoked by {@link org.apache.sis.referencing.operation.transform.InterpolatedTransform}
+     * and other transforms for initializing the values of their parameter group.
      *
      * @param  parameters  the parameter group where to set the values.
      *

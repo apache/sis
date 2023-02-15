@@ -18,14 +18,12 @@ package org.apache.sis.referencing.factory.sql.epsg;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.function.UnaryOperator;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -49,7 +47,6 @@ import org.apache.sis.test.sql.TestDatabase;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final class DataScriptFormatter extends ScriptRunner {
     /**
@@ -77,7 +74,7 @@ public final class DataScriptFormatter extends ScriptRunner {
              Connection c = db.source.getConnection())
         {
             final DataScriptFormatter f = new DataScriptFormatter(c);
-            f.run(Paths.get(arguments[0]), Paths.get(arguments[1]));
+            f.run(Path.of(arguments[0]), Path.of(arguments[1]));
         }
     }
 
@@ -157,7 +154,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         m.put("epsg_primemeridian",                lastColumn );
         m.put("epsg_unitofmeasure",                lastColumn );
         booleanColumnIndicesForTables = m;
-        doubleColumnIndicesForTables = Collections.singletonMap("epsg_coordoperationparamvalue", new int[] {2});
+        doubleColumnIndicesForTables = Map.of("epsg_coordoperationparamvalue", new int[] {2});
     }
 
     /**
@@ -447,7 +444,6 @@ public final class DataScriptFormatter extends ScriptRunner {
     /**
      * Removes the useless "E0" exponents after floating point numbers.
      */
-    @SuppressWarnings("null")
     private String removeUselessExponents(String line) {
         StringBuilder cleaned = null;
         final Matcher matcher = uselessExponentPattern.matcher(line);

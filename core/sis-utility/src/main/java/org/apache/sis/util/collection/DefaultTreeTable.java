@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
@@ -30,7 +29,6 @@ import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.internal.util.Acyclic;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
@@ -42,7 +40,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class CityLocation {
  *         public static final TableColumn<String> CITY_NAME  = new TableColumn<>(String.class, "City name");
  *         public static final TableColumn<Float>  LATITUDE   = new TableColumn<>(Float.class,  "Latitude");
@@ -57,7 +55,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *             return table;
  *         }
  *     }
- * }
+ *     }
  *
  * The {@code setRoot(…)} method accepts arbitrary {@link TreeTable.Node} implementations.
  * However, it is likely to be safer and more memory efficient when used together with the
@@ -70,7 +68,6 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  * @see TableColumn
  *
  * @since 0.3
- * @module
  */
 public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     /**
@@ -84,6 +81,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @see #getRoot()
      * @see #setRoot(TreeTable.Node)
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private TreeTable.Node root;
 
     /**
@@ -99,13 +97,14 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * implementation for storing values in a single flat array. After creation, this
      * map shall be read-only since many {@code Node} instances may share it.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * This field and the {@link #columns} field could be computed from each other.
      * But we serialize this field anyway because children nodes will typically hold
-     * a reference to that map, and we want to preserve the references tree.</div>
+     * a reference to that map, and we want to preserve the references tree.
      *
      * @see DefaultTreeTable.Node#columnIndices
      */
+    @SuppressWarnings("serial")
     final Map<TableColumn<?>,Integer> columnIndices;
 
     /**
@@ -154,7 +153,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
     static Map<TableColumn<?>,Integer> createColumnIndices(final TableColumn<?>[] columns) {
         Map<TableColumn<?>,Integer> map;
         switch (columns.length) {
-            case 0:  map = Collections.emptyMap(); break;
+            case 0:  map = Map.of(); break;
             case 1:  map = null; break; // Will be created inside the loop (common case).
             default: map = new LinkedHashMap<>(hashMapCapacity(columns.length)); break;
         }
@@ -163,7 +162,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             ArgumentChecks.ensureNonNullElement("columns", i, column);
             final Integer pos = i;
             if (map == null) {
-                map = Collections.singletonMap(column, pos);
+                map = Map.of(column, pos);
             } else if (map.put(column, pos) != null) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedIdentifier_1, column));
             }
@@ -180,7 +179,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *         {@link UnmodifiableArrayList#wrap(Object[])}.
      */
     static TableColumn<?>[] getColumns(final Map<TableColumn<?>,Integer> columnIndices) {
-        return columnIndices.keySet().toArray(new TableColumn<?>[columnIndices.size()]);
+        return columnIndices.keySet().toArray(TableColumn<?>[]::new);
     }
 
     /**
@@ -331,7 +330,6 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see DefaultTreeTable
      * @see TableColumn
@@ -392,12 +390,14 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @see #getParent()
          * @see #setParent(TreeTable.Node)
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private TreeTable.Node parent;
 
         /**
          * The list of children, or {@code null} if none.
          * Created only when first needed.
          */
+        @SuppressWarnings("serial")
         private List<TreeTable.Node> children;
 
         /**
@@ -409,11 +409,13 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          *
          * @see DefaultTreeTable#columnIndices
          */
+        @SuppressWarnings("serial")
         final Map<TableColumn<?>,Integer> columnIndices;
 
         /**
          * The values, or {@code null} if not yet created.
          */
+        @SuppressWarnings("serial")
         private Object[] values;
 
         /**
@@ -433,7 +435,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
                 columnIndices = ((DefaultTreeTable) table).columnIndices;
             } else {
                 final List<TableColumn<?>> columns = table.getColumns();
-                columnIndices = createColumnIndices(columns.toArray(new TableColumn<?>[columns.size()]));
+                columnIndices = createColumnIndices(columns.toArray(TableColumn<?>[]::new));
             }
         }
 
@@ -535,8 +537,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * automatically updates the {@linkplain #getParent() parent} reference of any {@code Node}
          * instance added to or removed from the list.
          *
-         * <p>For leaf nodes, this method returns an unmodifiable
-         * {@linkplain Collections#emptyList() empty list}.</p>
+         * <p>For leaf nodes, this method returns an unmodifiable {@linkplain List#of() empty list}.</p>
          */
         /* NOTE: If a future version removes the "final" keyword, then search for calls to
          * this method where the return value is casted to TreeNodeList. Any unconditional
@@ -547,7 +548,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         public final List<TreeTable.Node> getChildren() {
             if (children == null) {
                 if (isLeaf()) {
-                    children = Collections.emptyList();
+                    children = List.of();
                 } else {
                     children = new Children(this);
                 }
@@ -683,18 +684,18 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * parent}. This method can be used for determining if two branches of a same tree or of two
          * different trees are identical.
          *
-         * <div class="note"><b>Implementation note:</b> This method ignores the parent because:
+         * <h4>Implementation note</h4>
+         * This method ignores the parent because:
          * <ul>
          *   <li>When comparing the children recursively, comparing the parents would cause infinite recursivity.</li>
          *   <li>For consistency with the {@link #clone()} method, which cannot clone the parent.</li>
          *   <li>For making possible to compare branches instead of only whole trees.</li>
-         * </ul></div>
+         * </ul>
          *
          * @param  other  the object to compare with this node.
          * @return {@code true} if the two objects are equal, ignoring the parent node.
          */
         @Override
-        @SuppressWarnings("null")
         public boolean equals(final Object other) {
             if (other == this) {
                 return true;
@@ -773,8 +774,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             if (values != null) {
                 for (final Object value : values) {
                     if (value instanceof CharSequence) {
-                        final String text = trimWhitespaces(value.toString());
-                        if (text != null && !text.isEmpty()) {
+                        String text = value.toString();
+                        if (text != null && !(text = text.strip()).isEmpty()) {
                             return text;
                         }
                     }

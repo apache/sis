@@ -29,7 +29,6 @@ import org.apache.sis.storage.DataStoreProvider;
  * @see FormattedOutputCommand
  *
  * @since 0.8
- * @module
  */
 enum OutputFormat {
     /**

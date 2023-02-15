@@ -16,10 +16,25 @@
  */
 package org.apache.sis.internal.xml;
 
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.YearMonth;
+import java.time.Year;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.GregorianCalendar;
+import java.util.function.ObjIntConsumer;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -34,9 +49,8 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
  * Utilities methods related to XML.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.3
  * @since   0.3
- * @module
  */
 public final class XmlUtilities extends SystemListener {
     /**
@@ -132,8 +146,77 @@ public final class XmlUtilities extends SystemListener {
     }
 
     /**
+     * Temporal fields that may be copied into {@link XMLGregorianCalendar}.
+     */
+    private static final ChronoField[] FIELDS = {
+        /*[0]*/ ChronoField.YEAR,
+        /*[1]*/ ChronoField.MONTH_OF_YEAR,
+        /*[2]*/ ChronoField.DAY_OF_MONTH,
+        /*[3]*/ ChronoField.HOUR_OF_DAY,
+        /*[4]*/ ChronoField.MINUTE_OF_HOUR,
+        /*[5]*/ ChronoField.SECOND_OF_MINUTE,
+        /*[6]*/ ChronoField.MILLI_OF_SECOND,
+        /*[7]*/ ChronoField.OFFSET_SECONDS
+    };
+
+    /**
+     * Setter methods to invoke for setting the value of a temporal field on a {@link XMLGregorianCalendar}.
+     * Indices in this array must correspond to indices in the {@link #FIELDS} array.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})        // Generic array creation.
+    private static final ObjIntConsumer<XMLGregorianCalendar>[] SETTERS = new ObjIntConsumer[FIELDS.length];
+    static {
+        SETTERS[0] = XMLGregorianCalendar::setYear;
+        SETTERS[1] = XMLGregorianCalendar::setMonth;
+        SETTERS[2] = XMLGregorianCalendar::setDay;
+        SETTERS[3] = XMLGregorianCalendar::setHour;
+        SETTERS[4] = XMLGregorianCalendar::setMinute;
+        SETTERS[5] = XMLGregorianCalendar::setSecond;
+        SETTERS[6] = XMLGregorianCalendar::setMillisecond;
+        SETTERS[7] = (calendar, seconds) -> calendar.setTimezone(seconds / 60);     // Convert seconds to minutes.
+    }
+
+    /**
+     * Converts the given temporal object to a XML Gregorian calendar.
+     * The returned calendar may have undefined fields (including undefined time zone)
+     * if the corresponding information was not provided in the given temporal object.
+     *
+     * <p>If the returned date has a time, then it usually has millisecond accuracy.
+     * Caller may want to clear the millisecond field if it is equal to zero.</p>
+     *
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  date     the date to convert to a XML calendar, or {@code null}.
+     * @return the XML calendar, or {@code null} if {@code date} was null.
+     * @throws DatatypeConfigurationException if the factory cannot be created.
+     */
+    public static XMLGregorianCalendar toXML(final Context context, final Temporal date) throws DatatypeConfigurationException {
+        if (date == null) {
+            return null;
+        }
+        final XMLGregorianCalendar xml = getDatatypeFactory().newXMLGregorianCalendar();
+        if (date instanceof Instant) {
+            final TimeZone zone = (context != null) ? context.getTimeZone() : null;
+            final ZoneId zid = (zone != null) ? zone.toZoneId() : ZoneId.systemDefault();
+            final ZonedDateTime t = ZonedDateTime.ofInstant((Instant) date, zid);
+            for (int i=0; i<FIELDS.length; i++) {
+                SETTERS[i].accept(xml, t.get(FIELDS[i]));
+            }
+        } else {
+            for (int i=0; i<FIELDS.length; i++) {
+                final ChronoField field = FIELDS[i];
+                if (date.isSupported(field)) {
+                    SETTERS[i].accept(xml, date.get(field));
+                }
+            }
+        }
+        return xml;
+    }
+
+    /**
      * Converts the given date to a XML Gregorian calendar using the locale and timezone
      * from the current {@linkplain Context marshalling context}.
+     * The returned date has millisecond accuracy.
+     * Caller may want to clear the millisecond field if it is equal to zero.
      *
      * @param  context  the current (un)marshalling context, or {@code null} if none.
      * @param  date     the date to convert to a XML calendar, or {@code null}.
@@ -176,6 +259,61 @@ public final class XmlUtilities extends SystemListener {
     }
 
     /**
+     * Replaces undefined value by zero. Used for optional time fields.
+     */
+    private static int zeroIfUndef(final int value) {
+        return (value != FIELD_UNDEFINED) ? value : 0;
+    }
+
+    /**
+     * Converts the given XML Gregorian calendar to a temporal object.
+     * The temporal object may be {@link LocalDate}, {@link LocalTime},
+     * {@link LocalDateTime}, {@link OffsetDateTime}, {@link Year} or {@link YearMonth}
+     * depending on which fields are defined in the given calendar.
+     *
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  xml      the XML calendar to convert to a temporal object, or {@code null}.
+     * @return the temporal object, or {@code null} if {@code xml} is null or has too many undefined fields.
+     */
+    public static Temporal toTemporal(final Context context, final XMLGregorianCalendar xml) {
+        if (xml == null) {
+            return null;
+        }
+        final int year  = xml.getYear();
+        final int month = xml.getMonth();
+        final int day   = xml.getDay();
+        final int hour  = xml.getHour();
+        final int min   = zeroIfUndef(xml.getMinute());
+        final int sec   = zeroIfUndef(xml.getSecond());
+        final int nano;
+        final boolean hasYear =            (year  != FIELD_UNDEFINED);
+        final boolean hasYM   = hasYear && (month != FIELD_UNDEFINED);
+        final boolean hasDate = hasYM   && (day   != FIELD_UNDEFINED);
+        if (hour == FIELD_UNDEFINED) {
+            return hasDate ? LocalDate.of(year, month, day) :
+                   hasYM   ? YearMonth.of(year, month) :
+                   hasYear ? Year     .of(year) : null;
+        } else {
+            final BigDecimal f = xml.getFractionalSecond();
+            nano = (f != null) ? f.movePointRight(9).intValue() : 0;
+        }
+        final int offset = xml.getTimezone();
+        if (offset == FIELD_UNDEFINED) {
+            if (hasDate) {
+                return LocalDateTime.of(year, month, day, hour, min, sec, nano);
+            } else {
+                return LocalTime.of(hour, min, sec, nano);
+            }
+        }
+        final ZoneOffset zone = ZoneOffset.ofTotalSeconds(offset * 60);
+        if (hasDate) {
+            return OffsetDateTime.of(year, month, day, hour, min, sec, nano, zone);
+        } else {
+            return OffsetTime.of(hour, min, sec, nano, zone);
+        }
+    }
+
+    /**
      * Converts the given XML Gregorian calendar to a date.
      *
      * @param  context  the current (un)marshalling context, or {@code null} if none.
@@ -184,7 +322,7 @@ public final class XmlUtilities extends SystemListener {
      */
     public static Date toDate(final Context context, final XMLGregorianCalendar xml) {
         if (xml != null) {
-            final GregorianCalendar calendar =  xml.toGregorianCalendar();
+            final GregorianCalendar calendar = xml.toGregorianCalendar();
             if (context != null && xml.getTimezone() == FIELD_UNDEFINED) {
                 final TimeZone timezone = context.getTimeZone();
                 if (timezone != null) {

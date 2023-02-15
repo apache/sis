@@ -39,7 +39,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  * This wrapper formats the locale like below:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <lan:locale>
  *     <lan:PT_Locale id="locale-eng">
  *       <lan:language>
@@ -67,7 +67,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @see LocaleAdapter
  *
  * @since 0.3
- * @module
  */
 public final class PT_Locale {
     /**

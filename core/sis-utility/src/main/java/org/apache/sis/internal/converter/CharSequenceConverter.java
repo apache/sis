@@ -39,7 +39,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
@@ -50,6 +49,7 @@ final class CharSequenceConverter<T> extends SystemConverter<CharSequence,T> {
     /**
      * The converter to apply after this one.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ObjectConverter<? super String, ? extends T> next;
 
     /**

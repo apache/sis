@@ -82,7 +82,6 @@ import org.apache.sis.util.Debug;
  * @see org.opengis.metadata.content.SampleDimension
  *
  * @since 1.0
- * @module
  */
 public class SampleDimension implements Serializable {
     /**
@@ -97,6 +96,7 @@ public class SampleDimension implements Serializable {
      *
      * @see #getName()
      */
+    @SuppressWarnings("serial")       // Most SIS implementations are serializable.
     private final GenericName name;
 
     /**
@@ -118,6 +118,7 @@ public class SampleDimension implements Serializable {
      *
      * @see #getTransferFunction()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final MathTransform1D transferFunction;
 
     /**
@@ -174,7 +175,7 @@ public class SampleDimension implements Serializable {
         if (categories.isEmpty()) {
             list = CategoryList.EMPTY;
         } else {
-            list = CategoryList.create(categories.toArray(new Category[categories.size()]), background);
+            list = CategoryList.create(categories.toArray(Category[]::new), background);
         }
         this.name       = name;
         this.background = background;
@@ -546,7 +547,6 @@ public class SampleDimension implements Serializable {
      * @author  Alexis Manin (Geomatys)
      * @version 1.2
      * @since   1.0
-     * @module
      */
     public static class Builder {
         /**
@@ -1067,7 +1067,7 @@ public class SampleDimension implements Serializable {
             final double scale     = Δvalue / Δsample;
             final TransferFunction transferFunction = new TransferFunction();
             transferFunction.setScale(scale);
-            transferFunction.setOffset(minValue - scale * minSample);               // TODO: use Math.fma with JDK9.
+            transferFunction.setOffset(Math.fma(-scale, minSample, minValue));
             return addQuantitative(name, samples, transferFunction.getTransform(),
                     (converted instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) converted).unit() : null);
         }

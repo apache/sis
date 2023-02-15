@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.esri;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.logging.Logger;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.GridCoverageResource;
@@ -39,9 +40,8 @@ import org.apache.sis.storage.DataStore;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 @StoreMetadata(formatName    = RawRasterStoreProvider.NAME,
                fileSuffixes  = {"bil", "bip", "bsq"},
@@ -57,6 +57,13 @@ public final class RawRasterStoreProvider extends PRJDataStore.Provider {
      * The filename extension of {@code "*.hdr"} files.
      */
     static final String HDR = "hdr";
+
+    /**
+     * The logger used by RAW stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.esri");
 
     /**
      * Creates a new provider.
@@ -111,5 +118,13 @@ public final class RawRasterStoreProvider extends PRJDataStore.Provider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new RawRasterStore(this, connector);
+    }
+
+    /**
+     * {@return the logger used by RAW stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

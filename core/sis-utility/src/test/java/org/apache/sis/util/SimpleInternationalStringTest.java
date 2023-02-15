@@ -31,9 +31,8 @@ import static org.apache.sis.util.DefaultInternationalStringTest.MESSAGE;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class SimpleInternationalStringTest extends TestCase {
+public final class SimpleInternationalStringTest extends TestCase {
     /**
      * Tests the {@link SimpleInternationalString} implementation.
      */

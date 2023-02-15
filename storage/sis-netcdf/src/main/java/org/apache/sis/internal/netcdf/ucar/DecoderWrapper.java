@@ -18,10 +18,10 @@ package org.apache.sis.internal.netcdf.ucar;
 
 import java.io.File;
 import java.util.Date;
+import java.util.Set;
 import java.util.List;
 import java.util.Formatter;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
@@ -61,17 +61,13 @@ import org.apache.sis.storage.event.StoreListeners;
  * Provides netCDF decoding services based on the netCDF library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * The netCDF file to read.
      * This file is set at construction time.
-     *
-     * <p>This {@code DecoderWrapper} class does <strong>not</strong> close this file.
-     * Closing this file after usage is the user responsibility.</p>
      */
     private final NetcdfFile file;
 
@@ -94,7 +90,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
 
     /**
      * The discrete sampling features or grids found by UCAR library, or {@code null} if none.
-     * This reference is kept for making possible to close it in {@link #close()}.
+     * This reference is kept for making possible to close it in {@link #close(DataStore)}.
      *
      * @see #getDiscreteSampling(Object)
      */
@@ -149,7 +145,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
          * enhancement shall NOT be enabled because it causes the use of integer types twice bigger than needed
          * (e.g. `int` instead of `short`).
          */
-        file = NetcdfDatasets.openDataset(url, Collections.singleton(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
+        file = NetcdfDatasets.openDataset(url, Set.of(NetcdfDataset.Enhance.CoordSystems), -1, this, null);
         groups = new Group[1];
         initialize();
     }
@@ -453,7 +449,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @throws DataStoreException if the library of geometric objects is not available.
      */
     @Override
-    @SuppressWarnings("null")
     public DiscreteSampling[] getDiscreteSampling(final DataStore lock) throws IOException, DataStoreException {
         final FeatureDataset features = getFeatureDataSet();
         if (features instanceof FeatureDatasetPoint) {
@@ -493,7 +488,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     @SuppressWarnings({"ReturnOfCollectionOrArrayField"})
     public Grid[] getGridCandidates() throws IOException {
         if (geometries == null) {
-            List<CoordinateSystem> systems = Collections.emptyList();
+            List<CoordinateSystem> systems = List.of();
             if (file instanceof NetcdfDataset) {
                 /*
                  * We take all coordinate systems as associated to a grid. As an alternative,
@@ -670,15 +665,18 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     /**
      * Closes the netCDF file.
      *
+     * @param  lock  the lock to use in {@code synchronized(lock)} statements.
      * @throws IOException if an error occurred while closing the file.
      */
     @Override
-    public void close() throws IOException {
-        if (features != null) {
-            features.close();
-            features = null;
+    public void close(final DataStore lock) throws IOException {
+        synchronized (lock) {
+            if (features != null) {
+                features.close();
+                features = null;
+            }
+            file.close();
         }
-        file.close();
     }
 
     /**

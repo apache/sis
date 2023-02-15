@@ -33,6 +33,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.geometry.GeneralEnvelope;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -45,12 +46,11 @@ import static org.apache.sis.test.ReferencingAssert.*;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
- * @module
  */
 @DependsOn(GridExtentTest.class)
-public final strictfp class GridGeometryTest extends TestCase {
+public final class GridGeometryTest extends TestCase {
     /**
      * Verifies grid extent coordinates.
      */
@@ -433,6 +433,37 @@ public final strictfp class GridGeometryTest extends TestCase {
         assertTrue("isConversionLinear", grid.isConversionLinear(0, 1));
         assertNotSame("extent", extent, grid.getExtent());
         verifyGridToCRS(grid);
+    }
+
+    /**
+     * Verifies "grid to CRS" coefficients of a simple grid geometry.
+     */
+    @Test
+    public void testGetGridToCRS() {
+        final var extent = new GridExtent(null, new long[3], new long[3], true);
+        final var bbox   = new GeneralEnvelope(new double[] {-180, -90, -1000}, new double[] {180, 90, 2000});
+        final var grid   = new GridGeometry(extent, bbox, GridOrientation.HOMOTHETY);
+        assertEquals(extent, grid.getExtent());
+        assertEnvelopeEquals(bbox, grid.getEnvelope());
+        /*
+         * Verify internal consistency of the "grid to CRS" matrix.
+         * This consistency is violated if `ProjectiveTransform` constructor takes an `Number[]`
+         * array which is not protected against changes in the `GeneralMatrix` that own that array.
+         */
+        final Matrix   gridToCRS = MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER));
+        final Number[] numbers   = ((ExtendedPrecisionMatrix) gridToCRS).getElementAsNumbers(false);
+        final double[] elements  = MatrixSIS.castOrCopy(gridToCRS).getElements();
+        assertArrayEquals(new double[] {360, 0, 0, -180, 0, 180, 0, -90, 0, 0, 3000, -1000, 0, 0, 0, 1}, elements, STRICT);
+        assertEquals(elements.length, numbers.length);
+        for (int i=0; i<elements.length; i++) {
+            final double expected = elements[i];
+            final Number actual   = numbers [i];
+            if (expected == 0) {
+                assertNull(actual);
+            } else {
+                assertEquals(expected, actual.doubleValue(), STRICT);
+            }
+        }
     }
 
     /**

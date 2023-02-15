@@ -31,6 +31,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.measure.Units;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -74,7 +75,6 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  * @see org.apache.sis.referencing.operation.builder.LocalizationGridBuilder
  *
  * @since 0.7
- * @module
  */
 public class InterpolatedTransform extends DatumShiftTransform {
     /**
@@ -438,7 +438,6 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     static class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**
@@ -451,6 +450,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * be enabled, and some information will be printed to the standard output stream. Enabling debugging slows
          * down considerably the transformations; it should be done only for small set of test data.
          */
+        @Debug
         private static final boolean DEBUG = false;
 
         /**
@@ -460,6 +460,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
          * more curved grids like the ones read from netCDF files. We provide this switch for allowing performance
          * comparisons.
          */
+        @Debug
         private static final boolean SIMPLE = false;
 
         /**

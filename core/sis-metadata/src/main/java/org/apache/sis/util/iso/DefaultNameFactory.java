@@ -82,7 +82,6 @@ import org.apache.sis.internal.util.Strings;
  * @see DefaultMemberName
  *
  * @since 0.3
- * @module
  */
 public class DefaultNameFactory extends AbstractFactory implements NameFactory {
     /**
@@ -341,7 +340,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
              */
             return createLocalName(scope, name);
         }
-        return createGenericName(scope, names.toArray(new String[names.size()]));
+        return createGenericName(scope, names.toArray(String[]::new));
     }
 
     /**
@@ -365,7 +364,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * @param  value  the object to cast into an array of generic names, or {@code null}.
      * @return the generic names, or {@code null} if the given {@code value} was null.
      *         Note that it may be the {@code value} reference itself casted to {@code GenericName[]}.
-     * @throws ClassCastException if {@code value} can't be casted.
+     * @throws ClassCastException if {@code value} cannot be casted.
      *
      * @since 0.5
      */

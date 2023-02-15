@@ -60,7 +60,6 @@ import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.metadata.ReferencingServices;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.Numerics;
@@ -84,7 +83,6 @@ import org.apache.sis.io.TableAppender;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.referencing.CRS.findOperation;
 
 
@@ -134,9 +132,8 @@ import static org.apache.sis.referencing.CRS.findOperation;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
- * @module
  */
 public class GridGeometry implements LenientComparable, Serializable {
     /**
@@ -233,7 +230,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @see #getGridToCRS(PixelInCell)
      * @see PixelInCell#CELL_CENTER
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final MathTransform gridToCRS;
 
     /**
@@ -243,7 +240,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @serial This field is serialized because it may be a value specified explicitly at construction time,
      *         in which case it can be more accurate than a computed value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final MathTransform cornerToCRS;
 
     /**
@@ -523,7 +520,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  rounding   controls behavior of rounding from floating point values to integers.
      * @throws IllegalGridGeometryException if the math transform cannot compute the grid extent or the resolution.
      */
-    @SuppressWarnings("null")
     public GridGeometry(final PixelInCell anchor, final MathTransform gridToCRS, final Envelope envelope, final GridRoundingMode rounding) {
         if (gridToCRS == null) {
             ArgumentChecks.ensureNonNull("envelope", envelope);
@@ -587,7 +583,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @param  exception  the exception that occurred.
      */
     static void recoverableException(final String caller, final TransformException exception) {
-        Logging.recoverableException(getLogger(Modules.RASTER), GridGeometry.class, caller, exception);
+        Logging.recoverableException(GridExtent.LOGGER, GridGeometry.class, caller, exception);
     }
 
     /**
@@ -694,11 +690,10 @@ public class GridGeometry implements LenientComparable, Serializable {
                     resolution = new double[tgtDim];
                     for (int j=0; j<tgtDim; j++) {
                         final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
-                        final DoubleDouble scale  = (DoubleDouble) affine.getNumber(j, i);
-                        final DoubleDouble offset = (DoubleDouble) affine.getNumber(j, srcDim);
+                        DoubleDouble scale  = DoubleDouble.of(affine.getNumber(j, i), true);
+                        DoubleDouble offset = DoubleDouble.of(affine.getNumber(j, srcDim), true);
                         resolution[j] = Math.abs(scale.doubleValue());
-                        scale.multiply(0.5);
-                        offset.add(scale);
+                        offset = offset.add(scale.scalb(-1));
                         affine.setNumber(j, srcDim, offset);
                     }
                     gridToCRS = MathTransforms.linear(affine);
@@ -817,11 +812,11 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The conversion is often an affine transform, but not necessarily.
      * Conversions from cell indices to geospatial coordinates can be performed for example as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     MathTransform  gridToCRS     = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
      *     DirectPosition indicesOfCell = new GeneralDirectPosition(2, 3, 4):
      *     DirectPosition aPixelCenter  = gridToCRS.transform(indicesOfCell, null);
-     * }
+     *     }
      *
      * Callers must specify whether they want the "real world" coordinates of cell center or cell corner.
      * The cell corner is the one for which all grid indices have the smallest values (closest to negative infinity).
@@ -1358,21 +1353,20 @@ public class GridGeometry implements LenientComparable, Serializable {
      * {@code GridDerivation} does not change the state of this {@code GridGeometry} but instead creates
      * new instances as needed. Examples of modifications include clipping to a sub-area or applying a sub-sampling.
      *
-     * <div class="note"><b>Example:</b>
-     * for clipping this grid geometry to a sub-area, one can use:
+     * <p>Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
+     * {@code GridDerivation} preserves the number of dimensions. For example, {@linkplain GridDerivation#slice slicing}
+     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
+     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.</p>
      *
-     * {@preformat java
+     * <h4>Example</h4>
+     * For clipping this grid geometry to a sub-area, one can use:
+     *
+     * {@snippet lang="java" :
      *     GridGeometry gg = ...;
      *     Envelope areaOfInterest = ...;
      *     gg = gg.derive().rounding(GridRoundingMode.ENCLOSING)
      *                     .subgrid(areaOfInterest).build();
-     * }
-     * </div>
-     *
-     * Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
-     * {@code GridDerivation} preserves the number of dimensions. For example, {@linkplain GridDerivation#slice slicing}
-     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
-     * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.
+     *     }
      *
      * @return an object for deriving a grid geometry from {@code this}.
      */
@@ -1414,7 +1408,7 @@ public class GridGeometry implements LenientComparable, Serializable {
             MatrixSIS matrix = Matrices.copy(MathTransforms.getMatrix(cornerToCRS));
             final boolean isNonLinear = (matrix == null);
             if (isNonLinear) {
-                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.IDENTITY);
+                matrix = Matrices.create(tgtDim+1, srcDim+1, ExtendedPrecisionMatrix.CREATE_IDENTITY);
             }
             /*
              * By dividing the matrix elements directly, we avoid some numerical errors.
@@ -1422,16 +1416,14 @@ public class GridGeometry implements LenientComparable, Serializable {
              * Each period value must be multiplied by a full column.
              */
             newResolution = resolution.clone();
-            final DoubleDouble div = new DoubleDouble();
             for (int i = Math.min(srcDim, periods.length); --i >= 0;) {
                 final double p = periods[i];
                 if (p != 1) {
                     newResolution[i] /= p;
+                    final DoubleDouble pd = DoubleDouble.of(p, true);
                     for (int j=0; j<tgtDim; j++) {
-                        div.error = 0;
-                        div.value = p;
-                        div.inverseDivide(DoubleDouble.castOrCopy(matrix.getNumber(j, i)));
-                        matrix.setNumber(j, i, div);
+                        DoubleDouble e = DoubleDouble.of(matrix.getNumber(j, i), true);
+                        matrix.setNumber(j, i, e.divide(pd));
                         changed = true;
                     }
                 }
@@ -1489,22 +1481,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             t2 = MathTransforms.concatenate(t, t2);
         }
         return new GridGeometry(newExtent, t1, t2, envelope, resolution, nonLinears);
-    }
-
-    /**
-     * Returns a grid geometry translated by the given amount of cells compared to this grid.
-     *
-     * @param  translation  translation to apply on each grid axis in order.
-     * @return a grid geometry whose coordinates and the "grid to CRS" transforms have been translated by given amounts.
-     *
-     * @since 1.1
-     *
-     * @deprecated Renamed {@link #shiftGrid(long...)} for making clearer that this method changes
-     *             grid coordinates without changing "real world" coordinates.
-     */
-    @Deprecated
-    public GridGeometry translate(final long... translation) {
-        return shiftGrid(translation);
     }
 
     /**
@@ -1567,19 +1543,6 @@ public class GridGeometry implements LenientComparable, Serializable {
             throw new BackingStoreException(e);
         }
         return this;
-    }
-
-    /**
-     * Returns a grid geometry that encompass only some dimensions of this grid geometry.
-     *
-     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
-     * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
-     *
-     * @deprecated Renamed {@link #selectDimensions(int...)} for clarity and consistency with {@link GridExtent}.
-     */
-    @Deprecated
-    public GridGeometry reduce(int... dimensions) {
-        return selectDimensions(dimensions);
     }
 
     /**

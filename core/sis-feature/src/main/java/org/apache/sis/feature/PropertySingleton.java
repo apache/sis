@@ -37,7 +37,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class PropertySingleton<V> extends AbstractList<V> {
     /**

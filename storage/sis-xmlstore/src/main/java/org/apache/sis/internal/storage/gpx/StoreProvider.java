@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
+import java.util.Map;
+import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.storage.DataStore;
@@ -35,9 +37,8 @@ import org.apache.sis.util.Version;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 @StoreMetadata(formatName    = StoreProvider.NAME,
                fileSuffixes  = "xml",
@@ -48,6 +49,13 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * The format name.
      */
     public static final String NAME = "GPX";
+
+    /**
+     * The logger used by GPX stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.gpx");
 
     /**
      * The "1.0" version.
@@ -68,10 +76,10 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * Creates a new GPX store provider.
      */
     public StoreProvider() {
-        super("GPX");
-        mimeForNameSpaces.put(Tags.NAMESPACE_V10, "application/gpx+xml");
-        mimeForNameSpaces.put(Tags.NAMESPACE_V11, "application/gpx+xml");
-        mimeForRootElements.put("gpx", "application/gpx+xml");
+        super("GPX",
+              Map.of(Tags.NAMESPACE_V10, "application/gpx+xml",
+                     Tags.NAMESPACE_V11, "application/gpx+xml"),
+              Map.of("gpx",              "application/gpx+xml"));
     }
 
     /**
@@ -92,8 +100,12 @@ public final class StoreProvider extends StaxDataStoreProvider {
      * @throws DataStoreException if an error occurred while creating the data store instance.
      */
     @Override
-    public DataStore open(StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector);
+    public DataStore open(final StorageConnector connector) throws DataStoreException {
+        if (isWritable(connector)) {
+            return new WritableStore(this, connector);
+        } else {
+            return new Store(this, connector);
+        }
     }
 
     /**
@@ -105,5 +117,13 @@ public final class StoreProvider extends StaxDataStoreProvider {
     @Override
     protected JAXBContext getJAXBContext() throws JAXBException {
         return JAXBContext.newInstance(Metadata.class);
+    }
+
+    /**
+     * {@return the logger used by GPX stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

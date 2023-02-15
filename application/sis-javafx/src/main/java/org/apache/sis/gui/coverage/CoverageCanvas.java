@@ -75,14 +75,13 @@ import org.apache.sis.internal.gui.BackgroundThreads;
 import org.apache.sis.internal.gui.ExceptionReporter;
 import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.LogHandler;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -91,12 +90,11 @@ import static java.util.logging.Logger.getLogger;
  * instance (given by {@link #coverageProperty}) will change automatically according the zoom level.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see CoverageExplorer
  *
  * @since 1.1
- * @module
  */
 @DefaultProperty("coverage")
 public class CoverageCanvas extends MapCanvasAWT {
@@ -730,7 +728,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * point all remaining points are executed:
      *
      * <ol>
-     *   <li>Read a new coverage if zoom as changed more than some threshold value.</li>
+     *   <li>Read a new coverage if zoom has changed more than some threshold value.</li>
      *   <li>Compute statistics on sample values (if needed).</li>
      *   <li>Stretch the color ramp (if requested).</li>
      *   <li>Resample the image and convert to integer values.</li>
@@ -1149,7 +1147,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Invoked when an exception occurred. The declared source method should be a public or protected method.
      */
     static void unexpectedException(final String method, final Exception e) {
-        Logging.unexpectedException(getLogger(Modules.APPLICATION), CoverageCanvas.class, method, e);
+        Logging.unexpectedException(LOGGER, CoverageCanvas.class, method, e);
     }
 
     /**
@@ -1160,9 +1158,9 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Other methods should generally not invoke this method directly,
      * and use the following code instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     runAfterRendering(this::clear);
-     * }
+     *     }
      *
      * @see #runAfterRendering(Runnable)
      */

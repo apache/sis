@@ -24,8 +24,7 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
- * @module
  */
 package org.apache.sis.internal.system;

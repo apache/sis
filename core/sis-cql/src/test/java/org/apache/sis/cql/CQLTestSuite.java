@@ -27,7 +27,6 @@ import org.junit.runners.Suite;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.cql.ExpressionReadingTest.class,
@@ -37,7 +36,7 @@ import org.junit.runners.Suite;
     org.apache.sis.cql.QueryReadingTest.class,
     org.apache.sis.cql.QueryWritingTest.class,
 })
-public final strictfp class CQLTestSuite extends TestSuite {
+public final class CQLTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

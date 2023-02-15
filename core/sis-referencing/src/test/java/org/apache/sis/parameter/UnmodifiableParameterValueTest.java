@@ -34,10 +34,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn(DefaultParameterValueTest.class)
-public final strictfp class UnmodifiableParameterValueTest extends TestCase {
+public final class UnmodifiableParameterValueTest extends TestCase {
     /**
      * Creates an {@link UnmodifiableParameterValue} implementation for the given parameter
      * and asserts that we got a new instance equivalent to the original one.

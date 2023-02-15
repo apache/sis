@@ -19,7 +19,6 @@ package org.apache.sis.internal.storage.gpx;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.feature.AbstractAttribute;
@@ -60,7 +59,6 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class GroupAsPolylineOperation extends AbstractOperation {
     /**
@@ -82,6 +80,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
     /**
      * The expected result type to be returned by {@link #getResult()}.
      */
+    @SuppressWarnings("serial")
     private final AttributeType<?> result;
 
     /**
@@ -104,8 +103,8 @@ final class GroupAsPolylineOperation extends AbstractOperation {
      * @param  geometries  accessor to the geometry implementation in use (Java2D, ESRI or JTS).
      */
     static <G> AttributeType<? extends G> getResult(final Geometries<G> geometries) {
-        return new DefaultAttributeType<>(Collections.singletonMap(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY),
-                geometries.polylineClass, 1, 1, null);
+        return new DefaultAttributeType<>(Map.of(NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY),
+                                          geometries.polylineClass, 1, 1, null);
     }
 
     /**
@@ -154,6 +153,7 @@ final class GroupAsPolylineOperation extends AbstractOperation {
         /**
          * The feature on which to execute the operation.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final Feature feature;
 
         /**

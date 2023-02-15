@@ -19,23 +19,19 @@ package org.apache.sis.internal.system;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.InvalidPathException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Messages;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * Sub-directories of {@code SIS_DATA} where SIS looks for EPSG database, datum shift grids and other resources.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.7
- * @module
  */
 public enum DataDirectory {
     /**
@@ -122,11 +118,10 @@ public enum DataDirectory {
      */
     private static void log(final Level level, final Exception e, final short key, final Object... parameters) {
         final LogRecord record = Messages.getResources(null).getLogRecord(level, key, parameters);
-        record.setLoggerName(Loggers.SYSTEM);
         if (e != null) {
             record.setThrown(e);
         }
-        Logging.log(null, null, record);            // Let Logging.log(…) infers the public caller.
+        Logging.completeAndLog(SystemListener.LOGGER, null, null, record);  // Let Logging.log(…) infers the public caller.
     }
 
     /**
@@ -158,7 +153,7 @@ public enum DataDirectory {
         if (rootDirectory == null) try {
             return getenv() == null;
         } catch (SecurityException e) {
-            Logging.recoverableException(getLogger(Loggers.SYSTEM), DataDirectory.class, "isUndefined", e);
+            Logging.recoverableException(SystemListener.LOGGER, DataDirectory.class, "isUndefined", e);
         }
         return false;
     }
@@ -175,7 +170,7 @@ public enum DataDirectory {
             if (dir == null || dir.isEmpty()) {
                 warning(null, Messages.Keys.DataDirectoryNotSpecified_1, ENV);
             } else try {
-                final Path path = Paths.get(dir);
+                final Path path = Path.of(dir);
                 if (!Files.isDirectory(path)) {
                     warning(null, Messages.Keys.DataDirectoryDoesNotExist_2, ENV, path);
                 } else if (!Files.isReadable(path)) {
@@ -228,26 +223,5 @@ public enum DataDirectory {
             }
         }
         return directory;
-    }
-
-    /**
-     * If the given path is relative, returns the path as a child of the directory represented by this enum.
-     * If no valid directory is configured by the {@code SIS_DATA} environment variable, then the relative
-     * path is returned as-is.
-     *
-     * <p>This method is invoked for files that may be user-specified, for example datum shift file specified
-     * in {@link org.opengis.parameter.ParameterValue}.</p>
-     *
-     * @param  file  the path to resolve, or {@code null}.
-     * @return the path to use, or {@code null} if the given path was null.
-     */
-    public Path resolve(Path file) {
-        if (file != null && !file.isAbsolute()) {
-            final Path dir = getDirectory();
-            if (dir != null) {
-                return dir.resolve(file);
-            }
-        }
-        return file;
     }
 }

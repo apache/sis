@@ -39,11 +39,10 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn(GeodeticObjectParserTest.class)
-public final strictfp class WKTParserTest extends CRSParserTest {
+public final class WKTParserTest extends CRSParserTest {
     /**
      * Whether the test should replace the curly quotation marks “ and ” by the straight quotation mark ".
      * The ISO 19162 specification uses only straight quotation marks, but SIS supports both.
@@ -99,8 +98,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   GEODCRS[“WGS 84”,
+     * {@snippet lang="wkt" :
+     *  GEODCRS[“WGS 84”,
      *    DATUM[“World Geodetic System 1984”,
      *      ELLIPSOID[“WGS 84”, 6378137, 298.257223563,
      *        LENGTHUNIT[“metre”,1.0]]],
@@ -108,7 +107,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      AXIS[“(lat)”,north,ANGLEUNIT[“degree”,0.0174532925199433]],
      *      AXIS[“(lon)”,east,ANGLEUNIT[“degree”,0.0174532925199433]],
      *      AXIS[“ellipsoidal height (h)”,up,LENGTHUNIT[“metre”,1.0]]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -125,8 +124,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   GEODCRS[“S-95”,
+     * {@snippet lang="wkt" :
+     *  GEODCRS[“S-95”,
      *    DATUM[“Pulkovo 1995”,
      *      ELLIPSOID[“Krassowsky 1940”, 6378245, 298.3,
      *        LENGTHUNIT[“metre”,1.0]]],
@@ -135,7 +134,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      AXIS[“longitude”,east,ORDER[2]],
      *      ANGLEUNIT[“degree”,0.0174532925199433],
      *    REMARK[“Система Геодеэических Координвт года 1995(СК-95)”]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -152,8 +151,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   GEODCRS[“NAD83”,
+     * {@snippet lang="wkt" :
+     *  GEODCRS[“NAD83”,
      *    DATUM[“North American Datum 1983”,
      *      ELLIPSOID[“GRS 1980”, 6378137, 298.257222101, LENGTHUNIT[“metre”,1.0]]],
      *    CS[ellipsoidal,2],
@@ -162,7 +161,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      ANGLEUNIT[“degree”,0.017453292519943],
      *    ID[“EPSG”,4269],
      *    REMARK[“1986 realisation”]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -179,8 +178,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   GEODCRS[“NTF (Paris)”,
+     * {@snippet lang="wkt" :
+     *  GEODCRS[“NTF (Paris)”,
      *    DATUM[“Nouvelle Triangulation Francaise”,
      *      ELLIPSOID[“Clarke 1880 (IGN)”, 6378249.2, 293.4660213]],
      *    PRIMEM[“Paris”,2.5969213],
@@ -189,7 +188,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      AXIS[“longitude”,east,ORDER[2]],
      *      ANGLEUNIT[“grad”,0.015707963267949],
      *    REMARK[“Nouvelle Triangulation Française”]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -206,8 +205,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   GEODETICCRS[“JGD2000”,
+     * {@snippet lang="wkt" :
+     *  GEODETICCRS[“JGD2000”,
      *    DATUM[“Japanese Geodetic Datum 2000”,
      *      ELLIPSOID[“GRS 1980”, 6378137, 298.257222101]],
      *    CS[Cartesian,3],
@@ -221,7 +220,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *    TIMEEXTENT[2002-04-01,2011-10-21],
      *    ID[“EPSG”,4946,URI[“urn:ogc:def:crs:EPSG::4946”]],
      *    REMARK[“注：JGD2000ジオセントリックは現在JGD2011に代わりました。”]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -253,8 +252,8 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   PROJCRS[“NAD27 / Texas South Central”,
+     * {@snippet lang="wkt" :
+     *  PROJCRS[“NAD27 / Texas South Central”,
      *    BASEGEODCRS[“NAD27”,
      *      DATUM[“North American Datum 1927”,
      *        ELLIPSOID[“Clarke 1866”, 20925832.164, 294.97869821,
@@ -278,7 +277,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      AXIS[“(y)”,north],
      *      LENGTHUNIT[“US survey foot”,0.304800609601219],
      *    REMARK[“Fundamental point: Meade’s Ranch KS, latitude 39°13'26.686"N, longitude 98°32'30.506"W.”]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -337,12 +336,12 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis name and vertical datum type.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   VERTCRS[“NAVD88”,
+     * {@snippet lang="wkt" :
+     *  VERTCRS[“NAVD88”,
      *    VDATUM[“North American Vertical Datum 1988”],
      *    CS[vertical,1],
      *      AXIS[“gravity-related height (H)”,up],LENGTHUNIT[“metre”,1.0]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -362,11 +361,11 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis name.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   TIMECRS[“GPS Time”,
-     *     TDATUM[“Time origin”,TIMEORIGIN[1980-01-01T00:00:00.0Z]],
-     *     CS[temporal,1],AXIS[“time”,future],TIMEUNIT[“day”,86400.0]]
-     * }
+     * {@snippet lang="wkt" :
+     *  TIMECRS[“GPS Time”,
+     *    TDATUM[“Time origin”,TIMEORIGIN[1980-01-01T00:00:00.0Z]],
+     *    CS[temporal,1],AXIS[“time”,future],TIMEUNIT[“day”,86400.0]]
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -385,13 +384,13 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis name.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   PARAMETRICCRS[“WMO standard atmosphere layer 0”,
-     *     PDATUM[“Mean Sea Level”,ANCHOR[“1013.25 hPa at 15°C”]],
-     *     CS[parametric,1],
-     *     AXIS[“pressure (hPa)”,up],
-     *     PARAMETRICUNIT[“hPa”,100.0]]
-     * }
+     * {@snippet lang="wkt" :
+     *  PARAMETRICCRS[“WMO standard atmosphere layer 0”,
+     *    PDATUM[“Mean Sea Level”,ANCHOR[“1013.25 hPa at 15°C”]],
+     *    CS[parametric,1],
+     *    AXIS[“pressure (hPa)”,up],
+     *    PARAMETRICUNIT[“hPa”,100.0]]
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -410,15 +409,15 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   ENGINEERINGCRS[“Astra Minas Grid”,
+     * {@snippet lang="wkt" :
+     *  ENGINEERINGCRS[“Astra Minas Grid”,
      *    ENGINEERINGDATUM[“Astra Minas”],
      *    CS[Cartesian,2],
      *      AXIS[“northing (X)”,north,ORDER[1]],
      *      AXIS[“westing (Y)”,west,ORDER[2]],
      *      LENGTHUNIT[“metre”,1.0],
      *    ID[“EPSG”,5800]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -438,15 +437,15 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   ENGCRS[“A construction site CRS”,
+     * {@snippet lang="wkt" :
+     *  ENGCRS[“A construction site CRS”,
      *    EDATUM[“P1”,ANCHOR[“Peg in south corner”]],
      *    CS[Cartesian,2],
      *      AXIS[“site east”,southWest,ORDER[1]],
      *      AXIS[“site north”,southEast,ORDER[2]],
      *      LENGTHUNIT[“metre”,1.0],
      *    TIMEEXTENT[“date/time t1”,“date/time t2”]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -466,15 +465,15 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
-     *   ENGCRS[“A ship-centred CRS”,
+     * {@snippet lang="wkt" :
+     *  ENGCRS[“A ship-centred CRS”,
      *    EDATUM[“Ship reference point”,ANCHOR[“Centre of buoyancy”]],
      *    CS[Cartesian,3],
      *      AXIS[“(x)”,forward],
      *      AXIS[“(y)”,starboard],
      *      AXIS[“(z)”,down],
      *      LENGTHUNIT[“metre”,1.0]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -500,7 +499,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *  GEODCRS[“ETRS89 Lambert Azimuthal Equal Area CRS”,
      *    BASEGEODCRS[“WGS 84”,
      *      DATUM[“WGS 84”,
@@ -517,7 +516,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      AXIS[“latitude”,north,ORDER[1]],
      *      AXIS[“longitude”,east,ORDER[2]],
      *      ANGLEUNIT[“degree”,0.0174532925199433]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -534,7 +533,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *  ENGCRS[“Topocentric example A”,
      *    BASEGEODCRS[“WGS 84”,
      *      DATUM[“WGS 84”,
@@ -552,7 +551,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      AXIS[“Topocentric North (V)”,north,ORDER[2]],
      *      AXIS[“Topocentric height (W)”,up,ORDER[3]],
      *      LENGTHUNIT[“metre”,1.0]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -594,7 +593,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *  COMPOUNDCRS[“NAD83 + NAVD88”,
      *    GEODCRS[“NAD83”,
      *      DATUM[“North American Datum 1983”,
@@ -610,7 +609,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *        CS[vertical,1],
      *          AXIS[“gravity-related height (H)”,up],
      *          LENGTHUNIT[“metre”,1]]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -631,7 +630,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *  COMPOUNDCRS[“GPS position and time”,
      *    GEODCRS[“WGS 84”,
      *      DATUM[“World Geodetic System 1984”,
@@ -645,7 +644,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *      CS[temporal,1],
      *        AXIS[“time (T)”,future],
      *        TIMEUNIT[“day”,86400]]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
@@ -666,7 +665,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      * Completes the GeoAPI tests with a check of axis names.
      * The WKT parsed by this test is (except for quote characters):
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *  COMPOUNDCRS[“ICAO layer 0”,
      *    GEODETICCRS[“WGS 84”,
      *      DATUM[“World Geodetic System 1984”,
@@ -682,7 +681,7 @@ public final strictfp class WKTParserTest extends CRSParserTest {
      *          CS[parametric,1],
      *            AXIS[“pressure (P)”,unspecified],
      *            PARAMETRICUNIT[“hPa”,100]]]
-     * }
+     *  }
      *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */

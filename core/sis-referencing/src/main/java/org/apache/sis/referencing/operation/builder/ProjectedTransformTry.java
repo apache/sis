@@ -25,13 +25,13 @@ import java.text.NumberFormat;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
@@ -41,8 +41,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * in order to avoid consuming too much memory when many attempts are made; {@link LinearTransformBuilder} needs only
  * to keep the best attempt.
  *
- * <div class="note">
- * <p><b>Purpose:</b> localization grids in netCDF files contain (<var>longitude</var>, <var>latitude</var>) values for all pixels.
+ * <h2>Purpose</h2>
+ * <p>Localization grids in netCDF files contain (<var>longitude</var>, <var>latitude</var>) values for all pixels.
  * {@link LocalizationGridBuilder} first computes a linear (affine) approximation of a localization grid, then stores the residuals.
  * This approach works well when the residuals are small. However if the localization grid is non-linear, then the affine transform
  * is a poor approximation of that grid and the residuals are high. High residuals make inverse transforms hard to compute, which
@@ -53,15 +53,14 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * if one of those projections results in a grid closer to an affine transform. In other words, we use this class for trying to
  * guess what the projection may be. It is okay if the guess is not a perfect match; if the residuals become smalls enough,
  * it will resolve the "no convergence" errors.</p>
- * </div>
  *
- * <p><b>Note:</b> {@link #compareTo(ProjectedTransformTry)} is inconsistent with {@link #equals(Object)}.
- * The fact that {@link ProjectedTransformTry} instances are comparable should not be visible in public API.</p>
+ * <h2>Note</h2>
+ * {@link #compareTo(ProjectedTransformTry)} is inconsistent with {@link #equals(Object)}.
+ * The fact that {@link ProjectedTransformTry} instances are comparable should not be visible in public API.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, Map.Entry<String,MathTransform> {
     /**

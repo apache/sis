@@ -45,7 +45,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final class ImmutableEnvelope extends ArrayEnvelope implements Serializable {
     /**
@@ -138,9 +137,9 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
      * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
-     * {@preformat wkt
-     *     BOX(-180 -90, 180 90)
-     * }
+     * {@snippet lang="wkt" :
+     *   BOX(-180 -90, 180 90)
+     *   }
      *
      * However, this constructor is lenient to other geometry types like {@code POLYGON}.
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}

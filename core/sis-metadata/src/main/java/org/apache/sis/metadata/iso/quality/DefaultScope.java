@@ -42,12 +42,11 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Touraïvane (IRD)
  * @version 1.0
  * @since   0.3
- * @module
  *
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.
  *             The latter is defined in the {@link org.apache.sis.metadata.iso.maintenance} package.
  */
-@Deprecated
+@Deprecated(since="1.0")
 @XmlTransient
 public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.DefaultScope implements Scope {
     /**
@@ -117,7 +116,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      * @deprecated As of ISO 19115:2014, replaced by {@link #getExtents()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getExtents")
     public Extent getExtent() {
         return LegacyPropertyAdapter.getSingleton(getExtents(), Extent.class, null, DefaultScope.class, "getExtent");
@@ -131,7 +130,7 @@ public class DefaultScope extends org.apache.sis.metadata.iso.maintenance.Defaul
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setExtents(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setExtent(final Extent newValue) {
         setExtents(CollectionsExt.singletonOrEmpty(newValue));
     }

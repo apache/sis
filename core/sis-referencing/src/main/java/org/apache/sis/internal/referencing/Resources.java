@@ -34,7 +34,6 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -45,7 +44,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   1.2
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -224,6 +222,12 @@ public final class Resources extends IndexedResourceBundle {
          * three-dimensional {0,choice,0#geographic|1#projected} system instead.
          */
         public static final short EllipsoidalHeightNotAllowed_1 = 77;
+
+        /**
+         * Definitions from public sources. When a definition corresponds to an EPSG object (ignoring
+         * metadata), the EPSG code is provided as a reference where to find the complete definition.
+         */
+        public static final short FallbackAuthorityNotice = 103;
 
         /**
          * There is no local registry for version {1} of “{0}” authority. Fallback on default version
@@ -522,6 +526,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short RecursiveCreateCallForCode_2 = 62;
 
         /**
+         * The only valid entries are ±90° or equivalent in alternative angle units.
+         */
+        public static final short RestrictedToPoleLatitudes = 104;
+
+        /**
          * Matrix is singular.
          */
         public static final short SingularMatrix = 63;
@@ -612,7 +621,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forLocale(final Locale locale) throws MissingResourceException {
         return getBundle(Resources.class, locale);
@@ -625,7 +634,7 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @param  properties  the map of properties, or {@code null} if none.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Resources forProperties(final Map<?,?> properties) throws MissingResourceException {
         return forLocale(getLocale(properties));

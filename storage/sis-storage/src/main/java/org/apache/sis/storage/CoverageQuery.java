@@ -58,7 +58,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class CoverageQuery extends Query implements Cloneable, Serializable {
     /**
@@ -358,7 +357,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
                               new Longitude(box.getEastBoundLongitude()));
             } else {
                 sb.append('?');     // If the domain cannot be expressed as a geographic bounding box.
-            };
+            }
             sb.append(']');
             if (sourceDomainExpansion != 0) {
                 sb.append(" + margin(").append(sourceDomainExpansion).append(')');

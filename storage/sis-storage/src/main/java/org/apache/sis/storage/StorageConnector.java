@@ -18,8 +18,8 @@ package org.apache.sis.storage;
 
 import java.util.Map;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.function.UnaryOperator;
 import java.io.Reader;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -36,6 +36,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.OpenOption;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.IIOException;
@@ -65,6 +66,7 @@ import org.apache.sis.internal.storage.io.ChannelImageOutputStream;
 import org.apache.sis.internal.storage.io.InputStreamAdapter;
 import org.apache.sis.internal.storage.io.RewindableLineReader;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.io.InvalidSeekException;
 import org.apache.sis.setup.OptionKey;
@@ -101,9 +103,8 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public class StorageConnector implements Serializable {
     /**
@@ -112,17 +113,27 @@ public class StorageConnector implements Serializable {
     private static final long serialVersionUID = 2524083964906593093L;
 
     /**
-     * The default size of the {@link ByteBuffer} to be created.
-     * Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.
+     * The default size (in bytes) of {@link ByteBuffer}s created by storage connectors.
+     * Those buffers are typically created when the specified storage object is a
+     * {@link File}, {@link Path}, {@link URL} or {@link URI}.
+     * The default buffer size is arbitrary and may change in any future Apache SIS version.
      *
-     * <p>This buffer capacity is also used as read-ahead limit for mark operations.
-     * The rational is to allow as many bytes as contained in buffers of default size.
-     * For increasing the chances to meet that goal, this size should be the same than
-     * {@link java.io.BufferedInputStream} default buffer size.</p>
+     * <p>Users can override this value by providing a value for {@link OptionKey#BYTE_BUFFER}.</p>
      *
-     * @see RewindableLineReader#BUFFER_SIZE
+     * @see OptionKey#BYTE_BUFFER
+     *
+     * @since 1.4
      */
-    static final int DEFAULT_BUFFER_SIZE = 8192;
+    @Configuration
+    public static final int DEFAULT_BUFFER_SIZE = 16 * 1024;
+
+    /**
+     * The read-ahead limit for mark operations.
+     * We try to allow as many bytes as contained in buffers of default size.
+     * For increasing the chances to meet that goal, this size should be the
+     * same than {@link BufferedInputStream} default buffer size.
+     */
+    static final int READ_AHEAD_LIMIT = 8 * 1024;
 
     /**
      * The minimal size of the {@link ByteBuffer} to be created. This size is used only
@@ -222,11 +233,14 @@ public class StorageConnector implements Serializable {
      *
      * @see #getStorage()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     final Object storage;
 
     /**
      * A name for the input/output object, or {@code null} if none.
      * This field is initialized only when first needed.
+     *
+     * @see #getStorageName()
      */
     private transient String name;
 
@@ -242,6 +256,7 @@ public class StorageConnector implements Serializable {
      * @see #getOption(OptionKey)
      * @see #setOption(OptionKey, Object)
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Map<OptionKey<?>, Object> options;
 
     /**
@@ -638,9 +653,12 @@ public class StorageConnector implements Serializable {
      */
     public String getStorageName() {
         if (name == null) {
-            name = IOUtilities.filename(storage);
+            name = Strings.trimOrNull(IOUtilities.filename(storage));
             if (name == null) {
-                name = Classes.getShortClassName(storage);
+                name = Strings.trimOrNull(IOUtilities.toString(storage));
+                if (name == null) {
+                    name = Classes.getShortClassName(storage);
+                }
             }
         }
         return name;
@@ -957,7 +975,7 @@ public class StorageConnector implements Serializable {
          */
         reset();
         if (storage instanceof InputStream) {
-            ((InputStream) storage).mark(DEFAULT_BUFFER_SIZE);
+            ((InputStream) storage).mark(READ_AHEAD_LIMIT);
         }
         if (storage instanceof ByteBuffer) {
             final ChannelDataInput asDataInput = new ChannelImageInputStream(getStorageName(), (ByteBuffer) storage);
@@ -969,10 +987,7 @@ public class StorageConnector implements Serializable {
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          * If the given storage is already a ReadableByteChannel, then the factory will return it as-is.
          */
-        final ChannelFactory factory = ChannelFactory.prepare(storage, false,
-                getOption(OptionKey.URL_ENCODING),
-                getOption(OptionKey.OPEN_OPTIONS),
-                getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER));
+        final ChannelFactory factory = createChannelFactory(false);
         if (factory == null) {
             return null;
         }
@@ -1251,7 +1266,7 @@ public class StorageConnector implements Serializable {
             addView(Reader.class, null);                                        // Remember that there is no view.
             return null;
         }
-        input.mark(DEFAULT_BUFFER_SIZE);
+        input.mark(READ_AHEAD_LIMIT);
         final Reader in = new RewindableLineReader(input, getOption(OptionKey.ENCODING));
         addView(Reader.class, in, InputStream.class, (byte) (CLEAR_ON_RESET | CASCADE_ON_RESET));
         return in;
@@ -1294,6 +1309,25 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns a byte channel factory from the storage, or {@code null} if the storage is unsupported.
+     * See {@link ChannelFactory#prepare(Object, boolean, String, OpenOption[])} for more information.
+     *
+     * @param  allowWriteOnly  whether to allow wrapping {@link WritableByteChannel} and {@link OutputStream}.
+     * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
+     * @throws IOException if an error occurred while processing the given input.
+     */
+    private ChannelFactory createChannelFactory(final boolean allowWriteOnly) throws IOException {
+        ChannelFactory factory = ChannelFactory.prepare(storage, allowWriteOnly,
+                getOption(OptionKey.URL_ENCODING),
+                getOption(OptionKey.OPEN_OPTIONS));
+        final UnaryOperator<ChannelFactory> wrapper = getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER);
+        if (factory != null && wrapper != null) {
+            factory = wrapper.apply(factory);
+        }
+        return factory;
+    }
+
+    /**
      * Creates a view for the storage as a {@link ChannelDataOutput} if possible.
      * This code is a partial copy of {@link #createDataInput()} adapted for output.
      *
@@ -1312,10 +1346,7 @@ public class StorageConnector implements Serializable {
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          * If the given storage is already a WritableByteChannel, then the factory will return it as-is.
          */
-        final ChannelFactory factory = ChannelFactory.prepare(storage, true,
-                getOption(OptionKey.URL_ENCODING),
-                getOption(OptionKey.OPEN_OPTIONS),
-                getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER));
+        final ChannelFactory factory = createChannelFactory(true);
         if (factory == null) {
             return null;
         }
@@ -1517,7 +1548,7 @@ public class StorageConnector implements Serializable {
      */
     public void closeAllExcept(final Object view) throws DataStoreException {
         if (views == null) {
-            views = Collections.emptyMap();         // For blocking future usage of this StorageConnector instance.
+            views = Map.of();               // For blocking future usage of this StorageConnector instance.
             if (storage != view && storage instanceof AutoCloseable) try {
                 ((AutoCloseable) storage).close();
             } catch (DataStoreException e) {
@@ -1533,7 +1564,6 @@ public class StorageConnector implements Serializable {
          */
         final Map<AutoCloseable,Boolean> toClose = new IdentityHashMap<>(views.size());
         for (Coupled c : views.values()) {
-            @SuppressWarnings("null")
             Object v = c.view;
             if (v != view) {
                 if (v instanceof AutoCloseable) {
@@ -1586,7 +1616,7 @@ public class StorageConnector implements Serializable {
                 }
             }
         }
-        views = Collections.emptyMap();         // For blocking future usage of this StorageConnector instance.
+        views = Map.of();                   // For blocking future usage of this StorageConnector instance.
         /*
          * Now close all remaining items. Typically (but not necessarily) there is only one remaining item.
          * If an exception occurs, we will propagate it only after we are done closing all items.
@@ -1616,7 +1646,7 @@ public class StorageConnector implements Serializable {
      *
      * <h4>Rational</h4>
      * As of Java 18, above-cited methods systematically catch all {@link IOException}s and wrap
-     * them in an {@link IIOException} with <cite>"Can't create cache file!"</cite> error message.
+     * them in an {@link IIOException} with <cite>"Cannot create cache file!"</cite> error message.
      * This is conform to Image I/O specification but misleading if the stream provider throws an
      * {@link IOException} for another reason. Even when the failure is really caused by a problem
      * with cache file, we want to propagate the original exception to user because its message

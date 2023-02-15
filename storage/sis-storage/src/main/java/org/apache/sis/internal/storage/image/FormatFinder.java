@@ -46,7 +46,6 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
 final class FormatFinder implements AutoCloseable {
     /**
@@ -291,7 +290,7 @@ final class FormatFinder implements AutoCloseable {
      *
      * <h4>Rational</h4>
      * As of Java 18, above-cited methods systematically catch all {@link IOException}s and wrap
-     * them in an {@link IIOException} with <cite>"Can't create cache file!"</cite> error message.
+     * them in an {@link IIOException} with <cite>"Cannot create cache file!"</cite> error message.
      * This is conform to Image I/O specification but misleading if the stream provider throws an
      * {@link IOException} for another reason. Even when the failure is really caused by a problem
      * with cache file, we want to propagate the original exception to user because its message

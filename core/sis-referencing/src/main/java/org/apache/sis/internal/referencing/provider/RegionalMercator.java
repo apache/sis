@@ -35,7 +35,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @XmlTransient
 public class RegionalMercator extends AbstractMercator {

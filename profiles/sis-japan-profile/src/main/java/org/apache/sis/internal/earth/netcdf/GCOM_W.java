@@ -18,11 +18,9 @@ package org.apache.sis.internal.earth.netcdf;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 import java.util.regex.Pattern;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.netcdf.AttributeNames;
 import org.apache.sis.internal.netcdf.Convention;
@@ -40,7 +38,7 @@ import org.apache.sis.util.CharSequences;
  * for decoding <cite>Shizuku</cite> GCOM-W files produced by Japan Aerospace Exploration Agency (JAXA), version 3.
  * The file format is HDF5 and variables are like below (simplified):
  *
- * {@preformat text
+ * <pre class="text">
  *     variables:
  *         short "Geophysical Data"(1976, 243, 2)
  *             float SCALE FACTOR = 0.01
@@ -57,8 +55,7 @@ import org.apache.sis.util.CharSequences;
  *         string :ObservationStartDateTime = "2018-11-01T00:08:02.028Z"
  *         string :ObservationEndDateTime = "2018-11-01T00:57:24.247Z"
  *         string :PlatformShortName = "GCOM-W1" ;
- *         string :SensorShortName = "AMSR2" ;
- * }
+ *         string :SensorShortName = "AMSR2" ;</pre>
  *
  * Observations:
  * <ul class="verbose">
@@ -76,7 +73,6 @@ import org.apache.sis.util.CharSequences;
  * @see <a href="https://en.wikipedia.org/wiki/Global_Change_Observation_Mission">GCOM on Wikipedia</a>
  *
  * @since 1.0
- * @module
  */
 public final class GCOM_W extends Convention {
     /**
@@ -92,22 +88,18 @@ public final class GCOM_W extends Convention {
     /**
      * Mapping from ACDD or CF-Convention attribute names to names of attributes used by GCOM-W.
      */
-    private static final Map<String,String> ATTRIBUTES;
-    static {
-        final Map<String,String> m = new HashMap<>();
-        m.put(AttributeNames.TITLE,               "ProductName");              // identification­Info / citation / title
-        m.put(AttributeNames.PRODUCT_VERSION,     "ProductVersion");           // identification­Info / citation / edition
-        m.put(AttributeNames.IDENTIFIER.TEXT,     "GranuleID");                // identification­Info / citation / identifier / code
-        m.put(AttributeNames.DATE_CREATED,        "ProductionDateTime");       // identification­Info / citation / date
-        m.put(AttributeNames.TIME.MINIMUM,        "ObservationStartDateTime"); // identification­Info / extent / temporal­Element / extent
-        m.put(AttributeNames.TIME.MAXIMUM,        "ObservationEndDateTime");   // identification­Info / extent / temporal­Element / extent
-        m.put(AttributeNames.CREATOR.INSTITUTION, "ProcessingCenter");         // identification­Info / citation / citedResponsibleParty
-        m.put(AttributeNames.SUMMARY,             "GeophysicalName");          // identification­Info / abstract
-        m.put(AttributeNames.PLATFORM.TEXT,       "PlatformShortName");        // acquisition­Information / platform / identifier
-        m.put(AttributeNames.INSTRUMENT.TEXT,     "SensorShortName");          // acquisition­Information / platform / instrument / identifier
-        m.put(AttributeNames.SOURCE,              "InputFileName");            // data­Quality­Info / lineage / source / description
-        ATTRIBUTES = m;
-    }
+    private static final Map<String,String> ATTRIBUTES = Map.ofEntries(
+        Map.entry(AttributeNames.TITLE,               "ProductName"),               // identification­Info / citation / title
+        Map.entry(AttributeNames.PRODUCT_VERSION,     "ProductVersion"),            // identification­Info / citation / edition
+        Map.entry(AttributeNames.IDENTIFIER.TEXT,     "GranuleID"),                 // identification­Info / citation / identifier / code
+        Map.entry(AttributeNames.DATE_CREATED,        "ProductionDateTime"),        // identification­Info / citation / date
+        Map.entry(AttributeNames.TIME.MINIMUM,        "ObservationStartDateTime"),  // identification­Info / extent / temporal­Element / extent
+        Map.entry(AttributeNames.TIME.MAXIMUM,        "ObservationEndDateTime"),    // identification­Info / extent / temporal­Element / extent
+        Map.entry(AttributeNames.CREATOR.INSTITUTION, "ProcessingCenter"),          // identification­Info / citation / citedResponsibleParty
+        Map.entry(AttributeNames.SUMMARY,             "GeophysicalName"),           // identification­Info / abstract
+        Map.entry(AttributeNames.PLATFORM.TEXT,       "PlatformShortName"),         // acquisition­Information / platform / identifier
+        Map.entry(AttributeNames.INSTRUMENT.TEXT,     "SensorShortName"),           // acquisition­Information / platform / instrument / identifier
+        Map.entry(AttributeNames.SOURCE,              "InputFileName"));            // data­Quality­Info / lineage / source / description
 
     /**
      * Names of variables to use as axes (first word only).
@@ -203,7 +195,7 @@ public final class GCOM_W extends Convention {
      */
     @Override
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.singleton(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
+        return Set.of(new Linearizer(CommonCRS.WGS84, Linearizer.Type.UNIVERSAL));
     }
 
     /**
@@ -268,10 +260,10 @@ public final class GCOM_W extends Convention {
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol cannot be parsed.
+     * @throws MeasurementParseException if the unit symbol cannot be parsed.
      */
     @Override
-    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+    public Unit<?> getUnitFallback(final Variable data) throws MeasurementParseException {
         final String symbol = data.getAttributeAsString("UNIT");
         if (symbol == null) {
             return super.getUnitFallback(data);

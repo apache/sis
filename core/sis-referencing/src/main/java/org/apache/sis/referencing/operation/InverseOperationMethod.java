@@ -48,7 +48,6 @@ import org.apache.sis.util.Deprecable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @XmlTransient
 final class InverseOperationMethod extends DefaultOperationMethod {
@@ -60,7 +59,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
     /**
      * The original operation method for which this {@code InverseOperationMethod} is the inverse.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private final OperationMethod inverse;
 
     /**
@@ -143,7 +142,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
         final Collection<PositionalAccuracy> accuracy = source.getCoordinateOperationAccuracy();
         if (!Containers.isNullOrEmpty(accuracy)) {
             target.put(SingleOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    accuracy.toArray(new PositionalAccuracy[accuracy.size()]));
+                    accuracy.toArray(PositionalAccuracy[]::new));
         }
         /*
          * If the inverse of the given operation can be represented by inverting the sign of all numerical

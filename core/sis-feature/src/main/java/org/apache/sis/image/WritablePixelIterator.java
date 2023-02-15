@@ -35,7 +35,7 @@ import org.apache.sis.internal.feature.Resources;
  * <p>Contrarily to {@code PixelIterator}, {@code WritablePixelIterator} needs to be closed after
  * iteration in order to release tiles. Example:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     try (WritablePixelIterator it = WritablePixelIterator.create(image)) {
  *         double[] samples = null;
  *         while (it.next()) {
@@ -44,7 +44,7 @@ import org.apache.sis.internal.feature.Resources;
  *             it.setPixels(sample);                // Replace values in all bands.
  *         }
  *     }
- * }
+ *     }
  *
  * <h2>Casting a {@code PixelIterator}</h2>
  * To check if a {@code PixelIterator} can be used for writing pixels, a {@code … instanceof WritablePixelIterator}
@@ -54,7 +54,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public class WritablePixelIterator extends PixelIterator implements Closeable {
     /**
@@ -217,7 +216,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setPixel(int, int, int[])
      * @see #getPixel(int[])
      */
-    public void setPixel​(final int[] values) {
+    public void setPixel(final int[] values) {
         destRaster.setPixel(x, y, values);
     }
 
@@ -232,7 +231,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setPixel(int, int, float[])
      * @see #getPixel(float[])
      */
-    public void setPixel​(final float[] values) {
+    public void setPixel(final float[] values) {
         destRaster.setPixel(x, y, values);
     }
 
@@ -247,7 +246,7 @@ public class WritablePixelIterator extends PixelIterator implements Closeable {
      * @see WritableRaster#setPixel(int, int, double[])
      * @see #getPixel(double[])
      */
-    public void setPixel​(final double[] values) {
+    public void setPixel(final double[] values) {
         destRaster.setPixel(x, y, values);
     }
 

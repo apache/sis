@@ -60,7 +60,6 @@ import org.opengis.coverage.CannotEvaluateException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public abstract class GridCoverage extends BandedCoverage {
     /**
@@ -110,7 +109,7 @@ public abstract class GridCoverage extends BandedCoverage {
         ArgumentChecks.ensureNonNull ("domain", domain);
         ArgumentChecks.ensureNonEmpty("ranges", ranges);
         gridGeometry = domain;
-        sampleDimensions = ranges.toArray(new SampleDimension[ranges.size()]);
+        sampleDimensions = ranges.toArray(SampleDimension[]::new);
         ArgumentChecks.ensureNonEmpty("range", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);
@@ -350,7 +349,6 @@ public abstract class GridCoverage extends BandedCoverage {
      * @see GridCoverage#evaluator()
      *
      * @since 1.3
-     * @module
      */
     public interface Evaluator extends BandedCoverage.Evaluator {
         /**
@@ -491,9 +489,9 @@ public abstract class GridCoverage extends BandedCoverage {
      * Current implementation is equivalent to the following, where {@code <default flags>}
      * is the same set of flags than {@link GridGeometry#toString()}.
      *
-     * {@preformat java
-     *   return toTree(Locale.getDefault(), <default flags>).toString();
-     * }
+     * {@snippet lang="java" :
+     *     return toTree(Locale.getDefault(), <default flags>).toString();
+     *     }
      *
      * @return a string representation of this grid coverage for debugging purpose.
      */

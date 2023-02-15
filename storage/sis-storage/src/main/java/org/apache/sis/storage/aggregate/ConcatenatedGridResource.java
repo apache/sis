@@ -40,7 +40,6 @@ import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 
@@ -53,7 +52,6 @@ import org.apache.sis.util.ArraysExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class ConcatenatedGridResource extends AbstractGridCoverageResource implements AggregatedResource {
     /**
@@ -276,7 +274,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
         if (common == null) {
             int count = 0;
             for (final GridCoverageResource slice : slices) {
-                final double[][] sr = CollectionsExt.toArray(slice.getResolutions(), double[].class);
+                final double[][] sr = slice.getResolutions().toArray(double[][]::new);
                 if (sr != null) {                       // Should never be null, but we are paranoiac.
                     if (common == null) {
                         common = sr;

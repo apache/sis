@@ -50,9 +50,8 @@ import org.opengis.feature.Operation;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public strictfp class FeatureComparator {
+public class FeatureComparator {
     /**
      * The expected feature, or {@code null} if comparing only feature type.
      */

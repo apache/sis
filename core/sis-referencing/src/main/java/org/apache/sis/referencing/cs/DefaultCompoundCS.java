@@ -53,7 +53,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @XmlTransient
 public class DefaultCompoundCS extends AbstractCS {
@@ -63,8 +62,9 @@ public class DefaultCompoundCS extends AbstractCS {
     private static final long serialVersionUID = -5726410275278843373L;
 
     /**
-     * The coordinate systems.
+     * The coordinate systems in an unmodifiable list.
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final List<CoordinateSystem> components;
 
     /**
@@ -172,7 +172,7 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<CoordinateSystem> getComponents() {
-        return components;  // Unmodifiable.
+        return components;          // Unmodifiable.
     }
 
     /*

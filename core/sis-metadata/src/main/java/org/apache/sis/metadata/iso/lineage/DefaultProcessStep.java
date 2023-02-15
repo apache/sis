@@ -66,7 +66,6 @@ import org.apache.sis.internal.util.TemporalUtilities;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "description")
 @XmlType(name = "LI_ProcessStep_Type", propOrder = {
@@ -293,7 +292,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      * @deprecated As of ISO 19115-1:2014, replaced by {@link #getStepDateTime()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
         return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getDate(getStepDateTime()) : null;
@@ -306,7 +305,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @deprecated As of ISO 19115-1:2014, replaced by {@link #setStepDateTime(TemporalPrimitive)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setDate(final Date newValue) {
         setStepDateTime(TemporalUtilities.createInstant(newValue));
     }

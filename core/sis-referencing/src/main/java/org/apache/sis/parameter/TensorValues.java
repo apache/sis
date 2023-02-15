@@ -41,7 +41,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -59,7 +58,6 @@ import org.apache.sis.util.resources.Errors;
  * @param <E>  the type of tensor element values.
  *
  * @since 0.4
- * @module
  */
 @XmlTransient
 final class TensorValues<E> extends AbstractParameterDescriptor
@@ -82,7 +80,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     /**
      * The parameter for the number of row, columns and other dimensions in the tensor.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ParameterValue<Integer>[] dimensions;
 
     /**
@@ -201,8 +199,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public GeneralParameterDescriptor descriptor(String name) throws ParameterNotFoundException {
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
         return descriptors.descriptor(this, name, size());
     }
 
@@ -215,8 +212,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      */
     @Override
     public ParameterValue<?> parameter(String name) throws ParameterNotFoundException {
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
         IllegalArgumentException cause = null;
         int[] indices = null;
         try {

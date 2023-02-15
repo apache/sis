@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.referencing.j2d.AbstractShape;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -37,7 +36,6 @@ import org.locationtech.jts.geom.GeometryFactory;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 abstract class ShapeConverter {
     /**
@@ -162,7 +160,7 @@ abstract class ShapeConverter {
 
         /** Returns a copy of current coordinate values as a JTS coordinate sequence. */
         @Override PackedCoordinateSequence toSequence(final boolean close) {
-            if (close && !JDK9.equals(buffer, 0, 2, buffer, length - 2, length)) {
+            if (close && !Arrays.equals(buffer, 0, 2, buffer, length - 2, length)) {
                 addPoint(buffer);
             }
             return new PackedCoordinateSequence.Double(buffer, length);
@@ -208,7 +206,7 @@ abstract class ShapeConverter {
 
         /** Returns a copy of current coordinate values as a JTS coordinate sequence. */
         @Override PackedCoordinateSequence toSequence(final boolean close) {
-            if (close && !JDK9.equals(buffer, 0, 2, buffer, length - 2, length)) {
+            if (close && !Arrays.equals(buffer, 0, 2, buffer, length - 2, length)) {
                 addPoint(buffer);
             }
             return new PackedCoordinateSequence.Float(buffer, length);

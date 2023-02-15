@@ -26,25 +26,25 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.util.DoubleDouble;
 
 
 /**
  * Conversions between units that can be represented by a linear operation (scale or offset).
  * Note that the "linear" word in this class does not have the same meaning than the same word
- * in the {@link #isLinear()} method inherited from JSR-363.
+ * in the {@link #isLinear()} method inherited from JSR-385.
  *
- * <p><b>Implementation note:</b>
+ * <h2>Implementation note</h2>
  * for performance reason we should create specialized subtypes for the case where there is only a scale to apply,
  * or only an offset, <i>etc.</i> But we don't do that in Apache SIS implementation because we will rarely use the
  * {@code UnitConverter} for converting a lot of values. We rather use {@code MathTransform} for operations on
  * <var>n</var>-dimensional tuples, and unit conversions are only a special case of those more generic operations.
  * The {@code sis-referencing} module provided the specialized implementations needed for efficient operations
- * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.</p>
+ * and know how to copy the {@code UnitConverter} coefficients into an affine transform matrix.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
- * @module
  */
 final class LinearConverter extends AbstractConverter implements LenientComparable {
     /**
@@ -187,7 +187,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
 
     /**
      * Indicates if this converter is linear.
-     * JSR-363 defines a converter as linear if:
+     * JSR-385 defines a converter as linear if:
      *
      * <ul>
      *   <li>{@code convert(u + v) == convert(u) + convert(v)}</li>
@@ -221,15 +221,13 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * Returns the inverse of this unit converter.
      * Given that the formula applied by this converter is:
      *
-     * {@preformat math
-     *    y = (x⋅scale + offset) ∕ divisor
-     * }
+     * <pre class="math">
+     *    y = (x⋅scale + offset) ∕ divisor</pre>
      *
      * the inverse formula is:
      *
-     * {@preformat math
-     *    x = (y⋅divisor - offset) ∕ scale
-     * }
+     * <pre class="math">
+     *    x = (y⋅divisor - offset) ∕ scale</pre>
      */
     @Override
     public synchronized UnitConverter inverse() {
@@ -242,6 +240,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
 
     /**
      * Returns the coefficient of this linear conversion.
+     * Coefficients are offset and scale, in that order.
      */
     @Override
     @SuppressWarnings("fallthrough")
@@ -261,11 +260,13 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * package to perform more accurate calculations.
      */
     private static Number ratio(final double value, final double divisor) {
-        final int numerator = (int) value;
-        if (numerator == value) {
-            final int denominator = (int) divisor;
-            if (denominator == divisor) {
-                return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+        if (value != 0) {
+            final int numerator = (int) value;
+            if (numerator == value) {
+                final int denominator = (int) divisor;
+                if (denominator == divisor) {
+                    return (denominator == 1) ? numerator : new Fraction(numerator, denominator);
+                }
             }
         }
         return value / divisor;
@@ -276,21 +277,22 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public double convert(final double value) {
-        // TODO: use JDK9' Math.fma(…) and verify if it solve the accuracy issue in LinearConverterTest.inverse().
-        return (value * scale + offset) / divisor;
+        return Math.fma(value, scale, offset) / divisor;
     }
 
     /**
      * Applies the linear conversion on the given value. This method uses {@link BigDecimal} arithmetic if
-     * the given value is an instance of {@code BigDecimal}, or IEEE 754 floating-point arithmetic otherwise.
-     *
-     * <p>Apache SIS rarely uses {@link BigDecimal} arithmetic, so providing an efficient implementation of
-     * this method is not a goal.</p>
+     * the given value is an instance of {@code BigDecimal}, or double-double arithmetic if the value is an
+     * instance of {@link DoubleDouble}, or IEEE 754 floating-point arithmetic otherwise.
      */
     @Override
     public Number convert(Number value) {
         ArgumentChecks.ensureNonNull("value", value);
         if (!isIdentity()) {
+            if (value instanceof DoubleDouble) {
+                var dd = (DoubleDouble) value;
+                return dd.multiply(scale, true).add(offset, true).divide(divisor, true);
+            }
             if (value instanceof BigInteger) {
                 value = new BigDecimal((BigInteger) value);
             }
@@ -326,16 +328,14 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      * by the specified converter (right converter), and then converting by this converter (left converter).  In the
      * following equations, the 1 subscript is for the specified converter and the 2 subscript is for this converter:
      *
-     * {@preformat math
+     * <pre class="math">
      *    t = (x⋅scale₁ + offset₁) ∕ divisor₁
-     *    y = (t⋅scale₂ + offset₂) ∕ divisor₂
-     * }
+     *    y = (t⋅scale₂ + offset₂) ∕ divisor₂</pre>
      *
      * We rewrite as:
      *
-     * {@preformat math
-     *    y = (x⋅scale₁⋅scale₂ + offset₁⋅scale₂ + divisor₁⋅offset₂) ∕ (divisor₁⋅divisor₂)
-     * }
+     * <pre class="math">
+     *    y = (x⋅scale₁⋅scale₂ + offset₁⋅scale₂ + divisor₁⋅offset₂) ∕ (divisor₁⋅divisor₂)</pre>
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {
@@ -354,8 +354,8 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
             otherDivisor = lc.divisor;
         } else if (converter.isLinear()) {
             /*
-             * Fallback for foreigner implementations. Note that 'otherOffset' should be restricted to zero
-             * according JSR-363 definition of 'isLinear()', but let be safe; maybe we are not the only one
+             * Fallback for foreigner implementations. Note that `otherOffset` should be restricted to zero
+             * according JSR-385 definition of `isLinear()`, but let be safe; maybe we are not the only one
              * to have a different interpretation about the meaning of "linear".
              */
             otherOffset  = converter.convert(0.0);

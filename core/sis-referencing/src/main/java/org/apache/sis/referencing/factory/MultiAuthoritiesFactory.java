@@ -45,7 +45,6 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.AbstractIterator;
 import org.apache.sis.internal.util.DefinitionURI;
@@ -151,7 +150,6 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
  *
  * @since 0.7
- * @module
  */
 public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory
@@ -490,9 +488,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     /**
      * Returns the code spaces of all factories given to the constructor.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * the current implementation may be relatively costly since it implies instantiation of all factories.
-     * </div>
+     * <h4>Performance note</h4>
+     * The current implementation may be relatively costly because it implies instantiation of all factories.
      *
      * @return the code spaces of all factories.
      */
@@ -520,7 +517,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             return ((GeodeticAuthorityFactory) factory).getCodeSpaces();
         } else {
             final String authority = Citations.toCodeSpace(factory.getAuthority());
-            return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
+            return (authority != null) ? Set.of(authority) : Set.of();
         }
     }
 
@@ -1511,8 +1508,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
          */
         final LogRecord record = Resources.forLocale(null).getLogRecord(Level.WARNING,
                 Resources.Keys.MismatchedOperationFactories_2, sourceCRS, targetCRS);
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
+        Logging.completeAndLog(LOGGER, MultiAuthoritiesFactory.class, "createFromCoordinateReferenceSystemCodes", record);
         return super.createFromCoordinateReferenceSystemCodes(sourceCRS, targetCRS);
     }
 
@@ -1610,7 +1606,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                     String name = IdentifiedObjects.getIdentifierOrName(ops[0]) + " ⟶ "
                                 + IdentifiedObjects.getIdentifierOrName(ops[ops.length - 1]);
                     combined = DefaultFactories.forBuildin(CoordinateOperationFactory.class)
-                            .createConcatenatedOperation(Collections.singletonMap(CoordinateOperation.NAME_KEY, name), ops);
+                            .createConcatenatedOperation(Map.of(CoordinateOperation.NAME_KEY, name), ops);
                 }
                 break;
             }
@@ -1813,7 +1809,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
                         }
                     }
                 }
-                finders = list.toArray(new IdentifiedObjectFinder[list.size()]);
+                finders = list.toArray(IdentifiedObjectFinder[]::new);
             } catch (BackingStoreException e) {
                 throw e.unwrapOrRethrow(FactoryException.class);
             }

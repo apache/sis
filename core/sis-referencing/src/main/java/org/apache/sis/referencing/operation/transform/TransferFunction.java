@@ -63,7 +63,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  * @see org.apache.sis.coverage.SampleDimension#getTransferFunction()
  *
  * @since 0.5
- * @module
  */
 public class TransferFunction implements Cloneable, Serializable {
     /**
@@ -98,6 +97,7 @@ public class TransferFunction implements Cloneable, Serializable {
      *
      * <p>This field is serialized because the transform may be a user-provided one.</p>
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private MathTransform1D transform;
 
     /**
@@ -278,7 +278,7 @@ public class TransferFunction implements Cloneable, Serializable {
             } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
                 mt = ExponentialTransform1D.create(base, scale);
                 if (offset != 0) {                                          // Rarely occurs in practice.
-                    mt = MathTransforms.concatenate(mt, LinearTransform1D.create(0, offset));
+                    mt = MathTransforms.concatenate(mt, LinearTransform1D.create(null, offset));
                 }
             } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
                 if (scale == 1) {

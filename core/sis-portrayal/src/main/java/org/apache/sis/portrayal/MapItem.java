@@ -50,7 +50,6 @@ import org.opengis.util.InternationalString;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class MapItem extends Observable {
     /**

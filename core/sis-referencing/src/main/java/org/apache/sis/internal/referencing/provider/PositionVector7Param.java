@@ -26,7 +26,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @XmlTransient
 public final class PositionVector7Param extends GeocentricAffine {

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,17 +46,11 @@ import org.apache.sis.internal.util.SimpleCharacterIterator;
  * will still been seen as 3 separated fields by this implementation.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")     // Not needed - see comment about clone() at the end of this file.
 final class FormattedCharacterIterator extends SimpleCharacterIterator implements AttributedCharacterIterator {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = -5864519830922231670L;
-
     /**
      * Holds a field value, together with the run range in which this value is valid.
      * Contains also a reference to the previous {@code Entry} in order to build a chained
@@ -81,12 +74,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      *   <li>{@link #limit} is 3.</li>
      * </ul>
      */
-    private static final class Entry implements Serializable {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = 3297480138621390486L;
-
+    private static final class Entry {
         /**
          * The attribute value.
          */
@@ -333,9 +321,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * by {@link FormattedCharacterIterator#getAttributes()}. The value to extract depends
      * on the character index.
      */
-    private static final class Selector extends SurjectiveConverter<Entry,Object> implements Serializable {
-        private static final long serialVersionUID = -7281235148346378214L;
-
+    private static final class Selector extends SurjectiveConverter<Entry,Object> {
         /** Index of the character for which the map of attributes is requested. */
         private final int index;
 
@@ -364,9 +350,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      * The object converter to use for filtering the keys in the map returned by
      * {@link FormattedCharacterIterator#getAttributes()}.
      */
-    private static class Filter extends SurjectiveConverter<Attribute,Attribute> implements Serializable {
-        private static final long serialVersionUID = 6951804952836918035L;
-
+    private static class Filter extends SurjectiveConverter<Attribute,Attribute> {
         /** A reference to {@link FormattedCharacterIterator#attributes}. */
         private final Map<Attribute,Entry> attributes;
 

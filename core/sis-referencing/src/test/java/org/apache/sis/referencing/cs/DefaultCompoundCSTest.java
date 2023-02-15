@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -30,10 +30,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(org.apache.sis.internal.referencing.AxisDirectionsTest.class)
-public final strictfp class DefaultCompoundCSTest extends TestCase {
+public final class DefaultCompoundCSTest extends TestCase {
     /**
      * Tests {@link DefaultCompoundCS} construction.
      */
@@ -41,8 +40,7 @@ public final strictfp class DefaultCompoundCSTest extends TestCase {
     public void testConstruction() {
         final DefaultCompoundCS cs = new DefaultCompoundCS(
                 HardCodedCS.PROJECTED,
-                new DefaultVerticalCS(Collections.singletonMap(DefaultVerticalCS.NAME_KEY,
-                        HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
+                new DefaultVerticalCS(Map.of(DefaultVerticalCS.NAME_KEY, HardCodedAxes.HEIGHT_cm.getName()), HardCodedAxes.HEIGHT_cm),
                 HardCodedCS.DAYS
         );
         assertEquals("Compound CS: East (m), North (m), Up (cm), Future (d).", cs.getName().getCode());

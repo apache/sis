@@ -33,7 +33,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
@@ -45,6 +44,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.storage.Resources;
 
 
@@ -59,9 +59,11 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
- * @since   0.3
- * @module
+ * @version 1.4
+ *
+ * @see org.apache.sis.io.IO
+ *
+ * @since 0.3
  */
 public final class IOUtilities extends Static {
     /**
@@ -95,9 +97,13 @@ public final class IOUtilities extends Static {
      * instance. If the given argument is specialized type like {@code Path} or {@code File}, then this method uses
      * dedicated API like {@link Path#getFileName()}. Otherwise this method gets a string representation of the path
      * and returns the part after the last {@code '/'} or platform-dependent name separator character, if any.
+     * The returned string may be empty if the given path is empty or is the root directory.
      *
      * @param  path  the path as an instance of one of the above-cited types, or {@code null}.
      * @return the filename in the given path, or {@code null} if the given object is null or of unknown type.
+     *
+     * @see #extension(Object)
+     * @see #toString(Object)
      */
     public static String filename(final Object path) {
         return part(path, false);
@@ -149,13 +155,15 @@ public final class IOUtilities extends Static {
              */
             end = name.length();
             do {
-                fromIndex = name.lastIndexOf('/', --end) + 1;
+                if (--end < 0) return "";               // `end` is temporarily inclusive in this loop.
+                fromIndex = name.lastIndexOf('/', end);
                 if (separator != '/') {
                     // Search for platform-specific character only if the object is neither a URL or a URI.
-                    fromIndex = Math.max(fromIndex, CharSequences.lastIndexOf(name, separator, fromIndex, end+1) + 1);
+                    fromIndex = Math.max(fromIndex, name.lastIndexOf(separator, end));
                 }
-            } while (fromIndex > end);
-            end++;
+            } while (fromIndex == end);                 // Continue if '/' is the last character.
+            fromIndex++;                                // Character after the '/' separator.
+            end++;                                      // Make exclusive.
         }
         if (extension) {
             fromIndex = CharSequences.lastIndexOf(name, '.', fromIndex, end) + 1;
@@ -173,6 +181,9 @@ public final class IOUtilities extends Static {
      *
      * @param  path  the path for which to return a string representation.
      * @return the string representation, or {@code null} if none.
+     *
+     * @see #filename(Object)
+     * @see #extension(Object)
      */
     public static String toString(final Object path) {
         /*
@@ -188,27 +199,6 @@ public final class IOUtilities extends Static {
          */
         if (path instanceof File) {
             return ((File) path).getPath();
-        }
-        return null;
-    }
-
-    /**
-     * Returns the given path as a {@link File}, or {@code null} if it cannot be converted.
-     *
-     * @param  path  the object to convert to a {@link File}. Can be {@code null}.
-     * @return the given path as a {@link File}, or {@code null} if it cannot be converted.
-     */
-    public static File toFile(final Object path) {
-        if (path instanceof File) {
-            return (File) path;
-        } else if (path instanceof Path) try {
-            return ((Path) path).toFile();
-        } catch (UnsupportedOperationException e) {
-            // Ignore.
-        } else if (path instanceof URI) try {
-            return new File((URI) path);
-        } catch (IllegalArgumentException e) {
-            // Ignore.
         }
         return null;
     }
@@ -416,7 +406,7 @@ public final class IOUtilities extends Static {
 
     /**
      * Converts a {@link URL} to a {@link Path}. This is equivalent to a call to the standard
-     * {@link URL#toURI()} method followed by a call to the {@link Paths#get(URI)} static method,
+     * {@link URL#toURI()} method followed by a call to the {@link Path#of(URI)} static method,
      * except for the following functionalities:
      *
      * <ul>
@@ -431,7 +421,7 @@ public final class IOUtilities extends Static {
      * @return the path for the given URL, or {@code null} if the given URL was null.
      * @throws IOException if the URL cannot be converted to a path.
      *
-     * @see Paths#get(URI)
+     * @see Path#of(URI)
      */
     public static Path toPath(final URL url, final String encoding) throws IOException {
         if (url == null) {
@@ -439,7 +429,7 @@ public final class IOUtilities extends Static {
         }
         final URI uri = toURI(url, encoding);
         try {
-            return Paths.get(uri);
+            return Path.of(uri);
         } catch (IllegalArgumentException | FileSystemNotFoundException cause) {
             final String message = Exceptions.formatChainedMessages(null,
                     Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause);
@@ -475,7 +465,7 @@ public final class IOUtilities extends Static {
      *                   then {@code null}. This argument is ignored if the given path does not need
      *                   to be converted from URL to {@code File}.
      * @return the path as a {@link File} if possible, or a {@link URL} otherwise.
-     * @throws IOException if the given path is not a file and can't be parsed as a URL.
+     * @throws IOException if the given path is not a file and cannot be parsed as a URL.
      */
     public static Object toFileOrURL(final String path, final String encoding) throws IOException {
         if (path == null) {
@@ -525,9 +515,9 @@ public final class IOUtilities extends Static {
         } else if (path instanceof File) {
             return ((File) path).toPath();
         } else if (path instanceof URI) {
-            return Paths.get((URI) path);
+            return Path.of((URI) path);
         } else if (path instanceof CharSequence) {
-            return Paths.get(path.toString());
+            return Path.of(path.toString());
         } else {
             return null;
         }
@@ -662,6 +652,18 @@ public final class IOUtilities extends Static {
             }
         }
         return isWrite & (!isRead | truncate);
+    }
+
+    /**
+     * Returns {@code true} if the given protocol is "http" or "https".
+     * The comparison is case-insensitive.
+     *
+     * @param  protocol  the protocol to test.
+     * @return whether the given protocol is HTTP(S).
+     */
+    public static boolean isHTTP(final String protocol) {
+        return Constants.HTTP .equalsIgnoreCase(protocol)
+            || Constants.HTTPS.equalsIgnoreCase(protocol);
     }
 
     /**

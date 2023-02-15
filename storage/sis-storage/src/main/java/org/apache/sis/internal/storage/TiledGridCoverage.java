@@ -42,12 +42,12 @@ import org.apache.sis.util.resources.Errors;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
+import static java.lang.Math.multiplyFull;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 
 
 /**
@@ -68,7 +68,6 @@ import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public abstract class TiledGridCoverage extends GridCoverage {
     /**
@@ -671,11 +670,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
         /**
          * Moves the iterator position to next tile. This method should be invoked in a loop as below:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     do {
          *         // Process current tile.
          *     } while (domain.next());
-         * }
+         *     }
          *
          * @return {@code true} on success, or {@code false} if the iteration is finished.
          */

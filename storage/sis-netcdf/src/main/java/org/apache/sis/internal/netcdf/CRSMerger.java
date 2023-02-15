@@ -37,7 +37,6 @@ import org.apache.sis.util.Utilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class CRSMerger extends GeodeticObjectBuilder {
     /**

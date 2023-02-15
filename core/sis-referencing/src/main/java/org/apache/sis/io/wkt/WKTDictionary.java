@@ -46,7 +46,6 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
@@ -89,16 +88,16 @@ import org.apache.sis.util.SimpleInternationalString;
  * The additional CRS are defined by Well-Known Text strings in a {@code "MyCRS.txt"} file.
  * First step is to create a CRS factory with those definitions:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public final class MyCRS extends WKTDictionary implements CRSAuthorityFactory {
  *         MyCRS() throws IOException, FactoryException {
  *             super(new DefaultCitation("MyAuthority"));
- *             try (BufferedReader source = Files.newBufferedReader(Paths.get("MyCRS.txt"))) {
+ *             try (BufferedReader source = Files.newBufferedReader(Path.of("MyCRS.txt"))) {
  *                 load(source);
  *             }
  *         }
  *     }
- * }
+ *     }
  *
  * The second step is to register this factory as a service with a
  * {@code META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory} file on the classpath.
@@ -128,7 +127,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
@@ -150,6 +148,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Code spaces of authority codes recognized by this factory.
      * This set is computed from the {@code "ID[…]"} elements found in WKT definitions.
+     * Code spaces are sorted with most frequently used space first.
      *
      * @see #getCodeSpaces()
      */
@@ -173,11 +172,11 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * All {@link #parser} usages after {@code WKTDictionary} construction shall be synchronized by
      * the {@link ReadWriteLock#writeLock()}.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we manage the locks ourselves instead of using a {@link java.util.concurrent.ConcurrentHashMap}
+     * <h4>Implementation note</h4>
+     * We manage the locks ourselves instead of using a {@link java.util.concurrent.ConcurrentHashMap}
      * because if a {@link #definitions} value needs to be computed, then we need to block all other
      * threads anyway since {@link #parser} is not thread-safe. Consequently, the high concurrency
-     * capability provided by {@code ConcurrentHashMap} does not help us in this case.</div>
+     * capability provided by {@code ConcurrentHashMap} does not help us in this case.
      */
     private final ReadWriteLock lock;
 
@@ -883,7 +882,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     public Set<String> getCodeSpaces() {
         lock.readLock().lock();
         try {
-            return JDK9.copyOf(codespaces);
+            return CollectionsExt.copyPreserveOrder(codespaces);
         } finally {
             lock.readLock().unlock();
         }
@@ -938,19 +937,13 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
                      * Verify if an existing collection (assigned to another type) provides the same values.
                      * If we find one, share the same instance for reducing memory usage.
                      */
-                    boolean share = false;
                     for (final Set<String> other : codeCaches.values()) {
                         if (codes.equals(other)) {
                             codes = other;
-                            share = true;
                             break;
                         }
                     }
-                    if (!share) {
-                        // TODO: replace by Set.copyOf(Set) in JDK9 and remove the `share` flag
-                        // (not needed because Set.copyOf(Set) does the verification itself).
-                        codes = CollectionsExt.unmodifiableOrCopy(codes);
-                    }
+                    codes = Set.copyOf(codes);
                     codeCaches.put(type, codes);
                 }
             } finally {

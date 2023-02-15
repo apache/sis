@@ -58,7 +58,6 @@ import static org.apache.sis.internal.referencing.provider.Polyconic.*;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public class Polyconic extends MeridianArcBased {
     /**
@@ -69,23 +68,21 @@ public class Polyconic extends MeridianArcBased {
     /**
      * Coefficients for reverse projection. Snyder 18-17 gives:
      *
-     * {@preformat math
+     * <pre class="math">
      *     c₀ =    (-5/256 ⋅e⁶  +  -3/64 ⋅e⁴  +  -1/4⋅e²  +  1)
      *     c₂ = -2⋅(45/1024⋅e⁶  +   3/32 ⋅e⁴  +   3/8⋅e²)
      *     c₄ = +4⋅(45/1024⋅e⁶  +  15/256⋅e⁴)
      *     c₆ = -6⋅(35/3072⋅e⁶)
-     *     M′  = c₀ + c₂cos(2φ) + c₄cos(4φ) + c₆cos(6φ)
-     * }
+     *     M′  = c₀ + c₂cos(2φ) + c₄cos(4φ) + c₆cos(6φ)</pre>
      *
      * but using trigonometric identities we rewrite as:
      *
-     * {@preformat math
+     * <pre class="math">
      *     c₀ =    1 - e²
      *     c₂ = - 3/2 ⋅e⁴  +   3/2⋅e²
      *     c₄ = -15/8 ⋅e⁶  +  15/8⋅e⁴
      *     c₆ =  35/16⋅e⁶
-     *     M′  = c₀ + sin²φ⋅(c₂ + sin²φ⋅(c₄ + sin²φ⋅c₆))
-     * }
+     *     M′  = c₀ + sin²φ⋅(c₂ + sin²φ⋅(c₄ + sin²φ⋅c₆))</pre>
      *
      * @see <a href="https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods">Coefficients derivation</a>
      */
@@ -280,7 +277,6 @@ public class Polyconic extends MeridianArcBased {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   1.0
-     * @module
      */
     private static final class Spherical extends Polyconic {
         /**

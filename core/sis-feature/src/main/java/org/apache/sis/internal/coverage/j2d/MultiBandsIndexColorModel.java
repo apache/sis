@@ -35,14 +35,13 @@ import java.awt.image.SinglePixelPackedSampleModel;
  *
  * <p><b>Reminder:</b> {@link #getNumComponents()} will return 3 or 4 no matter
  * how many bands were specified to the constructor. This is not specific to this class;
- * {@code IndexColorModel} behave that way. So we can't rely on this method for checking
+ * {@code IndexColorModel} behave that way. So we cannot rely on this method for checking
  * the number of bands.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Andrea Aime (TOPP)
- * @version 1.1
+ * @version 1.4
  * @since   1.0
- * @module
  */
 final class MultiBandsIndexColorModel extends IndexColorModel {
     /**
@@ -95,12 +94,11 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
      * There is no way to share the {@code int[]} array of ARGB values between two {@link IndexColorModel}s.</p>
      */
     final IndexColorModel createSubsetColorModel(final int[] bands) {
-        final int     bits        = getPixelSize();
         final int[]   cmap        = getARGB();
         final boolean hasAlpha    = hasAlpha();
         final int     transparent = getTransparentPixel();
         if (bands.length == 1) {
-            return new IndexColorModel(bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType);
+            return new IndexColorModel(pixel_bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType);
         }
         int vb = 0;
         for (int i=0; i<bands.length; i++) {
@@ -109,7 +107,7 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
                 break;
             }
         }
-        return new MultiBandsIndexColorModel(bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType, bands.length, vb);
+        return new MultiBandsIndexColorModel(pixel_bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType, bands.length, vb);
     }
 
     /**
@@ -179,6 +177,17 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
             case DataBuffer.TYPE_INT:    return                       ((int[]) inData)[visibleBand];
             default: throw new UnsupportedOperationException();
         }
+    }
+
+    /**
+     * Returns the number of bits per pixel described by this color model.
+     * Must return a value different then {@code super.getPixelSize()} for avoiding that
+     * {@link IndexColorModel#equals(Object)} consider this color model equal to a standard
+     * {@code IndexColorModel} with the same color palette.
+     */
+    @Override
+    public int getPixelSize() {
+        return pixel_bits * numBands;
     }
 
     /**
@@ -277,5 +286,30 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
                 sm.getTransferType()                 == transferType &&
                 sm.getNumBands()                     == numBands     &&
                 (1 << sm.getSampleSize(visibleBand)) >= getMapSize();
+    }
+
+    /**
+     * Compares this color model with the given object for equality.
+     *
+     * @param  obj  the other object to compare with this color model.
+     * @return whether both object are equal.
+     */
+    @Override
+    public boolean equals(final Object obj) {
+         if (obj instanceof MultiBandsIndexColorModel) {
+             final MultiBandsIndexColorModel other = (MultiBandsIndexColorModel) obj;
+             return numBands == other.numBands && visibleBand == other.visibleBand && super.equals(other);
+         }
+         return false;
+    }
+
+    /**
+     * Returns a hash code value for this color model.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return super.hashCode() + 31 * numBands + 37 * visibleBand;
     }
 }

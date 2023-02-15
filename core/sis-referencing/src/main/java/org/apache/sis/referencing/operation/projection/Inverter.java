@@ -49,9 +49,8 @@ import static java.lang.Math.abs;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-478">SIS-478</a>
  *
  * @since 1.1
- * @module
  */
-@SuppressWarnings({"CloneableImplementsClone", "serial"})
+@SuppressWarnings({"serial", "CloneableImplementsClone"})       // Not intended to be serialized.
 final class Inverter extends Matrix2 {
     /**
      * Creates a new matrix initialized to identity.

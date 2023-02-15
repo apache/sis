@@ -24,13 +24,13 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -46,7 +46,7 @@ import java.net.URISyntaxException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
@@ -119,7 +119,6 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
 import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION;
@@ -159,16 +158,20 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
  * @since 0.7
- * @module
  */
 public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized, AutoCloseable
 {
+    /**
+     * The logger for factory operation.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
+
     /**
      * The vertical datum type, which is fixed to a hard-coded value for all vertical datum for now.
      * Note that vertical datum type is no longer part of ISO 19111:2007.
@@ -417,7 +420,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * the {@linkplain Citation#getEditionDate() edition date}.
      * Example (the exact content will vary with Apache SIS versions, JDBC driver and EPSG dataset versions):
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
@@ -427,8 +430,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
      *      ├─ Description ……………………………… EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
-     *      └─ Function ……………………………………… Connection
-     * }
+     *      └─ Function ……………………………………… Connection</pre>
      */
     @Override
     public synchronized Citation getAuthority() {
@@ -436,7 +438,7 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
          * We do not cache this citation because the caching service is already provided by ConcurrentAuthorityFactory.
          */
         final DefaultCitation c = new DefaultCitation("EPSG Geodetic Parameter Dataset");
-        c.setIdentifiers(Collections.singleton(new ImmutableIdentifier(null, null, Constants.EPSG)));
+        c.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, Constants.EPSG)));
         try {
             /*
              * Get the most recent version number from the history table. We get the date in local timezone
@@ -493,7 +495,7 @@ addURIs:    for (int i=0; ; i++) {
                     r.setLinkage(new URI(url));
                 } catch (URISyntaxException exception) {
                     // May happen if there is spaces in the URI.
-                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, "getAuthority", exception);
+                    Logging.recoverableException(LOGGER, EPSGDataAccess.class, "getAuthority", exception);
                 }
                 r.setFunction(function);
                 r.setDescription(description);
@@ -512,9 +514,9 @@ addURIs:    for (int i=0; ; i++) {
      * This returned set may keep a connection to the EPSG database,
      * so the set can execute efficiently idioms like the following one:
      *
-     * {@preformat java
-     *     getAuthorityCodes(type).containsAll(others)
-     * }
+     * {@snippet lang="java" :
+     *     getAuthorityCodes(type).containsAll(others);
+     *     }
      *
      * The returned set should not be referenced for a long time, as it may prevent this factory to release
      * JDBC resources. If the set of codes is needed for a long time, their values should be copied in another
@@ -563,7 +565,7 @@ addURIs:    for (int i=0; ; i++) {
                 return existing;
             }
         }
-        Map<String,String> result = Collections.emptyMap();
+        Map<String,String> result = Map.of();
         for (final TableInfo table : TableInfo.EPSG) {
             /*
              * We test `isAssignableFrom` in the two ways for catching the following use cases:
@@ -627,7 +629,7 @@ addURIs:    for (int i=0; ; i++) {
      */
     @Override
     public Set<String> getCodeSpaces() {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -1031,14 +1033,14 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Ensures that this factory is not already building an object of the given code.
      * This method shall be followed by a {@code try ... finally} block like below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ensureNoCycle(type, code);
      *     try {
      *         ...
      *     } finally {
      *         endOfRecursive(type, code);
      *     }
-     * }
+     *     }
      */
     private void ensureNoCycle(final Class<?> type, final Integer code) throws FactoryException {
         if (safetyGuard.putIfAbsent(code, type) != null) {
@@ -1096,8 +1098,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         if (!quiet) {
             LogRecord record = Resources.forLocale(locale).getLogRecord(Level.WARNING, Resources.Keys.DeprecatedCode_3,
                     Constants.EPSG + Constants.DEFAULT_SEPARATOR + code, replacedBy, reason);
-            record.setLoggerName(Loggers.CRS_FACTORY);
-            Logging.log(EPSGDataAccess.class, method, record);
+            Logging.completeAndLog(LOGGER, EPSGDataAccess.class, method, record);
         }
         return (String) replacedBy;
     }
@@ -1177,7 +1178,7 @@ codes:  for (int i=0; i<codes.length; i++) {
             properties.put(IdentifiedObject.NAME_KEY, id);
         }
         if (!aliases.isEmpty()) {
-            properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(new GenericName[aliases.size()]));
+            properties.put(IdentifiedObject.ALIAS_KEY, aliases.toArray(GenericName[]::new));
         }
         if (code != null) {
             final String codeString = code.toString();
@@ -1972,8 +1973,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         // Log a warning and create the ellipsoid using the inverse flattening.
                         final LogRecord record = resources().getLogRecord(Level.WARNING,
                                 Resources.Keys.AmbiguousEllipsoid_1, Constants.EPSG + Constants.DEFAULT_SEPARATOR + code);
-                        record.setLoggerName(Loggers.CRS_FACTORY);
-                        Logging.log(EPSGDataAccess.class, "createEllipsoid", record);
+                        Logging.completeAndLog(LOGGER, EPSGDataAccess.class, "createEllipsoid", record);
                     }
                     ellipsoid = owner.datumFactory.createFlattenedSphere(properties, semiMajorAxis, inverseFlattening, unit);
                 }
@@ -2490,7 +2490,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         unit = Units.multiply(base, b, c);
                     } else try {
                         unit = Units.valueOf(getString(code, result, 5));           // Try parsing the unit symbol as a fallback.
-                    } catch (ParserException e) {
+                    } catch (MeasurementParseException e) {
                         throw new FactoryDataException(error().getString(Errors.Keys.UnknownUnit_1, code), e);
                     }
                 }
@@ -2554,7 +2554,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final Set<Unit<?>> units;
                 if (epsg != null && Arrays.binarySearch(EPSG_CODE_PARAMETERS, epsg) >= 0) {
                     type  = Integer.class;
-                    units = Collections.emptySet();
+                    units = Set.of();
                 } else {
                     /*
                      * If the parameter appears to have at least one non-null value in the "Parameter File Name" column,
@@ -2675,7 +2675,7 @@ next:                   while (r.next()) {
                 descriptors.add(owner.createParameterDescriptor(getString(method, result, 1)));
             }
         }
-        return descriptors.toArray(new ParameterDescriptor<?>[descriptors.size()]);
+        return descriptors.toArray(ParameterDescriptor<?>[]::new);
     }
 
     /**
@@ -2728,8 +2728,12 @@ next:                   while (r.next()) {
                 String reference;
                 if (Double.isNaN(value)) {
                     /*
-                     * If no numeric values were provided in the database, then the values should be
-                     * in some external file. It may be a file in the $SIS_DATA/DatumChanges directory.
+                     * If no numeric value was provided in the database, then the values should be in
+                     * an external file. It may be a file in the "$SIS_DATA/DatumChanges" directory.
+                     * The reference file should be relative and _not_ encoded for valid URI syntax.
+                     * The encoding will be applied by invoking an `URI` multi-argument constructor.
+                     * Note that we must use a multi-arguments constructor, not URI(String), because
+                     * the latter assumes an encoded string (which is not the case in EPSG database).
                      */
                     reference = getString(operation, result, 3);
                 } else {
@@ -2744,13 +2748,14 @@ next:                   while (r.next()) {
                 }
                 try {
                     if (reference != null) {
-                        param.setValue(reference);
+                        param.setValue(new URI(null, reference, null));     // See above comment.
                     } else if (unit != null) {
                         param.setValue(value, unit);
                     } else {
                         param.setValue(value);
                     }
-                } catch (RuntimeException exception) {  // Catch InvalidParameterValueException, ArithmeticException and others.
+                } catch (RuntimeException | URISyntaxException exception) {
+                    // Catch InvalidParameterValueException, ArithmeticException and others.
                     throw new FactoryDataException(error().getString(Errors.Keys.CanNotSetParameterValue_1, name), exception);
                 }
             }
@@ -2837,7 +2842,6 @@ next:                   while (r.next()) {
      * @throws FactoryException if the object creation failed for some other reason.
      */
     @Override
-    @SuppressWarnings("null")
     public synchronized CoordinateOperation createCoordinateOperation(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
@@ -3339,7 +3343,7 @@ next:                   while (r.next()) {
      * @param exception  the exception to log.
      */
     private static void unexpectedException(final String method, final Exception exception) {
-        Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY), EPSGDataAccess.class, method, exception);
+        Logging.unexpectedException(LOGGER, EPSGDataAccess.class, method, exception);
     }
 
     /**

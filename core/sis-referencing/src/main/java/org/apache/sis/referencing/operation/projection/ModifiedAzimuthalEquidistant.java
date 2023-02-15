@@ -45,12 +45,11 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Maxime Gavens (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see AzimuthalEquidistant
  *
  * @since 1.1
- * @module
  */
 public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     /**
@@ -119,11 +118,9 @@ public class ModifiedAzimuthalEquidistant extends AzimuthalEquidistant {
     @Workaround(library="JDK", version="1.8")
     private ModifiedAzimuthalEquidistant(final Initializer initializer) {
         super(initializer);
-        final double axisRatio, ν0, f;
-        axisRatio   = initializer.axisLengthRatio().doubleValue();
-        ν0          = initializer.radiusOfCurvature(sinφ0);
-        ℯ2_ν0_sinφ0 = eccentricitySquared * ν0 * sinφ0;
-        f           = eccentricity / axisRatio;                 // √(1 - ℯ²) = b/a
+        var ν0      = initializer.rν2(sinφ0).sqrt().inverse();
+        ℯ2_ν0_sinφ0 = initializer.eccentricitySquared.multiply(ν0).doubleValue() * sinφ0;
+        double f    = eccentricity / initializer.axisLengthRatio().doubleValue();           // √(1 - ℯ²) = b/a
         G           = f * sinφ0;
         Hp          = f * cosφ0;
         Bp          = 3*eccentricitySquared * (sinφ0*cosφ0) / (1 - eccentricitySquared);

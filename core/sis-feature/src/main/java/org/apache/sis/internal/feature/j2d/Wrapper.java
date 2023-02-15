@@ -17,6 +17,7 @@
 package org.apache.sis.internal.feature.j2d;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.BiPredicate;
 import java.awt.Shape;
@@ -35,7 +36,6 @@ import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.filter.sqlmm.SQLMM;
 import org.apache.sis.internal.referencing.j2d.ShapeUtilities;
 import org.apache.sis.internal.referencing.j2d.AbstractShape;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 
@@ -51,7 +51,6 @@ import org.opengis.filter.SpatialOperatorName;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class Wrapper extends GeometryWithCRS<Shape> {
     /**
@@ -328,7 +327,7 @@ add:    for (;;) {
                         case PathIterator.SEG_QUADTO: n=4; break;
                         default: n=6; break;
                     }
-                    if (!JDK9.equals(p1, 0, n, p2, 0, n)) {
+                    if (!Arrays.equals(p1, 0, n, p2, 0, n)) {
                         return false;
                     }
                 }

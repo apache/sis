@@ -59,16 +59,15 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * left to right). Iteration can be performed on a complete image or only a sub-region of it. Some optimized iterator
  * implementations exist for a few commonly used {@linkplain java.awt.image.SampleModel sample models}.
  *
- * <div class="note"><b>Example:</b>
- * {@preformat java
+ * <h2>Example</h2>
+ * {@snippet lang="java" :
  *     PixelIterator it = PixelIterator.create(image);
  *     double[] samples = null;
  *     while (it.next()) {
  *         samples = it.getPixel(samples);      // Get values in all bands.
  *         // Perform computation here...
  *     }
- * }
- * </div>
+ *     }
  *
  * <h2>Default implementation</h2>
  * This base class uses the {@link Raster} API for traversing the pixels in each tile.
@@ -86,7 +85,6 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public class PixelIterator {
     /**
@@ -293,11 +291,12 @@ public class PixelIterator {
      * with unspecified iteration order. Users can invoke setter methods for specifying
      * desired behavior for the iterators to create.
      *
-     * <div class="note"><b>Example:</b>
-     * {@preformat java
-     *     PixelIterator iterator = new PixelIterator.Builder().setRegionOfInterest(new Rectangle(10, 10, 5, 5).create(image);
-     * }
-     * </div>
+     * <h2>Example</h2>
+     * {@snippet lang="java" :
+     *     PixelIterator iterator = new PixelIterator.Builder()
+     *             .setRegionOfInterest(new Rectangle(10, 10, 5, 5)
+     *             .create(image);
+     *     }
      */
     public static class Builder {
         /**
@@ -715,15 +714,14 @@ public class PixelIterator {
      * the iterator state is as if the {@link #next()} method has been invoked just before to reach the
      * specified position.
      *
-     * <div class="note"><b>Usage example:</b>
-     * {@preformat java
+     * <h4>Usage example</h4>
+     * {@snippet lang="java" :
      *     iterator.moveTo(x, y);
      *     do {
      *         int sample = iterator.getSample(band);
      *         // Use sample value here...
      *     } while (iterator.next());
-     * }
-     * </div>
+     *     }
      *
      * @param  px  the column index of the pixel to make current.
      * @param  py  the row index of the pixel to make current.
@@ -1027,7 +1025,7 @@ public class PixelIterator {
      *
      * @see Raster#getPixel(int, int, int[])
      */
-    public int[] getPixel​(final int[] dest) {
+    public int[] getPixel(final int[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -1043,7 +1041,7 @@ public class PixelIterator {
      *
      * @see Raster#getPixel(int, int, float[])
      */
-    public float[] getPixel​(final float[] dest) {
+    public float[] getPixel(final float[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -1059,7 +1057,7 @@ public class PixelIterator {
      *
      * @see Raster#getPixel(int, int, double[])
      */
-    public double[] getPixel​(final double[] dest) {
+    public double[] getPixel(final double[] dest) {
         return currentRaster.getPixel(x, y, dest);
     }
 
@@ -1085,7 +1083,7 @@ public class PixelIterator {
      *
      * @since 1.1
      */
-    public Object getDataElements​(final Object dest) {
+    public Object getDataElements(final Object dest) {
         return currentRaster.getDataElements​(x, y, dest);
     }
 
@@ -1116,12 +1114,12 @@ public class PixelIterator {
      * those write operations may change the content of windows at {@linkplain #next() next positions}
      * unless the iteration order of this iterator is {@link SequenceType#LINEAR}.</p>
      *
-     * <div class="note"><b>Usage example:</b>
+     * <h4>Usage example</h4>
      * following code creates an iterator over the full area of given image, then a window of 5×5 pixels.
      * The window is moved over all the image area in iteration order. Inside the window, data are copied
      * in {@linkplain SequenceType#LINEAR linear order} regardless the iteration order.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     PixelIterator it = create(image, null, new Dimension(5, 5), null);     // Windows size will be 5×5 pixels.
      *     PixelIterator<FloatBuffer> window = it.createWindow(TransferType.FLOAT);
      *     FloatBuffer values = window.values;
@@ -1132,8 +1130,7 @@ public class PixelIterator {
      *             // use the sample value here.
      *         }
      *     }
-     * }
-     * </div>
+     *     }
      *
      * @param  <T>   the type of the data buffer to use for transferring data.
      * @param  type  the desired type of values ({@code int}, {@code float} or {@code double}).
@@ -1179,7 +1176,6 @@ public class PixelIterator {
      * @param  <T>  the type of buffer which can be used for transferring data.
      *
      * @since 0.8
-     * @module
      */
     public abstract static class Window<T extends Buffer> {
         /**

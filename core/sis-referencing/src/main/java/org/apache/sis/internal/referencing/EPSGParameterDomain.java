@@ -30,7 +30,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class EPSGParameterDomain extends NumberRange<Double> {
     /**
@@ -41,6 +40,7 @@ public final class EPSGParameterDomain extends NumberRange<Double> {
     /**
      * The units of measurement.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     public final Set<Unit<?>> units;
 
     /**

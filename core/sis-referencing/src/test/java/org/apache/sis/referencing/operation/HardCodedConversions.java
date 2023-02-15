@@ -17,8 +17,6 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import java.util.Collections;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -41,9 +39,8 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class HardCodedConversions {
+public final class HardCodedConversions {
     /**
      * A defining conversion for a <cite>Mercator (variant A)</cite> (also known as "1SP") projection
      * with a scale factor of 1.
@@ -58,12 +55,12 @@ public final strictfp class HardCodedConversions {
      * A defining conversion for a <cite>Universal Transverse Mercator zone 9</cite> projection.
      * Pseudo Well-Known Text for the {@link org.opengis.referencing.operation.MathTransform}:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   Param_MT["Transverse Mercator",
      *       Parameter["Longitude of natural origin", -129, Unit["degree"]],
      *       Parameter["Scale factor at natural origin", 0.9996],
      *       Parameter["False easting", 500000, Unit["metre"]]]]
-     * }
+     *   }
      */
     public static final DefaultConversion UTM;
     static {
@@ -102,7 +99,7 @@ public final strictfp class HardCodedConversions {
      * Creates a defining conversion of the given name with given parameter values.
      */
     private static DefaultConversion create(final String name, final OperationMethod method, final ParameterValueGroup pg) {
-        return new DefaultConversion(Collections.singletonMap(OperationMethod.NAME_KEY, name), method, null, pg);
+        return new DefaultConversion(Map.of(OperationMethod.NAME_KEY, name), method, null, pg);
     }
 
     /**
@@ -121,7 +118,7 @@ public final strictfp class HardCodedConversions {
      * @return two-dimensional projection using the given method.
      */
     public static DefaultProjectedCRS createCRS(final DefaultConversion conversion) {
-        return new DefaultProjectedCRS(Collections.singletonMap(ProjectedCRS.NAME_KEY, conversion.getName()),
+        return new DefaultProjectedCRS(Map.of(ProjectedCRS.NAME_KEY, conversion.getName()),
                 HardCodedCRS.WGS84, conversion, HardCodedCS.PROJECTED);
     }
 
@@ -182,8 +179,8 @@ public final strictfp class HardCodedConversions {
         final DefaultConversion c = create("Lambert Conic Conformal", method, pg);
         final ImmutableIdentifier id = new ImmutableIdentifier(Citations.ESRI, "ESRI", "102110");
         return new DefaultProjectedCRS(
-                JDK9.mapOf(ProjectedCRS.NAME_KEY, "RGF 1993 Lambert",
-                           ProjectedCRS.IDENTIFIERS_KEY, id),
+                Map.of(ProjectedCRS.NAME_KEY, "RGF 1993 Lambert",
+                       ProjectedCRS.IDENTIFIERS_KEY, id),
                 HardCodedCRS.GRS80, c, HardCodedCS.PROJECTED);
     }
 
@@ -191,6 +188,6 @@ public final strictfp class HardCodedConversions {
      * Puts the given name in a property map CRS constructors.
      */
     private static Map<String,?> name(final String name) {
-        return Collections.singletonMap(ProjectedCRS.NAME_KEY, name);
+        return Map.of(ProjectedCRS.NAME_KEY, name);
     }
 }

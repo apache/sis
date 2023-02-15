@@ -27,9 +27,8 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
-public final strictfp class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilterTestCase<Shape> {
+public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilterTestCase<Shape> {
     /**
      * Creates a new test.
      */

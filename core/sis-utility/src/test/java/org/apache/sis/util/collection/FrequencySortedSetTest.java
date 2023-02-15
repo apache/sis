@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Set;
 import java.util.Collections;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -30,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class FrequencySortedSetTest extends TestCase {
+public final class FrequencySortedSetTest extends TestCase {
     /**
      * A simple case with only two elements, the first one being omitted.
      */
@@ -43,7 +43,7 @@ public final strictfp class FrequencySortedSetTest extends TestCase {
             final FrequencySortedSet<Integer> set = new FrequencySortedSet<>(reverse);
             assertFalse(set.add(12, 0));
             assertTrue (set.add(18, 11));
-            assertEquals(Collections.singleton(18), set);
+            assertEquals(Set.of(18), set);
             assertArrayEquals(new int[] {11}, set.frequencies());
         } while ((reverse = !reverse) == true);
     }

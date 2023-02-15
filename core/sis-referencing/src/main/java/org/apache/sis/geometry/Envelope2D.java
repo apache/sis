@@ -40,7 +40,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
 
-// Following imports are needed because we can't extend AbstractEnvelope.
+// Following imports are needed because we cannot extend AbstractEnvelope.
 // We want to write this class as if it was an AbstractEnvelope subclass.
 import static org.apache.sis.geometry.AbstractEnvelope.getAxis;
 import static org.apache.sis.geometry.AbstractEnvelope.getCommonCRS;
@@ -103,7 +103,6 @@ import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
  *
  * @since 0.3
- * @module
  */
 public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiable, Cloneable {
     /**
@@ -125,6 +124,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     /**
      * The coordinate reference system, or {@code null}.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private CoordinateReferenceSystem crs;
 
     /**
@@ -1182,9 +1182,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}".
      * Example:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   BOX(-90 -180, 90 180)
-     * }
+     *   }
      *
      * @see Envelopes#toString(Envelope)
      */

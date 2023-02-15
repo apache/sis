@@ -51,7 +51,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 final class Reader extends GeoTIFF {
     /**
@@ -115,9 +114,9 @@ final class Reader extends GeoTIFF {
      * Entries having a value that cannot be read immediately, but instead have a pointer
      * to a value stored elsewhere in the file. Those values will be read only when needed.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we use a {@code LinkedList} because we will perform frequent additions and removals,
-     * but no random access.</div>
+     * <h4>Implementation note</h4>
+     * We use a {@code LinkedList} because we will perform frequent additions and removals,
+     * but no random access.
      */
     private final LinkedList<DeferredEntry> deferredEntries = new LinkedList<>();
 
@@ -454,6 +453,7 @@ final class Reader extends GeoTIFF {
 
     /**
      * Closes this reader.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws IOException if an error occurred while closing this reader.
      */

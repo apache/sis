@@ -25,9 +25,8 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-referencing} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.referencing.LazySetTest.class,
@@ -219,10 +218,6 @@ import org.junit.BeforeClass;
     // Direct (not from authority codes) geodetic object creations.
     org.apache.sis.referencing.StandardDefinitionsTest.class,
     org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class,
-    org.apache.sis.referencing.factory.GIGS3002.class,
-    org.apache.sis.referencing.factory.GIGS3003.class,
-    org.apache.sis.referencing.factory.GIGS3004.class,
-    org.apache.sis.referencing.factory.GIGS3005.class,
 
     // Well Known Text parsing require above factory.
     org.apache.sis.io.wkt.MathTransformParserTest.class,
@@ -231,17 +226,6 @@ import org.junit.BeforeClass;
     org.apache.sis.io.wkt.WKTParserTest.class,
     org.apache.sis.io.wkt.WKTDictionaryTest.class,
     org.apache.sis.io.wkt.ComparisonWithEPSG.class,
-
-    // Geodetic object creations from authority codes.
-    org.apache.sis.referencing.factory.GIGS2001.class,
-    org.apache.sis.referencing.factory.GIGS2002.class,
-    org.apache.sis.referencing.factory.GIGS2003.class,
-    org.apache.sis.referencing.factory.GIGS2004.class,
-    org.apache.sis.referencing.factory.GIGS2005.class,
-    org.apache.sis.referencing.factory.GIGS2006.class,
-    org.apache.sis.referencing.factory.GIGS2007.class,
-    org.apache.sis.referencing.factory.GIGS2008.class,
-    org.apache.sis.referencing.factory.GIGS2009.class,
 
     // Following tests may use indirectly EPSG factory.
     org.apache.sis.referencing.CommonCRSTest.class,
@@ -302,7 +286,7 @@ import org.junit.BeforeClass;
     org.apache.sis.test.integration.MetadataTest.class,
     org.apache.sis.test.integration.ConsistencyTest.class
 })
-public final strictfp class ReferencingTestSuite extends TestSuite {
+public final class ReferencingTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

@@ -50,9 +50,8 @@ import static org.apache.sis.internal.referencing.provider.AlbersEqualArea.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
- * @module
  */
 public class AlbersEqualArea extends AuthalicConversion {
     /**
@@ -128,11 +127,11 @@ public class AlbersEqualArea extends AuthalicConversion {
         final double cosφ1 = cos(φ1);
         final double sinφ2 = sin(φ2);
         final double cosφ2 = cos(φ2);
-        final double m1 = initializer.scaleAtφ(sinφ1, cosφ1);           // = cos(φ₁) / √(1 – ℯ²sin²φ₁)
-        final double α1 = qm(sinφ1);                                    // Omitted ×(1-ℯ²)
+        final double m1    = initializer.scaleAtφ(sinφ1, cosφ1);        // (cos(φ₁) / √(1 – ℯ²sin²φ₁))²
+        final double α1    = qm(sinφ1);                                 // Omitted ×(1-ℯ²) (see below)
         if (secant) {
-            final double m2 = initializer.scaleAtφ(sinφ2, cosφ2);       // = cos(φ₂) / √(1 – ℯ²sin²φ₂)
-            final double α2 = qm(sinφ2);                                // Omitted ×(1-ℯ²)
+            final double m2 = initializer.scaleAtφ(sinφ2, cosφ2);       // (cos(φ₂) / √(1 – ℯ²sin²φ₂))²
+            final double α2 = qm(sinφ2);                                // Omitted ×(1-ℯ²) (see below)
             nm = (m1*m1 - m2*m2) / (α2 - α1);                           // n = nm / (1-ℯ²)
         } else {
             nm = sinφ1;
@@ -141,29 +140,25 @@ public class AlbersEqualArea extends AuthalicConversion {
         /*
          * Compute rn = (1-ℯ²)/nm, which is the reciprocal of the "real" n used in Snyder and EPSG guidance note.
          * We opportunistically use double-double arithmetic since the MatrixSIS operations use them anyway, but
-         * we do not really have that accuracy because of the limited precision of 'nm'. The intent is rather to
-         * increase the chances term cancellations happen during concatenation of coordinate operations.
+         * we do not really have that accuracy because of the limited precision of `nm`. The intent is rather to
+         * increase the chances that term cancellations happen during concatenation of coordinate operations.
          */
-        final DoubleDouble rn = new DoubleDouble(1d);
-        rn.subtract(initializer.eccentricitySquared);
-        rn.divide(nm);
+        final DoubleDouble rn = DoubleDouble.ONE.subtract(initializer.eccentricitySquared).divide(nm, false);
         /*
-         * Compute  ρ₀ = √(C - n⋅q(sinφ₀))/n  with multiplication by a omitted because already taken in account
-         * by the denormalization matrix. Omitted (1-ℯ²) term in nm cancels with omitted (1-ℯ²) term in qm(…).
+         * Compute  ρ₀ = √(C - n⋅q(sinφ₀))/n  with multiplication by `a` omitted because already taken in account
+         * by the denormalization matrix. Omitted (1-ℯ²) term in `nm` cancels with omitted (1-ℯ²) term in qm(…).
          * See above note about double-double arithmetic usage.
          */
-        final DoubleDouble ρ0 = new DoubleDouble(C - nm*qm(sinφ0));
-        ρ0.sqrt();
-        ρ0.multiply(rn);
+        final var ρ0 = DoubleDouble.sum(C, -nm*qm(sinφ0)).sqrt().multiply(rn);
         /*
          * At this point, all parameters have been processed. Now process to their
          * validation and the initialization of (de)normalize affine transforms.
          */
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        denormalize.convertBefore(0, rn, null); rn.negate();
-        denormalize.convertBefore(1, rn, ρ0);   rn.inverseDivide(-1);
-        normalize.convertAfter(0, rn, null);    // On this line, `rn` became `n`.
+        denormalize.convertBefore(0, rn, null);
+        denormalize.convertBefore(1, rn.negate(), ρ0);
+        normalize  .convertAfter (0, rn.inverse(), null);
     }
 
     /**
@@ -292,7 +287,6 @@ public class AlbersEqualArea extends AuthalicConversion {
      * @author  Rémi Maréchal (Geomatys)
      * @version 1.1
      * @since   0.8
-     * @module
      */
     static final class Spherical extends AlbersEqualArea {
         /**

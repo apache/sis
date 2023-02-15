@@ -26,7 +26,6 @@ import org.apache.sis.internal.jaxb.gml.CodeListAdapter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class CD_VerticalDatumType extends CodeListAdapter<VerticalDatumType> {
     /**

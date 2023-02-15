@@ -17,7 +17,6 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
-import java.util.Collections;
 import java.awt.Rectangle;
 import java.awt.Image;
 import java.awt.image.Raster;
@@ -26,7 +25,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.ImagingOpException;
 import org.apache.sis.image.ComputedImage;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.resources.Errors;
 
@@ -43,7 +41,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class BatchComputedImage extends ComputedImage {
     /**
@@ -96,7 +93,7 @@ public abstract class BatchComputedImage extends ComputedImage {
      */
     protected BatchComputedImage(final SampleModel sampleModel, final Map<String,Object> properties, final RenderedImage... sources) {
         super(sampleModel, sources);
-        this.properties = (properties != null) ? JDK9.copyOf(properties) : Collections.emptyMap();
+        this.properties = (properties != null) ? Map.copyOf(properties) : Map.of();
     }
 
     /**

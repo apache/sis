@@ -17,7 +17,6 @@
 package org.apache.sis.storage.landsat;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
@@ -50,7 +49,6 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class Band extends GridResourceWrapper implements SchemaModifier {
     /**
@@ -124,7 +122,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
         if (parent.directory != null) {
             file = parent.directory.resolve(filename);
         } else {
-            file = Paths.get(filename);
+            file = Path.of(filename);
         }
         final StorageConnector connector = new StorageConnector(file);
         connector.setOption(SchemaModifier.OPTION, this);

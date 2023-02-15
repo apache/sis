@@ -48,10 +48,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({DefaultGeographicBoundingBoxTest.class, DefaultExtentTest.class})
-public final strictfp class ExtentsTest extends TestCase {
+public final class ExtentsTest extends TestCase {
     /**
      * One minute of angle, in degrees.
      */
@@ -63,7 +62,6 @@ public final strictfp class ExtentsTest extends TestCase {
      * @throws IncommensurableException if a conversion between incompatible units were attempted.
      */
     @Test
-    @SuppressWarnings("null")
     public void testGetVerticalRange() throws IncommensurableException {
         final List<DefaultVerticalExtent> extents = Arrays.asList(
                 new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),

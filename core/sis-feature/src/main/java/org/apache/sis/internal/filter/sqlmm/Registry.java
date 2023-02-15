@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.filter.FunctionRegister;
-import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.jdk17.JDK17;
 
 // Branch-dependent imports
 import org.opengis.filter.Expression;
@@ -34,7 +34,6 @@ import org.opengis.filter.Expression;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class Registry implements FunctionRegister {
     /**
@@ -64,7 +63,7 @@ public final class Registry implements FunctionRegister {
      */
     @Override
     public Collection<String> getNames() {
-        return JDK9.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
+        return JDK17.toList(Arrays.stream(SQLMM.values()).map(SQLMM::name));
     }
 
     /**

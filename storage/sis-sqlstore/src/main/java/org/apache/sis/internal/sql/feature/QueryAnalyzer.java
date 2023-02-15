@@ -40,7 +40,6 @@ import org.apache.sis.internal.metadata.sql.Reflection;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class QueryAnalyzer extends FeatureAnalyzer {
     /**
@@ -181,6 +180,6 @@ final class QueryAnalyzer extends FeatureAnalyzer {
                 attributes.add(column);
             }
         }
-        return attributes.toArray(new Column[attributes.size()]);
+        return attributes.toArray(Column[]::new);
     }
 }

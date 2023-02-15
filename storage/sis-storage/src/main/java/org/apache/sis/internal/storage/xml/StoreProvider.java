@@ -16,6 +16,8 @@
  */
 package org.apache.sis.internal.storage.xml;
 
+import java.util.Map;
+import java.util.logging.Logger;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -29,9 +31,8 @@ import org.apache.sis.internal.storage.Capability;
  * The provider of {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.4
- * @module
  */
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "xml",
@@ -43,17 +44,24 @@ public final class StoreProvider extends AbstractProvider {
     public static final String NAME = "XML";
 
     /**
+     * The logger used by XML stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.xml");
+
+    /**
      * Creates a new provider.
      */
     public StoreProvider() {
-        super(null);
-        mimeForNameSpaces.put(      Namespaces.GML,       "application/gml+xml");
-        mimeForNameSpaces.put(      Namespaces.CSW,       "application/vnd.ogc.csw_xml");
-        mimeForNameSpaces.put(LegacyNamespaces.CSW,       "application/vnd.ogc.csw_xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMD,       "application/vnd.iso.19139+xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMI,       "application/vnd.iso.19139+xml");
-        mimeForNameSpaces.put(LegacyNamespaces.GMI_ALIAS, "application/vnd.iso.19139+xml");
-        mimeForRootElements.put("MD_Metadata",            "application/vnd.iso.19139+xml");
+        super(null,
+              Map.of(      Namespaces.GML,       "application/gml+xml",
+                           Namespaces.CSW,       "application/vnd.ogc.csw_xml",
+                     LegacyNamespaces.CSW,       "application/vnd.ogc.csw_xml",
+                     LegacyNamespaces.GMD,       "application/vnd.iso.19139+xml",
+                     LegacyNamespaces.GMI,       "application/vnd.iso.19139+xml",
+                     LegacyNamespaces.GMI_ALIAS, "application/vnd.iso.19139+xml"),
+              Map.of("MD_Metadata",              "application/vnd.iso.19139+xml"));
         // More types to be added in future versions.
     }
 
@@ -77,5 +85,13 @@ public final class StoreProvider extends AbstractProvider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new Store(this, connector);
+    }
+
+    /**
+     * {@return the logger used by XML stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

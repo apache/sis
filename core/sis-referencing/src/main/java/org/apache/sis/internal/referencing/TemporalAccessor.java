@@ -33,7 +33,6 @@ import org.apache.sis.measure.Range;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public final class TemporalAccessor {
     /**

@@ -31,7 +31,6 @@ import java.util.Iterator;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class SingletonElement extends AbstractSet<Element> {
     /**
@@ -66,7 +65,7 @@ final class SingletonElement extends AbstractSet<Element> {
      */
     @Override
     public Iterator<Element> iterator() {
-        return (isEmpty() ? Collections.<Element>emptySet() : Collections.singleton(value)).iterator();
+        return isEmpty() ? Collections.emptyIterator() : Collections.singleton(value).iterator();
     }
 
     /**

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.storage;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.content.ContentInformation;
@@ -44,14 +44,13 @@ import org.opengis.feature.FeatureType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
-public final strictfp class MetadataBuilderTest extends TestCase {
+public final class MetadataBuilderTest extends TestCase {
     /**
      * Tests {@link MetadataBuilder#parseLegalNotice(String)}.
      * The expected result of this parsing is:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Metadata
      *     └─Identification info
      *         └─Resource constraints
@@ -64,8 +63,7 @@ public final strictfp class MetadataBuilderTest extends TestCase {
      *                 └─Cited responsible party
      *                     ├─Party
      *                     │   └─Name…………………………… John Smith
-     *                     └─Role……………………………………… Owner
-     * }
+     *                     └─Role……………………………………… Owner</pre>
      */
     @Test
     public void testParseLegalNotice() {
@@ -138,9 +136,8 @@ public final strictfp class MetadataBuilderTest extends TestCase {
      * @param valueToInsert  the value to send to the metadata builder.
      */
     private static void verifyFeatureInstanceCount(final String errorMessage, final Integer expected, final long valueToInsert) {
-        final DefaultFeatureType dataType = new DefaultFeatureType(
-                Collections.singletonMap(DefaultFeatureType.NAME_KEY, "Test type"), false, null);
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var dataType = new DefaultFeatureType(Map.of(DefaultFeatureType.NAME_KEY, "Test type"), false, null);
+        final var builder  = new MetadataBuilder();
         final GenericName name = builder.addFeatureType(dataType, valueToInsert);
         assertNotNull(name);
 

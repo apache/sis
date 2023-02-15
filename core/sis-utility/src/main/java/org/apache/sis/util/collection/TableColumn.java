@@ -17,7 +17,6 @@
 package org.apache.sis.util.collection;
 
 import java.util.Map;
-import java.util.Collections;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
@@ -33,7 +32,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * for a particular column. {@code TableColumn}s are used for fetching values from nodes
  * as in the following example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class CityLocation {
  *         public static final ColumnTable<String> CITY_NAME = new ColumnTable<>(String.class, "City name");
  *         public static final ColumnTable<Float>  LATITUDE  = new ColumnTable<>(Float.class,  "Latitude");
@@ -49,7 +48,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *             longitude = myNode.getValue(LONGITUDE);
  *         }
  *     }
- * }
+ *     }
  *
  * <h2>Identity comparisons and serialization</h2>
  * This base class relies on <cite>identity comparisons</cite> instead of defining the
@@ -64,7 +63,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * Developers who need serialization support for their own instances have to resolve them in
  * their own subclass. The following example is one possible way to achieve that goal:</p>
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public class CityLocation {
  *         public static final ColumnTable<String> CITY_NAME = new Column<>("CITY_NAME", String.class, "City name");
  *         public static final ColumnTable<Float>  LATITUDE  = new Column<>("LATITUDE",  Float.class,  "Latitude");
@@ -87,7 +86,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *             }
  *         }
  *     }
- * }
+ *     }
  *
  * The constants defined in this class use a similar approach for providing serialization support.
  *
@@ -97,7 +96,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @param <V>  base type of all values in the column identified by this instance.
  *
  * @since 0.3
- * @module
  */
 public class TableColumn<V> implements CheckedContainer<V> {
     /**
@@ -175,7 +173,7 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * A map containing only the {@link #NAME} column.
      * This is the default set of columns when parsing a tree table.
      */
-    static final Map<TableColumn<?>,Integer> NAME_MAP = Collections.singletonMap(NAME, 0);
+    static final Map<TableColumn<?>,Integer> NAME_MAP = Map.of(NAME, 0);
 
     /**
      * Base type of all values in the column identified by this {@code ColumnTable} instance.

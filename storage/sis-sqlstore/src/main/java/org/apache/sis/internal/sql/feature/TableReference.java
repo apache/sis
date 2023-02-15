@@ -37,7 +37,6 @@ import static org.apache.sis.internal.util.Strings.trimOrNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public class TableReference {
     /**

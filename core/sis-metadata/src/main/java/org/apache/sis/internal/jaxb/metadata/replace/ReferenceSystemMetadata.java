@@ -35,11 +35,10 @@ import org.apache.sis.xml.Namespaces;
  * referencing module, since the latter marshals the CRS as specified in GML (close
  * to ISO 19111 model). This class contains only CRS identification as below:
  *
- * {@preformat text
+ * <pre class="text">
  *   mrs:MD_ReferenceSystem
  *   ├─mrs:referenceSystemIdentifier  :  mcc:MD_Identifier
- *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode
- * }
+ *   └─mrs:referenceSystemType        :  mrs:MD_ReferenceSystemTypeCode</pre>
  *
  * The {@code referenceSystemType} attribute is currently missing.
  * See <a href="https://issues.apache.org/jira/browse/SIS-470">SIS-470</a>.
@@ -57,7 +56,6 @@ import org.apache.sis.xml.Namespaces;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
  *
  * @since 0.3
- * @module
  */
 @XmlType(name = "MD_ReferenceSystem_Type", namespace = Namespaces.MRS)
 @XmlRootElement(name = "MD_ReferenceSystem", namespace = Namespaces.MRS)

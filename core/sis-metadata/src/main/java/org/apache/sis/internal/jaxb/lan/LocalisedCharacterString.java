@@ -34,7 +34,6 @@ import org.apache.sis.internal.jaxb.Context;
  * @see TextGroup
  *
  * @since 0.3
- * @module
  */
 final class LocalisedCharacterString {
     /**
@@ -134,9 +133,7 @@ final class LocalisedCharacterString {
      * Returns a string representation of this object for debugging purpose.
      * Example:
      *
-     * {@preformat text
-     *   LocalisedCharacterString[#locale-fra, “Un texte”]
-     * }
+     * <pre class="text">LocalisedCharacterString[#locale-fra, “Un texte”]</pre>
      *
      * @see TextGroup#toString()
      */

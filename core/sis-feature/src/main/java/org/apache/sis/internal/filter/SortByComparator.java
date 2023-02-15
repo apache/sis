@@ -41,7 +41,6 @@ import org.opengis.filter.ValueReference;
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
  *
  * @since 1.0
- * @module
  */
 public final class SortByComparator<R> implements SortBy<R>, Serializable {
     /**
@@ -54,6 +53,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      *
      * @see #getSortProperties()
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final SortProperty<R>[] properties;
 
     /**
@@ -74,7 +74,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      */
     @SuppressWarnings({"unchecked","rawtypes"})             // Generic array creation.
     private SortByComparator(final Map<?, SortProperty<R>> merged) {
-        properties = merged.values().toArray(new SortProperty[merged.size()]);
+        properties = merged.values().toArray(SortProperty[]::new);
     }
 
     /**

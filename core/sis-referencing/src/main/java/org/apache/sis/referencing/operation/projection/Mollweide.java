@@ -52,7 +52,6 @@ import static org.apache.sis.internal.referencing.provider.Mollweide.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 public class Mollweide extends NormalizedProjection {
     /**

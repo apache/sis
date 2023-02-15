@@ -36,6 +36,8 @@ import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.storage.StoreResource;
 import org.apache.sis.math.Vector;
 
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_COMPRESSION;
+
 
 /**
  * One or many GeoTIFF images packaged as a single resource.
@@ -47,9 +49,8 @@ import org.apache.sis.math.Vector;
  * as it may cause an infinite loop in {@code listeners.getLocale()} call.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 abstract class DataCube extends TiledGridResource implements ResourceOnFileSystem, StoreResource {
     /**
@@ -214,11 +215,11 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                 final Compression compression = getCompression();
                 if (compression == null) {
                     throw new DataStoreContentException(reader.resources().getString(
-                            Resources.Keys.MissingValue_2, Tags.name(Tags.Compression)));
+                            Resources.Keys.MissingValue_2, Tags.name((short) TAG_COMPRESSION)));
                 }
                 /*
                  * The `DataSubset` parent class is the most efficient but has many limitations
-                 * documented in the javadoc of its `readSlice(…)` method. If any pre-condition
+                 * documented in the javadoc of its `readSlice(…)` method. If any precondition
                  * is not met, we need to fallback on the less direct `CompressedSubset` class.
                  */
                 if (compression == Compression.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {

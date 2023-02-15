@@ -23,6 +23,7 @@ import java.io.LineNumberReader;
 import java.nio.charset.Charset;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.InvalidSeekException;
+import org.apache.sis.storage.StorageConnector;
 
 
 /**
@@ -38,14 +39,15 @@ import org.apache.sis.io.InvalidSeekException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 @SuppressWarnings("SynchronizeOnNonFinalField")
 public final class RewindableLineReader extends LineNumberReader {
     /**
-     * Size of the buffer, in number of characters.
+     * Size of the buffer, in number of characters. The number of bytes is twice this amount.
+     * This is also the maximal "read ahead limit" that can be passed to {@link #mark(int)}
+     * without causing buffer reallocation.
      */
-    public static final int BUFFER_SIZE = 8192;
+    public static final int BUFFER_SIZE = StorageConnector.DEFAULT_BUFFER_SIZE / 2;
 
     /**
      * The input stream, or {@code null} if this reader cannot rewind anymore.

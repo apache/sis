@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
@@ -37,13 +38,12 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * However, this {@code AuthalicConversion} is <strong>not</strong> necessarily an authalic projection.
  * Subclasses may want to use the latitude conversion formulas for other purposes.
  *
- * <h3>References</h3>
+ * <h2>References</h2>
  * <p>Lee, L. P. "The Nomenclature and Classification of Map Projections." Empire Survey Review 7, 190-200, 1944.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 abstract class AuthalicConversion extends NormalizedProjection {
     /**
@@ -142,9 +142,9 @@ abstract class AuthalicConversion extends NormalizedProjection {
          * smallest values first in order to reduce rounding errors. The algebraic changes are
          * in https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods.
          */
-        c2β     =      4./7    * e6  +    3./5  * e4  +  2./3 * e2;
-        c4β     =  -3028./2835 * e6  +  -23./45 * e4;
-        c6β     =   1522./2835 * e6;
+        c2β     = fma(e2, 2./3, fma(e4,   3./5,  e6*(    4./7)));
+        c4β     =               fma(e4, -23./45, e6*(-3028./2835));
+        c6β     =                                e6*( 1522./2835);
         qmPolar = qm(1);
         useIterations = (eccentricity >= ECCENTRICITY_THRESHOLD);
     }
@@ -253,7 +253,12 @@ abstract class AuthalicConversion extends NormalizedProjection {
          * Snyder 3-18, but rewriten using trigonometric identities in order to avoid
          * multiple calls to sin(double) method.
          */
-        double φ = β + cos(β)*sinβ*(c2β + sinβ2*(c4β + sinβ2*c6β));
+        double φ;
+        if (Formulas.USE_FMA) {
+            φ = fma(fma(fma(sinβ2, c6β, c4β), sinβ2, c2β), cos(β)*sinβ, β);
+        } else {
+            φ = β + cos(β)*sinβ*(c2β + sinβ2*(c4β + sinβ2*c6β));
+        }
         if (useIterations) {
             /*
              * Mathematical note: Snyder 3-16 gives q/(1-ℯ²) instead of y in the calculation of Δφ below.

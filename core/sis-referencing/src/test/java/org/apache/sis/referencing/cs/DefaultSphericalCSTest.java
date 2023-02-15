@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.test.TestCase;
@@ -32,10 +32,9 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn(AbstractCSTest.class)
-public final strictfp class DefaultSphericalCSTest extends TestCase {
+public final class DefaultSphericalCSTest extends TestCase {
     /**
      * Tests a spherical CRS conforms to EPSG:8.9:6404 definition.
      * Expected axes are:
@@ -59,7 +58,7 @@ public final strictfp class DefaultSphericalCSTest extends TestCase {
                 AxisDirection.UP);
 
         assertEquals(new DefaultSphericalCS(
-                Collections.singletonMap(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
+                Map.of(AbstractCS.NAME_KEY, "Spherical CS: East (°), North (°), Up (m)."),
                 HardCodedAxes.SPHERICAL_LONGITUDE,
                 HardCodedAxes.SPHERICAL_LATITUDE,
                 HardCodedAxes.GEOCENTRIC_RADIUS), normalized);

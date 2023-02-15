@@ -31,7 +31,6 @@ import org.apache.sis.util.resources.IndexedResourceBundle;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -42,7 +41,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   1.2
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -70,6 +68,11 @@ public final class Resources extends IndexedResourceBundle {
          * File system {0,choice,0#not|1#already} initialized for the “{1}” access key.
          */
         public static final short FileSystemInitialized_2 = 4;
+
+        /**
+         * Invalid bucket name in “{0}”.
+         */
+        public static final short InvalidBucketName_1 = 8;
 
         /**
          * Missing {0,choice,0#public|1#secret} access key in “{1}” URI.

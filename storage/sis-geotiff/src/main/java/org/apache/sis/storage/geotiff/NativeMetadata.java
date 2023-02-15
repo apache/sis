@@ -34,6 +34,8 @@ import org.apache.sis.internal.geotiff.Compression;
 import org.apache.sis.internal.geotiff.Predictor;
 
 import static java.lang.Math.addExact;
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
+import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 
 /**
@@ -48,9 +50,8 @@ import static java.lang.Math.addExact;
  * <p>This class is thread-safe if the user does not try to write in the tree.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 final class NativeMetadata extends GeoKeysLoader {
     /**
@@ -82,8 +83,6 @@ final class NativeMetadata extends GeoKeysLoader {
 
     /**
      * The node for GeoKeys, or {@code null} if none.
-     *
-     * @see Tags#GeoKeyDirectory
      */
     private TreeTable.Node geoNode;
 
@@ -141,10 +140,10 @@ final class NativeMetadata extends GeoKeysLoader {
                      * This switch is only about tags to skip; special handlings of some tags are done later.
                      */
                     switch (tag) {
-                        case Tags.TileOffsets:
-                        case Tags.StripOffsets:
-                        case Tags.TileByteCounts:
-                        case Tags.StripByteCounts: visible = false; break;
+                        case TAG_TILE_OFFSETS:
+                        case TAG_STRIP_OFFSETS:
+                        case TAG_TILE_BYTE_COUNTS:
+                        case TAG_STRIP_BYTE_COUNTS: visible = false; break;
                         default: visible = (size != 0); break;
                     }
                     if (visible) {
@@ -159,18 +158,18 @@ final class NativeMetadata extends GeoKeysLoader {
                         Object value = null;
                         XMLMetadata children = null;
                         switch (tag) {
-                            case Tags.GeoKeyDirectory: {
+                            case (short) TAG_GEO_KEY_DIRECTORY: {
                                 writeGeoKeys();             // Flush previous keys if any (should never happen).
                                 keyDirectory = type.readVector(input, count);
                                 value = "GeoTIFF";
                                 break;
                             }
-                            case Tags.GeoDoubleParams: {
+                            case (short) TAG_GEO_DOUBLE_PARAMS: {
                                 numericParameters = type.readVector(input, count);
                                 visible = false;
                                 break;
                             }
-                            case Tags.GeoAsciiParams: {
+                            case (short) TAG_GEO_ASCII_PARAMS: {
                                 setAsciiParameters(type.readString(input, count, reader.store.encoding));
                                 visible = false;
                                 break;
@@ -199,8 +198,8 @@ final class NativeMetadata extends GeoKeysLoader {
                                  * an enumeration.
                                  */
                                 switch (tag) {
-                                    case Tags.Compression: value = toString(value, Compression::valueOf, Compression.UNKNOWN); break;
-                                    case Tags.Predictor:   value = toString(value,   Predictor::valueOf,   Predictor.UNKNOWN); break;
+                                    case TAG_COMPRESSION: value = toString(value, Compression::valueOf, Compression.UNKNOWN); break;
+                                    case TAG_PREDICTOR:   value = toString(value,   Predictor::valueOf,   Predictor.UNKNOWN); break;
                                 }
                             }
                         }
@@ -215,7 +214,7 @@ final class NativeMetadata extends GeoKeysLoader {
                                 node.setValue(VALUE, value);
                             }
                             node.setValue(CODE, Short.toUnsignedInt(tag));
-                            if (tag == Tags.GeoKeyDirectory) {
+                            if (tag == (short) TAG_GEO_KEY_DIRECTORY) {
                                 geoNode = node;
                             }
                         }

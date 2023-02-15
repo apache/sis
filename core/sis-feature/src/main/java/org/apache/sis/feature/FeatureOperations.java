@@ -109,7 +109,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final class FeatureOperations extends Static {
     /**
@@ -126,7 +125,7 @@ public final class FeatureOperations extends Static {
     /**
      * Creates an operation which is only an alias for another property.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * features often have a property that can be used as identifier or primary key.
      * But the name of that property may vary between features of different types.
      * For example, features of type <b>Country</b> may have identifiers named “ISO country code”
@@ -136,13 +135,12 @@ public final class FeatureOperations extends Static {
      * which links to whatever property is used as an identifier in an arbitrary feature.
      * So the definition of the <b>Car</b> feature could contain the following code:
      *
-     * {@preformat java
-     *   AttributeType licensePlateNumber = ...;            // Attribute creation omitted for brevity
-     *   FeatureType car = new DefaultFeatureType(...,      // Arguments omitted for brevity
-     *           licensePlateNumber, model, owner,
-     *           FeatureOperations.link(singletonMap(NAME_KEY, "identifier"), licensePlateNumber);
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     AttributeType licensePlateNumber = ...;            // Attribute creation omitted for brevity
+     *     FeatureType car = new DefaultFeatureType(...,      // Arguments omitted for brevity
+     *             licensePlateNumber, model, owner,
+     *             FeatureOperations.link(Map.of(NAME_KEY, "identifier"), licensePlateNumber);
+     *     }
      *
      * Since this method does not create new property (it only redirects to an existing property),
      * this method ignores all {@code "result.*"} entries in the given {@code identification} map.

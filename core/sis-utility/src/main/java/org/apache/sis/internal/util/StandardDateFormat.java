@@ -62,17 +62,17 @@ import org.apache.sis.util.CharSequences;
  * only hours, or only hours and minutes, <i>etc</i>. ISO 19162 said that the timezone is restricted to UTC
  * but nevertheless allows to specify a timezone.</p>
  *
+ * <h2>Serialization</h2>
+ * Despite inheriting the {@link java.io.Serializable} interface, this class is actually not serializable
+ * because the {@link #format} field is not serializable (a constraint of {@link java.time.format}).
+ * All usages in Apache SIS should be either in transient fields or in non-serializable classes.
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.6
- * @module
  */
+@SuppressWarnings("serial")     // Not intended to be serialized.
 public final class StandardDateFormat extends DateFormat {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 2764313272939921664L;
-
     /**
      * The {@value} timezone ID.
      *

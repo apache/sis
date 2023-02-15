@@ -43,9 +43,8 @@ import org.apache.sis.internal.util.Numerics;
  * @see Tracer.Level#partialPaths
  *
  * @since 1.1
- * @module
  */
-@SuppressWarnings({"CloneableImplementsClone", "serial"})           // Not intended to be cloned or serialized.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})           // Not intended to be serialized.
 final class Fragments extends ArrayList<double[]> {
     /**
      * The first points and last point in this list of polylines. By convention the coordinate having fraction

@@ -49,16 +49,16 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * While not mandatory, we suggest to extend {@link org.apache.sis.referencing.operation.DefaultOperationMethod}.
  * Example:
  *
- * <div class="note">{@preformat java
+ * {@snippet lang="java" :
  *     public class MyProjectionProvider extends DefaultOperationMethod implements MathTransformProvider {
  *         public MyProjectionProvider() {
- *             super(Collections.singletonMap(NAME_KEY, "My projection"),
+ *             super(Map.of(NAME_KEY, "My projection"),
  *                     2, // Number of source dimensions
  *                     2, // Number of target dimensions
  *                     parameters);
  *         }
  *
- *         &#64;Override
+ *         @Override
  *         public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
  *             double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
  *             double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
@@ -66,14 +66,14 @@ import org.opengis.referencing.operation.MathTransformFactory;
  *             return new MyProjection(semiMajor, semiMinor, ...);
  *         }
  *     }
- * }</div>
+ * }
  *
  * Then the fully-qualified class name of that implementation should be listed in a file reachable on the classpath
  * with this exact name:
  *
- * {@preformat text
+ * {@snippet :
  *     META-INF/services/org.opengis.referencing.operation.OperationMethod
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys, IRD)
  * @version 0.6
@@ -83,18 +83,17 @@ import org.opengis.referencing.operation.MathTransformFactory;
  * @see AbstractMathTransform
  *
  * @since 0.6
- * @module
  */
 @FunctionalInterface
 public interface MathTransformProvider {
     /**
      * Creates a math transform from the specified group of parameter values.
      *
-     * <div class="note"><b>Implementation example:</b>
+     * <h4>Implementation example</h4>
      * The following example shows how parameter values can be extracted
      * before to instantiate the transform:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup parameters) {
      *         double semiMajor = values.parameter("semi_major").doubleValue(Units.METRE);
      *         double semiMinor = values.parameter("semi_minor").doubleValue(Units.METRE);
@@ -102,7 +101,6 @@ public interface MathTransformProvider {
      *         return new MyProjection(semiMajor, semiMinor, ...);
      *     }
      * }
-     * </div>
      *
      * <h4>Purpose of the factory argument</h4>
      * Some math transforms may actually be implemented as a chain of operation steps, for example a

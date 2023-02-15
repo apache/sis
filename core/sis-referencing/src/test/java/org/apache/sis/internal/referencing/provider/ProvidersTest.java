@@ -38,7 +38,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
@@ -46,7 +45,7 @@ import static org.junit.Assert.*;
     LongitudeRotationTest.class,
     MapProjectionTest.class
 })
-public final strictfp class ProvidersTest extends TestCase {
+public final class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.
      */

@@ -53,7 +53,6 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see DefaultAssociationRole
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractAssociation extends Field<Feature> implements FeatureAssociation, Cloneable, Serializable {
     /**
@@ -64,6 +63,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
     /**
      * Information about the association.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final FeatureAssociationRole role;
 
     /**

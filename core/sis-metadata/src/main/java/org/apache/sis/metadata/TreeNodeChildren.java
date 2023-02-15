@@ -49,7 +49,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
     /**
@@ -82,9 +81,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * {@link #metadata} object. This is given at construction time and shall be the
      * same than the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     accessor = parent.table.standard.getAccessor(metadata.getClass(), true);
-     * }
+     *     }
      */
     final PropertyAccessor accessor;
 
@@ -102,20 +101,18 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * If a property has the same name than the parent property that contains it,
      * we write its value in that parent property. For example, instead of:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *    └─Date
      *       ├─Date………………… 2012/01/01
-     *       └─Date type…… Creation
-     * }
+     *       └─Date type…… Creation</pre>
      *
      * We simplify as:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *    └─Date………………………… 2012/01/01
-     *       └─Date type…… Creation
-     * }
+     *       └─Date type…… Creation</pre>
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
@@ -123,7 +120,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * Modification count, incremented when the content of this collection is modified. This check
-     * is done on a <cite>best effort basis</cite> only, since we can't not track the changes which
+     * is done on a <cite>best effort basis</cite> only, since we cannot not track the changes which
      * are done independently in the {@linkplain #metadata} object.
      */
     int modCount;
@@ -229,9 +226,9 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
      * Returns {@code true} if the type at the given index is a collection or a map.
      * The given {@code index} is relative to the {@link #accessor} indexing, <strong>not</strong> to this collection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * We do not test {@code (value instanceof Collection)} because the value could be any user's implementation.
-     * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.</div>
+     * Nothing prevent users from implementing the collection interface even for singleton elements if they wish.
      *
      * @param  index  the index in the accessor (<em>not</em> the index in this collection).
      * @return {@code true} if the value at the given index is a collection.

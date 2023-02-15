@@ -1,8 +1,0 @@
-This directory contains the sis.jar file together with optional dependencies.
-Recognized optional dependencies are:
-
-  - Derby database
-  - JAXB implementation
-  - UCAR netCDF library
-  - ESRI Geometry API
-  - Java Topology Suite

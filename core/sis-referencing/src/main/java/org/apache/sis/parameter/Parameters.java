@@ -106,7 +106,6 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @XmlTransient
 public abstract class Parameters implements ParameterValueGroup, Cloneable {
@@ -199,7 +198,7 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
     private static final class Wrapper extends Parameters implements Serializable {
         private static final long serialVersionUID = -5491790565456920471L;
 
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ParameterValueGroup delegate;
         Wrapper(final ParameterValueGroup delegate) {this.delegate = delegate;}
 
@@ -415,7 +414,6 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * The {@link DefaultParameterValueGroup} subclass will override this method with a more efficient
      * implementation which avoid creating some deferred parameters.
      */
-    @SuppressWarnings("null")
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
         int i1 = 0, i2 = 0;
         ParameterValue<?> first     = null;
@@ -809,9 +807,9 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      *
      * <p>The default implementation is equivalent to:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return cast(parameter(name), parameter.getValueClass());
-     * }
+     *     }
      *
      * where {@code name} is a {@code parameter} {@linkplain DefaultParameterDescriptor#getName() name}
      * or {@linkplain DefaultParameterDescriptor#getAlias() alias} chosen by the same algorithm than

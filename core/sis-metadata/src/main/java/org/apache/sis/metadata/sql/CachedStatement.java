@@ -48,7 +48,6 @@ import org.apache.sis.internal.system.Loggers;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 final class CachedStatement implements AutoCloseable {
     /**

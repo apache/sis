@@ -31,14 +31,13 @@ import org.apache.sis.internal.util.Numerics;
  * └         ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Matrix1
  * @see Matrix3
  * @see Matrix4
  *
  * @since 0.4
- * @module
  */
 public class Matrix2 extends MatrixSIS {
     /**
@@ -215,19 +214,10 @@ public class Matrix2 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        final double[] elements = new double[SIZE*SIZE];
-        getElements(elements);
-        return elements;
-    }
-
-    /**
-     * Copies the matrix elements in the given flat array.
-     * The array length shall be at least 4, may also be 8.
-     */
-    @Override
-    final void getElements(final double[] elements) {
-        elements[0] = m00;    elements[1] = m01;
-        elements[2] = m10;    elements[3] = m11;
+        return new double[] {
+            m00, m01,
+            m10, m11
+        };
     }
 
     /**

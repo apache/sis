@@ -62,11 +62,10 @@ import org.apache.sis.internal.gui.GUIUtilities;
 import org.apache.sis.internal.gui.NonNullObjectProperty;
 import org.apache.sis.internal.gui.OptionalDataDownloader;
 import org.apache.sis.internal.gui.RecentChoices;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -83,9 +82,8 @@ import static java.util.logging.Logger.getLogger;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public class RecentReferenceSystems {
     /**
@@ -1047,23 +1045,7 @@ next:       for (int i=0; i<count; i++) {
     }
 
     /**
-     * @deprecated Replaced by {@link #createChoiceBox(boolean, ChangeListener)}.
-     */
-    @Deprecated
-    public ChoiceBox<ReferenceSystem> createChoiceBox(final ChangeListener<ReferenceSystem> action) {
-        return createChoiceBox(true, action);
-    }
-
-    /**
-     * @deprecated Replaced by {@link #createMenuItems(boolean, ChangeListener)}.
-     */
-    @Deprecated
-    public Menu createMenuItems(final ChangeListener<ReferenceSystem> action) {
-        return createMenuItems(true, action);
-    }
-
-    /**
-     * Returns the property for the selected value in a menu created by {@link #createMenuItems(ChangeListener)}.
+     * Returns the property for the selected value in a menu created by {@link #createMenuItems(boolean, ChangeListener)}.
      *
      * @param  menu  the menu, or {@code null} if none.
      * @return the property for the selected value, or {@code null} if none.
@@ -1095,7 +1077,7 @@ next:       for (int i=0; i<count; i++) {
      */
     protected void errorOccurred(final FactoryException e) {
         OptionalDataDownloader.reportIfInstalling(e);
-        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, "getReferenceSystems", e);
+        Logging.recoverableException(LOGGER, RecentReferenceSystems.class, "getReferenceSystems", e);
     }
 
     /**
@@ -1106,6 +1088,6 @@ next:       for (int i=0; i<count; i++) {
      * @param  e  the error that occurred.
      */
     static void errorOccurred(final String caller, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.APPLICATION), RecentReferenceSystems.class, caller, e);
+        Logging.recoverableException(LOGGER, RecentReferenceSystems.class, caller, e);
     }
 }

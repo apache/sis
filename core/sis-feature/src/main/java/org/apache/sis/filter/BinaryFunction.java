@@ -17,7 +17,6 @@
 package org.apache.sis.filter;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import java.math.BigInteger;
 import java.math.BigDecimal;
@@ -47,7 +46,6 @@ import org.opengis.filter.Expression;
  * @param  <V2>  the type of value computed by the second expression.
  *
  * @since 1.1
- * @module
  */
 abstract class BinaryFunction<R,V1,V2> extends Node {
     /**
@@ -60,7 +58,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      *
      * @see #getExpression1()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, ? extends V1> expression1;
 
     /**
@@ -68,7 +66,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      *
      * @see #getExpression2()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, ? extends V2> expression2;
 
     /**
@@ -101,7 +99,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * @return a list of size 2 containing the two expressions.
      */
     public List<Expression<? super R, ?>> getExpressions() {
-        return Arrays.asList(expression1, expression2);         // TODO: use List.of(…) with JDK9.
+        return List.of(expression1, expression2);
     }
 
     /**

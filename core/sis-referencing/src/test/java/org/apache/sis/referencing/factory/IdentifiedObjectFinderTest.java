@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.factory;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
@@ -40,10 +40,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 @DependsOn({CommonAuthorityFactoryTest.class, AuthorityFactoryProxyTest.class})
-public final strictfp class IdentifiedObjectFinderTest extends TestCase {
+public final class IdentifiedObjectFinderTest extends TestCase {
     /**
      * The factory to use for the test.
      */
@@ -80,7 +79,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
          * The intent is to force a full scan.
          */
         final CoordinateReferenceSystem search = new DefaultGeographicCRS(
-                Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
+                Map.of(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
                 CRS84.getDatum(), CRS84.getCoordinateSystem());
         assertEqualsIgnoreMetadata(CRS84, search);              // Required condition for next test.
 
@@ -109,7 +108,7 @@ public final strictfp class IdentifiedObjectFinderTest extends TestCase {
     /**
      * An authority factory to be used by {@link IdentifiedObjectFinderTest#testFindOnCachingInstance()}.
      */
-    private static final strictfp class Cached extends ConcurrentAuthorityFactory<GeodeticAuthorityFactory>
+    private static final class Cached extends ConcurrentAuthorityFactory<GeodeticAuthorityFactory>
             implements CRSAuthorityFactory
     {
         private final GeodeticAuthorityFactory factory;

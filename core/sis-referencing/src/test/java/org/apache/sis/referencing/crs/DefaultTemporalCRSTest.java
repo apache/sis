@@ -19,7 +19,7 @@ package org.apache.sis.referencing.crs;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
-import java.util.Collections;
+import java.util.Map;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.io.wkt.Convention;
@@ -37,9 +37,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISEC
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
-public final strictfp class DefaultTemporalCRSTest extends TestCase {
+public final class DefaultTemporalCRSTest extends TestCase {
     /**
      * Tests WKT 1 pseudo-formatting.
      * This is not part of OGC 01-009 standard.
@@ -105,10 +104,10 @@ public final strictfp class DefaultTemporalCRSTest extends TestCase {
     @Test
     public void testDateConversionWithNanos() {
         final DefaultTemporalDatum datum = new DefaultTemporalDatum(
-                Collections.singletonMap(DefaultTemporalDatum.NAME_KEY, "For test"),
+                Map.of(DefaultTemporalDatum.NAME_KEY, "For test"),
                 new Date(10000L * MILLISECONDS_PER_DAY + 12345));                        // 1997-05-19T00:00:12.345Z
         final DefaultTemporalCRS crs = new DefaultTemporalCRS(
-                Collections.singletonMap(DefaultTemporalCRS.NAME_KEY, datum.getName()),
+                Map.of(DefaultTemporalCRS.NAME_KEY, datum.getName()),
                 datum, HardCodedCS.DAYS);
         /*
          * DefaultTemporalCRS.toSeconds converter should have a non-zero offset because of the 0.345 seconds offset

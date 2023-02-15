@@ -49,7 +49,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class ResampledImageTest extends TestCase {
+public final class ResampledImageTest extends TestCase {
     /**
      * The source image. This is initialized to arbitrary values in two bands.
      * Location and number of tiles are random.

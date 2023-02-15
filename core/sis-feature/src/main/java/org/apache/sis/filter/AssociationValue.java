@@ -17,9 +17,9 @@
 package org.apache.sis.filter;
 
 import java.util.Arrays;
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.StringJoiner;
 import org.apache.sis.feature.Features;
@@ -49,7 +49,6 @@ import org.opengis.filter.ValueReference;
  * @see PropertyValue
  *
  * @since 1.2
- * @module
  */
 final class AssociationValue<V> extends LeafExpression<Feature, V>
         implements ValueReference<Feature, V>, Optimization.OnExpression<Feature, V>
@@ -78,7 +77,7 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
      * @param  accessor  expression to use for evaluating the property value after the last element of the path.
      */
     AssociationValue(final List<String> path, final PropertyValue<V> accessor) {
-        this.path = path.toArray(new String[path.size()]);
+        this.path = path.toArray(String[]::new);
         this.accessor = accessor;
     }
 
@@ -100,7 +99,7 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
      */
     @Override
     protected final Collection<?> getChildren() {
-        return Collections.singleton(getXPath());
+        return Set.of(getXPath());
     }
 
     /**

@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
-public final strictfp class StringsTest extends TestCase {
+public final class StringsTest extends TestCase {
     /**
      * Tests the {@link Strings#toString(Class, Object[])} method.
      */

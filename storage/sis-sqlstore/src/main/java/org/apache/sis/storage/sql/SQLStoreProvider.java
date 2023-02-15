@@ -19,6 +19,7 @@ package org.apache.sis.storage.sql;
 import java.util.Map;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Logger;
 import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
@@ -50,9 +51,8 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
- * @module
  */
 @StoreMetadata(formatName    = SQLStoreProvider.NAME,
                capabilities  = Capability.READ,
@@ -62,6 +62,13 @@ public class SQLStoreProvider extends DataStoreProvider {
      * The format name.
      */
     static final String NAME = "SQL";
+
+    /**
+     * The logger used by SQL stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.sql");
 
     /**
      * Name of the parameter for the list of qualified table names.
@@ -225,5 +232,13 @@ public class SQLStoreProvider extends DataStoreProvider {
         } catch (ParameterNotFoundException | UnconvertibleObjectException e) {
             throw new IllegalOpenParameterException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * {@return the logger used by SQL stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

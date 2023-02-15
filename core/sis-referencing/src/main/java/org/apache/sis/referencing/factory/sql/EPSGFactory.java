@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory.sql;
 
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +45,6 @@ import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
@@ -84,7 +82,6 @@ import org.apache.sis.util.Localized;
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
  * @since 0.7
- * @module
  */
 public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> implements CRSAuthorityFactory,
         CSAuthorityFactory, DatumAuthorityFactory, CoordinateOperationAuthorityFactory, Localized
@@ -94,7 +91,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *
      * @see #getCodeSpaces()
      */
-    private static final Set<String> CODESPACES = Collections.singleton(Constants.EPSG);
+    private static final Set<String> CODESPACES = Set.of(Constants.EPSG);
 
     /**
      * The factory to use for creating {@link Connection}s to the EPSG database.
@@ -254,7 +251,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
     public EPSGFactory(Map<String,?> properties) throws FactoryException {
         super(EPSGDataAccess.class);
         if (properties == null) {
-            properties = Collections.emptyMap();
+            properties = Map.of();
         }
         DataSource ds  = (DataSource)                 properties.get("dataSource");
         Locale locale  = (Locale)                     properties.get("locale");
@@ -456,7 +453,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
-            Logging.log(EPSGFactory.class, "newDataAccess", Initializer.connected(connection.getMetaData()));
+            Initializer.connected(connection.getMetaData(), EPSGFactory.class, "newDataAccess");
             SQLTranslator tr = translator;
             if (tr == null) {
                 synchronized (this) {
@@ -505,9 +502,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * wanting to return instances of their own {@link EPSGDataAccess} subclass.
      * The default implementation is simply:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return new EPSGDataAccess(this, connection, translator);
-     * }
+     *     }
      *
      * Subclasses can override this method with a similar code but with {@code new EPSGDataAccess(…)} replaced
      * by {@code new MyDataAccessSubclass(…)}.

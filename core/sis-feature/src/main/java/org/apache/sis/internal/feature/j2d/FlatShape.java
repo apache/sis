@@ -33,7 +33,6 @@ import org.apache.sis.internal.referencing.j2d.IntervalRectangle;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public abstract class FlatShape extends AbstractGeometry implements Shape {
     /**

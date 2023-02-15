@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.operation.Conversion;
@@ -60,13 +59,12 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 @DependsOn({
     org.apache.sis.internal.referencing.provider.ProvidersTest.class,
     OperationMethodSetTest.class
 })
-public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
+public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Returns the factory to use for the tests.
      *
@@ -194,7 +192,7 @@ public final strictfp class DefaultMathTransformFactoryTest extends TestCase {
          * and default parameter values.
          */
         final MathTransformFactory factory = factory();
-        final Map<String,?> dummyName = Collections.singletonMap(DefaultProjectedCRS.NAME_KEY, "Test");
+        final Map<String,?> dummyName = Map.of(DefaultProjectedCRS.NAME_KEY, "Test");
         final Collection<OperationMethod> methods = factory.getAvailableMethods(Projection.class);
         for (final OperationMethod method : methods) {
             final String classification = method.getName().getCode();

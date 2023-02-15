@@ -30,7 +30,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class GeometryCoordinateTransform extends GeometryTransform {
     /**

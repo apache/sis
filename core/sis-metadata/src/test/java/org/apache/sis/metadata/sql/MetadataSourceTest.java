@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.sql;
 
+import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
 import org.opengis.util.InternationalString;
@@ -41,10 +42,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(org.apache.sis.internal.metadata.sql.ScriptRunnerTest.class)
-public final strictfp class MetadataSourceTest extends TestCase {
+public final class MetadataSourceTest extends TestCase {
     /**
      * Tests {@link MetadataSource} with an in-memory Derby database.
      * This method delegates its work to all other methods in this class that expect a {@link MetadataSource} argument.
@@ -126,7 +126,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
     @TestStep
     public static void testSearch(final MetadataSource source) throws MetadataStoreException {
         final DefaultCitation specification = new DefaultCitation("PNG (Portable Network Graphics) Specification");
-        specification.setAlternateTitles(Collections.singleton(new SimpleInternationalString("PNG")));
+        specification.setAlternateTitles(Set.of(new SimpleInternationalString("PNG")));
         final DefaultFormat format = new DefaultFormat();
         format.setFormatSpecificationCitation(specification);
 
@@ -165,7 +165,7 @@ public final strictfp class MetadataSourceTest extends TestCase {
         final InternationalString more = new SimpleInternationalString("An open source project.");
         try {
             titles.add(more);
-            fail("Pre-defined metadata should be unmodifiable.");
+            fail("Predefined metadata should be unmodifiable.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
         }

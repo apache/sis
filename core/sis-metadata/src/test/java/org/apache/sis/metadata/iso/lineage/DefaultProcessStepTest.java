@@ -34,9 +34,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class DefaultProcessStepTest extends TestUsingFile {
+public final class DefaultProcessStepTest extends TestUsingFile {
     /**
      * An XML file containing process step information.
      */

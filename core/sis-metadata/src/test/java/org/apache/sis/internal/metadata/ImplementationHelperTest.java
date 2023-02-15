@@ -17,6 +17,7 @@
 package org.apache.sis.internal.metadata;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -34,9 +35,8 @@ import static java.util.Locale.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
-public final strictfp class ImplementationHelperTest extends TestCase {
+public final class ImplementationHelperTest extends TestCase {
     /**
      * Tests {@link ImplementationHelper#toMilliseconds(Date)}.
      */
@@ -66,11 +66,11 @@ public final strictfp class ImplementationHelperTest extends TestCase {
         locales = ImplementationHelper.setFirst(null, GERMAN);
         assertArrayEquals(new Locale[] {GERMAN}, locales.toArray());
 
-        locales = Arrays.asList(ENGLISH, JAPANESE, FRENCH);
+        locales = Arrays.asList(ENGLISH, JAPANESE, FRENCH);                 // Content will be modified.
         assertSame("Shall set value in-place.", locales, ImplementationHelper.setFirst(locales, GERMAN));
         assertArrayEquals(new Locale[] {GERMAN, JAPANESE, FRENCH}, locales.toArray());
 
-        locales = new LinkedHashSet<>(Arrays.asList(ENGLISH, JAPANESE, FRENCH));
+        locales = new LinkedHashSet<>(List.of(ENGLISH, JAPANESE, FRENCH));
         locales = ImplementationHelper.setFirst(locales, ITALIAN);
         assertArrayEquals(new Locale[] {ITALIAN, JAPANESE, FRENCH}, locales.toArray());
 

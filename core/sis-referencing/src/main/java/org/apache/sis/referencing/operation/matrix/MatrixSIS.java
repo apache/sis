@@ -21,12 +21,13 @@ import java.io.Serializable;
 import java.awt.geom.AffineTransform;                       // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
-import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.referencing.Arithmetic;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.Numbers;
 
 
 /**
@@ -55,12 +56,11 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see Matrices
  *
  * @since 0.4
- * @module
  */
 public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable, Serializable {
     /**
@@ -81,7 +81,6 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @throws IllegalArgumentException if the given array does not have the expected length.
      */
     static void ensureLengthMatch(final int expected, final double[] elements) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("elements", elements);
         if (elements.length != expected) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.UnexpectedArrayLength_2, expected, elements.length));
@@ -145,22 +144,32 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     }
 
     /**
-     * Stores the value at the specified row and column in the given {@code dd} object.
-     * This method does not need to verify argument validity.
+     * Returns the given matrix as an extended precision matrix.
      */
-    void get(final int row, final int column, final DoubleDouble dd) {
-        dd.value = getElement(row, column);
-        dd.error = DoubleDouble.errorForWellKnownValue(dd.value);
+    static ExtendedPrecisionMatrix asExtendedPrecision(final Matrix matrix) {
+        if (matrix instanceof UnmodifiableMatrix) {
+            return ((UnmodifiableMatrix) matrix).asExtendePrecision();
+        } else if (matrix instanceof ExtendedPrecisionMatrix) {
+            return (ExtendedPrecisionMatrix) matrix;
+        } else {
+            return new UnmodifiableMatrix(matrix);
+        }
     }
 
     /**
-     * Stores the value of the given {@code dd} object at the specified row and column.
-     * This method does not need to verify argument validity.
+     * Retrieves the value at the specified row and column if different than zero.
+     * If the value is zero, then this method <em>shall</em> return {@code null}.
+     * The use of {@code null} for zero is a way to identify zero easily no matter
+     * the value type.
      *
-     * @throws UnsupportedOperationException if this matrix is unmodifiable.
+     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
+     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
+     * @return the current value at the given row and column, or {@code null} if the value is zero.
+     * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
      */
-    void set(final int row, final int column, final DoubleDouble dd) {
-        setElement(row, column, dd.doubleValue());
+    Number getElementOrNull(final int row, final int column) {
+        final double value = getElement(row, column);
+        return (value == 0) ? null : value;
     }
 
     /**
@@ -171,20 +180,38 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @return the current value at the given row and column, rounded to nearest integer.
+     * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
+     * @throws ArithmeticException if the value is NaN or overflows integer capacity.
      *
      * @since 1.3
+     *
+     * @deprecated Replaced by {@code Numbers.round(getNumber(row, column))}.
+     * @see Numbers#round(Number)
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public long getInteger(int row, int column) {
-        return Math.round(getElement(row, column));
+        return Numbers.round(getNumber(row, column));
     }
 
     /**
      * Retrieves the value at the specified row and column of this matrix, wrapped in a {@code Number}.
      * The {@code Number} type depends on the matrix accuracy.
      *
+     * <h4>Use case</h4>
+     * This method may be more accurate than {@link #getElement(int, int)} in some implementations
+     * when the value is expected to be an integer, for example in conversions of pixel coordinates.
+     * {@link Number#longValue()} can be more accurate than {@link Number#doubleValue()} because a
+     * {@code long} may have more significant digits than what a {@code double} can contain.
+     * For safety against rounding errors and overflows,
+     * {@link Numbers#round(Number)} should be used instead of {@code Number.longValue()}.
+     *
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
      * @return the current value at the given row and column.
+     * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
+     *
+     * @see #getElement(int, int)
+     * @see Numbers#round(Number)
      */
     public Number getNumber(int row, int column) {
         return getElement(row, column);
@@ -196,31 +223,17 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
      * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @param  value   the new matrix element value.
+     * @param  value   the new matrix element value. A {@code null} value is interpreted as zero.
+     * @throws IndexOutOfBoundsException if the specified row or column is out of bounds.
+     * @throws UnsupportedOperationException if this matrix is unmodifiable.
      *
      * @see #setElement(int, int, double)
      *
      * @since 0.8
      */
     public void setNumber(int row, int column, final Number value) {
-        if (value instanceof DoubleDouble) {
-            set(row, column, (DoubleDouble) value);
-        } else if (DoubleDouble.shouldConvert(value)) {
-            set(row, column, new DoubleDouble(value));
-        } else {
-            setElement(row, column, value.doubleValue());
-        }
+        setElement(row, column, (value != null) ? value.doubleValue() : 0);
     }
-
-    /**
-     * Retrieves the value at the specified row and column of this matrix.
-     *
-     * @param  row     the row index, from 0 inclusive to {@link #getNumRow()} exclusive.
-     * @param  column  the column index, from 0 inclusive to {@link #getNumCol()} exclusive.
-     * @return the current value at the given row and column.
-     */
-    @Override
-    public abstract double getElement(int row, int column);
 
     /**
      * Returns a copy of all matrix elements in a flat, row-major (column indices vary fastest) array.
@@ -229,49 +242,12 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @return a copy of all current matrix elements in a row-major array.
      */
     public double[] getElements() {
-        final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final double[] elements = new double[numRow * numCol];
-        for (int k=0,j=0; j<numRow; j++) {
-            for (int i=0; i<numCol; i++) {
-                elements[k++] = getElement(j, i);
-            }
+        final double[] elements = new double[getNumRow() * numCol];
+        for (int i=0; i<elements.length; i++) {
+            elements[i] = getElement(i / numCol, i % numCol);
         }
         return elements;
-    }
-
-    /**
-     * Stores all matrix elements in the given flat array. This method does not verify the array length.
-     * All subclasses in this {@code org.apache.sis.referencing.operation.matrix} package override this
-     * method with a more efficient implementation.
-     *
-     * @param  dest  the destination array. May be longer than necessary (this happen when the caller needs to
-     *               append {@link org.apache.sis.internal.util.DoubleDouble#error} values after the elements).
-     */
-    void getElements(final double[] dest) {
-        final double[] elements = getElements();
-        System.arraycopy(elements, 0, dest, 0, elements.length);
-    }
-
-    /**
-     * Copies the elements of the given matrix in the given array.
-     * This method ignores the error terms, if any.
-     *
-     * @param  matrix    the matrix to copy.
-     * @param  numRow    {@code matrix.getNumRow()}.
-     * @param  numCol    {@code matrix.getNumCol()}.
-     * @param  elements  where to copy the elements.
-     */
-    static void getElements(final Matrix matrix, final int numRow, final int numCol, final double[] elements) {
-        if (matrix instanceof MatrixSIS) {
-            ((MatrixSIS) matrix).getElements(elements);
-        } else {
-            for (int k=0,j=0; j<numRow; j++) {
-                for (int i=0; i<numCol; i++) {
-                    elements[k++] = matrix.getElement(j, i);
-                }
-            }
-        }
     }
 
     /**
@@ -284,36 +260,43 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      *
      * @see Matrices#create(int, int, double[])
      */
-    public abstract void setElements(final double[] elements);
+    public void setElements(final double[] elements) {
+        final int numRow = getNumRow();
+        final int numCol = getNumCol();
+        ensureLengthMatch(numRow * numCol, elements);
+        for (int k=0,j=0; j<numRow; j++) {
+            for (int i=0; i<numCol; i++) {
+                setElement(j, i, elements[k++]);
+            }
+        }
+    }
 
     /**
-     * Sets elements in a sub-region of this matrix, optionally including error terms.
+     * Sets elements in a sub-region of this matrix.
      *
-     * @param  source    row-major values as given by {@link ExtendedPrecisionMatrix#getExtendedElements()}.
-     * @param  length    number of elements ({@code numRow} × {@code numCol}) in the source matrix, not including error terms.
-     * @param  stride    number of columns in the source matrix, used for computing indices in {@code source} array.
+     * @param  source    the matrix to copy.
      * @param  srcRow    index of the first row from the {@code source} to copy in {@code this}.
      * @param  srcCol    index of the first column from the {@code source} to copy in {@code this}.
      * @param  dstRow    index of the first row in {@code this} where to copy the {@code source} values.
      * @param  dstCol    index of the first column in {@code this} where to copy the {@code source} values.
      * @param  numRow    number of rows to copy.
      * @param  numCol    number of columns to copy.
-     * @param  transfer  if both {@code source} and {@code this} use extended precision,
-     *                   the temporary object to use for transferring values. Otherwise {@code null}.
      */
-    final void setElements(final double[] source, final int length, final int stride, final DoubleDouble transfer,
+    final void setElements(final Matrix source,
                            int srcRow, final int srcCol,
                            int dstRow, final int dstCol,
                            int numRow, final int numCol)
     {
+        final var exp = asExtendedPrecision(source);
         while (--numRow >= 0) {
-            final int valueOffset = srcRow*stride + srcCol;
             for (int i=0; i<numCol; i++) {
-                if (transfer != null) {
-                    transfer.setFrom(source, valueOffset + i, length);
-                    set(dstRow, dstCol + i, transfer);
+                final int s = srcCol + i;
+                final int t = dstCol + i;
+                final Number n = exp.getElementOrNull(srcRow, s);
+                if (n != null) {
+                    setNumber(dstRow, t, n);
                 } else {
-                    setElement(dstRow, dstCol + i, source[valueOffset + i]);
+                    setElement(dstRow, t, source.getElement(srcRow, s));    // Preserve the sign of 0.
                 }
             }
             srcRow++;
@@ -335,38 +318,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         ensureSizeMatch(numRow, numCol, matrix);
-        final int count = numRow * numCol;
-        final double[] elements;
-        /*
-         * If both matrices use extended precision, the elements array will have twice the expected length
-         * with the matrix values in the first half and the error terms in the second half.  If we want to
-         * preserve the extended precision, we have to transfer the values between the two matrices with a
-         * DoubleDouble object.
-         */
-        if (isExtendedPrecision() && matrix instanceof ExtendedPrecisionMatrix) {
-            elements = ((ExtendedPrecisionMatrix) matrix).getExtendedElements();
-            if (elements.length > count) {
-                final DoubleDouble t = new DoubleDouble();
-                for (int i=0; i<count; i++) {
-                    t.value = elements[i];
-                    t.error = elements[i + count];
-                    set(i / numCol, i % numCol, t);
-                }
-                return;
-            }
-        } else {
-            // Fallback for matrices that do not use extended precision.
-            elements = new double[count];
-            getElements(matrix, numRow, numCol, elements);
-        }
-        setElements(elements);
-    }
-
-    /**
-     * Returns {@code true} if this matrix uses extended precision.
-     */
-    boolean isExtendedPrecision() {
-        return false;
+        setElements(matrix, 0, 0, 0, 0, numRow, numCol);
     }
 
     /**
@@ -390,7 +342,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         int j = matrix.getNumRow();
         int i = matrix.getNumCol();
         if (i != j--) {
-            return false; // Matrix is not square.
+            return false;       // Matrix is not square.
         }
         double e = 1;
         while (--i >= 0) {
@@ -406,9 +358,9 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * Returns {@code true} if this matrix is an identity matrix.
      * This method is equivalent to the following code, except that it is potentially more efficient:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Matrices.isIdentity(this, 0.0);
-     * }
+     *     }
      *
      * @return {@code true} if this matrix is an identity matrix.
      *
@@ -443,26 +395,21 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public MatrixSIS normalizeColumns() {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        final MatrixSIS magnitudes = new NonSquareMatrix(1, numCol, false, 2);
-        final DoubleDouble sum = new DoubleDouble();
-        final DoubleDouble dot = new DoubleDouble();
-        final DoubleDouble tmp = new DoubleDouble();
+        final MatrixSIS magnitudes = new NonSquareMatrix(1, numCol, false);
         for (int i=0; i<numCol; i++) {
-            sum.clear();
+            Number sum = null;
             for (int j=0; j<numRow; j++) {
-                get(j, i, dot);
-                dot.square();
-                sum.add(dot);
+                final Number element = getElementOrNull(j, i);
+                sum = Arithmetic.add(sum, Arithmetic.square(element));
             }
-            sum.sqrt();
-            if (!sum.isZero()) {
+            sum = Arithmetic.sqrt(sum);
+            if (sum != null) {
                 int rowOfOne = -1;
                 for (int j=0; j<numRow; j++) {
-                    get(j, i, tmp);
-                    dot.setFrom(sum);
-                    dot.inverseDivide(tmp);
-                    set(j, i, dot);
-                    if (Math.abs(dot.doubleValue()) >= 1) {
+                    final Number element = getElementOrNull(j, i);
+                    final Number dot = Arithmetic.divide(element, sum);
+                    setNumber(j, i, dot);
+                    if (dot != null && Math.abs(dot.doubleValue()) >= 1) {
                         rowOfOne = j;
                     }
                 }
@@ -473,7 +420,8 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                  */
                 if (rowOfOne >= 0) {
                     for (int j=0; j<numRow; j++) {
-                        setElement(j, i, Math.copySign((j == rowOfOne) ? 1 : 0, getElement(j, i)));
+                        final double sign = getElement(j, i);
+                        setElement(j, i, Math.copySign(j == rowOfOne ? 1 : 0, sign));
                     }
                 }
                 magnitudes.setNumber(0, i, sum);
@@ -519,20 +467,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public void convertBefore(final int srcDim, final Number scale, final Number offset) {
         final int lastCol = getNumCol() - 1;
         ArgumentChecks.ensureValidIndex(lastCol, srcDim);
-        final DoubleDouble s = new DoubleDouble();
-        final DoubleDouble t = new DoubleDouble();
         for (int j = getNumRow(); --j >= 0;) {
             if (offset != null) {
-                get(j, srcDim,  s);             // Scale factor
-                get(j, lastCol, t);             // Translation factor
-                s.multiplyGuessError(offset);
-                t.add(s);
-                set(j, lastCol, t);
+                final Number s = getElementOrNull(j, srcDim);           // Scale factor
+                final Number t = getElementOrNull(j, lastCol);          // Translation factor
+                setNumber(j, lastCol, Arithmetic.add(t, Arithmetic.multiply(s, offset)));
             }
             if (scale != null) {
-                get(j, srcDim, s);              // Scale factor
-                s.multiplyGuessError(scale);
-                set(j, srcDim, s);
+                final Number s = getElementOrNull(j, srcDim);           // Scale factor
+                setNumber(j, srcDim, Arithmetic.multiply(s, scale));
             }
         }
     }
@@ -555,18 +498,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int lastRow = getNumRow() - 1;
         final int lastCol = getNumCol() - 1;
         ArgumentChecks.ensureValidIndex(lastRow, tgtDim);
-        final DoubleDouble s = new DoubleDouble();
         if (scale != null) {
             for (int i=lastCol; i>=0; i--) {
-                get(tgtDim, i, s);
-                s.multiplyGuessError(scale);
-                set(tgtDim, i, s);
+                final Number s = getElementOrNull(tgtDim, i);
+                setNumber(tgtDim, i, Arithmetic.multiply(s, scale));
             }
         }
         if (offset != null) {
-            get(tgtDim, lastCol, s);
-            s.addGuessError(offset);
-            set(tgtDim, lastCol, s);
+            final Number t = getElementOrNull(tgtDim, lastCol);
+            setNumber(tgtDim, lastCol, Arithmetic.add(t, offset));
         }
     }
 
@@ -587,7 +527,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public MatrixSIS multiply(final Matrix matrix) throws MismatchedMatrixSizeException {
         final int nc = matrix.getNumCol();
         ensureNumRowMatch(getNumCol(), matrix.getNumRow(), nc);
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(getNumRow(), nc, false);
+        final GeneralMatrix result = GeneralMatrix.create(getNumRow(), nc, false);
         result.setToProduct(this, matrix);
         return result;
     }
@@ -618,16 +558,15 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, numCol, vector.length));
         }
         final double[] target = new double[getNumRow()];
-        final DoubleDouble ele = new DoubleDouble();
-        final DoubleDouble sum = new DoubleDouble();
         for (int j=0; j<target.length; j++) {
+            Number sum = null;
             for (int i=0; i<numCol; i++) {
-                get(j, i, ele);
-                ele.multiplyGuessError(vector[i]);
-                sum.add(ele);
+                final Number element = getElementOrNull(j, i);
+                sum = Arithmetic.add(sum, Arithmetic.multiply(element, vector[i]));
             }
-            target[j] = sum.doubleValue();
-            sum.clear();
+            if (sum != null) {
+                target[j] = sum.doubleValue();
+            }
         }
         return target;
     }
@@ -637,14 +576,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * <code>{@linkplain #multiply(Matrix) multiply}(T)</code> where <var>T</var> is a matrix like
      * below (size varies):
      *
-     * {@preformat math
+     * <pre class="math">
      *        ┌                    ┐
      *        │ 1  0  0  vector[0] │
      *    T = │ 0  1  0  vector[1] │
      *        │ 0  0  1  vector[2] │
      *        │ 0  0  0  vector[3] │
-     *        └                    ┘
-     * }
+     *        └                    ┘</pre>
      *
      * The length of the given vector must be equal to the number of columns in this matrix.
      * The last vector element is 1 for an affine transform, but other values are allowed.
@@ -666,16 +604,13 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
             throw new MismatchedMatrixSizeException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, numCol, vector.length));
         }
         final int numRow = getNumRow();
-        final DoubleDouble s = new DoubleDouble();
-        final DoubleDouble t = new DoubleDouble();
         for (int j=0; j<numRow; j++) {
-            s.clear();
+            Number sum = null;
             for (int i=0; i<numCol; i++) {
-                get(j, i, t);
-                t.multiplyGuessError(vector[i]);
-                s.add(t);
+                final Number element = getElementOrNull(j, i);
+                sum = Arithmetic.add(sum, Arithmetic.multiply(element, vector[i]));
             }
-            set(j, numCol-1, s);
+            setNumber(j, numCol-1, sum);
         }
     }
 
@@ -703,7 +638,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @see AffineTransform#createInverse()
      */
     public MatrixSIS inverse() throws NoninvertibleMatrixException {
-        return Solver.inverse(this, true);
+        return Solver.inverse(this);
     }
 
     /**
@@ -720,8 +655,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         ArgumentChecks.ensureValidIndexRange(numRow, lower, upper);
-        final DoubleDouble dd = isExtendedPrecision() ? new DoubleDouble() : null;
-        final MatrixSIS reduced = Matrices.createZero(numRow - (upper - lower), numCol, dd != null);
+        final MatrixSIS reduced = Matrices.createZero(numRow - (upper - lower), numCol, this);
         int dest = 0;
         for (int j=0; j<numRow; j++) {
             if (j == lower) {
@@ -729,12 +663,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 if (j == numRow) break;
             }
             for (int i=0; i<numCol; i++) {
-                if (dd != null) {
-                    get(j, i, dd);
-                    reduced.set(dest, i, dd);
-                } else {
-                    reduced.setElement(dest, i, getElement(j, i));
-                }
+                reduced.setNumber(dest, i, getNumber(j, i));
             }
             dest++;
         }
@@ -756,8 +685,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         ArgumentChecks.ensureValidIndexRange(numCol, lower, upper);
-        final DoubleDouble dd = isExtendedPrecision() ? new DoubleDouble() : null;
-        final MatrixSIS reduced = Matrices.createZero(numRow, numCol - (upper - lower), dd != null);
+        final MatrixSIS reduced = Matrices.createZero(numRow, numCol - (upper - lower), this);
         int dest = 0;
         for (int i=0; i<numCol; i++) {
             if (i == lower) {
@@ -765,12 +693,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
                 if (i == numCol) break;
             }
             for (int j=0; j<numRow; j++) {
-                if (dd != null) {
-                    get(j, i, dd);
-                    reduced.set(j, dest, dd);
-                } else {
-                    reduced.setElement(j, dest, getElement(j, i));
-                }
+                reduced.setNumber(j, dest, getNumber(j, i));
             }
             dest++;
         }

@@ -34,7 +34,6 @@ import org.apache.sis.util.iso.Types;
  * @param <BoundType>  the code list being wrapped.
  *
  * @since 0.3
- * @module
  */
 public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> extends XmlAdapter<CodeListAdapter.Value, BoundType> {
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.esri;
 import java.util.List;
 import java.util.Locale;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.nio.ByteOrder;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -60,9 +61,8 @@ import static org.apache.sis.internal.util.Numerics.wholeDiv;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
- * @module
  */
 final class RawRasterStore extends RasterStore {
     /**
@@ -170,7 +170,7 @@ final class RawRasterStore extends RasterStore {
     /**
      * The object to use for reading data, or {@code null} if the channel has been closed.
      */
-    private ChannelDataInput input;
+    private volatile ChannelDataInput input;
 
     /**
      * Helper method for reading a rectangular region from the {@linkplain #input} stream.
@@ -189,6 +189,17 @@ final class RawRasterStore extends RasterStore {
     RawRasterStore(final RawRasterStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         input = connector.commit(ChannelDataInput.class, RawRasterStoreProvider.NAME);
+    }
+
+    /**
+     * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
+     *
+     * @return the main file and auxiliary files as paths, or an empty array if unknown.
+     * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
+     */
+    @Override
+    public Path[] getComponentFiles() throws DataStoreException {
+        return listComponentFiles(RawRasterStoreProvider.HDR, PRJ, STX, CLR);
     }
 
     /**
@@ -233,6 +244,7 @@ final class RawRasterStore extends RasterStore {
      */
     @Override
     public synchronized List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        final ChannelDataInput input = this.input;
         List<SampleDimension> sampleDimensions = super.getSampleDimensions();
         if (sampleDimensions == null) try {
             if (reader == null) {
@@ -326,6 +338,7 @@ final class RawRasterStore extends RasterStore {
      */
     private void readHeader() throws IOException, DataStoreException {
         assert Thread.holdsLock(this);
+        final ChannelDataInput input = this.input;
         if (input == null) {
             throw new DataStoreClosedException(canNotRead());
         }
@@ -346,6 +359,10 @@ final class RawRasterStore extends RasterStore {
         RawRasterLayout layout = RawRasterLayout.BIL;
         ByteOrder byteOrder    = ByteOrder.nativeOrder();
         final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR);
+        if (header == null) {
+            throw new DataStoreException(Resources.forLocale(getLocale())
+                    .getString(Resources.Keys.CanNotReadAuxiliaryFile_1, RawRasterStoreProvider.HDR));
+        }
         for (CharSequence line : CharSequences.splitOnEOL(header)) {
             final int length   = line.length();
             final int keyStart = CharSequences.skipLeadingWhitespaces(line, 0, length);
@@ -369,12 +386,12 @@ final class RawRasterStore extends RasterStore {
                         case BANDROWBYTES:  bandRowBytes  = parseStrictlyPositive(keyword, value); break;
                         case TOTALROWBYTES: totalRowBytes = parseStrictlyPositive(keyword, value); break;
                         case BANDGAPBYTES:  bandGapBytes  = Integer.parseInt(value); break;
-                        case SKIPBYTES:     skipBytes     = Long.valueOf(value); break;
-                        case ULXMAP:        ulxmap        = Double.valueOf(value); geomask |= 1; break;
-                        case ULYMAP:        ulymap        = Double.valueOf(value); geomask |= 2; break;
-                        case XDIM:          xdim          = Double.valueOf(value); geomask |= 4; break;
-                        case YDIM:          ydim          = Double.valueOf(value); geomask |= 8; break;
-                        case NODATA:        nodataValue   = Double.valueOf(value); break;
+                        case SKIPBYTES:     skipBytes     = Long.parseLong(value); break;
+                        case ULXMAP:        ulxmap        = Double.parseDouble(value); geomask |= 1; break;
+                        case ULYMAP:        ulymap        = Double.parseDouble(value); geomask |= 2; break;
+                        case XDIM:          xdim          = Double.parseDouble(value); geomask |= 4; break;
+                        case YDIM:          ydim          = Double.parseDouble(value); geomask |= 8; break;
+                        case NODATA:        nodataValue   = Double.parseDouble(value); break;
                         case PIXELTYPE:     signed        = indexOf(keyword, value, "SIGNED", "SIGNEDINT") >= 0; break;
                         case LAYOUT:        layout        = RawRasterLayout.valueOf(value.toUpperCase(Locale.US)); break;
                         case BYTEORDER: {
@@ -526,20 +543,26 @@ final class RawRasterStore extends RasterStore {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                  // Should never fail.
-        final ChannelDataInput in = input;
-        input  = null;                      // Cleared first in case of failure.
-        reader = null;
-        super.close();                      // Clear more fields. Never fail.
-        if (in != null) try {
-            in.channel.close();
-        } catch (IOException e) {
-            throw new DataStoreException(e);
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();                      // Should never fail.
+            final ChannelDataInput input = this.input;
+            if (input != null) try {
+                input.channel.close();
+            } catch (IOException e) {
+                throw new DataStoreException(e);
+            }
+        } finally {
+            synchronized (this) {
+                input  = null;                      // Cleared first in case of failure.
+                reader = null;
+                super.close();                      // Clear more fields. Never fail.
+            }
         }
     }
 }

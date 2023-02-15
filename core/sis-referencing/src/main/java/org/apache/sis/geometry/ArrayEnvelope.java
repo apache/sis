@@ -58,7 +58,6 @@ import static org.apache.sis.internal.referencing.Formulas.isPoleToPole;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
@@ -76,6 +75,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
     /**
      * The coordinate reference system, or {@code null}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     CoordinateReferenceSystem crs;
 
     /**
@@ -212,9 +212,9 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
-     * {@preformat wkt
-     *     BOX(-180 -90, 180 90)
-     * }
+     * {@snippet lang="wkt" :
+     *   BOX(-180 -90, 180 90)
+     *   }
      *
      * However, this constructor is lenient to other geometry types like {@code POLYGON}.
      * See the javadoc of the {@link GeneralEnvelope#GeneralEnvelope(CharSequence) GeneralEnvelope}

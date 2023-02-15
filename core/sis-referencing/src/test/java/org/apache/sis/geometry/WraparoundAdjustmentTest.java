@@ -36,9 +36,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
-public final strictfp class WraparoundAdjustmentTest extends TestCase {
+public final class WraparoundAdjustmentTest extends TestCase {
     /**
      * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope crossing the anti-meridian.
@@ -123,15 +122,14 @@ public final strictfp class WraparoundAdjustmentTest extends TestCase {
      * Tests {@link WraparoundAdjustment#shift(Envelope)}
      * with an envelope that cause the method to expand the area of interest. Illustration:
      *
-     * {@preformat text
+     * <pre class="text">
      *                  ┌────────────────────────────────────────────┐
      *                  │             Domain of validity             │
      *                  └────────────────────────────────────────────┘
      *   ┌────────────────────┐                                ┌─────
      *   │  Area of interest  │                                │  AOI
      *   └────────────────────┘                                └─────
-     *    ↖………………………………………………………360° period……………………………………………………↗︎
-     * }
+     *    ↖………………………………………………………360° period……………………………………………………↗︎</pre>
      *
      * @throws TransformException should never happen since this test does not transform coordinates.
      */

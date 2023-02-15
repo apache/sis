@@ -49,13 +49,12 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 @DependsOn({
     NTv2Test.class,
     NADCONTest.class
 })
-public final strictfp class InterpolatedTransformTest extends MathTransformTestCase {
+public final class InterpolatedTransformTest extends MathTransformTestCase {
     /**
      * Creates an {@link InterpolatedTransform} derived from a sinusoidal formula.
      * We do not really need {@code InterpolatedTransform} for sinusoidal formulas,

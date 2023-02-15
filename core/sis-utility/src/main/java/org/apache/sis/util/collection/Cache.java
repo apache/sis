@@ -54,13 +54,15 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * The easiest way to use this class is to invoke {@link #computeIfAbsent computeIfAbsent(…)}
  * or {@link #getOrCreate getOrCreate(…)} with lambda functions as below:
  *
- * {@preformat java
- *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
+ * {@snippet lang="java" :
+ *     class MyClass {
+ *         private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
  *
- *     public MyObject getMyObject(String key) {
- *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
+ *         public MyObject getMyObject(String key) {
+ *             return cache.computeIfAbsent(key, (k) -> createMyObject(k));
+ *         }
  *     }
- * }
+ *     }
  *
  * Alternatively, one can handle explicitly the locks.
  * This alternative sometimes provides more flexibility, for example in exception handling.
@@ -80,7 +82,7 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * be inside the {@code finally} block of a {@code try} block beginning immediately after the call
  * to {@link #lock lock(…)}, no matter what the result of the computation is (including {@code null}).
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
  *
  *     public MyObject getMyObject(final String key) throws MyCheckedException {
@@ -135,7 +137,6 @@ import org.apache.sis.internal.system.ReferenceQueueConsumer;
  * @param <V>  the type of value objects.
  *
  * @since 0.3
- * @module
  */
 public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
     /**
@@ -208,7 +209,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * {@linkplain Reference weak or soft references}.</p>
      *
      * @param initialCapacity  the initial capacity.
-     * @param costLimit        the maximum cost of objects to keep by strong reference.
+     * @param costLimit        the maximum cost (inclusive) of objects to keep by strong reference.
      * @param soft             if {@code true}, use {@link SoftReference} instead of {@link WeakReference}.
      */
     public Cache(int initialCapacity, final long costLimit, final boolean soft) {
@@ -277,11 +278,15 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * If a value already exists in the cache, then it is returned immediately.
      * Otherwise the {@code creator.call()} method is invoked and its result is saved in this cache for future reuse.
      *
-     * <div class="note"><b>Example:</b>
+     * <p>This method is similar to {@link #computeIfAbsent(Object, Function)} except that it can propagate checked exceptions.
+     * If the {@code creator} function does not throw any checked exception,
+     * then invoking {@code computeIfAbsent(…)} is simpler.</p>
+     *
+     * <h4>Example</h4>
      * the following example shows how this method can be used.
      * In particular, it shows how to propagate {@code MyCheckedException}:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
      *
      *     public MyObject getMyObject(final String key) throws MyCheckedException {
@@ -298,11 +303,6 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *         }
      *     }
      * }
-     * </div>
-     *
-     * This method is similar to {@link #computeIfAbsent(Object, Function)} except that it can propagate
-     * checked exceptions. If the {@code creator} function does not throw any checked exception, then
-     * invoking {@code computeIfAbsent(…)} is simpler.
      *
      * @param  key      the key for which to get the cached or created value.
      * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
@@ -335,20 +335,19 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * Otherwise the {@code creator.apply(Object)} method is invoked and its result
      * is saved in this cache for future reuse.
      *
-     * <div class="note"><b>Example:</b>
+     * <p>This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.</p>
+     *
+     * <h4>Example</h4>
      * below is the same code than {@link #getOrCreate(Object, Callable)} example,
      * but without the need for any checked exception handling:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private final Cache<String,MyObject> cache = new Cache<String,MyObject>();
      *
      *     public MyObject getMyObject(final String key) {
      *         return cache.computeIfAbsent(key, (k) -> createMyObject(k));
      *     }
      * }
-     * </div>
-     *
-     * This method is similar to {@link #getOrCreate(Object, Callable)}, but without checked exceptions.
      *
      * @param  key      the key for which to get the cached or created value.
      * @param  creator  a method for creating a value, to be invoked only if no value are cached for the given key.
@@ -854,14 +853,14 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * with a {@link Handler#putAndUnlock(Object) putAndUnlock} call in {@code try} … {@code catch}
      * blocks as in the example below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Cache.Handler handler = cache.lock();
      *     try {
      *         // Compute the result...
      *     } finally {
      *         handler.putAndUnlock(result);
      *     }
-     * }
+     *     }
      *
      * @param  key  the key for the entry to lock.
      * @return a handler to use for unlocking and storing the result.
@@ -972,7 +971,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * The handler returned by {@link Cache#lock}, to be used for unlocking and storing the result.
      * This handler should be used as below (the {@code try} … {@code finally} statements are important):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Value V = null;
      *     Cache.Handler<V> handler = cache.lock(key);
      *     try {
@@ -983,7 +982,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      *     } finally {
      *         handler.putAndUnlock(value);
      *     }
-     * }
+     *     }
      *
      * See the {@link Cache} javadoc for a more complete example.
      *
@@ -992,7 +991,6 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      */
     public interface Handler<V> {
         /**
@@ -1048,10 +1046,10 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
         /**
          * Do nothing (except checking for programming error), since we don't hold any lock.
          *
-         * <div class="note"><b>Implementation note:</b>
+         * <h4>Implementation note</h4>
          * An alternative would have been to store the result in the map anyway.
          * But doing so is unsafe because we have no lock; we have no guarantee that nothing
-         * has happened in another thread between {@code peek} and {@code putAndUnlock}.</div>
+         * has happened in another thread between {@code peek} and {@code putAndUnlock}.
          */
         @Override
         public void putAndUnlock(final V result) throws IllegalStateException {
@@ -1163,10 +1161,10 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
             /**
              * Do nothing (except checking for programming error), since we don't hold any lock.
              *
-             * <div class="note"><b>Implementation note:</b>
+             * <h4>Implementation note</h4>
              * An alternative would have been to store the result in the map anyway.
              * But doing so is unsafe because we have no lock; we have no guarantee that nothing
-             * has happened in another thread between {@code peek} and {@code putAndUnlock}.</div>
+             * has happened in another thread between {@code peek} and {@code putAndUnlock}.
              */
             @Override
             public void putAndUnlock(final V result) throws IllegalStateException {

@@ -79,7 +79,7 @@ public final class Assembler {
 
     /**
      * Relative path to be replaced by {@code "../"} path. We perform this substitution because the source files
-     * defined in the {@code source/developer-guide/<chapter>} directories reference directly the images in their
+     * defined in the {@code content/developer-guide/<chapter>} directories reference directly the images in their
      * final {@code static/book/images} directory.
      */
     private static final String[] PATHS_TO_REPLACE = {
@@ -138,7 +138,7 @@ public final class Assembler {
     /**
      * Creates a new assembler for the given input and output files.
      *
-     * @param  input   the input file (e.g. {@code "sis-site/main/source/developer-guide/index.html"}).
+     * @param  input   the input file (e.g. {@code "sis-site/main/content/developer-guide/index.html"}).
      * @throws ParserConfigurationException if this constructor cannot build the XML document.
      * @throws IOException if an error occurred while reading the file.
      * @throws SAXException if an error occurred while parsing the XML.
@@ -172,7 +172,7 @@ public final class Assembler {
                         "      http://www.apache.org/licenses/LICENSE-2.0" + LINE_SEPARATOR +
                         LINE_SEPARATOR +
                         "  This is an automatically generated file. DO NOT EDIT." + LINE_SEPARATOR +
-                        "  See the files in the `source/developer-guide` directory instead." + LINE_SEPARATOR +
+                        "  See the files in the `content/developer-guide` directory instead." + LINE_SEPARATOR +
                         LINE_SEPARATOR);
                 break;
             }
@@ -530,7 +530,7 @@ public final class Assembler {
 
     /**
      * Generates the {@code "static/book/en|fr/developer-guide.html"} files
-     * from {@code "source/developer-guide/[fr/]index.html"} files.
+     * from {@code "content/developer-guide/[fr/]index.html"} files.
      * The only argument expected by this method is the root of {@code sis-site} project.
      *
      * @param  args  command-line arguments. Should contain exactly on value, which is the site root directory.
@@ -549,7 +549,7 @@ public final class Assembler {
             System.err.println("Not a directory: " + directory);
             System.exit(1);
         }
-        final File source = new File(directory, "main/source");
+        final File source = new File(directory, "main/content");
         final File target = new File(directory, "asf-staging/book");
         final File input  = new File(source, "developer-guide/index.html");
         if (!input.isFile()) {

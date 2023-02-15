@@ -33,7 +33,6 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class Resources extends IndexedResourceBundle {
     /**
@@ -44,7 +43,6 @@ public final class Resources extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @since   1.0
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -185,7 +183,6 @@ public final class Resources extends IndexedResourceBundle {
         private static final long serialVersionUID = 7465539282825054584L;
 
         International(short key)                           {super(key);}
-        International(short key, Object args)              {super(key, args);}
         @Override protected KeyConstants getKeyConstants() {return Resources.Keys.INSTANCE;}
         @Override protected IndexedResourceBundle getBundle(final Locale locale) {
             return forLocale(locale);

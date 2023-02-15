@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.storage.csv;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Iterator;
 import java.time.Instant;
 import java.io.StringReader;
@@ -27,13 +27,14 @@ import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataOptionKey;
+import org.apache.sis.setup.OptionKey;
+import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import com.esri.core.geometry.Point2D;
 import com.esri.core.geometry.Polyline;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singletonList;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -50,9 +51,8 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * {@code true} if testing a moving feature, or {@code false} (the default) if testing a static feature.
      */
@@ -83,9 +83,12 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Opens a CSV store on the test data for reading the lines as-is, without assembling them in a single trajectory.
      */
-    private static Store open() throws DataStoreException {
-        StorageConnector connector = new StorageConnector(testData());
-        connector.setOption(DataOptionKey.FOLIATION_REPRESENTATION, FoliationRepresentation.FRAGMENTED);
+    private static Store open(final boolean fragmented) throws DataStoreException {
+        final var connector = new StorageConnector(testData());
+        if (fragmented) {
+            connector.setOption(DataOptionKey.FOLIATION_REPRESENTATION, FoliationRepresentation.FRAGMENTED);
+        }
+        connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         return new Store(null, connector);
     }
 
@@ -97,7 +100,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testGetMetadata() throws DataStoreException {
         final Metadata metadata;
-        try (Store store = open()) {
+        try (Store store = open(true)) {
             metadata = store.getMetadata();
         }
         final Extent extent = getSingleton(getSingleton(metadata.getIdentificationInfo()).getExtents());
@@ -116,7 +119,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testStaticFeatures() throws DataStoreException {
-        try (Store store = open()) {
+        try (Store store = open(true)) {
             verifyFeatureType(store.featureType, double[].class, 1);
             assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<Feature> it = store.features(false).iterator();
@@ -131,12 +134,12 @@ public final strictfp class StoreTest extends TestCase {
     /**
      * Tests reading the data as a moving features. In the following data:
      *
-     * {@preformat text
+     * {@snippet lang="csv" :
      *     a,  10, 150, 11.0 2.0 12.0 3.0, walking, 1
      *     b,  10, 190, 10.0 2.0 11.0 3.0, walking, 2
      *     a, 150, 190, 12.0 3.0 10.0 3.0
      *     c,  10, 190, 12.0 1.0 10.0 2.0 11.0 3.0, vehicle, 1
-     * }
+     *     }
      *
      * the two rows for the "a" features shall be merged in a single trajectory.
      *
@@ -145,13 +148,13 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testMovingFeatures() throws DataStoreException {
         isMovingFeature = true;
-        try (Store store = new Store(null, new StorageConnector(testData()))) {
+        try (Store store = open(false)) {
             verifyFeatureType(store.featureType, Polyline.class, Integer.MAX_VALUE);
             assertEquals("foliation", Foliation.TIME, store.foliation);
             final Iterator<Feature> it = store.features(false).iterator();
-            assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:51", new double[] {11, 2, 12, 3, 10, 3}, singletonList("walking"), Arrays.asList(1, 2));
-            assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        singletonList("walking"), singletonList(2));
-            assertPropertyEquals(it.next(), "c", "12:33:51", "12:36:51", new double[] {12, 1, 10, 2, 11, 3}, singletonList("vehicle"), singletonList(1));
+            assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:51", new double[] {11, 2, 12, 3, 10, 3}, List.of("walking"), List.of(1, 2));
+            assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        List.of("walking"), List.of(2));
+            assertPropertyEquals(it.next(), "c", "12:33:51", "12:36:51", new double[] {12, 1, 10, 2, 11, 3}, List.of("vehicle"), List.of(1));
             assertFalse(it.hasNext());
         }
     }

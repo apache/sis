@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     // Following are testing the test tools.
@@ -132,7 +131,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.converter.SystemRegistryTest.class,
     org.apache.sis.internal.converter.NumberConverterTest.class         // Shall be after SystemRegistryTest.
 })
-public final strictfp class UtilityTestSuite extends TestSuite {
+public final class UtilityTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

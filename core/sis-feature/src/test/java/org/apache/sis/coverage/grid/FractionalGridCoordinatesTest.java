@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class FractionalGridCoordinatesTest extends TestCase {
+public final class FractionalGridCoordinatesTest extends TestCase {
     /**
      * Creates a test instance with (4 -1.1 7.6) coordinate values.
      */

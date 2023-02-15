@@ -16,9 +16,8 @@
  */
 package org.apache.sis.feature.builder;
 
-import java.util.Arrays;
 import java.util.Set;
-import java.util.Collections;
+import java.util.List;
 import com.esri.core.geometry.Geometry;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.feature.Features;
@@ -49,10 +48,9 @@ import org.opengis.feature.PropertyType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @DependsOn(CharacteristicTypeBuilderTest.class)
-public final strictfp class AttributeTypeBuilderTest extends TestCase {
+public final class AttributeTypeBuilderTest extends TestCase {
     /**
      * Tests with the minimum number of parameters.
      */
@@ -118,7 +116,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDefaultValue(25f));
         assertSame(builder, builder.setValueClass(Float.class));
         assertEquals("valueClass", Float.class, builder.getValueClass());
-        assertSetEquals(Collections.singleton(builder), builder.owner().properties());
+        assertSetEquals(Set.of(builder), builder.owner().properties());
         final CharacteristicTypeBuilder<Float> stddev = builder.addCharacteristic(Float.class);
         assertSame(stddev, stddev.setName("stddev"));
         assertSame(stddev, stddev.setDefaultValue(2f));
@@ -134,7 +132,7 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertEquals("designation",   "test designation", newb.getDesignation());
         assertEquals("valueClass",    Double.class,       newb.getValueClass());
         assertEquals("defaultValue",  Double.valueOf(25), newb.getDefaultValue());
-        assertSetEquals(Collections.singleton(newb), newb.owner().properties());
+        assertSetEquals(Set.of(newb), newb.owner().properties());
         /*
          * In order to avoid accidental misuse, the old builder should not be usable anymore.
          */
@@ -232,15 +230,15 @@ public final strictfp class AttributeTypeBuilderTest extends TestCase {
         assertTrue("isEmpty", roles.isEmpty());
 
         assertTrue("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
-        assertSetEquals(Collections.singleton(AttributeRole.DEFAULT_GEOMETRY), roles);
+        assertSetEquals(Set.of(AttributeRole.DEFAULT_GEOMETRY), roles);
         assertFalse("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
 
         assertTrue("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
-        assertSetEquals(Arrays.asList(AttributeRole.DEFAULT_GEOMETRY, AttributeRole.IDENTIFIER_COMPONENT), roles);
+        assertSetEquals(List.of(AttributeRole.DEFAULT_GEOMETRY, AttributeRole.IDENTIFIER_COMPONENT), roles);
         assertFalse("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
 
         assertTrue("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));
-        assertSetEquals(Collections.singleton(AttributeRole.IDENTIFIER_COMPONENT), roles);
+        assertSetEquals(Set.of(AttributeRole.IDENTIFIER_COMPONENT), roles);
         assertFalse("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));
 
         assertTrue("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));

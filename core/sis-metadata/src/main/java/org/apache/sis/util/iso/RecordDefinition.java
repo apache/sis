@@ -49,7 +49,6 @@ import org.apache.sis.internal.util.CollectionsExt;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlTransient
 abstract class RecordDefinition {                                       // Intentionally not Serializable.
@@ -70,7 +69,7 @@ abstract class RecordDefinition {                                       // Inten
         /**
          * The wrapped record type.
          */
-        @SuppressWarnings("serial")                     // Not statically typed as Serializable.
+        @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
         private final RecordType recordType;            // This is the only serialized field in this file.
 
         /**

@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class GridOrientationTest extends TestCase {
+public final class GridOrientationTest extends TestCase {
     /**
      * Tests {@link GridOrientation#useVariantOfCRS(AxesConvention)}. This test may fail if new enumeration values
      * are added in {@link AxesConvention} without updating {@link GridOrientation#useVariantOfCRS(AxesConvention)}

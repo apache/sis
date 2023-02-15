@@ -53,7 +53,6 @@ import org.apache.sis.internal.gui.GUIUtilities;
  * @param  <S>  the type of row data as declared in the {@code TableView} generic type.
  *
  * @since 1.1
- * @module
  */
 final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<ActionEvent> {
     /**
@@ -264,12 +263,12 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
      * or because this cell is now used for a new {@code <S>} instance. This method is invoked when the
      * row value (of type {@code <S>}) is modified.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * this method should not invoke {@link #setGraphic(Node)} if the current graphic is a {@link ComboBoxBase}
+     * <h4>Implementation note</h4>
+     * This method should not invoke {@link #setGraphic(Node)} if the current graphic is a {@link ComboBoxBase}
      * (the parent of {@link ComboBox} and {@link ColorPicker}) because this method may be invoked at any time,
      * including during the execution of {@link #startEdit()} or {@link #commitEdit(Object)} methods.
      * Adding or removing {@link ComboBoxBase} in this method cause problems with focus system.
-     * In particular we must be sure to remove {@link ColorPicker} only after it has lost focus.</div>
+     * In particular we must be sure to remove {@link ColorPicker} only after it has lost focus.
      *
      * @param  colors  the new object to show as a color or gradient in this cell.
      * @param  empty   {@code true} if this method is invoked for creating an empty cell.

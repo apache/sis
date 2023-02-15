@@ -30,26 +30,24 @@ import static java.lang.StrictMath.*;
  * A pseudo-transform for debugging purpose. The input points can be random numbers between 0 and 1.
  * The transformed points are build as below (when formatted in base 10):
  *
- * {@preformat text
- *     [1 digit for dimension] [3 first fraction digits] . [original digits from source]
- * }
+ * <blockquote>
+ * [1 digit for dimension] [3 first fraction digits] . [original digits from source]
+ * </blockquote>
  *
  * For example if the first input coordinate is (0.2, 0.5, 0.3), then the transformed coordinate will be:
  *
- * {@preformat text
+ * <pre class="text">
  *     1002.2
  *     2005.5
- *     3003.3
- * }
+ *     3003.3</pre>
  *
  * This inverse transform is not effective and this transform cannot compute {@linkplain #derivative derivative}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
-strictfp class PseudoTransform extends AbstractMathTransform {
+class PseudoTransform extends AbstractMathTransform {
     /**
      * The source and target dimensions.
      */

@@ -50,7 +50,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public class ConverterRegistry {
     /**
@@ -96,12 +95,12 @@ public class ConverterRegistry {
      * fetch the {@code ObjectConverter} instances from the {@code META-INF/services}
      * directories as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ClassLoader loader = getClass().getClassLoader();
      *     for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, loader)) {
      *         register(converter);
      *     }
-     * }
+     *     }
      */
     protected void initialize() {
     }
@@ -214,14 +213,13 @@ public class ConverterRegistry {
      * Consider a converter from class {@code S} to class {@code T} where the two classes
      * are related in a hierarchy as below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   C1
      *   └───C2
      *       ├───C3
      *       │   └───S
      *       └───C4
-     *           └───T
-     * }
+     *           └───T</pre>
      *
      * Invoking this method will register the given converter for all the following cases:
      *

@@ -62,7 +62,6 @@ import org.opengis.metadata.spatial.GeolocationInformation;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_Georeferenceable_Type", propOrder = {
     "controlPointAvailable",

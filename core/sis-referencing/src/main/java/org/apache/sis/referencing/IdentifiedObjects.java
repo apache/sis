@@ -38,10 +38,10 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.DefinitionURI;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.metadata.Identifiers;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.metadata.NameToIdentifier;
@@ -50,7 +50,6 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.util.CollectionsExt.nonNull;
 
 
@@ -59,13 +58,12 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
  *
  * @since 0.4
- * @module
  */
 public final class IdentifiedObjects extends Static {
     /**
@@ -242,6 +240,8 @@ public final class IdentifiedObjects extends Static {
      * This method checks all {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers} in their iteration
      * order and returns the first identifier with an {@linkplain NamedIdentifier#getAuthority() authority} citation
      * {@linkplain Citations#identifierMatches(Citation, Citation) matching} the specified authority.
+     * If the specified authority implements {@link IdentifierSpace}, then the authority space name
+     * is also compared to the {@linkplain NamedIdentifier#getCodeSpace() code space} of each identifier.
      *
      * @param  object     the object to get the identifier from, or {@code null}.
      * @param  authority  the authority for the identifier to return, or {@code null} for
@@ -253,10 +253,17 @@ public final class IdentifiedObjects extends Static {
      */
     public static Identifier getIdentifier(final IdentifiedObject object, final Citation authority) {
         if (object != null) {
+            String cs = null;
+            if (authority instanceof IdentifierSpace<?>) {
+                cs = ((IdentifierSpace<?>) authority).getName();
+            }
             for (final Identifier identifier : nonNull(object.getIdentifiers())) {
                 if (identifier != null) {                       // Paranoiac check.
+                    if (cs != null && cs.equalsIgnoreCase(identifier.getCodeSpace())) {
+                        return identifier;      // Match based on codespace.
+                    }
                     if (authority == null || Citations.identifierMatches(authority, identifier.getAuthority())) {
-                        return identifier;
+                        return identifier;      // Match based on citation.
                     }
                 }
             }
@@ -421,9 +428,9 @@ public final class IdentifiedObjects extends Static {
      * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
      * one can use the following pattern instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     String urn = toURN(object.getClass(), getIdentifier(object, authority));
-     * }
+     *     }
      *
      * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
@@ -532,9 +539,9 @@ public final class IdentifiedObjects extends Static {
      * declares explicitly its identifier. If the declared identifier is wanted unconditionally,
      * one can use the following pattern instead:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     String code = toString(getIdentifier(object, Citations.EPSG));
-     * }
+     *     }
      *
      * This method can be seen as a converse of {@link CRS#forCode(String)}.
      *
@@ -570,37 +577,37 @@ public final class IdentifiedObjects extends Static {
      * Logs a warning for a non-critical error. The callers should have a fallback.
      */
     private static void warning(final String method, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.REFERENCING), IdentifiedObjects.class, method, e);
+        Logging.recoverableException(CRS.LOGGER, IdentifiedObjects.class, method, e);
     }
 
     /**
      * Creates a finder which can be used for looking up unidentified objects.
      * This method is an alternative to {@code lookup(…)} methods when more control are desired.
      *
-     * <div class="note"><b>Example 1: be lenient regarding axis order</b><br>
+     * <h4>Example 1: be lenient regarding axis order</h4>
      * By default, {@code lookup(…)} methods require that objects in the dataset have their axes in the
      * same order than the given object. For relaxing this condition, one can use the following Java code.
      * This example assumes that at most one object from the dataset will match the given object.
      * If more than one object may match, then the call to {@code findSingleton(…)} should be replaced
      * by {@code find(…)}.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
      *     finder.setIgnoringAxes(true);
      *     IdentifiedObject found = finder.findSingleton(object);
-     * }</div>
+     *     }
      *
-     * <div class="note"><b>Example 2: extend the search to deprecated definitions</b><br>
+     * <h4>Example 2: extend the search to deprecated definitions</h4>
      * By default, {@code lookup(…)} methods exclude deprecated objects from the search.
      * To search also among deprecated objects, one can use the following Java code:
      * This example does not use the {@code findSingleton(…)} convenience method on the assumption
      * that the search may find both deprecated and non-deprecated objects.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(null);
      *     finder.setSearchDomain(IdentifiedObjectFinder.Domain.ALL_DATASET);
      *     Set<IdentifiedObject> found = finder.find(object);
-     * }</div>
+     *     }
      *
      * @param  authority  the authority of the objects to search (typically {@code "EPSG"} or {@code "OGC"}),
      *         or {@code null} for searching among the objects created by all authorities.

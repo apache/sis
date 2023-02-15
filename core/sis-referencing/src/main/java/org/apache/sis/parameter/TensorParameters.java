@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Objects;
 import java.io.IOException;
 import java.io.Serializable;
@@ -88,7 +87,7 @@ import org.apache.sis.util.resources.Errors;
  *   <th class="sep">Using OGC names</th>
  * </tr>
  * <tr><td>
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   Parameter["A0", <value>, Id["EPSG", 8623]],
  *   Parameter["A1", <value>, Id["EPSG", 8624]],
  *   Parameter["A2", <value>, Id["EPSG", 8625]],
@@ -102,7 +101,7 @@ import org.apache.sis.util.resources.Errors;
  * but they are for polynomial transformations, not for affine transformations.</div>
  *
  * </td><td class="sep">
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *   Parameter["num_row", 3],
  *   Parameter["num_col", 3],
  *   Parameter["elt_0_0", <value>],
@@ -124,18 +123,18 @@ import org.apache.sis.util.resources.Errors;
  * For creating a new group of parameters for a matrix using the {@link #WKT1} naming conventions,
  * one can use the following code:
  *
- * {@preformat java
- *   Map<String,?> properties = Collections.singletonMap(ParameterValueGroup.NAME_KEY, "Affine");
- *   ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
- * }
+ * {@snippet lang="java" :
+ *     Map<String,?> properties = Map.of(ParameterValueGroup.NAME_KEY, "Affine");
+ *     ParameterValueGroup p = TensorParameters.WKT1.createValueGroup(properties);
+ *     }
  *
  * For setting the elements of a few values, then create a matrix from the parameter values:
  *
- * {@preformat java
- *   p.parameter("elt_0_0").setValue(4);    // "A0" also accepted as a synonymous of "elt_0_0".
- *   p.parameter("elt_1_1").setValue(6);    // "B1" also accepted as a synonymous of "elt_1_1".
- *   Matrix m = TensorParameters.WKT1.toMatrix(p);
- * }
+ * {@snippet lang="java" :
+ *     p.parameter("elt_0_0").setValue(4);    // "A0" also accepted as a synonymous of "elt_0_0".
+ *     p.parameter("elt_1_1").setValue(6);    // "B1" also accepted as a synonymous of "elt_1_1".
+ *     Matrix m = TensorParameters.WKT1.toMatrix(p);
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
@@ -145,7 +144,6 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.referencing.operation.matrix.Matrices
  *
  * @since 0.4
- * @module
  */
 public class TensorParameters<E> implements Serializable {
     /**
@@ -167,20 +165,20 @@ public class TensorParameters<E> implements Serializable {
      *     <th class="sep">Alias</th>
      *   </tr>
      * <tr><td>
-     * {@preformat text
+     * <pre class="text">
      *   ┌            ┐
      *   │ A0  A1  A2 │
      *   │ B0  B1  B2 │
      *   │ C0  C1  C2 │
-     *   └            ┘
-     * }</td><td class="sep">
-     * {@preformat text
+     *   └            ┘</pre>
+     * </td><td class="sep">
+     * <pre class="text">
      *   ┌                             ┐
      *   │ elt_0_0   elt_0_1   elt_0_2 │
      *   │ elt_1_0   elt_1_1   elt_1_2 │
      *   │ elt_2_0   elt_2_1   elt_2_2 │
-     *   └                             ┘
-     * }</td></tr>
+     *   └                             ┘</pre>
+     * </td></tr>
      * </table>
      *
      * <h4>Relationship with EPSG</h4>
@@ -279,7 +277,7 @@ public class TensorParameters<E> implements Serializable {
      *
      * <p>The length of this array determine the tensor {@linkplain #rank() rank}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ParameterDescriptor<Integer>[] dimensions;
 
     /**
@@ -496,7 +494,7 @@ public class TensorParameters<E> implements Serializable {
         final Citation authority = dimensions[0].getName().getAuthority();
         final String name = indicesToName(indices);
         return new DefaultParameterDescriptor<>(
-                Collections.singletonMap(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
+                Map.of(ParameterDescriptor.NAME_KEY, new NamedIdentifier(authority, name)),
                 0, 1, elementType, null, null, getDefaultValue(indices));
     }
 

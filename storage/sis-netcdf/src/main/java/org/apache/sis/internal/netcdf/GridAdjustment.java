@@ -44,7 +44,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class GridAdjustment {
     /**
@@ -81,7 +80,7 @@ public final class GridAdjustment {
      * The mechanism is documented in {@link Convention#nameOfDimension(Variable, int)}.
      * For example, given a file with the following netCDF variables:
      *
-     * {@preformat text
+     * <pre class="text">
      *     float Latitude(grid_y, grid_x)
      *       dim0 = "Line grids"
      *       dim1 = "Pixel grids"
@@ -92,16 +91,14 @@ public final class GridAdjustment {
      *       resampling_interval = 10
      *     ushort SST(data_y, data_x)
      *       dim0 = "Line grids"
-     *       dim1 = "Pixel grids"
-     * }
+     *       dim1 = "Pixel grids"</pre>
      *
      * this method will add the following entries in the {@code toGridDimensions} map, provided that
      * the dimensions are not already keys in that map:
      *
-     * {@preformat text
+     * <pre class="text">
      *     "Line grids"   →  Dimension[grid_x]
-     *     "Pixel grids"  →  Dimension[grid_y]
-     * }
+     *     "Pixel grids"  →  Dimension[grid_y]</pre>
      *
      * @param  variable          the variable for which a "label to grid dimensions" mapping is desired.
      * @param  axes              all axes in the netCDF file (not only the variable axes).

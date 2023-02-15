@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class ReferenceQueueConsumerTest extends TestCase {
+public final class ReferenceQueueConsumerTest extends TestCase {
     /**
      * Verifies that invoking {@link Thread#interrupt()} will cause {@link InterruptedException}
      * to be thrown even if invoked <em>before</em> {@link ReferenceQueue#remove()} put the

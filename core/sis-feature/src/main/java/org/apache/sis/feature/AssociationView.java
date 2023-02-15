@@ -37,7 +37,6 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 class AssociationView extends PropertyView<Feature> implements FeatureAssociation {
     /**
@@ -48,6 +47,7 @@ class AssociationView extends PropertyView<Feature> implements FeatureAssociatio
     /**
      * The role of this association. Must be one of the properties listed in the {@link #feature}.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final FeatureAssociationRole role;
 
     /**

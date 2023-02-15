@@ -51,7 +51,6 @@ import org.opengis.coverage.grid.SequenceType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class BandedIterator extends WritablePixelIterator {
     /**
@@ -203,7 +202,7 @@ final class BandedIterator extends WritablePixelIterator {
      * {@link ArrayIndexOutOfBoundsException} or return a random value.
      */
     @Override
-    public int[] getPixel​(int[] dest) {
+    public int[] getPixel(int[] dest) {
         if (dest == null) {
             dest = new int[numBands];
         }
@@ -226,7 +225,7 @@ final class BandedIterator extends WritablePixelIterator {
      * {@link ArrayIndexOutOfBoundsException} or return a random value.
      */
     @Override
-    public float[] getPixel​(float[] dest) {
+    public float[] getPixel(float[] dest) {
         if (dest == null) {
             dest = new float[numBands];
         }
@@ -244,7 +243,7 @@ final class BandedIterator extends WritablePixelIterator {
      * {@link ArrayIndexOutOfBoundsException} or return a random value.
      */
     @Override
-    public double[] getPixel​(double[] dest) {
+    public double[] getPixel(double[] dest) {
         if (dest == null) {
             dest = new double[numBands];
         }
@@ -262,7 +261,7 @@ final class BandedIterator extends WritablePixelIterator {
      * {@link ArrayIndexOutOfBoundsException} or return a random value.
      */
     @Override
-    public void setPixel​(final int[] values) {
+    public void setPixel(final int[] values) {
         final int index = x + xToBuffer;
         destBuffer.setElem(index, values[0]);           // See comment in `getPixel(int[])`.
         for (int i=1; i<numBands; i++) {
@@ -276,7 +275,7 @@ final class BandedIterator extends WritablePixelIterator {
      * {@link ArrayIndexOutOfBoundsException} or return a random value.
      */
     @Override
-    public void setPixel​(final float[] values) {
+    public void setPixel(final float[] values) {
         final int index = x + xToBuffer;
         destBuffer.setElemFloat(index, values[0]);      // See comment in `getPixel(int[])`.
         for (int i=1; i<numBands; i++) {
@@ -290,7 +289,7 @@ final class BandedIterator extends WritablePixelIterator {
      * {@link ArrayIndexOutOfBoundsException} or return a random value.
      */
     @Override
-    public void setPixel​(final double[] values) {
+    public void setPixel(final double[] values) {
         final int index = x + xToBuffer;
         destBuffer.setElemDouble(index, values[0]);     // See comment in `getPixel(int[])`.
         for (int i=1; i<numBands; i++) {

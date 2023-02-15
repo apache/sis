@@ -53,7 +53,6 @@ import org.opengis.metadata.constraint.LegalConstraints;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_LegalConstraints_Type", propOrder = {
     "accessConstraints",

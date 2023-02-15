@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.io.EOFException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.jdk17.JDK17;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.storage.DataStoreContentException;
@@ -38,7 +38,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class CharactersView implements CharSequence {
     /**
@@ -220,11 +219,11 @@ final class CharactersView implements CharSequence {
         if (direct) {
             return new String(array, start, length, StandardCharsets.US_ASCII);
         } else if (length <= array.length) {
-            JDK9.get(buffer, start, array, 0, length);
+            JDK17.get(buffer, start, array, 0, length);
             return new String(array, 0, length, StandardCharsets.US_ASCII);
         } else {
             final byte[] data = new byte[length];
-            JDK9.get(buffer, start, data);
+            JDK17.get(buffer, start, data);
             return new String(data, StandardCharsets.US_ASCII);
         }
     }

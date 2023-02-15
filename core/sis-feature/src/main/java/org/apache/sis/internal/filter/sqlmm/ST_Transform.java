@@ -17,7 +17,6 @@
 package org.apache.sis.internal.filter.sqlmm;
 
 import java.util.List;
-import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -61,7 +60,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ST_Transform<R,G> extends FunctionWithSRID<R> {
     /**
@@ -72,6 +70,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
     /**
      * The expression giving the geometry.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Expression<? super R, GeometryWrapper<G>> geometry;
 
     /**
@@ -107,7 +106,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Arrays.asList(unwrap(geometry), srid);             // TODO: use List.of(…) with JDK9.
+        return List.of(unwrap(geometry), srid);
     }
 
     /**

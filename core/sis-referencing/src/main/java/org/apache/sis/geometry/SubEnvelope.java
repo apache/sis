@@ -35,7 +35,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndexRange;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class SubEnvelope extends GeneralEnvelope {
     /**

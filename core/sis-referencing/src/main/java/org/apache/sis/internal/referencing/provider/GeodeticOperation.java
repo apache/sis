@@ -33,7 +33,6 @@ import org.opengis.referencing.operation.SingleOperation;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 @XmlTransient
 abstract class GeodeticOperation extends AbstractProvider {
@@ -118,7 +117,7 @@ abstract class GeodeticOperation extends AbstractProvider {
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (redimensioned != null && (sourceDimensions & ~1) == 2 && (targetDimensions & ~1) == 2) {
             final GeodeticOperation m = redimensioned[((sourceDimensions & 1) << 1) | (targetDimensions & 1)];

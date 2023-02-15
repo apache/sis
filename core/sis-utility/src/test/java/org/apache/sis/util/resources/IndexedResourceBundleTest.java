@@ -49,7 +49,7 @@ import static org.apache.sis.test.Assert.*;
  * @since   0.3
  */
 @DependsOn(LoaderTest.class)
-public final strictfp class IndexedResourceBundleTest extends TestCase {
+public final class IndexedResourceBundleTest extends TestCase {
     /**
      * The resource bundle in process of being tested. Shall be reset to {@code null} after every
      * test. If non-null, then {@link #dumpResourcesOnError()} will consider that the test failed

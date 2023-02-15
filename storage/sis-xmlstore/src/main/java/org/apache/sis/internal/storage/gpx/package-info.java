@@ -21,7 +21,7 @@
  * The GPX format can be used to describe waypoints, tracks, and routes.
  * Example (from Wikipedia):
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <gpx version="1.1" creator="Oregon 400t">
  *     <metadata>
  *       <link href="http://www.garmin.com">
@@ -47,7 +47,7 @@
  *       </trkseg>
  *     </trk>
  *   </gpx>
- * }
+ *   }
  *
  * The GPX 1.1 specification enforces the following conventions:
  * <ul>
@@ -56,13 +56,12 @@
  * </ul>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/GPS_Exchange_Format">GPS Exchange Format on Wikipedia</a>
  * @see <a href="http://www.topografix.com/GPX/1/1/">GPX 1.1 Schema Documentation</a>
  *
  * @since 0.8
- * @module
  */
 @XmlSchema(elementFormDefault = XmlNsForm.QUALIFIED, namespace = Tags.NAMESPACE_V11, xmlns = {
     @XmlNs(prefix = "gpx", namespaceURI = Tags.NAMESPACE_V11)

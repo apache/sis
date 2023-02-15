@@ -33,7 +33,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @XmlTransient
 class AbstractMercator extends MapProjection {

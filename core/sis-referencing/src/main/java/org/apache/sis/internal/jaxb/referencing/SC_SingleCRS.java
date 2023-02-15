@@ -31,7 +31,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
     /**

@@ -28,6 +28,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform2D;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
@@ -56,7 +57,6 @@ import static java.lang.Math.abs;
  * @author  Rémi Maréchal (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ResamplingGrid extends AbstractMathTransform2D {
     /**
@@ -72,6 +72,7 @@ final class ResamplingGrid extends AbstractMathTransform2D {
      * This maximum is honored on a best-effort basis; it may happen that for some pixels
      * the error is slightly higher.
      */
+    @Configuration
     static final double TOLERANCE = 0.125;
 
     /**

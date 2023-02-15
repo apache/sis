@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
@@ -38,9 +38,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class MultiplicityTest extends TestUsingFile {
+public final class MultiplicityTest extends TestUsingFile {
     /**
      * An XML file containing multiplicity declarations.
      */
@@ -63,7 +62,7 @@ public final strictfp class MultiplicityTest extends TestUsingFile {
     protected MarshallerPool getMarshallerPool() throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(FeatureAttributeMock.class),
-                        Collections.singletonMap(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
+                                      Map.of(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
         return pool;
     }

@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -38,9 +37,9 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
  * Stores temporary information needed for completing the construction of an {@link DefaultVerticalExtent} instance.
  * WKT of vertical extents looks like:
  *
- * {@preformat wkt
+ * {@snippet lang="wkt" :
  *     VERTICALEXTENT[-1000, 0, LENGTHUNIT[“metre”, 1]]
- * }
+ *     }
  *
  * But {@code DefaultVerticalExtent} has no {@code unit} property. Instead, {@code DefaultVerticalExtent} has a
  * {@code verticalCRS} property. The WKT specification said that heights are positive toward up and relative to
@@ -54,7 +53,6 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 final class VerticalInfo {
     /**
@@ -190,6 +188,6 @@ final class VerticalInfo {
      * Convenience method for creating the map of properties to give to the factory method.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 }

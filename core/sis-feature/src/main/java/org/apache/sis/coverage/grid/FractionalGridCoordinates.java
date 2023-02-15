@@ -53,7 +53,6 @@ import org.apache.sis.util.resources.Errors;
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
  * @since 1.1
- * @module
  */
 public class FractionalGridCoordinates implements GridCoordinates, Serializable {
     /**

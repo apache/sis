@@ -39,10 +39,9 @@ import static org.opengis.test.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.1
  * @since   0.5
- * @module
  */
 @DependsOn(ProjectiveTransformTest.class)
-public final strictfp class ConcatenatedTransformTest extends MathTransformTestCase {
+public final class ConcatenatedTransformTest extends MathTransformTestCase {
     /**
      * Tolerance factor for strict equalities.
      */
@@ -74,11 +73,11 @@ public final strictfp class ConcatenatedTransformTest extends MathTransformTestC
         validate();
         verifyTransform(source, target);
 
-        // Direct for general case - can't be validated.
+        // Direct for general case - cannot be validated.
         transform = new ConcatenatedTransformDirect(first, second);
         verifyTransform(source, target);
 
-        // Most general case - can't be validated.
+        // Most general case - cannot be validated.
         transform = new ConcatenatedTransform(first, second);
         verifyTransform(source, target);
 

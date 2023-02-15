@@ -18,7 +18,7 @@ package org.apache.sis.storage.geotiff;
 
 import java.util.Locale;
 import java.util.Iterator;
-import java.util.Collections;
+import java.util.Map;
 import java.util.StringJoiner;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -69,7 +69,6 @@ import static org.apache.sis.internal.util.TemporalUtilities.toDate;
  * @see <a href="https://www.dgiwg.org/dgiwg-standards">DGIWG Standards</a>
  *
  * @since 1.2
- * @module
  */
 final class XMLMetadata implements Filter {
     /**
@@ -102,12 +101,12 @@ final class XMLMetadata implements Filter {
     /**
      * {@code true} if the XML is GDAL metadata. Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <GDALMetadata>
      *     <Item name="acquisitionEndDate">2016-09-08T15:53:00+05:00</Item>
      *     <Item name="acquisitionStartDate">2016-09-08T15:56:00+05:00</Item>
      *   </GDALMetadata>
-     * }
+     *   }
      */
     private final boolean isGDAL;
 
@@ -387,7 +386,7 @@ final class XMLMetadata implements Filter {
                  * The `mergeMetadata` method applies heuristic rules for adding components.
                  */
                 metadata.mergeMetadata(XML.unmarshal(new StAXSource(reader),
-                        Collections.singletonMap(XML.WARNING_FILTER, this)),
+                        Map.of(XML.WARNING_FILTER, this)),
                         (listeners != null) ? listeners.getLocale() : null);
             }
             reader.close();     // No need to close the underlying input stream.

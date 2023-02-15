@@ -21,6 +21,7 @@ import java.util.Optional;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.MetadataServices;
 
@@ -32,8 +33,16 @@ import org.apache.sis.internal.util.MetadataServices;
  * in order to avoid interfering with user's settings.
  *
  * <h2>Other system-wide configuration</h2>
+ * The following methods have system-wide effects on Apache SIS configuration,
+ * but are not yet controlled through this {@code Configuration} class:
+ *
+ * <ul>
+ *   <li>{@link org.apache.sis.util.logging.MonolineFormatter#install()}</li>
+ *   <li>{@link org.apache.sis.util.logging.PerformanceLevel#setMinDuration(long, TimeUnit)}</li>
+ * </ul>
+ *
  * The following properties are defined by the standard Java environment.
- * Apache SIS does not modify those properties but read them:
+ * Apache SIS read those properties but does not modify them:
  *
  * <ul>
  *   <li>{@link Locale#getDefault()} (sometimes using {@link Locale.Category})</li>
@@ -47,7 +56,6 @@ import org.apache.sis.internal.util.MetadataServices;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class Configuration {
     /**
@@ -102,7 +110,7 @@ public final class Configuration {
      * Data source specified by JNDI has precedence over data source specified by this method in order to let users
      * control their data source. The following example shows how to setup a connection to a PostgreSQL database:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     import org.postgresql.ds.PGSimpleDataSource;
      *
      *     class MyClass {
@@ -124,7 +132,7 @@ public final class Configuration {
      *             Configuration.current().setDatabase(MyClass::createDataSource);
      *         }
      *     }
-     * }
+     *     }
      *
      * This method can be invoked only before the first attempt to {@linkplain #getDatabase() get the database}.
      * If the {@link DataSource} has already be obtained, then this method throws {@link IllegalStateException}.

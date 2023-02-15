@@ -111,7 +111,6 @@ import org.apache.sis.measure.Units;
  * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
  *
  * @since 0.4
- * @module
  */
 public enum AxesConvention implements AxisFilter {
     /**

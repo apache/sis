@@ -32,9 +32,9 @@ import org.apache.sis.util.ArraysExt;
  * even if the string has the same value. It should be possible to change a keyword used in WKT formatting
  * without affecting GML for instance.</p>
  *
- * <div class="note"><b>Note:</b>
- * all constants in this class are static and final. The Java compiler should replace those constants
- * by their literal values at compile time, which avoid the loading of this class at run-time.</div>
+ * <h2>Implementation note</h2>
+ * All constants in this class are static and final. The Java compiler should replace those constants
+ * by their literal values at compile time, which avoid the loading of this class at run-time.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -44,7 +44,6 @@ import org.apache.sis.util.ArraysExt;
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
  *
  * @since 0.6
- * @module
  */
 public final class WKTKeywords extends Static {
     /**

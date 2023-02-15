@@ -18,12 +18,12 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
 import java.util.List;
-import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.net.URI;
 import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
-import java.util.LinkedHashMap;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -57,9 +57,8 @@ import org.apache.sis.util.collection.Containers;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
- * @module
  */
 final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
     /**
@@ -74,6 +73,9 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      */
     @SuppressWarnings("CloneableImplementsClone")
     private static final class Region extends IntervalRectangle {
+        /** For cross-version compatibility. */
+        private static final long serialVersionUID = -2925837396412170681L;
+
         /** Subsampling compared to the grid having finest resolution. */
         private final double sx, sy;
 
@@ -153,7 +155,7 @@ final class DatumShiftGridGroup<C extends Quantity<C>, T extends Quantity<T>> ex
      * @throws IOException declared because {@link Tile#getRegion()} declares it, but should not happen.
      */
     static <C extends Quantity<C>, T extends Quantity<T>> DatumShiftGridGroup<C,T> create(
-            final Path file, final List<DatumShiftGridFile<C,T>> subgrids)
+            final URI file, final List<DatumShiftGridFile<C,T>> subgrids)
             throws IOException, FactoryException, NoninvertibleTransformException
     {
         final TileOrganizer mosaic = new TileOrganizer(null);

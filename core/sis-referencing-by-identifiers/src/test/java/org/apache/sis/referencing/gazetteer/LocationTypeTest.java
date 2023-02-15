@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.gazetteer;
 
-import java.util.List;
 import org.opengis.metadata.extent.GeographicDescription;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -35,9 +34,8 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class LocationTypeTest extends TestCase {
+public final class LocationTypeTest extends TestCase {
     /**
      * Creates the example given in annex B of ISO 19112:2003.
      *
@@ -183,8 +181,7 @@ public final strictfp class LocationTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testInheritance")
     public void testSnapshot() {
-        final List<LocationType> snapshot = ModifiableLocationType.snapshot(null, create(true));
-        verify(snapshot.toArray(new LocationType[snapshot.size()]));
+        verify(ModifiableLocationType.snapshot(null, create(true)).toArray(LocationType[]::new));
     }
 
     /**

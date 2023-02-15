@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
-import java.util.Collections;
+import java.util.logging.Logger;
 import javax.measure.Unit;
 import org.opengis.referencing.*;
 import org.opengis.referencing.cs.*;
@@ -31,6 +31,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
@@ -63,11 +64,15 @@ import org.apache.sis.util.Classes;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
- * @module
  */
 public abstract class GeodeticAuthorityFactory extends AbstractFactory implements AuthorityFactory {
+    /**
+     * The logger to use for reporting object creations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
+
     /**
      * Creates a new authority factory for geodetic objects.
      */
@@ -79,11 +84,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * This method may return {@code null} if it cannot obtain this information, for example because
      * the connection to a database is not available.
      *
-     * <div class="note"><b>Example:</b>
-     * a factory that create coordinate reference system objects from EPSG codes could return
-     * a citation like below:
+     * <h4>Example</h4>
+     * A factory that create coordinate reference system objects from EPSG codes could return a citation like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Citation
      *   ├─ Title ……………………………………………………… EPSG Geodetic Parameter Dataset
      *   ├─ Identifier ………………………………………… EPSG
@@ -93,10 +97,9 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   └─ Online resource (2 of 2)
      *      ├─ Linkage ………………………………………… jdbc:derby:/my/path/to/SIS_DATA/Databases/SpatialMetadata
      *      ├─ Description ……………………………… EPSG dataset version 9.1 on “Apache Derby Embedded JDBC Driver” version 10.14.
-     *      └─ Function ……………………………………… Connection
-     * }
+     *      └─ Function ……………………………………… Connection</pre>
      *
-     * The online resource description with a “Connection” function is a SIS extension.</div>
+     * The online resource description with a “Connection” function is a SIS extension.
      *
      * @return the organization responsible for definition of the database, or {@code null} if unknown.
      *
@@ -139,7 +142,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     public Set<String> getCodeSpaces() {
         final String authority = Citations.toCodeSpace(getAuthority());
-        return (authority != null) ? Collections.singleton(authority) : Collections.emptySet();
+        return (authority != null) ? Set.of(authority) : Set.of();
     }
 
     /**
@@ -1226,7 +1229,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     public Set<CoordinateOperation> createFromCoordinateReferenceSystemCodes(String sourceCRS, String targetCRS)
             throws NoSuchAuthorityCodeException, FactoryException
     {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -1290,7 +1293,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
                 }
             }
         }
-        return CharSequences.trimWhitespaces(code);
+        return code.strip();
     }
 
     /**

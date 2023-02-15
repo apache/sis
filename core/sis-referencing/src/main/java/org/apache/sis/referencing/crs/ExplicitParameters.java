@@ -28,12 +28,9 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -41,9 +38,8 @@ import static java.util.logging.Logger.getLogger;
  * This object formats only the explicit parameters. Implicit parameters derived from source ellipsoid are omitted.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
- * @module
  */
 final class ExplicitParameters extends FormattableObject {
     /**
@@ -107,19 +103,19 @@ final class ExplicitParameters extends FormattableObject {
                             value = ((ParameterValue<?>) param).doubleValue(ellipsoid.getAxisUnit());
                         } catch (IllegalStateException e) {
                             /*
-                             * May happen if the 'conversionFromBase' parameter group does not provide values
+                             * May happen if the `conversionFromBase` parameter group does not provide values
                              * for "semi_major" or "semi_minor" axis length. This should not happen with SIS
                              * implementation, but may happen with user-defined map projection implementations.
                              * Since the intent of this check was to skip those parameters anyway, it is okay
                              * for the purpose of WKT formatting if there are no parameters for axis lengths.
                              */
-                            Logging.recoverableException(getLogger(Loggers.WKT), DefaultProjectedCRS.class, "formatTo", e);
+                            Logging.recoverableException(WKTUtilities.LOGGER, DefaultProjectedCRS.class, "formatTo", e);
                             continue;
                         }
                         if (Double.isNaN(value)) {
                             continue;
                         }
-                        final double expected = (name == Constants.SEMI_MINOR)   // using '==' is okay here.
+                        final double expected = (name == Constants.SEMI_MINOR)   // using `==` is okay here.
                                 ? ellipsoid.getSemiMinorAxis() : ellipsoid.getSemiMajorAxis();
                         if (value == expected) {
                             continue;

@@ -30,10 +30,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @DependsOn(NumberRangeTest.class)
-public final strictfp class MeasurementRangeTest extends TestCase {
+public final class MeasurementRangeTest extends TestCase {
     /**
      * Tests unit conversions by the {@link MeasurementRange#convertTo(Unit)} method.
      *

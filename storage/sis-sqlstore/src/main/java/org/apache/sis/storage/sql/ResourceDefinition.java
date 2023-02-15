@@ -17,7 +17,6 @@
 package org.apache.sis.storage.sql;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Optional;
 import org.opengis.util.NameSpace;
@@ -35,7 +34,6 @@ import static org.apache.sis.internal.sql.feature.Database.WILDCARD;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class ResourceDefinition {
     /**
@@ -166,9 +164,8 @@ public final class ResourceDefinition {
         final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
         NameSpace ns = tableNS;
         if (ns == null) {
-            final Map<String,String> properties = new HashMap<>(4);     // TODO: use Map.of with JDK9.
-            properties.put("separator",      ".");
-            properties.put("separator.head", ":");
+            var properties = Map.of("separator",      ".",
+                                    "separator.head", ":");
             tableNS = ns = factory.createNameSpace(factory.createLocalName(null, "database"), properties);
         }
         return new ResourceDefinition(factory.createGenericName(ns, names), null);

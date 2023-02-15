@@ -111,9 +111,8 @@ import org.apache.sis.setup.OptionKey;
  * is known to support only one image per file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
- * @module
  */
 public class WorldFileStore extends PRJDataStore {
     /**
@@ -167,7 +166,7 @@ public class WorldFileStore extends PRJDataStore {
      *
      * @see #reader()
      */
-    private ImageReader reader;
+    private volatile ImageReader reader;
 
     /**
      * The object to close when {@code WorldFileStore} is closed. It may be a different object than
@@ -287,6 +286,7 @@ public class WorldFileStore extends PRJDataStore {
      * does not support the locale, the reader's default locale will be used.
      */
     private void configureReader() {
+        final ImageReader reader = this.reader;
         try {
             reader.setLocale(listeners.getLocale());
         } catch (IllegalArgumentException e) {
@@ -370,17 +370,21 @@ loop:   for (int convention=0;; convention++) {
      * Reads the "World file" by parsing an auxiliary file with the given suffix.
      *
      * @param  wld  suffix of the auxiliary file.
-     * @return the "World file" content as an affine transform.
+     * @return the "World file" content as an affine transform, or {@code null} if none was found.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if the file content cannot be parsed.
      */
     private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
-        final AuxiliaryContent content  = readAuxiliaryFile(wld);
-        final String           filename = content.getFilename();
-        final CharSequence[]   lines    = CharSequences.splitOnEOL(readAuxiliaryFile(wld));
-        final int              expected = 6;        // Expected number of elements.
-        int                    count    = 0;        // Actual number of elements.
-        final double[]         elements = new double[expected];
+        final AuxiliaryContent content = readAuxiliaryFile(wld);
+        if (content == null) {
+            listeners.warning(Resources.format(Resources.Keys.CanNotReadAuxiliaryFile_1, wld));
+            return null;
+        }
+        final String         filename = content.getFilename();
+        final CharSequence[] lines    = CharSequences.splitOnEOL(content);
+        final int            expected = 6;        // Expected number of elements.
+        int                  count    = 0;        // Actual number of elements.
+        final double[]       elements = new double[expected];
         for (int i=0; i<expected; i++) {
             final String line = lines[i].toString().trim();
             if (!line.isEmpty() && line.charAt(0) != '#') {
@@ -429,6 +433,7 @@ loop:   for (int convention=0;; convention++) {
      * @return the requested names, or an empty array if none or unknown.
      */
     public String[] getImageFormat(final boolean asMimeType) {
+        final ImageReader reader = this.reader;
         if (reader != null) {
             final ImageReaderSpi provider = reader.getOriginatingProvider();
             if (provider != null) {
@@ -553,6 +558,7 @@ loop:   for (int convention=0;; convention++) {
      * Returns all images in this store. Note that fetching the size of the list is a potentially costly operation.
      *
      * @return list of images in this store.
+     * @throws DataStoreException if an error occurred while fetching components.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public synchronized Collection<? extends GridCoverageResource> components() throws DataStoreException {
@@ -800,34 +806,38 @@ loop:   for (int convention=0;; convention++) {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * If a read operation is in progress, it will be aborted.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
+    public void close() throws DataStoreException {
         listeners.close();                  // Should never fail.
         final ImageReader codec = reader;
-        final Closeable  stream = toClose;
-        reader       = null;
-        toClose      = null;
-        metadata     = null;
-        components   = null;
-        gridGeometry = null;
-        try {
-            Object input = null;
-            if (codec != null) {
-                input = codec.getInput();
-                codec.setInput(null);
-                codec.dispose();
-                if (input instanceof AutoCloseable) {
-                    ((AutoCloseable) input).close();
+        if (codec != null) codec.abort();
+        synchronized (this) {
+            final Closeable  stream = toClose;
+            reader       = null;
+            toClose      = null;
+            metadata     = null;
+            components   = null;
+            gridGeometry = null;
+            try {
+                Object input = null;
+                if (codec != null) {
+                    input = codec.getInput();
+                    codec.reset();
+                    codec.dispose();
+                    if (input instanceof AutoCloseable) {
+                        ((AutoCloseable) input).close();
+                    }
                 }
+                if (stream != null && stream != input) {
+                    stream.close();
+                }
+            } catch (Exception e) {
+                throw new DataStoreException(e);
             }
-            if (stream != null && stream != input) {
-                stream.close();
-            }
-        } catch (Exception e) {
-            throw new DataStoreException(e);
         }
     }
 }

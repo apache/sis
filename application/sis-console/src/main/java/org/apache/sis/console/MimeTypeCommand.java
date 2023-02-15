@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.EnumSet;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.storage.DataStores;
@@ -33,9 +33,9 @@ import org.apache.sis.util.CharSequences;
  * This sub-command reproduces the functionality of the following Unix command,
  * except that {@code MimeTypeCommand} uses the SIS detection mechanism instead of the OS one.
  *
- * {@preformat shell
+ * {@snippet lang="shell" :
  *   file --mime-type <files>
- * }
+ *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
@@ -44,7 +44,6 @@ import org.apache.sis.util.CharSequences;
  * @see DataStores#probeContentType(Object)
  *
  * @since 0.4
- * @module
  */
 final class MimeTypeCommand extends CommandRunner {
     /**
@@ -98,7 +97,7 @@ final class MimeTypeCommand extends CommandRunner {
                  */
                 type = DataStores.probeContentType(file);
             } else try {
-                type = Files.probeContentType(Paths.get(uri));
+                type = Files.probeContentType(Path.of(uri));
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 type = DataStores.probeContentType(uri);
             } catch (NoSuchFileException e) {

@@ -37,12 +37,11 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn({
     DefaultTreeTableTest.class
 })
-public final strictfp class TreeTablesTest extends TestCase {
+public final class TreeTablesTest extends TestCase {
     /**
      * The {@code concatenateSingletons(…)} example documented in the {@link TreeTables} class javadoc.
      * This simple code assumes that the children collection in the given node is a {@link List}.

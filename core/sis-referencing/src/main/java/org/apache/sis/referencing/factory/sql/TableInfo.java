@@ -33,7 +33,6 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 final class TableInfo {
     /**
@@ -257,9 +256,9 @@ final class TableInfo {
      * if such condition can be added. The clause appended by this method looks like the following example
      * (details may vary because of enumeration values):
      *
-     * {@preformat sql
-     *   WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
-     * }
+     * {@snippet lang="sql" :
+     *     WHERE COORD_REF_SYS_KIND LIKE 'geographic%' AND
+     *     }
      *
      * In any case, the caller shall add at least one condition after this method call.
      *

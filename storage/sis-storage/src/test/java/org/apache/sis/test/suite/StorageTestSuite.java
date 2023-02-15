@@ -26,9 +26,8 @@ import org.junit.BeforeClass;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.storage.CodeTypeTest.class,
@@ -40,6 +39,8 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.io.ChannelImageOutputStreamTest.class,
     org.apache.sis.internal.storage.io.HyperRectangleReaderTest.class,
     org.apache.sis.internal.storage.io.RewindableLineReaderTest.class,
+    org.apache.sis.internal.storage.io.FileCacheByteChannelTest.class,
+    org.apache.sis.internal.storage.io.InputStreamArrayGetterTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
     org.apache.sis.internal.storage.RangeArgumentTest.class,
     org.apache.sis.internal.storage.MemoryGridResourceTest.class,
@@ -68,10 +69,11 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.folder.StoreTest.class,
     org.apache.sis.storage.aggregate.JoinFeatureSetTest.class,
     org.apache.sis.storage.aggregate.ConcatenatedFeatureSetTest.class,
+    org.apache.sis.storage.aggregate.CoverageAggregatorTest.class,
     org.apache.sis.storage.DataStoresTest.class,
     org.apache.sis.storage.ResourceProcessorTest.class
 })
-public final strictfp class StorageTestSuite extends TestSuite {
+public final class StorageTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

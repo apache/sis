@@ -53,7 +53,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
     "fees",
@@ -308,18 +307,6 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     }
 
     /**
-     * @deprecated Renamed {@link #getOrderOptionsType()} for ISO 19115 conformance.
-     *
-     * @return description of the order options record, or {@code null} if none.
-     *
-     * @since 0.5
-     */
-    @Deprecated
-    public RecordType getOrderOptionType() {
-        return getOrderOptionsType();
-    }
-
-    /**
      * Sets the description of the {@linkplain #getOrderOptions() order options} record.
      *
      * @param  newValue  new description of the order options record.
@@ -329,18 +316,6 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     public void setOrderOptionsType(final RecordType newValue) {
         checkWritePermission(orderOptionsType);
         orderOptionsType = newValue;
-    }
-
-    /**
-     * @deprecated Renamed {@link #setOrderOptionsType(RecordType)} for ISO 19115 conformance.
-     *
-     * @param  newValue  new description of the order options record.
-     *
-     * @since 0.5
-     */
-    @Deprecated
-    public void setOrderOptionType(final RecordType newValue) {
-        setOrderOptionsType(newValue);
     }
 
     /**

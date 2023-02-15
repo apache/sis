@@ -25,7 +25,6 @@
             <source-roots>
                 <root id="src.local-src.dir" name="Local sources (unversioned)"/>
                 <root id="src.javafx.dir" name="JavaFX application"/>
-                <root id="src.webapp.dir" name="Web application"/>
                 <root id="src.console.dir" name="Console"/>
                 <root id="src.portrayal.dir" name="Portrayal"/>
                 <root id="src.earth-obs.dir" name="Earth observation"/>
@@ -90,6 +89,7 @@
             <word>collinearity</word>
             <word>complexify</word>
             <word>covariant</word>
+            <word>customizable</word>
             <word>deserialization</word>
             <word>deserialized</word>
             <word>endianness</word>

@@ -66,9 +66,8 @@ import static org.apache.sis.internal.referencing.Formulas.fastHypot;
  * @author  André Gosselin (MPO)
  * @author  Rueben Schulz (UBC)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
- * @module
  */
 public class LambertConicConformal extends ConformalProjection {
     /**
@@ -129,19 +128,18 @@ public class LambertConicConformal extends ConformalProjection {
      * the normalization matrix which use that precision for "degrees to radians" conversion.
      * The goal is to have cleaner results after matrix inversions and multiplications.
      *
-     * <div class="note"><b>Tip:</b> how to verify the value:
-     * {@preformat java
+     * <h4>Tip</h4>
+     * How to verify the value:
+     *
+     * {@snippet lang="java" :
      *     BigDecimal a = new BigDecimal(BELGE_A.value);
      *     a = a.add     (new BigDecimal(BELGE_A.error));
      *     a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));
      *     a = a.multiply(new BigDecimal(60 * 60));
      *     System.out.println(a);
-     * }
-     * </div>
+     *     }
      */
-    static Number belgeA() {
-        return new DoubleDouble(-1.420431363598774E-4, -1.1777378450498224E-20);
-    }
+    static final DoubleDouble BELGE_A = DoubleDouble.of(-1.420431363598774E-4, -1.1777378450498224E-20);
 
     /**
      * Internal coefficients for computation, depending only on eccentricity and values of standards parallels.
@@ -313,14 +311,10 @@ public class LambertConicConformal extends ConformalProjection {
          * Compute F = m₁/(n⋅t₁ⁿ) from Geomatics Guidance Note number 7.
          * Following constants will be stored in the denormalization matrix, to be applied
          * after the non-linear formulas implemented by this LambertConicConformal class.
-         * Opportunistically use double-double arithmetic since the matrix coefficients will
-         * be stored in that format anyway. This makes a change in the 2 or 3 last digits.
          */
-        final DoubleDouble F = new DoubleDouble(n);
-        F.multiply(pow(t1, n));
-        F.inverseDivideGuessError(m1);
+        double F = m1 / (n * pow(t1, n));
         if (!isNorth) {
-            F.negate();
+            F = -F;
         }
         /*
          * Compute the radius of the parallel of latitude of the false origin.
@@ -330,10 +324,9 @@ public class LambertConicConformal extends ConformalProjection {
          *
          * EPSG uses this term in the computation of  y = FN + rF – r⋅cos(θ).
          */
-        DoubleDouble rF = null;
+        Number rF = null;
         if (φ0 != copySign(PI/2, -n)) {    // For reducing the rounding error documented in expΨ(+π/2).
-            rF = new DoubleDouble(F);
-            rF.multiply(pow(expΨ(φ0, eccentricity*sin(φ0)), n));
+            rF = F * pow(expΨ(φ0, eccentricity*sin(φ0)), n);
         }
         /*
          * At this point, all parameters have been processed. Now store
@@ -352,20 +345,19 @@ public class LambertConicConformal extends ConformalProjection {
          *   - Multiply by the scale factor (done by the super-class constructor).
          *   - Add false easting and false northing (done by the super-class constructor).
          */
-        DoubleDouble sλ = new DoubleDouble(n);
-        DoubleDouble sφ = null;
-        if (isNorth) {
-            // Reverse the sign of either longitude or latitude values before map projection.
-            sφ = new DoubleDouble(-1d);
+        double sλ = n;
+        Number sφ = null;
+        if (isNorth) {      // Reverse the sign of either longitude or latitude values before map projection.
+            sφ = -1;
         } else {
-            sλ.negate();
+            sλ = -sλ;
         }
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-        normalize  .convertAfter(0, sλ, (variant == Variant.BELGIUM) ? belgeA() : null);
-        normalize  .convertAfter(1, sφ, null);
-        denormalize.convertBefore(0, F, null); F.negate();
-        denormalize.convertBefore(1, F, rF);
+        normalize  .convertAfter (0, sλ, (variant == Variant.BELGIUM) ? BELGE_A : null);
+        normalize  .convertAfter (1, sφ, null);
+        denormalize.convertBefore(0,  F, null);
+        denormalize.convertBefore(1, -F, rF);
     }
 
     /**
@@ -513,7 +505,7 @@ public class LambertConicConformal extends ConformalProjection {
     /**
      * Provides the transform equations for the spherical case of the Lambert Conformal projection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h2>Implementation note</h2>
      * this class contains explicit checks for latitude values at poles.
      * See the discussion in the {@link Mercator.Spherical} javadoc for an explanation.
      * The following is specific to the Lambert Conformal projection.
@@ -521,22 +513,19 @@ public class LambertConicConformal extends ConformalProjection {
      * <p>Comparison of observed behavior at poles between the spherical and ellipsoidal cases,
      * if no special checks are applied:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *     ┌───────┬──────────────────────────┬────────────────────────┐
      *     │       │ Spherical                │ Ellipsoidal            │
      *     ├───────┼──────────────────────────┼────────────────────────┤
      *     │ North │ Approximate  (y = small) │ Exact answer (y = 0.0) │
      *     │ South │ Exact answer (y = +∞)    │ Approximate  (y = big) │
-     *     └───────┴──────────────────────────┴────────────────────────┘
-     * }
-     * </div>
+     *     └───────┴──────────────────────────┴────────────────────────┘</pre>
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  André Gosselin (MPO)
      * @author  Rueben Schulz (UBC)
      * @version 1.1
      * @since   0.6
-     * @module
      */
     static final class Spherical extends LambertConicConformal {
         /**

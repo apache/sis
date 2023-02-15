@@ -49,7 +49,6 @@ import org.apache.sis.internal.referencing.WKTKeywords;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class StoredTree implements Serializable {
     /**
@@ -87,6 +86,7 @@ final class StoredTree implements Serializable {
          * (e.g. "north"). A null value is not equivalent to an empty list. For example, the
          * list is null when parsing {@code "FOO"} but is empty when parsing {@code "FOO[]"}.
          */
+        @SuppressWarnings("serial")                 // Not statically typed as Serializable.
         private final Object[] children;
 
         /**
@@ -305,12 +305,12 @@ final class StoredTree implements Serializable {
      * where we need to allow more roots: when user wants to represent a coordinate system.
      * A WKT 2 coordinate system looks like:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   CS[Cartesian, 2],
      *     Axis["Easting (E)", east],
      *     Axis["Northing (N)", north],
      *     Unit["metre", 1]
-     * }
+     *   }
      *
      * While axes are conceptually parts of coordinate system, they are not declared inside the {@code CS[…]}
      * element for historical reasons (for compatibility with WKT 1). For representing such "flattened tree",

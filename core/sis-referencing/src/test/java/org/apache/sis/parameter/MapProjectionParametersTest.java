@@ -17,7 +17,6 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import java.util.Collections;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -43,10 +42,9 @@ import static org.apache.sis.internal.util.Constants.STANDARD_PARALLEL_2;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn(ParametersTest.class)
-public final strictfp class MapProjectionParametersTest extends TestCase {
+public final class MapProjectionParametersTest extends TestCase {
     /**
      * Creates a map projection descriptor with semi-major/minor axis lengths
      * and the given amount of standard parallels.
@@ -73,7 +71,7 @@ public final strictfp class MapProjectionParametersTest extends TestCase {
 
     /** Returns properties map for an object of the given name. */
     private static Map<String,String> name(final String name) {
-        return Collections.singletonMap(MapProjectionDescriptor.NAME_KEY, name);
+        return Map.of(MapProjectionDescriptor.NAME_KEY, name);
     }
 
     /**

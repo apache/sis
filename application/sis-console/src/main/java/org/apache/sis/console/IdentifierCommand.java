@@ -43,7 +43,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 final class IdentifierCommand extends FormattedOutputCommand {
     /**
@@ -136,6 +135,7 @@ final class IdentifierCommand extends FormattedOutputCommand {
                     rows.add(create(rs));
                 }
             } else {
+                // This list may contain a null element.
                 rows = Collections.singletonList(create((ReferenceSystem) metadata));
             }
             print(rows);

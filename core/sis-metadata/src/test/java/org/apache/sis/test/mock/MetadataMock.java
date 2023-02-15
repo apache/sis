@@ -17,6 +17,7 @@
 package org.apache.sis.test.mock;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
@@ -40,10 +41,9 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)
-public final strictfp class MetadataMock extends SimpleMetadata {
+public final class MetadataMock extends SimpleMetadata {
     /**
      * The language used for documenting metadata.
      */
@@ -86,7 +86,7 @@ public final strictfp class MetadataMock extends SimpleMetadata {
     @Override
     @Deprecated
     public Collection<Locale> getLanguages() {
-        return (language != null) ? Collections.singleton(language) : Collections.emptySet();
+        return (language != null) ? Set.of(language) : Set.of();
     }
 
     /**

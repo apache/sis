@@ -32,9 +32,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class KeyPathTest extends TestCase {
+public final class KeyPathTest extends TestCase {
     /**
      * A URI to use for testing purpose.
      */

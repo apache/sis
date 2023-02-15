@@ -25,7 +25,6 @@ package org.apache.sis.metadata.sql;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public class MetadataStoreException extends Exception {
     /**

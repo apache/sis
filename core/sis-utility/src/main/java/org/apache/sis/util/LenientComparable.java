@@ -100,7 +100,6 @@ package org.apache.sis.util;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public interface LenientComparable {
     /**
@@ -150,11 +149,11 @@ public interface LenientComparable {
      * Returns {@code true} if this object is strictly equals to the given object.
      * This method is usually implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     public boolean equals(Object other) {
      *         return equals(other, ComparisonMode.STRICT);
      *     }
-     * }
+     *     }
      *
      * Implementers shall ensure that the following conditions hold. Unless the {@code equals}
      * behavior is clearly documented in the interface javadoc (as for example in the Java

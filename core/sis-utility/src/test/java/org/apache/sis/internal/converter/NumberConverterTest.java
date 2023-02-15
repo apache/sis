@@ -34,11 +34,10 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 @DependsOn(SystemRegistryTest.class)
 @SuppressWarnings("UnnecessaryBoxing")
-public final strictfp class NumberConverterTest extends TestCase {
+public final class NumberConverterTest extends TestCase {
     /**
      * Creates a {@link NumberConverter} for the given source and target classes.
      * We have to use the {@link ConverterRegistry} instead of instantiating the

@@ -18,7 +18,6 @@ package org.apache.sis.internal.referencing;
 
 import java.util.Map;
 import java.util.Date;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import javax.measure.Unit;
@@ -49,7 +48,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -74,7 +72,6 @@ import org.apache.sis.parameter.Parameters;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
@@ -141,7 +138,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a map of properties containing only the name of the given object.
      */
     private static Map<String,Object> name(final IdentifiedObject template) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, template.getName());
+        return Map.of(IdentifiedObject.NAME_KEY, template.getName());
     }
 
     /**
@@ -206,7 +203,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     {
         final DatumFactory factory = factories.getDatumFactory();
         final Ellipsoid ellipsoid = factory.createFlattenedSphere(
-                Collections.singletonMap(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
+                Map.of(Ellipsoid.NAME_KEY, name), semiMajorAxis, inverseFlattening, units);
         datum = factory.createGeodeticDatum(name(ellipsoid), ellipsoid, CommonCRS.WGS84.primeMeridian());
         return this;
     }
@@ -304,9 +301,9 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * is a parameter value of the old projection and {@code target} is the group of parameters where to set
      * the values for new projection. If {@code mapper} is null, then the default implementation is as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     target.getOrCreate(source.getDescriptor()).setValue(source.getValue());
-     * }
+     *     }
      *
      * @param  newMethod  name of the new operation method, or {@code null} if no change.
      * @param  mapper     mapper from old parameters to new parameters, or {@code null} for verbatim copy.
@@ -443,25 +440,24 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
      * Creates a projected CRS using a conversion built from the values given by the {@code setParameter(…)} calls.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following example creates a projected CRS for the <cite>"NTF (Paris) / Lambert zone II"</cite> projection,
      * from a base CRS which is presumed to already exists in this example.
      *
-     * {@preformat java
-     *   GeodeticObjectBuilder builder = new GeodeticObjectBuilder();
-     *   GeographicCRS baseCRS = ...;
-     *   CartesianCS derivedCS = ...;
-     *   ProjectedCRS crs = builder
-     *           .setConversionMethod("Lambert Conic Conformal (1SP)")
-     *           .setConversionName("Lambert zone II")
-     *           .setParameter("Latitude of natural origin",             52, Units.GRAD)
-     *           .setParameter("Scale factor at natural origin", 0.99987742, Units.UNITY)
-     *           .setParameter("False easting",                      600000, Units.METRE)
-     *           .setParameter("False northing",                    2200000, Units.METRE)
-     *           .addName("NTF (Paris) / Lambert zone II")
-     *           .createProjectedCRS(baseCRS, derivedCS);
-     * }
-     * </div>
+     * {@snippet lang="java" :
+     *     var builder = new GeodeticObjectBuilder();
+     *     GeographicCRS baseCRS = ...;
+     *     CartesianCS derivedCS = ...;
+     *     ProjectedCRS crs = builder
+     *             .setConversionMethod("Lambert Conic Conformal (1SP)")
+     *             .setConversionName("Lambert zone II")
+     *             .setParameter("Latitude of natural origin",             52, Units.GRAD)
+     *             .setParameter("Scale factor at natural origin", 0.99987742, Units.UNITY)
+     *             .setParameter("False easting",                      600000, Units.METRE)
+     *             .setParameter("False northing",                    2200000, Units.METRE)
+     *             .addName("NTF (Paris) / Lambert zone II")
+     *             .createProjectedCRS(baseCRS, derivedCS);
+     *     }
      *
      * @param  baseCRS    coordinate reference system to base the derived CRS on.
      * @param  derivedCS  the coordinate system for the derived CRS, or {@code null} for the default.
@@ -641,7 +637,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         }
         ArgumentChecks.ensureValidIndex(srcDim - repDim, firstDimension);
         if (source instanceof CompoundCRS) {
-            final CoordinateReferenceSystem[] components = CollectionsExt.toArray(((CompoundCRS) source).getComponents(), CoordinateReferenceSystem.class);
+            final var components = ((CompoundCRS) source).getComponents().toArray(CoordinateReferenceSystem[]::new);
             int lower = 0;
             for (int i=0; i<components.length; i++) {
                 final CoordinateReferenceSystem c = components[i];

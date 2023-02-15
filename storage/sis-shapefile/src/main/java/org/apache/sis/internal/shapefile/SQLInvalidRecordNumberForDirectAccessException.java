@@ -25,7 +25,6 @@ import java.sql.SQLNonTransientException;
  * @author  Marc Le Bihan
  * @version 0.7
  * @since   0.7
- * @module
  */
 public class SQLInvalidRecordNumberForDirectAccessException extends SQLNonTransientException {
     /** Serial UID. */

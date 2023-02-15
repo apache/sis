@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class RepeatedVectorTest extends TestCase {
+public final class RepeatedVectorTest extends TestCase {
     /**
      * Tests the case where values in a grid are repeated horizontally.
      */

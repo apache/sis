@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.quality.Measure;
-import org.apache.sis.metadata.iso.quality.DefaultMeasure;
+import org.apache.sis.metadata.iso.quality.DefaultQualityMeasure;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class DQM_Measure extends PropertyType<DQM_Measure, Measure> {
     /**
@@ -77,8 +76,8 @@ public final class DQM_Measure extends PropertyType<DQM_Measure, Measure> {
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultMeasure getElement() {
-        return DefaultMeasure.castOrCopy(metadata);
+    public DefaultQualityMeasure getElement() {
+        return DefaultQualityMeasure.castOrCopy(metadata);
     }
 
     /**
@@ -86,7 +85,7 @@ public final class DQM_Measure extends PropertyType<DQM_Measure, Measure> {
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultMeasure metadata) {
+    public void setElement(final DefaultQualityMeasure metadata) {
         this.metadata = metadata;
     }
 }

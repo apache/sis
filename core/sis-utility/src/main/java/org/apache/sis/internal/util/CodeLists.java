@@ -35,7 +35,6 @@ import org.opengis.util.ControlledVocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class CodeLists implements Predicate<CodeList<?>> {
     /**
@@ -94,8 +93,8 @@ public final class CodeLists implements Predicate<CodeList<?>> {
      * @see org.apache.sis.util.iso.Types#forCodeName(Class, String, boolean)
      */
     public static <T extends CodeList<T>> T forName(final Class<T> codeType, String name, final boolean canCreate) {
-        name = CharSequences.trimWhitespaces(name);
-        if (name == null || name.isEmpty()) {
+        name = Strings.trimOrNull(name);
+        if (name == null) {
             return null;
         }
         return CodeList.valueOf(codeType, new CodeLists(name), canCreate ? name : null);
@@ -112,8 +111,8 @@ public final class CodeLists implements Predicate<CodeList<?>> {
      * @see org.apache.sis.util.iso.Types#forEnumName(Class, String)
      */
     public static <T extends Enum<T>> T forName(final Class<T> enumType, String name) {
-        name = CharSequences.trimWhitespaces(name);
-        if (name != null && !name.isEmpty()) try {
+        name = Strings.trimOrNull(name);
+        if (name != null) try {
             return Enum.valueOf(enumType, name);
         } catch (IllegalArgumentException e) {
             final T[] values = enumType.getEnumConstants();

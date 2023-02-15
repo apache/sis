@@ -29,7 +29,6 @@ import javax.xml.bind.annotation.XmlSchemaType;
  * @author  Cédric Briançon (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 public final class GO_Integer64 extends PropertyType<GO_Integer64, Long> {
     /**

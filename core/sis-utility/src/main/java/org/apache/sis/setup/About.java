@@ -56,7 +56,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.Shutdown;
 import org.apache.sis.internal.system.DataDirectory;
-import org.apache.sis.internal.jdk9.JDK9;
 
 import static java.lang.System.getProperty;
 import static java.util.logging.Logger.getLogger;
@@ -81,9 +80,8 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public enum About {
     /**
@@ -172,9 +170,9 @@ public enum About {
      *
      * <p>This convenience method is equivalent to the following code:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return configuration(EnumSet.allOf(About.class), null, null);
-     * }
+     *     }
      *
      * @return configuration information, as a tree for grouping some configuration by sections.
      */
@@ -351,7 +349,7 @@ fill:   for (int i=0; ; i++) {
                         nameKey = Vocabulary.Keys.Implementation;
                         value = "java.util.logging";
                         for (final Handler handler : getLogger("").getHandlers()) {
-                            final String c = JDK9.getPackageName(handler.getClass());
+                            final String c = handler.getClass().getPackageName();
                             if (!value.equals(c)) {
                                 value = c;
                                 break;
@@ -472,7 +470,7 @@ fill:   for (int i=0; ; i++) {
             if (name == null) {
                 name = resources.getString(nameKey);
             }
-            @SuppressWarnings("null")
+            @SuppressWarnings("null")   // `section` is non-null because of initially non-null `newSection`.
             final TreeTable.Node node = section.newChild();
             node.setValue(NAME, name);
             if (children != null) {
@@ -760,7 +758,7 @@ pathTree:   for (int j=0; ; j++) {
         try {
             return country ? locale.getCountry() : locale.getISO3Language();
         } catch (MissingResourceException e) {
-            Logging.ignorableException(getLogger(Loggers.LOCALIZATION), About.class, "configuration", e);
+            Logging.ignorableException(Vocabulary.LOGGER, About.class, "configuration", e);
             return null;
         }
     }

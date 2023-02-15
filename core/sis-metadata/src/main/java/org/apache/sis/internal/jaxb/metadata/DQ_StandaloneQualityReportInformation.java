@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.metadata;
 
 import javax.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.quality.StandaloneQualityReportInformation;
-import org.apache.sis.metadata.iso.quality.DefaultStandaloneQualityReportInformation;
+import org.apache.sis.metadata.iso.quality.DefaultEvaluationReportInformation;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
 
@@ -33,7 +33,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class DQ_StandaloneQualityReportInformation extends
         PropertyType<DQ_StandaloneQualityReportInformation, StandaloneQualityReportInformation>
@@ -84,8 +83,8 @@ public final class DQ_StandaloneQualityReportInformation extends
      * @return the metadata to be marshalled.
      */
     @XmlElementRef
-    public DefaultStandaloneQualityReportInformation getElement() {
-        return DefaultStandaloneQualityReportInformation.castOrCopy(metadata);
+    public DefaultEvaluationReportInformation getElement() {
+        return DefaultEvaluationReportInformation.castOrCopy(metadata);
     }
 
     /**
@@ -93,7 +92,7 @@ public final class DQ_StandaloneQualityReportInformation extends
      *
      * @param  metadata  the unmarshalled metadata.
      */
-    public void setElement(final DefaultStandaloneQualityReportInformation metadata) {
+    public void setElement(final DefaultEvaluationReportInformation metadata) {
         this.metadata = metadata;
     }
 }

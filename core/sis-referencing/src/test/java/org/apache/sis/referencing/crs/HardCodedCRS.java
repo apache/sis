@@ -18,7 +18,6 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -43,9 +42,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class HardCodedCRS {
+public final class HardCodedCRS {
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
      * This CRS uses (<var>latitude</var>, <var>longitude</var>) coordinates with latitude values
@@ -128,7 +126,7 @@ public final strictfp class HardCodedCRS {
      * @since 0.6
      */
     public static final DefaultGeographicCRS NTF = new DefaultGeographicCRS(
-            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "NTF (Paris)"),
+            Map.of(DefaultGeographicCRS.NAME_KEY, "NTF (Paris)"),
             HardCodedDatum.NTF, HardCodedCS.ELLIPSOIDAL_gon);
 
     /**
@@ -146,7 +144,7 @@ public final strictfp class HardCodedCRS {
      * @since 0.6
      */
     public static final DefaultGeographicCRS NTF_NORMALIZED_AXES = new DefaultGeographicCRS(
-            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, NTF.getName()),
+            Map.of(DefaultGeographicCRS.NAME_KEY, NTF.getName()),
             HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);
 
     /**
@@ -162,7 +160,7 @@ public final strictfp class HardCodedCRS {
      * @since 0.7
      */
     public static final DefaultGeographicCRS TOKYO = new DefaultGeographicCRS(
-            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "Tokyo"),
+            Map.of(DefaultGeographicCRS.NAME_KEY, "Tokyo"),
             HardCodedDatum.TOKYO, HardCodedCS.GEODETIC_3D);
 
     /**
@@ -178,7 +176,7 @@ public final strictfp class HardCodedCRS {
      * @since 0.7
      */
     public static final DefaultGeographicCRS JGD2000 = new DefaultGeographicCRS(
-            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "JGD2000"),
+            Map.of(DefaultGeographicCRS.NAME_KEY, "JGD2000"),
             HardCodedDatum.JGD2000, HardCodedCS.GEODETIC_3D);
 
     /**
@@ -193,7 +191,7 @@ public final strictfp class HardCodedCRS {
      * @since 1.1
      */
     public static final DefaultGeographicCRS GRS80 = new DefaultGeographicCRS(
-            Collections.singletonMap(DefaultGeographicCRS.NAME_KEY, "Unknown datum based on GRS 1980 ellipsoid"),
+            Map.of(DefaultGeographicCRS.NAME_KEY, "Unknown datum based on GRS 1980 ellipsoid"),
             GeodeticDatumMock.GRS80, HardCodedCS.GEODETIC_2D);
 
     /**
@@ -234,7 +232,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional Cartesian coordinate reference system with (x,y) axes in metres.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
-     * this CS can't be reprojected to a geographic coordinate reference system for example).
+     * this CS cannot be reprojected to a geographic coordinate reference system for example).
      */
     public static final DefaultEngineeringCRS CARTESIAN_2D = new DefaultEngineeringCRS(
             getProperties(HardCodedCS.CARTESIAN_2D), HardCodedDatum.UNKNOWN, HardCodedCS.CARTESIAN_2D);
@@ -242,7 +240,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional Cartesian coordinate reference system with (x,y,z) axes in metres.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
-     * this CS can't be reprojected to a geographic coordinate reference system for example).
+     * this CS cannot be reprojected to a geographic coordinate reference system for example).
      */
     public static final DefaultEngineeringCRS CARTESIAN_3D = new DefaultEngineeringCRS(
             getProperties(HardCodedCS.CARTESIAN_3D), HardCodedDatum.UNKNOWN, HardCodedCS.CARTESIAN_3D);
@@ -339,7 +337,7 @@ public final strictfp class HardCodedCRS {
     /**
      * A two-dimensional Cartesian coordinate reference system with (column, row) axes.
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
-     * this CS can't be reprojected to a geographic coordinate reference system for example).
+     * this CS cannot be reprojected to a geographic coordinate reference system for example).
      *
      * <p>The {@code PixelInCell} attribute of the associated {@code ImageDatum}
      * is set to {@link PixelInCell#CELL_CENTER}.</p>

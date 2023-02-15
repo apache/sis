@@ -26,7 +26,6 @@ import org.apache.sis.storage.shapefile.ShapeTypeEnum;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class ShapefileDescriptor {
     /** File code. */

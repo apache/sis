@@ -49,7 +49,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
     /**
@@ -60,6 +59,7 @@ abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
     /**
      * The expression giving the spatial reference system identifier, or {@code null} if none.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, ?> srid;
 
     /**

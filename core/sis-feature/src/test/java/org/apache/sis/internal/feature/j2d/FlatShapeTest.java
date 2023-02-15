@@ -30,9 +30,8 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class FlatShapeTest extends TestCase {
+public final class FlatShapeTest extends TestCase {
     /**
      * Tests {@link Polyline} using {@link Path2D} as a reference implementation.
      */

@@ -38,7 +38,6 @@ import org.opengis.util.FactoryException;
  * @see ConcurrentAuthorityFactory#newDataAccess()
  *
  * @since 0.7
- * @module
  */
 public class MissingFactoryResourceException extends FactoryException {
     /**

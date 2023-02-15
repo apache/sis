@@ -18,7 +18,6 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Set;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Collection;
 import java.util.Collections;
@@ -47,10 +46,9 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.6
- * @module
  */
 @DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
-public final strictfp class CitationsTest extends TestCase {
+public final class CitationsTest extends TestCase {
     /**
      * Verifies that {@link Citations#values()} is complete by comparing with the list
      * of constants given by reflection.
@@ -258,7 +256,7 @@ public final strictfp class CitationsTest extends TestCase {
         assertNotNull(identifiers);
         try {
             identifiers.add(null);
-            fail("Pre-defined metadata shall be unmodifiable.");
+            fail("Predefined metadata shall be unmodifiable.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
         }
@@ -288,7 +286,7 @@ public final strictfp class CitationsTest extends TestCase {
         final Identifier ogc = new DefaultIdentifier("OGC", "06-042", null);
         final Identifier iso = new DefaultIdentifier("ISO", "19128", null);
         final DefaultCitation citation = new DefaultCitation("Web Map Server");
-        citation.setIdentifiers(Arrays.asList(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
+        citation.setIdentifiers(List.of(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
         assertTrue ("With full identifier",  Citations.identifierMatches(citation, ogc, ogc.getCode()));
         assertTrue ("With full identifier",  Citations.identifierMatches(citation, iso, iso.getCode()));
         assertFalse("With wrong code",       Citations.identifierMatches(citation, new DefaultIdentifier("ISO", "19115", null), "19115"));

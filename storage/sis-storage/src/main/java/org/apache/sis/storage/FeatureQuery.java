@@ -77,7 +77,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
@@ -109,6 +108,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @see #getSelection()
      * @see #setSelection(Filter)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Filter<? super Feature> selection;
 
     /**
@@ -137,6 +137,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @see #getSortBy()
      * @see #setSortBy(SortBy)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private SortBy<Feature> sortBy;
 
     /**
@@ -147,6 +148,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @see #getLinearResolution()
      * @see #setLinearResolution(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<Length> linearResolution;
 
     /**
@@ -416,11 +418,13 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
          * Never {@code null}.
          */
+        @SuppressWarnings("serial")
         public final Expression<? super Feature, ?> expression;
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
          */
+        @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
         public final GenericName alias;
 
         /**

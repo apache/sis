@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -59,12 +58,11 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     DefaultTransformationTest.class     // Because similar to DefaultConversion but simpler.
 })
-public final strictfp class DefaultConversionTest extends TestCase {
+public final class DefaultConversionTest extends TestCase {
     /**
      * The rotation from a CRS using the Paris prime meridian to a CRS using the Greenwich prime meridian,
      * in degrees. The definitive value is 2.5969213 grads.
@@ -85,19 +83,19 @@ public final strictfp class DefaultConversionTest extends TestCase {
     private static GeographicCRS createParisCRS(final boolean isSource, final EllipsoidalCS cs, final boolean useGreenwich) {
         DefaultGeodeticDatum datum = HardCodedDatum.NTF;
         if (useGreenwich) {
-            datum = new DefaultGeodeticDatum(Collections.singletonMap(DefaultGeodeticDatum.NAME_KEY, datum.getName()),
-                    datum.getEllipsoid(), HardCodedDatum.GREENWICH);
+            datum = new DefaultGeodeticDatum(Map.of(DefaultGeodeticDatum.NAME_KEY, datum.getName()),
+                                             datum.getEllipsoid(), HardCodedDatum.GREENWICH);
         }
-        return new DefaultGeographicCRS(Collections.singletonMap(GeographicCRS.NAME_KEY,
-                isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"), datum, cs);
+        return new DefaultGeographicCRS(Map.of(GeographicCRS.NAME_KEY, isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"),
+                                        datum, cs);
     }
 
     /**
      * Changes only the coordinate system of the given CRS, which is supposed geographic.
      */
     private static GeographicCRS changeCS(final CoordinateReferenceSystem crs, final EllipsoidalCS cs) {
-        return new DefaultGeographicCRS(Collections.singletonMap(DefaultGeographicCRS.NAME_KEY,
-                crs.getName()), ((GeodeticCRS) crs).getDatum(), cs);
+        return new DefaultGeographicCRS(Map.of(DefaultGeographicCRS.NAME_KEY, crs.getName()),
+                                        ((GeodeticCRS) crs).getDatum(), cs);
     }
 
     /**

@@ -33,7 +33,6 @@ import org.apache.sis.geometry.DirectPosition2D;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ConcatenatedTransform2D extends ConcatenatedTransform implements MathTransform2D {
     /**
@@ -95,7 +94,7 @@ final class ConcatenatedTransform2D extends ConcatenatedTransform implements Mat
      *
      * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point as a 2×2 matrix.
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final Point2D point) throws TransformException {

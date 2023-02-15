@@ -20,7 +20,6 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +67,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public class DataViewer extends Application {
     /**
@@ -329,7 +327,7 @@ public class DataViewer extends Application {
                     if (save.size() >= RecentFiles.MAX_COUNT) break;
                 }
                 RecentChoices.setURLs(save);
-                content.loadResources(Collections.singleton(url));
+                content.loadResources(Set.of(url));
             } catch (URISyntaxException e) {
                 ExceptionReporter.canNotReadFile(content.getView(), choice, e);
             }

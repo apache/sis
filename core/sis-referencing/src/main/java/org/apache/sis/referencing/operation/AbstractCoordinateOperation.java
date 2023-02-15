@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.Unmarshaller;
@@ -74,7 +74,6 @@ import org.apache.sis.internal.system.Semaphores;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 
@@ -106,9 +105,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
- * @module
  */
 @XmlType(name = "AbstractCoordinateOperationType", propOrder = {
     "domainOfValidity",
@@ -131,6 +129,11 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     private static final long serialVersionUID = 1237358357729193885L;
 
     /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+
+    /**
      * The source CRS, or {@code null} if not available.
      *
      * <p><b>Consider this field as final!</b>
@@ -139,7 +142,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getSourceCRS()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     CoordinateReferenceSystem sourceCRS;
 
     /**
@@ -151,7 +154,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getTargetCRS()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     CoordinateReferenceSystem targetCRS;
 
     /**
@@ -163,7 +166,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getInterpolationCRS()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private CoordinateReferenceSystem interpolationCRS;
 
     /**
@@ -186,7 +189,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getCoordinateOperationAccuracy()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     Collection<PositionalAccuracy> coordinateOperationAccuracy;
 
     /**
@@ -198,7 +201,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getDomainOfValidity()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     Extent domainOfValidity;
 
     /**
@@ -209,7 +212,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getScope()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private InternationalString scope;
 
     /**
@@ -220,7 +223,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * This field is non-final only for the convenience of constructors and for initialization
      * at XML unmarshalling time by {@link AbstractSingleOperation#afterUnmarshal(Unmarshaller, Object)}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     MathTransform transform;
 
     /**
@@ -256,7 +259,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
             if (value instanceof PositionalAccuracy[]) {
                 coordinateOperationAccuracy = CollectionsExt.nonEmptySet((PositionalAccuracy[]) value);
             } else {
-                coordinateOperationAccuracy = Collections.singleton((PositionalAccuracy) value);
+                coordinateOperationAccuracy = Set.of((PositionalAccuracy) value);
             }
         }
     }
@@ -407,7 +410,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         if (sourceCRS != null && targetCRS != null) {
             wrapAroundChanges = CoordinateOperations.wrapAroundChanges(sourceCRS, targetCRS.getCoordinateSystem());
         } else {
-            wrapAroundChanges = Collections.emptySet();
+            wrapAroundChanges = Set.of();
         }
     }
 
@@ -898,8 +901,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                                                                        this.getTargetCRS().getCoordinateSystem()));
                             tr2 = MathTransforms.concatenate(before, tr2, after);
                         } catch (IncommensurableException | RuntimeException e) {
-                            Logging.ignorableException(getLogger(Loggers.COORDINATE_OPERATION),
-                                    AbstractCoordinateOperation.class, "equals", e);
+                            Logging.ignorableException(LOGGER, AbstractCoordinateOperation.class, "equals", e);
                         }
                         if (deepEquals(tr1, tr2, mode)) return true;
                         assert !debug || deepEquals(tr1, tr2, ComparisonMode.DEBUG);        // For locating the mismatch.
@@ -934,11 +936,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * allows a subset of coordinate operations with the ESRI-specific {@code GEOGTRAN} keyword.
      * To enabled this variant, {@link org.apache.sis.io.wkt.WKTFormat} can be configured as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     format = new WKTFormat(null, null);
      *     format.setConvention(Convention.WKT1_IGNORE_AXES);
      *     format.setNameAuthority(Citations.ESRI);
-     * }
+     *     }
      *
      * @param  formatter  the formatter to use.
      * @return {@code "CoordinateOperation"}.

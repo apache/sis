@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -47,7 +46,6 @@ import org.apache.sis.util.Utilities;
  * @see MathTransforms#specialize(MathTransform, Map)
  *
  * @since 1.0
- * @module
  */
 class SpecializableTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -58,6 +56,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     /**
      * The global transform to use if there is no suitable specialization.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final MathTransform global;
 
     /**
@@ -75,6 +74,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         /**
          * The transform to apply in this area.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final MathTransform transform;
 
         /**
@@ -83,6 +83,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
          *
          * @see #createInverseTransform()
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         MathTransform inverse;
 
         /**
@@ -142,6 +143,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
      *
      * @see #inverse()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private MathTransform inverse;
 
     /**
@@ -163,7 +165,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
              * SpecializableTransforms we will store directly the specializations that it contains. It will
              * reduce the amountof steps when transforming coordinates.
              */
-            List<SubArea> inherited = Collections.emptyList();
+            List<SubArea> inherited = List.of();
             if (tr instanceof SpecializableTransform) {
                 inherited = ((SpecializableTransform) tr).roots();
                 tr        = ((SpecializableTransform) tr).global;
@@ -197,9 +199,9 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     @SuppressWarnings("unchecked")
     private List<SubArea> roots() {
         if (domains == null) {
-            return Collections.emptyList();
+            return List.of();
         } else if (domains instanceof SubArea) {
-            return Collections.singletonList((SubArea) domains);
+            return List.of((SubArea) domains);
         } else {
             /*
              * We are cheating here since we have a `List<RTreeNode>`. But this `SpecializableTransform`
@@ -535,6 +537,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
         /**
          * The inverse of {@link SpecializableTransform#global}.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final MathTransform global;
 
         /**

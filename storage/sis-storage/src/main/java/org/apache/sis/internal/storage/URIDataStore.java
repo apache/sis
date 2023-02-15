@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.charset.Charset;
@@ -54,7 +53,6 @@ import org.apache.sis.util.logging.Logging;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.8
- * @module
  */
 public abstract class URIDataStore extends DataStore implements StoreResource, ResourceOnFileSystem {
     /**
@@ -163,7 +161,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
             if (location == null) {
                 return new Path[0];
             } else try {
-                path = Paths.get(location);
+                path = Path.of(location);
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 throw new DataStoreException(e);
             }
@@ -208,7 +206,6 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.2
      * @since   0.8
-     * @module
      */
     public abstract static class Provider extends DataStoreProvider {
         /**

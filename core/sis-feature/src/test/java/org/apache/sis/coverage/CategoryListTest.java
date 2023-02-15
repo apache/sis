@@ -39,10 +39,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 @DependsOn(CategoryTest.class)
-public final strictfp class CategoryListTest extends TestCase {
+public final class CategoryListTest extends TestCase {
     /**
      * Asserts that the specified categories are sorted.
      * This method ignores {@code NaN} values.

@@ -51,7 +51,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @see <a href="http://geotiff.maptools.org/proj_list/miller_cylindrical.html">GeoTIFF parameters for Miller Cylindrical</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class MillerCylindrical extends AbstractMercator {

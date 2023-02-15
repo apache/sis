@@ -37,12 +37,11 @@ import static org.opengis.test.Assert.*;
  * is that reported statistics will be incomplete.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.4
- * @module
  */
 @DependsOn(SolverTest.class)
-public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
+public final class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns, initialized by {@link #prepareNewMatrixSize(Random)}.
      */
@@ -69,8 +68,8 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      * Ensures that the given matrix is an instance of the expected type.
      */
     @Override
-    void validate(final MatrixSIS matrix) {
-        super.validate(matrix);
+    void validateImplementation(final MatrixSIS matrix) {
+        super.validateImplementation(matrix);
         assertEquals(NonSquareMatrix.class, matrix.getClass());
     }
 
@@ -94,7 +93,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
      */
     @Test
     public void testInverseWithTranslationTerm() throws NoninvertibleMatrixException {
-        final NonSquareMatrix m = new NonSquareMatrix(5, 3, new double[] {
+        final NonSquareMatrix m = new NonSquareMatrix(5, 3, new Number[] {
             2, 0, 0,
             0, 0, 0,
             0, 4, 0,
@@ -102,12 +101,12 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
             0, 0, 1
         });
         MatrixSIS inverse = m.inverse();
-        assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new double[] {
+        assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new Number[] {
             0.5, 0,   0,    0,   0,
             0,   0,   0.25, 0,   0,
             0,   0,   0,    0,   1}), inverse, STRICT);
 
-        assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new double[] {
+        assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new Number[] {
             2, 0, 0,
             0, 0, NaN,
             0, 4, 0,
@@ -138,7 +137,7 @@ public final strictfp class NonSquareMatrixTest extends MatrixTestCase {
                 2, 0, 0,
                 0, 2, 0,
                 0, 0, 1), 2);
-        testDimensionIncrease(new GeneralMatrix(5, 5, new double[] {
+        testDimensionIncrease(new GeneralMatrix(5, 5, new Number[] {
                 2, 0, 0, 0, 0,
                 0, 2, 0, 0, 0,
                 0, 0, 2, 0, 0,

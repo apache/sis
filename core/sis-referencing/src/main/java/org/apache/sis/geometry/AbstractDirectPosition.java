@@ -59,7 +59,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public abstract class AbstractDirectPosition extends FormattableObject implements DirectPosition {
     /**
@@ -238,9 +237,9 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * The format is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
      * are the coordinate values at index 0, 1, 2, <i>etc.</i>:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POINT[x₀ x₁ x₂ …]
-     * }
+     *   }
      *
      * If the coordinate reference system is geodetic or projected, then coordinate values are formatted
      * with a precision equivalent to one centimetre on Earth (the actual number of fraction digits is
@@ -265,9 +264,9 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
      * are the coordinate values at index 0, 1, 2, <i>etc.</i>:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POINT(x₀ x₁ x₂ …)
-     * }
+     *   }
      *
      * This method formats the numbers as with {@link Double#toString(double)} (i.e. without fixed number of fraction digits).
      * The string returned by this method can be {@linkplain GeneralDirectPosition#GeneralDirectPosition(CharSequence) parsed}

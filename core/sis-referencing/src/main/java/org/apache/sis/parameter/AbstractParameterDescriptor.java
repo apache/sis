@@ -93,7 +93,6 @@ import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParame
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
 @XmlType(name = "AbstractGeneralOperationParameterType", propOrder = {
     "nonDefaultMinimumOccurs",

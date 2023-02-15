@@ -35,9 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.4
- * @module
  */
-public final strictfp class PT_LocaleTest extends TestUsingFile {
+public final class PT_LocaleTest extends TestUsingFile {
     /**
      * An XML file containing localized strings.
      */

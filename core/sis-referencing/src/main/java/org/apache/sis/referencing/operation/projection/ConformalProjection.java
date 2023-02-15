@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
+import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.Resources;
 
 import static java.lang.Math.*;
@@ -54,9 +55,8 @@ import static java.lang.Math.*;
  * parallel is a pole, the polar Stereographic results.” (Snyder, page 105)</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.6
- * @module
  */
 abstract class ConformalProjection extends NormalizedProjection {
     /**
@@ -95,12 +95,10 @@ abstract class ConformalProjection extends NormalizedProjection {
      *
      *     <blockquote>sin(2χ)⋅(c₂ + cos(2χ)⋅(c₄ + cos(2χ)⋅(c₆ + cos(2χ)⋅c₈)))</blockquote>
      *
-     * <div class="note"><b>Serialization note:</b>
-     * we do not strictly need to serialize those fields since they could be computed after deserialization.
-     * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
-     * fields final) and because values computed after deserialization could be slightly different than the
-     * ones computed after construction if a future version of the constructor uses the double-double values
-     * provided by {@link Initializer}.</div>
+     * <h4>Serialization note</h4>
+     * we do not strictly need to serialize those fields because they could be computed after deserialization.
+     * But we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
+     * fields final) and because different version of SIS computes those coefficients in slightly different ways.
      */
     private final double c2χ, c4χ, c6χ, c8χ;
 
@@ -141,10 +139,10 @@ abstract class ConformalProjection extends NormalizedProjection {
          * For each line, we add the smallest values first in order to reduce rounding errors.
          * The smallest values are the ones using the eccentricity raised to the highest power.
          */
-        c2χ =  -73./ 2016 * e8  +   1./40  * e6  +  5./24 * e4  +  1./2 * e2;
-        c4χ =  233./ 6720 * e8  +  29./120 * e6  +  7./24 * e4;
-        c6χ =   81./  280 * e8  +   7./30  * e6;
-        c8χ = 4279./20160 * e8;
+        c2χ = fma(e2, 1./2, fma(e4, 5./24, fma(e6,  1./40,  e8*( -73./2016))));
+        c4χ =               fma(e4, 7./24, fma(e6, 29./120, e8*( 233./6720)));
+        c6χ =                              fma(e6,  7./30,  e8*(  81./280));
+        c8χ =                                               e8*(4279./20160);
     }
 
     /**
@@ -212,7 +210,11 @@ abstract class ConformalProjection extends NormalizedProjection {
          */
         final double sin_2φ = sin(2*φ);
         final double cos_2φ = cos(2*φ);
-        φ += sin_2φ * (c2χ + cos_2φ * (c4χ + cos_2φ * (c6χ + cos_2φ * c8χ)));
+        if (Formulas.USE_FMA) {
+            φ = fma(sin_2φ, fma(cos_2φ, fma(cos_2φ, fma(cos_2φ, c8χ, c6χ), c4χ), c2χ), φ);
+        } else {
+            φ += sin_2φ * (c2χ + cos_2φ * (c4χ + cos_2φ * (c6χ + cos_2φ * c8χ)));
+        }
         /*
          * Note: a previous version checked if the value of the smallest term c8χ⋅sin(8φ) was smaller than
          * the iteration tolerance. But this was not reliable enough. We use now a hard coded threshold

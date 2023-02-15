@@ -41,7 +41,6 @@ import static org.apache.sis.math.MathFunctions.truncate;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 class SexagesimalConverter extends AbstractConverter {
     /**
@@ -127,7 +126,7 @@ class SexagesimalConverter extends AbstractConverter {
     /**
      * The inverse of this converter.
      */
-    private final UnitConverter inverse;
+    private final SexagesimalConverter inverse;
 
     /**
      * Constructs a converter for sexagesimal units.

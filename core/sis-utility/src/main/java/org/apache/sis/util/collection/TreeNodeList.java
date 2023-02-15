@@ -52,15 +52,14 @@ import org.apache.sis.util.resources.Errors;
  *       to {@code TreeNodeList} (we need the slower path implemented in {@code AbstractList}).</li>
  * </ul>
  *
- * <div class="note"><b>Implementation note:</b>
+ * <h3>Note on serialization</h3>
  * Being serializable may seem contradictory with the non-cloneable requirement.
  * But serializing {@code TreeNodeList} will also serialize the parent, thus
- * creating new copy on deserialization. So the parents should not be mixed.</div>
+ * creating new copy on deserialization. So the parents should not be mixed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 abstract class TreeNodeList extends AbstractList<TreeTable.Node>
         implements CheckedContainer<TreeTable.Node>, Serializable
@@ -78,12 +77,14 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
     /**
      * The parent of all children managed by this list.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final TreeTable.Node parent;
 
     /**
      * The children, or {@code null} if none.
      * This array will be created when first needed.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private TreeTable.Node[] children;
 
     /**

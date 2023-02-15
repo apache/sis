@@ -48,7 +48,6 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 final class MatrixParametersAlphaNum extends MatrixParameters {
     /**

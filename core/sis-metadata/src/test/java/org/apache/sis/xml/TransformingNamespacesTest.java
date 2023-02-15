@@ -16,12 +16,11 @@
  */
 package org.apache.sis.xml;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Collection;
-import java.util.Collections;
 import javax.xml.namespace.NamespaceContext;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.TestCase;
@@ -36,14 +35,13 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class TransformingNamespacesTest extends TestCase implements NamespaceContext {
+public final class TransformingNamespacesTest extends TestCase implements NamespaceContext {
     /**
      * All prefixes declared in this test.
      */
     private static Collection<String> prefixes() {
-        return Arrays.asList("mdq", "ns1", "ns2", "cit", "mdb", "gex");
+        return List.of("mdq", "ns1", "ns2", "cit", "mdb", "gex");
     }
 
     /**
@@ -74,12 +72,12 @@ public final strictfp class TransformingNamespacesTest extends TestCase implemen
         switch (namespaceURI) {
             case Namespaces.MDQ: {
                 // Arbitrarily return more than one prefix for that namespace.
-                prefixes = Arrays.asList("mdq", "ns1", "ns2");
+                prefixes = List.of("mdq", "ns1", "ns2");
                 break;
             }
             default: {
                 final String p = getPrefix(namespaceURI);
-                prefixes = (p != null) ? Collections.singleton(p) : Collections.emptySet();
+                prefixes = (p != null) ? Set.of(p) : Set.of();
                 break;
             }
         }

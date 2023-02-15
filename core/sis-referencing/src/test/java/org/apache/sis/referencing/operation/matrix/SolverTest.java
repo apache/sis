@@ -47,12 +47,11 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
  * the above-cited simple operations anyway.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
- * @module
  */
 @DependsOn(GeneralMatrixTest.class) // See class javadoc
-public final strictfp class SolverTest extends TestCase {
+public final class SolverTest extends TestCase {
     /**
      * The tolerance threshold for this test case, which is {@value}. This value needs to be higher then the
      * {@link MatrixTestCase#TOLERANCE} one because of the increased complexity of {@link Solver} operations.
@@ -77,7 +76,7 @@ public final strictfp class SolverTest extends TestCase {
      * Initializes the {@link #matrix} and {@link #reference} matrices to random values.
      */
     private void createMatrices(final int numRow, final int numCol, final Random random) {
-        matrix = new GeneralMatrix(numRow, numCol, false, 1);
+        matrix = new GeneralMatrix(numRow, numCol, false);
         reference = new Matrix(numRow, numCol);
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
@@ -145,7 +144,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0.5,    0,  -10,
             0,     0,  0,      0,    1
         };
-        MatrixSIS inverse = Solver.inverse(matrix, false);
+        MatrixSIS inverse = Solver.inverse(matrix);
         assertEqualsElements(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN. The translation term for the corresponding
@@ -165,7 +164,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  NaN,    0,  NaN,
             0,     0,  0,      0,    1
         };
-        inverse = Solver.inverse(matrix, false);
+        inverse = Solver.inverse(matrix);
         assertEqualsElements(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a scale factor to NaN with translation equals to 0.
@@ -186,7 +185,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  NaN,    0,    0,
             0,     0,  0,      0,    1
         };
-        inverse = Solver.inverse(matrix, false);
+        inverse = Solver.inverse(matrix);
         assertEqualsElements(expected, 5, 5, inverse, TOLERANCE);
         /*
          * Set a translation term to NaN. The translation should be NaN in
@@ -206,7 +205,7 @@ public final strictfp class SolverTest extends TestCase {
             0,     0,  0.5,    0,  NaN,
             0,     0,  0,      0,    1
         };
-        inverse = Solver.inverse(matrix, false);
+        inverse = Solver.inverse(matrix);
         assertEqualsElements(expected, 5, 5, inverse, TOLERANCE);
     }
 }

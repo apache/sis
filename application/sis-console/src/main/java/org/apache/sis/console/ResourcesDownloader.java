@@ -19,7 +19,6 @@ package org.apache.sis.console;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.io.Console;
@@ -41,7 +40,6 @@ import org.apache.sis.setup.OptionalInstallations;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @Fallback
 public class ResourcesDownloader extends OptionalInstallations {
@@ -102,7 +100,7 @@ public class ResourcesDownloader extends OptionalInstallations {
      */
     @Override
     public Set<String> getAuthorities() {
-        return (console != null) ? super.getAuthorities() : Collections.emptySet();
+        return (console != null) ? super.getAuthorities() : Set.of();
     }
 
     /**

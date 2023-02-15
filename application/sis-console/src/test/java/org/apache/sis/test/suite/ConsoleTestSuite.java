@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.console.CommandRunnerTest.class,
@@ -37,7 +36,7 @@ import org.junit.BeforeClass;
     org.apache.sis.console.MetadataCommandTest.class,
     org.apache.sis.console.CRSCommandTest.class
 })
-public final strictfp class ConsoleTestSuite extends TestSuite {
+public final class ConsoleTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

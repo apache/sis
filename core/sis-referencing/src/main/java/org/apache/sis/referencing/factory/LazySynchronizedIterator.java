@@ -35,7 +35,6 @@ import org.apache.sis.internal.util.AbstractIterator;
  * @param <E>  the type of elements to be returned by the iterator.
  *
  * @since 0.7
- * @module
  */
 final class LazySynchronizedIterator<E> extends AbstractIterator<E> {
     /**

@@ -45,7 +45,6 @@ import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
  * @author  Touraïvane (IRD)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractDQ_ThematicAccuracy_Type")
 @XmlRootElement(name = "AbstractDQ_ThematicAccuracy")

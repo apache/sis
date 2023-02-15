@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -34,9 +33,8 @@ import java.util.zip.ZipFile;
  * This is used when JavaFX cannot be found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.3
  * @since   1.1
- * @module
  */
 public final class FXFinder {
     /**
@@ -138,7 +136,7 @@ public final class FXFinder {
      * Creates a new finder.
      */
     private FXFinder(final String setenv) {
-        this.setenv = Paths.get(setenv).normalize();
+        this.setenv = Path.of(setenv).normalize();
         isWindows = setenv.endsWith(WINDOWS_BATCH_EXTENSION);
     }
 
@@ -204,7 +202,7 @@ public final class FXFinder {
             } else if (value.isEmpty()) {
                 value = "(blank)";
             } else if (name.equals("SIS_DATA") && value.equals("bin/../data")) {
-                value = Paths.get(value).toAbsolutePath().toString();
+                value = Path.of(value).toAbsolutePath().toString();
             }
         } catch (SecurityException e) {
             value  = "(unreadable)";
@@ -276,7 +274,10 @@ public final class FXFinder {
      * <pre>javafx-sdk-&lt;version&gt;/lib/javafx.controls.jar</pre>
      *
      * If the file seems valid, {@code null} is returned.
-     * Otherwise an error message is HTML is returned.
+     * Otherwise an error message in HTML is returned.
+     *
+     * @param  file  path to the zip file.
+     * @return {@code null} on success, otherwise error message in HTML.
      */
     static String checkZip(final File file) throws IOException {
         try (ZipFile zip = new ZipFile(file)) {
@@ -287,15 +288,21 @@ public final class FXFinder {
                     final String basedir = entry.getName();
                     if (basedir.startsWith(JAVAFX_DIRECTORY_PREFIX)) {
                         final int start = JAVAFX_DIRECTORY_PREFIX.length();
-                        int end = basedir.indexOf('.', start);
-                        if (end < start) end = basedir.length();
-                        final int version = Integer.parseInt(basedir.substring(start, end));
-                        if (version < JAVAFX_VERSION) {
-                            return "<html>Apache SIS requires JavaFX version " + JAVAFX_VERSION + " or later. "
-                                    + "The given file contains JavaFX version " + version + ".</html>";
+                        int end = start;
+                        while (end < basedir.length()) {
+                            final char c = basedir.charAt(end);
+                            if (c < '0' || c > '9') break;
+                            end++;
                         }
-                        if (zip.getEntry(basedir + JAVAFX_LIB_DIRECTORY + '/' + JAVAFX_SENTINEL_FILE) != null) {
-                            return null;        // Valid file.
+                        if (end > start) {
+                            final int version = Integer.parseInt(basedir.substring(start, end));
+                            if (version < JAVAFX_VERSION) {
+                                return "<html>Apache SIS requires JavaFX version " + JAVAFX_VERSION + " or later. "
+                                        + "The given file contains JavaFX version " + version + ".</html>";
+                            }
+                            if (zip.getEntry(basedir + JAVAFX_LIB_DIRECTORY + '/' + JAVAFX_SENTINEL_FILE) != null) {
+                                return null;        // Valid file.
+                            }
                         }
                     }
                     break;
@@ -309,12 +316,11 @@ public final class FXFinder {
      * Returns the destination directory where to decompress ZIP files.
      * This method assumes the following directory structure:
      *
-     * {@preformat text
+     * <pre class="text">
      *     apache-sis       (can be any name)
      *     ├─ conf
      *     │  └─ setenv.sh
-     *     └─ opt
-     * }
+     *     └─ opt</pre>
      */
     final File getDestinationDirectory() throws IOException {
         File basedir = setenv.toAbsolutePath().toFile().getParentFile();

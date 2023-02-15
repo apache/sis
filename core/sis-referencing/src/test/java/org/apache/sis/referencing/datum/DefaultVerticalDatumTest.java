@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.Map;
 import java.lang.reflect.Field;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -30,7 +31,6 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
@@ -41,9 +41,8 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultVerticalDatumTest extends TestCase {
+public final class DefaultVerticalDatumTest extends TestCase {
     /**
      * An XML file in this package containing a vertical datum definition.
      */
@@ -75,8 +74,9 @@ public final strictfp class DefaultVerticalDatumTest extends TestCase {
      * Returns the vertical datum type inferred by {@link DefaultVerticalDatum} for the given name.
      */
     private static VerticalDatumType typeForName(final Field typeField, final String name) throws IllegalAccessException {
-        final DefaultVerticalDatum datum = new DefaultVerticalDatum(
-                singletonMap(DefaultVerticalDatum.NAME_KEY, name), VerticalDatumType.OTHER_SURFACE);
+        final var datum = new DefaultVerticalDatum(
+                Map.of(DefaultVerticalDatum.NAME_KEY, name),
+                VerticalDatumType.OTHER_SURFACE);
         typeField.set(datum, null);
         return datum.getVerticalDatumType();
     }
@@ -87,12 +87,12 @@ public final strictfp class DefaultVerticalDatumTest extends TestCase {
     @Test
     public void testToWKT() {
         DefaultVerticalDatum datum;
-        datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Geoidal"), VerticalDatumType.GEOIDAL);
+        datum = new DefaultVerticalDatum(Map.of(DefaultVerticalDatum.NAME_KEY, "Geoidal"), VerticalDatumType.GEOIDAL);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Geoidal”, 2005]", datum);
         assertWktEquals(Convention.WKT2, "VDATUM[“Geoidal”]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Geoidal”]", datum);
 
-        datum = new DefaultVerticalDatum(singletonMap(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
+        datum = new DefaultVerticalDatum(Map.of(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Ellipsoidal”, 2002]", datum);
         assertWktEquals(Convention.WKT2, "VDATUM[“Ellipsoidal”]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Ellipsoidal”]", datum);

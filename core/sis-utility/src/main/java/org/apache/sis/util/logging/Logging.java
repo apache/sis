@@ -16,16 +16,19 @@
  */
 package org.apache.sis.util.logging;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.lang.reflect.Modifier;
 
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -41,9 +44,8 @@ import org.apache.sis.internal.system.Modules;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class Logging extends Static {
     /**
@@ -56,6 +58,7 @@ public final class Logging extends Static {
      * Consequently, we will ignore the stack traces of recoverable failures, but will report
      * stack traces that may impact performance, configuration, or correctness.</p>
      */
+    @Configuration
     private static final int LEVEL_THRESHOLD_FOR_STACKTRACE = 600;
 
     /**
@@ -75,7 +78,7 @@ public final class Logging extends Static {
      */
     public static Logger getLogger(final Class<?> source) {
         ArgumentChecks.ensureNonNull("source", source);
-        String name = JDK9.getPackageName(source);
+        String name = source.getPackageName();
         if (name.startsWith(Modules.INTERNAL_CLASSNAME_PREFIX)) {
             // Remove the "internal" part from Apache SIS package names.
             name = Modules.CLASSNAME_PREFIX + name.substring(Modules.INTERNAL_CLASSNAME_PREFIX.length());
@@ -85,33 +88,56 @@ public final class Logging extends Static {
 
     /**
      * Logs the given record to the logger associated to the given class.
-     * This convenience method performs the following steps:
      *
-     * <ul>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceClassName(String) set the source class name}
-     *       to the {@linkplain Class#getCanonicalName() canonical name} of the given class;</li>
-     *   <li>Unconditionally {@linkplain LogRecord#setSourceMethodName(String) set the source method name}
-     *       to the given value;</li>
-     *   <li>Get the logger for the {@linkplain LogRecord#getLoggerName() logger name} if specified,
-     *       or for the {@code classe} package name otherwise;</li>
-     *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name} of the given record,
-     *       if not already set;</li>
-     *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record.</li>
-     * </ul>
+     * @deprecated Replaced by {@code completeAndLog(null, record, classe, method)} for encouraging
+     * the use of static {@link Logger} constants. Also the new name makes clear that the record is
+     * modified.
      *
      * @param  classe  the class to report as the source of the logging message.
      * @param  method  the method to report as the source of the logging message.
      * @param  record  the record to log.
      */
-    public static void log(final Class<?> classe, String method, final LogRecord record) {
+    @Deprecated(since="1.4", forRemoval=true)
+    public static void log(final Class<?> classe, final String method, final LogRecord record) {
+        completeAndLog(null, classe, method, record);
+    }
+
+    /**
+     * Completes the properties of the given record, then logs to the specified or inferred logger.
+     * If the {@code logger} argument is {@code null}, the logger is inferred from the other arguments.
+     * This convenience method performs the following steps:
+     *
+     * <ul>
+     *   <li>{@linkplain LogRecord#setSourceClassName(String) Set the source class name}
+     *       to the {@linkplain Class#getCanonicalName() canonical name} of the given class.</li>
+     *   <li>{@linkplain LogRecord#setSourceMethodName(String) Set the source method name}
+     *       to the given value.</li>
+     *   <li>{@linkplain LogRecord#setLoggerName(String) Set the logger name}
+     *       to the {@linkplain Logger#getName() name} of the given logger if non null.
+     *       Otherwise use the {@linkplain Class#getPackageName() package name of the class}.</li>
+     *   <li>{@linkplain Logger#log(LogRecord) Log} the modified record to the specified {@code logger} if non null,
+     *       or to the logger specified by the {@linkplain LogRecord#getLoggerName() logger name} otherwise.</li>
+     * </ul>
+     *
+     * @param  logger  the logger where to log, or {@code null} for inferring from the logger or package name.
+     * @param  classe  the class to report as the source of the logging message.
+     * @param  method  the method to report as the source of the logging message.
+     * @param  record  the record to complete and log.
+     *
+     * @since 1.4
+     */
+    public static void completeAndLog(Logger logger, final Class<?> classe, final String method, final LogRecord record) {
         ArgumentChecks.ensureNonNull("record", record);
-        final String loggerName = record.getLoggerName();
-        Logger logger;
-        if (loggerName == null) {
-            logger = getLogger(classe);
+        if (logger != null) {
             record.setLoggerName(logger.getName());
         } else {
-            logger = Logger.getLogger(loggerName);
+            final String loggerName = record.getLoggerName();
+            if (loggerName == null) {
+                logger = getLogger(classe);
+                record.setLoggerName(logger.getName());
+            } else {
+                logger = Logger.getLogger(loggerName);
+            }
         }
         if (classe != null && method != null) {
             record.setSourceClassName(classe.getCanonicalName());
@@ -121,8 +147,11 @@ public final class Logging extends Static {
              * If the given class or method is null, infer them from stack trace. We do not document this feature
              * in public API because the rules applied here are heuristic and may change in any future SIS version.
              */
-            logger = inferCaller(logger, (classe != null) ? classe.getCanonicalName() : null,
-                            method, Thread.currentThread().getStackTrace(), record);
+            final Logger fl = logger;       // Because lambda functions require final values.
+            logger = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) ->
+                    inferCaller(fl, (classe != null) ? classe.getCanonicalName() : null, method,
+                            stream.filter((frame) -> Modifier.isPublic(frame.getDeclaringClass().getModifiers()))
+                                  .map((StackWalker.StackFrame::toStackTraceElement)), record));
         }
         logger.log(record);
     }
@@ -132,6 +161,9 @@ public final class Logging extends Static {
      * This method inspects the given stack trace, skips what looks like internal API based on heuristic rules, then
      * if some arguments are non-null tries to match them.
      *
+     * <p>This method should be invoked only if at least one of {@code logger}, {@code classe} or {@code method}
+     * is null.</p>
+     *
      * @param  logger  where the log record will be sent after this method call, or {@code null} if unknown.
      * @param  classe  the name of the class to report in the log record, or {@code null} if unknown.
      * @param  method  the name of the method to report in the log record, or {@code null} if unknown.
@@ -139,61 +171,31 @@ public final class Logging extends Static {
      * @param  record  the record where to set the class and method names.
      * @return the record to use for logging the record.
      */
-    private static Logger inferCaller(Logger logger, String classe, String method,
-            final StackTraceElement[] trace, final LogRecord record)
+    private static Logger inferCaller(Logger logger, final String classe, final String method,
+            final Stream<StackTraceElement> trace, final LogRecord record)
     {
-        for (final StackTraceElement element : trace) {
+        final StackTraceElement first = trace.filter((element) -> {
             /*
-             * Search for the first stack trace element with a classname matching the expected one.
-             * We compare against the name of the class given in argument if it was non-null.
+             * Search for the first stack trace element with a class name and method name matching the expected ones.
+             * Null argument (class or method name) will not be compared (i.e. any name is accepted).
              *
              * Note: a previous version also compared logger name with package name.
              * This has been removed because those names are only loosely related.
              */
-            final String classname = element.getClassName();
-            if (classe != null) {
-                if (!classname.equals(classe)) {
-                    continue;
-                }
-            } else if (!isPublic(element)) {
-                continue;
-            }
-            /*
-             * Now that we have a stack trace element from the expected class (or any
-             * element if we don't know the class), make sure that we have the right method.
-             */
-            final String methodName = element.getMethodName();
-            if (method != null && !methodName.equals(method)) {
-                continue;
-            }
-            /*
-             * Now computes every values that are null, and stop the loop.
-             */
-            if (logger == null) {
-                final int separator = classname.lastIndexOf('.');
-                logger = Logger.getLogger((separator >= 1) ? classname.substring(0, separator-1) : "");
-            }
-            if (classe == null) {
-                classe = classname;
-            }
-            if (method == null) {
-                method = methodName;
-            }
-            break;
-        }
-        /*
-         * The logger may stay null if we have been unable to find a suitable stack trace.
-         * Fallback on the global logger.
-         */
+            return ((classe != null) ?  classe.equals(element.getClassName()) : isPublic(element)) &&
+                   ((method == null) || method.equals(element.getMethodName()));
+        }).findFirst().orElse(null);
         if (logger == null) {
-            logger = Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+            String name = Logger.GLOBAL_LOGGER_NAME;
+            if (first != null) {
+                final String classname = first.getClassName();
+                final int separator = classname.lastIndexOf('.');
+                name = (separator >= 1) ? classname.substring(0, separator-1) : "";
+            }
+            logger = Logger.getLogger(name);
         }
-        if (classe != null) {
-            record.setSourceClassName(classe);
-        }
-        if (method != null) {
-            record.setSourceMethodName(method);
-        }
+        if (classe != null || first != null) record.setSourceClassName (first == null ? classe : first.getClassName());
+        if (method != null || first != null) record.setSourceMethodName(first == null ? method : first.getMethodName());
         return logger;
     }
 
@@ -218,7 +220,7 @@ public final class Logging extends Static {
         if (classname.startsWith(Modules.CLASSNAME_PREFIX + "util.logging.")) {
             return classname.endsWith("Test");      // Consider JUnit tests as public.
         }
-        return true;    // TODO: with StackWalker on JDK9, check if the class is public.
+        return true;
     }
 
     /**
@@ -309,7 +311,7 @@ public final class Logging extends Static {
             record.setThrown(error);
         }
         if (logger == null || classe == null || method == null) {
-            logger = inferCaller(logger, classe, method, error.getStackTrace(), record);
+            logger = inferCaller(logger, classe, method, Arrays.stream(error.getStackTrace()), record);
         } else {
             record.setSourceClassName(classe);
             record.setSourceMethodName(method);

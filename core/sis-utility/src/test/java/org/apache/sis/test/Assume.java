@@ -16,6 +16,7 @@
  */
 package org.apache.sis.test;
 
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import org.apache.sis.internal.system.DataDirectory;
@@ -25,11 +26,10 @@ import org.apache.sis.internal.system.DataDirectory;
  * Assumption methods used by the SIS project in addition of the JUnit ones.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
- * @module
  */
-public final strictfp class Assume extends org.junit.Assume {
+public final class Assume extends org.junit.Assume {
     /**
      * Do not allow instantiation.
      */
@@ -49,13 +49,13 @@ public final strictfp class Assume extends org.junit.Assume {
      * @param  file  the file that needs to exist.
      * @return the path to the given file.
      */
-    public static Path assumeDataExists(final DataDirectory type, final String file) {
+    public static URI assumeDataExists(final DataDirectory type, final String file) {
         assumeNotNull("$SIS_DATA environment variable not set.", System.getenv(DataDirectory.ENV));
         Path path = type.getDirectory();
         assumeNotNull("$SIS_DATA/" + type + " directory not found.", path);
         path = path.resolve(file);
         assumeTrue("Specified file or directory not found.", Files.exists(path));
         assumeTrue("Specified directory not readable.", Files.isReadable(path));
-        return path;
+        return path.toUri();
     }
 }

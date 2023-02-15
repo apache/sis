@@ -3,7 +3,7 @@ Welcome to Apache SIS <https://sis.apache.org>
 ==============================================
 
 SIS is a Java language library for developing geospatial applications.
-The library is an implementation of GeoAPI 3.0.1 interfaces and can be used
+The library is an implementation of GeoAPI 3.0.2 interfaces and can be used
 for desktop or server applications. Apache SIS provides data structures for
 geographic features and associated metadata along with methods to manipulate
 those data structures. The SIS metadata module forms the base of the library
@@ -24,9 +24,9 @@ project logo are trademarks of The Apache Software Foundation.
 Getting Started
 ===============
 
-Running the library part of Apache SIS requires Java 8 or higher.
+Running the library part of Apache SIS requires Java 11 or higher.
 Running the JavaFX application part requires Java 16 or higher.
-Building SIS requires Java 17 or higher
+Building SIS requires Java 18 or higher
 together with Maven 3 <https://maven.apache.org/> build system.
 To build SIS, use the following command in this directory:
 
@@ -57,8 +57,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 Some Apache SIS subcomponents have dependencies subject to different
-license terms. All those dependencies except GeoAPI and JSR-363 are
-optional. Your use of those dependencies is subject to the terms and
+license terms. All those dependencies except GeoAPI, JSR-385 and JAXB API
+are optional. Your use of those dependencies is subject to the terms and
 conditions of the licenses listed in the NOTICE file.
 
 

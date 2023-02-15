@@ -40,9 +40,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class GeoKeysTest extends TestCase {
+public final class GeoKeysTest extends TestCase {
     /**
      * Tests {@link GeoKeys#name(short)}.
      */

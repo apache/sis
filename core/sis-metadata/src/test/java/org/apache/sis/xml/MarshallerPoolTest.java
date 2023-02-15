@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class MarshallerPoolTest extends TestCase {
+public final class MarshallerPoolTest extends TestCase {
     /**
      * Tests a marshaller which is acquired, then released.
      * The marshaller should be reset to its initial state
@@ -46,10 +45,6 @@ public final strictfp class MarshallerPoolTest extends TestCase {
         final MarshallerPool pool = new MarshallerPool(JAXBContext.newInstance(new Class<?>[0]), null);
         final Marshaller marshaller = pool.acquireMarshaller();
         assertNotNull(marshaller);
-        /*
-         * PooledMarshaller should convert the property name from "com.sun.xml.bind.xmlHeaders" to
-         * "com.sun.xml.internal.bind.xmlHeaders" if we are running JDK implementation of JAXB.
-         */
         assertNull(marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));
         marshaller.setProperty("com.sun.xml.bind.xmlHeaders", "<DTD ...>");
         assertEquals("<DTD ...>", marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));

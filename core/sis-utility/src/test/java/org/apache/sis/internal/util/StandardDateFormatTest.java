@@ -36,9 +36,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
-public final strictfp class StandardDateFormatTest extends TestCase {
+public final class StandardDateFormatTest extends TestCase {
     /**
      * Verifies the {@link StandardDateFormat#MILLISECONDS_PER_DAY}, {@link StandardDateFormat#NANOS_PER_MILLISECOND}
      * and {@link StandardDateFormat#NANOS_PER_SECOND} constant values.

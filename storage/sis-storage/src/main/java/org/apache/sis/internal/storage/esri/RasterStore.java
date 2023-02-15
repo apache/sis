@@ -71,7 +71,6 @@ import org.apache.sis.math.Statistics;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 abstract class RasterStore extends PRJDataStore implements GridCoverageResource {
     /**
@@ -95,7 +94,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      *
      * @see #getComponentFiles()
      */
-    private static final String STX = "stx", CLR = "clr";
+    static final String STX = "stx", CLR = "clr";
 
     /**
      * The color model, created from the {@code "*.clr"} file content when first needed.
@@ -509,7 +508,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
 
     /**
      * Closes this data store and releases any underlying resources.
-     * Shall be overridden by subclasses in a synchronized method.
+     * Shall be overridden by subclasses inside a synchronized block.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */

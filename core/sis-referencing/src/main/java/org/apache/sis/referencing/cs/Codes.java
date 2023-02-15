@@ -36,7 +36,6 @@ import static org.apache.sis.internal.util.Constants.EPSG_AXIS_DEGREES;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 final class Codes {
     /**

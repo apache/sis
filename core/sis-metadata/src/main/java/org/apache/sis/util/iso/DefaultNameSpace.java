@@ -61,7 +61,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see DefaultNameFactory
  *
  * @since 0.3
- * @module
  */
 public class DefaultNameSpace implements NameSpace, Serializable {
     /**
@@ -321,9 +320,9 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * {@linkplain AbstractName#toFullyQualifiedName() fully-qualified names} where
      * the following condition holds:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assert name.scope().isGlobal() == true;
-     * }
+     *     }
      *
      * @return the identifier of this namespace.
      */
@@ -443,7 +442,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
                 {
                     child = new DefaultNameSpace(this, name, headSeparator, separator);
                     /*
-                     * Do not cache that instance. Actually we can't guess if that instance
+                     * Do not cache that instance. Actually we cannot guess if that instance
                      * would be more appropriate for caching purpose than the old one. We
                      * just assume that keeping the oldest one is more conservative.
                      */
@@ -509,10 +508,10 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * With this convention, it would be possible to create an <cite>expanded form</cite> of a generic name
      * (except for escaping of illegal characters) with a simple concatenation as in the following code example:
      *
-     * {@preformat java
-     *     GenericName name = ...; // A name
+     * {@snippet lang="java" :
+     *     GenericName name = ...;                // A name
      *     println("Expanded form = " + name.scope() + name);
-     * }
+     *     }
      *
      * However, the convention followed by this {@code DefaultNameSpace} implementation is not specified in the
      * {@link NameSpace} contract. This implementation follows the JCR convention for debugging convenience,

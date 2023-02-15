@@ -40,7 +40,6 @@ import org.apache.sis.xml.XLink;
  * @author  Cullen Rombach (Image Matters)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @XmlType(name = "Anchor_Type")
 @XmlRootElement(name = "Anchor")

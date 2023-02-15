@@ -54,7 +54,6 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see DefaultAttributeType
  *
  * @since 0.5
- * @module
  */
 final class MultiValuedAttribute<V> extends AbstractAttribute<V> implements Cloneable {
     /**

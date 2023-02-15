@@ -29,7 +29,6 @@ import org.apache.sis.internal.referencing.Resources;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   0.5
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")   // No additional fields compared to parent.
 public class ImmutableAffineTransform extends AffineTransform {

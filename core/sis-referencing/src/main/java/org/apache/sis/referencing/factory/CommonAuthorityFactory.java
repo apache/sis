@@ -18,10 +18,10 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
-import java.util.Arrays;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -44,7 +44,6 @@ import org.apache.sis.internal.referencing.provider.TransverseMercator.Zoner;
 import org.apache.sis.internal.referencing.GeodeticObjectBuilder;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.CommonCRS;
@@ -53,8 +52,6 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.SimpleInternationalString;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -214,7 +211,6 @@ import static java.util.logging.Logger.getLogger;
  * @see CommonCRS
  *
  * @since 0.7
- * @module
  */
 public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements CRSAuthorityFactory {
     /**
@@ -230,7 +226,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @see #getCodeSpaces()
      */
     private static final Set<String> CODESPACES = Collections.unmodifiableSet(
-            new LinkedHashSet<>(Arrays.asList(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
+            new LinkedHashSet<>(List.of(Constants.OGC, Constants.CRS, "AUTO", AUTO2)));
 
     /**
      * First code in the AUTO(2) namespace.
@@ -312,7 +308,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             code = parsed.localCode;
             code = parsed.isNumeric ? format(Integer.parseInt(code)) : format(code);
         } catch (NoSuchAuthorityCodeException | NumberFormatException e) {
-            Logging.ignorableException(getLogger(Loggers.CRS_FACTORY), CommonAuthorityFactory.class, "reformat", e);
+            Logging.ignorableException(LOGGER, CommonAuthorityFactory.class, "reformat", e);
             return null;
         }
         return code;
@@ -422,11 +418,11 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     @Override
     public InternationalString getDescriptionText(final String code) throws FactoryException {
         final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
-        if (parsed.isNumeric && parsed.parameters().length == 0) {
+        if (parsed.isNumeric && parsed.isParameterless()) {
             /*
              * For codes in the "AUTO(2)" namespace without parameters, we cannot rely on the default implementation
              * because it would fail to create the ProjectedCRS instance. Instead, we return a generic description.
-             * Note that we do not execute this block if parametes were specified. If there is parameters,
+             * Note that we do not execute this block if parametes were specified. If there are parameters,
              * then we instead rely on the default implementation for a more accurate description text.
              * Note also that we do not restrict to "AUTOx" namespaces because erroneous namespaces exist
              * in practice and the numerical codes are non-ambiguous (at least in current version).
@@ -498,26 +494,25 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
     private CoordinateReferenceSystem createCoordinateReferenceSystem(final String code, final CommonAuthorityCode parsed)
             throws FactoryException
     {
-        /*
-         * First, handled the case of non-numerical parameterless codes ("OGC:JulianDate", etc.)
-         * We accept also SIS-specific codes (e.g. "OGC:ModifiedJulianDate", "OGC:JavaTime") if
-         * the namespace is the more neutral "CRS" instead of "OGC". The SIS-specific codes are
-         * never listed in `getAuthorityCodes(…)`.
-         */
         final String localCode = parsed.localCode;
-        final double[] parameters = parsed.parameters();
-        if (!parsed.isNumeric && !parsed.isAuto(false) && parameters.length == 0) try {
-            return CommonCRS.Temporal.forIdentifier(localCode, parsed.isOGC).crs();
-        } catch (IllegalArgumentException e) {
-            throw noSuchAuthorityCode(localCode, code, e);
-        }
-        /*
-         * In current version, all non-temporal CRS have a numerical code.
-         */
+        final double[] parameters;
         final int codeValue;
         try {
+            parameters = parsed.parameters();
+            /*
+             * First, handled the case of non-numerical parameterless codes ("OGC:JulianDate", etc.)
+             * We accept also SIS-specific codes (e.g. "OGC:ModifiedJulianDate", "OGC:JavaTime") if
+             * the namespace is the more neutral "CRS" instead of "OGC". The SIS-specific codes are
+             * never listed in `getAuthorityCodes(…)`.
+             */
+            if (!parsed.isNumeric && !parsed.isAuto(false) && parameters.length == 0) {
+                return CommonCRS.Temporal.forIdentifier(localCode, parsed.isOGC).crs();
+            }
+            /*
+             * In current version, all non-temporal CRS have a numerical code.
+             */
             codeValue = Integer.parseInt(localCode);
-        } catch (NumberFormatException exception) {
+        } catch (IllegalArgumentException exception) {                  // Include `NumberFormatException`.
             throw noSuchAuthorityCode(localCode, code, exception);
         }
         /*

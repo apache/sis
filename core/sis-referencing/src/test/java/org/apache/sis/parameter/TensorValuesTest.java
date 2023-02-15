@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Map;
 import java.util.List;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,7 +34,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.test.Validators.validate;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.internal.util.Constants.NUM_ROW;
@@ -46,10 +46,9 @@ import static org.apache.sis.internal.util.Constants.NUM_COL;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(MatrixParametersTest.class)
-public final strictfp class TensorValuesTest extends TestCase {
+public final class TensorValuesTest extends TestCase {
     /**
      * The name of the parameter group created in this test class.
      */
@@ -59,14 +58,14 @@ public final strictfp class TensorValuesTest extends TestCase {
      * Creates an instance for a matrix using the WKT 1 conventions.
      */
     private static ParameterValueGroup createWKT1() {
-        return TensorParameters.WKT1.createValueGroup(singletonMap(TensorValues.NAME_KEY, GROUP_NAME));
+        return TensorParameters.WKT1.createValueGroup(Map.of(TensorValues.NAME_KEY, GROUP_NAME));
     }
 
     /**
      * Creates an instance for a matrix using the alphanumeric (EPSG) conventions.
      */
     private static ParameterValueGroup createAlphaNumeric() {
-        return TensorParameters.ALPHANUM.createValueGroup(singletonMap(TensorValues.NAME_KEY, GROUP_NAME));
+        return TensorParameters.ALPHANUM.createValueGroup(Map.of(TensorValues.NAME_KEY, GROUP_NAME));
     }
 
     /**
@@ -318,7 +317,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         matrix.setElement(1,0, -2);
         matrix.setElement(2,2,  7);
         final ParameterValueGroup group = TensorParameters.WKT1.createValueGroup(
-                singletonMap(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
+                Map.of(TensorValues.NAME_KEY, Constants.AFFINE), matrix);
         validate(group);
         assertWktEquals(
                 "PARAMETERGROUP[“Affine”,\n"      +
@@ -345,7 +344,7 @@ public final strictfp class TensorValuesTest extends TestCase {
         matrix.setElement(1,0, -2);
         matrix.setElement(2,2,  7);
         final ParameterValueGroup group = TensorParameters.ALPHANUM.createValueGroup(
-                singletonMap(TensorValues.NAME_KEY, Affine.NAME), matrix);
+                Map.of(TensorValues.NAME_KEY, Affine.NAME), matrix);
         validate(group);
         assertWktEquals(
                 "PARAMETERGROUP[“Affine parametric transformation”,\n" +

@@ -38,7 +38,6 @@ import org.apache.sis.util.ArraysExt;
  * @see ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])
  *
  * @since 1.1
- * @module
  */
 final class ColorsForRange implements Comparable<ColorsForRange> {
     /**

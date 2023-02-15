@@ -36,7 +36,6 @@ import static org.apache.sis.internal.util.CollectionsExt.nonNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class RepresentationInfo extends Section<SpatialRepresentation> {
     /**

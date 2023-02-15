@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.metadata;
 
-import java.util.Collections;
+import java.util.List;
 import org.opengis.util.RecordType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.quality.PositionalAccuracy;
@@ -36,7 +36,6 @@ import org.apache.sis.util.Static;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.7
- * @module
  */
 public final class TransformationAccuracy extends Static {
     /**
@@ -71,13 +70,13 @@ public final class TransformationAccuracy extends Static {
             record.setAll(accuracy);
 
             final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
-            result.setValues(Collections.singletonList(record));
+            result.setValues(List.of(record));
             result.setValueUnit(Units.METRE);              // In metres by definition in the EPSG database.
             result.setValueType(type);
 
             final DefaultAbsoluteExternalPositionalAccuracy element =
                     new DefaultAbsoluteExternalPositionalAccuracy(result);
-            element.setNamesOfMeasure(Collections.singleton(TRANSFORMATION_ACCURACY));
+            element.setNamesOfMeasure(List.of(TRANSFORMATION_ACCURACY));
             element.setEvaluationMethodType(EvaluationMethodType.DIRECT_EXTERNAL);
             element.transitionTo(DefaultAbsoluteExternalPositionalAccuracy.State.FINAL);
 

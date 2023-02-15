@@ -32,9 +32,8 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-final strictfp class PropertyTypeMock extends PropertyType<PropertyTypeMock, Result> {
+final class PropertyTypeMock extends PropertyType<PropertyTypeMock, Result> {
     /**
      * Creates a new adapter. Only the {@link #marshal(Object)}
      * method shall be invoked on that new instance.

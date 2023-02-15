@@ -41,7 +41,6 @@ import org.apache.sis.util.Debug;
  * @see <a href="https://en.wikipedia.org/wiki/Marching_squares">Marching squares on Wikipedia</a>
  *
  * @since 1.1
- * @module
  */
 final class Tracer {
     /**
@@ -132,11 +131,10 @@ final class Tracer {
          * Note that this bit order is different than the order used in Wikipedia "Marching squares" article.
          * The order used in this class allows more direct bitwise operations as described in next section.
          *
-         * {@preformat text
+         * <pre class="text">
          *     (0)╌╌╌(1)
          *      ╎     ╎
-         *     (2)╌╌╌(3)
-         * }
+         *     (2)╌╌╌(3)</pre>
          *
          * Bits are set to 1 where the data value is above the isoline {@linkplain #value}, and 0 where the data value
          * is below the isoline value. Data values exactly equal to the isoline value are handled as if they were greater.
@@ -160,22 +158,20 @@ final class Tracer {
          * from left to right before top to bottom. This instance is non-empty if the cell in previous iteration
          * was like below (all those examples have a line crossing the right border):
          *
-         * {@preformat text
+         * <pre class="text">
          *     ●╌╌╌╌╌╌●              ○╌╱╌╌╌╌●╱             ○╌╌╌╌╲╌●
          *     ╎      ╎              ╎╱     ╱              ╎     ╲╎
          *    ─┼──────┼─             ╱     ╱╎              ╎      ╲
-         *     ○╌╌╌╌╌╌○             ╱●╌╌╌╌╱╌○              ○╌╌╌╌╌╌○╲
-         * }
+         *     ○╌╌╌╌╌╌○             ╱●╌╌╌╌╱╌○              ○╌╌╌╌╌╌○╲</pre>
          *
          * This field {@link PolylineBuffer#isEmpty() is empty} if the cell in previous iteration was like below
          * (no line cross the right border):
          *
-         * {@preformat text
+         * <pre class="text">
          *     ○╌╲╌╌╌╌●              ○╌╌╌┼╌╌●
          *     ╎  ╲   ╎              ╎   │  ╎
          *     ╎   ╲  ╎              ╎   │  ╎
-         *     ○╌╌╌╌╲╌●              ○╌╌╌┼╌╌●
-         * }
+         *     ○╌╌╌╌╲╌●              ○╌╌╌┼╌╌●</pre>
          */
         private final PolylineBuffer polylineOnLeft;
 
@@ -185,7 +181,7 @@ final class Tracer {
          * For non-empty element at index <var>x</var>, values on the left border are given by pixels at coordinate
          * {@code x} and values on the right border are given by pixels at coordinate {@code x+1}. Example:
          *
-         * {@preformat text
+         * <pre class="text">
          *            ○╌╌╌╌╌╌●╱
          *            ╎ Top  ╱
          *            ╎ [x] ╱╎
@@ -194,8 +190,7 @@ final class Tracer {
          *    ─┼──────┼██████╎
          *     ○╌╌╌╌╌╌○╌╌╌╌╌╌○
          *            ↑
-         *     x coordinate of first pixel (upper-left corner)
-         * }
+         *     x coordinate of first pixel (upper-left corner)</pre>
          */
         private final PolylineBuffer[] polylinesOnTop;
 
@@ -510,12 +505,11 @@ final class Tracer {
          * or otherwise are saved in {@link #partialPaths} for later processing.
          * This method is invoked for cells like below:
          *
-         * {@preformat text
+         * <pre class="text">
          *     ●╌╱╌╌╌╌○        ○╌╱╌╌╌╌●        ○╌╱╌╌╌╌●╱
          *     ╎╱     ╎        ╎╱     ╎        ╎╱     ╱
          *     ╱      ╎        ╱      ╎        ╱     ╱╎
-         *    ╱○╌╌╌╌╌╌○       ╱●╌╌╌╌╌╌●       ╱●╌╌╌╌╱╌○
-         * }
+         *    ╱○╌╌╌╌╌╌○       ╱●╌╌╌╌╌╌●       ╱●╌╌╌╌╱╌○</pre>
          *
          * This method does itself the interpolations on left side and top side. The two polylines
          * {@link #polylineOnLeft} and {@code polylineOnTop} will become empty after this method call.

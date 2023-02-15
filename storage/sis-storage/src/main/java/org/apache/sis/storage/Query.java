@@ -51,7 +51,6 @@ import org.opengis.filter.QueryExpression;
  * @see GridCoverageResource#subset(Query)
  *
  * @since 0.8
- * @module
  */
 public abstract class Query implements QueryExpression {
     /**

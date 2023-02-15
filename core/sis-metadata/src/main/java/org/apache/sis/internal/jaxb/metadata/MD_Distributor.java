@@ -30,7 +30,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final class MD_Distributor extends PropertyType<MD_Distributor, Distributor> {
     /**

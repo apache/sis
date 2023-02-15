@@ -35,7 +35,6 @@ import org.apache.sis.internal.storage.Resources;
  * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
  *
  * @since 1.2
- * @module
  */
 final class ProbeInputStream extends FilterInputStream {
     /**
@@ -46,7 +45,7 @@ final class ProbeInputStream extends FilterInputStream {
         if (!input.markSupported()) {
             throw new DataStoreException(Resources.format(Resources.Keys.MarkNotSupported_1, owner.getStorageName()));
         }
-        input.mark(StorageConnector.DEFAULT_BUFFER_SIZE);
+        input.mark(StorageConnector.READ_AHEAD_LIMIT);
     }
 
     /**
@@ -76,6 +75,8 @@ final class ProbeInputStream extends FilterInputStream {
 
     /**
      * Closes this stream and resets the wrapped stream to its original position.
+     * The wrapped stream is <em>not</em> closed, so this method does not really
+     * release any resource. Closing the wrapped stream is caller's responsibility.
      */
     @Override
     public void close() throws IOException {

@@ -34,7 +34,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @see Transformer
  *
  * @since 0.4
- * @module
  */
 final class TransformVersion {
     /**

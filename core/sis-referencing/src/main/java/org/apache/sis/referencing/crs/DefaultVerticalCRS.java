@@ -57,7 +57,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createVerticalCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "VerticalCRSType", propOrder = {
     "coordinateSystem",
@@ -78,6 +77,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private VerticalDatum datum;
 
     /**

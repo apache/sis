@@ -28,9 +28,8 @@ import org.apache.sis.internal.jaxb.Context;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class ReferenceResolverMock extends ReferenceResolver {
+public final class ReferenceResolverMock extends ReferenceResolver {
     /**
      * Creates a new reference resolver.
      */
@@ -41,14 +40,14 @@ public final strictfp class ReferenceResolverMock extends ReferenceResolver {
      * Creates a new SIS context using a {@code ReferenceResolverMock}.
      * Callers shall use this method in a {@code try} … {@code finally} block as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     final Context context = ReferenceResolverMock.begin(true);
      *     try {
      *         // So some test
      *     } finally {
      *         context.finish();
      *     }
-     * }
+     *     }
      *
      * Alternatively, the {@code finally} block can be replaced by a call to {@code context.finish()} in a method
      * annotated by {@link org.junit.After}. This is done automatically by {@link org.apache.sis.test.xml.TestCase}.

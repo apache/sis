@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.coverage.j2d;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Collection;
 import java.util.AbstractMap.SimpleEntry;
 import java.awt.Color;
@@ -40,9 +40,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public final strictfp class ColorizerTest extends TestCase {
+public final class ColorizerTest extends TestCase {
     /**
      * Tests the creation of an index color model using {@link Colorizer#Colorizer(Collection)}.
      *
@@ -50,7 +49,7 @@ public final strictfp class ColorizerTest extends TestCase {
      */
     @Test
     public void testRangeAndColors() throws TransformException {
-        final Colorizer colorizer = new Colorizer(Arrays.asList(
+        final Colorizer colorizer = new Colorizer(List.of(
                 new SimpleEntry<>(NumberRange.create(0, true,  0, true), new Color[] {Color.GRAY}),
                 new SimpleEntry<>(NumberRange.create(1, true,  1, true), new Color[] {ColorModelFactory.TRANSPARENT}),
                 new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})));

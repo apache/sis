@@ -34,9 +34,8 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class HardCodedAxes {
+public final class HardCodedAxes {
     /**
      * Axis for geodetic longitudes in a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
      * Increasing coordinate values go {@linkplain AxisDirection#EAST East}

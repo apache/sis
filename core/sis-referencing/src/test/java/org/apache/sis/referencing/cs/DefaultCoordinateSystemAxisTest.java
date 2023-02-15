@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.test.Validators;
@@ -27,7 +28,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
@@ -39,13 +39,12 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
     org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
 })
-public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
+public final class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
      * Validates the {@link HardCodedAxes} constants.
      */
@@ -116,7 +115,7 @@ public final strictfp class DefaultCoordinateSystemAxisTest extends TestCase {
     @DependsOnMethod("testWKT")
     public void testMeridianWKT() {
         assertWktEquals("AXIS[“South along 90°W (x)”, south, MERIDIAN[-90.0, ANGLEUNIT[“degree”, 0.017453292519943295]], LENGTHUNIT[“metre”, 1]]",
-                new DefaultCoordinateSystemAxis(singletonMap(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
+                new DefaultCoordinateSystemAxis(Map.of(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
                         "x", new DirectionAlongMeridian(AxisDirection.SOUTH, -90).getDirection(), Units.METRE));
     }
 

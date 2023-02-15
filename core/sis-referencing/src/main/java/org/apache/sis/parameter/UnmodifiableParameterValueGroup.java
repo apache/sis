@@ -46,7 +46,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 class UnmodifiableParameterValueGroup extends Parameters implements LenientComparable, Serializable {
     /**
@@ -59,7 +58,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      *
      * @see #getDescriptor()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
@@ -67,7 +66,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      *
      * @see #values()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final List<GeneralParameterValue> values;
 
     /**

@@ -17,6 +17,7 @@
 package org.apache.sis.util.iso;
 
 import java.util.Map;
+import java.util.List;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.TreeMap;
@@ -45,9 +46,8 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class TypesTest extends TestCase {
+public final class TypesTest extends TestCase {
     /**
      * Tests the {@link Types#toInternationalString(Map, String)} method.
      */
@@ -257,7 +257,7 @@ public final strictfp class TypesTest extends TestCase {
     @Test
     public void testGetCodeValues() {
         final OnLineFunction[] actual = Types.getCodeValues(OnLineFunction.class);
-        assertTrue(Arrays.asList(actual).containsAll(Arrays.asList(
+        assertTrue(Arrays.asList(actual).containsAll(List.of(
                 OnLineFunction.INFORMATION, OnLineFunction.SEARCH, OnLineFunction.ORDER,
                 OnLineFunction.DOWNLOAD, OnLineFunction.OFFLINE_ACCESS)));
     }

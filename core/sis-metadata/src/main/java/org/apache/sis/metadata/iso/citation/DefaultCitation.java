@@ -73,7 +73,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @TitleProperty(name = "title")
 @XmlType(name = "CI_Citation_Type", propOrder = {
@@ -165,7 +164,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @deprecated Removed as of ISO 19115:2014.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     @SuppressWarnings("serial")
     private InternationalString collectiveTitle;
 
@@ -499,7 +498,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @deprecated Removed as of ISO 19115:2014.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @XmlElement(name = "collectiveTitle", namespace = LegacyNamespaces.GMD)
     public InternationalString getCollectiveTitle() {
         return FilterByVersion.LEGACY_METADATA.accept() ? collectiveTitle : null;
@@ -513,7 +512,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @deprecated Removed as of ISO 19115:2014.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setCollectiveTitle(final InternationalString newValue) {
         checkWritePermission(collectiveTitle);
         collectiveTitle = newValue;
@@ -530,9 +529,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Returns the International Standard Book Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   return getIdentifierMap().getSpecialized(Citations.ISBN);
-     * }
+     * {@snippet lang="java" :
+     *     return getIdentifierMap().getSpecialized(Citations.ISBN);
+     *     }
      *
      * @return the ISBN, or {@code null} if none.
      *
@@ -549,9 +548,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Sets the International Standard Book Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
-     * }
+     * {@snippet lang="java" :
+     *     getIdentifierMap().putSpecialized(Citations.ISBN, newValue);
+     *     }
      *
      * @param  newValue  the new ISBN, or {@code null} if none.
      *
@@ -569,9 +568,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Returns the International Standard Serial Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   return getIdentifierMap().getSpecialized(Citations.ISSN);
-     * }
+     * {@snippet lang="java" :
+     *     return getIdentifierMap().getSpecialized(Citations.ISSN);
+     *     }
      *
      * @return the ISSN, or {@code null} if none.
      *
@@ -588,9 +587,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Sets the International Standard Serial Number.
      * In this SIS implementation, invoking this method is equivalent to:
      *
-     * {@preformat java
-     *   getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
-     * }
+     * {@snippet lang="java" :
+     *     getIdentifierMap().putSpecialized(Citations.ISSN, newValue);
+     *     }
      *
      * @param  newValue  the new ISSN.
      *

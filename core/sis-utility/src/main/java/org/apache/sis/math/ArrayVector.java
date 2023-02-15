@@ -33,7 +33,6 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 
 
@@ -47,7 +46,6 @@ import org.apache.sis.measure.NumberRange;
  * @param <E>  the base type of elements in the vector.
  *
  * @since 0.8
- * @module
  */
 abstract class ArrayVector<E extends Number> extends Vector implements CheckedContainer<E>, Serializable {
     /**
@@ -99,7 +97,6 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * or {@code null} if this method cannot do better than the given {@code Vector} instance.
      * This method shall be invoked only for vector of integer values (this is not verified).
      */
-    @SuppressWarnings("null")
     static Vector compress(final Vector source, final long min, final long max) {
         boolean isSigned = (min >= Byte.MIN_VALUE && max <= Byte.MAX_VALUE);
         if (isSigned || (min >= 0 && max <= 0xFF)) {
@@ -146,8 +143,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
     static Vector compress(final Vector source, final double tolerance) {
         if (!Float.class.equals(source.getElementType())) {
             /*
-             * For floating point types, verify if values are equivalent to 'float' values.
-             * There is two different ways to pad extra fraction digits in 'double' values:
+             * For floating point types, verify if values are equivalent to `float` values.
+             * There is two different ways to pad extra fraction digits in `double` values:
              * with zero fraction digits in base 2 representation (the standard Java cast),
              * or with zero fraction digits in base 10 representation.
              */
@@ -156,7 +153,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
             double v;
             do if (i >= length) {
                 return new Floats(source.floatValues());
-            } while (!(Math.abs((v = source.doubleValue(i++)) - (float) v) > tolerance));    // Use '!' for accepting NaN.
+            } while (!(Math.abs((v = source.doubleValue(i++)) - (float) v) > tolerance));    // Use `!` for accepting NaN.
             /*
              * Same try than above loop, but now using base 10 representation.
              * This is a more costly computation.
@@ -281,7 +278,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other instanceof Doubles) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Doubles) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -401,7 +398,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Floats) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -561,7 +558,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Longs) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -585,7 +582,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * signed integers. Consequently, we do not need to distinguish the two cases during the loop.
          */
         @Override public final Number increment(final double tolerance) {
-            if (!(tolerance >= 0 && tolerance < 1)) {                       // Use '!' for catching NaN.
+            if (!(tolerance >= 0 && tolerance < 1)) {                       // Use `!` for catching NaN.
                 return super.increment(tolerance);
             }
             int i = array.length;
@@ -691,7 +688,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Integers) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -715,7 +712,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
          * signed integers. Consequently, we do not need to distinguish the two cases during the loop.
          */
         @Override public final Number increment(final double tolerance) {
-            if (!(tolerance >= 0 && tolerance < 1)) {                       // Use '!' for catching NaN.
+            if (!(tolerance >= 0 && tolerance < 1)) {                       // Use `!` for catching NaN.
                 return super.increment(tolerance);
             }
             int i = array.length;
@@ -730,7 +727,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
                             return null;
                         }
                     }
-                    // Do not use the ?: operator below since it casts 'asInt' to Long, which is not wanted.
+                    // Do not use the ?: operator below since it casts `asInt` to Long, which is not wanted.
                     if (isSigned) {
                         return asInt;
                     } else {
@@ -825,7 +822,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(final int lower, final int upper, final Vector other, final int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Shorts) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -844,8 +841,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /*
-         * Not worth to override 'increment(double)' because the array cannot be long anyway
-         * (except if the increment is zero) and the implicit conversion of 'short' to 'int'
+         * Not worth to override `increment(double)` because the array cannot be long anyway
+         * (except if the increment is zero) and the implicit conversion of `short` to `int`
          * performed by Java would make the implementation a little bit more tricky.
          */
 
@@ -934,7 +931,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         /** Returns whether this vector in the given range is equal to the specified vector. */
         @Override final boolean equals(int lower, final int upper, final Vector other, int otherOffset) {
             if (other.getClass() == getClass()) {
-                return JDK9.equals(array, lower, upper,
+                return Arrays.equals(array, lower, upper,
                         ((Bytes) other).array, otherOffset, otherOffset + (upper - lower));
             }
             return super.equals(lower, upper, other, otherOffset);
@@ -953,8 +950,8 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         }
 
         /*
-         * Not worth to override 'increment(double)' because the array cannot be long anyway
-         * (except if the increment is zero) and the implicit conversion of 'byte' to 'int'
+         * Not worth to override `increment(double)` because the array cannot be long anyway
+         * (except if the increment is zero) and the implicit conversion of `byte` to `int`
          * performed by Java would make the implementation a little bit more tricky.
          */
 
@@ -1232,7 +1229,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
         @Override public byte     byteValue(int index) {return Byte   .parseByte  (array[index]);}
         @Override public Number         get(int index) {
             final String value = array[index];
-            return (value != null) ? Double.parseDouble(value) : null;
+            return (value != null) ? Double.valueOf(value) : null;
         }
 
         /** Stores the given value in this vector and returns the previous value. */

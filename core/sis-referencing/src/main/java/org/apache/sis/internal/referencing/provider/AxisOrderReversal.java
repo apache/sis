@@ -36,7 +36,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 @XmlTransient
 public class AxisOrderReversal extends AbstractProvider {

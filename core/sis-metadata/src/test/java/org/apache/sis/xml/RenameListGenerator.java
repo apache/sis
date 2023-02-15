@@ -25,9 +25,6 @@ import java.nio.file.Files;
 import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Collections;
 import java.lang.reflect.Method;
 import javax.xml.bind.annotation.XmlSchema;
 import javax.xml.bind.annotation.XmlElement;
@@ -42,14 +39,13 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * The format is described in the {@code readme.html} page in source code directory.
  * Output format contains namespaces first, then classes, then properties. Example:
  *
- * {@preformat text
+ * <pre class="text">
  * http://standards.iso.org/iso/19115/-3/cit/1.0
  *   CI_Address
  *     administrativeArea
  *     city
  *   CI_Citation
- *     citedResponsibleParty
- * }
+ *     citedResponsibleParty</pre>
  *
  * This class can be used as a starting point for generating a new file from scratch.
  * It should not be used for updating the existing file (unless a lot of things have changed)
@@ -65,11 +61,11 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * For generating a new file:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     public static void main(String[] args) throws Exception {
- *         RenameListGenerator gen = new RenameListGenerator(Paths.get("/home/user/project/build/classes"));
- *         gen.add(Paths.get("org/apache/sis/metadata/iso"));
- *         try (final BufferedWriter out = Files.newBufferedWriter(Paths.get("MyOutputFile.lst"))) {
+ *         RenameListGenerator gen = new RenameListGenerator(Path.of("/home/user/project/build/classes"));
+ *         gen.add(Path.of("org/apache/sis/metadata/iso"));
+ *         try (final BufferedWriter out = Files.newBufferedWriter(Path.of("MyOutputFile.lst"))) {
  *             gen.print(out);
  *         }
  *     }
@@ -79,8 +75,10 @@ public final class RenameListGenerator {
     /**
      * Properties in those namespaces do not have older namespaces to map from.
      */
-    private static final Set<String> LEGACY_NAMESPACES = Collections.unmodifiableSet(new HashSet<>(
-            Arrays.asList(LegacyNamespaces.GMD, LegacyNamespaces.GMI, LegacyNamespaces.SRV)));
+    private static final Set<String> LEGACY_NAMESPACES = Set.of(
+            LegacyNamespaces.GMD,
+            LegacyNamespaces.GMI,
+            LegacyNamespaces.SRV);
 
     /**
      * The {@value} string used in JAXB annotations for default names or namespaces.

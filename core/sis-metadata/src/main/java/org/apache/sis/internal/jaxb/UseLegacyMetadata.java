@@ -34,7 +34,6 @@ import java.lang.annotation.RetentionPolicy;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-401">SIS-401</a>
  *
  * @since 1.0
- * @module
  */
 @Inherited
 @Target(ElementType.TYPE)

@@ -19,7 +19,6 @@ package org.apache.sis.filter;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
@@ -56,10 +55,10 @@ import org.opengis.feature.FeatureType;
  * This class is <strong>not</strong> thread-safe.
  * A new instance shall be created for each thread applying optimizations. Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Filter<R> filter = ...;
  *     filter = new Optimization().apply(filter);
- * }
+ *     }
  *
  * <h2>How optimizations are applied</h2>
  * Optimizations are specific to each expression and filter type.
@@ -78,7 +77,6 @@ import org.opengis.feature.FeatureType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class Optimization {
     /**
@@ -426,7 +424,7 @@ public class Optimization {
      */
     private static <R> List<Filter<? super R>> toAndOperands(final Filter<R> filter) {
         if (filter == null) {
-            return Collections.emptyList();
+            return List.of();
         }
         final CodeList<?> type = filter.getOperatorType();
         if (type == LogicalOperatorName.AND) {
@@ -454,7 +452,7 @@ public class Optimization {
                 return result;
             }
         }
-        return Collections.singletonList(filter);
+        return List.of(filter);
     }
 
     /**

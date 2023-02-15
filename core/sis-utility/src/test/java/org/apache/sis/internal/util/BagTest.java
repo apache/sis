@@ -31,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class BagTest extends TestCase {
+public final class BagTest extends TestCase {
     /**
      * Creates an instance initialized to the given values.
      */

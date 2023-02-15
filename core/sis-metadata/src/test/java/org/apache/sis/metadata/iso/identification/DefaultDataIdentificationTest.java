@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.Locale;
 import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.citation.Citation;
@@ -34,7 +35,6 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 
 
@@ -44,7 +44,6 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn({
     org.apache.sis.metadata.ValueMapTest.class,
@@ -53,7 +52,7 @@ import static org.apache.sis.test.MetadataAssert.*;
     org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
     DefaultKeywordsTest.class
 })
-public final strictfp class DefaultDataIdentificationTest extends TestCase {
+public final class DefaultDataIdentificationTest extends TestCase {
     /**
      * Creates the instance to test.
      */
@@ -68,8 +67,8 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          *       └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc
          */
         final DefaultCitation citation = new DefaultCitation("Sea Surface Temperature Analysis Model");
-        citation.setDates(singleton(new DefaultCitationDate(TestUtilities.date("2005-09-22 00:00:00"), DateType.CREATION)));
-        citation.setIdentifiers(singleton(new DefaultIdentifier("SST_Global.nc")));
+        citation.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("2005-09-22 00:00:00"), DateType.CREATION)));
+        citation.setIdentifiers(Set.of(new DefaultIdentifier("SST_Global.nc")));
         /*
          * Descriptive keywords
          *   ├─Keyword………………………………………………………………………… EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature
@@ -107,12 +106,12 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
          */
         final DefaultDataIdentification info = new DefaultDataIdentification(citation,
                 "Global 5.0 x 2.5 degree model data", null, null);
-        info.setSpatialRepresentationTypes(singleton(SpatialRepresentationType.GRID));
-        info.setDescriptiveKeywords(singleton(keywords));
-        info.setResourceConstraints(singleton(new DefaultConstraints("Freely available")));
+        info.setSpatialRepresentationTypes(Set.of(SpatialRepresentationType.GRID));
+        info.setDescriptiveKeywords(Set.of(keywords));
+        info.setResourceConstraints(Set.of(new DefaultConstraints("Freely available")));
         info.getLocalesAndCharsets().put(Locale.US,     StandardCharsets.US_ASCII);
         info.getLocalesAndCharsets().put(Locale.FRENCH, StandardCharsets.ISO_8859_1);
-        info.setExtents(singleton(Extents.WORLD));
+        info.setExtents(Set.of(Extents.WORLD));
         return info;
     }
 
@@ -166,7 +165,7 @@ public final strictfp class DefaultDataIdentificationTest extends TestCase {
         final Map<String,Object> map = info.asMap();
         assertEquals("abstract", "Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
         assertTitleEquals("title", "Sea Surface Temperature Analysis Model", (Citation) map.get("citation"));
-        assertEquals("spatialRepresentationType", singleton(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
+        assertEquals("spatialRepresentationType", Set.of(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
 
         final Locale[] locales = {Locale.US, Locale.FRENCH};
         assertArrayEquals("language",     locales, ((Collection<?>) map.get("language")).toArray());

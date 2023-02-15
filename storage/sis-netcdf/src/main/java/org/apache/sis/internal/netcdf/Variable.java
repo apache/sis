@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import java.io.IOException;
 import java.time.Instant;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.storage.DataStoreException;
@@ -58,7 +58,6 @@ import static org.apache.sis.internal.storage.StoreUtilities.ALLOW_LAST_RESORT_S
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public abstract class Variable extends Node {
     /**
@@ -401,7 +400,7 @@ public abstract class Variable extends Node {
             }
             if (unit == null) try {
                 unit = decoder.convention().getUnitFallback(this);
-            } catch (ParserException ex) {
+            } catch (MeasurementParseException ex) {
                 if (error == null) error = ex;
                 else error.addSuppressed(ex);
                 if (symbols == null) {
@@ -599,7 +598,7 @@ public abstract class Variable extends Node {
          */
         boolean isIncomplete = false;
         final List<Dimension> fromVariable = getGridDimensions();
-        final Dimension[] dimensions = fromVariable.toArray(new Dimension[fromVariable.size()]);
+        final Dimension[] dimensions = fromVariable.toArray(Dimension[]::new);
         for (int i=0; i<dimensions.length; i++) {
             isIncomplete |= ((dimensions[i] = domain.remove(dimensions[i])) == null);
         }
@@ -977,7 +976,7 @@ public abstract class Variable extends Node {
      * Multi-dimensional variables are flattened as a one-dimensional array (wrapped in a vector).
      * Example:
      *
-     * {@preformat text
+     * <pre class="text">
      *   DIMENSIONS:
      *     time: 3
      *     lat : 2
@@ -992,8 +991,7 @@ public abstract class Variable extends Node {
      *     (1,0,0) (1,0,1) (1,0,2) (1,0,3)
      *     (1,1,0) (1,1,1) (1,1,2) (1,1,3)
      *     (2,0,0) (2,0,1) (2,0,2) (2,0,3)
-     *     (2,1,0) (2,1,1) (2,1,2) (2,1,3)
-     * }
+     *     (2,1,0) (2,1,1) (2,1,2) (2,1,3)</pre>
      *
      * If {@link #hasRealValues()} returns {@code true}, then this method shall
      * {@linkplain #replaceNaN(Object) replace fill values and missing values by NaN values}.

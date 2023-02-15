@@ -33,6 +33,7 @@ import org.apache.sis.internal.netcdf.TestCase;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -45,15 +46,14 @@ import static org.apache.sis.test.TestUtilities.date;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
- * @module
  */
 @DependsOn({
     ChannelDecoderTest.class,
     org.apache.sis.internal.netcdf.impl.VariableInfoTest.class
 })
-public final strictfp class MetadataReaderTest extends TestCase {
+public final class MetadataReaderTest extends TestCase {
     /**
      * Tests {@link MetadataReader#split(String)}.
      */
@@ -72,10 +72,9 @@ public final strictfp class MetadataReaderTest extends TestCase {
      */
     @Test
     public void testEmbedded() throws IOException, DataStoreException {
-        final Metadata metadata;
-        try (Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
-            metadata = new MetadataReader(input).read();
-        }
+        final Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC);
+        final Metadata metadata = new MetadataReader(input).read();
+        input.close(new DataStoreMock("lock"));
         compareToExpected(metadata).assertMetadataEquals();
     }
 
@@ -88,10 +87,9 @@ public final strictfp class MetadataReaderTest extends TestCase {
      */
     @Test
     public void testUCAR() throws IOException, DataStoreException {
-        final Metadata metadata;
-        try (Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
-            metadata = new MetadataReader(input).read();
-        }
+        final Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC);
+        final Metadata metadata = new MetadataReader(input).read();
+        input.close(new DataStoreMock("lock"));
         final ContentVerifier verifier = compareToExpected(metadata);
         verifier.addExpectedValue("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[1]", "NetCDF-3/CDM");
         verifier.assertMetadataEquals();

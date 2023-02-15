@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
+import java.time.temporal.Temporal;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,7 +31,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.Element;
-import org.opengis.metadata.quality.UsabilityElement;
+import org.opengis.metadata.quality.Usability;
 import org.opengis.metadata.quality.Completeness;
 import org.opengis.metadata.quality.TemporalQuality;
 import org.opengis.metadata.quality.ThematicAccuracy;
@@ -43,6 +44,8 @@ import org.opengis.metadata.quality.Metaquality;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.gco.InternationalStringAdapter;
+import org.apache.sis.internal.metadata.legacy.DateToTemporal;
+import org.apache.sis.internal.metadata.legacy.TemporalToDate;
 import org.apache.sis.internal.metadata.Dependencies;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
@@ -72,7 +75,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Alexis Gaillard (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {
     "standaloneQualityReportDetails",
@@ -95,9 +97,9 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
     AbstractPositionalAccuracy.class,
     AbstractThematicAccuracy.class,
     AbstractTemporalQuality.class,
-    DefaultUsabilityElement.class,
+    DefaultUsability.class,
     AbstractMetaquality.class,
-    DefaultMeasure.class            // Not a subclass, but "weakly" associated.
+    DefaultQualityMeasure.class     // Not a subclass, but "weakly" associated.
 })
 public class AbstractElement extends ISOMetadata implements Element {
     /**
@@ -182,7 +184,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is an instance of {@link PositionalAccuracy},
      *       {@link TemporalQuality}, {@link ThematicAccuracy}, {@link LogicalConsistency},
-     *       {@link Completeness}, {@link UsabilityElement} or {@link Metaquality},
+     *       {@link Completeness}, {@link Usability} or {@link Metaquality},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
@@ -214,8 +216,8 @@ public class AbstractElement extends ISOMetadata implements Element {
         if (object instanceof Completeness) {
             return AbstractCompleteness.castOrCopy((Completeness) object);
         }
-        if (object instanceof UsabilityElement) {
-            return DefaultUsabilityElement.castOrCopy((UsabilityElement) object);
+        if (object instanceof Usability) {
+            return DefaultUsability.castOrCopy((Usability) object);
         }
         if (object instanceof Metaquality) {
             return AbstractMetaquality.castOrCopy((Metaquality) object);
@@ -313,7 +315,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultMeasureReference#getNamesOfMeasure()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getMeasureReference")
     @XmlElement(name = "nameOfMeasure", namespace = LegacyNamespaces.GMD)
     public Collection<InternationalString> getNamesOfMeasure() {
@@ -340,7 +342,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultMeasureReference#setNamesOfMeasure(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setNamesOfMeasure(final Collection<? extends InternationalString> newValues) {
         if (!isNullOrEmpty(newValues)) {
             setMeasureReferenceProperty(DefaultMeasureReference::setNamesOfMeasure, newValues);
@@ -355,7 +357,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultMeasureReference#getMeasureIdentification()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getMeasureReference")
     @XmlElement(name = "measureIdentification", namespace = LegacyNamespaces.GMD)
     public Identifier getMeasureIdentification() {
@@ -369,7 +371,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultMeasureReference#setMeasureIdentification(Identifier)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setMeasureIdentification(final Identifier newValue)  {
         setMeasureReferenceProperty(DefaultMeasureReference::setMeasureIdentification, newValue);
     }
@@ -382,7 +384,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultMeasureReference#getMeasureDescription()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getMeasureReference")
     @XmlElement(name = "measureDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getMeasureDescription() {
@@ -396,7 +398,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultMeasureReference#setMeasureDescription(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setMeasureDescription(final InternationalString newValue)  {
         setMeasureReferenceProperty(DefaultMeasureReference::setMeasureDescription, newValue);
     }
@@ -460,7 +462,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationMethodType()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationMethodType", namespace = LegacyNamespaces.GMD)
     public EvaluationMethodType getEvaluationMethodType() {
@@ -474,7 +476,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationMethodType(EvaluationMethodType)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setEvaluationMethodType(final EvaluationMethodType newValue)  {
         setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationMethodType, newValue);
     }
@@ -487,7 +489,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationMethodDescription()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationMethodDescription", namespace = LegacyNamespaces.GMD)
     public InternationalString getEvaluationMethodDescription() {
@@ -501,7 +503,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationMethodDescription(InternationalString)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setEvaluationMethodDescription(final InternationalString newValue)  {
         setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationMethodDescription, newValue);
     }
@@ -514,7 +516,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getEvaluationProcedure()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "evaluationProcedure", namespace = LegacyNamespaces.GMD)
     public Citation getEvaluationProcedure() {
@@ -528,7 +530,7 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setEvaluationProcedure(Citation)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setEvaluationProcedure(final Citation newValue) {
         setEvaluationMethodProperty(DefaultEvaluationMethod::setEvaluationProcedure, newValue);
     }
@@ -543,24 +545,22 @@ public class AbstractElement extends ISOMetadata implements Element {
      * @deprecated Replaced by {@link DefaultEvaluationMethod#getDates()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.3")
     @Dependencies("getEvaluationMethod")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Collection<Date> getDates() {
-        if (!FilterByVersion.LEGACY_METADATA.accept()) {
-            return null;
-        }
-        EvaluationMethod m = getEvaluationMethod();
-        if (m == null) {
-            if (state() == State.FINAL) {
-                return Collections.emptyList();
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            EvaluationMethod m = getEvaluationMethod();
+            if (m == null) {
+                if (state() == State.FINAL) {
+                    return Collections.emptyList();
+                }
+                setEvaluationMethod(m = new DefaultEvaluationMethod());
             }
-            setEvaluationMethod(m = new DefaultEvaluationMethod());
+            Collection<? extends Temporal> dates = m.getDates();
+            if (dates != null) return new TemporalToDate(dates);
         }
-        if (m instanceof DefaultEvaluationMethod) {
-            return ((DefaultEvaluationMethod) m).getDates();
-        }
-        return Collections.unmodifiableCollection(m.getDates());
+        return null;
     }
 
     /**
@@ -571,10 +571,10 @@ public class AbstractElement extends ISOMetadata implements Element {
      *
      * @deprecated Replaced by {@link DefaultEvaluationMethod#setDates(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.3")
     public void setDates(final Collection<? extends Date> newValues) {
         if (!isNullOrEmpty(newValues)) {
-            setEvaluationMethodProperty(DefaultEvaluationMethod::setDates, newValues);
+            setEvaluationMethodProperty(DefaultEvaluationMethod::setDates, new DateToTemporal(newValues));
         }
     }
 

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Optional;
@@ -77,9 +76,8 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
- * @module
  */
 class Store extends DataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
     /**
@@ -257,7 +255,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
                 nameFactory = DefaultFactories.forBuildin(NameFactory.class);
             }
             GenericName name = nameFactory.createLocalName(null, super.getDisplayName());
-            NameSpace   ns   = nameFactory.createNameSpace(name, Collections.singletonMap("separator", "/"));
+            NameSpace   ns   = nameFactory.createNameSpace(name, Map.of("separator", "/"));
             identifier       = nameFactory.createLocalName(ns, ".");
         }
         return identifier;
@@ -276,6 +274,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
             mb.addResourceScope(ScopeCode.COLLECTION, Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
             mb.addLanguage(locale,   MetadataBuilder.Scope.RESOURCE);
             mb.addEncoding(encoding, MetadataBuilder.Scope.RESOURCE);
+            final GenericName identifier = identifier(null);
             String name = null;
             if (identifier != null) {
                 name = identifier.toString();
@@ -378,7 +377,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
             } catch (BackingStoreException ex) {
                 throw ex.unwrapOrRethrow(DataStoreException.class);
             }
-            components = UnmodifiableArrayList.wrap(resources.toArray(new Resource[resources.size()]));
+            components = UnmodifiableArrayList.wrap(resources.toArray(Resource[]::new));
         }
         return components;              // Safe because unmodifiable list.
     }
@@ -438,28 +437,23 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
 
     /**
      * Closes all children resources.
+     * This method can be invoked asynchronously for interrupting a long reading process
+     * if the children stores also support asynchronous close operations.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                                          // Should never fail.
-        final Collection<Resource> resources = components;
-        if (resources != null) {
-            components = null;                                      // Clear first in case of failure.
-            DataStoreException failure = null;
-            for (final Resource r : resources) {
-                if (r instanceof DataStore) try {
-                    ((DataStore) r).close();
-                } catch (DataStoreException ex) {
-                    if (failure == null) {
-                        failure = ex;
-                    } else {
-                        failure.addSuppressed(ex);
-                    }
-                }
-            }
-            if (failure != null) {
-                throw failure;
-            }
+    public void close() throws DataStoreException {
+        listeners.close();                          // Should never fail.
+        final Collection<Resource> resources;
+        synchronized (this) {
+            resources      = components;
+            components     = List.of();
+            identifier     = null;
+            metadata       = null;
+            structuredView = null;
+            children.clear();
+        }
+        if (resources != null && !resources.isEmpty()) {
+            ConcurrentCloser.RESOURCES.closeAll(resources);
         }
     }
 }

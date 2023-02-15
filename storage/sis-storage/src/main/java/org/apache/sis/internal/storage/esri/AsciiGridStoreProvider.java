@@ -17,6 +17,7 @@
 package org.apache.sis.internal.storage.esri;
 
 import java.util.Map;
+import java.util.logging.Logger;
 import java.nio.ByteBuffer;
 import java.io.EOFException;
 import org.apache.sis.storage.DataStore;
@@ -38,9 +39,8 @@ import org.apache.sis.internal.storage.PRJDataStore;
  * the part of the caller. However, the {@link AsciiGridStore} instances created by this factory are not thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 @StoreMetadata(formatName    = AsciiGridStoreProvider.NAME,
                fileSuffixes  = {"asc", "grd", "agr", "aig"},
@@ -51,6 +51,13 @@ public final class AsciiGridStoreProvider extends PRJDataStore.Provider {
      * The format names for ESRI ASCII grid files.
      */
     static final String NAME = "ASCII Grid";
+
+    /**
+     * The logger used by ASCII grid stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.esri");
 
     /**
      * Creates a new provider.
@@ -135,5 +142,13 @@ cellsize:           if (!header.containsKey(AsciiGridStore.CELLSIZE)) {
         } else {
             return new AsciiGridStore(this, connector, true);
         }
+    }
+
+    /**
+     * {@return the logger used by ASCII grid stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

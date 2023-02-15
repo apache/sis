@@ -7,18 +7,18 @@ for developing geospatial applications in the Java programming language.
 The library can be used for desktop or server applications.
 
 Apache SIS, SIS, Apache, the Apache feather logo, and the Apache SIS
-project logo are trademarks of The Apache Software Foundation.
+project logo are trademarks of The Apache Software Foundation (ASF).
 
 
 Installation
 ============
 
 For developing applications using the SIS library or for using on command-line,
-the only requirement is Java 8 or later. For launching the desktop application,
+the only requirement is Java 11 or later. For launching the desktop application,
 requirements are Java 16 or later and JavaFX 13 or later.
 
-1) Unzip `apache-sis-1.3-bin.zip` in any directory.
-2) Add the `apache-sis-1.3/bin` directory to the path.
+1) Unzip `apache-sis-1.4-bin.zip` in any directory.
+2) Add the `apache-sis-1.4/bin` directory to the path.
 3) Invoke `sis` or `sisfx` on the command line.
 
 
@@ -27,7 +27,7 @@ Configuration (Unix only)
 
 A `SIS_OPTS` environment variable can optionally be set for specifying options
 to be given to any execution of Apache SIS. For example for setting the
-encoding to UTF-8:
+encoding to UTF-8 in the console application:
 
     export SIS_OPTS="--encoding UTF-8"
 

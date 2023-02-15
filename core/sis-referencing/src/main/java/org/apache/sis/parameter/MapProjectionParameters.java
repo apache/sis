@@ -16,7 +16,6 @@
  */
 package org.apache.sis.parameter;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import javax.measure.Unit;
@@ -43,7 +42,6 @@ import static org.apache.sis.metadata.iso.citation.Citations.NETCDF;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 final class MapProjectionParameters extends DefaultParameterValueGroup {
     /**
@@ -168,12 +166,13 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.EARTH_RADIUS), 0, 1, Double.class,
+                InverseFlattening.properties(Constants.EARTH_RADIUS), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, Units.METRE), null, null);
 
         /**
          * The parameters for the semi-major and semi-minor axis length.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final ParameterValue<?> semiMajor, semiMinor;
 
         /**
@@ -253,19 +252,20 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Double> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                toMap(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
+                properties(Constants.INVERSE_FLATTENING), 0, 1, Double.class,
                 MeasurementRange.createGreaterThan(0.0, Units.UNITY), null, null);
 
         /**
          * Helper method for {@link #DESCRIPTOR} constructions.
          */
-        static Map<String,?> toMap(final String name) {
-            return Collections.singletonMap(NAME_KEY, new NamedIdentifier(NETCDF, name));
+        private static Map<String,?> properties(final String name) {
+            return Map.of(NAME_KEY, new NamedIdentifier(NETCDF, name));
         }
 
         /**
          * The parameters for the semi-major and semi-minor axis length.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final ParameterValue<?> semiMajor, semiMinor;
 
         /**
@@ -372,7 +372,7 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * This is not a standard parameter.
          */
         static final ParameterDescriptor<Boolean> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, Boolean.FALSE);
+                InverseFlattening.properties(Constants.IS_IVF_DEFINITIVE), 0, 1, Boolean.class, null, null, Boolean.FALSE);
 
         /**
          * The parameters for the inverse flattening factor.
@@ -437,12 +437,13 @@ final class MapProjectionParameters extends DefaultParameterValueGroup {
          * {@value Constants#STANDARD_PARALLEL_2}. This is not a standard parameter.
          */
         static final ParameterDescriptor<double[]> DESCRIPTOR = new DefaultParameterDescriptor<>(
-                InverseFlattening.toMap(Constants.STANDARD_PARALLEL),
+                InverseFlattening.properties(Constants.STANDARD_PARALLEL),
                 0, 1, double[].class, null, null, null);
 
         /**
          * The parameters for the standard parallels.
          */
+        @SuppressWarnings("serial")     // Most SIS implementations are serializable.
         private final ParameterValue<?> standardParallel1, standardParallel2;
 
         /**

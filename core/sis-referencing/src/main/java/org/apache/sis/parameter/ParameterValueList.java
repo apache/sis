@@ -43,16 +43,15 @@ import org.apache.sis.internal.referencing.Resources;
  * This class performs checks on the parameter values to be added or removed.
  * This implementation supports {@code set(…)}, {@code add(…)} and {@code remove(…)} operations.
  *
- * <div class="note"><b>Implementation note:</b>
- * this class reproduces some {@link java.util.ArrayList} functionalities.
+ * <h4>Implementation note</h4>
+ * This class reproduces some {@link java.util.ArrayList} functionalities.
  * However, we do <strong>not</strong> extend {@code ArrayList} because we really need the default method
  * implementations provided by {@code AbstractList} — the optimizations performed by {@code ArrayList}
- * are not suitable here.</div>
+ * are not suitable here.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 final class ParameterValueList extends AbstractList<GeneralParameterValue> implements RandomAccess, Serializable {
     /**
@@ -66,14 +65,14 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      * <p>This descriptor shall not be used in {@link #equals(Object)} and {@link #hashCode()}
      * implementations in order to stay consistent with the {@link List} contract.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final ParameterDescriptorGroup descriptor;
 
     /**
      * The parameter values in the group. The length of this array is the list capacity.
      * This array will growth as needed.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private GeneralParameterValue[] values;
 
     /**

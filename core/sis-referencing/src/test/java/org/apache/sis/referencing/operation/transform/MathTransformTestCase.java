@@ -43,6 +43,7 @@ import org.opengis.test.Validators;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.ReferencingAssert;
+import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 import static org.opengis.test.Assert.*;
 
 // Branch-dependent imports
@@ -73,9 +74,8 @@ import org.opengis.test.CalculationType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
-public abstract strictfp class MathTransformTestCase extends TransformTestCase {
+public abstract class MathTransformTestCase extends TransformTestCase {
     /**
      * The number of coordinates to use for stressing the math transform. We use a number that
      * encompass at least 2 time the default buffer size in order to test the code that use
@@ -215,6 +215,7 @@ public abstract strictfp class MathTransformTestCase extends TransformTestCase {
             assertFalse("transform instanceof MathTransform2D:", transform instanceof MathTransform2D);
         }
         assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
+        MatrixTestCase.validate(MathTransforms.getMatrix(transform));
     }
 
     /**

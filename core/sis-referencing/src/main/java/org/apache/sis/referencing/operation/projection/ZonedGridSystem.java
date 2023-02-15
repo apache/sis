@@ -66,7 +66,6 @@ import static org.apache.sis.internal.referencing.provider.ZonedTransverseMercat
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.8
- * @module
  */
 public class ZonedGridSystem extends AbstractMathTransform2D implements Serializable {
     /**
@@ -99,11 +98,13 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
     /**
      * The projection that performs the actual work before we add the zone number.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     final AbstractMathTransform projection;
 
     /**
      * The inverse of this map projection.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     private final MathTransform2D inverse;
 
     /**
@@ -206,7 +207,6 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.8
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform2D.Inverse implements Serializable {
         /**
@@ -222,6 +222,7 @@ public class ZonedGridSystem extends AbstractMathTransform2D implements Serializ
         /**
          * The projection that performs the actual work after we removed the zone number.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final AbstractMathTransform inverseProjection;
 
         /**

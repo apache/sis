@@ -27,7 +27,6 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 public final class ProfileTypes extends TypeRegistration {
     /**

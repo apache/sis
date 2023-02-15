@@ -18,8 +18,6 @@ package org.apache.sis.internal.filter.sqlmm;
 
 import java.nio.ByteBuffer;
 import java.util.List;
-import java.util.Arrays;
-import java.util.Collections;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
@@ -43,7 +41,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
     /**
@@ -54,6 +51,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
     /**
      * The expression giving the geometry.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, ?> geometry;
 
     /**
@@ -84,10 +82,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
      */
     @Override
     public final List<Expression<? super R, ?>> getParameters() {
-        if (srid == null) {
-            return Collections.singletonList(geometry);
-        }
-        return Arrays.asList(geometry, srid);                   // TODO: use List.of(…) with JDK9.
+        return (srid != null) ? List.of(geometry, srid) : List.of(geometry);
     }
 
     /**

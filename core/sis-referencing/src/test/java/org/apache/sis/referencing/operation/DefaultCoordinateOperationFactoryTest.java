@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.List;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -56,22 +57,21 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.3
  * @since   0.7
- * @module
  */
 @DependsOn({
     CoordinateOperationRegistryTest.class,
     CoordinateOperationFinderTest.class
 })
-public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
+public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assertEquals(expected, actual, STRICT);
-     * }
+     *     }
      */
     private static final double STRICT = 0;
 
@@ -351,5 +351,21 @@ public final strictfp class DefaultCoordinateOperationFactoryTest extends MathTr
         verifyTransform(CoordinateOperationFinderTest.expectedAGD66(true),
                         CoordinateOperationFinderTest.expectedAGD66(false));
         validate();
+    }
+
+    /**
+     * Verifies that requesting an unknown method throws {@link NoSuchIdentifierException}.
+     *
+     * @throws FactoryException if an unexpected error occurred.
+     */
+    @Test
+    public void testUnknownMethod() throws FactoryException {
+        try {
+            factory.getOperationMethod("I do not exist");
+            fail("Expected NoSuchIdentifierException");
+        } catch (NoSuchIdentifierException e) {
+            final String message = e.getMessage();
+            assertTrue(message, message.contains("I do not exist"));
+        }
     }
 }

@@ -34,16 +34,15 @@ import org.apache.sis.util.Classes;
 /**
  * A {@code DataTransfer} with all data in the given buffer, without channel.
  *
- * <div class="note"><b>Implementation note:</b>
+ * <h4>Implementation note</h4>
  * This class implements also an empty {@link ReadableByteChannel} as safety. When using {@link ChannelDataInput}
  * without channel, only an existing {@code Buffer} pre-filled with the data should be used. If we have a bug in
  * our reading process, the empty channel will cause an {@link java.io.EOFException} to be thrown instead of a
- * {@link NullPointerException}.</div>
+ * {@link NullPointerException}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 final class MemoryDataTransfer implements DataTransfer, ReadableByteChannel {
     /**

@@ -32,9 +32,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.5
- * @module
  */
-public strictfp class CoordinateDomainTest extends TestCase {
+public class CoordinateDomainTest extends TestCase {
     /**
      * The tolerance threshold used in this test suite.
      */

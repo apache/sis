@@ -30,10 +30,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @SuppressWarnings("serial")
-public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
+public final class LargeCodeList  extends CodeList<LargeCodeList> {
     /**
      * List of all enumerations of this type.
      */
@@ -63,7 +62,7 @@ public final strictfp class LargeCodeList  extends CodeList<LargeCodeList> {
      */
     public static LargeCodeList[] values() {
         synchronized (VALUES) {
-            return VALUES.toArray(new LargeCodeList[VALUES.size()]);
+            return VALUES.toArray(LargeCodeList[]::new);
         }
     }
 

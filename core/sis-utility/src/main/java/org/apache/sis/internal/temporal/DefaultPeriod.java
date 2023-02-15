@@ -28,7 +28,6 @@ import org.opengis.temporal.Period;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class DefaultPeriod extends Primitive implements Period {
     /** Bounds making this period. */

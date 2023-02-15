@@ -18,8 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Arrays;
 import java.util.Locale;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
@@ -41,10 +39,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.3
- * @module
  */
 @DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
-public final strictfp class InformationMapTest extends TestCase {
+public final class InformationMapTest extends TestCase {
     /**
      * Tests {@link InformationMap#get(Object)} on a few specific properties of the {@link Citation} type.
      * This test duplicates {@link PropertyInformationTest}, but is done here again as an integration test.
@@ -68,9 +65,9 @@ public final strictfp class InformationMapTest extends TestCase {
         final Map<String,ExtendedElementInformation> descriptions = MetadataStandard.ISO_19115.asInformationMap(
                 EnvironmentalRecord.class, KeyNamePolicy.UML_IDENTIFIER);
 
-        final Set<String> expected = new HashSet<>(Arrays.asList(
+        final Set<String> expected = Set.of(
             "averageAirTemperature", "maxAltitude", "maxRelativeHumidity", "meteorologicalConditions"
-        ));
+        );
         assertEquals(expected, descriptions.keySet());
     }
 

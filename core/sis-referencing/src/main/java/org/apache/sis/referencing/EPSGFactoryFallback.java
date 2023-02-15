@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.LinkedHashSet;
 import javax.measure.Unit;
@@ -41,8 +40,6 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.metadata.citation.Citation;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.Resources;
@@ -52,7 +49,6 @@ import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.setup.InstallationResources;
-import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 import org.apache.sis.measure.Latitude;
@@ -63,11 +59,12 @@ import org.apache.sis.measure.Units;
  * The authority factory to use as a fallback when the real EPSG factory is not available.
  * We use this factory in order to guarantee that the minimal set of CRS codes documented
  * in the {@link CRS#forCode(String)} method javadoc is always available.
+ * This fallback uses data available in public sources, with all EPSG metadata omitted except the identifiers.
+ * The EPSG identifiers are provided as references where to find the complete definitions.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.3
  * @since   0.7
- * @module
  */
 @Fallback
 final class EPSGFactoryFallback extends GeodeticAuthorityFactory
@@ -87,16 +84,6 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
     static final EPSGFactoryFallback INSTANCE = new EPSGFactoryFallback();
 
     /**
-     * The authority to report in exceptions. Not necessarily the same than the {@link #authority} title.
-     */
-    private static final String AUTHORITY = Constants.EPSG + "-subset";
-
-    /**
-     * The authority, created when first needed.
-     */
-    private Citation authority;
-
-    /**
      * URL  where users can get more information about the installation process.
      * Fetched when first needed.
      *
@@ -112,17 +99,19 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
     }
 
     /**
-     * Returns the EPSG authority with only a modification in the title
-     * for emphasing that this is a subset of EPSG dataset.
+     * Returns an authority with "Subset of EPSG" title.
      */
     @Override
-    public synchronized Citation getAuthority() {
-        if (authority == null) {
-            final DefaultCitation c = new DefaultCitation(Citations.EPSG);
-            c.setTitle(Vocabulary.formatInternational(Vocabulary.Keys.SubsetOf_1, c.getTitle()));
-            authority = c;
-        }
-        return authority;
+    public Citation getAuthority() {
+        return StandardDefinitions.AUTHORITY;
+    }
+
+    /**
+     * Returns the title of the authority as a string in the default locale.
+     * This is used in exceptions.
+     */
+    private String getAuthorityTitle() {
+        return getAuthority().getTitle().toString();
     }
 
     /**
@@ -132,7 +121,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
      */
     @Override
     public Set<String> getCodeSpaces() {
-        return Collections.singleton(Constants.EPSG);
+        return Set.of(Constants.EPSG);
     }
 
     /**
@@ -361,12 +350,12 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
             }
         } catch (NumberFormatException cause) {
             final NoSuchAuthorityCodeException e = new NoSuchAuthorityCodeException(Resources.format(
-                    Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, toClass(kind), code), AUTHORITY, code);
+                    Resources.Keys.NoSuchAuthorityCode_3, Constants.EPSG, toClass(kind), code), getAuthorityTitle(), code);
             e.initCause(cause);
             throw e;
         }
         throw new NoSuchAuthorityCodeException(Resources.format(Resources.Keys.NoSuchAuthorityCodeInSubset_4,
-                Constants.EPSG, toClass(kind), code, getInstallationURL()), AUTHORITY, code);
+                Constants.EPSG, toClass(kind), code, getInstallationURL()), getAuthorityTitle(), code);
     }
 
     /**

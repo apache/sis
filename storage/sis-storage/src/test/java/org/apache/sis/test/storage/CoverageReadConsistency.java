@@ -64,9 +64,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public strictfp class CoverageReadConsistency extends TestCase {
+public class CoverageReadConsistency extends TestCase {
     /**
      * A constant for identifying the codes working on two dimensional slices.
      */
@@ -449,7 +448,7 @@ nextSlice:  for (;;) {
     public static void printDurations() {
         if (statistics != null) {
             // It is too late for using `TestCase.out`.
-            System.out.print(StatisticsFormat.getInstance().format(statistics.toArray(new Statistics[statistics.size()])));
+            System.out.print(StatisticsFormat.getInstance().format(statistics.toArray(Statistics[]::new)));
             statistics = null;
         }
     }

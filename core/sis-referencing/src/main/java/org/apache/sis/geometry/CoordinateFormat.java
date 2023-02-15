@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.UncheckedIOException;
@@ -52,7 +53,6 @@ import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.LocalizedParseException;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
@@ -71,7 +71,6 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.io.CompoundFormat;
 import org.apache.sis.referencing.CRS;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -102,16 +101,20 @@ import static java.util.logging.Logger.getLogger;
  * transform the position} before to format it.</p>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see AngleFormat
  * @see org.apache.sis.measure.UnitFormat
  * @see GeneralDirectPosition
  *
  * @since 0.8
- * @module
  */
 public class CoordinateFormat extends CompoundFormat<DirectPosition> {
+    /**
+     * The logger for units of measurement.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.MEASURE);
+
     /**
      * Serial number for cross-version compatibility.
      */
@@ -135,7 +138,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * For example if the unit of measurement of an axis is meter but the precision is 1000 metres,
      * then {@code CoordinateFormat} will automatically uses kilometres units instead of metres.
      */
-    private static final Set<Unit<?>> SCALABLES = JDK9.setOf(Units.METRE, Units.PASCAL);
+    private static final Set<Unit<?>> SCALABLES = Set.of(Units.METRE, Units.PASCAL);
 
     /**
      * The separator between each coordinate values to be formatted.
@@ -160,6 +163,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #groundDimensions
      * @see #setGroundPrecision(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<?> groundPrecision;
 
     /**
@@ -173,6 +177,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @see #accuracyThreshold
      * @see #setGroundAccuracy(Quantity)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Quantity<?> groundAccuracy;
 
     /**
@@ -248,6 +253,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @see #setDefaultCRS(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private CoordinateReferenceSystem defaultCRS;
 
     /**
@@ -458,7 +464,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     public void setSeparator(final String separator) {
         ArgumentChecks.ensureNonEmpty("separator", separator);
         this.separator = separator;
-        parseSeparator = CharSequences.trimWhitespaces(separator);
+        parseSeparator = separator.strip();
     }
 
     /**
@@ -968,7 +974,6 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      *
      * @param  crs  the target CRS in the conversion from ground units to CRS units.
      */
-    @SuppressWarnings("null")
     private void applyGroundPrecision(final CoordinateReferenceSystem crs) {
         /*
          * If the given resolution is linear (for example in metres), compute an equivalent resolution in degrees
@@ -1624,13 +1629,13 @@ skipSep:    if (i != 0) {
                 throw new LocalizedParseException(getLocale(), key, args, index);
             }
             /*
-             * At this point 'subPos' is set to the beginning of the next coordinate to parse in 'asString'.
+             * At this point `subPos` is set to the beginning of the next coordinate to parse in `asString`.
              * Parse the value as a number, angle or date, as determined from the coordinate system axis.
              */
             if (formats != null) {
                 format = formats[i];
             }
-            @SuppressWarnings("null")
+            @SuppressWarnings("null")       // `format` was initially null only if `formats` is non-null.
             final Object object = format.parseObject(asString, subPos);
             if (object == null) {
                 /*
@@ -1819,13 +1824,14 @@ checkDirection: if (direction != null) {
     }
 
     /**
-     * Invoked when an expected error occurred but continuation is still possible.
+     * Invoked when an unexpected error occurred but continuation is still possible.
+     * This method is invoked in the context of units of measurement.
      *
      * @param  method  the public method to report as the source of the log record.
      * @param  error   the error that occurred.
      */
     private static void unexpectedException(final String method, final Exception error) {
-        Logging.unexpectedException(getLogger(Loggers.MEASURE), CoordinateFormat.class, method, error);
+        Logging.unexpectedException(LOGGER, CoordinateFormat.class, method, error);
     }
 
     /**
@@ -1853,6 +1859,6 @@ checkDirection: if (direction != null) {
      * @throws ClassNotFoundException if the class serialized on the stream is not on the classpath.
      */
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
-        parseSeparator = CharSequences.trimWhitespaces(separator);
+        parseSeparator = separator.strip();
     }
 }

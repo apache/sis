@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class PathBuilder {
     /**
@@ -228,7 +227,7 @@ public class PathBuilder {
         switch (polylines.size()) {
             case 0:  return null;
             case 1:  return polylines.get(0);
-            default: return new MultiPolylines(polylines.toArray(new Polyline[polylines.size()]));
+            default: return new MultiPolylines(polylines.toArray(Polyline[]::new));
         }
     }
 

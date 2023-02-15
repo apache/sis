@@ -41,10 +41,10 @@ import org.apache.sis.util.ArraysExt;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.addExact;
 import static java.lang.Math.multiplyExact;
+import static java.lang.Math.multiplyFull;
 import static java.lang.Math.incrementExact;
 import static org.apache.sis.internal.util.Numerics.ceilDiv;
 import static org.apache.sis.internal.util.Numerics.wholeDiv;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 
 
 /**
@@ -56,7 +56,6 @@ import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class RawRasterReader extends HyperRectangleReader {
     /**

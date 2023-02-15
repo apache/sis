@@ -18,6 +18,7 @@ package org.apache.sis.internal.referencing;
 
 import java.lang.reflect.Array;
 import java.util.function.Function;
+import java.util.logging.Logger;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
@@ -46,6 +47,7 @@ import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.referencing.provider.Affine;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.ElementKind;
@@ -71,11 +73,15 @@ import org.apache.sis.math.Vector;
  * We need to be specific in order to select the right "aspect" of the given object.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
- * @module
  */
 public final class WKTUtilities extends Static {
+    /**
+     * The logger for Well Known Text operations.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.WKT);
+
     /**
      * Do not allow instantiation of this class.
      */

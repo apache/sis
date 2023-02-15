@@ -35,7 +35,6 @@ import org.apache.sis.parameter.Parameters;
  * @see <a href="http://geotiff.maptools.org/proj_list/cassini_soldner.html">GeoTIFF parameters for Cassini-Soldner</a>
  *
  * @since 1.1
- * @module
  */
 @XmlTransient
 public class CassiniSoldner extends MapProjection {

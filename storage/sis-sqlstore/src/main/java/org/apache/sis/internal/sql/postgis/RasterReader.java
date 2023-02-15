@@ -37,7 +37,6 @@ import java.awt.image.DataBufferDouble;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
-import java.nio.channels.Channels;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -46,11 +45,11 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.storage.io.InputStreamArrayGetter;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.sql.feature.InfoStatements;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.math.Vector;
@@ -71,9 +70,8 @@ import static org.apache.sis.internal.sql.postgis.Band.OPPOSITE_SIGN;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 public final class RasterReader extends RasterFormat {
     /**
@@ -239,7 +237,7 @@ public final class RasterReader extends RasterFormat {
                  */
                 final int sampleSize  = band.getDataTypeSize();                 // In bits: 1, 2, 4, 8, 16, 32 or 64.
                 final int elementSize = DataBuffer.getDataTypeSize(dataType);   // Same as above except for 1, 2, 4.
-                final int length = Math.toIntExact(Numerics.ceilDiv(JDK9.multiplyFull(width, height) * sampleSize, elementSize));
+                final int length = Math.toIntExact(Numerics.ceilDiv(Math.multiplyFull(width, height) * sampleSize, elementSize));
                 final Object data;
                 switch (dataType & ~OPPOSITE_SIGN) {
                     case DataBuffer.TYPE_USHORT:
@@ -400,9 +398,11 @@ public final class RasterReader extends RasterFormat {
      * @throws IOException if an error occurred while reading data from the input stream.
      */
     public ChannelDataInput channel(final InputStream input) throws IOException {
-        if (buffer == null) {
-            buffer = ByteBuffer.allocate(8192);
-        }
-        return new ChannelDataInput("raster", Channels.newChannel(input), buffer, false);
+        return InputStreamArrayGetter.channel("raster", input, () -> {
+            if (buffer == null) {
+                buffer = ByteBuffer.allocate(8192);
+            }
+            return buffer;
+        });
     }
 }

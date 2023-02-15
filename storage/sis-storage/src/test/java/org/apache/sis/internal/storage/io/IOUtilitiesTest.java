@@ -35,11 +35,10 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
- * @module
  */
-public final strictfp class IOUtilitiesTest extends TestCase {
+public final class IOUtilitiesTest extends TestCase {
     /**
      * Tests {@link IOUtilities#filename(Object)}.
      *
@@ -53,6 +52,8 @@ public final strictfp class IOUtilitiesTest extends TestCase {
         assertEquals("Map.png", IOUtilities.filename(new URI ("file:/Users/name/Map.png")));
         assertEquals("Map.png", IOUtilities.filename(new URL ("file:/Users/name/Map.png")));
         assertEquals("name",    IOUtilities.filename(new URI ("file:/Users/name/")));
+        assertEquals("",        IOUtilities.filename("/"));
+        assertEquals("",        IOUtilities.filename(""));
         assertNull(IOUtilities.filename(Boolean.FALSE));
         assertNull(IOUtilities.filename(null));
     }

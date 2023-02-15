@@ -47,7 +47,6 @@ import org.apache.sis.internal.util.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class MergeStrategy {
     /**
@@ -165,7 +164,7 @@ public final class MergeStrategy {
      * @param  resource  the resource for which to update the merge strategy, or {@code null}.
      * @return resource with updated merge strategy, or {@code null} if the given resource was null.
      */
-    public Resource apply(Resource resource) {
+    public Resource apply(final Resource resource) {
         if (resource instanceof AggregatedResource) {
             return ((AggregatedResource) resource).apply(this);
         }

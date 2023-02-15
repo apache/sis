@@ -47,9 +47,8 @@ import org.apache.sis.util.CharSequences;
  * the file containing WKT definition is the main file, not an auxiliary file.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
- * @module
  */
 final class Store extends URIDataStore {
     /**
@@ -62,7 +61,7 @@ final class Store extends URIDataStore {
     /**
      * The reader, set by the constructor and cleared when no longer needed.
      */
-    private Reader source;
+    private volatile Reader source;
 
     /**
      * The locale for {@link org.opengis.util.InternationalString} localization
@@ -118,7 +117,6 @@ final class Store extends URIDataStore {
     private void parse() throws DataStoreException {
         final Reader in = source;
         if (in != null) try {
-            source = null;                                                  // Cleared first in case of error.
             final String wkt;
             try {
                 char[] buffer = new char[FirstKeywordPeek.READ_AHEAD_LIMIT];
@@ -135,6 +133,7 @@ final class Store extends URIDataStore {
                 }
                 wkt = String.valueOf(buffer, 0, length);
             } finally {
+                source = null;
                 in.close();
             }
             /*
@@ -194,19 +193,24 @@ final class Store extends URIDataStore {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();              // Should never fail.
-        final Reader s = source;
-        source = null;                  // Cleared first in case of failure.
-        objects.clear();
-        if (s != null) try {
-            s.close();
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();              // Should never fail.
+            final Reader s = source;
+            if (s != null) s.close();
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                objects.clear();
+                metadata = null;
+                source   = null;
+            }
         }
     }
 }

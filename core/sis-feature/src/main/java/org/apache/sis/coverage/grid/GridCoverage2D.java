@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -96,7 +95,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class GridCoverage2D extends GridCoverage {
     /**
@@ -412,7 +410,7 @@ public class GridCoverage2D extends GridCoverage {
                 } else {
                     name = Vocabulary.formatInternational(Vocabulary.Keys.Band_1, i+1);
                 }
-                sd[i] = new SampleDimension(factory.createLocalName(null, name), null, Collections.emptyList());
+                sd[i] = new SampleDimension(factory.createLocalName(null, name), null, List.of());
             }
             range = Arrays.asList(sd);
         }

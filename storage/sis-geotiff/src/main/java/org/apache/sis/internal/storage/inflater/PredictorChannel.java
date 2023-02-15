@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.geotiff.Predictor;
-import org.apache.sis.internal.jdk9.JDK9;
+import org.apache.sis.internal.jdk17.JDK17;
 
 
 /**
@@ -29,7 +29,6 @@ import org.apache.sis.internal.jdk9.JDK9;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 abstract class PredictorChannel extends PixelChannel {
     /**
@@ -117,7 +116,7 @@ abstract class PredictorChannel extends PixelChannel {
             if (length > deferred.length) {
                 deferred = new byte[length];
             }
-            JDK9.get(target, end, deferred, deferredCount, remaining);
+            JDK17.get(target, end, deferred, deferredCount, remaining);
             target.position(end);
             deferredCount = length;
         }

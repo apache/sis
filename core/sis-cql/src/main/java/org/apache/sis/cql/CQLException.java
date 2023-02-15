@@ -23,7 +23,6 @@ package org.apache.sis.cql;
  * @author  Johann Sorel (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 public final class CQLException extends Exception {
     /**

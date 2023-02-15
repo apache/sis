@@ -68,9 +68,8 @@ import org.apache.sis.util.ArgumentChecks;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
- * @module
  */
 public class GeoTiffStore extends DataStore implements Aggregate {
     /**
@@ -84,7 +83,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @see #reader()
      */
-    private Reader reader;
+    private volatile Reader reader;
 
     /**
      * The {@link GeoTiffStoreProvider#LOCATION} parameter value, or {@code null} if none.
@@ -221,6 +220,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * This method must be invoked inside a block synchronized on {@code this}.
      */
     final NameSpace namespace() {
+        final Reader reader = this.reader;
         if (!isNamespaceSet && reader != null) {
             final NameFactory f = reader.nameFactory;
             GenericName name = null;
@@ -538,19 +538,26 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Closes this GeoTIFF store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing the GeoTIFF file.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                  // Should never fail.
-        final Reader r = reader;
-        reader = null;
-        components = null;
-        if (r != null) try {
-            r.close();
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();                  // Should never fail.
+            final Reader r = reader;
+            if (r != null) r.close();
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                components     = null;
+                namespace      = null;
+                metadata       = null;
+                nativeMetadata = null;
+                reader         = null;
+            }
         }
     }
 

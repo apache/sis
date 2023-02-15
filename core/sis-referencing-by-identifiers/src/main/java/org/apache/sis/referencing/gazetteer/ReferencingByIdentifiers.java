@@ -63,13 +63,12 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see ModifiableLocationType
  * @see AbstractLocation
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem implements ReferenceSystemUsingIdentifiers {
@@ -79,10 +78,16 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
     private static final long serialVersionUID = 5353942546043471933L;
 
     /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.REFERENCING_BY_IDENTIFIERS);
+
+    /**
      * Property used to characterize the spatial reference system.
      *
      * @see #getTheme()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString theme;
 
     /**
@@ -90,6 +95,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      *
      * @see #getOverallOwner()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Party overallOwner;
 
     /**
@@ -98,6 +104,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      *
      * @see #getLocationTypes()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final List<LocationType> locationTypes;
 
     /**
@@ -277,7 +284,6 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.3
      * @since   1.3
-     * @module
      */
     public abstract static class Coder {
         /**
@@ -320,10 +326,10 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
          * A combined method which sets the encoder precision to the given value, then formats the given position.
          * The default implementation is equivalent to the following code:
          *
-         * {@preformat java
+         * {@snippet lang="java" :
          *     setPrecision(precision, position);
          *     return encode(position);
-         * }
+         *     }
          *
          * Subclasses should override with more efficient implementation,
          * for example by transforming the given position only once.
@@ -368,7 +374,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
          * @param e       the transformation error.
          */
         static void recoverableException(final Class<?> caller, final String method, final Exception e) {
-            Logging.recoverableException(Logger.getLogger(Modules.REFERENCING_BY_IDENTIFIERS), caller, method, e);
+            Logging.recoverableException(LOGGER, caller, method, e);
         }
     }
 

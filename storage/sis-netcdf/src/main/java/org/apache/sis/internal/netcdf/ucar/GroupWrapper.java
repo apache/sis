@@ -28,7 +28,6 @@ import org.apache.sis.internal.netcdf.Decoder;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 final class GroupWrapper extends Node {
     /**

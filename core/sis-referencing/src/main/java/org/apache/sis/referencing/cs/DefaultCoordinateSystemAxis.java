@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
 import javax.measure.Unit;
@@ -60,7 +59,6 @@ import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.NEGATIVE_INFINITY;
 import static java.lang.Double.POSITIVE_INFINITY;
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 import static org.apache.sis.util.collection.Containers.property;
 
 /*
@@ -95,7 +93,6 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * @see Unit
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "CoordinateSystemAxisType", propOrder = {
     "abbreviation",
@@ -143,20 +140,23 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * @see #isHeuristicMatchForName(String)
      */
-    private static final Map<String,Object> ALIASES = new HashMap<>(12);
-    static {
-        final Boolean latitude  = Boolean.TRUE;
-        final Boolean longitude = Boolean.FALSE;
-        ALIASES.put("lat",                latitude);
-        ALIASES.put("latitude",           latitude);
-        ALIASES.put("geodetic latitude",  latitude);
-        ALIASES.put("lon",                longitude);
-        ALIASES.put("long",               longitude);
-        ALIASES.put("longitude",          longitude);
-        ALIASES.put("geodetic longitude", longitude);
-        /*
-         * Do not add aliases for "x" and "y" in this map. See ALIASES_XY for more information.
-         */
+    private static final Map<String,Object> ALIASES = Map.of(
+            "lat",                Boolean.TRUE,
+            "latitude",           Boolean.TRUE,
+            "geodetic latitude",  Boolean.TRUE,
+            "lon",                Boolean.FALSE,
+            "long",               Boolean.FALSE,
+            "longitude",          Boolean.FALSE,
+            "geodetic longitude", Boolean.FALSE);
+    /*
+     * Do not add aliases for "x" and "y" in this map. See ALIASES_XY for more information.
+     */
+
+    /**
+     * Returns a value of {@link #ALIASES} map for the given axis name.
+     */
+    private static Object getAliasType(final String name) {
+        return ALIASES.get(name.strip().toLowerCase(Locale.US));   // Our ALIASES are in English.
     }
 
     /**
@@ -206,6 +206,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *
      * @see #getUnit()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Unit<?> unit;
 
     /**
@@ -527,12 +528,12 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         }
         /*
          * The standard comparisons didn't worked. Check for the aliases. Note: we don't test
-         * for  'isHeuristicMatchForNameXY(...)'  here because the "x" and "y" axis names are
-         * too generic.  We test them only in the 'equals' method, which has the extra-safety
+         * for `isHeuristicMatchForNameXY(…)` here because the "x" and "y" axis names are too
+         * generic. We test them only in the `equals(…)` method, which has the extra-safety
          * of units comparison (so less risk to treat incompatible axes as equivalent).
          */
-        final Object type = ALIASES.get(trimWhitespaces(name).toLowerCase(Locale.US)); // Our ALIASES are in English.
-        return (type != null) && (type == ALIASES.get(trimWhitespaces(getName().getCode()).toLowerCase(Locale.US)));
+        final Object type = getAliasType(name);
+        return (type != null) && (type == getAliasType(getName().getCode()));
     }
 
     /**
@@ -546,11 +547,11 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      *         (depending on the {@code xy} value), or {@code false} otherwise.
      */
     private static boolean isHeuristicMatchForNameXY(String xy, String name) {
-        xy = trimWhitespaces(xy);
+        xy = xy.strip();
         if (xy.length() == 1) {
             int i = Character.toLowerCase(xy.charAt(0)) - 'x';
             if (i >= 0 && i <= 1) {
-                name = trimWhitespaces(name);
+                name = name.strip();
                 if (!name.isEmpty()) do {
                     if (name.regionMatches(true, 0, ALIASES_XY[i], 0, name.length())) {
                         return true;
@@ -649,7 +650,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
              *
              * Note: there is no need to execute this block if metadata are not ignored,
              *       because in this case a stricter check has already been performed by
-             *       the 'equals' method in the superclass.
+             *       the `equals(…)` method in the superclass.
              */
             final String thatCode = name.getCode();
             if (!isHeuristicMatchForName(thatCode)) {
@@ -658,8 +659,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
                     /*
                      * The above test checked for special cases ("Lat" / "Lon" aliases, etc.).
                      * The next line may repeat the same check, so we may have a partial waste
-                     * of CPU.   But we do it anyway for checking the 'that' aliases, and also
-                     * because the user may have overridden 'that.isHeuristicMatchForName(…)'.
+                     * of CPU. But we do it anyway for checking the `that` aliases, and also
+                     * because the user may have overridden `that.isHeuristicMatchForName(…)`.
                      */
                     final String thisCode = name.getCode();
                     if (!IdentifiedObjects.isHeuristicMatchForName(that, thisCode)) {
@@ -883,7 +884,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
         maximumValue = POSITIVE_INFINITY;
         /*
          * Direction and unit of measurement are mandatory for SIS working. We do not verify their presence here
-         * because the verification would have to be done in an 'afterMarshal(…)' method and throwing an exception
+         * because the verification would have to be done in an `afterMarshal(…)` method and throwing an exception
          * in that method causes the whole unmarshalling to fail. But the CD_CoordinateSystemAxis adapter does some
          * verifications.
          */

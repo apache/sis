@@ -26,11 +26,10 @@
  * may change in incompatible ways in any future version without notice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.internal.feature.j2d
  *
  * @since 0.3
- * @module
  */
 package org.apache.sis.internal.referencing.j2d;

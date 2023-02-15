@@ -45,9 +45,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.2
- * @module
  */
-public final strictfp class WorldFileStoreTest extends TestCase {
+public final class WorldFileStoreTest extends TestCase {
     /**
      * Returns a storage connector with the URL to the test data.
      */

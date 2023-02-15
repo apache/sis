@@ -16,7 +16,7 @@
  */
 package org.apache.sis.util.iso;
 
-import java.util.Collections;
+import java.util.Map;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.JAXBContext;
@@ -48,10 +48,9 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(DefaultNameFactoryTest.class)
-public final strictfp class NameMarshallingTest extends TestCase {
+public final class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      *
@@ -66,7 +65,7 @@ public final strictfp class NameMarshallingTest extends TestCase {
     private String marshal(final GenericName name) throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class),
-                    Collections.singletonMap(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
+                                      Map.of(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);

@@ -17,7 +17,8 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Map;
-import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -30,9 +31,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
-public final strictfp class DefaultDomainConsistencyTest extends TestCase {
+public final class DefaultDomainConsistencyTest extends TestCase {
     /**
      * Tests {@link DefaultDomainConsistency#asMap()}.
      */
@@ -41,7 +41,7 @@ public final strictfp class DefaultDomainConsistencyTest extends TestCase {
         final DefaultDescriptiveResult r = new DefaultDescriptiveResult("A result");
         final DefaultDomainConsistency c = new DefaultDomainConsistency();
         final Map<String,Object> m = c.asMap();
-        c.setResults(Collections.singleton(r));
-        assertEquals(Collections.singletonList(r), m.get("result"));
+        c.setResults(Set.of(r));
+        assertEquals(List.of(r), m.get("result"));
     }
 }

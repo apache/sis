@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Map;
-import java.util.Collections;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -64,7 +63,6 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Cédric Briançon (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 @RunWith(TestRunner.class)
 @DependsOn({
@@ -72,7 +70,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
     org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
     org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class
 })
-public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest {
+public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.
      */
@@ -143,7 +141,7 @@ public final strictfp class GeodeticObjectFactoryTest extends ObjectFactoryTest 
      * This is the only mandatory property for object creation.
      */
     private static Map<String,?> name(final String name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

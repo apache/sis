@@ -33,9 +33,8 @@ import static org.junit.Assert.assertNotNull;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class BIPConsistencyTest extends CoverageReadConsistency {
+public final class BIPConsistencyTest extends CoverageReadConsistency {
     /**
      * The store used for the test, opened only once.
      */

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
@@ -96,9 +96,8 @@ import static org.apache.sis.internal.referencing.provider.GeocentricAffineBetwe
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
- * @module
  */
 public class EllipsoidToCentricTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -116,7 +115,6 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     public enum TargetType {
         /**
@@ -216,6 +214,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * construction time). In addition this field is part of serialization form in order to preserve the
      * references graph.</div>
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final AbstractMathTransform inverse;
 
     /**
@@ -288,15 +287,14 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          *   - A "denormalization" transform for scaling (X,Y,Z) to the semi-major axis length.
          */
         context.normalizeGeographicInputs(0);
-        final DoubleDouble a = DoubleDouble.createAndGuessError(semiMajor);
+        final DoubleDouble a = DoubleDouble.of(semiMajor, true);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         for (int i=0; i<3; i++) {
             denormalize.convertAfter(i, a, null);
         }
         if (withHeight) {
-            a.inverseDivide(1);
             final MatrixSIS normalize = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
-            normalize.convertBefore(2, a, null);    // Divide ellipsoidal height by a.
+            normalize.convertBefore(2, a.inverse(), null);          // Divide ellipsoidal height by a.
         }
         inverse = new Inverse(this);
     }
@@ -366,15 +364,15 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Creates a transform from geographic to Cartesian geocentric coordinates (convenience method).
-     * Invoking this method is equivalent to the following:
+     * This method is equivalent to the following:
      *
-     * {@preformat java
-     *     createGeodeticConversion(factory,
+     * {@snippet lang="java" :
+     *     return createGeodeticConversion(factory,
      *             ellipsoid.getSemiMajorAxis(),
      *             ellipsoid.getSemiMinorAxis(),
      *             ellipsoid.getAxisUnit(),
      *             withHeight, TargetType.CARTESIAN);
-     * }
+     *     }
      *
      * The target type is assumed Cartesian because this is the most frequently used target.
      *
@@ -780,7 +778,6 @@ next:   while (--numPts >= 0) {
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     private static final class Inverse extends AbstractMathTransform.Inverse implements Serializable {
         /**
@@ -842,8 +839,7 @@ next:   while (--numPts >= 0) {
         @Override
         public ParameterDescriptorGroup getParameterDescriptors() {
             ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Centric to ellipsoid (radians domain)");
-            return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name),
-                    forward.getParameterDescriptors());
+            return new DefaultParameterDescriptorGroup(Map.of(ParameterDescriptorGroup.NAME_KEY, name), forward.getParameterDescriptors());
         }
 
         /**

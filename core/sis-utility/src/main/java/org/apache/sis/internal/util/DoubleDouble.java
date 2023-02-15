@@ -23,6 +23,8 @@ import java.math.MathContext;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -42,28 +44,20 @@ import org.apache.sis.math.DecimalFunctions;
  * more compact storage and better performance. {@code DoubleDouble} can be converted to {@code BigDecimal} as
  * below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     BigDecimal decimal = new BigDecimal(dd.value).add(new BigDecimal(dd.error));
- * }
+ *     }
  *
- * <h2>Impact of availability of FMA instructions</h2>
- * When allowed to use <cite>fused multiply-add</cite> (FMA) instruction added in JDK9
- * (see <a href="https://issues.apache.org/jira/browse/SIS-136">SIS-136</a> on Apache SIS JIRA),
- * then the following methods should be revisited:
- *
- * <ul>
- *   <li>{@link #setToProduct(double, double)} - revisit with [Hida &amp; al.] algorithm 7.</li>
- * </ul>
+ * {@code DoubleDouble} is a <em>value object</em>, immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Double-double_%28arithmetic%29#Double-double_arithmetic">Wikipedia: Double-double arithmetic</a>
  *
  * @since 0.4
- * @module
  */
-public final class DoubleDouble extends Number {
+public final class DoubleDouble extends Number implements Comparable<DoubleDouble> {
     /**
      * For cross-version compatibility.
      */
@@ -75,49 +69,29 @@ public final class DoubleDouble extends Number {
      * are immediately followed by a clearing of {@link DoubleDouble#error}.  The result should then be
      * identical to computation performed using the normal {@code double} arithmetic.
      *
-     * <p>Since this flag is static final, all expressions of the form {@code if (DISABLED)} should be
+     * <p>Because this flag is static final, all expressions of the form {@code if (DISABLED)} should be
      * omitted by the compiler from the class files in normal operations.</p>
      *
-     * <p>Setting this flag to {@code true} causes some JUnit tests to fail. This is normal. The main
+     * <p>Setting this flag to {@code true} causes some JUnit tests to fail, which is expected. The main
      * purpose of this flag is to allow {@code org.apache.sis.referencing.operation.matrix.MatrixTestCase}
      * to perform strict comparisons of matrix operation results with JAMA, which is taken as the reference
-     * implementation. Since JAMA uses {@code double} arithmetic, SIS needs to disable {@code double-double}
+     * implementation. Since JAMA uses {@code double} arithmetic, SIS needs to disable double-double
      * arithmetic if the results are to be compared for strict equality.</p>
      */
+    @Debug
     public static final boolean DISABLED = false;
 
     /**
+     * A margin in number of bits for determining if an error term should be considered as zero.
      * When computing <var>a</var> - <var>b</var> as a double-double (106 significand bits) value,
      * if the amount of non-zero significand bits is equal or lower than {@code ZERO_THRESHOLD+1},
      * consider the result as zero.
      */
+    @Configuration
     private static final int ZERO_THRESHOLD = 2;
 
     /**
-     * The split constant used as part of multiplication algorithms. The split algorithm is as below
-     * (we have to inline it in multiplication methods because Java cannot return multi-values):
-     *
-     * {@preformat java
-     *     private void split(double a) {
-     *         double t   = SPLIT * a;
-     *         double ahi = t - (t - a);
-     *         double alo = a - ahi;
-     *     }
-     * }
-     *
-     * <p>Source: [Hida &amp; al.] page 4 algorithm 5, itself reproduced from [Shewchuk] page 325.</p>
-     */
-    private static final double SPLIT = (1 << 27) + 1;
-
-    /**
-     * Maximal value that can be handled by {@link #multiply(double, double)}.
-     * If a multiplication is using a value greater than {@code MAX_VALUE},
-     * then the result will be infinity or NaN.
-     */
-    public static final double MAX_VALUE = Double.MAX_VALUE / SPLIT;
-
-    /**
-     * Pre-defined constants frequently used in SIS, sorted in increasing order. This table contains only
+     * Predefined constants frequently used in SIS, sorted in increasing order. This table contains only
      * constants that cannot be inferred by {@link DecimalFunctions#deltaForDoubleToDecimal(double)},
      * for example some transcendental values.
      *
@@ -176,188 +150,178 @@ public final class DoubleDouble extends Number {
     };
 
     /**
+     * A {@code DoubleDouble} instance for the 0 value.
+     *
+     * @see #isZero()
+     */
+    public static final DoubleDouble ZERO = new DoubleDouble(0, 0);
+
+    /**
+     * A {@code DoubleDouble} instance for the 1 value.
+     */
+    public static final DoubleDouble ONE = new DoubleDouble(1, 0);
+
+    /**
+     * A {@code DoubleDouble} instance for the π value.
+     */
+    public static final DoubleDouble PI =
+            new DoubleDouble(3.14159265358979323846264338327950, 1.2246467991473532E-16);
+
+    /**
+     * A {@code DoubleDouble} instance for the conversion factor from radians to angular degrees.
+     */
+    public static final DoubleDouble RADIANS_TO_DEGREES =
+            new DoubleDouble(57.2957795130823208767981548141052, -1.9878495670576283E-15);
+
+    /**
+     * A {@code DoubleDouble} instance for the conversion factor from angular degrees to radians.
+     */
+    public static final DoubleDouble DEGREES_TO_RADIANS =
+            new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
+
+    /**
+     * A {@code DoubleDouble} instance for the conversion factor from arc-seconds to radians.
+     */
+    public static final DoubleDouble SECONDS_TO_RADIANS =
+            new DoubleDouble(0.000004848136811095359935899141023579480, 9.320078015422868E-23);
+
+    /**
+     * A {@code DoubleDouble} instance for the NaN value.
+     *
+     * @see #isNaN()
+     */
+    public static final DoubleDouble NaN = new DoubleDouble(Double.NaN, Double.NaN);
+
+    /**
      * The main value, minus the {@link #error}.
      */
-    public double value;
+    public final double value;
 
     /**
      * The error that shall be added to the main {@link #value} in order to get the
      * <cite>"real"</cite> (actually <cite>"the most accurate that we can"</cite>) value.
      */
-    public double error;
+    public final double error;
 
     /**
-     * Creates a new value initialized to zero.
-     */
-    public DoubleDouble() {
-    }
-
-    /**
-     * Creates a new value initialized to the given value.
-     *
-     * @param  other  the other value to copy.
-     */
-    public DoubleDouble(final DoubleDouble other) {
-        value = other.value;
-        error = other.error;
-    }
-
-    /**
-     * Creates a new value initialized to the given number. If the given number is an instance of
-     * {@code DoubleDouble}, {@link BigDecimal}, {@link BigInteger} or {@link Fraction}, then the
-     * error term will be taken in account.
-     *
-     * @param  otherValue  the initial value.
-     */
-    public DoubleDouble(Number otherValue) {
-        if (otherValue instanceof Fraction) {
-            value = ((Fraction) otherValue).denominator;
-            inverseDivide(((Fraction) otherValue).numerator);
-        } else {
-            if (otherValue instanceof BigInteger) {
-                otherValue = new BigDecimal((BigInteger) otherValue, MathContext.DECIMAL128);
-            }
-            value = otherValue.doubleValue();
-            if (otherValue instanceof DoubleDouble) {
-                error = ((DoubleDouble) otherValue).error;
-            } else if (otherValue instanceof Long) {
-                error = otherValue.longValue() - (long) value;
-            } else if (otherValue instanceof BigDecimal) {
-                // Really need new BigDecimal(value) below, not BigDecimal.valueOf(value).
-                error = ((BigDecimal) otherValue).subtract(new BigDecimal(value), MathContext.DECIMAL64).doubleValue();
-            } else {
-                error = errorForWellKnownValue(value);
-            }
-        }
-    }
-
-    /**
-     * Returns {@code true} if the given value is one of the special cases recognized by the
-     * {@link #DoubleDouble(Number)} constructor. Those special cases should rarely occur,
-     * so we do not complicate the code with optimized code paths.
-     *
-     * <p>This method does not test if the given value is already an instance of {@code DoubleDouble}.
-     * That verification should be done by the caller.</p>
-     *
-     * @param  value  the value to test.
-     * @return {@code true} if it is worth to convert the given value to a {@code DoubleDouble}.
-     *
-     * @since 0.8
-     */
-    public static boolean shouldConvert(final Number value) {
-        return (value instanceof Fraction)   || (value instanceof Long) ||
-               (value instanceof BigInteger) || (value instanceof BigDecimal);
-    }
-
-    /**
-     * Creates a new instance initialized to the given long integer.
-     *
-     * @param  value  the long integer value to wrap.
-     */
-    public DoubleDouble(final long value) {
-        this.value = value;
-        this.error = (value - (long) this.value);
-    }
-
-    /**
-     * Creates a new instance initialized to the given value verbatim, without inferring an error term for double-double arithmetic.
-     * We use this constructor when the value has been computed using transcendental functions (cosine, logarithm, <i>etc.</i>)
-     * in which case there is no way we can infer a meaningful error term. It should also be used when the value is known to have
-     * an exact representation as a {@code double} primitive type.
-     *
-     * @param  value  the value to wrap in a {@code DoubleDouble} instance.
-     *
-     * @see #createAndGuessError(double)
-     */
-    public DoubleDouble(final double value) {
-        this.value = value;
-    }
-
-    /**
-     * Creates a new value initialized to the given value and error.
+     * Creates a new instance for the given value and error.
      * It is caller's responsibility to ensure that the (value, error) pair is normalized.
      *
-     * @param  value  the initial value.
-     * @param  error  the initial error.
+     * @param  value  the value.
+     * @param  error  the error.
      */
-    public DoubleDouble(final double value, final double error) {
+    private DoubleDouble(final double value, final double error) {
         this.value = value;
-        this.error = error;
+        this.error = DISABLED ? 0 : error;
         assert !(Math.abs(error) >= Math.ulp(value)) : this;            // Use ! for being tolerant to NaN.
     }
 
     /**
-     * Returns the given value as a {@code DoubleDouble}. This method returns the given instance
-     * directly if it can be safely casted to {@code DoubleDouble}.
+     * Returns an instance for the given number. If the given number is an instance of
+     * {@code DoubleDouble}, {@link BigDecimal}, {@link BigInteger} or {@link Fraction},
+     * then the error term will be taken in account.
      *
-     * @param  value  the value to cast or to copy, or {@code null}.
-     * @return the value as a {@code DoubleDouble} (may be the same instance than the given argument),
-     *         or {@code null} if the given value was null.
-     *
-     * @since 0.8
+     * @param  value    the value, or {@code null}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
+     * @return the value as a double-double number, or {@code null} if the given number was null.
      */
-    public static DoubleDouble castOrCopy(final Number value) {
-        return (value == null || value instanceof DoubleDouble) ? (DoubleDouble) value : new DoubleDouble(value);
+    public static DoubleDouble of(Number value, final boolean decimal) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof DoubleDouble) {
+            return (DoubleDouble) value;
+        }
+        if (value instanceof Fraction) {
+            final Fraction f = (Fraction) value;
+            return new DoubleDouble(f.numerator, 0)
+                            .divide(f.denominator);
+        }
+        final double v, error;
+        if (value instanceof Float) {
+            final float f = (Float) value;
+            value = decimal ? DecimalFunctions.floatToDouble(f) : f;
+        } else if (value instanceof BigInteger) {
+            value = new BigDecimal((BigInteger) value, MathContext.DECIMAL128);
+        }
+        v = value.doubleValue();
+        if (value instanceof Integer) {
+            error = 0;
+        } else if (value instanceof Long) {
+            error = value.longValue() - (long) v;       // Need rounding toward zero.
+        } else if (value instanceof BigDecimal) {
+            // Really need new BigDecimal(value) below, not BigDecimal.valueOf(value).
+            error = ((BigDecimal) value).subtract(new BigDecimal(v), MathContext.DECIMAL64).doubleValue();
+        } else {
+            error = decimal ? errorForWellKnownValue(v) : 0;
+        }
+        return new DoubleDouble(v, error);
     }
 
     /**
-     * Creates a new value initialized to the given value and an error term inferred by
-     * {@link #errorForWellKnownValue(double)}.
+     * Returns an instance for the given integer.
      *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #DoubleDouble(double) DoubleDouble}(value)</code> is more efficient.
-     *
-     * @param  value  the initial value.
-     * @return an instance initialized to the given value and a default error term.
+     * @param  value  the integer value to wrap in a {@code DoubleDouble}.
+     * @return the value as a double-double number.
      */
-    public static DoubleDouble createAndGuessError(final double value) {
-        return new DoubleDouble(value, errorForWellKnownValue(value));
+    public static DoubleDouble of(final int value) {
+        return new DoubleDouble(value, 0);
     }
 
     /**
-     * Returns a new {@code DoubleDouble} instance initialized to the π value.
+     * Returns an instance for the given long integer.
      *
-     * @return an instance initialized to the 3.14159265358979323846264338327950 value.
+     * @param  value  the long integer value to wrap in a {@code DoubleDouble}.
+     * @return the value as a double-double number.
      */
-    public static DoubleDouble createPi() {
-        return new DoubleDouble(3.14159265358979323846264338327950, 1.2246467991473532E-16);
+    public static DoubleDouble of(final long value) {
+        final double f = value;
+        return new DoubleDouble(f, value - (long) f);       // Rounding toward zero.
     }
 
     /**
-     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
-     * from radians to angular degrees.
+     * Returns an instance for the given value.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
+     * {@code decimal} should be {@code false} when the value has been computed using transcendental functions
+     * (cosine, logarithm, <i>etc.</i>), in which case there is no way we can infer a meaningful error term.
+     * Should also be {@code false} (for performance reason) when the value is an exact representation in base 2.
      *
-     * @return an instance initialized to the 57.2957795130823208767981548141052 value.
+     * @param  value    the value.
+     * @param  decimal  whether the value was intended to be exact in base 10.
+     * @return the value as a double-double number.
      */
-    public static DoubleDouble createRadiansToDegrees() {
-        return new DoubleDouble(57.2957795130823208767981548141052, -1.9878495670576283E-15);
+    public static DoubleDouble of(final double value, final boolean decimal) {
+        return new DoubleDouble(value, decimal ? errorForWellKnownValue(value) : 0);
     }
 
     /**
-     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
-     * from angular degrees to radians.
+     * Returns an instance for the given value and error.
+     * It is caller's responsibility to ensure the {@code error} term is less than 1 ULP of {@code value}.
      *
-     * @return an instance initialized to the 0.01745329251994329576923690768488613 value.
+     * @param  value  the value.
+     * @param  error  the error.
+     * @return the value as a double-double number.
      */
-    public static DoubleDouble createDegreesToRadians() {
-        return new DoubleDouble(0.01745329251994329576923690768488613, 2.9486522708701687E-19);
+    public static DoubleDouble of(final double value, final double error) {
+        return new DoubleDouble(value, error);
     }
 
     /**
-     * Returns a new {@code DoubleDouble} instance initialized to the conversion factor
-     * from arc-seconds to radians.
+     * Return value + error. The result should be identical to {@link #value},
+     * but we nevertheless do the sum as a safety.
      *
-     * @return an instance initialized to the 0.000004848136811095359935899141023579480 value.
+     * @return {@link #value} + {@link #error}.
      */
-    public static DoubleDouble createSecondsToRadians() {
-        return new DoubleDouble(0.000004848136811095359935899141023579480, 9.320078015422868E-23);
-    }
-
-    /** @return {@link #value} + {@link #error}. */
     @Override public double doubleValue() {return value + error;}
     @Override public float  floatValue()  {return (float) doubleValue();}
-    @Override public long   longValue()   {return Math.round(value) + (long) error;}
-    @Override public int    intValue()    {return Math.toIntExact(longValue());}
+    @Override public int    intValue()    {return Numerics.clamp(longValue());}
+    @Override public long   longValue()   {return Numerics.saturatingAdd(Math.round(value), (long) error);}
+    /*
+     * Do not override `shortValue()` and `byteValue()` in order to keep a behavior
+     * consistent with all `Number` subclasses provided in the standard JDK: first
+     * a narrowing conversion to `int` followed by discarding the high order bits.
+     * Note than even a direct `(short) value` cast implicitly does above steps.
+     */
 
     /**
      * Suggests an {@link #error} for the given value. The {@code DoubleDouble} class contains a hard-coded list
@@ -377,252 +341,162 @@ public final class DoubleDouble extends Number {
      * @return the error for the given value, or 0 if unknown. In the latter case,
      *         the base 2 representation of the given value is assumed to be accurate enough.
      */
-    public static double errorForWellKnownValue(final double value) {
+    static double errorForWellKnownValue(final double value) {
         if (DISABLED) return 0;
         final int i = Arrays.binarySearch(VALUES, Math.abs(value));
+        final double error;
         if (i >= 0) {
-            return MathFunctions.xorSign(ERRORS[i], value);
+            error = MathFunctions.xorSign(ERRORS[i], value);
+        } else {
+            final double delta = DecimalFunctions.deltaForDoubleToDecimal(value);
+            error = Double.isNaN(delta) ? 0 : delta;
         }
-        final double delta = DecimalFunctions.deltaForDoubleToDecimal(value);
-        return Double.isNaN(delta) ? 0 : delta;
+        assert !(Math.abs(error) >= Math.ulp(value)) : value;       // Use ! for being tolerant to NaN.
+        return error;
     }
 
     /**
      * Returns {@code true} if this {@code DoubleDouble} is equal to zero.
      *
      * @return {@code true} if this {@code DoubleDouble} is equal to zero.
+     *
+     * @see #ZERO
      */
     public boolean isZero() {
         return value == 0 && error == 0;
     }
 
     /**
-     * Resets the {@link #value} and {@link #error} terms to zero.
-     */
-    public void clear() {
-        value = 0;
-        error = 0;
-    }
-
-    /**
-     * Sets this {@code DoubleDouble} to the given 64-bits signed integer.
+     * Returns {@code true} if this {@code DoubleDouble} is not a number.
      *
-     * @param  n  the value to set.
-     */
-    public void set(final long n) {
-        value = n;
-        error = n - (long) value;
-    }
-
-    /**
-     * Sets this {@code DoubleDouble} to the same value than the given instance.
+     * @return {@code true} if this {@code DoubleDouble} is not a number.
      *
-     * @param  other  the instance to copy.
+     * @see #NaN
      */
-    public void setFrom(final DoubleDouble other) {
-        value = other.value;
-        error = other.error;
+    public boolean isNaN() {
+        return Double.isNaN(value) || Double.isNaN(error);
     }
 
     /**
-     * Sets the {@link #value} and {@link #error} terms to values read from the given array.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *   value = array[index];
-     *   error = array[index + errorOffset];
-     * }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void setFrom(final double[] array, final int index, final int errorOffset) {
-        value = array[index];
-        error = array[index + errorOffset];
-    }
-
-    /**
-     * Equivalent to a call to {@code setToQuickSum(value, error)} inlined.
-     * This is invoked after addition or multiplication operations.
-     */
-    final void normalize() {
-        error += (value - (value += error));
-        if (DISABLED) error = 0;
-    }
-
-    /**
-     * Sets this {@code DoubleDouble} to the sum of the given numbers,
+     * Returns the sum of the given numbers,
      * to be used only when {@code abs(a) >= abs(b)}.
      *
      * <p>Source: [Hida &amp; al.] page 4 algorithm 3, itself reproduced from [Shewchuk] page 312.</p>
      *
      * @param  a  the first number to add.
      * @param  b  the second number to add, which must be smaller than {@code a}.
+     * @return sum of the given numbers.
      */
-    final void setToQuickSum(final double a, final double b) {
-        value = a + b;
-        error = b - (value - a);
-        if (DISABLED) error = 0;
+    static DoubleDouble quickSum(final double a, final double b) {
+        final double value = a + b;
+        return new DoubleDouble(value, b - (value - a));
     }
 
     /**
-     * Sets this {@code DoubleDouble} to the sum of the given numbers.
+     * Returns the sum of the given numbers.
+     * The double-double accuracy is useful when the largest value is exact in base 2.
+     * A typical example is: 1 - (small value).
      *
      * <p>Source: [Hida &amp; al.] page 4 algorithm 4, itself reproduced from [Shewchuk] page 314.</p>
      *
      * @param  a  the first number to add.
      * @param  b  the second number to add.
+     * @return sum of the given numbers.
      */
-    public void setToSum(final double a, final double b) {
-        value = a + b;
+    public static DoubleDouble sum(final double a, final double b) {
+        final double value = a + b;
         final double v = value - a;
-        error = (a - (value - v)) + (b - v);
-        if (DISABLED) error = 0;
+        return new DoubleDouble(value, (a - (value - v)) + (b - v));
     }
 
     /**
-     * Sets this {@code DoubleDouble} to the product of the given numbers.
-     * The given numbers shall not be greater than {@value #MAX_VALUE} in magnitude.
+     * Returns the product of the given numbers.
+     * Note that unless the given arguments are exact in base 2,
+     * the result is not more accurate than a {@code double}.
      *
-     * <p>Source: [Hida &amp; al.] page 4 algorithm 6, itself reproduced from [Shewchuk] page 326.</p>
+     * <p>Source: [Hida &amp; al.] page 5 algorithm 7, itself reproduced from [Shewchuk] page 326.
+     * This is the algorithm used when FMA instruction is available. For an algorithm without FMA,
+     * see [Hida &amp; al.] page 4 algorithm 6 (it is more complicated).</p>
      *
      * @param  a  the first number to multiply.
      * @param  b  the second number to multiply.
+     * @return product of the given numbers.
      */
-    public void setToProduct(final double a, final double b) {
-        value = a * b;
-        double t = SPLIT * a;
-        final double ahi = t - (t - a);
-        final double alo = a - ahi;
-        t = SPLIT * b;
-        final double bhi = t - (t - b);
-        final double blo = b - bhi;
-        error = ((ahi*bhi - value) + ahi*blo + alo*bhi) + alo*blo;
-        if (DISABLED) error = 0;
+    public static DoubleDouble product(final double a, final double b) {
+        final double value = a * b;
+        return new DoubleDouble(value, Math.fma(a, b, -value));     // Really needs the `fma(…)` precision here.
     }
 
     /**
-     * Stores the {@link #value} and {@link #error} terms in the given array.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *   array[index] = value;
-     *   array[index + errorOffset] = error;
-     * }
-     *
-     * @param  array        the array where to store the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
+     * {@return {@code 1/this}}.
      */
-    public void storeTo(final double[] array, final int index, final int errorOffset) {
-        array[index] = value;
-        array[index + errorOffset] = error;
+    public DoubleDouble inverse() {
+        return ONE.divide(this);
     }
 
     /**
-     * Swaps two double-double values in the given array.
-     *
-     * @param  array        the array where to swap the values and errors.
-     * @param  i0           index of the first value to swap.
-     * @param  i1           index of the second value to swap.
-     * @param  errorOffset  offset to add to the indices in order to get the error indices in the given array.
-     *
-     * @see org.apache.sis.util.ArraysExt#swap(double[], int, int)
+     * {@return {@code -this}}.
      */
-    public static void swap(final double[] array, int i0, int i1, final int errorOffset) {
-        double t = array[i0];
-        array[i0] = array[i1];
-        array[i1] = t;
-        t = array[i0 += errorOffset];
-        array[i0] = array[i1 += errorOffset];
-        array[i1] = t;
-    }
-
-    /**
-     * Sets this number to {@code -this}.
-     */
-    public void negate() {
-        value = -value;
-        error = -error;
+    public DoubleDouble negate() {
+        return new DoubleDouble(-value, -error);
     }
 
     /**
      * Adds another double-double value to this {@code DoubleDouble}.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    add(other.value, other.error);
-     * }
      *
      * @param  other  the other value to add to this {@code DoubleDouble}.
+     * @return the sum of {@code this} with the given number.
      */
-    public void add(final DoubleDouble other) {
-        add(other.value, other.error);
+    public DoubleDouble add(final DoubleDouble other) {
+        return add(other.value, other.error);
     }
 
     /**
      * Adds a {@code Number} value to this {@code DoubleDouble}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
+     * @param  other    the other value to add to this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
+     * @return the sum of {@code this} with the given number.
+     */
+    public DoubleDouble add(final Number other, final boolean decimal) {
+        return add(of(other, decimal));
+    }
+
+    /**
+     * Adds a {@code int} value to this {@code DoubleDouble}.
+     *
      * @param  other  the other value to add to this {@code DoubleDouble}.
+     * @return the sum of {@code this} with the given number.
      */
-    public void addGuessError(final Number other) {
-        if (other instanceof DoubleDouble) {
-            add((DoubleDouble) other);
-        } else if (shouldConvert(other)) {
-            add(new DoubleDouble(other));
-        } else {
-            addGuessError(other.doubleValue());
-        }
+    public DoubleDouble add(final int other) {
+        return add(other, 0);
     }
 
     /**
-     * Adds a {@code double} value to this {@code DoubleDouble} with a default error term.
-     * This is a convenience method for:
+     * Adds a {@code long} value to this {@code DoubleDouble}.
      *
-     * {@preformat java
-     *    add(otherValue, errorForWellKnownValue(otherValue));
-     * }
-     *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #add(double) add}(otherValue)</code> is more efficient.
-     *
-     * @param  otherValue  the other value to add to this {@code DoubleDouble}.
+     * @param  other  the other value to add to this {@code DoubleDouble}.
+     * @return the sum of {@code this} with the given number.
      */
-    public void addGuessError(final double otherValue) {
-        add(otherValue, errorForWellKnownValue(otherValue));
+    public DoubleDouble add(final long other) {
+        return add(of(other));
     }
 
     /**
-     * Adds the given {@code double} value using
-     * <a href="https://en.wikipedia.org/wiki/Kahan_summation_algorithm">Kahan summation algorithm</a>.
-     * This can be used when {@code otherValue} is known to be smaller than {@link #value}.
+     * Adds a {@code double} value to this {@code DoubleDouble}.
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * @param  y  the other value to add to this {@code DoubleDouble}.
+     * @param  other    the other value to add to this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
+     * @return the sum of {@code this} with the given number.
      */
-    public void addKahan(double y) {
-        y += error;
-        error = y + (value - (value += y));
-    }
-
-    /**
-     * Adds a {@code double} value to this {@code DoubleDouble} without error term.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    add(otherValue, 0);
-     * }
-     *
-     * @param  otherValue  the other value to add to this {@code DoubleDouble}.
-     */
-    public void add(final double otherValue) {
-        add(otherValue, 0);
+    public DoubleDouble add(final double other, final boolean decimal) {
+        return add(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
      * Adds another double-double value to this {@code DoubleDouble}.
-     * The result is stored in this instance.
      *
      * <h4>Implementation</h4>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then:
@@ -637,208 +511,149 @@ public final class DoubleDouble extends Number {
      * keeping in mind that the result of (a.value + b.value) has itself an error
      * which needs to be added to (a.error + b.error). In Java code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   final double thisError = this.error;
      *   setToSum(value, otherValue);
      *   error += thisError;
      *   error += otherError;
      *   setToQuickSum(value, error);
-     * }
+     *   }
      *
      * @param  otherValue  the other value to add to this {@code DoubleDouble}.
      * @param  otherError  the error of the other value to add to this {@code DoubleDouble}.
+     * @return the sum of {@code this} with the given number.
      */
-    public void add(final double otherValue, final double otherError) {
-        // Inline expansion of the code in above javadoc.
-        double v = value;
-        value += otherValue;
-        error += v - (value + (v -= value)) + (otherValue + v);
-        error += otherError;
-        if (value == 0 && error != 0) {
+    private DoubleDouble add(final double otherValue, final double otherError) {
+        double s = value + otherValue;
+        double v = s - value;
+        double e = (value - (s - v)) + (otherValue - v) + (error + otherError);
+        if (s == 0 && e != 0) {
             /*
              * The two values almost cancelled, only their error terms are different.
-             * The number of significand bits (mantissa) in the IEEE 'double' representation is 52,
+             * The number of significand bits (mantissa) in the IEEE `double` representation is 52,
              * not counting the hidden bit. So estimate the accuracy of the double-double number as
-             * the accuracy of the 'double' value (which is 1 ULP) scaled as if we had 52 additional
+             * the accuracy of the `double` value (which is 1 ULP) scaled as if we had 52 additional
              * significand bits (we ignore some more bits if ZERO_THRESHOLD is greater than 0).
              * If the error is not greater than that value, then assume that it is not significant.
              */
-            if (Math.abs(error) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - Numerics.SIGNIFICAND_SIZE)) {
-                error = 0;
-                return;
+            if (Math.abs(e) <= Math.scalb(Math.ulp(otherValue), ZERO_THRESHOLD - Numerics.SIGNIFICAND_SIZE)) {
+                return new DoubleDouble(s, 0);
             }
         }
-        normalize();
-    }
-
-    /**
-     * Adds another double-double value to this {@code DoubleDouble}, reading the values from an array.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *    add(array[index], array[index + errorOffset]);
-     * }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void add(final double[] array, final int index, final int errorOffset) {
-        add(array[index], array[index + errorOffset]);
+        return quickSum(s, e);
     }
 
     /**
      * Subtracts another double-double value from this {@code DoubleDouble}.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    subtract(other.value, other.error);
-     * }
      *
      * @param  other  the other value to subtract from this value.
+     * @return the difference between {@code this} and the given number.
      */
-    public void subtract(final DoubleDouble other) {
-        subtract(other.value, other.error);
+    public DoubleDouble subtract(final DoubleDouble other) {
+        return add(-other.value, -other.error);
     }
 
     /**
      * Subtracts a {@code Number} from this {@code DoubleDouble}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value to subtract from this {@code DoubleDouble}.
+     * @param  other    the other value to subtract from this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
+     * @return the difference between {@code this} and the given number.
      */
-    public void subtractGuessError(final Number other) {
-        if (other instanceof DoubleDouble) {
-            subtract((DoubleDouble) other);
-        } else if (shouldConvert(other)) {
-            subtract(new DoubleDouble(other));
-        } else {
-            subtractGuessError(other.doubleValue());
-        }
+    public DoubleDouble subtract(final Number other, final boolean decimal) {
+        return subtract(of(other, decimal));
+    }
+
+    /**
+     * Subtracts an {@code int} from this {@code DoubleDouble}.
+     *
+     * @param  other  the other value to subtract from this {@code DoubleDouble}.
+     * @return the difference between {@code this} and the given number.
+     */
+    public DoubleDouble subtract(final int other) {
+        return add(-((double) other), 0);
+    }
+
+    /**
+     * Subtracts a {@code long} from this {@code DoubleDouble}.
+     *
+     * @param  other  the other value to subtract from this {@code DoubleDouble}.
+     * @return the difference between {@code this} and the given number.
+     */
+    public DoubleDouble subtract(final long other) {
+        return subtract(of(other));
     }
 
     /**
      * Subtracts a {@code double} from this {@code DoubleDouble} with a default error term.
-     * This is a convenience method for:
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * {@preformat java
-     *    subtract(otherValue, errorForWellKnownValue(otherValue));
-     * }
-     *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #subtract(double) subtract}(otherValue)</code> is more efficient.
-     *
-     * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
+     * @param  other    the other value to subtract from this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
+     * @return the difference between {@code this} and the given number.
      */
-    public void subtractGuessError(final double otherValue) {
-        subtract(otherValue, errorForWellKnownValue(otherValue));
-    }
-
-    /**
-     * Subtracts a {@code double} from this {@code DoubleDouble} without error term.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    subtract(otherValue, 0);
-     * }
-     *
-     * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
-     */
-    public void subtract(final double otherValue) {
-        subtract(otherValue, 0);
-    }
-
-    /**
-     * Subtracts another double-double value from this {@code DoubleDouble}.
-     * The result is stored in this instance.
-     *
-     * @param  otherValue  the other value to subtract from this {@code DoubleDouble}.
-     * @param  otherError  the error of the other value to subtract from this {@code DoubleDouble}.
-     */
-    public void subtract(final double otherValue, final double otherError) {
-        add(-otherValue, -otherError);
-    }
-
-    /**
-     * Subtracts another double-double value from this {@code DoubleDouble}, reading the values from an array.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *    subtract(array[index], array[index + errorOffset]);
-     * }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void subtract(final double[] array, final int index, final int errorOffset) {
-        subtract(array[index], array[index + errorOffset]);
+    public DoubleDouble subtract(double other, final boolean decimal) {
+        other = -other;
+        return add(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
      * Multiplies this {@code DoubleDouble} by another double-double value.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    multiply(other.value, other.error);
-     * }
      *
      * @param  other  the other value to multiply by this value.
+     * @return the product of {@code this} with the given number.
      */
-    public void multiply(final DoubleDouble other) {
-        multiply(other.value, other.error);
+    public DoubleDouble multiply(final DoubleDouble other) {
+        return multiply(other.value, other.error);
     }
 
     /**
      * Multiplies this {@code DoubleDouble} by a {@code Number}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value to multiply by this {@code DoubleDouble}.
+     * @param  other    the other value to multiply by this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
+     * @return the product of {@code this} with the given number.
      */
-    public void multiplyGuessError(final Number other) {
-        if (other instanceof DoubleDouble) {
-            multiply((DoubleDouble) other);
-        } else if (shouldConvert(other)) {
-            multiply(new DoubleDouble(other));
-        } else {
-            multiplyGuessError(other.doubleValue());
-        }
+    public DoubleDouble multiply(final Number other, final boolean decimal) {
+        return multiply(of(other, decimal));
+    }
+
+    /**
+     * Multiplies this {@code DoubleDouble} by an {@code int}.
+     *
+     * @param  other  the other value to multiply by this {@code DoubleDouble}.
+     * @return the product of {@code this} with the given number.
+     */
+    public DoubleDouble multiply(final int other) {
+        return multiply(other, 0);
+    }
+
+    /**
+     * Multiplies this {@code DoubleDouble} by a {@code long}.
+     *
+     * @param  other  the other value to multiply by this {@code DoubleDouble}.
+     * @return the product of {@code this} with the given number.
+     */
+    public DoubleDouble multiply(final long other) {
+        return multiply(of(other));
     }
 
     /**
      * Multiplies this {@code DoubleDouble} by a {@code double} with a default error term.
-     * This is a convenience method for:
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * {@preformat java
-     *    multiply(otherValue, errorForWellKnownValue(otherValue));
-     * }
-     *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #multiply(double) multiply}(otherValue)</code> is more efficient.
-     *
-     * @param  otherValue  the other value to multiply by this {@code DoubleDouble}.
+     * @param  other    the other value to multiply by this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
+     * @return the product of {@code this} with the given number.
      */
-    public void multiplyGuessError(final double otherValue) {
-        multiply(otherValue, errorForWellKnownValue(otherValue));
-    }
-
-    /**
-     * Multiplies this {@code DoubleDouble} by a {@code double} without error term.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    multiply(otherValue, 0);
-     * }
-     *
-     * @param  otherValue  the other value to multiply by this {@code DoubleDouble}.
-     */
-    public void multiply(final double otherValue) {
-        multiply(otherValue, 0);
+    public DoubleDouble multiply(final double other, final boolean decimal) {
+        return multiply(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
      * Multiplies this {@code DoubleDouble} by another double-double value.
-     * The result is stored in this instance.
      *
      * <h4>Implementation</h4>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then:
@@ -853,206 +668,75 @@ public final class DoubleDouble extends Number {
      *
      * The first term is the main product. All other terms are added to the error, keeping in mind that the main
      * product has itself an error. The last term (the product of errors) is ignored because presumed very small.
-     * In Java code:
-     *
-     * {@preformat java
-     *   final double thisValue = this.value;
-     *   final double thisError = this.error;
-     *   setToProduct(thisValue, otherValue);
-     *   error += otherError * thisValue;
-     *   error += otherValue * thisError;
-     *   setToQuickSum(value, error);
-     * }
      *
      * @param  otherValue  the other value by which to multiply this {@code DoubleDouble}.
      * @param  otherError  the error of the other value by which to multiply this {@code DoubleDouble}.
+     * @return the product of {@code this} with the given number.
      */
-    public void multiply(final double otherValue, final double otherError) {
-        final double thisValue = this.value;
-        final double thisError = this.error;
-        setToProduct(thisValue, otherValue);
-        error += otherError * thisValue;
-        error += otherValue * thisError;
-        normalize();
-    }
-
-    /**
-     * Multiplies this {@code DoubleDouble} by another double-double value stored in the given array.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *    multiply(array[index], array[index + errorOffset]);
-     * }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void multiply(final double[] array, final int index, final int errorOffset) {
-        multiply(array[index], array[index + errorOffset]);
+    private DoubleDouble multiply(final double otherValue, final double otherError) {
+        double v = value * otherValue, e;
+        e = Math.fma(value, otherValue, -v);    // Really needs the `fma(…)` precision here.
+        e = Math.fma(otherError, value, e);
+        e = Math.fma(otherValue, error, e);
+        return quickSum(v, e);
     }
 
     /**
      * Divides this {@code DoubleDouble} by another double-double value.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    divide(other.value, other.error);
-     * }
      *
      * @param  other  the other value to by which to divide this value.
+     * @return the ratio between {@code this} and the given number.
      */
-    public void divide(final DoubleDouble other) {
-        divide(other.value, other.error);
+    public DoubleDouble divide(final DoubleDouble other) {
+        return divide(other.value, other.error);
     }
 
     /**
      * Divides this {@code DoubleDouble} by a {@code Number}. If the given number is an instance
      * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
      *
-     * @param  other  the other value by which to divide this {@code DoubleDouble}.
+     * @param  other    the other value by which to divide this {@code DoubleDouble}.
+     * @param  decimal  whether {@code float} and {@code double} values were intended to be exact in base 10.
+     * @return the ratio between {@code this} and the given number.
      */
-    public void divideGuessError(final Number other) {
-        if (other instanceof DoubleDouble) {
-            divide((DoubleDouble) other);
-        } else if (shouldConvert(other)) {
-            divide(new DoubleDouble(other));
-        } else {
-            divideGuessError(other.doubleValue());
-        }
+    public DoubleDouble divide(final Number other, final boolean decimal) {
+        return divide(of(other, decimal));
+    }
+
+    /**
+     * Divides this {@code DoubleDouble} by an {@code int}.
+     *
+     * @param  other  the other value by which to divide this {@code DoubleDouble}.
+     * @return the ratio between {@code this} and the given number.
+     */
+    public DoubleDouble divide(final int other) {
+        return divide(other, 0);
+    }
+
+    /**
+     * Divides this {@code DoubleDouble} by a {@code long}.
+     *
+     * @param  other  the other value by which to divide this {@code DoubleDouble}.
+     * @return the ratio between {@code this} and the given number.
+     */
+    public DoubleDouble divide(final long other) {
+        return divide(of(other));
     }
 
     /**
      * Divides this {@code DoubleDouble} by a {@code double} with a default error term.
-     * This is a convenience method for:
+     * If {@code decimal} is {@code true}, then an error term is inferred for well-known values.
      *
-     * {@preformat java
-     *    divide(otherValue, errorForWellKnownValue(otherValue));
-     * }
-     *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #divide(double) divide}(otherValue)</code> is more efficient.
-     *
-     * @param  otherValue  the other value by which to divide this {@code DoubleDouble}.
+     * @param  other    the other value by which to divide this {@code DoubleDouble}.
+     * @param  decimal  whether the value was intended to be exact in base 10.
+     * @return the ratio between {@code this} and the given number.
      */
-    public void divideGuessError(final double otherValue) {
-        divide(otherValue, errorForWellKnownValue(otherValue));
-    }
-
-    /**
-     * Divides this {@code DoubleDouble} by a {@code double} without error term.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    divide(otherValue, 0);
-     * }
-     *
-     * @param  otherValue  the other value by which to divide this {@code DoubleDouble}.
-     */
-    public void divide(final double otherValue) {
-        divide(otherValue, 0);
+    public DoubleDouble divide(final double other, final boolean decimal) {
+        return divide(other, decimal ? errorForWellKnownValue(other) : 0);
     }
 
     /**
      * Divides this {@code DoubleDouble} by another double-double value.
-     * The result is stored in this instance.
-     *
-     * @param  denominatorValue  the other value by which to divide this {@code DoubleDouble}.
-     * @param  denominatorError  the error of the other value by which to divide this {@code DoubleDouble}.
-     */
-    public void divide(final double denominatorValue, final double denominatorError) {
-        if (DISABLED) {
-            value /= denominatorValue;
-            error  = 0;
-            return;
-        }
-        final double numeratorValue = value;
-        final double numeratorError = error;
-        value = denominatorValue;
-        error = denominatorError;
-        inverseDivide(numeratorValue, numeratorError);
-    }
-
-    /**
-     * Divides this {@code DoubleDouble} by another double-double value stored in the given array.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *    divide(array[index], array[index + errorOffset]);
-     * }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void divide(final double[] array, final int index, final int errorOffset) {
-        divide(array[index], array[index + errorOffset]);
-    }
-
-    /**
-     * Divides the given double-double value by this {@code DoubleDouble}.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    inverseDivide(other.value, other.error);
-     * }
-     *
-     * @param  other  the other value to divide by this value.
-     */
-    public void inverseDivide(final DoubleDouble other) {
-        inverseDivide(other.value, other.error);
-    }
-
-    /**
-     * Divides the given {@code Number} value by this {@code DoubleDouble}. If the given number is an instance
-     * of {@code DoubleDouble} or {@link Fraction}, then the error term will be taken in account.
-     *
-     * @param  other  the other value to divide by this {@code DoubleDouble}.
-     */
-    public void inverseDivideGuessError(final Number other) {
-        if (other instanceof DoubleDouble) {
-            inverseDivide((DoubleDouble) other);
-        } else if (shouldConvert(other)) {
-            inverseDivide(new DoubleDouble(other));
-        } else {
-            inverseDivideGuessError(other.doubleValue());
-        }
-    }
-
-    /**
-     * Divides the given {@code double} value by this {@code DoubleDouble} with a default error term.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
-     * }
-     *
-     * <b>Tip:</b> if the other value is known to be an integer or a power of 2, then invoking
-     * <code>{@linkplain #inverseDivide(double) inverseDivide}(otherValue)</code> is more efficient.
-     *
-     * @param  numeratorValue  the other value to divide by this {@code DoubleDouble}.
-     */
-    public void inverseDivideGuessError(final double numeratorValue) {
-        inverseDivide(numeratorValue, errorForWellKnownValue(numeratorValue));
-    }
-
-    /**
-     * Divides the given {@code double} value by this {@code DoubleDouble} without error term.
-     * This is a convenience method for:
-     *
-     * {@preformat java
-     *    inverseDivide(numeratorValue, 0);
-     * }
-     *
-     * @param  numeratorValue  the other value to divide by this {@code DoubleDouble}.
-     */
-    public void inverseDivide(final double numeratorValue) {
-        inverseDivide(numeratorValue, 0);
-    }
-
-    /**
-     * Divides the given double-double value by this {@code DoubleDouble}.
-     * The result is stored in this instance.
      *
      * <h4>Implementation</h4>
      * If <var>a</var> and <var>b</var> are {@code DoubleDouble} instances, then we estimate:
@@ -1063,68 +747,68 @@ public final class DoubleDouble extends Number {
      *
      *   <blockquote>remainder = a - b * (a.value / b.value)</blockquote>
      *
-     * @param  numeratorValue  the other value to divide by this {@code DoubleDouble}.
-     * @param  numeratorError  the error of the other value to divide by this {@code DoubleDouble}.
+     * @param  otherValue  the other value by which to divide this {@code DoubleDouble}.
+     * @param  otherError  the error of the other value by which to divide this {@code DoubleDouble}.
+     * @return the ratio between {@code this} and the given number.
      */
-    public void inverseDivide(final double numeratorValue, final double numeratorError) {
+    private DoubleDouble divide(final double otherValue, final double otherError) {
         if (DISABLED) {
-            value = numeratorValue / value;
-            error = 0;
-            return;
+            return new DoubleDouble(value / otherValue, 0);
         }
-        final double denominatorValue = value;
         /*
-         * The 'b * (a.value / b.value)' part in the method javadoc.
+         * The `b * (a.value / b.value)` part in the method javadoc.
+         * The result should be `a` ± some error to be determined.
          */
-        final double quotient = numeratorValue / denominatorValue;
-        multiply(quotient);
+        double pv, pe, s;
+        final double quotient = value / otherValue;
+        pe  = Math.fma(quotient, otherValue, -value);   // Really needs the `fma(…)` precision here.
+        pe  = Math.fma(quotient, otherError, pe);
+        pv  = value + pe;                               // `quickSum(value, r)` inlined on 3 lines.
+        s   = value - pv;
+        pe += s;
         /*
-         * Compute 'remainder' as 'a - above_product'.
+         * Compute the remainder as `a - above_product` where the product is the (pv + pe) pair.
+         * Code below is a call to `sum(-pv, -pe)` inlined and without final `quickSum(…)` call.
          */
-        final double productError = error;
-        setToSum(numeratorValue, -value);
-        error -= productError;  // Complete the above subtraction
-        error += numeratorError;
+        final double v = s - value;
+        double e = (value - (s - v)) - (pv + v) + (error - pe);
         /*
-         * Adds the 'remainder / b' term, using 'remainder / b.value' as an approximation
+         * Adds the `remainder / b` term, using `remainder / b.value` as an approximation
          * (otherwise we would have to invoke this method recursively). The approximation
-         * is assumed okay since the second term is small compared to the first one.
+         * is assumed okay because the second term is small compared to the first one.
          */
-        setToQuickSum(quotient, (value + error) / denominatorValue);
-    }
-
-    /**
-     * Divides the given double-double value by this {@code DoubleDouble}.
-     * This is a convenience method for a frequently used operation, implemented as below:
-     *
-     * {@preformat java
-     *    inverseDivide(array[index], array[index + errorOffset]);
-     * }
-     *
-     * @param  array        the array from which to get the value and error.
-     * @param  index        index of the value in the given array.
-     * @param  errorOffset  offset to add to {@code index} in order to get the index of the error in the given array.
-     */
-    public void inverseDivide(final double[] array, final int index, final int errorOffset) {
-        inverseDivide(array[index], array[index + errorOffset]);
+        return quickSum(quotient, (s + e) / otherValue);
     }
 
     /**
      * Computes (1-x)/(1+x) where <var>x</var> is {@code this}.
      * This pattern occurs in map projections.
+     *
+     * @return (1-x)/(1+x).
      */
-    public void ratio_1m_1p() {
-        final DoubleDouble numerator = new DoubleDouble(1d);
-        numerator.subtract(this);
-        add(1);
-        inverseDivide(numerator);
+    public DoubleDouble ratio_1m_1p() {
+        return ONE.subtract(this).divide(add(1));
+    }
+
+    /**
+     * Returns {@code this} × 2ⁿ. Typical usages are
+     * {@code scalb(1)} for an efficient multiplication by 2 and
+     * {@code scalb(-1)} for an efficient division by 2.
+     *
+     * @param  n  power of 2 used to scale {@code this}.
+     * @return {@code this} × 2ⁿ.
+     */
+    public DoubleDouble scalb(final int n) {
+        return new DoubleDouble(Math.scalb(value, n), Math.scalb(error, n));
     }
 
     /**
      * Computes the square of this value.
+     *
+     * @return {@code this * this}.
      */
-    public void square() {
-        multiply(value, error);
+    public DoubleDouble square() {
+        return multiply(value, error);
     }
 
     /**
@@ -1148,17 +832,18 @@ public final class DoubleDouble extends Number {
      * Isolating ε:
      *
      * <blockquote>ε  ≈  (value + error - r²) / (2r)</blockquote>
+     *
+     * @return the square root of this value.
      */
-    public void sqrt() {
-        if (value != 0) {
-            final double thisValue = this.value;
-            final double thisError = this.error;
-            double r = Math.sqrt(thisValue);
-            setToProduct(r, r);
-            subtract(thisValue, thisError);
-            divide(-2*r);                           // Multiplication by 2 does not cause any precision lost.
-            setToQuickSum(r, value);
+    public DoubleDouble sqrt() {
+        if (value == 0) {
+            return ZERO;
         }
+        double r = Math.sqrt(value);
+        DoubleDouble t = product(r, r);
+        t = t.subtract(this);
+        t = t.divide(-2*r, 0);                       // Multiplication by 2 does not cause any precision lost.
+        return quickSum(r, t.value);
     }
 
     /**
@@ -1166,35 +851,31 @@ public final class DoubleDouble extends Number {
      * The given <var>c</var> coefficients are presumed accurate in base 2
      * (i.e. this method does not try to apply a correction for base 10).
      *
-     * @param coefficients The {@code c} coefficients. The array length must be at least 1.
+     * @param  coefficients the {@code c} coefficients. The array length must be at least 1.
+     * @return the series sum.
      */
-    public void series(final double... coefficients) {
-        final DoubleDouble x = new DoubleDouble(this);
-        value = coefficients[0];
-        error = 0;
-        final int last = coefficients.length - 1;
-        if (last >= 1) {
-            final DoubleDouble xn = new DoubleDouble(x);
-            final DoubleDouble t = new DoubleDouble(xn);
-            for (int i=1; i<last; i++) {
-                t.multiply(coefficients[i]);
-                add(t);
-                xn.multiply(x);
-                t.setFrom(xn);
-            }
-            t.multiply(coefficients[last]);
-            add(t);
+    public DoubleDouble series(final double... coefficients) {
+        DoubleDouble sum = new DoubleDouble(coefficients[0], 0);
+        DoubleDouble xn  = this;
+        for (int i=1; i < coefficients.length; i++) {
+            sum = sum.add(xn.multiply(coefficients[i], 0));
+            xn  = multiply(xn);
         }
+        return sum;
     }
 
     /**
-     * Returns a hash code value for this number.
+     * Compares this value with the given value for order.
      *
-     * @return a hash code value.
+     * @param   other  the value to be compared.
      */
     @Override
-    public int hashCode() {
-        return Long.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
+    public int compareTo(final DoubleDouble other) {
+        int c = Double.compare(value, other.value);
+        if (c == 0) {
+            c = Double.compare(error, other.error);
+        }
+        return c;
     }
 
     /**
@@ -1214,13 +895,26 @@ public final class DoubleDouble extends Number {
     }
 
     /**
-     * Returns a string representation of this number for debugging purpose.
-     * The returned string does not need to contains all digits that this {@code DoubleDouble} can handle.
+     * Returns a hash code value for this number.
+     *
+     * @return a hash code value.
+     */
+    @Override
+    public int hashCode() {
+        return Long.hashCode(Double.doubleToLongBits(value) ^ Double.doubleToLongBits(error));
+    }
+
+    /**
+     * Returns a string representation of this number.
+     * This method prints only {@link #value} digits because the {@link #error} term is not always significant.
+     * For example SIS sometime uses {@code DoubleDouble} in calculations involving trigonometric operations
+     * where operands have only {@code double} precision. Because users may see {@code DoubleDouble} values
+     * returned by {@code MatrixSIS}, we want to avoid misleading them with non-realistic precision.
      *
      * @return a string representation of this number.
      */
     @Override
     public String toString() {
-        return new BigDecimal(value).add(new BigDecimal(error), MathContext.DECIMAL128).toString();
+        return Double.toString(doubleValue());
     }
 }

@@ -32,10 +32,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class MetadataCommandTest extends TestCase {
+public final class MetadataCommandTest extends TestCase {
     /**
      * Tests the sub-command on a netCDF file.
      *

@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
-import java.util.Collections;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
@@ -39,9 +38,8 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
-public final strictfp class MathTransformFactoryMock implements MathTransformFactory {
+public final class MathTransformFactoryMock implements MathTransformFactory {
     /**
      * The operation method.
      */
@@ -64,7 +62,7 @@ public final strictfp class MathTransformFactoryMock implements MathTransformFac
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(Class<? extends SingleOperation> type) {
-        return type.isInstance(method) ? Collections.singleton(method) : Collections.emptySet();
+        return type.isInstance(method) ? Set.of(method) : Set.of();
     }
 
     /**

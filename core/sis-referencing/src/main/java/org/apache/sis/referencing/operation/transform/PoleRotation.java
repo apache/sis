@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
-import java.util.Collections;
+import java.util.Map;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
@@ -70,7 +70,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class PoleRotation extends AbstractMathTransform2D implements Serializable {
     /**
@@ -127,6 +126,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      *
      * @see #inverse()
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private MathTransform2D inverse;
 
     /**
@@ -327,8 +327,8 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
     public ParameterDescriptorGroup getParameterDescriptors() {
         // We assume that it is not worth to cache this descriptor.
         ImmutableIdentifier name = new ImmutableIdentifier(Citations.SIS, Constants.SIS, "Rotated Latitude/longitude (radians domain)");
-        return new DefaultParameterDescriptorGroup(Collections.singletonMap(ParameterDescriptorGroup.NAME_KEY, name),
-                1, 1, (ParameterDescriptor<?>) context.getDescriptor().descriptors().get(0));
+        return new DefaultParameterDescriptorGroup(Map.of(ParameterDescriptorGroup.NAME_KEY, name),
+                    1, 1, (ParameterDescriptor<?>) context.getDescriptor().descriptors().get(0));
     }
 
     /**

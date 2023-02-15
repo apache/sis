@@ -29,9 +29,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.system.Loggers;
-
-import static java.util.logging.Logger.getLogger;
+import org.apache.sis.internal.jaxb.Context;
 
 
 /**
@@ -74,13 +72,12 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @see <a href="http://www.w3.org/TR/xlink/">XML Linking Language</a>
  * @see <a href="http://schemas.opengis.net/xlink/1.0.0/xlinks.xsd">OGC schema</a>
  *
  * @since 0.3
- * @module
  */
 @XmlTransient
 public class XLink implements Serializable {
@@ -127,6 +124,7 @@ public class XLink implements Serializable {
      * @see #getTitle()
      * @category semantic
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private InternationalString title;
 
     /**
@@ -212,7 +210,6 @@ public class XLink implements Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see XLink#getType()
      */
@@ -535,7 +532,6 @@ public class XLink implements Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see XLink#getShow()
      */
@@ -610,7 +606,6 @@ public class XLink implements Serializable {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3
      * @since   0.3
-     * @module
      *
      * @see XLink#getActuate()
      */
@@ -831,9 +826,7 @@ public class XLink implements Serializable {
      * Returns a string representation of this object. The default implementation returns the
      * simple class name followed by non-null attributes, as in the example below:
      *
-     * {@preformat text
-     *     XLink[type="locator", href="urn:ogc:def:method:EPSG::4326"]
-     * }
+     * <pre class="text">XLink[type="locator", href="urn:ogc:def:method:EPSG::4326"]</pre>
      */
     @Override
     public String toString() {
@@ -869,7 +862,7 @@ public class XLink implements Serializable {
                 }
             } catch (NoSuchFieldException e) {
                 // Should never happen with Enums. But if it happen anyway, this is not a fatal error.
-                Logging.unexpectedException(getLogger(Loggers.XML), XLink.class, "toString", e);
+                Logging.unexpectedException(Context.LOGGER, XLink.class, "toString", e);
             }
             buffer.append(label).append("=\"").append(value).append('"');
         }

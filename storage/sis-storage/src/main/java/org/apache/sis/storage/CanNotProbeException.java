@@ -27,7 +27,6 @@ package org.apache.sis.storage;
  * @see DataStoreProvider#probeContent(StorageConnector)
  *
  * @since 1.2
- * @module
  */
 public class CanNotProbeException extends DataStoreException {
     /**
@@ -37,8 +36,9 @@ public class CanNotProbeException extends DataStoreException {
 
     /**
      * The data store provider that failed to probe a file.
+     * This is null if this exception has been deserialized.
      */
-    private final DataStoreProvider provider;
+    private final transient DataStoreProvider provider;
 
     /**
      * Creates an exception with the specified details message and cause.
@@ -68,7 +68,7 @@ public class CanNotProbeException extends DataStoreException {
     /**
      * Returns the data store provider that failed to probe a file.
      *
-     * @return the data store provider that failed to probe a file.
+     * @return the data store provider that failed to probe a file, or {@code null} if unknown.
      *
      * @see DataStore#getProvider()
      */

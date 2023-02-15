@@ -17,7 +17,6 @@
 package org.apache.sis.filter;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -50,7 +49,6 @@ import org.opengis.filter.DistanceOperatorName;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements DistanceOperator<R> {
     /**
@@ -66,7 +64,7 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
     /**
      * The buffer distance around the geometry of the second expression.
      */
-    @SuppressWarnings("serial")                         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Quantity<Length> distance;
 
     /**
@@ -115,8 +113,8 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
      */
     @Override
     public List<Expression<? super R, ?>> getExpressions() {
-        return Arrays.asList(original(expression1), original(expression2),          // TODO: use List.of(…) with JDK9.
-                             new LeafExpression.Literal<>(distance));
+        return List.of(original(expression1), original(expression2),
+                       new LeafExpression.Literal<>(distance));
     }
 
     /**
@@ -125,7 +123,7 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
      */
     @Override
     protected Collection<?> getChildren() {
-        return Arrays.asList(original(expression1), original(expression2), distance);   // TODO: use List.of(…) with JDK9.
+        return List.of(original(expression1), original(expression2), distance);
     }
 
     /**

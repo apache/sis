@@ -46,7 +46,6 @@ import org.apache.sis.storage.Resource;
  * @param <E> the type of the event subclass.
  *
  * @version 1.3
- * @module
  */
 public abstract class CascadedStoreEvent<E extends CascadedStoreEvent<E>> extends StoreEvent {
     /**

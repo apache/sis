@@ -17,13 +17,15 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
+import java.util.function.IntUnaryOperator;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
+import org.apache.sis.internal.referencing.Arithmetic;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.ArraysExt;
 
 
 /**
@@ -34,18 +36,17 @@ import org.apache.sis.util.ArraysExt;
  * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-176">SIS-176</a>
  *
  * @since 0.7
- * @module
  */
 final class ScaleTransform extends AbstractLinearTransform implements ExtendedPrecisionMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 8527439133082104085L;
+    private static final long serialVersionUID = 7236779710212360309L;
 
     /**
      * Multiplication factors, to be applied in the same order than coordinate values.
@@ -54,10 +55,10 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     private final double[] factors;
 
     /**
-     * The error terms in double-double arithmetic, or {@code null} if none.
-     * May be shorter than {@code factors} if all remaining errors are zero.
+     * The scale factors with potentially extended precision.
+     * Zero values <em>shall</em> be represented by null elements.
      */
-    private final double[] errors;
+    private final Number[] numbers;
 
     /**
      * Number of coordinate values to drop after the values that we multiplied.
@@ -70,7 +71,23 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      */
     ScaleTransform(final double[] factors) {
         this.factors = factors.clone();
-        errors = null;
+        this.numbers = wrap(this.factors);
+        numDroppedDimensions = 0;
+    }
+
+    /**
+     * Creates a transform as the inverse of the given transform.
+     * This constructors assumes that the given transform does not drop any dimension.
+     */
+    private ScaleTransform(final ScaleTransform other) {
+        final int dim = other.factors.length;
+        factors = new double[dim];
+        numbers = new Number[dim];
+        for (int i=0; i<dim; i++) {
+            factors[i] = 1 / other.factors[i];
+            numbers[i] = Arithmetic.inverse(other.numbers[i]);
+        }
+        inverse = other;
         numDroppedDimensions = 0;
     }
 
@@ -79,46 +96,47 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
      * This constructors assumes that the matrix is affine and contains only
      * scale coefficients (this is not verified).
      */
-    ScaleTransform(final int numRow, final int numCol, final double[] elements) {
+    ScaleTransform(final int numRow, final int numCol, final Number[] elements) {
         numDroppedDimensions = numCol - numRow;
-        final int n = numRow * numCol;
-        final int tgtDim = numRow - 1;
-        factors = new double[tgtDim];
-        double[] errors = null;
-        int lastError = -1;
-        for (int i=0; i<tgtDim; i++) {
-            int j = numCol*i + i;
-            factors[i] = elements[j];
-            if ((j += n) < elements.length) {
-                final double e = elements[j];
-                if (e != 0) {
-                    if (errors == null) {
-                        errors = new double[tgtDim];
-                    }
-                    errors[i] = e;
-                    lastError = i;
-                }
-            }
-        }
-        this.errors = ArraysExt.resize(errors, lastError + 1);
+        numbers = new Number[numRow - 1];
+        factors = store(elements, numbers, (i) -> numCol*i + i);
     }
 
     /**
-     * Returns a copy of matrix elements, including error terms if any.
+     * Copies non-zero numbers from {@code source} to {@code target}.
+     * The copies numbers are also returned as floating point values.
+     *
+     * @param  source    the numbers to copy. This array will not be modified.
+     * @param  target    where to store the non-zero numbers.
+     * @param  indices   maps array index from {@code target} to {@code source}.
+     * @return a copy of {@code target} as floating point numbers.
      */
-    @Override
-    public double[] getExtendedElements() {
-        final int numCol = getNumCol();
-        final int n = getNumRow() * numCol;
-        final double[] elements = new double[(errors == null) ? n : (n << 1)];
-        for (int i=0; i<factors.length; i++) {
-            final int j = numCol*i + i;
-            elements[j] = factors[i];
-            if (errors != null && i < errors.length) {
-                elements[j + n] = errors[i];
+    static double[] store(final Number[] source, final Number[] target, final IntUnaryOperator indices) {
+        final double[] values = new double[target.length];
+        for (int i=0; i<target.length; i++) {
+            final Number value = source[indices.applyAsInt(i)];
+            if (value != null) {
+                values[i] = value.doubleValue();               // Unconditional store because may be -0.
+                if (!ExtendedPrecisionMatrix.isZero(value)) {
+                    target[i] = value;
+                }
             }
         }
-        elements[n - 1] = 1;
+        return values;
+    }
+
+    /**
+     * Returns a copy of all matrix elements in a flat, row-major array.
+     * Zero values <em>shall</em> be null. Callers can write in the returned array.
+     */
+    @Override
+    public Number[] getElementAsNumbers(final boolean writable) {
+        final int numCol = getNumCol();
+        final Number[] elements = new Number[getNumRow() * numCol];
+        for (int i=0; i<numbers.length; i++) {
+            elements[numCol*i + i] = numbers[i];
+        }
+        elements[elements.length - 1] = 1;
         return elements;
     }
 
@@ -139,19 +157,21 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     }
 
     /**
-     * Returns the matrix element at the given index.
+     * Retrieves the value at the specified row and column of the matrix.
+     * If the value is zero, then this method <em>shall</em> return {@code null}.
      */
     @Override
-    public double getElement(final int row, final int column) {
-        final int dstDim = factors.length;
+    public final Number getElementOrNull(final int row, final int column) {
+        final int dstDim = numbers.length;
         final int srcDim = dstDim + numDroppedDimensions;
         ArgumentChecks.ensureBetween("row",    0, dstDim, row);
         ArgumentChecks.ensureBetween("column", 0, srcDim, column);
         if (row == dstDim) {
-            return (column == srcDim) ? 1 : 0;
-        } else {
-            return (row == column) ? factors[row] : 0;
+            if (column == srcDim) return 1;
+        } else if (row == column) {
+            return numbers[row];
         }
+        return null;
     }
 
     /**
@@ -292,6 +312,17 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     }
 
     /**
+     * Invoked by {@link #inverse()} the first time that the inverse transform needs to be computed.
+     */
+    @Override
+    final LinearTransform createInverse() throws NoninvertibleTransformException {
+        if (numDroppedDimensions == 0) {
+            return new ScaleTransform(this);
+        }
+        return super.createInverse();
+    }
+
+    /**
      * Gets the derivative of this transform at a point.
      * For a matrix transform, the derivative is the same everywhere.
      *
@@ -325,6 +356,6 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
         final ScaleTransform that = (ScaleTransform) object;
         return numDroppedDimensions == that.numDroppedDimensions
                && Arrays.equals(factors, that.factors)
-               && Arrays.equals(errors,  that.errors);
+               && Arrays.equals(numbers, that.numbers);
     }
 }

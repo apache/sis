@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import javax.xml.bind.annotation.XmlType;
@@ -116,7 +115,6 @@ import org.apache.sis.io.wkt.Convention;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "CompoundCRSType")
 @XmlRootElement(name = "CompoundCRS")
@@ -133,6 +131,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * <p><b>Consider this field as final!</b>
      * This field is modified only at construction and unmarshalling time by {@link #setComponents(List)}</p>
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private List<? extends CoordinateReferenceSystem> components;
 
     /**
@@ -202,7 +201,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
          * Note that this is already be done if the given array does not contain nested CompoundCRS.
          */
         if (singles != this.components) {
-            verify(properties, singles.toArray(new SingleCRS[singles.size()]));
+            verify(properties, singles.toArray(SingleCRS[]::new));
         }
     }
 
@@ -350,7 +349,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         if (setSingleComponents(crs)) {
             components = singles;                           // Shares the same list.
         } else {
-            components = UnmodifiableArrayList.wrap(crs.toArray(new CoordinateReferenceSystem[crs.size()]));
+            components = UnmodifiableArrayList.wrap(crs.toArray(CoordinateReferenceSystem[]::new));
         }
     }
 
@@ -380,7 +379,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> crs) {
         final List<SingleCRS> flattened = new ArrayList<>(crs.size());
         final boolean identical = ReferencingUtilities.getSingleComponents(crs, flattened);
-        singles = UnmodifiableArrayList.wrap(flattened.toArray(new SingleCRS[flattened.size()]));
+        singles = UnmodifiableArrayList.wrap(flattened.toArray(SingleCRS[]::new));
         return identical;
     }
 
@@ -623,8 +622,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultCompoundCRS() {
-        components = Collections.emptyList();
-        singles    = Collections.emptyList();
+        components = List.of();
+        singles    = List.of();
         /*
          * At least one component CRS is mandatory for SIS working. We do not verify their presence here
          * because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
@@ -649,8 +648,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     @XmlJavaTypeAdapter(SC_CRS.class)
     @XmlElement(name = "componentReferenceSystem", required = true)
     private CoordinateReferenceSystem[] getXMLComponents() {
-        final List<SingleCRS> crs = getSingleComponents();
-        return crs.toArray(new CoordinateReferenceSystem[crs.size()]);
+        return getSingleComponents().toArray(CoordinateReferenceSystem[]::new);
     }
 
     /**

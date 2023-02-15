@@ -104,7 +104,6 @@ import org.opengis.feature.AttributeType;
  * @see AbstractAttribute
  *
  * @since 0.5
- * @module
  */
 public class DefaultAttributeType<V> extends FieldType implements AttributeType<V> {
     /**
@@ -124,6 +123,7 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      *
      * @see #getDefaultValue()
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final V defaultValue;
 
     /**

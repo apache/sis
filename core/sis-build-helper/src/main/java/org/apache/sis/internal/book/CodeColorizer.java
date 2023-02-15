@@ -16,10 +16,7 @@
  */
 package org.apache.sis.internal.book;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.io.BufferedReader;
@@ -41,13 +38,12 @@ import org.w3c.dom.NodeList;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.7
- * @module
  */
 public final class CodeColorizer {
     /**
      * Lists of Java keywords.
      */
-    public static final Set<String> JAVA_KEYWORDS = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
+    public static final Set<String> JAVA_KEYWORDS = Set.of(
         "abstract", "continue", "for",        "new",        "switch",
         "assert",   "default",  "goto",       "package",    "synchronized",
         "boolean",  "do",       "if",         "private",    "this",
@@ -58,7 +54,7 @@ public final class CodeColorizer {
         "char",     "final",    "interface",  "static",     "void",
         "class",    "finally",  "long",       "strictfp",   "volatile",
         "const",    "float",    "native",     "super",      "while",
-        /* literals: */ "true", "false", "null")));
+        /* literals: */ "true", "false", "null");
 
     /**
      * Returns all nodes in the given list as an array. This method is used for getting a snapshot
@@ -385,26 +381,26 @@ public final class CodeColorizer {
                             }
                             /*
                              * The following code is executed for each word which is a valid Java identifier.
-                             * Different kind of emphase may be applied: bold for Java keywords, some colors
+                             * Different kind of emphasis may be applied: bold for Java keywords, some colors
                              * for OGC/ISO classes, other colors for SIS classes, etc.
                              */
                             final String word = text.substring(lower, upper);
-                            Element emphase = null;
+                            Element emphasis = null;
                             if (JAVA_KEYWORDS.contains(word)) {
-                                emphase = document.createElement("b");
+                                emphasis = document.createElement("b");
                             } else if (isJava) {
                                 final Specifier origin = getSpecifier(word);
                                 if (origin != null) {
-                                    emphase = document.createElement("code");
-                                    emphase.setAttribute("class", origin.style);
+                                    emphasis = document.createElement("code");
+                                    emphasis.setAttribute("class", origin.style);
                                 }
                             }
-                            if (emphase != null) {
-                                emphase.setTextContent(word);
+                            if (emphasis != null) {
+                                emphasis.setTextContent(word);
                                 if (nextSubstringStart != lower) {
                                     parent.insertBefore(document.createTextNode(text.substring(nextSubstringStart, lower)), node);
                                 }
-                                parent.insertBefore(emphase, node);
+                                parent.insertBefore(emphasis, node);
                                 nextSubstringStart = upper;
                             }
                             lower = upper;

@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.metadata.quality.ValueStructure;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.metadata.iso.quality.DefaultDescription;
+import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.Namespaces;
 import org.junit.Test;
@@ -36,9 +36,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
-public final strictfp class QualityParameterTest extends TestCase {
+public final class QualityParameterTest extends TestCase {
     /**
      * Creates the parameter to use for testing purpose.
      *
@@ -48,7 +47,7 @@ public final strictfp class QualityParameterTest extends TestCase {
         final QualityParameter param = new QualityParameter();
         param.code           = "some parameter";
         param.definition     = new SimpleInternationalString("a definition");
-        param.description    = new DefaultDescription("a description");
+        param.description    = new DefaultMeasureDescription("a description");
         param.valueStructure = ValueStructure.MATRIX;
         param.valueType      = Names.createTypeName(Integer.class);
         return param;

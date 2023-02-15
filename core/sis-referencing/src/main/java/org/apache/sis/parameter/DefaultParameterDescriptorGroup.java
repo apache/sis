@@ -56,11 +56,11 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * If nevertheless a {@code ParameterDescriptorGroup} needs to be instantiated directly,
  * then the {@link ParameterBuilder} class may make the task easier.
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * The following example declares the parameters for a <cite>Mercator (variant A)</cite> projection method
  * valid from 80°S to 84°N on all the longitude range (±180°).
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     class Mercator {
  *         static final ParameterDescriptorGroup PARAMETERS;
  *         static {
@@ -80,8 +80,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *             PARAMETERS = builder.createGroup(parameters);
  *         }
  *     }
- * }
- * </div>
+ *     }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -91,7 +90,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterDescriptor
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "OperationParameterGroupType")
 @XmlRootElement(name = "OperationParameterGroup")
@@ -109,7 +107,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      *
      * @see #descriptors()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private List<GeneralParameterDescriptor> descriptors;
 
     /**
@@ -190,7 +188,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             || ((DefaultParameterDescriptorGroup) parameters).descriptors != descriptors)
         {
             // Note sure where the list come from, we are better to copy its content.
-            final GeneralParameterDescriptor[] p = descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+            final GeneralParameterDescriptor[] p = descriptors.toArray(GeneralParameterDescriptor[]::new);
             verifyNames(properties, p);
             descriptors = asList(p);
         }
@@ -243,9 +241,9 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
         if (descriptor instanceof DefaultParameterDescriptorGroup &&
                 ((DefaultParameterDescriptorGroup) descriptor).descriptors == c)
         {
-            descriptors = c; // Share the immutable instance (no need to clone).
+            descriptors = c;            // Share the immutable instance (no need to clone).
         } else {
-            descriptors = asList(c.toArray(new GeneralParameterDescriptor[c.size()]));
+            descriptors = asList(c.toArray(GeneralParameterDescriptor[]::new));
         }
     }
 
@@ -254,6 +252,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     private static List<GeneralParameterDescriptor> asList(final GeneralParameterDescriptor[] parameters) {
         switch (parameters.length) {
+            /*
+             * Use `Collections` instead of `List.of(…)` for consistency with
+             * `UnmodifiableArrayList` which accepts `List.contains(null)`.
+             */
             case 0:  return Collections.emptyList();
             case 1:  return Collections.singletonList(parameters[0]);
             case 2:  // fall through
@@ -365,7 +367,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * @throws ParameterNotFoundException if there is no parameter for the given name.
      */
     @Override
-    @SuppressWarnings("null")
     public GeneralParameterDescriptor descriptor(final String name) throws ParameterNotFoundException {
         // Quick search for an exact match.
         ArgumentChecks.ensureNonNull("name", name);
@@ -471,8 +472,7 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      */
     @XmlElement(name = "parameter", required = true)
     private GeneralParameterDescriptor[] getDescriptors() {
-        final List<GeneralParameterDescriptor> descriptors = descriptors();     // Give to user a chance to override.
-        return descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]);
+        return descriptors().toArray(GeneralParameterDescriptor[]::new);
     }
 
     /**

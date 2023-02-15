@@ -97,7 +97,6 @@ import org.apache.sis.util.Classes;
  * @see Plane
  *
  * @since 0.5
- * @module
  */
 public class LinearTransformBuilder extends TransformBuilder {
     /**
@@ -129,11 +128,11 @@ public class LinearTransformBuilder extends TransformBuilder {
      * Example: {x[], y[], z[]}.
      * This is {@code null} if not yet specified.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * we could use a flat array with (x₀, y₀), (x₁, y₁), (x₂, y₂), <i>etc.</i> coordinate tuples instead.
+     * <h4>Implementation note</h4>
+     * We could use a flat array with (x₀, y₀), (x₁, y₁), (x₂, y₂), <i>etc.</i> coordinate tuples instead.
      * Such flat array would be more convenient for some coordinate conversions with {@link MathTransform}.
      * But using array of arrays is more convenient for other calculations working on one dimension at time,
-     * make data more local for CPU, and also allows handling of more points.</div>
+     * make data more local for CPU, and also allows handling of more points.
      */
     private double[][] targets;
 
@@ -291,10 +290,10 @@ public class LinearTransformBuilder extends TransformBuilder {
      * <p>If this builder has been created for randomly distributed source points, then the allocation
      * should rather be performed as below:</p>
      *
-     * {@preformat java
-     *    sources = new double[srcDim][capacity];
-     *    targets = new double[tgtDim][capacity];
-     * }
+     * {@snippet lang="java" :
+     *     sources = new double[srcDim][capacity];
+     *     targets = new double[tgtDim][capacity];
+     *     }
      */
     private void allocate(final int tgtDim) {
         targets = new double[tgtDim][gridLength];
@@ -1497,7 +1496,6 @@ search:         for (int j=domain(); --j >= 0;) {
      * some codes may not work anymore. Search for {@code isAffine()} statements for locating codes
      * that depend on affine transform assumption.</p>
      */
-    @SuppressWarnings("serial")
     private MatrixSIS fit() throws FactoryException {
         final double[][] sources = this.sources;                    // Protect from changes.
         final double[][] targets = this.targets;
@@ -1507,7 +1505,7 @@ search:         for (int j=domain(); --j >= 0;) {
         final int sourceDim = (sources != null) ? sources.length : gridSize.length;
         final int targetDim = targets.length;
         correlations = new double[targetDim];
-        final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.ZERO);
+        final MatrixSIS matrix = Matrices.create(targetDim + 1, sourceDim + 1,  ExtendedPrecisionMatrix.CREATE_ZERO);
         matrix.setElement(targetDim, sourceDim, 1);
         for (int j=0; j < targetDim; j++) {
             final double c;
@@ -1697,7 +1695,7 @@ search:         for (int j=domain(); --j >= 0;) {
          * └────────────┴─────────────┘
          */
         if (linearizers != null) {
-            final ProjectedTransformTry[] alternatives = linearizers.toArray(new ProjectedTransformTry[linearizers.size()]);
+            final var alternatives = linearizers.toArray(ProjectedTransformTry[]::new);
             Arrays.sort(alternatives);
             buffer.append(Strings.CONTINUATION_ITEM);
             vocabulary.appendLabel(Vocabulary.Keys.Preprocessing, buffer);

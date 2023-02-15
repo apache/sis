@@ -17,12 +17,12 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Locale;
+import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -67,8 +67,6 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Modules;
 
-import static java.util.logging.Logger.getLogger;
-
 // Branch-dependent imports
 import org.opengis.coverage.grid.GridEnvelope;
 import org.opengis.coverage.grid.GridCoordinates;
@@ -93,15 +91,20 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
- * @module
  */
 public class GridExtent implements GridEnvelope, LenientComparable, Serializable {
     /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -4717353677844056017L;
+
+    /**
+     * The logger for operations on grid coverages. Declared in this {@code GridExtent}
+     * class because it is among the first ones in the chain of dependencies.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.RASTER);
 
     /**
      * The dimension name types for given coordinate system axis directions.
@@ -111,15 +114,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #typeFromAxes(CoordinateReferenceSystem, int)
      */
-    private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS;
-    static {
-        final Map<AxisDirection,DimensionNameType> dir = new HashMap<>(6);
-        dir.put(AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN);
-        dir.put(AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW);
-        dir.put(AxisDirection.UP,              DimensionNameType.VERTICAL);
-        dir.put(AxisDirection.FUTURE,          DimensionNameType.TIME);
-        AXIS_DIRECTIONS = dir;
-    }
+    private static final Map<AxisDirection,DimensionNameType> AXIS_DIRECTIONS = Map.of(
+            AxisDirection.COLUMN_POSITIVE, DimensionNameType.COLUMN,
+            AxisDirection.ROW_POSITIVE,    DimensionNameType.ROW,
+            AxisDirection.UP,              DimensionNameType.VERTICAL,
+            AxisDirection.FUTURE,          DimensionNameType.TIME);
 
     /**
      * Default axis types for the two-dimensional cases.
@@ -245,6 +244,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The axis types are {@link DimensionNameType#COLUMN} and {@link DimensionNameType#ROW ROW} in that order.
      *
      * @param  bounds  the bounds to copy in the new grid extent.
+     * @throws IllegalArgumentException if the rectangle is empty.
      *
      * @since 1.1
      */
@@ -260,6 +260,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @param  width   number of pixels in each row.
      * @param  height  number of pixels in each column.
+     * @throws IllegalArgumentException if the width or the height is not greater than zero.
      */
     public GridExtent(final long width, final long height) {
         ArgumentChecks.ensureStrictlyPositive("width",  width);
@@ -824,22 +825,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * @deprecated Replaced by {@link #getPointOfInterest(PixelInCell)}.
-     *
-     * @return the grid coordinates of a representative point.
-     */
-    @Deprecated
-    public double[] getPointOfInterest() {
-        return getPointOfInterest(PixelInCell.CELL_CORNER);
-    }
-
-    /**
      * Returns the grid coordinates of a representative point.
      * This point may be used for estimating a {@linkplain GridGeometry#getResolution(boolean) grid resolution}.
      * The default implementation returns the median (or center) coordinates of this grid extent,
      * but subclasses can override this method if another point is considered more representative.
      *
-     * <p>The {@code anchpr} argument tells {@linkplain GridGeometry#getGridToCRS(PixelInCell) which transform}
+     * <p>The {@code anchor} argument tells {@linkplain GridGeometry#getGridToCRS(PixelInCell) which transform}
      * the caller intend to use for converting the grid coordinates to "real world" coordinates.
      * With the default implementation, the coordinate values returned with {@code CELL_CORNER}
      * are 0.5 cell units higher than the coordinate values returned with {@code CELL_CENTER}.
@@ -897,31 +888,31 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
      * in a <var>n</var>-dimensional cube where <var>s</var> ≤ <var>n</var>.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.
      * The first step is to specify the <var>x</var> and <var>t</var> coordinates of the slice.
      * In this example we set <var>x</var> to 5 and <var>t</var> to 8.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     GridGeometry grid = ...;             // Geometry of the (x,y,z,t) grid.
      *     GridGeometry slice4D = grid.slice(new GeneralDirectPosition(5, NaN, NaN, 8));
-     * }
+     *     }
      *
      * Above code created a slice at the requested position, but that slice still have 4 dimensions.
      * It is a "slice" because the <var>x</var> and <var>t</var> dimensions of {@code slice4D} have only one cell.
      * If a two-dimensional slice is desired, then above operations can be completed as below.
      * In this example, the result of {@code getSubspaceDimensions(2)} call will be {1,2}.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     int[]  subDimensions = slice4D.getExtent().getSubspaceDimensions(2);
      *     GridGeometry slice2D = slice4D.reduce(subDimensions);
-     * }
+     *     }
      *
      * Note that in this particular example, it would have been more efficient to execute {@code grid.reduce(1,2)} directly.
      * This {@code getSubspaceDimensions(int)} method is more useful for inferring a {@code slice2D} from a {@code slice4D}
      * which has been created elsewhere, or when we do not really want the {@code slice2D} but only its dimension indices.
-     * </div>
      *
+     * <h4>Number of dimensions</h4>
      * This method returns exactly <var>s</var> indices. If there is more than <var>s</var> dimensions having a
      * {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
      * If there is less than <var>s</var> dimensions having a size greater than 1, then the returned list of
@@ -1224,7 +1215,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         } catch (FactoryException e) {
             // "toEnvelope" is the closest public method that may invoke this method.
-            Logging.recoverableException(getLogger(Modules.RASTER), GridExtent.class, "toEnvelope", e);
+            Logging.recoverableException(LOGGER, GridExtent.class, "toEnvelope", e);
         }
     }
 
@@ -1295,21 +1286,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public GridExtent selectDimensions(int... dimensions) {
         dimensions = verifyDimensions(dimensions, getDimension());
         return (dimensions != null) ? reorder(dimensions) : this;
-    }
-
-    /**
-     * Returns a grid extent that encompass only some dimensions of this grid extent.
-     *
-     * @param  dimensions  the dimensions to select, in strictly increasing order.
-     * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
-     *
-     * @since 1.1
-     *
-     * @deprecated Renamed {@link #selectDimensions(int...)} for clarity.
-     */
-    @Deprecated
-    public GridExtent reduceDimension(int... dimensions) {
-        return selectDimensions(dimensions);
     }
 
     /**
@@ -1646,30 +1622,25 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return an affine transform from this grid extent to the given envelope, expressed as a matrix.
      */
     final MatrixSIS cornerToCRS(final Envelope env, final long flippedAxes, final int[] sourceDimensions) {
-        final int          srcDim = getDimension();
-        final int          tgtDim = env.getDimension();
-        final MatrixSIS    affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.ZERO);
-        final DoubleDouble scale  = new DoubleDouble();
-        final DoubleDouble offset = new DoubleDouble();
+        final int       srcDim = getDimension();
+        final int       tgtDim = env.getDimension();
+        final MatrixSIS affine = Matrices.create(tgtDim + 1, srcDim + 1, ExtendedPrecisionMatrix.CREATE_ZERO);
         for (int j=0; j<tgtDim; j++) {
             final int i = (sourceDimensions != null) ? sourceDimensions[j] : j;
+            DoubleDouble scale;
             if (i < srcDim) {
                 final boolean flip = (flippedAxes & Numerics.bitmask(j)) != 0;
-                offset.set(coordinates[i]);
-                scale.set(coordinates[i + srcDim]);
-                scale.subtract(offset);
-                scale.add(1);                                   // == getSize(j) but without overflow.
-                scale.inverseDivideGuessError(env.getSpan(j));  // == (envelope span) / (grid size).
-                if (flip) scale.negate();
+                DoubleDouble offset = DoubleDouble.of(coordinates[i]);
+                DoubleDouble size   = DoubleDouble.of(coordinates[i+srcDim]).subtract(offset).add(1);
+                scale = DoubleDouble.of(env.getSpan(j), true).divide(size);
+                if (flip) scale = scale.negate();
                 if (!offset.isZero()) {                         // Use `if` for keeping the value if scale is NaN.
-                    offset.multiply(scale);
-                    offset.negate();
+                    offset = offset.multiply(scale).negate();
                 }
-                offset.addGuessError(flip ? env.getMaximum(j) : env.getMinimum(j));
+                offset = offset.add(flip ? env.getMaximum(j) : env.getMinimum(j), true);
                 affine.setNumber(j, srcDim, offset);
             } else {
-                scale.value = Double.NaN;
-                scale.error = Double.NaN;
+                scale = DoubleDouble.NaN;
             }
             affine.setNumber(j, i, scale);
         }
@@ -1748,7 +1719,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns the intersection of this grid extent with to the given grid extent.
+     * Returns the intersection of this grid extent with the given grid extent.
      * The given extent shall have the same number of dimensions than this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
      * be the same in all dimensions, ignoring types that are absent.
@@ -1757,6 +1728,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return the intersection result. May be one of the existing instances.
      * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
      * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
+     * @throws DisjointExtentException if the given extent does not intersect this extent.
      *
      * @since 1.3
      */
@@ -1765,7 +1737,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
-     * Returns the union of this grid extent with to the given grid extent.
+     * Returns the union of this grid extent with the given grid extent.
      * The given extent shall have the same number of dimensions than this extent.
      * The {@linkplain #getAxisType(int) axis types} (vertical, temporal, …) must
      * be the same in all dimensions, ignoring types that are absent.
@@ -1783,6 +1755,11 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
 
     /**
      * Implementation of {@link #union(GridExtent)} and {@link #intersect(GridExtent)}
+     *
+     * @param  other  the grid to combine with.
+     * @return the union or intersection result, or {@code null} if the intersection gave an empty result.
+     * @throws MismatchedDimensionException if the two extents do not have the same number of dimensions.
+     * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      */
     private GridExtent combine(final GridExtent other, final boolean union) {
         final int n = coordinates.length;
@@ -1809,6 +1786,13 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         while (i < n) {clipped[i] = extremum(coordinates[i], other.coordinates[i],  union); i++;}
         if (Arrays.equals(clipped,  this.coordinates)) return this;
         if (Arrays.equals(clipped, other.coordinates)) return other;
+        if (!union) {
+            for (i=0; i<m; i++) {
+                if (clipped[i] > clipped[i+m]) {
+                    throw new DisjointExtentException(this, other, i);
+                }
+            }
+        }
         return new GridExtent(this, clipped);
     }
 

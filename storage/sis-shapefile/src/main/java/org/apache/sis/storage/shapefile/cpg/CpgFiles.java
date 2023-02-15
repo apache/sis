@@ -36,7 +36,6 @@ import org.apache.sis.util.Static;
  * @author  Johann Sorel (Geomatys)
  * @version 2.0
  * @since   2.0
- * @module
  */
 public final class CpgFiles extends Static {
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Map;
 import java.util.Locale;
 import java.io.IOException;
 import org.opengis.geometry.Envelope;
@@ -35,7 +36,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -50,9 +50,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
-public final strictfp class GridExtentTest extends TestCase {
+public final class GridExtentTest extends TestCase {
     /**
      * Creates a three-dimensional grid extent to be shared by different tests.
      */
@@ -282,6 +281,13 @@ public final strictfp class GridExtentTest extends TestCase {
         assertExtentEquals(extent, 1, 220, 799);
         assertExtentEquals(extent, 2, 40,  46);
         assertSame(extent.intersect(domain), extent);
+        final GridExtent disjoint = domain.translate(0, 1000);
+        try {
+            extent.intersect(disjoint);
+            fail("Expected DisjointExtentException.");
+        } catch (DisjointExtentException e) {
+            assertNotNull(e.getMessage());
+        }
     }
 
     /**
@@ -350,7 +356,7 @@ public final strictfp class GridExtentTest extends TestCase {
     @Test
     public void testGetSubspaceDimensions() {
         final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
-        assertMapEquals(JDK9.mapOf(1, 5L, 3, 40L), extent.getSliceCoordinates());
+        assertMapEquals(Map.of(1, 5L, 3, 40L), extent.getSliceCoordinates());
         assertArrayEquals(new int[] {0,  2  }, extent.getSubspaceDimensions(2));
         assertArrayEquals(new int[] {0,1,2  }, extent.getSubspaceDimensions(3));
         assertArrayEquals(new int[] {0,1,2,3}, extent.getSubspaceDimensions(4));

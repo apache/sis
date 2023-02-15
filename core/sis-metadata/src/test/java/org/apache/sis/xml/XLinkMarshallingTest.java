@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml;
 
-import java.util.Collections;
+import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
 import javax.xml.bind.JAXBException;
@@ -39,10 +39,9 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
-public final strictfp class XLinkMarshallingTest extends TestCase {
+public final class XLinkMarshallingTest extends TestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.
      */
@@ -87,11 +86,11 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
      * Tests (un)marshalling of an object with a {@code xlink:href} attribute without element definition.
      * The XML fragment is:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <mdb:MD_Metadata>
      *     <mdb:identificationInfo xlink:href="http://test.net"/>
      *   </mdb:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      * @throws URISyntaxException if the URI used in this test is malformed.
@@ -103,7 +102,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
         final DefaultDataIdentification identification = new DefaultDataIdentification();
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setIdentificationInfo(Collections.singleton(identification));
+        metadata.setIdentificationInfo(Set.of(identification));
 
         assertXmlEquals(LINK_ONLY_XML, marshal(metadata), "xmlns:*");
         verify(true, unmarshal(DefaultMetadata.class, LINK_ONLY_XML));
@@ -113,7 +112,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
      * Tests (un)marshalling of an object with a {@code xlink:href} attribute with an element definition.
      * The XML fragment is:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <mdb:MD_Metadata>
      *     <mdb:identificationInfo xlink:href="http://test.net">
      *       <mdb:MD_DataIdentification>
@@ -123,7 +122,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
      *       </mdb:MD_DataIdentification>
      *     </mdb:identificationInfo>
      *   </mdb:MD_Metadata>
-     * }
+     *   }
      *
      * @throws JAXBException if an error occurred during (un)marshalling.
      * @throws URISyntaxException if the URI used in this test is malformed.
@@ -136,7 +135,7 @@ public final strictfp class XLinkMarshallingTest extends TestCase {
         identification.getIdentifierMap().putSpecialized(IdentifierSpace.XLINK, xlink);
         identification.setAbstract(new SimpleInternationalString("This is a test."));
         final DefaultMetadata metadata = new DefaultMetadata();
-        metadata.setIdentificationInfo(Collections.singleton(identification));
+        metadata.setIdentificationInfo(Set.of(identification));
 
         assertXmlEquals(LINK_WITH_ELEMENT_XML, marshal(metadata), "xmlns:*");
         final DefaultMetadata unmarshal = unmarshal(DefaultMetadata.class, LINK_WITH_ELEMENT_XML);

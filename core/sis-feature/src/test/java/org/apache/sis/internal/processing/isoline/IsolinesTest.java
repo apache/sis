@@ -37,9 +37,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class IsolinesTest extends TestCase {
+public final class IsolinesTest extends TestCase {
     /**
      * Tolerance threshold for rounding errors. Needs to take in account that
      * {@link org.apache.sis.internal.feature.j2d.Polyline} stores coordinate

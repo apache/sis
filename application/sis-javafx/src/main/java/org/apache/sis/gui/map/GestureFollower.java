@@ -20,7 +20,6 @@ import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
 import java.util.Optional;
-import java.util.logging.Logger;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Path;
@@ -39,8 +38,9 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 import org.apache.sis.portrayal.CanvasFollower;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.logging.Logging;
+
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -58,9 +58,8 @@ import org.apache.sis.util.logging.Logging;
  * All events should be processed in the JavaFX thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
- * @module
  */
 public class GestureFollower extends CanvasFollower implements EventHandler<MouseEvent> {
     /**
@@ -231,7 +230,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
         } catch (TransformException e) {
             cursorSourceValid = false;
             cursor.setVisible(false);
-            Logging.recoverableException(Logger.getLogger(Modules.APPLICATION), GestureFollower.class, "handle", e);
+            Logging.recoverableException(LOGGER, GestureFollower.class, "handle", e);
         }
     }
 

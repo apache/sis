@@ -19,8 +19,6 @@ package org.apache.sis.referencing.factory;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -53,7 +51,6 @@ import org.apache.sis.internal.referencing.MergedProperties;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Messages;
@@ -61,6 +58,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.xml.XML;
 
 
@@ -190,9 +188,8 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
- * @module
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
     /**
@@ -249,13 +246,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @param  properties  the default properties, or {@code null} if none.
      */
-    public GeodeticObjectFactory(Map<String,?> properties) {
-        if (properties == null || properties.isEmpty()) {
-            properties = Collections.emptyMap();
-        } else {
-            properties = CollectionsExt.compact(new HashMap<>(properties));
-        }
-        defaultProperties = properties;
+    public GeodeticObjectFactory(final Map<String,?> properties) {
+        defaultProperties = (properties != null) ? Map.copyOf(properties) : Map.of();
         pool = new WeakHashSet<>(AbstractIdentifiedObject.class);
         parser = new AtomicReference<>();
     }
@@ -324,10 +316,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                         (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
                                      : Messages.Keys.CreatedNamedObject_2,
                         c.getInterface(), c.getName().getCode(), id);
-                record.setSourceClassName(GeodeticObjectFactory.class.getCanonicalName());
-                record.setSourceMethodName(caller);
-                record.setLoggerName(LOGGER.getName());
-                LOGGER.log(record);
+
+                Logging.completeAndLog(LOGGER, GeodeticObjectFactory.class, caller, record);
             }
         }
         return c;
@@ -1598,10 +1588,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * This method understands both version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
      * of the WKT format.
      *
-     * <div class="note"><b>Example:</b> below is a slightly simplified WKT 2 string for a Mercator projection.
+     * <h4>Example</h4>
+     * Below is a slightly simplified WKT 2 string for a Mercator projection.
      * For making this example smaller, some optional {@code UNIT[…]} and {@code ORDER[…]} elements have been omitted.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS["SIRGAS 2000 / Brazil Mercator",
      *     BaseGeodCRS["SIRGAS 2000",
      *       Datum["Sistema de Referencia Geocentrico para las Americas 2000",
@@ -1617,9 +1608,9 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *       Axis["northing (N)", north],
      *       LengthUnit["metre", 1],
      *     Id["EPSG",5641]]
-     * }
-     * </div>
+     *   }
      *
+     * <h4>Logging</h4>
      * If the given text contains non-fatal anomalies
      * (unknown or unsupported WKT elements, inconsistent unit definitions, unparsable axis abbreviations, <i>etc.</i>),
      * warnings may be reported in a {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.

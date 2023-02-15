@@ -45,15 +45,16 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Transform which passes through a subset of coordinates to another transform.
  * This allows transforms to operate on a subset of coordinate values.
  *
- * <div class="note"><b>Example:</b> giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
- * {@code PassThroughTransform} can convert the height values from feet to meters without affecting the latitude and
- * longitude values. Such transform can be built as below:
+ * <h2>Example</h2>
+ * Giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
+ * {@code PassThroughTransform} can convert the height values from feet to meters
+ * without affecting the latitude and longitude values.
+ * Such transform can be built as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     MathTransform feetToMetres = MathTransforms.linear(0.3048, 0);       // One-dimensional conversion.
  *     MathTransform tr = MathTransforms.passThrough(2, feetToMetres, 0);   // Three-dimensional conversion.
- * }
- * </div>
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * {@code PassThroughTransform} is immutable and thread-safe if its {@linkplain #subTransform} is also
@@ -70,7 +71,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * @see MathTransforms#compound(MathTransform...)
  *
  * @since 0.5
- * @module
  */
 public class PassThroughTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -96,6 +96,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * The sub-transform to apply on the {@linkplain #getModifiedCoordinates() modified coordinates}.
      * This is often the sub-transform specified at construction time, but not necessarily.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final MathTransform subTransform;
 
     /**
@@ -138,10 +139,10 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * Creates a transform which passes through a subset of coordinates to another transform.
      * This method returns a transform having the following dimensions:
      *
-     * {@preformat java
-     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
-     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
-     * }
+     * {@snippet lang="java" :
+     *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
+     *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
+     *     }
      *
      * Affected coordinates will range from {@code firstAffectedCoordinate} inclusive to
      * {@code dimTarget - numTrailingCoordinates} exclusive.

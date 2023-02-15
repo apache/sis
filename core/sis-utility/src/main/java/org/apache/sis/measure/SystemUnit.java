@@ -43,12 +43,11 @@ import org.apache.sis.math.Fraction;
  * without scale factor or offset.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param <Q>  the kind of quantity to be measured using this units.
  *
  * @since 0.8
- * @module
  */
 final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements QuantityFactory<Q> {
     /**
@@ -403,9 +402,9 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      *
      * <p>The most important alternate unit in Apache SIS is {@link Units#RADIAN}, defined as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   Unit<Angle> RADIAN = ONE.alternate("rad").asType(Angle.class);
-     * }
+     *   }
      *
      * @param  symbol  the new symbol for the alternate unit.
      * @return the alternate unit.
@@ -633,5 +632,21 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         } else {
             return new Scalar<>(v, unit);
         }
+    }
+
+    /**
+     * Creates a quantity for the given number stated in the specified unit and scale.
+     *
+     * @param  value  the numeric value stated in the specified unit.
+     * @param  unit   the unit of the value.
+     * @param  scale  the {@code ABSOLUTE} / {@code RELATIVE} scale of the quantity to create.
+     * @return the requested quantity.
+     */
+    @Override
+    public Quantity<Q> create(final Number value, final Unit<Q> unit, final Quantity.Scale scale) {
+        if (Objects.requireNonNull(scale) != Scalar.SCALE) {
+            throw new UnsupportedOperationException("Relative scale is not yet supported.");
+        }
+        return create(value, unit);
     }
 }

@@ -17,7 +17,6 @@
 package org.apache.sis.storage;
 
 import java.util.List;
-import java.util.Collections;
 import java.awt.image.BufferedImage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -40,7 +39,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-final strictfp class GridResourceMock extends AbstractGridCoverageResource {
+final class GridResourceMock extends AbstractGridCoverageResource {
     /**
      * Grid geometry of this resource, specified at construction time.
      */
@@ -58,7 +57,7 @@ final strictfp class GridResourceMock extends AbstractGridCoverageResource {
         super(null, false);
         assertNotNull(gridGeometry);
         this.gridGeometry     = gridGeometry;
-        this.sampleDimensions = Collections.singletonList(new SampleDimension.Builder().setName(0).build());
+        this.sampleDimensions = List.of(new SampleDimension.Builder().setName(0).build());
     }
 
     /**

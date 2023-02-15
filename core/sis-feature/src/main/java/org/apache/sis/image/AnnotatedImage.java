@@ -59,7 +59,6 @@ import org.apache.sis.internal.util.Strings;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 abstract class AnnotatedImage extends ImageAdapter {
     /**
@@ -478,7 +477,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      * approach is two define 3 private methods in the subclass as below (where <var>P</var> is the type of the
      * property to compute):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     private P createAccumulator() {
      *         // Create an object holding the information to be computed by a single thread.
      *         // This is invoked for each worker thread before the worker starts its execution.
@@ -494,7 +493,7 @@ abstract class AnnotatedImage extends ImageAdapter {
      *         // The accumulator may already contain data, which need to be augmented (not overwritten).
      *     }
      *
-     *     &#64;Override
+     *     @Override
      *     protected Collector<Raster,P,P> collector() {
      *         return Collector.of(this::createAccumulator, MyClass::compute, MyClass::combine);
      *     }

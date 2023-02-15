@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
+import java.util.Map;
 import java.net.URI;
 import java.io.StringReader;
 import java.util.logging.Filter;
@@ -33,7 +34,6 @@ import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.util.logging.Logger.getLogger;
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.MetadataAssert.*;
 
 
@@ -44,9 +44,8 @@ import static org.apache.sis.test.MetadataAssert.*;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultBrowseGraphicTest extends TestCase {
+public final class DefaultBrowseGraphicTest extends TestCase {
     /**
      * {@code false} if testing ISO 19115-3 document, or {@code true} if testing ISO 19139:2007 document.
      */
@@ -317,8 +316,9 @@ public final strictfp class DefaultBrowseGraphicTest extends TestCase {
          * Unmarshals the given object while listening to warnings.
          */
         public DefaultBrowseGraphic unmarshal(final String xml) throws JAXBException {
-            return (DefaultBrowseGraphic) XML.unmarshal(new StreamSource(new StringReader(xml)),
-                    singletonMap(XML.WARNING_FILTER, this));
+            return (DefaultBrowseGraphic) XML.unmarshal(
+                    new StreamSource(new StringReader(xml)),
+                    Map.of(XML.WARNING_FILTER, this));
         }
     }
 }

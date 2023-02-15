@@ -63,7 +63,6 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @XmlTransient
 public abstract class MapProjection extends AbstractProvider {
@@ -178,7 +177,7 @@ public abstract class MapProjection extends AbstractProvider {
      *
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
-    @Deprecated
+    @Deprecated(since="1.1")
     private OperationMethod redimensioned;
 
     /**
@@ -207,7 +206,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @deprecated ISO 19111:2019 removed source/target dimensions attributes.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.1")
     public final OperationMethod redimension(final int sourceDimensions, final int targetDimensions) {
         if (sourceDimensions != 3 || targetDimensions != 3) {
             return super.redimension(sourceDimensions, targetDimensions);

@@ -17,7 +17,6 @@
 package org.apache.sis.filter;
 
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.regex.Pattern;
 import org.apache.sis.util.ArgumentChecks;
@@ -38,7 +37,6 @@ import org.opengis.filter.LikeOperator;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Optimization.OnFilter<R> {
     /**
@@ -49,7 +47,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
     /**
      * The source of values to compare against the pattern.
      */
-    @SuppressWarnings("serial")                         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final Expression<? super R, ?> expression;
 
     /**
@@ -169,8 +167,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
      */
     @Override
     protected Collection<?> getChildren() {
-        // TODO: use List.of(…) in JDK9.
-        return Arrays.asList(expression, pattern);
+        return List.of(expression, pattern);
     }
 
     /**
@@ -178,8 +175,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
      */
     @Override
     public List<Expression<? super R, ?>> getExpressions() {
-        // TODO: use List.of(…) in JDK9.
-        return Arrays.asList(expression, new LeafExpression.Literal<>(pattern));
+        return List.of(expression, new LeafExpression.Literal<>(pattern));
     }
 
     /**

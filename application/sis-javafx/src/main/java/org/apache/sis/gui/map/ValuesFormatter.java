@@ -36,7 +36,6 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
@@ -44,7 +43,7 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 // Branch-dependent imports
 import org.opengis.coverage.CannotEvaluateException;
@@ -60,9 +59,8 @@ import org.opengis.coverage.CannotEvaluateException;
  * from a background thread.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     /**
@@ -516,7 +514,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         final String message = e.getMessage();
         if (!message.equals(lastErrorMessage)) {
             lastErrorMessage = message;
-            Logging.recoverableException(getLogger(Modules.APPLICATION), ValuesUnderCursor.class, method, e);
+            Logging.recoverableException(LOGGER, ValuesUnderCursor.class, method, e);
         }
     }
 }

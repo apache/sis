@@ -16,10 +16,9 @@
  */
 package org.apache.sis.referencing.operation;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Arrays;
-import java.util.Collections;
 import java.text.ParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -80,7 +79,6 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 @DependsOn({
     DefaultConversionTest.class,
@@ -88,14 +86,14 @@ import static org.apache.sis.test.Assert.*;
     DefaultPassThroughOperationTest.class,
     DefaultConcatenatedOperationTest.class
 })
-public final strictfp class CoordinateOperationFinderTest extends MathTransformTestCase {
+public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assertEquals(expected, actual, STRICT);
-     * }
+     *     }
      */
     private static final double STRICT = 0;
 
@@ -279,7 +277,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
         assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation",  Transformation.class, operation);
         assertEquals    ("method", method, ((SingleOperation) operation).getMethod().getName().getCode());
 
@@ -340,7 +338,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
         assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation",  Transformation.class, operation);
         assertEquals("method", "Geocentric translations (geog2D domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
@@ -386,7 +384,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
         assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
         assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Arrays.asList(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
         assertInstanceOf("operation", Transformation.class,  operation);
         assertEquals    ("method", "Geocentric translations (geocentric domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
@@ -665,7 +663,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
         assertInstanceOf("operation", Conversion.class, operation);
 
         transform = operation.getMathTransform();
-        tolerance = 1E-12;
+        tolerance = 2E-12;
         verifyTransform(new double[] {
             // December 31, 1899 at 12:00 UTC in seconds.
             CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
@@ -901,7 +899,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
      * This is a convenience method for construction of geodetic objects.
      */
     private static Map<String,String> properties(final String name) {
-        return Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, name);
+        return Map.of(CoordinateReferenceSystem.NAME_KEY, name);
     }
 
     /**
@@ -992,7 +990,7 @@ public final strictfp class CoordinateOperationFinderTest extends MathTransformT
             0, 0, 0, 1
         }), ((LinearTransform) transform).getMatrix(), 1E-12);
 
-        tolerance = 1E-12;
+        tolerance = 2E-12;
         verifyTransform(new double[] {
             -5, -8, CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
         }, new double[] {

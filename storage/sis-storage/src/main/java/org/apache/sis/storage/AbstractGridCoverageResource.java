@@ -38,7 +38,6 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.util.StandardDateFormat;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.Resources;
 
@@ -63,7 +62,6 @@ import org.apache.sis.internal.storage.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class AbstractGridCoverageResource extends AbstractResource implements GridCoverageResource {
     /**
@@ -198,7 +196,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
             final Object[] parameters = new Object[6];
             parameters[0] = IOUtilities.filename(file != null ? file : listeners.getSourceName());
             parameters[5] = nanos / (double) StandardDateFormat.NANOS_PER_SECOND;
-            JDK9.ifPresentOrElse(domain.getGeographicExtent(), (box) -> {
+            domain.getGeographicExtent().ifPresentOrElse((box) -> {
                 final AngleFormat f = new AngleFormat(locale);
                 double min = box.getSouthBoundLatitude();
                 double max = box.getNorthBoundLatitude();

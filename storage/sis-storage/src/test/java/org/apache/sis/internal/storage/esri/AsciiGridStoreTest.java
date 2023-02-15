@@ -40,9 +40,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class AsciiGridStoreTest extends TestCase {
+public final class AsciiGridStoreTest extends TestCase {
     /**
      * Returns a storage connector with the URL to the test data.
      */

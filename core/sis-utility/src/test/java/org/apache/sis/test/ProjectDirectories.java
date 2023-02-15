@@ -21,8 +21,6 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import org.apache.sis.internal.jdk9.JDK9;
 
 import static org.junit.Assert.*;
 
@@ -35,7 +33,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class ProjectDirectories {
     /**
@@ -71,12 +68,12 @@ public final class ProjectDirectories {
         assertNotNull("Class not found.", resource);
         Path dir;
         try {
-            dir = Paths.get(resource.toURI()).getParent();
+            dir = Path.of(resource.toURI()).getParent();
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }
         classesPackageDirectory = dir;
-        packageName = JDK9.getPackageName(c);
+        packageName = c.getPackageName();
         String pkg = packageName;
         int s = pkg.length();
         do {

@@ -35,7 +35,6 @@ import org.apache.sis.internal.shapefile.jdbc.statement.DBFStatement;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public class DBFConnection extends AbstractConnection {
     /** The object to use for reading the database content. */

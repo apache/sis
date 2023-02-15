@@ -45,8 +45,8 @@ import org.apache.sis.internal.system.Semaphores;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
+@SuppressWarnings("CloneableImplementsClone")
 public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * For cross-version compatibility.
@@ -56,7 +56,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * The (presumed immutable) parameters used for creating this transform.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final ParameterValueGroup parameters;
 
     /**

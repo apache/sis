@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.gui;
 
-import java.util.Arrays;
 import java.util.List;
 import javafx.scene.control.TreeItem;
 import javafx.scene.paint.Color;
@@ -33,9 +32,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public final strictfp class GUIUtilitiesTest extends TestCase {
+public final class GUIUtilitiesTest extends TestCase {
     /**
      * Tests {@link GUIUtilities#appendPathSorted(TreeItem, Comparable...)}
      * and   {@link GUIUtilities#removePathSorted(TreeItem, Comparable...)}.
@@ -118,9 +116,9 @@ public final strictfp class GUIUtilitiesTest extends TestCase {
      */
     @Test
     public void testLongestCommonSubsequence() {
-        final List<Integer> x = Arrays.asList(1, 2, 4, 6, 7,    9);
-        final List<Integer> y = Arrays.asList(1, 2,    3, 7, 8);
-        assertEquals(Arrays.asList(1, 2, 7), GUIUtilities.longestCommonSubsequence(x, y));
+        final List<Integer> x = List.of(1, 2, 4, 6, 7,    9);
+        final List<Integer> y = List.of(1, 2,    3, 7, 8);
+        assertEquals(List.of(1, 2, 7), GUIUtilities.longestCommonSubsequence(x, y));
     }
 
     /**

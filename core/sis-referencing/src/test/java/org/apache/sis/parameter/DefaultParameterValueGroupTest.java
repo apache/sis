@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +36,6 @@ import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 import static org.opengis.test.Validators.*;
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 
 
@@ -45,13 +45,12 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @DependsOn({
     DefaultParameterDescriptorGroupTest.class,
     DefaultParameterValueTest.class
 })
-public final strictfp class DefaultParameterValueGroupTest extends TestCase {
+public final class DefaultParameterValueGroupTest extends TestCase {
     /**
      * The descriptors of parameters to be tested by this class.
      * The default descriptors are:
@@ -239,11 +238,11 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesAddAllWithSubgroups() {
         final DefaultParameterDescriptorGroup group, subGroup;
         final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
-        subGroup = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"),
-                2, 4, descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+        subGroup = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "theSubGroup"),
+                2, 4, descriptors.toArray(GeneralParameterDescriptor[]::new));
         descriptors.add(subGroup);
-        group = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theGroup"),
-                descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+        group = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "theGroup"),
+                descriptors.toArray(GeneralParameterDescriptor[]::new));
         /*
          * Prepare the GeneralParameterValue instances that we are going to add in the above group.
          * We assign arbitrary integer values to each instance if order to be able to differentiate
@@ -295,7 +294,7 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
         final DefaultParameterValueGroup    group = createGroup(10);
         final List<GeneralParameterValue>  values = group.values();
         final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<>(
-                singletonMap(NAME_KEY, "Optional 5"), 0, 1, Integer.class, null, null, null).createValue();
+                Map.of(NAME_KEY, "Optional 5"), 0, 1, Integer.class, null, null, null).createValue();
         try {
             values.add(nonExistent);
             fail("“Optional 5” is not a parameter for this group.");
@@ -385,8 +384,8 @@ public final strictfp class DefaultParameterValueGroupTest extends TestCase {
      */
     @Test
     public void testAddGroup() {
-        descriptor = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theGroup"), 1, 1,
-                new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "theSubGroup"), 0, 10)
+        descriptor = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "theGroup"), 1, 1,
+                new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "theSubGroup"), 0, 10)
         );
         validate(descriptor);
 

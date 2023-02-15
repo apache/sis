@@ -25,7 +25,6 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.lang.annotation.ElementType;
@@ -51,11 +50,10 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 @SuppressWarnings("UnnecessaryBoxing")
 @DependsOn(org.apache.sis.measure.AngleTest.class)
-public final strictfp class StringConverterTest extends TestCase {
+public final class StringConverterTest extends TestCase {
     /**
      * Asserts that conversion of the given {@code source} value produces
      * the given {@code target} value, and tests the inverse conversion.
@@ -265,7 +263,7 @@ public final strictfp class StringConverterTest extends TestCase {
     public void testPath() {
         final ObjectConverter<String,Path> c = new StringConverter.Path();
         final String path = "home/user/index.txt".replace('/', File.separatorChar);
-        runInvertibleConversion(c, path, Paths.get(path));
+        runInvertibleConversion(c, path, Path.of(path));
         assertSerializedEquals(c);
     }
 

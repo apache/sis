@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -39,6 +40,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
+import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
@@ -81,17 +83,21 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultMathTransformFactory
  * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractMathTransform extends FormattableObject
         implements MathTransform, Parameterized, LenientComparable
 {
+    /**
+     * The logger for coordinate operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+
     /**
      * Maximum buffer size when creating temporary arrays. Must not be too big, otherwise the
      * cost of allocating the buffer may be greater than the benefit of transforming array of
@@ -350,7 +356,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * derivative at that location. Invoking this method is conceptually equivalent to running
      * the following:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Matrix derivative = null;
      *     if (derivate) {
      *         double[] coordinates = Arrays.copyOfRange(srcPts, srcOff, srcOff + getSourceDimensions());
@@ -358,7 +364,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *     }
      *     this.transform(srcPts, srcOff, dstPts, dstOff, 1);                   // May overwrite srcPts.
      *     return derivative;
-     * }
+     *     }
      *
      * However, this method provides two advantages:
      *
@@ -527,7 +533,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *                 May be the same than {@code srcPts}.
      * @param  dstOff  the offset to the location of the first transformed point that is stored in the destination array.
      * @param  numPts  the number of point objects to be transformed.
-     * @throws TransformException if a point can't be transformed. Some implementations will stop at the first failure,
+     * @throws TransformException if a point cannot be transformed. Some implementations will stop at the first failure,
      *         wile some other implementations will fill the un-transformable points with {@link Float#NaN} values,
      *         continue and throw the exception only at end. Implementations that fall in the latter case should set
      *         the {@linkplain TransformException#getLastCompletedTransform last completed transform} to {@code this}.
@@ -941,12 +947,13 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Compares the specified object with this math transform for strict equality.
      * This method is implemented as below (omitting assertions):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * @param  object  the object to compare with this transform.
      * @return {@code true} if the given object is a transform of the same class and using the same parameter values.
+     * @throws AssertionError if assertions are enabled and the objects are equal but their hash codes are different.
      */
     @Override
     public final boolean equals(final Object object) {
@@ -1079,7 +1086,6 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @version 1.0
      * @since   0.5
-     * @module
      */
     protected abstract static class Inverse extends AbstractMathTransform {
         /**

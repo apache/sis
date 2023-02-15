@@ -21,14 +21,12 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.BlockingQueue;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * A thread executing short tasks after some (potentially zero nanosecond) delay.
  * This class should be reserved to internal SIS usage without user's code.
  * In practice some user code may be indirectly executed through SIS tasks invoking overrideable methods.
- * But all submitted tasks shall be very quick, since there is only one thread shared by everyone.
+ * But all submitted tasks shall be very quick, because there is only one thread shared by everyone.
  *
  * <p>The methods for use in this class are:</p>
  * <ul>
@@ -53,12 +51,11 @@ import static java.util.logging.Logger.getLogger;
  * {@code CacheTest.stress()} tests suggests that the lightweight solution is faster.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a>
  *
  * @since 0.3
- * @module
  */
 public final class DelayedExecutor extends DaemonThread {
     /**
@@ -136,7 +133,7 @@ public final class DelayedExecutor extends DaemonThread {
                  * We need to test 'isKillRequested()' below.
                  */
             } catch (Throwable exception) {
-                Logging.unexpectedException(getLogger(Loggers.SYSTEM), getClass(), "run", exception);
+                Logging.unexpectedException(SystemListener.LOGGER, getClass(), "run", exception);
             }
             if (isKillRequested()) {
                 queue.clear();

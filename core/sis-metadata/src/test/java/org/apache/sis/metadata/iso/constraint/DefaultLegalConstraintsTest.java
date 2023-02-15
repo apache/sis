@@ -16,6 +16,7 @@
  */
 package org.apache.sis.metadata.iso.constraint;
 
+import java.util.Set;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
@@ -23,7 +24,6 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.MetadataAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
@@ -36,9 +36,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.4
- * @module
  */
-public final strictfp class DefaultLegalConstraintsTest extends TestCase {
+public final class DefaultLegalConstraintsTest extends TestCase {
     /**
      * Tests unmarshalling of an element containing an empty {@code codeListValue} attribute.
      * This was used to cause a {@code NullPointerException} prior SIS-157 fix.
@@ -85,7 +84,7 @@ public final strictfp class DefaultLegalConstraintsTest extends TestCase {
                 "</mco:MD_LegalConstraints>\n";
 
         final DefaultLegalConstraints c = new DefaultLegalConstraints();
-        c.setUseConstraints(singleton(Restriction.LICENCE));
+        c.setUseConstraints(Set.of(Restriction.LICENCE));
         assertXmlEquals(xml, marshal(c), "xmlns:*");
         DefaultLegalConstraints actual = unmarshal(DefaultLegalConstraints.class, xml);
         assertSame(Restriction.LICENCE, getSingleton(actual.getUseConstraints()));

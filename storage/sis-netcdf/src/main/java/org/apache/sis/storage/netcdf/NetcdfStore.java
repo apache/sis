@@ -63,7 +63,6 @@ import ucar.nc2.constants.CDM;
  * @see NetcdfStoreProvider
  *
  * @since 0.3
- * @module
  */
 public class NetcdfStore extends DataStore implements Aggregate {
     /**
@@ -238,7 +237,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
             final List<Resource> grids = RasterResource.create(decoder, this);
             if (!grids.isEmpty()) {
                 grids.addAll(UnmodifiableArrayList.wrap(resources));
-                resources = grids.toArray(new Resource[grids.size()]);
+                resources = grids.toArray(Resource[]::new);
             }
             components = UnmodifiableArrayList.wrap(resources);
         } catch (IOException e) {
@@ -262,20 +261,26 @@ public class NetcdfStore extends DataStore implements Aggregate {
 
     /**
      * Closes this netCDF store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing the netCDF file.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                  // Should never fail.
-        final Decoder reader = decoder;
-        decoder    = null;
-        metadata   = null;
-        components = null;
-        if (reader != null) try {
-            reader.close();
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();                  // Should never fail.
+            final Decoder reader = decoder;
+            if (reader != null) {
+                reader.close(this);
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                components = null;
+                metadata   = null;
+                decoder    = null;
+            }
         }
     }
 

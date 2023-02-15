@@ -41,7 +41,6 @@ import org.apache.sis.util.AbstractInternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 public abstract class ResourceInternationalString extends AbstractInternationalString implements Serializable {
     /**
@@ -66,6 +65,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      * specify {@code null} as an argument value. We distinguish the two cases with the sign
      * of the {@link #key} value.
      */
+    @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private final Object arguments;
 
     /**

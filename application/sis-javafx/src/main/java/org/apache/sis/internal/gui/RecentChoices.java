@@ -25,6 +25,7 @@ import javafx.scene.control.ComboBox;
 import javafx.collections.ObservableList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.FrequencySortedSet;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -33,7 +34,6 @@ import org.apache.sis.util.collection.FrequencySortedSet;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public final class RecentChoices {
     /**
@@ -43,6 +43,7 @@ public final class RecentChoices {
      *
      * @see #useReferenceSystem(String)
      */
+    @Configuration
     public static final int MAXIMUM_REFERENCE_SYSTEMS = 20;
 
     /**
@@ -183,7 +184,7 @@ public final class RecentChoices {
                 if (!CRS_THIS_RUN.add(code.trim())) {
                     return;
                 }
-                codes = CRS_THIS_RUN.toArray(new String[CRS_THIS_RUN.size()]);
+                codes = CRS_THIS_RUN.toArray(String[]::new);
             }
             saveReferenceSystems(codes);
         }
@@ -196,7 +197,7 @@ public final class RecentChoices {
     public static void saveReferenceSystems() {
         final String[] codes;
         synchronized (CRS_THIS_RUN) {
-            codes = CRS_THIS_RUN.toArray(new String[CRS_THIS_RUN.size()]);
+            codes = CRS_THIS_RUN.toArray(String[]::new);
         }
         saveReferenceSystems(codes);
     }

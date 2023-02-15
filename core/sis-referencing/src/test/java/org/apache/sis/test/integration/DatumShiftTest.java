@@ -16,10 +16,7 @@
  */
 package org.apache.sis.test.integration;
 
-import java.nio.file.Path;
-import java.io.IOException;
-import org.opengis.util.FactoryException;
-import org.opengis.referencing.operation.TransformException;
+import java.net.URI;
 import org.apache.sis.internal.referencing.provider.NTv2Test;
 import org.apache.sis.internal.referencing.provider.NADCONTest;
 import org.apache.sis.internal.referencing.provider.FranceGeocentricInterpolationTest;
@@ -37,27 +34,24 @@ import static org.apache.sis.test.Assume.*;
  * directory.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
- * @module
  */
 @DependsOn({
     NTv2Test.class,
     NADCONTest.class,
     FranceGeocentricInterpolationTest.class
 })
-public final strictfp class DatumShiftTest extends TestCase {
+public final class DatumShiftTest extends TestCase {
     /**
      * Tests loading an official {@code "ntf_r93.gsb"} datum shift grid file
      * and interpolating the sample point tested by {@link FranceGeocentricInterpolationTest}.
      *
-     * @throws IOException if the grid exists but an error occurred while loading it.
-     * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testRGF93() throws IOException, FactoryException, TransformException {
-        final Path file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb");
+    public void testRGF93() throws Exception {
+        final URI file = assumeDataExists(DataDirectory.DATUM_CHANGES, "ntf_r93.gsb");
         NTv2Test.testRGF93(file);
     }
 
@@ -65,14 +59,12 @@ public final strictfp class DatumShiftTest extends TestCase {
      * Tests loading the official {@code "conus.las"} and {@code "conus.los"} datum shift grid files
      * and interpolating a sample point tested by {@link NADCONTest}.
      *
-     * @throws IOException if the grids exist but an error occurred while loading them.
-     * @throws FactoryException if an error occurred while computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testNADCON() throws IOException, FactoryException, TransformException {
-        final Path latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las");
-        final Path longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los");
+    public void testNADCON() throws Exception {
+        final URI latitudeShifts  = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.las");
+        final URI longitudeShifts = assumeDataExists(DataDirectory.DATUM_CHANGES, "conus.los");
         NADCONTest.testNADCON(latitudeShifts, longitudeShifts);
     }
 }

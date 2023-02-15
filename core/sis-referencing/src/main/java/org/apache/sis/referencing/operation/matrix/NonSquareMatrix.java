@@ -18,24 +18,24 @@ package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.util.Numbers;
 
 
 /**
  * A matrix which is not square.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see Matrices#createDiagonal(int, int)
  *
  * @since 0.4
- * @module
  */
 final class NonSquareMatrix extends GeneralMatrix {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5481206711680231697L;
+    private static final long serialVersionUID = 5440465531101262966L;
 
     /**
      * Creates a matrix of size {@code numRow} × {@code numCol}.
@@ -46,10 +46,9 @@ final class NonSquareMatrix extends GeneralMatrix {
      * @param numCol         number of columns.
      * @param setToIdentity  {@code true} for initializing the matrix to the identity matrix,
      *                       or {@code false} for leaving it initialized to zero.
-     * @param precision      1 for normal precision, or 2 for extended precision.
      */
-    NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity, final int precision) {
-        super(numRow, numCol, setToIdentity, precision);
+    NonSquareMatrix(final int numRow, final int numCol, final boolean setToIdentity) {
+        super(numRow, numCol, setToIdentity);
     }
 
     /**
@@ -57,21 +56,12 @@ final class NonSquareMatrix extends GeneralMatrix {
      * The array values are copied in one row at a time in row major fashion.
      * The array shall be exactly {@code numRow*numCol} in length.
      *
-     * @param numRow    number of rows.
-     * @param numCol    number of columns.
-     * @param elements  initial values.
+     * @param  numRow    number of rows.
+     * @param  numCol    number of columns.
+     * @param  elements  initial values.
      */
-    NonSquareMatrix(final int numRow, final int numCol, final double[] elements) {
+    NonSquareMatrix(final int numRow, final int numCol, final Number[] elements) {
         super(numRow, numCol, elements);
-    }
-
-    /**
-     * Constructs a new matrix and copies the initial values from the given matrix.
-     *
-     * @param matrix  the matrix to copy.
-     */
-    NonSquareMatrix(final Matrix matrix) {
-        super(matrix);
     }
 
     /**
@@ -88,25 +78,20 @@ final class NonSquareMatrix extends GeneralMatrix {
     public void transpose() {
         final short numRow = this.numRow;                 // Protection against accidental changes before we are done.
         final short numCol = this.numCol;
-        final int   errors = indexOfErrors(numRow, numCol, elements);       // Where error values start, or 0 if none.
-        final double[] copy = elements.clone();
+        final Number[] copy = elements.clone();
         int k = 0;
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
-                final int t = i*numRow + j;
-                elements[t] = copy[k];
-                if (errors != 0) {
-                    elements[t + errors] = copy[k + errors];
-                }
-                k++;
+                elements[i*numRow + j] = copy[k++];
             }
         }
+        assert k == elements.length;
         this.numRow = numCol;
         this.numCol = numRow;
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the value of <var>U</var> which solves {@code this} × <var>U</var> = {@code matrix}.
      *
      * <p>This method delegates the work to {@code inverse().multiply(matrix)} in order to leverage
      * the special handling done by {@code inverse()} for non-square matrices.</p>
@@ -121,7 +106,7 @@ final class NonSquareMatrix extends GeneralMatrix {
     }
 
     /**
-     * {@inheritDoc}
+     * Returns the inverse of this matrix.
      *
      * <p>This method performs a special check for non-square matrices in an attempt to invert them anyway.
      * If this matrix has more columns than rows, then this method can invert that matrix if and only if
@@ -135,15 +120,14 @@ final class NonSquareMatrix extends GeneralMatrix {
      * then insert NaN in place of the omitted dimensions. In the matrix below, we can see that (x,y) are
      * independent of (z,t) because the 3th and 4th columns contains only 0 elements:</p>
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌               ┐ -1        ┌                  ┐
      *   │ 2  0  0  0  8 │           │ 0.5  0     -4.00 │
      *   │ 0  4  0  0  5 │     =     │ 0    0.25  -1.25 │
      *   │ 0  0  0  0  1 │           │ 0    0       NaN │
      *   └               ┘           │ 0    0       NaN │
      *                               │ 0    0      1    │
-     *                               └                  ┘
-     * }
+     *                               └                  ┘</pre>
      *
      * There is an issue about whether the full row shall contain NaN, or only the last element (the translation
      * term) as in the above example.  The current implementation inserts a NaN value in the translation term and
@@ -190,7 +174,7 @@ next:   do {
                 throw nonInvertible();                            // Not enough columns that we can omit.
             }
             for (int j=length + i; (j -= numCol) >= 0;) {
-                if (elements[j] != 0) {
+                if (elements[j] != null) {
                     continue next;
                 }
             }
@@ -200,22 +184,18 @@ next:   do {
          * Found enough columns containing only zero elements. Create a square matrix omitting those columns,
          * and invert that matrix. Note that we also need to either copy the error terms, or to infer them.
          */
-        GeneralMatrix squareMatrix = new GeneralMatrix(numRow, numRow, false, 2);
+        GeneralMatrix squareMatrix = new GeneralMatrix(numRow, numRow, false);
         int j = 0;
         for (i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) oi++;
             else copyColumn(this, i, squareMatrix, j++);                     // Copy only if not skipped.
         }
-        // If the source matrix does not use double-double arithmetic, infer the error terms.
-        if (indexOfErrors(numRow, numCol, elements) == 0) {
-            inferErrors(squareMatrix.elements);
-        }
-        squareMatrix = (GeneralMatrix) Solver.inverse(squareMatrix, false);
+        squareMatrix = Solver.inverse(squareMatrix);
         /*
          * Create a new matrix with new rows added for the omitted coordinates.
-         * From this point, the meaning of 'numCol' and 'numRow' are interchanged.
+         * From this point, the meaning of `numCol` and `numRow` are interchanged.
          */
-        final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false, 2);
+        final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false);
         for (oi=0, j=0, i=0; i<numCol; i++) {
             if (oi != omitted.length && i == omitted[oi]) {
                 inverse.setElement(i, numRow-1, Double.NaN);        // Translation term to NaN, remaining to 0.
@@ -255,8 +235,8 @@ next:   do {
             int i = offset + numCol;
             if (ignoreTranslation) i--;
             while (--i >= offset) {
-                final double element = elements[i];
-                if (element != 0 && !Double.isNaN(element)) {
+                final Number element = elements[i];
+                if (element != null && !Numbers.isNaN(element)) {
                     continue next;
                 }
             }
@@ -266,21 +246,18 @@ next:   do {
          * Found enough rows containing only zero elements. Create a square matrix omitting those rows,
          * and invert that matrix. Note that we also need to either copy the error terms, or to infer them.
          */
-        GeneralMatrix squareMatrix = new GeneralMatrix(numCol, numCol, false, 2);
+        GeneralMatrix squareMatrix = new GeneralMatrix(numCol, numCol, false);
         int i = 0;
         for (j=0; j<numRow; j++) {
             if (oi != omitted.length && j == omitted[oi]) oi++;
             else copyRow(this, j, squareMatrix, i++);                   // Copy only if not skipped.
         }
-        if (indexOfErrors(numRow, numCol, elements) == 0) {
-            inferErrors(squareMatrix.elements);
-        }
-        squareMatrix = (GeneralMatrix) Solver.inverse(squareMatrix, false);
+        squareMatrix = Solver.inverse(squareMatrix);
         /*
          * Create a new matrix with new columns added for the omitted rows.
-         * From this point, the meaning of 'numCol' and 'numRow' are interchanged.
+         * From this point, the meaning of `numCol` and `numRow` are interchanged.
          */
-        final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false, 2);
+        final NonSquareMatrix inverse = new NonSquareMatrix(numCol, numRow, false);
         for (oi=0, i=0, j=0; j<numRow; j++) {
             if (oi != omitted.length && j == omitted[oi]) oi++;
             else copyColumn(squareMatrix, i++, inverse, j);
@@ -289,9 +266,9 @@ next:   do {
     }
 
     /**
-     * Copies a column between two matrices, including the double-double arithmetic error terms if any.
-     * The target matrix must have the same number of rows than the source matrix, and must have enough
-     * room for error terms (this is not verified).
+     * Copies a column between two matrices.
+     * The target matrix must have the same number of rows than the source matrix,
+     * and must have enough room for error terms (this is not verified).
      *
      * @param  source     the matrix from which to copy a column.
      * @param  srcIndex   index of the column to copy from the source matrix.
@@ -308,9 +285,9 @@ next:   do {
     }
 
     /**
-     * Copies a row between two matrices, including the double-double arithmetic error terms if any.
-     * The target matrix must have the same number of columns than the source matrix, and must have
-     * enough room for error terms (this is not verified).
+     * Copies a row between two matrices.
+     * The target matrix must have the same number of columns than the source matrix,
+     * and must have enough room for error terms (this is not verified).
      *
      * @param  source     the matrix from which to copy a row.
      * @param  srcIndex   index of the row to copy from the source matrix.

@@ -29,10 +29,10 @@ import javax.imageio.stream.ImageInputStream;
  * Adds the missing methods in {@code ChannelDataInput} for implementing the {@code ImageInputStream} interface.
  * The JDK approach for creating an image input stream from a channel would be as below:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     ReadableByteChannel channel = ...;
  *     ImageInputStream stream = ImageIO.createImageInputStream(Channels.newInputStream(channel));
- * }
+ *     }
  *
  * However, the standard {@link javax.imageio.stream.ImageInputStreamImpl} implementation performs many work by itself,
  * including supporting various {@linkplain ByteOrder byte order}, which could be more efficiently done by NIO.
@@ -49,7 +49,6 @@ import javax.imageio.stream.ImageInputStream;
  * @see java.nio.channels.Channels#newInputStream(ReadableByteChannel)
  *
  * @since 0.3
- * @module
  */
 public class ChannelImageInputStream extends ChannelDataInput implements ImageInputStream {
     /**
@@ -84,12 +83,12 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      * Creates a new input stream from the given {@code ChannelDataInput}.
      * This constructor is invoked when we need to change the implementation class
      * from {@code ChannelDataInput} to {@code ChannelImageInputStream}.
+     * The old input should not be used anymore after this constructor has been invoked.
      *
      * @param  input  the existing instance from which to takes the channel and buffer.
-     * @throws IOException if an error occurred while reading the channel.
      */
-    public ChannelImageInputStream(final ChannelDataInput input) throws IOException {
-        super(input.filename, input.channel, input.buffer, true);
+    public ChannelImageInputStream(final ChannelDataInput input) {
+        super(input);
     }
 
     /**
@@ -118,9 +117,9 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      * Reads a byte from the stream and returns a {@code true} if it is nonzero, {@code false} otherwise.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return readByte() != 0;
-     * }
+     *     }
      *
      * @return the value of the next boolean from the stream.
      * @throws IOException if an error (including EOF) occurred while reading the stream.
@@ -197,9 +196,9 @@ loop:   while ((c = read()) >= 0) {
      * Reads up to {@code dest.length} bytes from the stream, and stores them into
      * {@code dest} starting at index 0. The default implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return read(dest, 0, dest.length);
-     * }
+     *     }
      *
      * @param  dest  an array of bytes to be written to.
      * @return the number of bytes actually read, or -1 on EOF.
@@ -305,9 +304,9 @@ loop:   while ((c = read()) >= 0) {
      * Discards the initial position of the stream prior to the current stream position.
      * The implementation is as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     flushBefore(getStreamPosition());
-     * }
+     *     }
      *
      * @throws IOException if an I/O error occurred.
      */

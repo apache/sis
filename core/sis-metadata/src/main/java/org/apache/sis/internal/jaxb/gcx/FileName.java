@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * This is used for the URI in {@link org.apache.sis.metadata.iso.identification.DefaultBrowseGraphic}.
  * Example:
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <fileName>
  *      <gcx:FileName src="../path/wkj98723.jpg">Overview</gcx:FileName>
  *   </fileName>
@@ -39,7 +39,6 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "FileName_PropertyType")
 @XmlRootElement(name = "FileName")

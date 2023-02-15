@@ -47,10 +47,9 @@ import static org.junit.Assert.*;
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  *
  * @since 0.6
- * @module
  */
 @DependsOn(org.apache.sis.parameter.DefaultParameterDescriptorTest.class)
-public final strictfp class CC_GeneralOperationParameterTest extends TestCase {
+public final class CC_GeneralOperationParameterTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testGroupMergeBecauseExtraParameter()}.
      * This rule is used by test methods for verifying that the log message contains the expected information.

@@ -38,16 +38,15 @@ import org.opengis.util.GenericName;
  * The wrapped resource is created only when first needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public abstract class GridResourceWrapper implements GridCoverageResource {
     /**
      * The coverage resource instance which provides the data.
      * This is initially {@code null} and created when first needed.
      */
-    private GridCoverageResource source;
+    private volatile GridCoverageResource source;
 
     /**
      * Creates a new wrapper.
@@ -79,12 +78,16 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      * @throws DataStoreException if the resource cannot be created.
      */
     protected final GridCoverageResource source() throws DataStoreException {
-        synchronized (getSynchronizationLock()) {
-            if (source == null) {
-                source = createSource();
+        GridCoverageResource s = source;
+        if (s == null) {
+            synchronized (getSynchronizationLock()) {
+                s = source;
+                if (s == null) {
+                    source = s = createSource();
+                }
             }
-            return source;
         }
+        return s;
     }
 
     /**
@@ -225,18 +228,16 @@ public abstract class GridResourceWrapper implements GridCoverageResource {
      */
     @Override
     public <T extends StoreEvent> void removeListener(Class<T> eventType, StoreListener<? super T> listener) {
-        final GridCoverageResource source;
-        synchronized (getSynchronizationLock()) {
-            source = this.source;       // No need to invoke the `source()` method here.
-        }
-        if (source != null) {
-            source.removeListener(eventType, listener);
+        final GridCoverageResource s = source;      // No need to invoke the `source()` method here.
+        if (s != null) {
+            s.removeListener(eventType, listener);
         }
     }
 
     /**
      * Closes the data store associated to the resource, then discards the resource.
      * This method does not verify if the data store is still used by other resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing the data store.
      */

@@ -25,6 +25,5 @@
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 package org.apache.sis.storage.shapefile;

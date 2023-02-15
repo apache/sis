@@ -33,10 +33,9 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Martin Desruisseaux (IRD)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(RangeTest.class)
-public final strictfp class DateRangeTest extends TestCase {
+public final class DateRangeTest extends TestCase {
     /**
      * Tests {@link Range#union(Range)}.
      */

@@ -18,7 +18,6 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.List;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.sql.Statement;
 import java.sql.ResultSet;
@@ -44,7 +43,6 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -55,7 +53,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
@@ -64,9 +61,8 @@ import static org.apache.sis.internal.metadata.NameToIdentifier.Simplifier.ESRI_
  * This is used for finding the EPSG code of a given Coordinate Reference System or other geodetic object.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.7
- * @module
  */
 final class EPSGCodeFinder extends IdentifiedObjectFinder {
     /**
@@ -112,14 +108,13 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      * Returns a description of the condition to put in a {@code WHERE} clause for an object having
      * the given dependency.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The {@code super.find(…)} method performs a check (not documented in public API) for detecting
      * when it is invoked recursively, which is the case here. Consequently, the {@code super.find(…)}
      * behavior below is slightly different than usual: since invoked recursively, {@code super.find(…)}
      * checks the cache of the {@link ConcurrentAuthorityFactory} wrapper. If found, the dependency will
      * also be stored in the cache. This is desirable because this method may be invoked (indirectly) in
      * a loop for many CRS objects sharing the same {@link CoordinateSystem} or {@link Datum} dependencies.
-     * </div>
      *
      * @param  column      column in the SQL query containing EPSG codes of dependency.
      * @param  type        GeoAPI interface implemented by the dependency to search.
@@ -146,9 +141,9 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
             for (final IdentifiedObject dep : find) {
                 Identifier id = IdentifiedObjects.getIdentifier(dep, Citations.EPSG);
                 if (id != null) try {                                                   // Should never be null, but let be safe.
-                    filters.add(Integer.parseInt(id.getCode()));
+                    filters.add(Integer.valueOf(id.getCode()));
                 } catch (NumberFormatException e) {
-                    Logging.recoverableException(getLogger(Loggers.CRS_FACTORY), EPSGCodeFinder.class, "getCodeCandidates", e);
+                    Logging.recoverableException(EPSGDataAccess.LOGGER, EPSGCodeFinder.class, "getCodeCandidates", e);
                 }
             }
             if (!filters.isEmpty()) {
@@ -162,17 +157,17 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
      * A condition to put in a SQL {@code WHERE} clause. SQL query will be one of the forms shown below,
      * where {@code <column>} and {@code <values>} are {@link #column} and {@link #values} respectively.
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     SELECT <codeColumn> FROM <table> WHERE <column> IN (<values>)
      *     SELECT <codeColumn> FROM <table> WHERE <column> >= <value - ε> AND <column> <= <value + ε>
-     * }
+     *     }
      *
      * The latter form is used if {@code <filters>} is a floating point value.
      * Otherwise, {@code <filters>} are typically EPSG codes of dependencies.
      */
     private static class Condition {
         /** A sentinel value for filtering by name. */
-        static final Condition NAME = new Condition("NAME", Collections.emptySet());
+        static final Condition NAME = new Condition("NAME", Set.of());
 
         /** The column on which the condition apply. */
         final String column;
@@ -239,7 +234,7 @@ final class EPSGCodeFinder extends IdentifiedObjectFinder {
     private static final class FloatCondition extends Condition {
         /** Creates a new condition for the given value. */
         FloatCondition(final String column, final double value) {
-            super(column, Collections.singleton(value));
+            super(column, Set.of(value));
         }
 
         /**
@@ -305,7 +300,7 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                             if ((filters[i] = dependencies((i==0) ? "CMPD_HORIZCRS_CODE" : "CMPD_VERTCRS_CODE",
                                     CoordinateReferenceSystem.class, components.get(i), false)) == null)
                             {
-                                return Collections.emptySet();
+                                return Set.of();
                             }
                         }
                         break crs;
@@ -336,10 +331,10 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
             } else if (object instanceof SingleCRS) {
                 filter = dependencies("DATUM_CODE", Datum.class, ((SingleCRS) object).getDatum(), true);
             } else {
-                return Collections.emptySet();
+                return Set.of();
             }
             if (filter == null) {
-                return Collections.emptySet();
+                return Set.of();
             }
             filters = new Condition[] {filter};
         } else if (isInstance(Datum.class, object)) {
@@ -359,13 +354,13 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     Condition.NAME
                 };
                 if (filters[0] == null) {
-                    return Collections.emptySet();
+                    return Set.of();
                 }
             } else {
                 if (isInstance(VerticalDatum.class, object)) {
                     final VerticalDatumType type = ((VerticalDatum) object).getVerticalDatumType();
                     if (type != null && !type.equals(EPSGDataAccess.VERTICAL_DATUM_TYPE)) {
-                        return Collections.emptySet();
+                        return Set.of();
                     }
                 }
                 filters = new Condition[] {
@@ -522,9 +517,9 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
      * Appends to the given buffer the SQL statement for filtering datum names using a pattern created by
      * {@link #toDatumPattern(String, StringBuilder)}. This method append a SQL fragment like below:
      *
-     * {@preformat sql
+     * {@snippet lang="sql" :
      *     (LOWER(<column>) LIKE '<pattern>' OR …)
-     * }
+     *     }
      *
      * This method assumes that {@code namePatterns} contains at least one element.
      *

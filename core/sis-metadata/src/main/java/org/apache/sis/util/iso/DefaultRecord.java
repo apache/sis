@@ -22,7 +22,6 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Collections;
 import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -63,7 +62,6 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * @see DefaultRecordSchema
  *
  * @since 0.5
- * @module
  */
 public class DefaultRecord implements Record, Serializable {
     /**
@@ -74,7 +72,7 @@ public class DefaultRecord implements Record, Serializable {
     /**
      * The type definition of this record. Cannot be {@code null}.
      */
-    @SuppressWarnings("serial")
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final RecordDefinition definition;
 
     /**
@@ -183,7 +181,7 @@ public class DefaultRecord implements Record, Serializable {
     @Override
     public Map<MemberName, Object> getFields() {
         if (values == null) {                         // Should never be null, except temporarily at XML unmarshalling time.
-            return Collections.emptyMap();
+            return Map.of();
         }
         return new AbstractMap<MemberName, Object>() {
             /** Returns the number of fields in the record. */
@@ -439,14 +437,14 @@ public class DefaultRecord implements Record, Serializable {
      * A record can be anything, but usages that we have seen so far write a character
      * sequence or a code list. Examples:
      *
-     * {@preformat xml
-     *    <gco:Record>Alphanumeric values: Product is alphanumeric.</gco:Record>
-     *    <gco:Record>Alphanumeric Text: Message contains alphanumeric text.</gco:Record>
-     *    <gco:Record>Part A: Reflectivity presented as a tabular listing of alphanumerics.</gco:Record>
-     *    <gco:Record>
-     *      <gmd:CodeListValue codelist="someURL#DataQualityAssessment" codeListValue="intermediate">intermediate</gmd:CodeListValue>
-     *    </gco:Record>
-     * }
+     * {@snippet lang="xml" :
+     *   <gco:Record>Alphanumeric values: Product is alphanumeric.</gco:Record>
+     *   <gco:Record>Alphanumeric Text: Message contains alphanumeric text.</gco:Record>
+     *   <gco:Record>Part A: Reflectivity presented as a tabular listing of alphanumerics.</gco:Record>
+     *   <gco:Record>
+     *     <gmd:CodeListValue codelist="someURL#DataQualityAssessment" codeListValue="intermediate">intermediate</gmd:CodeListValue>
+     *   </gco:Record>
+     *   }
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-419">SIS-419</a>
      */

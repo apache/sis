@@ -26,7 +26,7 @@ import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.metadata.sql.Initializer;
-import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.iso.Types;
@@ -34,16 +34,13 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * Implements the metadata services needed by the {@code "sis-utility"} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.6
- * @module
  */
 public final class ServicesForUtility extends MetadataServices {
     /**
@@ -110,7 +107,7 @@ public final class ServicesForUtility extends MetadataServices {
                         server   = type.getMethod("getServerName", (Class[]) null).invoke(ds, (Object[]) null);
                     }
                 } catch (NoSuchMethodException e) {
-                    Logging.recoverableException(getLogger(Loggers.SYSTEM), MetadataServices.class, "getInformation", e);
+                    Logging.recoverableException(SystemListener.LOGGER, MetadataServices.class, "getInformation", e);
                 } catch (Exception e) {
                     // Leave the message unchanged if it contains at least 2 words.
                     String message = Exceptions.getLocalizedMessage(e, locale);

@@ -34,9 +34,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class RasterReaderTest extends TestCase {
+public final class RasterReaderTest extends TestCase {
     /**
      * Tests reading a raster in unsigned short format.
      * This method reads the {@code "raster-ushort.wkb"} file

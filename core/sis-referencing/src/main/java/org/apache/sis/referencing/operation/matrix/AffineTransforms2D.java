@@ -45,7 +45,6 @@ import static java.awt.geom.AffineTransform.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 public final class AffineTransforms2D extends Static {
     /**
@@ -210,9 +209,9 @@ public final class AffineTransforms2D extends Static {
      * This operation is equivalent to the following code, except that it can reuse the
      * given {@code dest} rectangle and is potentially more efficient:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return transform.createTransformedShape(bounds).getBounds2D();
-     * }
+     *     }
      *
      * Note that if the given rectangle is an image bounds, then the given transform shall map the
      * <strong>upper-left corner</strong> of pixels (as in Java2D usage), not the center of pixels
@@ -259,16 +258,16 @@ public final class AffineTransforms2D extends Static {
      * This operation is equivalent to the following code, except that it can reuse the
      * given {@code dest} rectangle and is potentially more efficient:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return createInverse().createTransformedShape(bounds).getBounds2D();
-     * }
+     *     }
      *
      * @param  transform  the affine transform to use.
      * @param  bounds     the rectangle to transform, or {@code null}.
      *                    this rectangle will not be modified except if {@code dest} references the same object.
      * @param  dest       rectangle in which to place the result. If {@code null}, a new rectangle will be created.
      * @return the inverse transform of the {@code bounds} rectangle, or {@code null} if {@code bounds} was null.
-     * @throws NoninvertibleTransformException if the affine transform can't be inverted.
+     * @throws NoninvertibleTransformException if the affine transform cannot be inverted.
      */
     public static Rectangle2D inverseTransform(final AffineTransform transform,
             final Rectangle2D bounds, final Rectangle2D dest) throws NoninvertibleTransformException
@@ -307,7 +306,7 @@ public final class AffineTransforms2D extends Static {
      *                    this point will not be modified except if {@code dest} references the same object.
      * @param  dest       point in which to place the result. If {@code null}, a new point will be created.
      * @return the inverse transform of the {@code vector}, or {@code null} if {@code source} was null.
-     * @throws NoninvertibleTransformException if the affine transform can't be inverted.
+     * @throws NoninvertibleTransformException if the affine transform cannot be inverted.
      */
     public static Point2D inverseDeltaTransform(final AffineTransform transform,
             final Point2D vector, final Point2D dest) throws NoninvertibleTransformException
@@ -392,7 +391,7 @@ public final class AffineTransforms2D extends Static {
      * The example below choose to apply the sign on the <var>y</var> scale, but this is an arbitrary
      * (while common) choice:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     double scaleX0 = getScaleX0(transform);
      *     double scaleY0 = getScaleY0(transform);
      *     int    flip    = getFlip(transform);
@@ -400,14 +399,14 @@ public final class AffineTransforms2D extends Static {
      *         scaleY0 *= flip;
      *         // ... continue the process here.
      *     }
-     * }
+     *     }
      *
      * This method is similar to the following code, except that this method distinguishes
      * between "unflipped" and "unknown" states.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     boolean flipped = (tr.getType() & TYPE_FLIP) != 0;
-     * }
+     *     }
      *
      * @param  transform  the affine transform to inspect.
      * @return -1 if an axis has been flipped, +1 if no flipping, or 0 if unknown.

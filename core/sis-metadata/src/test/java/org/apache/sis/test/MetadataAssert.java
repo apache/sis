@@ -30,7 +30,6 @@ import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.internal.xml.LegacyNamespaces;
-import org.apache.sis.internal.util.CollectionsExt;
 
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -45,9 +44,8 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
-public strictfp class MetadataAssert extends Assert {
+public class MetadataAssert extends Assert {
     /**
      * For subclass constructor only.
      */
@@ -121,7 +119,7 @@ public strictfp class MetadataAssert extends Assert {
         final Scope scope = source.getScope();
         assertNotNull("metadata.lineage.source.scope", scope);
         assertEquals("metadata.lineage.source.scope.level", ScopeCode.FEATURE_TYPE, scope.getLevel());
-        final CharSequence[] actual = CollectionsExt.toArray(getSingleton(scope.getLevelDescription()).getFeatures(), CharSequence.class);
+        final var actual = getSingleton(scope.getLevelDescription()).getFeatures().toArray(CharSequence[]::new);
         for (int i=0; i<actual.length; i++) {
             actual[i] = actual[i].toString();
         }
@@ -134,8 +132,8 @@ public strictfp class MetadataAssert extends Assert {
      *
      * <ul>
      *   <li>{@link org.w3c.dom.Node}: used directly without further processing.</li>
-     *   <li>{@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}: the
-     *       stream is opened and parsed as a XML document.</li>
+     *   <li>{@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}:
+     *       the stream is opened and parsed as a XML document.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
@@ -165,9 +163,9 @@ public strictfp class MetadataAssert extends Assert {
      * <p>For example, in order to ignore the namespace, type and schema location declaration,
      * the following strings can be given to the {@code ignoredAttributes} argument:</p>
      *
-     * {@preformat text
+     * {@snippet :
      *   "xmlns:*", "xsi:schemaLocation", "xsi:type"
-     * }
+     *   }
      *
      * @param  expected           the expected XML document.
      * @param  actual             the XML document to compare.

@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.metadata.IdentifiersTest.class,
@@ -119,6 +118,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.jaxb.metadata.replace.QualityParameterTest.class,
     org.apache.sis.metadata.iso.identification.DefaultCoupledResourceTest.class,
     org.apache.sis.metadata.iso.identification.DefaultServiceIdentificationTest.class,
+    org.apache.sis.metadata.iso.quality.DefaultEvaluationMethodTest.class,
     org.apache.sis.metadata.iso.quality.AbstractElementTest.class,
     org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracyTest.class,
     org.apache.sis.metadata.iso.quality.DefaultDomainConsistencyTest.class,
@@ -143,7 +143,7 @@ import org.junit.BeforeClass;
     org.apache.sis.metadata.iso.citation.CitationsTest.class,
     org.apache.sis.metadata.xml.SchemaComplianceTest.class
 })
-public final strictfp class MetadataTestSuite extends TestSuite {
+public final class MetadataTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

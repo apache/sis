@@ -16,13 +16,13 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -32,10 +32,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.6
- * @module
  */
 @DependsOn(SingletonAttributeTest.class)
-public final strictfp class AbstractOperationTest extends TestCase {
+public final class AbstractOperationTest extends TestCase {
     /**
      * Returns an operation that found new cities.
      */
@@ -44,7 +43,7 @@ public final strictfp class AbstractOperationTest extends TestCase {
         final ParameterDescriptor<?>[] parameters = {
             builder.addName("founder").create(String.class, null)
         };
-        return new NoOperation(singletonMap(AbstractOperation.NAME_KEY, "new city"),
+        return new NoOperation(Map.of(AbstractOperation.NAME_KEY, "new city"),
                 builder.addName("create").createGroup(parameters),
                 DefaultAttributeTypeTest.city());
     }

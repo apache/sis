@@ -28,7 +28,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class Messages extends IndexedResourceBundle {
     /**
@@ -39,7 +38,6 @@ public final class Messages extends IndexedResourceBundle {
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
      * @since   0.3
-     * @module
      */
     public static final class Keys extends KeyConstants {
         /**
@@ -258,7 +256,7 @@ public final class Messages extends IndexedResourceBundle {
      *
      * @param  locale  the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      */
     public static Messages getResources(final Locale locale) throws MissingResourceException {
         return getBundle(Messages.class, locale);

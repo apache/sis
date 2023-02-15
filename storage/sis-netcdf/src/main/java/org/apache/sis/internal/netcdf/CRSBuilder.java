@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.StringJoiner;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -87,7 +86,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     /**
@@ -507,7 +505,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
      * @param  name  name of the geodetic object (datum, coordinate system, …) to create.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

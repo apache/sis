@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ConcurrentModificationException;
@@ -56,22 +55,20 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * If a {@code TreeTable} is formatted with only that column,
  * then the {@link String} result is like the following example:
  *
- * {@preformat text
+ * <pre class="text">
  *   Node #1
  *     ├─Node #2
  *     │   └─Node #4
- *     └─Node #3
- * }
+ *     └─Node #3</pre>
  *
  * If the same {@code TreeTable} is formatted with two columns,
  * then the {@link String} result is like the following example:
  *
- * {@preformat text
+ * <pre class="text">
  *   Node #1……………………… More #1
  *     ├─Node #2…………… More #2
  *     │   └─Node #4… More #4
- *     └─Node #3…………… More #3
- * }
+ *     └─Node #3…………… More #3</pre>
  *
  * This representation can be printed to the {@linkplain java.io.Console#writer() console output}
  * (for example) if the stream uses a monospaced font and supports Unicode characters.
@@ -98,7 +95,6 @@ import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
@@ -121,6 +117,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @see #getColumns()
      * @see #setColumns(TableColumn[])
      */
+    @SuppressWarnings("serial")         // The implementations that we use are Serializable.
     private Map<TableColumn<?>,Integer> columnIndices;
 
     /**
@@ -161,6 +158,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
     /**
      * A filter for specifying whether a node should be formatted, or {@code null} if no filtering is applied.
      * This is ignored at parsing time.
+     *
+     * <p>A non-null value may cause the serialization to fail.</p>
      *
      * @see #getNodeFilter()
      * @see #setNodeFilter(Predicate)
@@ -409,14 +408,13 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @throws ParseException if an error occurred while parsing a node value.
      */
     @Override
-    @SuppressWarnings("null")
     public TreeTable parse(final CharSequence text, final ParsePosition pos) throws ParseException {
         final Matcher matcher   = getColumnSeparatorMatcher(text);
         final int length        = text.length();
         int indexOfLineStart    = pos.getIndex();
-        int indentationLevel    = 0;                // Current index in the 'indentations' array.
+        int indentationLevel    = 0;                // Current index in the `indentations` array.
         int[] indentations      = new int[16];      // Number of spaces (ignoring drawing characters) for each level.
-        TreeTable.Node lastNode = null;             // Last parsed node, having 'indentation[level]' characters before its content.
+        TreeTable.Node lastNode = null;             // Last parsed node, having `indentation[level]` characters before its content.
         TreeTable.Node root     = null;             // First node found while parsing.
         final DefaultTreeTable table = new DefaultTreeTable(columnIndices != null ? columnIndices : TableColumn.NAME_MAP);
         final TableColumn<?>[] columns = DefaultTreeTable.getColumns(table.columnIndices);
@@ -500,7 +498,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     /*
                      * Lower indentation level: go up in the tree until we find the new parent.
                      * Note that lastNode.getParent() should never return null, since only the
-                     * node at 'indentationLevel == 0' has a null parent and we check that case.
+                     * node at `indentationLevel == 0` has a null parent and we check that case.
                      */
                     if (--indentationLevel < 0) {
                         pos.setErrorIndex(indexOfLineStart);
@@ -719,7 +717,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             final Format format = getFormat(value.getClass());
             if (format instanceof DecimalFormat && Numbers.isFloat(value.getClass())) {
                 final double number = ((Number) value).doubleValue();
-                if (number != (int) number) {   // Cast to 'int' instead of 'long' as a way to limit to about 2E9.
+                if (number != (int) number) {   // Cast to `int` instead of `long` as a way to limit to about 2E9.
                     /*
                      * The default floating point format uses only 3 fraction digits. We adjust that to the number
                      * of digits required by the number to format. We do that only if no NumberFormat was inferred
@@ -814,7 +812,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                     if (needLineSeparator && lineSeparator != null) {
                         setLineSeparator(lineSeparator + getTreeSymbols(true, isLast[level]));
                     }
-                    format(child, level+1);                     // 'isLast' must be set before to call this method.
+                    format(child, level+1);                     // `isLast` must be set before to call this method.
                 }
                 if (lineSeparator != null) {
                     setLineSeparator(lineSeparator);            // Restore previous state.
@@ -881,8 +879,7 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
         if (columnIndices != null) {
             columns = DefaultTreeTable.getColumns(columnIndices);
         } else {
-            final List<TableColumn<?>> c = tree.getColumns();
-            columns = c.toArray(new TableColumn<?>[c.size()]);
+            columns = tree.getColumns().toArray(TableColumn<?>[]::new);
         }
         if (recursivityGuard == null) {
             recursivityGuard = new HashSet<>();
@@ -934,10 +931,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      *
      * The output with default values is like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   root
-     *     └─column0…… column1…… column2…… column3
-     * }
+     *     └─column0…… column1…… column2…… column3</pre>
      *
      * Subclasses can override this method if different column separators are desired.
      * Note however that doing so may prevent the {@link #parse parse(…)} method to work.

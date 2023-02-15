@@ -41,7 +41,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @XmlType(name = "CI_Individual_Type", propOrder = {
     "positionName"

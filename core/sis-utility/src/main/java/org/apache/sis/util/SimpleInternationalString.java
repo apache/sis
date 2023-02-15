@@ -41,7 +41,6 @@ import java.util.Locale;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public class SimpleInternationalString extends AbstractInternationalString implements Serializable {
     /**

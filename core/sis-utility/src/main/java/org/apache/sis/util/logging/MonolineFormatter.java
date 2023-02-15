@@ -36,11 +36,11 @@ import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.X364;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.AutoMessageFormat;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.Configuration;
 import org.apache.sis.util.Debug;
 
 import static org.apache.sis.internal.util.StandardDateFormat.UTC;
@@ -78,7 +78,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * The format can also be set from a {@code logging.properties} file.
  * For example, user can cut and paste the following properties into {@code logging.properties}:
  *
- * {@preformat text
+ * {@snippet lang="properties" :
  *     ###########################################################################
  *     # Properties for the apache.sis.org MonolineFormatter.
  *     # By default, MonolineFormatter displays only the log level
@@ -95,16 +95,16 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *     ###########################################################################
  *     org.apache.sis.util.logging.MonolineFormatter.time = HH:mm:ss.SSS
  *     org.apache.sis.util.logging.MonolineFormatter.source = class:short
- * }
+ *     }
  *
  * See {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} for more information about the
  * above {@code time} and {@code source} properties. Encoding and logging level are configured separately,
  * typically on the JDK {@link ConsoleHandler} like below:
  *
- * {@preformat text
+ * {@snippet lang="properties" :
  *     java.util.logging.ConsoleHandler.encoding = UTF-8
  *     java.util.logging.ConsoleHandler.level = FINE
- * }
+ *     }
  *
  * <h2>Thread safety</h2>
  * The same {@code MonolineFormatter} instance can be safely used by many threads without synchronization
@@ -118,7 +118,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * @see Handler#setFormatter(Formatter)
  *
  * @since 0.3
- * @module
  */
 public class MonolineFormatter extends Formatter {
     /** Do not format source class name.       */ private static final int NO_SOURCE    = 0;
@@ -151,7 +150,7 @@ public class MonolineFormatter extends Formatter {
      * A comparator for logging level. This comparator sorts finest levels first and severe levels last.
      */
     private static final Comparator<Level> COMPARATOR = (final Level l1, final Level l2) -> {
-        // We can't just return (i1 - i2) because some levels are
+        // We cannot just return (i1 - i2) because some levels are
         // Integer.MIN_VALUE or Integer.MAX_VALUE, which cause overflow.
         final int i1 = l1.intValue();
         final int i2 = l2.intValue();
@@ -185,6 +184,7 @@ public class MonolineFormatter extends Formatter {
     /**
      * Maximal amount of causes to print in stack traces. This is an arbitrary limit.
      */
+    @Configuration
     private static final int MAX_CAUSES = 10;
 
     /**
@@ -285,9 +285,9 @@ public class MonolineFormatter extends Formatter {
      * Constructs a default {@code MonolineFormatter}. This no-argument constructor is invoked
      * by the logging system if the {@code logging.properties} file contains the following line:
      *
-     * {@preformat text
-     *   java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
-     * }
+     * {@snippet lang="properties" :
+     *     java.util.logging.ConsoleHandler.formatter = org.apache.sis.util.logging.MonolineFormatter
+     *     }
      *
      * @since 1.0
      */
@@ -512,7 +512,7 @@ loop:   for (int i=0; ; i++) {
             sourceFormat = NO_SOURCE;
             return;
         }
-        format = CharSequences.trimWhitespaces(format).toLowerCase(Locale.US);
+        format = format.strip().toLowerCase(Locale.US);
         for (int i=0; i<FORMAT_LABELS.length; i++) {
             if (format.equals(FORMAT_LABELS[i])) {
                 sourceFormat = i;
@@ -656,16 +656,16 @@ loop:   for (int i=0; ; i++) {
     @Override
     public String format(final LogRecord record) {
         boolean faint = false;                      // Whether to use faint text for level < INFO.
-        String emphaseStart = "";                   // ANSI escape sequence for bold text if we use it.
-        String emphaseEnd   = "";                   // ANSI escape sequence for stopping bold text if we use it.
+        String emphasisStart = "";                  // ANSI escape sequence for bold text if we use it.
+        String emphasisEnd   = "";                  // ANSI escape sequence for stopping bold text if we use it.
         final Level level = record.getLevel();
         final StringBuffer buffer = this.buffer;
         synchronized (buffer) {
             final boolean colors = (this.colors != null);
             if (colors && level.intValue() >= LEVEL_THRESHOLD.intValue()) {
-                emphaseStart = X364.BOLD.sequence();
-                emphaseEnd   = X364.NORMAL.sequence();
-                faint        = faintSupported;
+                emphasisStart = X364.BOLD.sequence();
+                emphasisEnd   = X364.NORMAL.sequence();
+                faint         = faintSupported;
             }
             buffer.setLength(header.length());
             /*
@@ -689,10 +689,10 @@ loop:   for (int i=0; ; i++) {
                     levelColor = colorAt(level);
                     levelReset = X364.BACKGROUND_DEFAULT.sequence();
                 }
-                final int offset = buffer.append(levelColor).append(emphaseStart).length();
+                final int offset = buffer.append(levelColor).append(emphasisStart).length();
                 final int length = buffer.append(level.getLocalizedName()).length() - offset;
-                buffer.append(emphaseEnd).append(CharSequences.spaces(levelWidth - length));
-                margin += buffer.length() - emphaseEnd.length() - offset;
+                buffer.append(emphasisEnd).append(CharSequences.spaces(levelWidth - length));
+                margin += buffer.length() - emphasisEnd.length() - offset;
                 buffer.append(levelReset).append(' ');
             }
             /*
@@ -721,7 +721,7 @@ loop:   for (int i=0; ; i++) {
                 if (sourceFormat == METHOD) {
                     source = source + '.' + record.getSourceMethodName();
                 }
-                buffer.append(emphaseStart).append('[').append(source).append(']').append(emphaseEnd).append(' ');
+                buffer.append(emphasisStart).append('[').append(source).append(']').append(emphasisEnd).append(' ');
             }
             /*
              * Now prepare the LineAppender for the message. We set a line separator prefixed by some
@@ -971,15 +971,15 @@ loop:   for (int i=0; ; i++) {
      *       root logger.</li>
      * </ul>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Limitations</h4>
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
-     * and does not check if any child logger has a {@code ConsoleHandler}.</div>
+     * and does not check if any child logger has a {@code ConsoleHandler}.
      *
      * @return the new or existing {@code MonolineFormatter}. The formatter output can be configured
      *         using the {@link #setTimeFormat(String)} and {@link #setSourceFormat(String)} methods.
      * @throws SecurityException if this method does not have the permission to install the formatter.
      */
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.STATIC)
     public static MonolineFormatter install() throws SecurityException {
         return install(Logger.getLogger(""), null);
     }
@@ -1007,9 +1007,9 @@ loop:   for (int i=0; ; i++) {
      *     </ul></li>
      * </ul>
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Limitations</h4>
      * The current implementation does not check for duplicated {@code ConsoleHandler} instances,
-     * and does not check if any child logger has a {@code ConsoleHandler}.</div>
+     * and does not check if any child logger has a {@code ConsoleHandler}.
      *
      * <h4>Specifying a log level</h4>
      * This method can opportunistically set the handler level. If the given level is non-null,
@@ -1024,7 +1024,7 @@ loop:   for (int i=0; ; i++) {
      * @throws SecurityException if this method does not have the permission to install the formatter.
      */
     @Debug
-    @Configuration
+    @Configuration(writeAccess = Configuration.Access.STATIC)
     public static MonolineFormatter install(final Logger logger, final Level level) throws SecurityException {
         ArgumentChecks.ensureNonNull("logger", logger);
         MonolineFormatter monoline = null;

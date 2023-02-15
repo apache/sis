@@ -59,7 +59,6 @@ import org.apache.sis.internal.shapefile.jdbc.AbstractJDBC;
  * @author  Marc Le Bihan
  * @version 0.5
  * @since   0.5
- * @module
  */
 public abstract class AbstractResultSet extends AbstractJDBC implements ResultSet {
     /*

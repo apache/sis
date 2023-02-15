@@ -19,9 +19,10 @@ package org.apache.sis.test.xml;
 import java.util.Map;
 import java.util.Set;
 import java.util.List;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.net.URI;
 import java.net.URL;
 import java.io.File;
@@ -43,12 +44,12 @@ import org.w3c.dom.Text;
 import org.xml.sax.SAXException;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static java.lang.StrictMath.*;
 import static org.opengis.test.Assert.*;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
-import static org.apache.sis.util.CharSequences.trimWhitespaces;
 
 
 /**
@@ -71,35 +72,31 @@ import static org.apache.sis.util.CharSequences.trimWhitespaces;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.3
  *
  * @see TestCase
  * @see org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])
  *
  * @since 0.3
- * @module
  */
-public strictfp class DocumentComparator {
+public class DocumentComparator {
     /**
      * Commonly used prefixes for namespaces. Used as shorthands for calls to
      * {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}.
      *
      * @see #substitutePrefix(String)
      */
-    private static final Map<String, String> PREFIX_URL = new HashMap<>(16);
-    static {
-        final Map<String,String> map = PREFIX_URL;
-        map.put("xmlns", "http://www.w3.org/2000/xmlns");           // No trailing slash.
-        map.put("xlink", Namespaces.XLINK);
-        map.put("xsi",   Namespaces.XSI);
-        map.put("gco",   Namespaces.GCO);
-        map.put("mdb",   Namespaces.MDB);
-        map.put("srv",   Namespaces.SRV);
-        map.put("gml",   Namespaces.GML);
-        map.put("gmd",   LegacyNamespaces.GMD);
-        map.put("gmx",   LegacyNamespaces.GMX);
-        map.put("gmi",   LegacyNamespaces.GMI);
-    }
+    private static final Map<String, String> PREFIX_URL = Map.of(
+            "xmlns", "http://www.w3.org/2000/xmlns",                // No trailing slash.
+            "xlink", Namespaces.XLINK,
+            "xsi",   Namespaces.XSI,
+            "gco",   Namespaces.GCO,
+            "mdb",   Namespaces.MDB,
+            "srv",   Namespaces.SRV,
+            "gml",   Namespaces.GML,
+            "gmd",   LegacyNamespaces.GMD,
+            "gmx",   LegacyNamespaces.GMX,
+            "gmi",   LegacyNamespaces.GMI);
 
     /**
      * The DOM factory, created when first needed.
@@ -152,11 +149,10 @@ public strictfp class DocumentComparator {
      * <p>For example, in order to ignore the namespace, type and schema location declaration,
      * the following strings can be added in this set:</p>
      *
-     * {@preformat text
+     * <pre class="text">
      *   "http://www.w3.org/2000/xmlns:*",
      *   "http://www.w3.org/2001/XMLSchema-instance:schemaLocation",
-     *   "http://www.w3.org/2001/XMLSchema-instance:type"
-     * }
+     *   "http://www.w3.org/2001/XMLSchema-instance:type"</pre>
      *
      * Note that for convenience, the {@link org.apache.sis.test.MetadataAssert#assertXmlEquals(Object, Object, String[])}
      * method automatically replaces some widely used prefixes by their full URL.
@@ -190,7 +186,7 @@ public strictfp class DocumentComparator {
      *
      * <ul>
      *   <li>{@link Node}; used directly without further processing.</li>
-     *   <li>{@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
+     *   <li>{@link Path}, {@link File}, {@link URL} or {@link URI}: the stream is opened and parsed as a XML document.</li>
      *   <li>{@link String}: The string content is parsed directly as a XML document.</li>
      * </ul>
      *
@@ -248,6 +244,7 @@ public strictfp class DocumentComparator {
         if (input instanceof File)        return new FileInputStream((File) input);
         if (input instanceof URI)         return ((URI) input).toURL().openStream();
         if (input instanceof URL)         return ((URL) input).openStream();
+        if (input instanceof Path)        return Files.newInputStream((Path) input);
         if (input instanceof String)      return new ByteArrayInputStream(input.toString().getBytes("UTF-8"));
         throw new IOException("Cannot handle input type: " + (input != null ? input.getClass() : input));
     }
@@ -473,7 +470,6 @@ public strictfp class DocumentComparator {
      * @param expected  the node having the expected attributes.
      * @param actual    the node to compare.
      */
-    @SuppressWarnings("null")
     protected void compareAttributes(final Node expected, final Node actual) {
         final NamedNodeMap expectedAttributes = expected.getAttributes();
         final NamedNodeMap actualAttributes   = actual.getAttributes();
@@ -503,7 +499,7 @@ public strictfp class DocumentComparator {
                  * └───────────────────┴─────────────────────────────────┴──────────────┴─────────────┘
                  *
                  * By default, this block is not be executed. However if the user gave us Nodes that are
-                 * not namespace aware, then the 'isIgnored(…)' method will try to parse the node name.
+                 * not namespace aware, then the `isIgnored(…)` method will try to parse the node name.
                  */
                 name = expAttr.getNodeName();
             }
@@ -531,7 +527,7 @@ public strictfp class DocumentComparator {
         if (!ignored.isEmpty()) {
             if (ns == null) {
                 /*
-                 * If there is no namespace, then the 'name' argument should be the qualified name
+                 * If there is no namespace, then the `name` argument should be the qualified name
                  * (with a prefix). Example: "xsi:schemaLocation". We will look first for an exact
                  * name match, then for a match after replacing the local name by "*".
                  */
@@ -591,8 +587,8 @@ public strictfp class DocumentComparator {
 
                     // For text node, continue the search if the node is empty.
                     case Node.TEXT_NODE: {
-                        final String text = trimWhitespaces(node.getTextContent());
-                        if (text == null || text.isEmpty()) {
+                        final String text = Strings.trimOrNull(node.getTextContent());
+                        if (text == null) {
                             continue;
                         }
                         break;
@@ -659,7 +655,7 @@ public strictfp class DocumentComparator {
      * if it is actually a {@link String} object.
      */
     private static Comparable<?> trim(final Comparable<?> property) {
-        return (property instanceof String) ? trimWhitespaces(((String) property)) : property;
+        return (property instanceof String) ? (((String) property)).strip() : property;
     }
 
     /**
@@ -757,7 +753,6 @@ public strictfp class DocumentComparator {
      * @param  node           the node to format.
      * @param  lineSeparator  the platform-specific line separator.
      */
-    @SuppressWarnings("null")
     private static void formatNode(final StringBuilder buffer, final Node node, final String lineSeparator) {
         if (node == null) {
             buffer.append("(no node)").append(lineSeparator);

@@ -18,6 +18,7 @@ package org.apache.sis.internal.simple;
 
 import java.util.Date;
 import java.util.Collection;
+import java.util.logging.Logger;
 import java.io.ObjectStreamException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -36,8 +37,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * Base class for the {@code public static final Citation} constants defined in some SIS classes.
@@ -46,19 +45,23 @@ import static java.util.logging.Logger.getLogger;
  * is available, then that simple primary key will be used as the citation title.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see IdentifierSpace
  * @see Citations
  *
  * @since 0.6
- * @module
  */
 public class CitationConstant extends SimpleCitation {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -8429121584437634107L;
+
+    /**
+     * Where to log warnings when searching for an entry in the database.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.SQL);
 
     /**
      * Class of {@code public static final Citation} constants which are also used as namespace for identifiers.
@@ -183,7 +186,7 @@ public class CitationConstant extends SimpleCitation {
                          * the MetadataFallback class. So if we get this exception, a more serious error occurred.
                          * It is still not fatal however, since most of Citation content is informative.
                          */
-                        Logging.unexpectedException(getLogger(Loggers.SQL), CitationConstant.class, "delegate", e);
+                        Logging.unexpectedException(LOGGER, CitationConstant.class, "delegate", e);
                         c = new SimpleCitation(title);
                     }
                     delegate = c;
@@ -194,11 +197,19 @@ public class CitationConstant extends SimpleCitation {
     }
 
     /**
+     * Returns the title, which is mandatory.
+     */
+    @Override
+    public InternationalString getTitle() {
+        InternationalString title = delegate().getTitle();
+        return (title != null) ? title : super.getTitle();
+    }
+
+    /**
      * Redirects the call to the delegate citation (the instance which actually contain the data).
      *
      * @return the value returned by the delegate.
      */
-    @Override public InternationalString                        getTitle()                   {return delegate().getTitle();}
     @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return delegate().getAlternateTitles();}
     @Override public Collection<? extends CitationDate>         getDates()                   {return delegate().getDates();}
     @Override public InternationalString                        getEdition()                 {return delegate().getEdition();}

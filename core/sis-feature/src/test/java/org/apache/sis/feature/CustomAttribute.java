@@ -16,14 +16,13 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Set;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDataQuality;
 import org.apache.sis.metadata.iso.quality.DefaultDomainConsistency;
 import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.referencing.NamedIdentifier;
-
-import static java.util.Collections.singleton;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;
@@ -36,10 +35,9 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @SuppressWarnings("serial")
-final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
+final class CustomAttribute<V> extends AbstractAttribute<V> {
     /**
      * A quality information that this attribute will report in addition to the default ones.
      */
@@ -84,8 +82,8 @@ final strictfp class CustomAttribute<V> extends AbstractAttribute<V> {
         final DefaultQuantitativeResult result  = new DefaultQuantitativeResult();
         result.setErrorStatistic(new SimpleInternationalString(ADDITIONAL_QUALITY_INFO));
         report.setMeasureIdentification(NamedIdentifier.castOrCopy(getName()));
-        report .setResults(singleton(result));
-        quality.setReports(singleton(report));
+        report .setResults(Set.of(result));
+        quality.setReports(Set.of(report));
         return quality;
     }
 }

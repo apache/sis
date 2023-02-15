@@ -44,9 +44,8 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class MaskedImageTest extends TestCase {
+public final class MaskedImageTest extends TestCase {
     /**
      * The image width and height in pixels.
      */

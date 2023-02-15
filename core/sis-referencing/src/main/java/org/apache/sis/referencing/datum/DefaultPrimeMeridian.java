@@ -71,9 +71,9 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *
  * <b>Example:</b> the following code gets the Greenwich prime meridian:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     PrimeMeridian pm = CommonCRS.WGS84.primeMeridian();
- * }
+ *     }
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -88,7 +88,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createPrimeMeridian(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "PrimeMeridianType")
 @XmlRootElement(name = "PrimeMeridian")
@@ -112,6 +111,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setGreenwichMeasure(Measure)}</p>
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Unit<Angle> angularUnit;
 
     /**
@@ -227,9 +227,9 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * This convenience method makes it easier to obtain longitude in decimal degrees using the following
      * code, regardless of the underlying angular units of this prime meridian:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     double longitudeInDegrees = primeMeridian.getGreenwichLongitude(Units.DEGREE);
-     * }
+     *     }
      *
      * @param  unit  the unit in which to express longitude.
      * @return the Greenwich longitude in the given units.
@@ -312,7 +312,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * of an {@code AbstractDerivedCRS}. In such case, base CRS coordinate system axes shall not be formatted, which
      * has the consequence of bringing the {@code UNIT[…]} element right below the {@code PRIMEM[…]} one. Example:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
      *     BaseGeodCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
@@ -321,7 +321,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *       AngleUnit[“grad”, 0.015707963267948967]],
      *     Conversion[“Lambert zone II”,
      *       etc...
-     * }
+     *   }
      *
      * If we were not formatting a base CRS, we would have many lines between {@code PrimeMeridian[…]} and
      * {@code AngleUnit[…]} in the above example, which would make less obvious that the angle unit applies

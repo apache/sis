@@ -35,7 +35,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.crs.CompoundCRS.NAME_KEY;
 import static org.apache.sis.test.ReferencingAssert.*;
 
@@ -46,14 +45,13 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @DependsOn({
     SubTypesTest.class,
     DefaultGeographicCRSTest.class,
     DefaultVerticalCRSTest.class
 })
-public final strictfp class DefaultCompoundCRSTest extends TestCase {
+public final class DefaultCompoundCRSTest extends TestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
      */
@@ -133,8 +131,8 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     @Test
     public void testConstructionAndSerialization() {
         final DefaultGeographicCRS crs2 = HardCodedCRS.WGS84;
-        final DefaultCompoundCRS   crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), crs2, HEIGHT);
-        final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME);
+        final DefaultCompoundCRS   crs3 = new DefaultCompoundCRS(Map.of(NAME_KEY, "3D"), crs2, HEIGHT);
+        final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), crs3, TIME);
         Validators.validate(crs4);
         /*
          * Verifies the coordinate system axes.
@@ -176,13 +174,13 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     public void testNormalization() {
         final DefaultGeographicCRS crs2 = HardCodedCRS.WGS84_LATITUDE_FIRST;
         final DefaultGeographicCRS rh2  = crs2.forConvention(AxesConvention.RIGHT_HANDED);
-        final DefaultCompoundCRS   crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), crs2, HEIGHT);
-        final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME);
+        final DefaultCompoundCRS   crs3 = new DefaultCompoundCRS(Map.of(NAME_KEY, "3D"), crs2, HEIGHT);
+        final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), crs3, TIME);
         final DefaultCompoundCRS   rh4  = crs4.forConvention(AxesConvention.RIGHT_HANDED);
         assertNotSame(crs4, rh4);
         Validators.validate(rh4);
         verifyComponents(crs2, crs3, crs4);
-        verifyComponents(rh2, new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), rh2, HEIGHT), rh4);
+        verifyComponents(rh2, new DefaultCompoundCRS(Map.of(NAME_KEY, "3D"), rh2, HEIGHT), rh4);
     }
 
     /**
@@ -191,7 +189,7 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
     @Test
     public void testShiftLongitudeRange() {
         final DefaultGeographicCRS crs3 = HardCodedCRS.WGS84_3D;
-        final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME);
+        final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), crs3, TIME);
         CoordinateSystemAxis axis = crs4.getCoordinateSystem().getAxis(0);
         assertEquals("longitude.minimumValue", -180.0, axis.getMinimumValue(), STRICT);
         assertEquals("longitude.maximumValue", +180.0, axis.getMaximumValue(), STRICT);
@@ -215,13 +213,13 @@ public final strictfp class DefaultCompoundCRSTest extends TestCase {
      */
     @Test
     public void testIsStandardCompliant() {
-        final DefaultCompoundCRS crs3 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "3D"), HardCodedCRS.WGS84,  HEIGHT);
-        final DefaultCompoundCRS crs4 = new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), HardCodedCRS.WGS84_3D, TIME);
+        final DefaultCompoundCRS crs3 = new DefaultCompoundCRS(Map.of(NAME_KEY, "3D"), HardCodedCRS.WGS84,  HEIGHT);
+        final DefaultCompoundCRS crs4 = new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), HardCodedCRS.WGS84_3D, TIME);
         assertTrue (isStandardCompliant(crs3));
         assertTrue (isStandardCompliant(crs4));
-        assertTrue (isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), crs3, TIME)));
-        assertFalse(isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "5D"), crs4, TIME)));
-        assertFalse(isStandardCompliant(new DefaultCompoundCRS(singletonMap(NAME_KEY, "4D"), TIME, crs3)));
+        assertTrue (isStandardCompliant(new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), crs3, TIME)));
+        assertFalse(isStandardCompliant(new DefaultCompoundCRS(Map.of(NAME_KEY, "5D"), crs4, TIME)));
+        assertFalse(isStandardCompliant(new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), TIME, crs3)));
     }
 
     /**

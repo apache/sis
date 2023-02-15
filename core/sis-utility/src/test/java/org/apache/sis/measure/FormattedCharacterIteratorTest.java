@@ -42,9 +42,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
-public final strictfp class FormattedCharacterIteratorTest extends TestCase {
+public final class FormattedCharacterIteratorTest extends TestCase {
     /**
      * The string used for testing purpose in this class.
      */
@@ -130,7 +129,7 @@ public final strictfp class FormattedCharacterIteratorTest extends TestCase {
      * with attributes. Built in a sub-class of {@link SimpleCharacterIterator} in
      * order to have access to the protected {@link #upper} field.
      */
-    @SuppressWarnings({"serial", "CloneableImplementsClone"})
+    @SuppressWarnings("CloneableImplementsClone")
     private static class LatitudeString extends SimpleCharacterIterator {
         LatitudeString() {
             super(LATITUDE_STRING);

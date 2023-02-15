@@ -19,7 +19,6 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Collections;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.ImmutableIdentifier;
@@ -30,7 +29,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import static org.apache.sis.test.ReferencingAssert.*;
 
@@ -41,13 +39,12 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.4
- * @module
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
     DefaultCoordinateSystemAxisTest.class
 })
-public final strictfp class NormalizerTest extends TestCase {
+public final class NormalizerTest extends TestCase {
     /**
      * Tests {@link Normalizer#sort(CoordinateSystemAxis[], int)}
      * with axes of an ellipsoidal coordinate system.
@@ -170,7 +167,7 @@ public final strictfp class NormalizerTest extends TestCase {
      * Creates axes from the specified directions.
      */
     private static CoordinateSystemAxis[] toAxes(final AxisDirection[] directions) {
-        final Map<String,?> properties = singletonMap(NAME_KEY, "Temporary axis");
+        final Map<String,?> properties = Map.of(NAME_KEY, "Temporary axis");
         final CoordinateSystemAxis[] axis = new CoordinateSystemAxis[directions.length];
         for (int i=0; i<directions.length; i++) {
             axis[i] = new DefaultCoordinateSystemAxis(properties, "none", directions[i], Units.METRE);
@@ -230,7 +227,7 @@ public final strictfp class NormalizerTest extends TestCase {
     @Test
     public void testNormalize() {
         final DefaultEllipsoidalCS cs = new DefaultEllipsoidalCS(
-                Collections.singletonMap(DefaultEllipsoidalCS.NAME_KEY, "lat lon height"),
+                Map.of(DefaultEllipsoidalCS.NAME_KEY, "lat lon height"),
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.ELLIPSOIDAL_HEIGHT);
@@ -253,7 +250,7 @@ public final strictfp class NormalizerTest extends TestCase {
     @Test
     public void testIdentifierRemoval() {
         final DefaultEllipsoidalCS cs = new DefaultEllipsoidalCS(           // EPSG::6423
-                Collections.singletonMap(DefaultEllipsoidalCS.NAME_KEY, "lat lon height"),
+                Map.of(DefaultEllipsoidalCS.NAME_KEY, "lat lon height"),
                 addIdentifier(HardCodedAxes.GEODETIC_LATITUDE,  (short) 108),
                 addIdentifier(HardCodedAxes.GEODETIC_LONGITUDE, (short) 109),
                 addIdentifier(HardCodedAxes.ELLIPSOIDAL_HEIGHT, (short) 110));

@@ -28,7 +28,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 final class CRSCommand extends FormattedOutputCommand {
     /**

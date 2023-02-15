@@ -38,7 +38,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
  * @see CoordinateOperationFinder#createOperationStep(CoordinateReferenceSystem, List, CoordinateReferenceSystem, List)
  *
  * @since 0.7
- * @module
  */
 final class SubOperationInfo {
     /**
@@ -299,7 +298,7 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
      * select any source CRS in the list of {@link SingleCRS} given to the {@link #createSteps createSteps(…)} method;
      * the source CRS are not necessarily picked in the same order as they appear in the list.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * if the source CRS has (<var>x</var>, <var>y</var>, <var>t</var>) coordinates and the target CRS has
      * (<var>t</var>, <var>x</var>, <var>y</var>) coordinates with some operation applied on <var>x</var>
      * and <var>y</var>, then the operations will be applied in that order:
@@ -313,15 +312,13 @@ next:   for (int targetComponentIndex = 0; targetComponentIndex < infos.length; 
      * dimension and move them into the "trailing coordinates" dimension, we have to reorder coordinates before
      * to create the pass-through operations. This is done by the following matrix:
      *
-     * {@preformat math
+     * <pre class="math">
      *   ┌   ┐   ┌         ┐┌   ┐
      *   │ t │   │ 0 0 1 0 ││ x │
      *   │ x │ = │ 1 0 0 0 ││ y │
      *   │ y │   │ 0 1 0 0 ││ t │
      *   │ 1 │   │ 0 0 0 1 ││ 1 │
-     *   └   ┘   └         ┘└   ┘
-     * }
-     * </div>
+     *   └   ┘   └         ┘└   ┘</pre>
      *
      * Furthermore, some dimensions may be dropped,
      * e.g. from (<var>x</var>, <var>y</var>, <var>t</var>) to (<var>x</var>, <var>y</var>).

@@ -18,7 +18,6 @@ package org.apache.sis.internal.storage;
 
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 import org.opengis.metadata.distribution.Format;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.sql.MetadataStoreException;
@@ -31,9 +30,8 @@ import org.apache.sis.internal.system.Modules;
  * The primary key in the {@code MD_Format} table must be the name given at construction time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
     /**
@@ -101,7 +99,7 @@ public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
                 if (listeners != null) {
                     listeners.warning(record);
                 } else {
-                    Logger.getLogger(Modules.STORAGE).log(record);
+                    getLogger().log(record);
                 }
             }
             format = super.getFormat();

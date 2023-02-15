@@ -31,7 +31,6 @@ import org.apache.sis.util.CharSequences;
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
  *
  * @since 0.6
- * @module
  */
 final class IntegerList {
     /**

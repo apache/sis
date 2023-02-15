@@ -19,9 +19,9 @@ package org.apache.sis.util.logging;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.TimeUnit;
-import org.apache.sis.util.Configuration;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -51,9 +51,8 @@ import org.apache.sis.util.resources.Vocabulary;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class PerformanceLevel extends Level {
     /**
@@ -79,14 +78,12 @@ public final class PerformanceLevel extends Level {
     public static final PerformanceLevel SLOWER = new PerformanceLevel("SLOWER", Vocabulary.Keys.Slower, 630, 10_000_000_000L);
 
     /**
-     * @deprecated Renamed {@link #SLOWNESS}.
-     */
-    @Deprecated
-    public static final PerformanceLevel SLOW = SLOWNESS;
-
-    /**
      * The minimal duration (in nanoseconds) for logging the record.
+     *
+     * @see #getMinDuration(TimeUnit)
+     * @see #setMinDuration(long, TimeUnit)
      */
+    @Configuration(writeAccess = Configuration.Access.INSTANCE)
     private volatile long minDuration;
 
     /**
@@ -149,7 +146,6 @@ public final class PerformanceLevel extends Level {
      * @param  unit      the unit of the given duration value.
      * @throws IllegalArgumentException if the given duration is zero or negative.
      */
-    @Configuration
     @SuppressWarnings("fallthrough")
     public void setMinDuration(long duration, final TimeUnit unit) throws IllegalArgumentException {
         ArgumentChecks.ensureStrictlyPositive("duration", duration);

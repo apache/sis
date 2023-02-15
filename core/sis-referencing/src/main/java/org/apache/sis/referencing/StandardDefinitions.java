@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.HashMap;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import org.opengis.util.InternationalString;
+import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.citation.PresentationForm;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -37,12 +40,17 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.util.NoSuchIdentifierException;
+import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.AxisNames;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.provider.TransverseMercator;
 import org.apache.sis.internal.referencing.provider.PolarStereographicA;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -63,8 +71,8 @@ import org.apache.sis.measure.Units;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
+import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
-import static org.opengis.referencing.crs.GeographicCRS.SCOPE_KEY;
 import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
@@ -74,18 +82,53 @@ import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADI
  * This class is used only as a fallback if the objects cannot be fetched from the EPSG database.
  * This class should not be loaded when a connection to an EPSG geodetic dataset is available.
  *
+ * <p>This class uses data available in public sources, with all EPSG metadata omitted except the identifiers.
+ * The EPSG identifiers are provided as references where to find the complete definitions.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.4
- * @module
  */
 final class StandardDefinitions {
+    /**
+     * The EPSG database version that most closely match the fallback CRS.
+     * We refer to latest version of the 9.x series instead of more recent
+     * data because the fallback CRS does not use datum ensemble.
+     */
+    static final String VERSION = "9.9.1";
+
     /**
      * The EPSG code for Greenwich meridian.
      *
      * @see org.apache.sis.internal.util.Constants#EPSG_GREENWICH
      */
     static final String GREENWICH = "8901";
+
+    /**
+     * Notice about the provenance of those data.
+     * This is provided as a small clarification because EPSG data should be licensed under EPSG Terms of Use.
+     * The approach in this class is to use only the data that are available from public sources,
+     * and to add only the EPSG codes as citation references. The notice text is:
+     *
+     * <blockquote>Definitions from public sources. When a definition corresponds to an EPSG object (ignoring metadata),
+     * the EPSG code is provided as a reference where to find the complete definition.</blockquote>
+     */
+    private static final InternationalString NOTICE =
+            Resources.formatInternational(Resources.Keys.FallbackAuthorityNotice);
+
+    /**
+     * The authority for this subset of EPSG database.
+     */
+    static final Citation AUTHORITY;
+    static {
+        final DefaultCitation c = new DefaultCitation();
+        c.setTitle(Vocabulary.formatInternational(Vocabulary.Keys.SubsetOf_1, Constants.EPSG));
+        c.setEdition(new SimpleInternationalString(StandardDefinitions.VERSION));
+        c.getPresentationForms().add(PresentationForm.DOCUMENT_DIGITAL);
+        c.getOtherCitationDetails().add(NOTICE);
+        c.transitionTo(DefaultCitation.State.FINAL);
+        AUTHORITY = c;
+    }
 
     /**
      * Do not allow instantiation of this class.
@@ -105,13 +148,16 @@ final class StandardDefinitions {
     private static Map<String,Object> properties(final int code, final String name, final String alias, final boolean world) {
         final Map<String,Object> map = new HashMap<>(8);
         if (code != 0) {
-            map.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, String.valueOf(code)));
+            map.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, Constants.EPSG, String.valueOf(code), VERSION, null));
         }
-        map.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, name));
-        map.put(ALIAS_KEY, alias);                                      // May be null, which is okay.
+        map.put(NAME_KEY, new NamedIdentifier(AUTHORITY, null, name, null, null));
+        if (alias != null) {
+            map.put(ALIAS_KEY, alias);
+        }
         if (world) {
             map.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         }
+        map.put(REMARKS_KEY, NOTICE);
         return map;
     }
 
@@ -168,22 +214,19 @@ final class StandardDefinitions {
      */
     static GeographicCRS createGeographicCRS(final short code, final GeodeticDatum datum, final EllipsoidalCS cs) {
         final String name;
-        String  alias = null;
-        String  scope = null;
         boolean world = false;
         switch (code) {
-            case 4326: name = "WGS 84"; world = true;           scope = "Horizontal component of 3D system."; break;
-            case 4322: name = "WGS 72"; world = true;           scope = "Horizontal component of 3D system."; break;
-            case 4258: name = "ETRS89"; alias = "ETRS89-GRS80"; scope = "Horizontal component of 3D system."; break;
-            case 4269: name = "NAD83";                          scope = "Geodetic survey.";                   break;
-            case 4267: name = "NAD27";                          scope = "Geodetic survey.";                   break;
-            case 4230: name = "ED50";                           scope = "Geodetic survey.";                   break;
-            case 4019: name = "Unknown datum based upon the GRS 1980 ellipsoid";           world = true;      break;
-            case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; world = true;      break;
+            case 4326: name = "WGS 84"; world = true; break;
+            case 4322: name = "WGS 72"; world = true; break;
+            case 4258: name = "ETRS89"; break;
+            case 4269: name = "NAD83";  break;
+            case 4267: name = "NAD27";  break;
+            case 4230: name = "ED50";   break;
+            case 4019: name = "Unknown datum based upon the GRS 1980 ellipsoid";           world = true; break;
+            case 4047: name = "Unspecified datum based upon the GRS 1980 Authalic Sphere"; world = true; break;
             default:   throw new AssertionError(code);
         }
-        final Map<String, Object> properties = properties(code, name, alias, world);
-        properties.put(SCOPE_KEY, scope);
+        final Map<String, Object> properties = properties(code, name, null, world);
         return new DefaultGeographicCRS(properties, datum, cs);
     }
 
@@ -227,12 +270,12 @@ final class StandardDefinitions {
         boolean ivfDefinitive  = true;
         Unit<Length> unit      = Units.METRE;
         switch (code) {
-            case 7030: name  = "WGS 84";                   alias = "WGS84";        semiMajorAxis = 6378137.0; other = 298.257223563; break;
-            case 7043: name  = "WGS 72";                   alias = "NWL 10D";      semiMajorAxis = 6378135.0; other = 298.26;        break;
-            case 7019: alias = "International 1979";       name  = "GRS 1980";     semiMajorAxis = 6378137.0; other = 298.257222101; break;
-            case 7022: name  = "International 1924";       alias = "Hayford 1909"; semiMajorAxis = 6378388.0; other = 297.0;         break;
-            case 7008: name  = "Clarke 1866";              ivfDefinitive = false;  semiMajorAxis = 6378206.4; other = 6356583.8;     break;
-            case 7048: name  = "GRS 1980 Authalic Sphere"; ivfDefinitive = false;  semiMajorAxis = other = AUTHALIC_RADIUS;          break;
+            case 7030: name  = "WGS 1984";                 semiMajorAxis = 6378137.0; other = 298.257223563; break;
+            case 7043: name  = "WGS 1972";                 semiMajorAxis = 6378135.0; other = 298.26;        break;
+            case 7019: name  = "GRS 1980";                 semiMajorAxis = 6378137.0; other = 298.257222101; break;
+            case 7022: name  = "International 1924";       semiMajorAxis = 6378388.0; other = 297.0;         break;
+            case 7008: name  = "Clarke 1866";              semiMajorAxis = 6378206.4; other = 6356583.8; ivfDefinitive = false; break;
+            case 7048: name  = "GRS 1980 Authalic Sphere"; semiMajorAxis = other = AUTHALIC_RADIUS; ivfDefinitive = false; break;
             default:   throw new AssertionError(code);
         }
         final Map<String,Object> map = properties(code, name, alias, false);
@@ -249,8 +292,8 @@ final class StandardDefinitions {
      */
     static PrimeMeridian primeMeridian() {
         final Map<String,Object> properties = new HashMap<>(4);
-        properties.put(NAME_KEY, new NamedIdentifier(Citations.EPSG, "Greenwich"));         // Name is fixed by ISO 19111.
-        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(Citations.EPSG, GREENWICH));
+        properties.put(NAME_KEY, new NamedIdentifier(AUTHORITY, "Greenwich"));          // Name is fixed by ISO 19111.
+        properties.put(IDENTIFIERS_KEY, new NamedIdentifier(AUTHORITY, GREENWICH));
         return new DefaultPrimeMeridian(properties, 0, Units.DEGREE);
     }
 
@@ -270,13 +313,13 @@ final class StandardDefinitions {
         switch (code) {
             case 5703: wms    = "88";
                        name   = "NAVD88 height";
-                       alias  = "North American Vertical Datum of 1988 height (m)";
+                       alias  = "North American Vertical Datum 1988 height";
                        break;
             case 5714: name   = "MSL height";
-                       alias  = "mean sea level height";
+                       alias  = "Mean Sea Level height";
                        break;
             case 5715: name   = "MSL depth";
-                       alias  = "mean sea level depth";
+                       alias  = "Mean Sea Level depth";
                        csName = "Vertical CS. Axis: depth (D).";
                        csCode = 6498;
                        axis   = 113;

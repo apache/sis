@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class DQM_Parameter extends PropertyType<DQM_Parameter, ParameterDescriptor<?>> {
     /**

@@ -51,7 +51,6 @@ import org.apache.sis.internal.system.Modules;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.3
- * @module
  */
 public final class SystemRegistry extends ConverterRegistry {
     /**
@@ -70,9 +69,10 @@ public final class SystemRegistry extends ConverterRegistry {
         /*
          * Force reloading of META-INF/services files if the classpath changed,
          * since the set of reachable META-INF/services files may have changed.
-         * If any converters were registered by explicit calls to the 'register' method,
-         * then those converters are lost. This is of concern only for applications using
-         * a modularization framework like OSGi. See package javadoc for more information.
+         * If any converters were registered by explicit calls to the `register` method,
+         * then those converters are lost. This is of concern only for applications
+         * using a container framework such as Servlet or OSGi.
+         * See package javadoc for more information.
          */
         SystemListener.add(new SystemListener(Modules.UTILITIES) {
             @Override protected void classpathChanged() {
@@ -96,12 +96,12 @@ public final class SystemRegistry extends ConverterRegistry {
      * <p>The default implementation is equivalent to the following code
      * (see the package javadoc for more information):</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     ClassLoader loader = getClass().getClassLoader();
      *     for (ObjectConverter<?,?> converter : ServiceLoader.load(ObjectConverter.class, loader)) {
      *         register(converter);
      *     }
-     * }
+     *     }
      */
     @Override
     protected void initialize() {

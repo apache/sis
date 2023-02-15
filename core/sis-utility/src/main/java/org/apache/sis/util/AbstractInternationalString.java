@@ -47,7 +47,6 @@ import org.apache.sis.internal.util.Strings;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public abstract class AbstractInternationalString implements InternationalString, Formattable {
     /**

@@ -27,14 +27,13 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4
  * @since   0.4
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.profile.fra.DirectReferenceSystemTest.class,
     org.apache.sis.internal.profile.fra.DataIdentificationTest.class,
     org.apache.sis.profile.france.FrenchProfileTest.class
 })
-public final strictfp class FrenchProfileTestSuite extends TestSuite {
+public final class FrenchProfileTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

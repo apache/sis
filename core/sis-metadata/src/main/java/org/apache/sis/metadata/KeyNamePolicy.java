@@ -36,7 +36,6 @@ import org.opengis.annotation.UML;
  * @see MetadataStandard#asValueMap(Object, Class, KeyNamePolicy, ValueExistencePolicy)
  *
  * @since 0.3
- * @module
  */
 public enum KeyNamePolicy {
     /**

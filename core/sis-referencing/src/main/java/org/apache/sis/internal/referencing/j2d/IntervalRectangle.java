@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.referencing.j2d;
 
+import java.io.Serializable;
 import java.awt.geom.Rectangle2D;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -59,12 +60,14 @@ import org.apache.sis.internal.util.Strings;
  * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.8
- * @module
  */
 @SuppressWarnings("CloneableImplementsClone")
-public class IntervalRectangle extends Rectangle2D {
+public class IntervalRectangle extends Rectangle2D implements Serializable {
+    /** For cross-version compatibility. */
+    private static final long serialVersionUID = -5921513912411186629L;
+
     /** Minimal <var>x</var> coordinate value. */ public double xmin;
     /** Minimal <var>y</var> coordinate value. */ public double ymin;
     /** Maximal <var>x</var> coordinate value. */ public double xmax;
@@ -82,15 +85,15 @@ public class IntervalRectangle extends Rectangle2D {
      * full longitude range (i.e. this constructor does not preserve the convention of using
      * negative width for envelopes crossing anti-meridian).
      *
-     * <div class="note"><b>Note:</b> this constructor expands envelopes that cross the anti-meridian
+     * <h4>Design note</h4>
+     * This constructor expands envelopes that cross the anti-meridian
      * because the methods defined in this class are not designed for handling such envelopes.
      * If a rectangle with negative width is nevertheless desired for envelope crossing the anti-meridian,
      * one can use the following constructor:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     new IntervalRectangle(envelope.getLowerCorner(), envelope.getUpperCorner());
-     * }
-     * </div>
+     *     }
      *
      * @param envelope  the envelope from which to copy the values.
      */
@@ -467,9 +470,9 @@ public class IntervalRectangle extends Rectangle2D {
      * Invoking this method is equivalent to invoking the following code, except that this
      * method behaves correctly with infinite values and {@link Envelope2D} implementation.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Rectangle2D.intersect(this, rect, this);
-     * }
+     *     }
      *
      * @param  rect  the {@code Rectangle2D} to intersect with this rectangle.
      *

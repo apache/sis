@@ -19,7 +19,6 @@ package org.apache.sis.util.resources;
 import java.net.URL;
 import java.util.List;
 import java.util.Locale;
-import java.util.Collections;
 import java.util.ResourceBundle;
 import java.lang.reflect.InvocationTargetException;
 import java.io.IOException;
@@ -32,7 +31,6 @@ import java.io.IOException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 final class Loader extends ResourceBundle.Control {
     /**
@@ -43,7 +41,7 @@ final class Loader extends ResourceBundle.Control {
     /**
      * The formats supported by this loader.
      */
-    private static final List<String> FORMATS = Collections.singletonList("apache-sis." + EXTENSION);
+    private static final List<String> FORMATS = List.of("apache-sis." + EXTENSION);
 
     /**
      * The singleton instance of the {@link Loader} class.

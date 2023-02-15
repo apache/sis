@@ -18,6 +18,7 @@ package org.apache.sis.parameter;
 
 import java.lang.reflect.Array;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.nio.file.Path;
 import java.io.Serializable;
 import java.io.File;
@@ -57,7 +58,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.UnconvertibleObjectException;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Utilities.deepEquals;
 
@@ -93,9 +93,9 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * The type and constraints on parameter values are given by the {@linkplain #getDescriptor() descriptor},
  * which is specified at construction time. The parameter type can be fetch with the following idiom:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     Class<T> valueClass = parameter.getDescriptor().getValueClass();
- * }
+ *     }
  *
  * <h2>Instantiation</h2>
  * A {@linkplain DefaultParameterDescriptor parameter descriptor} must be defined before parameter value can be created.
@@ -118,7 +118,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * for modifying the behavior of all getter and setter methods.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <T>  the type of the value stored in this parameter.
  *
@@ -126,7 +126,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @see DefaultParameterValueGroup
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "ParameterValueType", propOrder = {
     "xmlValue",
@@ -142,6 +141,11 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     private static final long serialVersionUID = -5837826787089486776L;
 
     /**
+     * The logger for parameters.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.PARAMETER);
+
+    /**
      * The definition of this parameter.
      *
      * <p><b>Consider this field as final!</b>
@@ -149,7 +153,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @see #getDescriptor()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private ParameterDescriptor<T> descriptor;
 
     /**
@@ -169,7 +173,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      *
      * @since 0.7
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected Unit<?> unit;
 
     /**
@@ -602,8 +606,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
                      * Level.FINE (not WARNING) because this log duplicates the exception
                      * that `setValue(Object, Unit)` may throw (with a better message).
                      */
-                    Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
-                            DefaultParameterValue.class, "setValue", e);
+                    Logging.recoverableException(LOGGER, DefaultParameterValue.class, "setValue", e);
                 } else {
                     /*
                      * If the given value is an array, verify if array elements need to be converted
@@ -857,9 +860,9 @@ convert:            if (componentType != null) {
      * Compares the specified object with this parameter for equality.
      * This method is implemented as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
@@ -942,9 +945,9 @@ convert:            if (componentType != null) {
      * Formats this parameter as a <cite>Well Known Text</cite> {@code Parameter[…]} element.
      * Example:
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   Parameter["False easting", 0.0, LengthUnit["metre", 1]]
-     * }
+     *   }
      *
      * <h4>Unit of measurement</h4>
      * The units of measurement were never specified in WKT 1 format, and are optional in WKT 2 format.
@@ -960,7 +963,7 @@ convert:            if (componentType != null) {
      * parameters, which are in kilometres in this example.
      *
      * <p><b>WKT 1:</b></p>
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   PROJCS[…,
      *     GEOGCS[…,
      *       UNIT[“grad”, 0.015707963267948967]],       // Unit for all angles
@@ -970,10 +973,10 @@ convert:            if (componentType != null) {
      *     PARAMETER[“false_easting”, 600.0],           // In kilometres
      *     PARAMETER[“false_northing”, 2200.0],         // In kilometres
      *     UNIT[“kilometre”, 1000]]                     // Unit for all lengths
-     * }
+     *   }
      *
      * <p><b>WKT 2:</b></p>
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS[…
      *     BaseGeodCRS[…
      *       AngleUnit[“grad”, 0.015707963267948967]],
@@ -985,7 +988,7 @@ convert:            if (componentType != null) {
      *       Parameter[“False northing”, 2200.0]],
      *     CS[“Cartesian”, 2],
      *       LengthUnit[“kilometre”, 1000]]
-     * }
+     *   }
      * </div>
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.

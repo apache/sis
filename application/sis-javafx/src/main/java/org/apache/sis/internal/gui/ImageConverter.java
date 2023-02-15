@@ -37,14 +37,12 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.map.coverage.RenderingWorkaround;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -61,16 +59,15 @@ import static java.util.logging.Logger.getLogger;
  * This policy may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
- * @module
  */
 final class ImageConverter extends Task<Statistics[]> {
     /**
      * Colors to apply on the mask image when that image is overlay on top of another image.
      * Current value is a transparent yellow color.
      */
-    private static final Map<NumberRange<?>,Color[]> MASK_TRANSPARENCY = JDK9.mapOf(
+    private static final Map<NumberRange<?>,Color[]> MASK_TRANSPARENCY = Map.of(
             NumberRange.create(0, true, 0, true), new Color[] {ColorModelFactory.TRANSPARENT},
             NumberRange.create(1, true, 1, true), new Color[] {new Color(0x30FFFF00, true)});
 
@@ -187,7 +184,7 @@ final class ImageConverter extends Task<Statistics[]> {
          */
         final ImageProcessor processor  = new ImageProcessor();
         final Statistics[]   statistics = processor.valueOfStatistics(source, sourceAOI, (DoubleUnaryOperator[]) null);
-        final RenderedImage  image      = processor.stretchColorRamp(source, JDK9.mapOf("multStdDev", 3, "statistics", statistics));
+        final RenderedImage  image      = processor.stretchColorRamp(source, Map.of("multStdDev", 3, "statistics", statistics));
         final RenderedImage  mask       = getMask(processor);
         final BufferedImage  buffer     = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);
         final Graphics2D     graphics   = buffer.createGraphics();
@@ -213,7 +210,7 @@ final class ImageConverter extends Task<Statistics[]> {
             return processor.visualize((RenderedImage) mask, MASK_TRANSPARENCY);
         } catch (IllegalArgumentException e) {
             // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
-            Logging.recoverableException(getLogger(Loggers.APPLICATION), PropertyView.class, "setImage", e);
+            Logging.recoverableException(LOGGER, PropertyView.class, "setImage", e);
         }
         return null;
     }

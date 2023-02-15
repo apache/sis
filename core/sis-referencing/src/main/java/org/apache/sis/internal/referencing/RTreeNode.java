@@ -50,8 +50,8 @@ import org.apache.sis.util.collection.DefaultTreeTable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
+@SuppressWarnings("CloneableImplementsClone")
 public class RTreeNode extends GeneralEnvelope {
     /**
      * For cross-version compatibility.

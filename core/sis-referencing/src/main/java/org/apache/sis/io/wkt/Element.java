@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.Locale;
 import java.text.ParsePosition;
 import java.text.ParseException;
@@ -41,9 +40,9 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  * An element in a <cite>Well Know Text</cite> (WKT). An {@code Element} is made of {@link String},
  * {@link Number} and other {@link Element}. For example:
  *
- * {@preformat text
+ * {@snippet lang="wkt" :
  *     PrimeMeridian[“Greenwich”, 0.0, AngleUnit[“degree”, 0.017453292519943295]]]
- * }
+ *     }
  *
  * Each {@code Element} object can contain an arbitrary number of other elements.
  * The result is a tree, which can be seen with {@link #toString()} for debugging purpose.
@@ -60,7 +59,6 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.6
- * @module
  */
 final class Element {
     /**
@@ -140,20 +138,20 @@ final class Element {
      * This wrapper is a convenience for branching on different codes depending on
      * the keyword value. For example:
      *
-     * {@preformat java
-     *    Element wrapper = new Element(an_element_with_unknown_keyword);
-     *    Element e = wrapper.pullElement(…, "ProjectedCRS");
-     *    if (e != null) {
-     *        // Do something specific to projected CRS.
-     *        return;
-     *    }
-     *    e = wrapper.pullElement(…, "GeographicCRS");
-     *    if (e != null) {
-     *        // Do something specific to Geographic CRS.
-     *        return;
-     *    }
-     *    // etc.
-     * }
+     * {@snippet lang="java" :
+     *     Element wrapper = new Element(an_element_with_unknown_keyword);
+     *     Element e = wrapper.pullElement(…, "ProjectedCRS");
+     *     if (e != null) {
+     *         // Do something specific to projected CRS.
+     *         return;
+     *     }
+     *     e = wrapper.pullElement(…, "GeographicCRS");
+     *     if (e != null) {
+     *         // Do something specific to Geographic CRS.
+     *         return;
+     *     }
+     *     // etc.
+     *     }
      *
      * @param  singleton  the only child for this root.
      *
@@ -183,7 +181,7 @@ final class Element {
     Element(final String keyword, final LinkedList<Object> children, final int offset, final Locale errorLocale) {
         this.keyword       = keyword;
         this.isEnumeration = (children == null);
-        this.children      = isEnumeration ? Collections.emptyList() : children;
+        this.children      = isEnumeration ? List.of() : children;
         this.isFragment    = (offset < 0);
         this.offset        = isFragment ? ~offset : offset;
         this.errorLocale   = errorLocale;
@@ -237,7 +235,7 @@ final class Element {
                                 openingBracket = text.codePointAt(lower))) < 0)
         {
             position.setIndex(lower);
-            children = Collections.emptyList();
+            children = List.of();
             isEnumeration = true;
             return;
         }

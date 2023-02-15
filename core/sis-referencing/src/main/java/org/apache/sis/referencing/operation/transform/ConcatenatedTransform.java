@@ -39,7 +39,6 @@ import org.apache.sis.internal.referencing.provider.GeocentricAffine;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.system.Semaphores;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
@@ -49,8 +48,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -62,12 +59,11 @@ import static java.util.logging.Logger.getLogger;
  * <p>Concatenated transforms are serializable if all their step transforms are serializable.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.opengis.referencing.operation.MathTransformFactory#createConcatenatedTransform(MathTransform, MathTransform)
  *
  * @since 0.5
- * @module
  */
 class ConcatenatedTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -85,11 +81,13 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * The first math transform.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     protected final MathTransform transform1;
 
     /**
      * The second math transform.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     protected final MathTransform transform2;
 
     /**
@@ -99,6 +97,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @see #inverse()
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private MathTransform inverse;
 
     /**
@@ -128,10 +127,10 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Likewise if the concatenation result works with one-dimensional input and output points,
      * then the returned transform will implement {@link MathTransform1D}.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * {@code ConcatenatedTransform} implementations are available in two versions: direct and non-direct.
      * The "non-direct" versions use an intermediate buffer when performing transformations; they are slower
-     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.</div>
+     * and consume more memory. They are used only as a fallback when a "direct" version cannot be created.
      *
      * @param  tr1      the first math transform.
      * @param  tr2      the second math transform.
@@ -276,8 +275,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
                  * Ignore. The `concatenated.inverse()` method will try to compute the inverse itself,
                  * possible at the cost of more NaN values than what above code would have produced.
                  */
-                Logging.recoverableException(getLogger(Loggers.COORDINATE_OPERATION),
-                        ConcatenatedTransform.class, "create", e);
+                Logging.recoverableException(LOGGER, ConcatenatedTransform.class, "create", e);
             }
         }
         return concatenated;
@@ -848,7 +846,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      *
      * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).
-     * @throws TransformException if the derivative can't be evaluated at the specified point.
+     * @throws TransformException if the derivative cannot be evaluated at the specified point.
      */
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
@@ -909,13 +907,12 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * This method tries to delegate the concatenation to {@link #transform1} or {@link #transform2}.
      * Assuming that transforms are associative, this is equivalent to trying the following arrangements:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Instead of : other → tr1 → tr2
      *   Try:         (other → tr1) → tr2          where (…) denote an optimized concatenation.
      *
      *   Instead of : tr1 → tr2 → other
-     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.
-     * }
+     *   Try:         tr1 → (tr2 → other)          where (…) denote an optimized concatenation.</pre>
      *
      * @return the simplified transform, or {@code null} if no such optimization is available.
      * @throws FactoryException if an error occurred while combining the transforms.

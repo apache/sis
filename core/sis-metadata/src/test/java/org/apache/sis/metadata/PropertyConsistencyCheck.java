@@ -51,10 +51,9 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn(PropertyAccessorTest.class)
-public abstract strictfp class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
+public abstract class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.
      */

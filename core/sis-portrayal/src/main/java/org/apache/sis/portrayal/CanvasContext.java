@@ -34,6 +34,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 
 
@@ -44,7 +45,6 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @SuppressWarnings("serial")   // Not intended to be serialized.
 final class CanvasContext extends CoordinateOperationContext {
@@ -54,6 +54,7 @@ final class CanvasContext extends CoordinateOperationContext {
      *
      * @see Canvas#findTransform(CoordinateReferenceSystem, CoordinateReferenceSystem, boolean)
      */
+    @Configuration
     private static final double DISPLAY_RESOLUTION = 1;
 
     /**

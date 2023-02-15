@@ -64,7 +64,6 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "ProjectedCRSType", propOrder = {
     "baseCRS",
@@ -312,10 +311,11 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     /**
      * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
      *
-     * <div class="note"><b>Example:</b> Well-Known Text (version 2)
+     * <h4>Example</h4>
+     * Well-Known Text (version 2)
      * of a projected coordinate reference system using the Lambert Conformal method.
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   ProjectedCRS[“NTF (Paris) / Lambert zone II”,
      *     BaseGeodCRS[“NTF (Paris)”,
      *       Datum[“Nouvelle Triangulation Francaise”,
@@ -333,11 +333,11 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *       Axis[“Northing (N)”, north, Order[2]],
      *       LengthUnit[“metre”, 1],
      *     Id[“EPSG”, 27572, Citation[“IOGP”], URI[“urn:ogc:def:crs:EPSG::27572”]]]
-     * }
+     *   }
      *
      * <p>Same coordinate reference system using WKT 1.</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   PROJCS[“NTF (Paris) / Lambert zone II”,
      *     GEOGCS[“NTF (Paris)”,
      *       DATUM[“Nouvelle Triangulation Francaise”,
@@ -356,9 +356,9 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      *     AXIS[“Easting”, EAST],
      *     AXIS[“Northing”, NORTH],
      *     AUTHORITY[“EPSG”, “27572”]]
-     * }
-     * </div>
+     *   }
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ProjectedCRS"} (WKT 2) or {@code "ProjCS"} (WKT 1).
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#57">WKT 2 specification §9</a>

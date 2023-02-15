@@ -27,12 +27,11 @@ import java.util.LinkedHashMap;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.IOException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 
 import org.opengis.util.CodeList;
 import org.opengis.util.NameFactory;
@@ -66,6 +65,7 @@ import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.wkt.StoreFormat;
 import org.apache.sis.internal.referencing.AxisDirections;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.resources.Errors;
@@ -80,7 +80,6 @@ import ucar.nc2.constants.ACDD;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants.CF;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 import static org.apache.sis.internal.util.CollectionsExt.first;
 
@@ -115,13 +114,13 @@ import static org.apache.sis.internal.util.CollectionsExt.first;
  * @author  Alexis Manin (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 final class MetadataReader extends MetadataBuilder {
     /**
      * Whether the reader should include experimental fields.
      * They are fields for which we are unsure of the proper ISO 19115 location.
      */
+    @Configuration
     private static final boolean EXPERIMENTAL = true;
 
     /**
@@ -226,7 +225,7 @@ final class MetadataReader extends MetadataBuilder {
      */
     static List<String> split(final String value) {
         if (value == null) {
-            return Collections.emptyList();
+            return List.of();
         }
         final List<String> items = new ArrayList<>();
         int start = 0;      // Index of the first character of the next item to add in the list.
@@ -388,7 +387,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
         final DefaultOnlineResource resource = new DefaultOnlineResource(uri);
         final String protocol = uri.getScheme();
         resource.setProtocol(protocol);
-        if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+        if (IOUtilities.isHTTP(protocol)) {
             resource.setApplicationProfile("web browser");
         }
         resource.setFunction(OnLineFunction.INFORMATION);
@@ -401,7 +400,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private static Address createAddress(final String email) {
         if (email != null) {
             final DefaultAddress address = new DefaultAddress();
-            address.setElectronicMailAddresses(singleton(email));
+            address.setElectronicMailAddresses(Set.of(email));
             return address;
         }
         return null;
@@ -413,8 +412,8 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
     private static Contact createContact(final Address address, final OnlineResource url) {
         if (address != null || url != null) {
             final DefaultContact contact = new DefaultContact();
-            if (address != null) contact.setAddresses(singleton(address));
-            if (url     != null) contact.setOnlineResources(singleton(url));
+            if (address != null) contact.setAddresses(Set.of(address));
+            if (url     != null) contact.setOnlineResources(Set.of(url));
             return contact;
         }
         return null;
@@ -522,7 +521,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 if (individualName   != null) party = new DefaultIndividual(individualName, null, null);
                 if (organisationName != null) party = new DefaultOrganisation(organisationName, null, (Individual) party, null);
                 if (party            == null) party = isOrganisation(keys) ? new DefaultOrganisation() : new DefaultIndividual();
-                if (contact          != null) party.setContactInfo(singleton(contact));
+                if (contact          != null) party.setContactInfo(Set.of(contact));
                 responsibility = new DefaultResponsibility(role, null, party);
             }
         }
@@ -727,7 +726,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     final String symbol = res.substring(s+1).trim();
                     if (!symbol.isEmpty()) try {
                         units = Units.valueOf(symbol);
-                    } catch (ParserException e) {
+                    } catch (MeasurementParseException e) {
                         warning(Errors.Keys.CanNotAssignUnitToDimension_2, name, units, e);
                     }
                 }
@@ -818,7 +817,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                     final UnitConverter c = Units.valueOf(symbol).getConverterToAny(targetUnit);
                     min = c.convert(min);
                     max = c.convert(max);
-                } catch (ParserException | IncommensurableException e) {
+                } catch (MeasurementParseException | IncommensurableException e) {
                     warning(e);
                 }
                 boolean reverse = false;
@@ -871,7 +870,6 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
      * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
      */
-    @SuppressWarnings("null")
     private void addContentInfo() {
         /*
          * Prepare a list of features and coverages, but without writing metadata now.

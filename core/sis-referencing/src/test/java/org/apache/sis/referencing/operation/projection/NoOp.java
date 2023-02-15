@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.operation.projection;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
@@ -35,10 +35,9 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.6
- * @module
  */
 @SuppressWarnings("serial")
-final strictfp class NoOp extends ConformalProjection {
+final class NoOp extends ConformalProjection {
     /**
      * Creates a new "no-operation".
      *
@@ -72,9 +71,9 @@ final strictfp class NoOp extends ConformalProjection {
     @Workaround(library="JDK", version="1.7")
     private NoOp(final Parameters parameters) {
         super(new Initializer(new DefaultOperationMethod(
-                Collections.singletonMap(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
+                Map.of(DefaultOperationMethod.NAME_KEY, parameters.getDescriptor().getName()),
                 DIMENSION, DIMENSION,
-                parameters.getDescriptor()), parameters, Collections.emptyMap(), null));
+                parameters.getDescriptor()), parameters, Map.of(), null));
     }
 
     /**

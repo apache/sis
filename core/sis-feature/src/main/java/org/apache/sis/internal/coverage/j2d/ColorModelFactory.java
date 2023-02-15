@@ -48,9 +48,8 @@ import org.apache.sis.util.Debug;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
- * @module
  */
 public final class ColorModelFactory {
     /**
@@ -66,8 +65,7 @@ public final class ColorModelFactory {
      *
      * @see #unique(ColorModel)
      */
-    @SuppressWarnings("rawtypes")   // TODO: Remove after we removed ColorModelPatch.
-    private static final WeakHashSet<ColorModelPatch> CACHE = new WeakHashSet<>(ColorModelPatch.class);
+    private static final WeakHashSet<ColorModel> CACHE = new WeakHashSet<>(ColorModel.class);
 
     /**
      * A pool of color models previously created by {@link #createColorModel()}.
@@ -245,7 +243,7 @@ public final class ColorModelFactory {
             final int[] nBits = {
                 DataBuffer.getDataTypeSize(dataType)
             };
-            return unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, dataType));
+            return CACHE.unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, dataType));
         }
         /*
          * Interpolates the colors in the color palette. Colors that do not fall
@@ -391,7 +389,7 @@ public final class ColorModelFactory {
             cm = new MultiBandsIndexColorModel(bits, length, ARGB, 0, hasAlpha, transparent,
                                                dataType, numBands, visibleBand);
         }
-        return unique(cm);
+        return CACHE.unique(cm);
     }
 
     /**
@@ -442,7 +440,7 @@ public final class ColorModelFactory {
             final ScaledColorSpace cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
             cm = new ScaledColorModel(cs, dataType);
         }
-        return unique(cm);
+        return CACHE.unique(cm);
     }
 
     /**
@@ -571,7 +569,7 @@ public final class ColorModelFactory {
             cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), numBits, hasAlpha, false,
                             hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
         }
-        return unique(cm);
+        return CACHE.unique(cm);
     }
 
     /**
@@ -620,7 +618,7 @@ public final class ColorModelFactory {
             // TODO: handle other color models.
             return Optional.empty();
         }
-        return Optional.of(unique(subset));
+        return Optional.of(CACHE.unique(subset));
     }
 
     /**
@@ -642,22 +640,6 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns a unique instance of the given color model.
-     * This method is automatically invoked by {@code create(…)} methods in this class.
-     *
-     * @param  <T>  the type of the color model to share.
-     * @param  cm   the color model for which to get a unique instance.
-     * @return a unique (shared) instance of the given color model.
-     */
-    private static <T extends ColorModel> T unique(T cm) {
-        // `CACHE` is null-safe and it is sometimes okay to return a null color model.
-        // ColorModelPatch is not null-safe, but it will be removed in a future version.
-        ColorModelPatch<T> c = new ColorModelPatch<>(cm);
-        c = CACHE.unique(c);
-        return c.cm;
-    }
-
-    /**
      * Returns a suggested type for an {@link IndexColorModel} of {@code mapSize} colors.
      * This method returns {@link DataBuffer#TYPE_BYTE} or {@link DataBuffer#TYPE_USHORT}.
      *
@@ -672,9 +654,9 @@ public final class ColorModelFactory {
      * Returns a bit count for an {@link IndexColorModel} mapping {@code mapSize} colors.
      * It is guaranteed that the following relation is hold:
      *
-     * {@preformat java
-     *     (1 << getBitCount(mapSize)) >= mapSize
-     * }
+     * {@snippet lang="java" :
+     *     assert (1 << getBitCount(mapSize)) >= mapSize;
+     *     }
      *
      * @param  mapSize  the number of colors in the map.
      * @return the number of bits to use.

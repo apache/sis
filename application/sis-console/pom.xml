@@ -86,29 +86,6 @@
     </plugins>
   </build>
 
-  <!-- Create the binary distribution file. -->
-  <profiles>
-    <profile>
-      <id>apache-release</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.sis.core</groupId>
-            <artifactId>sis-build-helper</artifactId>
-            <version>${sis.plugin.version}</version>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>dist</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
 
   <!-- ===========================================================
            Dependencies
@@ -141,6 +118,11 @@
     <dependency>
       <groupId>org.apache.derby</groupId>
       <artifactId>derby</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derbytools</artifactId>
       <scope>runtime</scope>
     </dependency>
 

@@ -38,7 +38,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 final class GridSliceLocator {
     /**
@@ -77,7 +76,9 @@ final class GridSliceLocator {
     /**
      * Creates a new locator for slices at given coordinates.
      *
-     * @param searchDimension  the dimension on which the searches are done.
+     * @param slices           descriptions of the grid resources to use as slices in a multi-dimensional cube.
+     * @param searchDimension  the dimension on which the searches for grid slices are done.
+     * @param resources        an array of initially null elements where to store the resources.
      */
     GridSliceLocator(final List<GridSlice> slices, final int searchDimension, final GridCoverageResource[] resources) {
         this.searchDimension = searchDimension;

@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.metadata.replace.ServiceParameter;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 public final class SV_Parameter extends PropertyType<SV_Parameter, ParameterDescriptor<?>> {
     /**

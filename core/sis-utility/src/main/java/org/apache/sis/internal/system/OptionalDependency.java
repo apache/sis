@@ -31,7 +31,6 @@ import org.apache.sis.util.resources.Messages;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 public abstract class OptionalDependency extends SystemListener {
     /**
@@ -57,8 +56,8 @@ public abstract class OptionalDependency extends SystemListener {
      * Invoked when the classpath is likely to have changed.
      * Subclasses must override like below:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected final void classpathChanged() {
      *         synchronized (MyServices.class) {
      *             super.classpathChanged();
@@ -92,7 +91,7 @@ public abstract class OptionalDependency extends SystemListener {
             final LogRecord record = Messages.getResources(null).getLogRecord(Level.CONFIG,
                     Messages.Keys.OptionalModuleNotFound_1, dependency);
             record.setLoggerName(module);
-            Logging.log(type, "getInstance", record);
+            Logging.completeAndLog(null, type, "getInstance", record);
             return null;
         } catch (ReflectiveOperationException exception) {
             // Should never happen if we didn't broke our helper class.

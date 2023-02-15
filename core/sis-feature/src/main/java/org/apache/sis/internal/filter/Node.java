@@ -52,15 +52,19 @@ import org.opengis.feature.AttributeType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public abstract class Node implements Serializable {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -749201100175374658L;
+
+    /**
+     * The logger for all operations relative to filters.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.FILTER);
 
     /**
      * Scope of all names defined by SIS convention.
@@ -87,6 +91,7 @@ public abstract class Node implements Serializable {
      * @see Expression#getFunctionName()
      */
     protected static <T> AttributeType<T> createType(final Class<T> type, final Object name) {
+        // We do not use `Map.of(…)` for letting the attribute type constructor do the null check.
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
                                           type, 1, 1, null, (AttributeType<?>[]) null);
     }
@@ -281,12 +286,11 @@ public abstract class Node implements Serializable {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-460">SIS-460</a>
      */
     protected final void warning(final Exception e, final boolean recoverable) {
-        final Logger logger = Logger.getLogger(Loggers.FILTER);
         final String method = (this instanceof Predicate) ? "test" : "apply";
         if (recoverable) {
-            Logging.recoverableException(logger, getClass(), method, e);
+            Logging.recoverableException(LOGGER, getClass(), method, e);
         } else {
-            Logging.unexpectedException(logger, getClass(), method, e);
+            Logging.unexpectedException(LOGGER, getClass(), method, e);
         }
     }
 }

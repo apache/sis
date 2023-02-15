@@ -16,7 +16,6 @@
  */
 package org.apache.sis.measure;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.HashMap;
 import javax.measure.Unit;
@@ -36,9 +35,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class UnitDimensionTest extends TestCase {
+public final class UnitDimensionTest extends TestCase {
     /**
      * The dimension declared by the base {@link Units} constant.
      * We should not create our own instance for avoiding to pollute the {@link UnitDimension} cache.
@@ -141,10 +139,10 @@ public final strictfp class UnitDimensionTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("LENGTH",        LENGTH       .getBaseDimensions());     // Null value as per JSR-363 specification.
+        assertNull("LENGTH",        LENGTH       .getBaseDimensions());     // Null value as per JSR-385 specification.
         assertNull("TIME",          TIME         .getBaseDimensions());
         assertTrue("DIMENSIONLESS", DIMENSIONLESS.getBaseDimensions().isEmpty());
-        assertMapEquals(Collections.singletonMap(LENGTH, 3), VOLUME.getBaseDimensions());
+        assertMapEquals(Map.of(LENGTH, 3), VOLUME.getBaseDimensions());
 
         final Map<Dimension,Integer> expected = new HashMap<>(4);
         assertNull(expected.put(MASS,    1));
@@ -166,7 +164,7 @@ public final strictfp class UnitDimensionTest extends TestCase {
         verifyEqualsAndHashCode("Derived dimensions", false, Units.NEWTON, Units.JOULE);
         verifyEqualsAndHashCode("Dimensionsless",     true,  Units.UNITY,  Units.UNITY);
         verifyEqualsAndHashCode("Dimensionsless",     true,  Units.DEGREE, Units.DEGREE);
-        verifyEqualsAndHashCode("Dimensionsless",     true,  Units.UNITY,  Units.DEGREE);    // Really true (not false) as per JSR-363 specification.
+        verifyEqualsAndHashCode("Dimensionsless",     true,  Units.UNITY,  Units.DEGREE);    // Really true (not false) as per JSR-385 specification.
         verifyEqualsAndHashCode("Mixed types",        false, Units.METRE,  Units.UNITY);
         verifyEqualsAndHashCode("Mixed types",        false, Units.METRE,  Units.NEWTON);
     }

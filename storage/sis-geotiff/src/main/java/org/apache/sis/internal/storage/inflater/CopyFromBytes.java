@@ -40,7 +40,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 abstract class CopyFromBytes extends Inflater {
     /**
@@ -289,7 +288,7 @@ abstract class CopyFromBytes extends Inflater {
             }
             final int n = elementsPerChunk * Short.BYTES;
             input.ensureBufferContains(n);
-            bank.put((ShortBuffer) source.asShortBuffer().limit(elementsPerChunk));    // TODO: remove cast in JDK9.
+            bank.put(source.asShortBuffer().limit(elementsPerChunk));
             source.position(source.position() + n);
         }
     }
@@ -329,7 +328,7 @@ abstract class CopyFromBytes extends Inflater {
             }
             final int n = elementsPerChunk * Integer.BYTES;
             input.ensureBufferContains(n);
-            bank.put((IntBuffer) source.asIntBuffer().limit(elementsPerChunk));        // TODO: remove cast in JDK9.
+            bank.put(source.asIntBuffer().limit(elementsPerChunk));
             source.position(source.position() + n);
         }
     }
@@ -369,7 +368,7 @@ abstract class CopyFromBytes extends Inflater {
             }
             final int n = elementsPerChunk * Float.BYTES;
             input.ensureBufferContains(n);
-            bank.put((FloatBuffer) source.asFloatBuffer().limit(elementsPerChunk));    // TODO: remove cast in JDK9.
+            bank.put(source.asFloatBuffer().limit(elementsPerChunk));
             source.position(source.position() + n);
         }
     }
@@ -409,7 +408,7 @@ abstract class CopyFromBytes extends Inflater {
             }
             final int n = elementsPerChunk * Double.BYTES;
             input.ensureBufferContains(n);
-            bank.put((DoubleBuffer) source.asDoubleBuffer().limit(elementsPerChunk));  // TODO: remove cast in JDK9.
+            bank.put(source.asDoubleBuffer().limit(elementsPerChunk));
             source.position(source.position() + n);
         }
     }

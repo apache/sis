@@ -160,11 +160,10 @@
  * @author  Rémi Maréchal (Geomatys)
  * @author  Adrian Custer (Geomatys)
  * @author  Matthieu Bastianelli (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://mathworld.wolfram.com/MapProjection.html">Map projections on MathWorld</a>
  *
  * @since 0.6
- * @module
  */
 package org.apache.sis.referencing.operation.projection;

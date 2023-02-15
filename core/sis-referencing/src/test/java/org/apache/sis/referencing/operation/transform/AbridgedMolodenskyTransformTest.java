@@ -41,10 +41,9 @@ import static java.lang.StrictMath.toRadians;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(MolodenskyTransformTest.class)
-public final strictfp class AbridgedMolodenskyTransformTest extends MathTransformTestCase {
+public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
      */

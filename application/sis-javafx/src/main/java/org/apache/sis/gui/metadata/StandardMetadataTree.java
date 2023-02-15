@@ -16,7 +16,7 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.util.Collections;
+import java.util.Map;
 import java.io.StringWriter;
 import javax.xml.transform.stream.StreamResult;
 import javafx.event.ActionEvent;
@@ -66,7 +66,6 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public class StandardMetadataTree extends MetadataTree {
     /**
@@ -106,7 +105,7 @@ public class StandardMetadataTree extends MetadataTree {
             tree = ((AbstractMetadata) metadata).asTreeTable();
         } else {
             // `COMPACT` is the default policy of `AbstractMetadata.asTreeTable()`.
-            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, null, ValueExistencePolicy.COMPACT);
+            tree = MetadataStandard.ISO_19115.asTreeTable(metadata, Metadata.class, ValueExistencePolicy.COMPACT);
         }
         setContent(tree);
     }
@@ -198,8 +197,8 @@ public class StandardMetadataTree extends MetadataTree {
                             content.put(DataFormats.XML, text);
                         } else if (source == copyAsLegacy) {                    // ISO 19139:2007.
                             final StringWriter output = new StringWriter();
-                            XML.marshal(obj, new StreamResult(output),
-                                    Collections.singletonMap(XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
+                            XML.marshal(obj, new StreamResult(output), Map.of(
+                                        XML.METADATA_VERSION, LegacyNamespaces.VERSION_2007));
                             text = output.toString();
                             content.put(DataFormats.ISO_19139, text);
                         } else {

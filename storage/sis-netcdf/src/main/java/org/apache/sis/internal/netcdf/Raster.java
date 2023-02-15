@@ -42,7 +42,6 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 final class Raster extends BufferedGridCoverage {
     /**

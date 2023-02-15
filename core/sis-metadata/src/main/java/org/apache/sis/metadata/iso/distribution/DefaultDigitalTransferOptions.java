@@ -56,7 +56,6 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_DigitalTransferOptions_Type", propOrder = {
     "unitsOfDistribution",
@@ -273,7 +272,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * @deprecated As of ISO 19115:2014, replaced by {@link #getOffLines()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getOffLines")
     public Medium getOffLine() {
         return LegacyPropertyAdapter.getSingleton(getOffLines(), Medium.class, null, DefaultDigitalTransferOptions.class, "getOffLine");
@@ -286,7 +285,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setOffLines(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setOffLine(final Medium newValue) {
         setOffLines(CollectionsExt.singletonOrEmpty(newValue));
     }

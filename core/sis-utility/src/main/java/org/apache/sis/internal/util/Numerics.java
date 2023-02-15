@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.util.function.BiFunction;
+import java.math.BigInteger;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Workaround;
@@ -28,24 +29,25 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.math.Statistics;
+import org.apache.sis.math.Fraction;
 
 import static java.lang.Math.min;
 import static java.lang.Math.max;
 import static java.lang.Math.abs;
 import static java.lang.Math.ulp;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
  * Miscellaneous utilities methods working on floating point numbers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class Numerics extends Static {
     /**
-     * Some frequently used {@link Double} values. As of Java 8, those values do not
+     * Some frequently used {@link Double} values. As of Java 11, those values do not
      * seem to be cached by {@link Double#valueOf(double)} like JDK does for integers.
      */
     private static final Map<Object,Object> CACHE = new HashMap<>(32);
@@ -98,13 +100,13 @@ public final class Numerics extends Static {
      * detect the cases where two {@link org.apache.sis.referencing.operation.transform.LinearTransform}
      * are equal for practical purpose. This threshold can be used as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Matrix m1 = ...;
      *     Matrix m2 = ...;
      *     if (Matrices.epsilonEqual(m1, m2, COMPARISON_THRESHOLD, true)) {
      *         // Consider that matrixes are equal.
      *     }
-     * }
+     *     }
      *
      * By extension, the same threshold value is used for comparing other floating point values.
      *
@@ -113,7 +115,9 @@ public final class Numerics extends Static {
      *
      * @see org.apache.sis.internal.referencing.Formulas#LINEAR_TOLERANCE
      * @see org.apache.sis.internal.referencing.Formulas#ANGULAR_TOLERANCE
+     * @see org.apache.sis.referencing.operation.matrix.GeneralMatrix#ZERO_THRESHOLD
      */
+    @Configuration
     public static final double COMPARISON_THRESHOLD = 1E-13;
 
     /**
@@ -121,9 +125,9 @@ public final class Numerics extends Static {
      * {@code double}. For any real value, the following code evaluate to 0 if the given value is
      * positive:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Double.doubleToRawLongBits(value) & SIGN_BIT_MASK;
-     * }
+     *     }
      *
      * Note that this idiom differentiates positive zero from negative zero.
      * It should be used only when such difference matter.
@@ -270,10 +274,13 @@ public final class Numerics extends Static {
      * @return {@code value} × {@code multiplier} / {@code divisor} rounded toward zero.
      */
     public static long multiplyDivide(final long value, final long multiplier, final long divisor) {
-        // TODO: uncomment with JDK9
-//      final long high = Math.multiplyHigh(value, multiplier);
-//      return Math.multiplyExact(value * multiplier / divisor, high);
-        return Math.multiplyExact(value, multiplier) / divisor;
+        try {
+            return Math.multiplyExact(value, multiplier) / divisor;
+        } catch (ArithmeticException e) {
+            // We do not have a better algorithm at this time.
+            return BigInteger.valueOf(value).multiply(BigInteger.valueOf(multiplier))
+                             .divide(BigInteger.valueOf(divisor)).longValueExact();
+        }
     }
 
     /**
@@ -284,14 +291,10 @@ public final class Numerics extends Static {
      * @param  y  the value to add to {@code x}.
      * @return {@code x+y} computed with saturation arithmetic.
      */
-    public static long saturatingAdd(final long x, final int y) {
+    public static long saturatingAdd(final long x, final long y) {
         final long result = x + y;
-        if (y >= 0) {
-            if (result < x) return Long.MAX_VALUE;
-        } else {
-            if (result > x) return Long.MIN_VALUE;
-        }
-        return result;
+        if (((x ^ result) & (y ^ result)) >= 0) return result;
+        return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
     }
 
     /**
@@ -302,14 +305,10 @@ public final class Numerics extends Static {
      * @param  y  the value to subtract from {@code x}.
      * @return {@code x-y} computed with saturation arithmetic.
      */
-    public static long saturatingSubtract(final long x, final int y) {
+    public static long saturatingSubtract(final long x, final long y) {
         final long result = x - y;
-        if (y < 0) {
-            if (result < x) return Long.MAX_VALUE;
-        } else {
-            if (result > x) return Long.MIN_VALUE;
-        }
-        return result;
+        if (((x ^ y) & (x ^ result)) >= 0) return result;
+        return (result < x) ? Long.MAX_VALUE : Long.MIN_VALUE;
     }
 
     /**
@@ -322,6 +321,22 @@ public final class Numerics extends Static {
         if (value < Integer.MIN_VALUE) return Integer.MIN_VALUE;
         if (value > Integer.MAX_VALUE) return Integer.MAX_VALUE;
         return (int) value;
+    }
+
+    /**
+     * Returns the given fraction as a {@link Fraction} instance if possible,
+     * or as a {@link Double} approximation otherwise.
+     *
+     * @param  numerator    numerator of the fraction to return.
+     * @param  denominator  denominator of the fraction to return.
+     * @return the fraction as a {@link Fraction} or {@link Double} object.
+     */
+    public static Number fraction(long numerator, long denominator) {
+        try {
+            return Fraction.valueOf(numerator, denominator).unique();
+        } catch (ArithmeticException e) {
+            return valueOf(numerator / (double) denominator);
+        }
     }
 
     /**
@@ -487,9 +502,9 @@ public final class Numerics extends Static {
      * Converts a power of 2 to a power of 10, rounded toward negative infinity.
      * This method is equivalent to the following code, but using only integer arithmetic:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return (int) Math.floor(exp2 * LOG10_2);
-     * }
+     *     }
      *
      * This method is valid only for arguments in the [-2620 … 2620] range, which is more than enough
      * for the range of {@code double} exponents. We do not put this method in public API because it
@@ -528,9 +543,9 @@ public final class Numerics extends Static {
      * where <var>n</var> is {@link Math#getExponent(double)} - {@value #SIGNIFICAND_SIZE}.
      * For any non-NaN values (including infinity), the following relationship holds:
      *
-     * {@preformat java
-     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == Math.abs(value);
-     * }
+     * {@snippet lang="java" :
+     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE) == Math.abs(value);
+     *     }
      *
      * For negative values, this method behaves as if the value was positive.
      *
@@ -558,9 +573,9 @@ public final class Numerics extends Static {
      * <var>n</var> is {@link Math#getExponent(float)} - {@value #SIGNIFICAND_SIZE_OF_FLOAT}.
      * For any non-NaN positive values (including infinity), the following relationship holds:
      *
-     * {@preformat java
-     *    assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
-     * }
+     * {@snippet lang="java" :
+     *     assert Math.scalb(getSignificand(value), Math.getExponent(value) - SIGNIFICAND_SIZE_OF_FLOAT) == value;
+     *     }
      *
      * For negative values, this method behaves as if the value was positive.
      *

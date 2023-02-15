@@ -29,9 +29,8 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
-public final strictfp class DefaultFormulaTest extends TestCase {
+public final class DefaultFormulaTest extends TestCase {
     /**
      * Tests {@link DefaultFormula#toWKT()}.
      */

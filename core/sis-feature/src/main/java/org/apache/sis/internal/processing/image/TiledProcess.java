@@ -24,7 +24,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.internal.system.CommonExecutor;
 import org.apache.sis.internal.util.Numerics;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -61,7 +60,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @param  <R>  the type of value computed as a result of this process.
  *
  * @since 1.1
- * @module
  */
 public abstract class TiledProcess<R> {
     /**
@@ -113,11 +111,11 @@ public abstract class TiledProcess<R> {
      * which will be overwritten by this method.
      *
      * <p>Usage example:</p>
-     * {@preformat java
+     * {@snippet lang="java" :
      *     TiledProcess process = new TiledProcess<MyResultType>(image, 0, 0,
      *             new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR))
      *     {
-     *         &#64;Override
+     *         @Override
      *         protected Task createSubTask() {
      *             return new SubTask();
      *         }
@@ -125,13 +123,13 @@ public abstract class TiledProcess<R> {
      *         private final class SubTask extends Task {
      *             private MyResultType result;
      *
-     *             &#64;Override protected void execute() {result = ...}    // Do calculation in background thread.
-     *             &#64;Override protected void merge(Task neighbor) {...}  // Merge this.result with neighbor.result().
-     *             &#64;Override protected MyResultType result() {return result;}
+     *             @Override protected void execute() {result = ...}    // Do calculation in background thread.
+     *             @Override protected void merge(Task neighbor) {...}  // Merge this.result with neighbor.result().
+     *             @Override protected MyResultType result() {return result;}
      *         }
      *     };
      *     process.execute();
-     * }
+     *     }
      *
      * @param  data             the image on which to iterate over the pixels.
      * @param  overlapX         the number of overlapping pixels between tiles on the <var>x</var> axis.
@@ -153,7 +151,7 @@ public abstract class TiledProcess<R> {
         final int height = data.getHeight();
         int  numTileX = Math.max(width  / MIN_TILE_SIZE, 1);
         int  numTileY = Math.max(height / MIN_TILE_SIZE, 1);
-        long numTiles = JDK9.multiplyFull(numTileX, numTileY);
+        long numTiles = Math.multiplyFull(numTileX, numTileY);
         if (numTiles > CommonExecutor.PARALLELISM) {
             final double r = Math.sqrt(CommonExecutor.PARALLELISM / (double) numTiles);     // Always < 1.
             if (numTileX >= numTileY) {

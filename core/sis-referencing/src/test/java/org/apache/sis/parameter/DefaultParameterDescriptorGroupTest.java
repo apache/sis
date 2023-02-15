@@ -19,7 +19,6 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
-import java.util.Collections;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -31,7 +30,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Validators.*;
-import static java.util.Collections.singletonMap;
 import static org.apache.sis.test.ReferencingAssert.*;
 import static org.opengis.referencing.IdentifiedObject.*;
 
@@ -43,10 +41,9 @@ import static org.opengis.referencing.IdentifiedObject.*;
  * @author  Johann Sorel (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
 @DependsOn(DefaultParameterDescriptorTest.class)
-public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase {
+public final class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
      * The default value used by the parameters in the {@link #M1_M1_O1_O2} descriptor.
      */
@@ -62,7 +59,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
     static {
         final Class<Integer> type = Integer.class;
         final Map<String,Object> properties = new HashMap<>(4);
-        M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1,
+        M1_M1_O1_O2 = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Test group"), 0, 1,
             new DefaultParameterDescriptor<>(name(properties, "Mandatory 1", "Ambiguity"), 1, 1, type, null, null, DEFAULT_VALUE),
             new DefaultParameterDescriptor<>(name(properties, "Mandatory 2", "Alias 2"),   1, 1, type, null, null, DEFAULT_VALUE),
             new DefaultParameterDescriptor<>(name(properties, "Optional 3",  "Alias 3"),   0, 1, type, null, null, DEFAULT_VALUE),
@@ -91,7 +88,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
         p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
         p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
         try {
-            new DefaultParameterDescriptorGroup(singletonMap(NAME_KEY, "Test group"), 0, 1, p1, p2);
+            new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Test group"), 0, 1, p1, p2);
             fail("Constructor should have detected the duplicated names.");
         } catch (IllegalArgumentException e) {
             final String message = e.getMessage();
@@ -218,8 +215,7 @@ public final strictfp class DefaultParameterDescriptorGroupTest extends TestCase
          * Here, the URI should be omitted because it is a long value which does not
          * bring new information, since it is computed from other values.
          */
-        final DefaultParameterDescriptorGroup group = new DefaultParameterDescriptorGroup(
-                Collections.singletonMap(NAME_KEY, "Affine"), 1, 1, descriptor);
+        final var group = new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Affine"), 1, 1, descriptor);
         assertWktEquals("PARAMETERGROUP[“Affine”,\n" +
                         "  PARAMETER[“A0”, ID[“EPSG”, 8623]]]", group);
     }

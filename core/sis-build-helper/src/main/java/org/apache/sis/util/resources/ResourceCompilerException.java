@@ -25,7 +25,6 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @SuppressWarnings("serial")
 final class ResourceCompilerException extends MojoExecutionException {

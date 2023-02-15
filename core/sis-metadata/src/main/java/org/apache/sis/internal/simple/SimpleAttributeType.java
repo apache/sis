@@ -36,7 +36,6 @@ import org.opengis.util.TypeName;
  * @param <V>  the type of attribute value.
  *
  * @since 0.5
- * @module
  */
 public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Serializable {
     /**
@@ -47,6 +46,7 @@ public final class SimpleAttributeType<V> implements AttributeType<V>, Type, Ser
     /**
      * The name for this attribute type.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final TypeName name;
 
     /**

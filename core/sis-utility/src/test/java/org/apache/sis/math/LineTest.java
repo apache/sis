@@ -30,10 +30,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (MPO, IRD)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @DependsOn(org.apache.sis.internal.util.DoubleDoubleTest.class)
-public final strictfp class LineTest extends TestCase {
+public final class LineTest extends TestCase {
     /**
      * Tolerance factor for comparisons for floating point values.
      */

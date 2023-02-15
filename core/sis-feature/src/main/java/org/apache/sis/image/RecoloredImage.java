@@ -46,7 +46,6 @@ import org.apache.sis.measure.NumberRange;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 final class RecoloredImage extends ImageAdapter {
     /**

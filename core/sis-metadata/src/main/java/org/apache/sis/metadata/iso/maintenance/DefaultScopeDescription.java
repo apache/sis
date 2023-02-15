@@ -68,7 +68,6 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).
 @XmlRootElement(name = "MD_ScopeDescription", namespace = Namespaces.MCC)

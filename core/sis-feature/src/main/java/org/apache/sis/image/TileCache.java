@@ -23,7 +23,6 @@ import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.jdk9.JDK9;
 
 
 /**
@@ -41,7 +40,6 @@ import org.apache.sis.internal.jdk9.JDK9;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class TileCache extends Cache<TileCache.Key, Raster> {
     /**
@@ -69,7 +67,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
      */
     @Override
     protected int cost​(final Raster tile) {
-        long numBits = JDK9.multiplyFull(tile.getWidth(), tile.getHeight()) * tile.getNumBands();
+        long numBits = Math.multiplyFull(tile.getWidth(), tile.getHeight()) * tile.getNumBands();
         final DataBuffer buffer = tile.getDataBuffer();
         if (buffer != null) try {
             numBits *= DataBuffer.getDataTypeSize(buffer.getDataType());

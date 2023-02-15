@@ -32,9 +32,8 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
-public final strictfp class LinearConverterTest extends TestCase {
+public final class LinearConverterTest extends TestCase {
     /**
      * Asserts that the given converter is a linear converter with the given scale factor and no offset.
      * The scale factor is given by the ratio of the given numerator and denominator.
@@ -177,7 +176,6 @@ public final strictfp class LinearConverterTest extends TestCase {
         c = LinearConverter.offset(27315, 100);
         inv = (LinearConverter) c.inverse();
         assertEquals(12.3, c.convert(inv.convert(12.3)), 1E-13);
-        // TODO: use JDK9' Math.fma(…) in LinearConverter.convert(double) and verify if it solve the accuracy issue.
     }
 
     /**

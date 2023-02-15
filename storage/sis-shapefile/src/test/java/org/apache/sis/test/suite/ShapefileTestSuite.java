@@ -31,7 +31,7 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.shapefile.jdbc.DBFResultSetTest.class,
     org.apache.sis.internal.shapefile.jdbc.sql.WhereClauseTest.class
 })
-public final strictfp class ShapefileTestSuite extends TestSuite {
+public final class ShapefileTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

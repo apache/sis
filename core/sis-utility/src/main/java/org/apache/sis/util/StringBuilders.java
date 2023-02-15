@@ -39,7 +39,6 @@ import static java.lang.Character.*;
  * @see CharSequences
  *
  * @since 0.3
- * @module
  */
 public final class StringBuilders extends Static {
     /**

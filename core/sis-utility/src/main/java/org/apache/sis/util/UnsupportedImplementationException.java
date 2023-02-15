@@ -28,7 +28,6 @@ import org.apache.sis.util.resources.Errors;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public class UnsupportedImplementationException extends UnsupportedOperationException {
     /**

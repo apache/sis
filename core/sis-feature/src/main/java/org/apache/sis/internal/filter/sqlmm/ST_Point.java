@@ -51,7 +51,6 @@ import org.opengis.filter.InvalidFilterValueException;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 final class ST_Point<R,G> extends FunctionWithSRID<R> {
     /**
@@ -62,6 +61,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
     /**
      * The expression giving the coordinate values. May include the SRID as last parameter.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Expression<? super R, ?>[] parameters;
 
     /**

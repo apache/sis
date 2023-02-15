@@ -49,7 +49,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class CoverageStyling extends ColorColumnHandler<Category> implements Function<Category,Color[]> {
     /**
@@ -99,7 +98,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      * @param items  list of items of the table to clear.
      */
     private void clear(final ObservableList<Category> items) {
-        final Category[] content = items.toArray(new Category[items.size()]);
+        final Category[] content = items.toArray(Category[]::new);
         items.clear();              // For forcing a repaint of the table.
         customizedColors.clear();
         items.setAll(content);

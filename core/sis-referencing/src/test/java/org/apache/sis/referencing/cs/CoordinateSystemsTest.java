@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
+import java.util.Map;
 import java.util.Locale;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
@@ -36,7 +37,6 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 import static org.apache.sis.referencing.cs.CoordinateSystems.*;
@@ -49,13 +49,12 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
 @DependsOn({
     DirectionAlongMeridianTest.class,
     NormalizerTest.class
 })
-public final strictfp class CoordinateSystemsTest extends TestCase {
+public final class CoordinateSystemsTest extends TestCase {
     /**
      * Tests {@link CoordinateSystems#parseAxisDirection(String)}.
      */
@@ -181,10 +180,10 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
      */
     @Test
     public void testSwapAndScaleAxes2D() throws IncommensurableException {
-        final CoordinateSystem λφ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ)"),
+        final CoordinateSystem λφ = new DefaultEllipsoidalCS(Map.of(NAME_KEY, "(λ,φ)"),
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.GEODETIC_LATITUDE);
-        final CoordinateSystem φλ = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(φ,λ)"),
+        final CoordinateSystem φλ = new DefaultEllipsoidalCS(Map.of(NAME_KEY, "(φ,λ)"),
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.GEODETIC_LONGITUDE);
         final Matrix expected = Matrices.create(3, 3, new double[] {
@@ -206,11 +205,11 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @Test
     @DependsOnMethod("testSwapAndScaleAxes2D")
     public void testSwapAndScaleAxes3D() throws IncommensurableException {
-        final CoordinateSystem λφh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(λ,φ,h)"),
+        final CoordinateSystem λφh = new DefaultEllipsoidalCS(Map.of(NAME_KEY, "(λ,φ,h)"),
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.ELLIPSOIDAL_HEIGHT);
-        final CoordinateSystem φλh = new DefaultEllipsoidalCS(singletonMap(NAME_KEY, "(φ,λ,h)"),
+        final CoordinateSystem φλh = new DefaultEllipsoidalCS(Map.of(NAME_KEY, "(φ,λ,h)"),
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.ELLIPSOIDAL_HEIGHT);
@@ -234,11 +233,11 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @Test
     @DependsOnMethod("testSwapAndScaleAxes3D")
     public void testSwapAndScaleAxes() throws IncommensurableException {
-        final CoordinateSystem hxy = new DefaultCartesianCS(singletonMap(NAME_KEY, "(h,x,y)"),
+        final CoordinateSystem hxy = new DefaultCartesianCS(Map.of(NAME_KEY, "(h,x,y)"),
                 HardCodedAxes.HEIGHT_cm,
                 HardCodedAxes.EASTING,
                 HardCodedAxes.NORTHING);
-        final CoordinateSystem yxh = new DefaultCartesianCS(singletonMap(NAME_KEY, "(y,x,h)"),
+        final CoordinateSystem yxh = new DefaultCartesianCS(Map.of(NAME_KEY, "(y,x,h)"),
                 HardCodedAxes.SOUTHING,
                 HardCodedAxes.EASTING,
                 HardCodedAxes.DEPTH);
@@ -265,7 +264,7 @@ public final strictfp class CoordinateSystemsTest extends TestCase {
     @Test
     @DependsOnMethod("testSwapAndScaleAxes")
     public void testScaleAndSwapAxesNonSquare() throws IncommensurableException {
-        final DefaultCartesianCS cs = new DefaultCartesianCS(singletonMap(NAME_KEY, "Test"),
+        final var cs = new DefaultCartesianCS(Map.of(NAME_KEY, "Test"),
                 new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.SOUTHING), "y", AxisDirection.SOUTH, Units.CENTIMETRE),
                 new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.EASTING),  "x", AxisDirection.EAST,  Units.MILLIMETRE));
 

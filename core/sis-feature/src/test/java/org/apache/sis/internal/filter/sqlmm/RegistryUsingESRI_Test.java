@@ -28,9 +28,8 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
+public final class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
     /**
      * Creates a new test.
      */

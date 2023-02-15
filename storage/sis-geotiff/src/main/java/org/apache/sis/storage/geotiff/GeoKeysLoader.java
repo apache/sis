@@ -21,15 +21,17 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.internal.geotiff.Resources;
 
+import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
+
 
 /**
  * Loads GeoTIFF keys in a hash map, but without performing any interpretation.
  * A {@code GeoKeysLoader} receives as inputs the values of the following TIFF tags:
  *
  * <ul>
- *   <li>{@link Tags#GeoKeyDirectory} — array of unsigned {@code short} values grouped into blocks of 4.</li>
- *   <li>{@link Tags#GeoDoubleParams} — array of {@double} values referenced by {@code GeoKeyDirectory} elements.</li>
- *   <li>{@link Tags#GeoAsciiParams}  — array of characters referenced by {@code GeoKeyDirectory} elements.</li>
+ *   <li>{@code GeoKeyDirectory} — array of unsigned {@code short} values grouped into blocks of 4.</li>
+ *   <li>{@code GeoDoubleParams} — array of {@double} values referenced by {@code GeoKeyDirectory} elements.</li>
+ *   <li>{@code GeoAsciiParams}  — array of characters referenced by {@code GeoKeyDirectory} elements.</li>
  * </ul>
  *
  * For example, consider the following values for the above-cited tags:
@@ -45,14 +47,13 @@ import org.apache.sis.internal.geotiff.Resources;
  *   <tr><td> 2051 </td><td> 34736 </td><td>  1 </td><td>     0 </td></tr>
  * </table>
  *
- * {@preformattext
+ * <pre class="text">
  *   GeoDoubleParams(34736) = {1.5}
- *   GeoAsciiParams(34737) = "Custom File|My Geographic|"
- * }
+ *   GeoAsciiParams(34737) = "Custom File|My Geographic|"</pre>
  *
- * <p>The first number in the {@code GeoKeyDirectory} table indicates that this is a version 1 GeoTIFF GeoKey directory.
+ * The first number in the {@code GeoKeyDirectory} table indicates that this is a version 1 GeoTIFF GeoKey directory.
  * This version will only change if the key structure is changed. The other numbers on the first line said that the file
- * uses revision 1.2 of the set of keys and that there is 6 key values.</p>
+ * uses revision 1.2 of the set of keys and that there is 6 key values.
  *
  * <p>The next line indicates that the first key (1024 = {@code ModelType}) has the value 2 (Geographic),
  * explicitly placed in the entry list since the TIFF tag location is 0.
@@ -65,9 +66,8 @@ import org.apache.sis.internal.geotiff.Resources;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 class GeoKeysLoader {
     /**
@@ -83,16 +83,12 @@ class GeoKeysLoader {
     /**
      * References the {@link GeoKeys} needed for building the Coordinate Reference System.
      * Cannot be null when invoking {@link #load(Map)}.
-     *
-     * @see Tags#GeoKeyDirectory
      */
     public Vector keyDirectory;
 
     /**
      * The numeric values referenced by the {@link #keyDirectory}.
      * Can be {@code null} if none.
-     *
-     * @see Tags#GeoDoubleParams
      */
     public Vector numericParameters;
 
@@ -100,7 +96,6 @@ class GeoKeysLoader {
      * The characters referenced by the {@link #keyDirectory}.
      * Can be {@code null} if none.
      *
-     * @see Tags#GeoAsciiParams
      * @see #setAsciiParameters(String[])
      */
     public String asciiParameters;
@@ -125,7 +120,7 @@ class GeoKeysLoader {
     }
 
     /**
-     * Sets the value of {@link #asciiParameters} from {@link Tags#GeoAsciiParams} value.
+     * Sets the value of {@link #asciiParameters} from {@code GeoAsciiParams} value.
      */
     final void setAsciiParameters(final String[] values) {
         switch (values.length) {
@@ -208,7 +203,7 @@ class GeoKeysLoader {
                  * the specification does not allocate a separated vector for them. We use the
                  * `int` type if needed for allowing storage of unsigned short values.
                  */
-                case Tags.GeoKeyDirectory & 0xFFFF: {
+                case TAG_GEO_KEY_DIRECTORY: {
                     if (valueOffset + count > keyDirectory.size()) {
                         missingValue(key);
                         continue;
@@ -231,7 +226,7 @@ class GeoKeysLoader {
                  * Values of type `double` are read from a separated vector, `numericParameters`.
                  * Result is stored in a Double wrapper or in an array of type 'double[]'.
                  */
-                case Tags.GeoDoubleParams & 0xFFFF: {
+                case TAG_GEO_DOUBLE_PARAMS: {
                     if (valueOffset + count > numberOfDoubles) {
                         missingValue(key);
                         continue;
@@ -254,7 +249,7 @@ class GeoKeysLoader {
                  * ASCII encoding use the pipe ('|') character as a replacement for the NUL character
                  * used in C/C++ programming languages. We need to omit those trailing characters.
                  */
-                case Tags.GeoAsciiParams & 0xFFFF: {
+                case TAG_GEO_ASCII_PARAMS: {
                     int upper = valueOffset + count;
                     if (upper > numberOfChars) {
                         missingValue(key);

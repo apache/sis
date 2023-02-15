@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.measure.Longitude;
@@ -35,9 +35,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.4
- * @module
  */
-public final strictfp class FormulasTest extends TestCase {
+public final class FormulasTest extends TestCase {
     /**
      * Verifies the {@link Formulas#LONGITUDE_MAX} constant.
      */
@@ -119,8 +118,9 @@ public final strictfp class FormulasTest extends TestCase {
      */
     @Test
     public void testRadiusOfConformalSphere() {
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createFlattenedSphere(
-                Collections.singletonMap(DefaultEllipsoid.NAME_KEY, "Bessel 1841"), 6377397.155, 299.1528128, Units.METRE);
+        final var ellipsoid = DefaultEllipsoid.createFlattenedSphere(
+                Map.of(DefaultEllipsoid.NAME_KEY, "Bessel 1841"),
+                6377397.155, 299.1528128, Units.METRE);
         assertEquals(6382644.571, Formulas.radiusOfConformalSphere(ellipsoid, StrictMath.toRadians(52.156160556)), 0.001);
     }
 

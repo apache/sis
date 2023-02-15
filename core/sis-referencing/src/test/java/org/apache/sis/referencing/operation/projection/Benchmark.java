@@ -47,7 +47,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @SuppressWarnings("UseOfSystemOutOrSystemErr")
 public final class Benchmark {

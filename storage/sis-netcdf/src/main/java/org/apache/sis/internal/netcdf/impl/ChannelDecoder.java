@@ -39,7 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Decoder;
@@ -53,6 +53,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -74,22 +75,21 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
  * @since 0.3
- * @module
  */
 public final class ChannelDecoder extends Decoder {
     /**
      * The netCDF magic number expected in the first integer of the stream.
      * The comparison shall ignore the 8 lowest bits, as in the following example:
      *
-     * {@preformat java
-     *     int header = ...; // The first integer in the stream.
+     * {@snippet lang="java" :
+     *     int header = ...;     // The first integer in the stream.
      *     boolean isNetCDF = (header & 0xFFFFFF00) == MAGIC_NUMBER;
-     * }
+     *     }
      */
     public static final int MAGIC_NUMBER = ('C' << 24) | ('D' << 16) | ('F' <<  8);
 
@@ -273,7 +273,7 @@ public final class ChannelDecoder extends Decoder {
          */
         DimensionInfo[] dimensions = null;
         VariableInfo[]  variables  = null;
-        List<Map.Entry<String,Object>> attributes = Collections.emptyList();
+        List<Map.Entry<String,Object>> attributes = List.of();
         for (int i=0; i<3; i++) {
             final long tn = input.readLong();                   // Combination of tag and nelems
             if (tn != 0) {
@@ -299,7 +299,7 @@ public final class ChannelDecoder extends Decoder {
             this.variableMap = toCaseInsensitiveNameMap(variables);
         } else {
             this.variables   = new VariableInfo[0];
-            this.variableMap = Collections.emptyMap();
+            this.variableMap = Map.of();
         }
         initialize();
     }
@@ -617,7 +617,7 @@ public final class ChannelDecoder extends Decoder {
              * Following block is almost a copy-and-paste of similar block in the contructor,
              * but with less cases in the "switch" statements.
              */
-            List<Map.Entry<String,Object>> attributes = Collections.emptyList();
+            List<Map.Entry<String,Object>> attributes = List.of();
             final long tn = input.readLong();
             if (tn != 0) {
                 final int tag = (int) (tn >>> Integer.SIZE);
@@ -899,7 +899,7 @@ public final class ChannelDecoder extends Decoder {
                     dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
                 }
             }
-        } catch (IncommensurableException | ParserException | DateTimeException | ArithmeticException e) {
+        } catch (IncommensurableException | MeasurementParseException | DateTimeException | ArithmeticException e) {
             listeners.warning(e);
         }
         return dates;
@@ -1033,25 +1033,27 @@ nextVar:    for (final VariableInfo variable : variables) {
                  * from the "coordinates" attribute and axes inferred from variable names matching dimension names, we
                  * use axes from "coordinates" attribute first followed by other axes.
                  */
-                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(new VariableInfo[axes.size()]));
+                GridInfo grid = new GridInfo(variable.dimensions, axes.toArray(VariableInfo[]::new));
                 GridInfo existing = shared.putIfAbsent(grid, grid);
                 if (existing != null) {
                     grid = existing;
                 }
                 variable.grid = grid;
             }
-            gridGeometries = shared.values().toArray(new Grid[shared.size()]);
+            gridGeometries = shared.values().toArray(Grid[]::new);
         }
         return gridGeometries;
     }
 
     /**
      * Closes the channel.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
+     * @param  lock  ignored because this method can be run asynchronously.
      * @throws IOException if an error occurred while closing the channel.
      */
     @Override
-    public void close() throws IOException {
+    public void close(final DataStore lock) throws IOException {
         input.channel.close();
     }
 

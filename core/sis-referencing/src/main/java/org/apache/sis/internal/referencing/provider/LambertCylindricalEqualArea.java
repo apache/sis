@@ -35,7 +35,6 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  * @see <a href="http://geotiff.maptools.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
  *
  * @since 0.8
- * @module
  */
 @XmlTransient
 public final class LambertCylindricalEqualArea extends MapProjection {

@@ -58,7 +58,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  *
  * @since 0.6
- * @module
  */
 @XmlType(name = "AbstractGeneralDerivedCRSType")
 @XmlRootElement(name = "AbstractGeneralDerivedCRS")
@@ -81,7 +80,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * @see #getConversionFromBase()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private C conversionFromBase;
 
     /**

@@ -51,7 +51,6 @@ import org.opengis.geometry.DirectPosition;
  * @see GeneralEnvelope#wraparound(WraparoundMethod)
  *
  * @since 1.1
- * @module
  */
 public enum WraparoundMethod {
     /**
@@ -65,9 +64,9 @@ public enum WraparoundMethod {
      * given the {@code BBOX(+170 0, -170 1)} envelope, a polygon created from the 4 corners
      * and ignoring the fact that the envelope crosses the anti-meridian may be as below:</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POLYGON(+170 0, -170 0, -170 1, +170 1, +170 0)
-     * }
+     *   }
      */
     NONE,
 
@@ -100,9 +99,9 @@ public enum WraparoundMethod {
      * given the {@code BBOX(+170 0, -170 1)} envelope,
      * a polygon created after shifting the "upper" corner (-170 1) may be as below:</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POLYGON(+170 0, +190 0, +190 1, +170 1, +170 0)
-     * }
+     *   }
      */
     CONTIGUOUS_UPPER,
 
@@ -117,9 +116,9 @@ public enum WraparoundMethod {
      * given the {@code BBOX(+170 0, -170 1)} envelope,
      * a polygon created after shifting the "lower" corner (+170 0) may be as below:</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POLYGON(-190 0, -170 0, -170 1, -190 1, -190 0)
-     * }
+     *   }
      */
     CONTIGUOUS_LOWER,
 
@@ -142,9 +141,9 @@ public enum WraparoundMethod {
      * given the {@code BBOX(+170 0, -170 1)} envelope,
      * a polygon created after expanding the envelope may be as below:</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   POLYGON(-180 0, +180 0, +180 1, -180 1, -180 0)
-     * }
+     *   }
      *
      * @see GeneralEnvelope#simplify()
      */
@@ -161,11 +160,11 @@ public enum WraparoundMethod {
      * given the {@code BBOX(+170 0, -170 1)} envelope,
      * polygons created after splitting the envelope may be as below:</p>
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   MULTI-POLYGON(
      *       (-180 0,  -170 0,  -170 1,  -180 1,  -180 0)
      *       (+170 0,  +180 0,  +180 1,  +170 1,  +170 0))
-     * }
+     *   }
      *
      * @see GeneralEnvelope#toSimpleEnvelopes()
      */

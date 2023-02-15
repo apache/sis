@@ -35,10 +35,9 @@ import static org.apache.sis.util.collection.TableColumn.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @DependsOn(TableColumnTest.class)
-public final strictfp class DefaultTreeTableTest extends TestCase {
+public final class DefaultTreeTableTest extends TestCase {
     /**
      * Tests the creation of an {@link DefaultTreeTable} with initially no root node.
      * The columns are {@code NAME} and {@code TYPE}.

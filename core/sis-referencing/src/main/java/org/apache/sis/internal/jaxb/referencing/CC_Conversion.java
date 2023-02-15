@@ -31,7 +31,6 @@ import org.apache.sis.referencing.operation.DefaultConversion;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 public final class CC_Conversion extends PropertyType<CC_Conversion, Conversion> {
     /**

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Map;
 import java.util.EnumMap;
 import java.util.Optional;
-import java.util.Collections;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
 import javafx.beans.DefaultProperty;
@@ -71,13 +71,12 @@ import org.apache.sis.gui.Widget;
  * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see CoverageCanvas
  * @see GridView
  *
  * @since 1.1
- * @module
  */
 @DefaultProperty("coverage")
 public class CoverageExplorer extends Widget {
@@ -220,23 +219,6 @@ public class CoverageExplorer extends Widget {
      * @see #getWindowHandler()
      */
     private WindowHandler window;
-
-    /**
-     * Creates an initially empty explorer with default view type.
-     * By default {@code CoverageExplorer} will show a coverage as a table of values,
-     * i.e. the default view type is {@link View#TABLE}.
-     *
-     * <div class="note"><b>API note:</b>
-     * the reason for setting default value to tabular data is because it requires loading much less data with
-     * {@link java.awt.image.RenderedImage}s supporting deferred tile loading. By contrast {@link View#IMAGE}
-     * may require loading the full image.</div>
-     *
-     * @deprecated Use {@link #CoverageExplorer(View)}.
-     */
-    @Deprecated
-    public CoverageExplorer() {
-        this(View.TABLE);
-    }
 
     /**
      * Creates an initially empty explorer with the specified view type.
@@ -629,8 +611,7 @@ public class CoverageExplorer extends Widget {
                     name = e.getClass().getSimpleName();
                 }
             }
-            referenceSystems.setGridReferencing(true,
-                    Collections.singletonMap(name, coverage.getGridGeometry()));
+            referenceSystems.setGridReferencing(true, Map.of(name, coverage.getGridGeometry()));
         }
         /*
          * Following calls will NOT forward the new values to the views because this `notifyDataChanged(…)`

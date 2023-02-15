@@ -65,7 +65,6 @@ import static org.apache.sis.util.collection.Containers.property;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @XmlTransient
 public class AbstractReferenceSystem extends AbstractIdentifiedObject implements ReferenceSystem {
@@ -82,7 +81,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *
      * @see #getDomainOfValidity()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Extent domainOfValidity;
 
     /**
@@ -94,7 +93,7 @@ public class AbstractReferenceSystem extends AbstractIdentifiedObject implements
      *
      * @see #getScope()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private InternationalString scope;
 
     /**

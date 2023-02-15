@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.metadata.NameMeaning;
 import org.apache.sis.internal.referencing.Resources;
@@ -39,9 +38,8 @@ import org.apache.sis.internal.referencing.Resources;
  * Identification of an authority factory by its type, namespace and version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
- * @module
  */
 final class AuthorityFactoryIdentifier {
     /**
@@ -282,8 +280,8 @@ final class AuthorityFactoryIdentifier {
      * as the source of the log since it is the nearest public API.
      */
     private void log(final LogRecord record) {
-        record.setLoggerName(Loggers.CRS_FACTORY);
-        Logging.log(MultiAuthoritiesFactory.class, "getAuthorityFactory", record);
+        Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER,
+                MultiAuthoritiesFactory.class, "getAuthorityFactory", record);
     }
 
     /**

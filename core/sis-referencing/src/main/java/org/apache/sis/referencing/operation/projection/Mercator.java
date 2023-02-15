@@ -34,7 +34,6 @@ import org.apache.sis.internal.referencing.provider.MercatorSpherical;
 import org.apache.sis.internal.referencing.provider.MercatorAuxiliarySphere;
 import org.apache.sis.internal.referencing.provider.RegionalMercator;
 import org.apache.sis.internal.referencing.provider.PseudoMercator;
-import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -81,13 +80,12 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * @author  Rueben Schulz (UBC)
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see TransverseMercator
  * @see ObliqueMercator
  *
  * @since 0.6
- * @module
  */
 public class Mercator extends ConformalProjection {
     /**
@@ -243,12 +241,6 @@ public class Mercator extends ConformalProjection {
         super(initializer);
         variant = (Variant) initializer.variant;
         /*
-         * The "Longitude of natural origin" parameter is found in all Mercator projections and is mandatory.
-         * Since this is usually the Greenwich meridian, the default value is 0°. We keep the value in degrees
-         * for now; it will be converted to radians later.
-         */
-        final double λ0 = initializer.getAndStore(Mercator1SP.LONGITUDE_OF_ORIGIN);
-        /*
          * The "Latitude of natural origin" is not formally a parameter of Mercator projection. But the parameter
          * is included for completeness in CRS labelling, with the restriction (specified in EPSG documentation)
          * that the value must be zero. The EPSG dataset provides this parameter for "Mercator variant A" (1SP),
@@ -269,13 +261,13 @@ public class Mercator extends ConformalProjection {
          * if they really want, since we sometimes see such CRS definitions.
          */
         final double φ1 = toRadians(initializer.getAndStore(Mercator2SP.STANDARD_PARALLEL));
-        final Number k0 = new DoubleDouble(initializer.scaleAtφ(sin(φ1), cos(φ1)));
+        final Number k0 = initializer.scaleAtφ(sin(φ1), cos(φ1));
         final MatrixSIS normalize   = context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, k0, null);
         denormalize.convertBefore(1, k0, null);
         if (φ0 != 0) {
-            denormalize.convertBefore(1, null, new DoubleDouble(-log(expΨ(φ0, eccentricity * sin(φ0)))));
+            denormalize.convertBefore(1, null, -log(expΨ(φ0, eccentricity * sin(φ0))));
         }
         /*
          * Variants of the Mercator projection which can be handled by scale factors.
@@ -291,7 +283,7 @@ public class Mercator extends ConformalProjection {
             normalize  .convertBefore(1, 0.80, null);
             denormalize.convertBefore(1, 1.25, null);
         } else if (variant == Variant.AUXILIARY) {
-            DoubleDouble ratio = null;
+            final Number ratio;
             final int type = initializer.getAndStore(MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE, 0);
             switch (type) {
                 default: {
@@ -299,9 +291,9 @@ public class Mercator extends ConformalProjection {
                             MercatorAuxiliarySphere.AUXILIARY_SPHERE_TYPE.getName().getCode(), type));
                 }
                 case AuthalicMercator.TYPE:
-                case 2: ratio = new DoubleDouble(Formulas.getAuthalicRadius(1, initializer.axisLengthRatio().value)); break;
+                case 2: ratio = initializer.authalicRadius();  break;
                 case 1: ratio = initializer.axisLengthRatio(); break;
-                case 0: break;      // Same as "Popular Visualisation Pseudo Mercator".
+                case 0: ratio = null; break;      // Same as "Popular Visualisation Pseudo Mercator".
             }
             denormalize.convertAfter(0, ratio, null);
             denormalize.convertAfter(1, ratio, null);
@@ -330,7 +322,7 @@ public class Mercator extends ConformalProjection {
          * those remaning lines of code.
          */
         if (φ0 == 0 && isPositive(φ1 != 0 ? φ1 : φ0)) {
-            final Number reverseSign = new DoubleDouble(-1d);
+            final Number reverseSign = DoubleDouble.of(-1);
             normalize  .convertBefore(1, reverseSign, null);
             denormalize.convertBefore(1, reverseSign, null);        // Must be before false easting/northing.
         }
@@ -500,7 +492,7 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
     /**
      * Provides the transform equations for the spherical case of the Mercator projection.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * this class contains an explicit check for latitude values at a pole. If floating point arithmetic had infinite
      * precision, such checks would not be necessary since the formulas lead naturally to infinite values at poles,
      * which is the correct answer. In practice the infinite value emerges by itself at only one pole, and the other
@@ -514,13 +506,11 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
      *       other values we could let the math do their "natural" work.</li>
      *   <li>For φ = -π/2 our arithmetic already produces negative infinity.</li>
      * </ul>
-     * </div>
      *
      * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
      * @author  Rueben Schulz (UBC)
      * @version 0.6
      * @since   0.6
-     * @module
      */
     static final class Spherical extends Mercator {
         /**

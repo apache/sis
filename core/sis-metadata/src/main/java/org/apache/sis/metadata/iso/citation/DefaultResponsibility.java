@@ -57,7 +57,6 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @SuppressWarnings("deprecation")
 @XmlType(name = "CI_Responsibility_Type", propOrder = {

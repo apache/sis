@@ -71,7 +71,6 @@ import static java.lang.Double.doubleToRawLongBits;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class CategoryList extends AbstractList<Category> implements MathTransform1D, Serializable {
     /**

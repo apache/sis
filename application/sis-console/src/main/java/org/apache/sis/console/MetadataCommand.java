@@ -16,7 +16,7 @@
  */
 package org.apache.sis.console;
 
-import java.util.Collections;
+import java.util.Set;
 import java.util.EnumSet;
 import java.util.function.Predicate;
 import org.opengis.metadata.Metadata;
@@ -32,7 +32,6 @@ import org.apache.sis.util.collection.TreeTable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 final class MetadataCommand extends FormattedOutputCommand {
     /**
@@ -72,7 +71,7 @@ final class MetadataCommand extends FormattedOutputCommand {
         if (metadata != null) {
             if (!(metadata instanceof Metadata)) {
                 final DefaultMetadata md = new DefaultMetadata();
-                md.setReferenceSystemInfo(Collections.singleton((ReferenceSystem) metadata));
+                md.setReferenceSystemInfo(Set.of((ReferenceSystem) metadata));
                 metadata = md;
             }
             format(metadata);

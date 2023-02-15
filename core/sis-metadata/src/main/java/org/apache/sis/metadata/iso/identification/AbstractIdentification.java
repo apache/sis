@@ -84,7 +84,6 @@ import org.apache.sis.util.iso.Types;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
     "citation",
@@ -792,7 +791,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * @deprecated As of ISO 19115:2014, replaced by {@link #getAssociatedResources()}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="1.0")
     @Dependencies("getAssociatedResources")
     @XmlElement(name = "aggregationInfo", namespace = LegacyNamespaces.GMD)
     public Collection<AggregateInformation> getAggregationInfo() {
@@ -819,7 +818,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @deprecated As of ISO 19115:2014, replaced by {@link #setAssociatedResources(Collection)}.
      */
-    @Deprecated
+    @Deprecated(since="1.0")
     public void setAggregationInfo(final Collection<? extends AggregateInformation> newValues) {
         setAssociatedResources(newValues);
     }

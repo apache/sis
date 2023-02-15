@@ -42,7 +42,6 @@ import org.opengis.metadata.quality.DomainConsistency;
  * @author  Touraïvane (IRD)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "DQ_DomainConsistency_Type")
 @XmlRootElement(name = "DQ_DomainConsistency")

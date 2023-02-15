@@ -40,13 +40,12 @@ import org.opengis.feature.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 @DependsOn({
     DenseFeatureTest.class,
     SparseFeatureTest.class
 })
-public final strictfp class AbstractFeatureTest extends FeatureTestCase {
+public final class AbstractFeatureTest extends FeatureTestCase {
     /**
      * A feature implementation on top of {@link AbstractFeature}. This class has more code than strictly necessary
      * since we need to reproduce some of the verifications performed by the Apache SIS supported implementations

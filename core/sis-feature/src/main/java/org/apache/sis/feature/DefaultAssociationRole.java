@@ -62,7 +62,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see AbstractAssociation
  *
  * @since 0.5
- * @module
  */
 public class DefaultAssociationRole extends FieldType implements FeatureAssociationRole {
     /**
@@ -75,6 +74,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *
      * @see #getValueType()
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private volatile FeatureType valueType;
 
     /**
@@ -146,26 +146,25 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * This constructor can be used when creating a cyclic graph of {@link DefaultFeatureType} instances.
      * In such cases, at least one association needs to be created while its {@code FeatureType} is not yet available.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following establishes a bidirectional association between feature types <var>A</var> and <var>B</var>:
      *
-     * {@preformat java
-     *   String    namespace = "My model";
-     *   GenericName nameOfA = Names.createTypeName(namespace, ":", "Feature type A");
-     *   GenericName nameOfB = Names.createTypeName(namespace, ":", "Feature type B");
-     *   FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
-     *       new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
-     *       // More properties if desired.
-     *   );
-     *   FeatureType typeB = new DefaultFeatureType(nameOfB, false, null,
-     *       new DefaultAssociationRole(Names.createLocalName("Association to A"), featureA),
-     *       // More properties if desired.
-     *   );
-     * }
+     * {@snippet lang="java" :
+     *     String    namespace = "My model";
+     *     GenericName nameOfA = Names.createTypeName(namespace, ":", "Feature type A");
+     *     GenericName nameOfB = Names.createTypeName(namespace, ":", "Feature type B");
+     *     FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
+     *         new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
+     *         // More properties if desired.
+     *     );
+     *     FeatureType typeB = new DefaultFeatureType(nameOfB, false, null,
+     *         new DefaultAssociationRole(Names.createLocalName("Association to A"), featureA),
+     *         // More properties if desired.
+     *     );
+     *     }
      *
      * After the above code completed, the {@linkplain #getValueType() value type} of <cite>"association to B"</cite>
      * has been automatically set to the {@code typeB} instance.
-     * </div>
      *
      * Callers shall make sure that the feature types graph will not contain more than one feature of the given name.
      * If more than one {@code FeatureType} instance of the given name is found at resolution time, the selected one
@@ -235,14 +234,14 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
                 } else {
                     /*
                      * The feature that we need to resolve is not the one we just created. Maybe we can find
-                     * this desired feature in an association of the 'creating' feature, instead of beeing
-                     * the 'creating' feature itself. This is a little bit unusual, but not illegal.
+                     * this desired feature in an association of the `creating` feature, instead of beeing
+                     * the `creating` feature itself. This is a little bit unusual, but not illegal.
                      */
                     final List<FeatureType> deferred = new ArrayList<>();
                     resolved = search(creating, properties, name, deferred);
                     if (resolved == null) {
                         /*
-                         * Did not found the desired FeatureType in the 'creating' instance.
+                         * Did not found the desired FeatureType in the `creating` instance.
                          * Try harder, by searching recursively in associations of associations.
                          */
                         if (deferred.isEmpty() || (resolved = deepSearch(deferred, name)) == null) {
@@ -272,7 +271,6 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      * @param  deferred    where to store {@code FeatureType}s to be eventually used for a deep search.
      * @return the feature of the given name, or {@code null} if none.
      */
-    @SuppressWarnings("null")
     private static FeatureType search(final FeatureType feature, Collection<? extends PropertyType> properties,
             final GenericName name, final List<FeatureType> deferred)
     {
@@ -367,7 +365,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     public final FeatureType getValueType() {
         /*
          * This method shall be final for consistency with other methods in this classes
-         * which use the 'valueType' field directly. Furthermore, this method is invoked
+         * which use the `valueType` field directly. Furthermore, this method is invoked
          * (indirectly) by DefaultFeatureType constructors.
          */
         FeatureType type = valueType;
@@ -493,8 +491,8 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
     @Override
     public int hashCode() {
         /*
-         * Do not use the full 'valueType' object for computing hash code,
-         * because it may change before and after 'resolve' is invoked. In
+         * Do not use the full `valueType` object for computing hash code,
+         * because it may change before and after `resolve` is invoked. In
          * addition, this avoid infinite recursivity in case of cyclic graph.
          */
         return super.hashCode() + valueType.getName().hashCode();

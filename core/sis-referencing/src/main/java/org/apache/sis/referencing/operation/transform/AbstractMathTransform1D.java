@@ -54,7 +54,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 public abstract class AbstractMathTransform1D extends AbstractMathTransform implements MathTransform1D {
     /**
@@ -164,7 +163,6 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0
      * @since   0.7
-     * @module
      */
     protected abstract static class Inverse extends AbstractMathTransform.Inverse implements MathTransform1D {
         /**

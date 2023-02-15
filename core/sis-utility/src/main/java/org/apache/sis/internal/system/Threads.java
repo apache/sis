@@ -19,8 +19,6 @@ package org.apache.sis.internal.system;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * Utilities methods for threads. This class declares in a single place every {@link ThreadGroup} used in SIS.
@@ -33,9 +31,8 @@ import static java.util.logging.Logger.getLogger;
  * dependencies the other way around.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class Threads extends Static {
     /**
@@ -63,7 +60,7 @@ public final class Threads extends Static {
      */
     static final ThreadGroup DAEMONS = new ThreadGroup(SIS, "Daemons") {
         @Override public void uncaughtException(final Thread thread, final Throwable exception) {
-            Logging.severeException(getLogger(Loggers.SYSTEM), thread.getClass(), "run", exception);
+            Logging.severeException(SystemListener.LOGGER, thread.getClass(), "run", exception);
         }
     };
 

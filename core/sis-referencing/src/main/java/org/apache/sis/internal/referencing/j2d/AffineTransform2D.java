@@ -47,9 +47,8 @@ import org.apache.sis.util.Workaround;
  * the {@link #equals(Object) equals} method, hopefully to occur only in exceptional corner cases.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
- * @module
  */
 public class AffineTransform2D extends ImmutableAffineTransform
         implements LinearTransform2D, LenientComparable, Parameterized
@@ -58,6 +57,11 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = -5299837898367149069L;
+
+    /**
+     * The number of input and output dimensions.
+     */
+    static final int DIMENSION = 2;
 
     /**
      * The matrix, or {@code null} if not yet computed.
@@ -101,24 +105,21 @@ public class AffineTransform2D extends ImmutableAffineTransform
     }
 
     /**
-     * Creates a new {@code AffineTransform2D} from the 9 or 18 values of the given matrix.
-     *
-     * @param matrix  the matrix from which to get the (potentially extended) elements.
+     * Creates a new {@code AffineTransform2D} from the given values.
+     * This constructor shall not modify the given array.
      */
-    public AffineTransform2D(final ExtendedPrecisionMatrix matrix) {
-        this(matrix, matrix.getExtendedElements());
+    private AffineTransform2D(final Number[] elements) {
+        super(doubleValue(elements[0]), doubleValue(elements[3]),
+              doubleValue(elements[1]), doubleValue(elements[4]),
+              doubleValue(elements[2]), doubleValue(elements[5]));
+        matrix = new AffineMatrix.ExtendedPrecision(this, elements);
     }
 
     /**
-     * Work around for RFE #4093999 in Sun's bug database
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Returns the given number as a {@code double} value. Null value means zero.
      */
-    @Workaround(library="JDK", version="1.7")
-    private AffineTransform2D(final ExtendedPrecisionMatrix m, final double[] elements) {
-        super(pz(elements[0]), pz(elements[3]),
-              pz(elements[1]), pz(elements[4]),
-              pz(elements[2]), pz(elements[5]));
-        matrix = new AffineMatrix(this, elements);
+    private static double doubleValue(final Number value) {
+        return (value != null) ? pz(value.doubleValue()) : 0;
     }
 
     /**
@@ -174,6 +175,23 @@ public class AffineTransform2D extends ImmutableAffineTransform
     }
 
     /**
+     * Creates an affine transform from the given matrix.
+     *
+     * @param  matrix  the matrix.
+     * @return an affine transform from the given matrix.
+     */
+    public static AffineTransform2D create(final Matrix matrix) {
+        if (matrix instanceof ExtendedPrecisionMatrix) {
+            return new AffineTransform2D(((ExtendedPrecisionMatrix) matrix).getElementAsNumbers(false));
+        } else {
+            return new AffineTransform2D(
+                    matrix.getElement(0,0), matrix.getElement(1,0),
+                    matrix.getElement(0,1), matrix.getElement(1,1),
+                    matrix.getElement(0,2), matrix.getElement(1,2));
+        }
+    }
+
+    /**
      * Ensures that this transform contains only positive zeros, then marks this transform as unmodifiable.
      */
     public final void freeze() {
@@ -209,7 +227,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public ParameterDescriptorGroup getParameterDescriptors() {
-        return Affine.getProvider(2, 2, true).getParameters();
+        return Affine.getProvider(DIMENSION, DIMENSION, true).getParameters();
     }
 
     /**
@@ -227,7 +245,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public final int getSourceDimensions() {
-        return 2;
+        return DIMENSION;
     }
 
     /**
@@ -235,7 +253,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public final int getTargetDimensions() {
-        return 2;
+        return DIMENSION;
     }
 
     /**
@@ -243,7 +261,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      */
     @Override
     public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) {
-        ArgumentChecks.ensureDimensionMatches("ptSrc", 2, ptSrc);
+        ArgumentChecks.ensureDimensionMatches("ptSrc", DIMENSION, ptSrc);
         /*
          * Try to write directly in the destination point if possible. Following
          * code avoid the creation of temporary objects (except if ptDst is null).
@@ -260,7 +278,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
                 super.transform(point, point);
                 return point;
             }
-            ArgumentChecks.ensureDimensionMatches("ptDst", 2, ptDst);
+            ArgumentChecks.ensureDimensionMatches("ptDst", DIMENSION, ptDst);
             if (ptDst instanceof Point2D) {
                 final Point2D point = (Point2D) ptDst;
                 point.setLocation(ptSrc.getOrdinate(0), ptSrc.getOrdinate(1));
@@ -349,7 +367,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
                      * this matrix inversion is multiplied with other matrices: the double-double accuracy allows
                      * us to better detect the terms that are 0 or 1 after matrix concatenation.
                      */
-                    AffineTransform2D work = new AffineTransform2D(((ExtendedPrecisionMatrix) Matrices.inverse(matrix)));
+                    AffineTransform2D work = create(Matrices.inverse(matrix));
                     work.inverse = this;
                     inverse = work;                 // Set only on success.
                 }

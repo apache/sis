@@ -29,9 +29,8 @@ import java.text.MessageFormat;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-@SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not to be serialized.
+@SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not intended to be serialized.
 public final class AutoMessageFormat extends MessageFormat {
     /**
      * Formats that may need to be configured before to write a value, or {@code null} if none.

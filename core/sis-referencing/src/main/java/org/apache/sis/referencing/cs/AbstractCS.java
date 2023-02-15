@@ -19,6 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import java.util.EnumMap;
 import java.util.Arrays;
+import java.util.logging.Logger;
 import javax.measure.Unit;
 import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlElement;
@@ -51,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
-import static java.util.logging.Logger.getLogger;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 
@@ -75,13 +75,12 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see DefaultCoordinateSystemAxis
  * @see org.apache.sis.referencing.crs.AbstractCRS
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "AbstractCoordinateSystemType")
 @XmlRootElement(name = "AbstractCoordinateSystem")
@@ -100,6 +99,11 @@ import static org.apache.sis.util.ArgumentChecks.*;
 })
 public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSystem {
     /**
+     * The logger for referencing operations.
+     */
+    static final Logger LOGGER = Logger.getLogger(Modules.REFERENCING);
+
+    /**
      * Serial number for inter-operability with different versions.
      */
     private static final long serialVersionUID = 6757665252533744744L;
@@ -117,7 +121,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #getAxis(int)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private CoordinateSystemAxis[] axes;
 
     /**
@@ -422,7 +426,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
                  * Other exceptions would probably be more serious errors, but it still non-fatal
                  * for this method since we can continue with what Normalizer created.
                  */
-                Logging.recoverableException(getLogger(Modules.REFERENCING), getClass(), "forConvention", e);
+                Logging.recoverableException(LOGGER, getClass(), "forConvention", e);
             }
         }
         return this;
@@ -508,19 +512,20 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
      * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).
      *
-     * <div class="note"><b>Example:</b> Well-Known Text of a two-dimensional {@code EllipsoidalCS}
+     * <h4>Example</h4>
+     * Well-Known Text of a two-dimensional {@code EllipsoidalCS}
      * having (φ,λ) axes in a unit defined by the enclosing CRS (usually degrees).
      *
-     * {@preformat wkt
+     * {@snippet lang="wkt" :
      *   CS[ellipsoidal, 2],
      *   Axis["latitude", north],
      *   Axis["longitude", east]
      * }
-     * </div>
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code CS} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code CS} is defined in the WKT 2 specification only.
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "CS"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#36">WKT 2 specification §7.5</a>

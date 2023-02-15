@@ -20,9 +20,11 @@ import java.lang.reflect.Proxy;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.UnitConverter;
+import javax.measure.UnconvertibleException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -33,18 +35,22 @@ import org.apache.sis.internal.util.Numerics;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param <Q>  the type of quantity implemented by this scalar.
  *
  * @since 0.8
- * @module
  */
 class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Comparable<Q> {
     /**
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = -381805117700594712L;
+
+    /**
+     * The scale of this quantity. Currently only absolute scale is supported.
+     */
+    static final Scale SCALE = Scale.ABSOLUTE;
 
     /**
      * The numerical value of this quantity.
@@ -54,7 +60,7 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     /**
      * The unit of measurement associated to the value.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Unit<Q> unit;
 
     /**
@@ -111,6 +117,16 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
             return create(newValue, unit);
         }
         return this;
+    }
+
+    /**
+     * Returns the scale of this quantity, which can be absolute or relative.
+     *
+     * @return whether this quantity uses absolute or relative scale.
+     */
+    @Override
+    public final Scale getScale() {
+        return SCALE;
     }
 
     /**
@@ -293,11 +309,42 @@ class Scalar<Q extends Quantity<Q>> extends Number implements Quantity<Q>, Compa
     }
 
     /**
+     * Returns a quantity whose value is {@code −getValue()}.
+     */
+    @Override
+    public final Quantity<Q> negate() {
+        return of(-value);
+    }
+
+    /**
      * Ensures that this quantity is of the given type.
      */
     @Override
     public final <T extends Quantity<T>> Quantity<T> asType(final Class<T> type) throws ClassCastException {
         return type.cast(this);
+    }
+
+    /**
+     * Compares this quantity with the given quantity, doing the conversion of unit if necessary.
+     *
+     * @param  that  the quantity to be compared with this instance.
+     * @return {@code true} if the two quantities are equivalent.
+     */
+    @Override
+    public final boolean isEquivalentTo(final Quantity<Q> that) {
+        final Unit<Q> otherUnit = that.getUnit();
+        try {
+            final Number r = otherUnit.getConverterTo(unit).convert(that.getValue());
+            if (r instanceof Float) {
+                return Math.abs(value - r.doubleValue()) < Math.ulp(r.floatValue());
+            } else {
+                return value == r.doubleValue();
+            }
+        } catch (UnconvertibleException e) {
+            Logging.ignorableException(AbstractUnit.LOGGER, Scalar.class, "isEquivalentTo", e);
+            // Non-convertible quantities are not equivalent.
+        }
+        return false;
     }
 
     /**

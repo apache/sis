@@ -19,7 +19,6 @@ package org.apache.sis.internal.jaxb.referencing;
 import java.util.List;
 import java.util.Map;
 import java.util.IdentityHashMap;
-import java.util.Collections;
 import javax.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
@@ -52,10 +51,9 @@ import static org.junit.Assert.*;
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  *
  * @since 0.6
- * @module
  */
 @DependsOn(CC_GeneralOperationParameterTest.class)
-public final strictfp class CC_OperationParameterGroupTest extends TestCase {
+public final class CC_OperationParameterGroupTest extends TestCase {
     /**
      * The remark to associate to the "Latitude of natural origin" parameter.
      * Should be different than the comment stored in {@link Mercator1SP} in
@@ -116,8 +114,8 @@ public final strictfp class CC_OperationParameterGroupTest extends TestCase {
         final List<GeneralParameterDescriptor> fromXML    = unmarshal().descriptors();
         final List<GeneralParameterDescriptor> fromValues = UnmodifiableArrayList.wrap(expected);
         final Map<GeneralParameterDescriptor,GeneralParameterDescriptor> replacements = new IdentityHashMap<>(4);
-        final GeneralParameterDescriptor[] merged = CC_OperationParameterGroup.merge(fromXML,
-                fromValues.toArray(new GeneralParameterDescriptor[fromValues.size()]), replacements);
+        final var merged = CC_OperationParameterGroup.merge(fromXML,
+                fromValues.toArray(GeneralParameterDescriptor[]::new), replacements);
 
         assertTrue("Expected no replacement.", replacements.isEmpty());
         assertEquals("Number of parameters", 2, merged.length);
@@ -163,7 +161,7 @@ public final strictfp class CC_OperationParameterGroupTest extends TestCase {
         /*
          * All references to 'fromValue' will need to be replaced by references to 'complete'.
          */
-        assertEquals("replacements", Collections.singletonMap(fromValue, complete), replacements);
+        assertEquals("replacements", Map.of(fromValue, complete), replacements);
     }
 
     /**
@@ -179,7 +177,7 @@ public final strictfp class CC_OperationParameterGroupTest extends TestCase {
         List<GeneralParameterDescriptor> descriptors = group.descriptors();
 
         // Merge with the parameters defined in Mercator1SP class
-        group = CC_OperationMethod.group(group.getName(), descriptors.toArray(new GeneralParameterDescriptor[descriptors.size()]));
+        group = CC_OperationMethod.group(group.getName(), descriptors.toArray(GeneralParameterDescriptor[]::new));
         descriptors = group.descriptors();
 
         assertSame("name", group.getName(), group.getName());

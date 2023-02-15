@@ -18,7 +18,6 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.ArgumentChecks;
@@ -43,7 +42,6 @@ import org.opengis.filter.NullOperator;
  * @param  <V>  the type of value computed by the expression.
  *
  * @since 1.1
- * @module
  */
 class UnaryFunction<R,V> extends Node {
     /**
@@ -56,7 +54,7 @@ class UnaryFunction<R,V> extends Node {
      *
      * @see #getExpression()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Expression<? super R, ? extends V> expression;
 
     /**
@@ -82,7 +80,7 @@ class UnaryFunction<R,V> extends Node {
      * @return a list of size 1 containing the singleton expression.
      */
     public final List<Expression<? super R, ?>> getExpressions() {
-        return Collections.singletonList(expression);
+        return List.of(expression);
     }
 
     /**

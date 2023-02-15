@@ -28,7 +28,6 @@ import org.opengis.util.InternationalString;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public abstract class MarshalContext {
     /**
@@ -69,7 +68,7 @@ public abstract class MarshalContext {
      * to use the UTC timezone as the default value, but some flexibility is allowed.
      *
      * <div class="warning"><b>Upcoming API change — Java time API</b>:
-     * return type may be changed to {@link java.time.ZoneId} when Apache SIS will target Java 8.
+     * return type may be changed to {@link java.time.ZoneId} in a future version.
      * This change may be applied in synchronization with GeoAPI 4.0.
      * </div>
      *

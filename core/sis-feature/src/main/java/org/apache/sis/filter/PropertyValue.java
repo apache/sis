@@ -16,11 +16,9 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Collection;
-import java.util.Collections;
 import org.apache.sis.feature.Features;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
@@ -55,7 +53,6 @@ import org.opengis.filter.ValueReference;
  * @see AssociationValue
  *
  * @since 1.1
- * @module
  */
 abstract class PropertyValue<V> extends LeafExpression<Feature,V>
         implements ValueReference<Feature,V>, Optimization.OnExpression<Feature,V>
@@ -141,7 +138,7 @@ split:  if (path != null) {
      */
     @Override
     protected final Collection<?> getChildren() {
-        return isVirtual ? Arrays.asList(name, isVirtual) : Collections.singleton(name);
+        return isVirtual ? List.of(name, isVirtual) : List.of(name);
     }
 
     /**
@@ -195,6 +192,7 @@ split:  if (path != null) {
      * put the column name in the SQL {@code WHERE} clause. It makes the difference between
      * using or not the database index.
      */
+    @Override
     public abstract PropertyValue<V> optimize(Optimization optimization);
 
 
@@ -407,7 +405,7 @@ split:  if (path != null) {
         private final Class<S> source;
 
         /** The conversion from source type to the type to be returned. */
-        @SuppressWarnings("serial")         // Not statically typed as Serializable.
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final ObjectConverter<? super S, ? extends V> converter;
 
         /** Creates a new expression retrieving values from a property of the given name. */

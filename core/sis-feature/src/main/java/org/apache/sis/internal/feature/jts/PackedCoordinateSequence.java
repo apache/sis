@@ -36,7 +36,6 @@ import org.locationtech.jts.geom.CoordinateSequences;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 abstract class PackedCoordinateSequence implements CoordinateSequence, Serializable {
     /**
@@ -263,6 +262,7 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
     /**
      * Coordinate sequence storing values in a packed {@code double[]} array.
      */
+    @SuppressWarnings("CloneableImplementsClone")
     static final class Double extends PackedCoordinateSequence {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 1940132733783453171L;
@@ -350,6 +350,7 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
     /**
      * Coordinate sequence storing values in a packed {@code float[]} array.
      */
+    @SuppressWarnings("CloneableImplementsClone")
     static final class Float extends PackedCoordinateSequence {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = 2625498691139718968L;
@@ -449,6 +450,7 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
     /**
      * Returns a string representation of this coordinate sequence.
      */
+    @Override
     public final String toString() {
         return CoordinateSequences.toString(this);
     }
@@ -478,7 +480,9 @@ abstract class PackedCoordinateSequence implements CoordinateSequence, Serializa
      *
      * @deprecated Inherits the deprecation status from JTS.
      */
+    @Override
     @Deprecated
+    @SuppressWarnings("CloneDoesntCallSuperClone")
     public final Object clone() {
         return copy();
     }

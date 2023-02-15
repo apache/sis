@@ -40,7 +40,6 @@ import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.parameter.Parameters;
@@ -56,7 +55,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.referencing.WKTUtilities.LOGGER;
 
 
 /**
@@ -124,13 +123,12 @@ import static java.util.logging.Logger.getLogger;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.operation.projection.NormalizedProjection
  * @see AbstractMathTransform#getContextualParameters()
  *
  * @since 0.6
- * @module
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
@@ -143,7 +141,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @see ContextualParameters#getMatrix(MatrixRole)
      *
      * @since 0.7
-     * @module
      */
     public enum MatrixRole {
         /**
@@ -189,6 +186,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #getDescriptor()
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
@@ -200,6 +198,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @see #getMatrix(MatrixRole)
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private Matrix normalize, denormalize;
 
     /**
@@ -212,6 +211,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @see #parameter(String)
      * @see #freeze()
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private ParameterValue<?>[] values;
 
     /**
@@ -258,8 +258,8 @@ public class ContextualParameters extends Parameters implements Serializable {
         ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim);
         ArgumentChecks.ensureStrictlyPositive("tgtDim", tgtDim);
         this.descriptor  = descriptor;
-        this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.IDENTITY);
-        this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.IDENTITY);
+        this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
+        this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
         this.values      = new ParameterValue<?>[descriptor.descriptors().size()];
     }
 
@@ -300,19 +300,6 @@ public class ContextualParameters extends Parameters implements Serializable {
             this.values = ArraysExt.resize(values, count);
         }
         isFrozen = true;
-    }
-
-    /**
-     * Creates a matrix for a linear step of the transforms chain.
-     * It is important that the matrices created here are instances of {@link MatrixSIS}, in order
-     * to allow {@link #getMatrix(MatrixRole)} to return the reference to the (de)normalize matrices.
-     */
-    private static MatrixSIS linear(final String name, final Integer size) {
-        if (size == null) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, name));
-        }
-        final int n = size + 1;
-        return Matrices.create(n, n, ExtendedPrecisionMatrix.IDENTITY);
     }
 
     /**
@@ -403,8 +390,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      * invoked, the matrices returned by this method are {@linkplain Matrices#unmodifiable(Matrix) unmodifiable}.
      *
      *
-     * <div class="note"><b>Application to map projections:</b>
-     * after {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
+     * <h4>Application to map projections</h4>
+     * After {@link org.apache.sis.referencing.operation.projection.NormalizedProjection} construction, the matrices
      * returned by {@code projection.getContextualParameters().getMatrix(…)} are initialized to the values shown below.
      * Note that some {@code NormalizedProjection} subclasses apply further modifications to those matrices.
      *
@@ -418,7 +405,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      *     <td class="sep">{@include formulas.html#DenormalizeCartesian}</td>
      *   </tr>
      * </table>
-     * </div>
      *
      * @param  role  {@code NORMALIZATION} for fetching the <cite>normalization</cite> transform to apply before the kernel,
      *               {@code DENORMALIZATION} for the <cite>denormalization</cite> transform to apply after the kernel, or
@@ -476,11 +462,10 @@ public class ContextualParameters extends Parameters implements Serializable {
          * In theory the check for (λ0 != 0) is useless. However, Java has a notion of negative zero, and we want
          * to avoid negative zeros because we do not want them to appear in WKT formatting of matrix elements.
          */
-        final DoubleDouble toRadians = DoubleDouble.createDegreesToRadians();
+        final DoubleDouble toRadians = DoubleDouble.DEGREES_TO_RADIANS;
         DoubleDouble offset = null;
         if (λ0 != 0) {
-            offset = DoubleDouble.createAndGuessError(-λ0);
-            offset.multiply(toRadians);
+            offset = DoubleDouble.of(-λ0, true).multiply(toRadians);
         }
         final MatrixSIS normalize = (MatrixSIS) this.normalize;         // Must be the same instance, not a copy.
         normalize.convertBefore(0, toRadians, offset);
@@ -506,7 +491,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     public synchronized MatrixSIS denormalizeGeographicOutputs(final double λ0) {
         ensureModifiable();
-        final DoubleDouble toDegrees = DoubleDouble.createRadiansToDegrees();
+        final DoubleDouble toDegrees = DoubleDouble.RADIANS_TO_DEGREES;
         final MatrixSIS denormalize = (MatrixSIS) this.denormalize;         // Must be the same instance, not a copy.
         denormalize.convertAfter(0, toDegrees, (λ0 != 0) ? λ0 : null);
         denormalize.convertAfter(1, toDegrees, null);
@@ -617,9 +602,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      * Before the call to {@link #completeTransform completeTransform(…)},
      * this method can be used for setting parameter values like below:
      *
-     * {@preformat java
-     *   parameter("Scale factor").setValue(0.9996);   // Scale factor of Universal Transverse Mercator (UTM) projections.
-     * }
+     * {@snippet lang="java" :
+     *     parameter("Scale factor").setValue(0.9996);   // Scale factor of Universal Transverse Mercator (UTM) projections.
+     *     }
      *
      * After the call to {@code completeTransform(…)}, the returned parameters are read-only.
      *
@@ -996,6 +981,6 @@ public class ContextualParameters extends Parameters implements Serializable {
      * transform.</p>
      */
     private static void unexpectedException(final IllegalStateException e) {
-        Logging.unexpectedException(getLogger(Loggers.WKT), ConcatenatedTransform.class, "formatTo", e.getCause());
+        Logging.unexpectedException(LOGGER, ConcatenatedTransform.class, "formatTo", e.getCause());
     }
 }

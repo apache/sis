@@ -46,7 +46,6 @@ import org.apache.sis.internal.jaxb.SpecializedIdentifier;
  * @see <a href="https://www.isotc211.org/2005/gco/gcoBase.xsd">OGC/ISO schema</a>
  *
  * @since 0.3
- * @module
  */
 final class ObjectReference {
     /**
@@ -128,7 +127,7 @@ final class ObjectReference {
      * Adds a new identifier into the given map, if non null. No previous value should exist in normal situation.
      * However, a previous value may exit in unusual (probably not very valid) XML, as in the following example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:series uuidref="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
      *       <cit:CI_Series uuid="f8f5fcb1-d57b-4013-b3a4-4eaa40df6dcf">
@@ -136,7 +135,7 @@ final class ObjectReference {
      *       </cit:CI_Series>
      *     </cit:series>
      *   </cit:CI_Citation>
-     * }
+     *   }
      *
      * In such situation, this method is silent if the two identifiers are equal, or logs a warning and restores
      * the previous value if they are not equal. The previous value is the "{@code uuid}" attribute, which is

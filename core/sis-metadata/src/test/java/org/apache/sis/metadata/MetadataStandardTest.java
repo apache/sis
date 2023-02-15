@@ -40,7 +40,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -61,7 +60,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @DependsOn({
     PropertyAccessorTest.class,
@@ -69,7 +67,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
     NameMapTest.class,
     TypeMapTest.class,
     ValueMapTest.class})
-public final strictfp class MetadataStandardTest extends TestCase {
+public final class MetadataStandardTest extends TestCase {
     /**
      * The standard being tested.
      */
@@ -226,9 +224,9 @@ public final strictfp class MetadataStandardTest extends TestCase {
         final DefaultPlatform platform = new DefaultPlatform();
         platform.setDescription(new SimpleInternationalString("A platform."));
         instrument.setMountedOn(platform);
-        platform.setInstruments(singleton(instrument));
+        platform.setInstruments(Set.of(instrument));
         final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
-        acquisition.setPlatforms(singleton(platform));
+        acquisition.setPlatforms(Set.of(platform));
         return acquisition;
     }
 

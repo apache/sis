@@ -28,12 +28,11 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.time.format.DateTimeParseException;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import ucar.nc2.constants.CF;
 import ucar.nc2.constants.CDM;
 import ucar.nc2.constants._Coordinate;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.DataType;
 import org.apache.sis.internal.netcdf.Dimension;
@@ -69,7 +68,6 @@ import org.apache.sis.math.Vector;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 final class VariableInfo extends Variable implements Comparable<VariableInfo> {
     /**
@@ -417,7 +415,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Parses the given unit symbol and set the {@link #epoch} if the parsed unit is a temporal unit.
      * This method is called by {@link #getUnit()}.
      *
-     * @throws ParserException if the given symbol cannot be parsed.
+     * @throws MeasurementParseException if the given symbol cannot be parsed.
      */
     @Override
     protected Unit<?> parseUnit(String symbols) {
@@ -444,7 +442,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         final Unit<?> unit;
         try {
             unit = Units.valueOf(symbols);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             if (dateError != null) {
                 e.addSuppressed(dateError);
             }
@@ -796,7 +794,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                 for (int j=upper; --j >= lower;) {
                     if (Byte.toUnsignedInt(chars[j]) > ' ') {
                         while (Byte.toUnsignedInt(chars[lower]) <= ' ') lower++;
-                        if (JDK9.equals(chars, lower, ++j, chars, plo, phi)) {
+                        if (Arrays.equals(chars, lower, ++j, chars, plo, phi)) {
                             element = previous;
                         } else {
                             element  = new String(chars, lower, j - lower, encoding);

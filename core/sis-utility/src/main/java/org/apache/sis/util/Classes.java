@@ -58,7 +58,6 @@ import static org.apache.sis.internal.system.Modules.INTERNAL_CLASSNAME_PREFIX;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 public final class Classes extends Static {
     /**
@@ -325,10 +324,10 @@ public final class Classes extends Static {
      * This method is also useful for fetching the class of an object known only by its bound
      * type. As of Java 6, the usual pattern:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Number n = 0;
      *     Class<? extends Number> c = n.getClass();
-     * }
+     *     }
      *
      * doesn't seem to work if {@link Number} is replaced by a parameterized type {@code T}.
      *
@@ -412,10 +411,10 @@ public final class Classes extends Static {
      *
      * @see Class#getInterfaces()
      */
-    @SuppressWarnings({"unchecked","rawtypes"})                             // Generic array creation.
+    @SuppressWarnings({"unchecked","rawtypes"})
     public static <T> Class<? super T>[] getAllInterfaces(final Class<T> type) {
         final Set<Class<?>> interfaces = getInterfaceSet(type);
-        return (interfaces != null) ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_ARRAY;
+        return (interfaces != null) ? interfaces.toArray(Class[]::new) : EMPTY_ARRAY;
     }
 
     /**
@@ -666,17 +665,16 @@ next:       for (final Class<?> candidate : candidates) {
      * Only interfaces assignable to {@code baseInterface} are compared.
      * Declaration order does not matter.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * in ISO 19111, different interfaces exist for different coordinate system (CS) geometries
      * ({@code CartesianCS}, {@code PolarCS}, etc.). One can check if two implementations have
      * the same geometry with the following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (implementSameInterfaces(cs1, cs2, CoordinateSystem.class)) {
      *         // The two Coordinate Systems are of the same kind.
      *     }
-     * }
-     * </div>
+     *     }
      *
      * @param  object1  the first object to check for interfaces.
      * @param  object2  the second object to check for interfaces.

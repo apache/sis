@@ -17,7 +17,6 @@
 package org.apache.sis.internal.feature;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
@@ -63,7 +62,6 @@ import org.opengis.filter.DistanceOperatorName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public final class SpatialOperationContext implements Serializable {
     /**
@@ -79,13 +77,13 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * Approximate geographic area of geometries, or {@code null} if unspecified.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GeographicBoundingBox areaOfInterest;
 
     /**
      * The target CRS in which to transform geometries, or {@code null} for inferring automatically.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final CoordinateReferenceSystem computationCRS;
 
     /**
@@ -94,7 +92,7 @@ public final class SpatialOperationContext implements Serializable {
      * Note that it does not mean that the units of measurement must be meters; only that they must
      * be compatible with meters.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Unit<?> systemUnit;
 
     /**
@@ -106,7 +104,7 @@ public final class SpatialOperationContext implements Serializable {
     /**
      * The common CRS found by {@link #transform(GeometryWrapper[])}. May be null.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     CoordinateReferenceSystem commonCRS;
 
     /**
@@ -364,8 +362,8 @@ select: if (commonCRS == null) {
             final ReferencingFactoryContainer f = new ReferencingFactoryContainer();
             method = f.getCoordinateOperationFactory().getOperationMethod("Mercator_2SP");
             cartCS = f.getStandardProjectedCS();
-            name   = Collections.singletonMap(DefaultConversion.NAME_KEY,
-                        new ImmutableIdentifier(Citations.SIS, "SIS", "Mercator for geometry"));
+            name   = Map.of(DefaultConversion.NAME_KEY,
+                            new ImmutableIdentifier(Citations.SIS, "SIS", "Mercator for geometry"));
         }
 
         /**

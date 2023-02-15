@@ -18,7 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Set;
 import java.util.Map;
-import java.util.Arrays;
+import java.util.List;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.function.Consumer;
@@ -51,10 +51,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 @DependsOn(WKTFormatTest.class)
-public final strictfp class WKTDictionaryTest extends TestCase {
+public final class WKTDictionaryTest extends TestCase {
     /**
      * Tests {@link WKTDictionary#addDefinitions(Stream)}. The CRS used in this test are a subset of the
      * ones used by {@link #testLoad()}. One of them is intentionally malformed for testing error index.
@@ -64,7 +63,7 @@ public final strictfp class WKTDictionaryTest extends TestCase {
     @Test
     public void testAddDefinitions() throws FactoryException {
         final WKTDictionary factory = new WKTDictionary(null);
-        factory.addDefinitions(Arrays.asList(
+        factory.addDefinitions(List.of(
                 "GeodCRS[\"Anguilla 1957\",\n" +
                 " Datum[\"Anguilla 1957\",\n" +
                 "  Ellipsoid[\"Clarke 1880\", 6378249.145, 293.465]],\n" +
@@ -90,7 +89,7 @@ public final strictfp class WKTDictionaryTest extends TestCase {
         assertSame( codes,  factory.getAuthorityCodes(GeodeticCRS.class));
         assertSame( codes,  factory.getAuthorityCodes(GeographicCRS.class));
         assertEquals(0, factory.getAuthorityCodes(ProjectedCRS.class).size());
-        assertSetEquals(Arrays.asList("21", "E1"), codes);
+        assertSetEquals(List.of("21", "E1"), codes);
         /*
          * Tests CRS creation, potentially with expected error.
          */
@@ -138,10 +137,10 @@ public final strictfp class WKTDictionaryTest extends TestCase {
         Set<String> codes = factory.getAuthorityCodes(IdentifiedObject.class);
         assertSame( codes,  factory.getAuthorityCodes(IdentifiedObject.class));     // Test caching.
         assertSame( codes,  factory.getAuthorityCodes(SingleCRS.class));            // Test sharing.
-        assertSetEquals(Arrays.asList("102018", "ESRI::102021", "TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
-        assertSetEquals(Arrays.asList("102018", "ESRI::102021"), factory.getAuthorityCodes(ProjectedCRS.class));
+        assertSetEquals(List.of("102018", "ESRI::102021", "TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
+        assertSetEquals(List.of("102018", "ESRI::102021"), factory.getAuthorityCodes(ProjectedCRS.class));
         codes = factory.getAuthorityCodes(GeographicCRS.class);
-        assertSetEquals(Arrays.asList("TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
+        assertSetEquals(List.of("TEST::102021", "TEST:v2:102021", "E1", "E2"), codes);
         assertSame(codes, factory.getAuthorityCodes(GeodeticCRS.class));            // Test sharing.
         assertSame(codes, factory.getAuthorityCodes(GeographicCRS.class));          // Test caching.
         /*

@@ -19,12 +19,11 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Locale;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import javax.measure.quantity.Angle;
 import org.opengis.geometry.Envelope;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.geometry.Envelope2D;
@@ -40,11 +39,10 @@ import static org.opengis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Simon Reynard (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
- * @module
  */
-public final strictfp class NADCONTest extends DatumShiftTestCase {
+public final class NADCONTest extends DatumShiftTestCase {
     /**
      * Returns the sample point for a step in the transformation from NAD27 to NAD83.
      * The sample point is the coordinate of Meades Ranch station, which was the point
@@ -92,12 +90,10 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
      * Tests loading a grid file and interpolating a sample point.
      * The point used for this test is given by {@link #samplePoint(int)}.
      *
-     * @throws URISyntaxException if the URL to the test file cannot be converted to a path.
-     * @throws FactoryException if an error occurred while loading or computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    public void testLoader() throws URISyntaxException, FactoryException, TransformException {
+    public void testLoader() throws Exception {
         testNADCON(getResource(TEST_FILE + ".laa"),     // Latitude shifts
                    getResource(TEST_FILE + ".loa"),     // Longitude shifts
                    -99.75, -98.0, 37.5, 39.75);
@@ -111,26 +107,23 @@ public final strictfp class NADCONTest extends DatumShiftTestCase {
      *
      * @param  latitudeShifts   path to the official {@code "conus.las"} file.
      * @param  longitudeShifts  path to the official {@code "conus.los"} file.
-     * @throws FactoryException if an error occurred while loading or computing the grid.
-     * @throws TransformException if an error occurred while computing the envelope or testing the point.
+     * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
-    public static void testNADCON(final Path latitudeShifts, final Path longitudeShifts)
-            throws FactoryException, TransformException
-    {
+    public static void testNADCON(final URI latitudeShifts, final URI longitudeShifts) throws Exception {
         testNADCON(latitudeShifts, longitudeShifts, -131, -63, 20, 50);
     }
 
     /**
-     * Implementation of {@link #testLoader()} and {@link #testNADCON(Path, Path)}.
+     * Implementation of {@link #testLoader()} and {@link #testNADCON(URI, URI)}.
      *
      * @param  xmin  westmost longitude.
      * @param  xmax  eastmost longitude.
      * @param  ymin  southmost latitude.
      * @param  ymax  northmost latitude.
      */
-    private static void testNADCON(final Path latitudeShifts, final Path longitudeShifts,
+    private static void testNADCON(final URI latitudeShifts, final URI longitudeShifts,
             final double xmin, final double xmax, final double ymin, final double ymax)
-            throws FactoryException, TransformException
+            throws Exception
     {
         final DatumShiftGridFile<Angle,Angle> grid = NADCON.getOrLoad(latitudeShifts, longitudeShifts);
         assertInstanceOf("Should not be compressed.", DatumShiftGridFile.Float.class, grid);

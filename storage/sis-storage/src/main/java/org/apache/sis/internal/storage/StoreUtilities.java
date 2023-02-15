@@ -45,8 +45,8 @@ import org.apache.sis.storage.WritableFeatureSet;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.geometry.GeneralEnvelope;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.metadata.Identifiers;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.CharSequences;
@@ -64,7 +64,6 @@ import org.opengis.feature.Feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public final class StoreUtilities extends Static {
     /**
@@ -82,6 +81,7 @@ public final class StoreUtilities extends Static {
      * have different sample value ranges for each coverage, which cause {@code CoverageAggregator} to consider
      * that that cannot be aggregated together.</p>
      */
+    @Configuration
     public static final boolean ALLOW_LAST_RESORT_STATISTICS = false;
 
     /**
@@ -95,7 +95,7 @@ public final class StoreUtilities extends Static {
      *
      * @see #basedOnASCII(Charset)
      */
-    private static final Set<String> basedOnASCII = JDK9.setOf("US-ASCII", "ISO-8859-1", "UTF-8");
+    private static final Set<String> basedOnASCII = Set.of("US-ASCII", "ISO-8859-1", "UTF-8");
 
     /**
      * Do not allow instantiation of this class.
@@ -294,11 +294,11 @@ public final class StoreUtilities extends Static {
      * This flag can be tested as below (this cover both the read-only case and the writable
      * case where the files must exist):</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (!options.contains(StandardOpenOption.CREATE)) {
      *         // Throw an exception if the file does not exist.
      *     }
-     * }
+     *     }
      *
      * <p>{@link StandardOpenOption#CREATE_NEW}<br>
      * means that the {@link DataStore} should fail to open if the file already exists.

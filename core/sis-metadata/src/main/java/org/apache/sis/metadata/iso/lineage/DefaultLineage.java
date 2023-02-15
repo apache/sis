@@ -75,7 +75,6 @@ import org.apache.sis.internal.jaxb.metadata.MD_Scope;
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "LI_Lineage_Type", propOrder = {
     "statement",

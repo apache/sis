@@ -36,7 +36,6 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public final class Containers extends Static {
     /**

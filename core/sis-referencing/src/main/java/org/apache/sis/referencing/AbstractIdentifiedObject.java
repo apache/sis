@@ -121,7 +121,6 @@ import static org.apache.sis.internal.util.CollectionsExt.immutableSet;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {
     "description",
@@ -178,7 +177,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getName()
      * @see #getNames()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Identifier name;
 
     /**
@@ -189,7 +188,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link Names#add(Identifier)}.</p>
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Collection<GenericName> alias;
 
     /**
@@ -202,7 +201,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getIdentifiers()
      * @see #getIdentifier()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private Set<Identifier> identifiers;
 
     /**
@@ -213,7 +212,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * @see #getRemarks()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private InternationalString remarks;
 
     /**
@@ -765,9 +764,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Compares the specified object with this object for equality.
      * This method is implemented as below (omitting assertions):
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return equals(other, ComparisonMode.STRICT);
-     * }
+     *     }
      *
      * Subclasses shall override {@link #equals(Object, ComparisonMode)} instead of this method.
      *
@@ -794,6 +793,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Subclasses shall override {@link #computeHashCode()} instead of this method.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     * @throws AssertionError if assertions are enabled and the value computed by {@link #computeHashCode()} changed.
      */
     @Override
     public final int hashCode() {                       // No need to synchronize; ok if invoked twice.
@@ -821,8 +821,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * All {@code computeHashCode()} methods shall invoke {@code super.computeHashCode()},
      * <strong>not</strong> {@code hashCode()}. Example:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected long computeHashCode() {
      *         return super.computeHashCode() + 31 * Objects.hash(myProperties);
      *     }
@@ -848,17 +848,19 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <div class="horizontal-flow">
      * <div><p><b>WKT example</b></p>
-     * {@preformat text
+     * <pre class="text">
      *   GeodeticCRS["WGS 84", ID["EPSG", 4326]]
      *                       ↑
-     *               (insertion point)
-     * }
+     *               (insertion point)</pre>
      * </div><div>
      * <p><b>Java code example</b></p>
-     * {@preformat java
-     *     super.formatTo(formatter);
-     *     // ... write the elements at the insertion point ...
-     *     return "GeodeticCRS";
+     * {@snippet lang="java" :
+     *     @Override
+     *     protected String formatTo(final Formatter formatter) {
+     *         super.formatTo(formatter);
+     *         // ... write the elements at the insertion point ...
+     *         return "GeodeticCRS";
+     *     }
      * }
      * </div></div>
      *
@@ -1023,7 +1025,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <h4>Why there is no <code>setNames(…)</code> method</h4>
      * Some JAXB implementations never invoke setter method for collections. Instead, they invoke the getter and
      * add directly the identifiers in the returned collection. Whether JAXB will perform or not a final call to
-     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 early access do not).
+     * {@code setNames(…)} is JAXB-implementation dependent (JDK7 does but JDK6 and JDK8 do not).
      * It seems a more portable approach (at least for JAXB reference implementations) to design our class
      * without setter method, in order to have the same behavior on all supported JDK versions.
      *

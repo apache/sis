@@ -48,9 +48,8 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
  * The interpretation of {@link ClientFileSystem#separator} as a path separator is done by this class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 final class KeyPath implements Path {
     /**
@@ -338,8 +337,8 @@ final class KeyPath implements Path {
     /**
      * Returns a new path with the same file system than this path.
      */
-    private KeyPath newPath(final String path) {
-        return new KeyPath(fs, path, CharSequences.EMPTY_ARRAY, false);
+    private KeyPath newPath(final String other) {
+        return new KeyPath(fs, Objects.requireNonNull(other, "other"), CharSequences.EMPTY_ARRAY, false);
     }
 
     /**

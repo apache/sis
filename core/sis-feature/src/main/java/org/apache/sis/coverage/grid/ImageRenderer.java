@@ -46,7 +46,6 @@ import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
@@ -78,10 +77,10 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * computes automatically the offsets from that position to the position of the first value included
  * in the {@code sliceExtent} given to the constructor.</p>
  *
- * <div class="note"><b>Usage example:</b>
- * {@preformat java
+ * <h2>Usage example</h2>
+ * {@snippet lang="java" :
  *     class MyResource extends GridCoverage {
- *         &#64;Override
+ *         @Override
  *         public RenderedImage render(GridExtent sliceExtent) {
  *             ImageRenderer renderer = new ImageRenderer(this, sliceExtent);
  *             try {
@@ -92,8 +91,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  *             }
  *         }
  *     }
- * }
- * </div>
+ *     }
  *
  * <h2>Limitations</h2>
  * Current implementation constructs only images made of a single tile.
@@ -105,7 +103,6 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * @see GridCoverage#render(GridExtent)
  *
  * @since 1.0
- * @module
  */
 public class ImageRenderer {
     /**
@@ -303,7 +300,7 @@ public class ImageRenderer {
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
         ArgumentChecks.ensureNonNull("coverage", coverage);
-        bands = CollectionsExt.toArray(coverage.getSampleDimensions(), SampleDimension.class);
+        bands = coverage.getSampleDimensions().toArray(SampleDimension[]::new);
         geometry = coverage.getGridGeometry();
         final GridExtent source = geometry.getExtent();
         final int dimension = source.getDimension();
@@ -613,14 +610,13 @@ public class ImageRenderer {
      * This method should be invoked when the data given to {@code setData(…)} contains only one {@link Vector}, {@link Buffer} or
      * {@link DataBuffer} bank, and the bands in that unique bank are interleaved.
      *
-     * <div class="note"><b>Example:</b>
-     * for an image having three bands named Red (R), Green (G) and Blue (B), if the sample values are stored in a single bank in a
+     * <h4>Example</h4>
+     * For an image having three bands named Red (R), Green (G) and Blue (B), if the sample values are stored in a single bank in a
      * R₀,G₀,B₀, R₁,G₁,B₁, R₂,G₂,B₂, R₃,G₃,B₃, <i>etc.</i> fashion, then this method should be invoked as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     setInterleavedPixelOffsets(3, new int[] {0, 1, 2});
-     * }
-     * </div>
+     *     }
      *
      * @param  pixelStride  the number of data elements between each pixel in the data vector or buffer.
      * @param  bandOffsets  offsets to add to sample index in each band. This is typically {0, 1, 2, …}.
@@ -665,11 +661,10 @@ public class ImageRenderer {
      * This is useful for data with a clear 0 (white) in the middle of the range,
      * with a minimal value equals to the negative of the maximal value.
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     setCategoryColors((category) -> category.isQuantitative() ? new Color[] {
-     *         Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED
-     *     } : null);
-     * }
+     *             Color.BLUE, Color.CYAN, Color.WHITE, Color.YELLOW, Color.RED} : null);
+     *     }
      *
      * @param colors  the colors to use for each category. The {@code colors} argument cannot be null,
      *                but {@code colors.apply(Category)} can return null.

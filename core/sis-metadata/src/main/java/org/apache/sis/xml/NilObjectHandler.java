@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
@@ -42,14 +43,13 @@ import org.apache.sis.internal.jaxb.ModifiableIdentifierMap;
  * definition were found for a XML element identified by {@code xlink} or {@code uuidref}
  * attributes.
  *
- * <div class="note"><b>Implementation note:</b>
+ * <h4>Implementation note</h4>
  * The same handler could be used for every proxy having the same XLink.
- * For now, it doesn't seem worth to cache the handlers.</div>
+ * For now, it doesn't seem worth to cache the handlers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.3
  * @since   0.3
- * @module
  */
 final class NilObjectHandler implements InvocationHandler {
     /**
@@ -130,11 +130,11 @@ final class NilObjectHandler implements InvocationHandler {
                     return (attribute instanceof NilReason) ? (NilReason) attribute : null;
                 }
                 case "getIdentifierMap": {
-                    return (attribute instanceof IdentifierMap) ? (IdentifierMap) attribute : null;
+                    return (attribute instanceof IdentifierMap) ? (IdentifierMap) attribute : Collections.emptyMap();
                 }
                 case "getIdentifiers": {
                     return (attribute instanceof IdentifierMapAdapter) ?
-                            ((IdentifierMapAdapter) attribute).getIdentifiers(method.getReturnType()) : null;
+                            ((IdentifierMapAdapter) attribute).getIdentifiers(method.getReturnType()) : Collections.emptyList();
                 }
                 case "toString": {
                     return Strings.bracket(getInterface(proxy), attribute);

@@ -45,14 +45,13 @@ import org.opengis.test.ToleranceModifier;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.0
  * @since   0.5
- * @module
  */
 @DependsOn({
     CoordinateDomainTest.class,
     LinearTransformTest.class,
     ExponentialTransform1DTest.class
 })
-public final strictfp class PassThroughTransformTest extends MathTransformTestCase {
+public final class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * The random number generator to be used in this test.
      */

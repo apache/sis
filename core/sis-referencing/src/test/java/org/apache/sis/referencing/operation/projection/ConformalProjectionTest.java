@@ -36,12 +36,11 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
  * Tests the {@link ConformalProjection} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.6
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class ConformalProjectionTest extends TransformTestCase {
+public final class ConformalProjectionTest extends TransformTestCase {
     /**
      * Natural logarithm of the pseudo-infinity as returned by Mercator formulas in the spherical
      * case, truncated to nearest integer. This is not a real infinity because there is no exact
@@ -54,10 +53,9 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
      * This is a little bit more a Java test than an Apache SIS test (or to be more
      * accurate, a test of our understanding of the {@code java.lang.Math} library).
      *
-     * {@preformat text
+     * <pre class="text">
      *   Forward:  y = log(tan(π/4 + φ/2))
-     *   Inverse:  φ = π/2 - 2*atan(exp(-y))
-     * }
+     *   Inverse:  φ = π/2 - 2*atan(exp(-y))</pre>
      */
     @Test
     public void verifyMath() {
@@ -81,8 +79,7 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
          * Some checks performed in our projection implementations assume that
          * conversion of 90° to radians give exactly Math.PI/2.
          */
-        final DoubleDouble dd = DoubleDouble.createDegreesToRadians();
-        dd.multiply(90);
+        final DoubleDouble dd = DoubleDouble.DEGREES_TO_RADIANS.multiply(90);
         assertEquals(PI/2, dd.value, 0.0);
         assertEquals(PI/2, toRadians(90), 0.0);
     }
@@ -90,10 +87,9 @@ public final strictfp class ConformalProjectionTest extends TransformTestCase {
     /**
      * Tests the {@link ConformalProjection#expΨ(double, double)} function.
      *
-     * {@preformat text
+     * <pre class="text">
      *   Forward:  y = -log(t(φ))
-     *   Inverse:  φ = φ(exp(-y))
-     * }
+     *   Inverse:  φ = φ(exp(-y))</pre>
      */
     @Test
     @DependsOnMethod("verifyMath")

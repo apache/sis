@@ -39,7 +39,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.FillValues;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Disposable;
@@ -50,7 +49,7 @@ import org.apache.sis.geometry.Shapes2D;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
 
 
 /**
@@ -72,13 +71,12 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see Interpolation
  * @see java.awt.image.AffineTransformOp
  *
  * @since 1.1
- * @module
  */
 public class ResampledImage extends ComputedImage {
     /**
@@ -316,9 +314,9 @@ public class ResampledImage extends ComputedImage {
      * The return value should be 0 according above contract, but this method returns 0.5 instead.
      * This addition of a 0.5 offset allows the following substitution:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Math.round(x) ≈ (long) Math.floor(x + 0.5)
-     * }
+     *     }
      *
      * {@link Math#round(double)} is the desired behavior for nearest-neighbor interpolation, but the buffer given
      * to {@link Interpolation#interpolate(DoubleBuffer, int, double, double, double[], int)} is filled with values
@@ -463,7 +461,7 @@ public class ResampledImage extends ComputedImage {
      * @param  error   the ignore which can be ignored.
      */
     private static void recoverableException(final String method, final Exception error) {
-        Logging.recoverableException(getLogger(Modules.RASTER), ResampledImage.class, method, error);
+        Logging.recoverableException(LOGGER, ResampledImage.class, method, error);
     }
 
     /**

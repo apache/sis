@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Collections;
+import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import org.opengis.geometry.DirectPosition;
@@ -58,10 +58,9 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 @DependsOn(GridGeometryTest.class)
-public final strictfp class GridDerivationTest extends TestCase {
+public final class GridDerivationTest extends TestCase {
     /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} using only the
      * {@link GridExtent} result provided by {@link GridDerivation#getIntersection()}.
@@ -588,11 +587,11 @@ public final strictfp class GridDerivationTest extends TestCase {
          * for any point INSIDE the envelope, it's non-determinist about points perfectly aligned on the edge.
          * So, here we will test a point very near to the envelope edge, but still into it.
          */
-        final GeneralEnvelope grid3d = new GeneralEnvelope(3);
+        final var grid3d = new GeneralEnvelope(3);
         grid3d.setEnvelope(0, 0, 0, 1920, 1080, 4);
 
-        final DefaultCompoundCRS crs3d = new DefaultCompoundCRS(
-                Collections.singletonMap("name", "geo3d"),
+        final var crs3d = new DefaultCompoundCRS(
+                Map.of("name", "geo3d"),
                 HardCodedCRS.WGS84,
                 HardCodedCRS.TIME);
 
@@ -724,7 +723,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry when all involved grid geometries cross the anti-meridian.
      * Illustration:
      *
-     * {@preformat text
+     * <pre class="text">
      *   ──────────────┐                    ┌──────────────────
      *        Grid     │                    │       Grid
      *   ──────────────┘                    └──────────────────
@@ -733,8 +732,7 @@ public final strictfp class GridDerivationTest extends TestCase {
      *          AOI       │       │      Area Of Interest
      *   ─────────────────┘       └────────────────────────────
      *                102°W       22°W
-     *   ↖…………………………………………………………………………………………………360° period…………↗︎
-     * }
+     *   ↖…………………………………………………………………………………………………360° period…………↗︎</pre>
      */
     @Test
     public void testAntiMeridianCrossingInBothGrids() {
@@ -814,15 +812,14 @@ public final strictfp class GridDerivationTest extends TestCase {
      * Tests deriving a grid geometry from an area of interest overlapping the grid in such a way
      * that we have to overlap the AOI to the full grid extent. Illustration:
      *
-     * {@preformat text
+     * <pre class="text">
      *                  ┌────────────────────────────────────────────┐
      *                  │             Domain of validity             │
      *                  └────────────────────────────────────────────┘
      *   ┌────────────────────┐                                ┌─────
      *   │  Area of interest  │                                │  AOI
      *   └────────────────────┘                                └─────
-     *    ↖………………………………………………………360° period……………………………………………………↗︎
-     * }
+     *    ↖………………………………………………………360° period……………………………………………………↗︎</pre>
      */
     @Test
     public void testAreaOfInterestExpansion() {

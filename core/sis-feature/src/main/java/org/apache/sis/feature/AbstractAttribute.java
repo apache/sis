@@ -76,7 +76,6 @@ import org.opengis.feature.MultiValuedPropertyException;
  * @see DefaultAttributeType
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractAttribute<V> extends Field<V> implements Attribute<V>, Serializable {
     /**
@@ -87,6 +86,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
     /**
      * Information about the attribute (base Java class, domain of values, <i>etc.</i>).
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     final AttributeType<V> type;
 
     /**
@@ -158,7 +158,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
         out.defaultWriteObject();
         final Attribute<?>[] characterizedBy;
         if (characteristics instanceof CharacteristicMap) {
-            characterizedBy = characteristics.values().toArray(new Attribute<?>[characteristics.size()]);
+            characterizedBy = characteristics.values().toArray(Attribute[]::new);
         } else {
             characterizedBy = null;
         }
@@ -293,11 +293,11 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * <p>If an attribute is known to be a measurement with a characteristic named "accuracy"
      * of type {@link Float}, then the accuracy value could be read as below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     Float getAccuracy(Attribute<?> measurement) {
      *         Attribute<?> accuracy = measurement.characteristics().get("accuracy");
      *         if (accuracy != null) {
-     *             return (Float) accuracy.getValue(); // Value may be null.
+     *             return (Float) accuracy.getValue();          // Value may be null.
      *         } else {
      *             return (Float) measurement.getType().characteristics().get("accuracy").getDefaultValue();
      *             // A more sophisticated implementation would probably cache the default value somewhere.
@@ -312,30 +312,30 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *     If an older characteristic existed for that name, it will be replaced.
      *     Example:
      *
-     *     {@preformat java
-     *       Attribute<?> accuracy = ...;                               // To be created by the caller.
-     *       characteristics.put("accuracy", accuracy);
-     *     }</li>
+     *     {@snippet lang="java" :
+     *         Attribute<?> accuracy = ...;                               // To be created by the caller.
+     *         characteristics.put("accuracy", accuracy);
+     *         }</li>
      *
      *   <li>Adding the new characteristic to the {@linkplain Map#values() values} collection.
      *     The name is inferred automatically from the characteristic type.
      *     If an older characteristic existed for the same name, an {@link IllegalStateException} will be thrown.
      *     Example:
      *
-     *     {@preformat java
-     *       Attribute<?> accuracy = ...;                               // To be created by the caller.
-     *       characteristics.values().add(accuracy);
-     *     }</li>
+     *     {@snippet lang="java" :
+     *         Attribute<?> accuracy = ...;                               // To be created by the caller.
+     *         characteristics.values().add(accuracy);
+     *         }</li>
      *
      *   <li>Adding the characteristic name to the {@linkplain Map#keySet() key set}.
      *     If no characteristic existed for that name, a default one will be created.
      *     Example:
      *
-     *     {@preformat java
-     *       characteristics.keySet().add("accuracy");                  // Ensure that an entry will exist for that name.
-     *       Attribute<?> accuracy = characteristics.get("accuracy");
-     *       Features.cast(accuracy, Float.class).setValue(...);        // Set new accuracy value here as a float.
-     *     }</li>
+     *     {@snippet lang="java" :
+     *         characteristics.keySet().add("accuracy");                  // Ensure that an entry will exist for that name.
+     *         Attribute<?> accuracy = characteristics.get("accuracy");
+     *         Features.cast(accuracy, Float.class).setValue(...);        // Set new accuracy value here as a float.
+     *         }</li>
      * </ol>
      *
      * @return other attribute types that describes this attribute type, or an empty map if none.
@@ -362,7 +362,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
             if (!map.isEmpty()) {
                 if (!(map instanceof CharacteristicTypeMap)) {
                     final Collection<AttributeType<?>> types = map.values();
-                    map = CharacteristicTypeMap.create(type, types.toArray(new AttributeType<?>[types.size()]));
+                    map = CharacteristicTypeMap.create(type, types.toArray(AttributeType<?>[]::new));
                 }
                 return new CharacteristicMap(this, (CharacteristicTypeMap) map);
             }
@@ -425,11 +425,12 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
-     * <div class="note"><b>Example:</b> given an attribute named “population” with [1 … 1] multiplicity,
+     * <h4>Example</h4>
+     * Given an attribute named “population” with [1 … 1] multiplicity,
      * if no value has been assigned to that attribute, then this {@code quality()} method will return
      * the following data quality report:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Data quality
      *     ├─Scope
      *     │   └─Level………………………………………………… Attribute
@@ -439,9 +440,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      *         ├─Evaluation method type…… Direct internal
      *         └─Result
      *             ├─Explanation……………………… Missing value for “population” property.
-     *             └─Pass………………………………………… false
-     * }
-     * </div>
+     *             └─Pass………………………………………… false</pre>
      *
      * @return reports on all constraint violations found.
      *
@@ -458,10 +457,9 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * The returned string is for debugging purpose and may change in any future SIS version.
      * The current implementation is like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *     Attribute[“temperature” : Float] = {20.3, 17.8, 21.1}
-     *     └─ characteristics: units=°C, accuracy=0.1
-     * }
+     *     └─ characteristics: units=°C, accuracy=0.1</pre>
      *
      * @return a string representation of this attribute for debugging purpose.
      */

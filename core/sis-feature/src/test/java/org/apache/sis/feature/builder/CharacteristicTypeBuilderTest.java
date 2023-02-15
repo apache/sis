@@ -16,7 +16,7 @@
  */
 package org.apache.sis.feature.builder;
 
-import java.util.Collections;
+import java.util.Set;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -34,9 +34,8 @@ import org.opengis.feature.AttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
+public final class CharacteristicTypeBuilderTest extends TestCase {
     /**
      * Tests {@link CharacteristicTypeBuilder#setValueClass(Class)}.
      * This implies the replacement of the builder by a new instance.
@@ -52,7 +51,7 @@ public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDefaultValue(2));
         assertSame(builder, builder.setValueClass(Integer.class));
         assertEquals("valueClass", Integer.class, builder.getValueClass());
-        assertSetEquals(Collections.singleton(builder), owner.characteristics());
+        assertSetEquals(Set.of(builder), owner.characteristics());
         /*
          * Pretend that we changed our mind and now want a Float type instead of Integer.
          * In current implementation this requires the creation of a new builder instance,
@@ -65,7 +64,7 @@ public final strictfp class CharacteristicTypeBuilderTest extends TestCase {
         assertEquals("designation",   "test designation", newb.getDesignation());
         assertEquals("valueClass",    Float.class,        newb.getValueClass());
         assertEquals("defaultValue",  Float.valueOf(2),   newb.getDefaultValue());
-        assertSetEquals(Collections.singleton(newb), owner.characteristics());
+        assertSetEquals(Set.of(newb), owner.characteristics());
         /*
          * In order to avoid accidental misuse, the old builder should not be usable anymore.
          */

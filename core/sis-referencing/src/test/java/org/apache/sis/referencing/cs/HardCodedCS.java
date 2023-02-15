@@ -20,7 +20,6 @@ import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.measure.Units;
 
-import static java.util.Collections.singletonMap;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
@@ -31,9 +30,8 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
-public final strictfp class HardCodedCS {
+public final class HardCodedCS {
     /**
      * A two-dimensional ellipsoidal CS with
      * <var>{@linkplain HardCodedAxes#GEODETIC_LATITUDE geodetic latitude}</var>,
@@ -41,7 +39,7 @@ public final strictfp class HardCodedCS {
      * axes in decimal degrees.
      */
     public static final DefaultEllipsoidalCS GEODETIC_φλ = new DefaultEllipsoidalCS(
-            singletonMap(NAME_KEY, "Geodetic 2D (φ,λ)"),
+            Map.of(NAME_KEY, "Geodetic 2D (φ,λ)"),
             HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.GEODETIC_LONGITUDE);
 
@@ -52,7 +50,7 @@ public final strictfp class HardCodedCS {
      * axes in decimal degrees.
      */
     public static final DefaultEllipsoidalCS GEODETIC_2D = new DefaultEllipsoidalCS(
-            singletonMap(NAME_KEY, "Geodetic 2D"),
+            Map.of(NAME_KEY, "Geodetic 2D"),
             HardCodedAxes.GEODETIC_LONGITUDE,
             HardCodedAxes.GEODETIC_LATITUDE);
 
@@ -64,7 +62,7 @@ public final strictfp class HardCodedCS {
      * axes.
      */
     public static final DefaultEllipsoidalCS GEODETIC_3D = new DefaultEllipsoidalCS(
-            singletonMap(NAME_KEY, "Geodetic 3D"),
+            Map.of(NAME_KEY, "Geodetic 3D"),
             HardCodedAxes.GEODETIC_LONGITUDE,
             HardCodedAxes.GEODETIC_LATITUDE,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT);
@@ -78,7 +76,7 @@ public final strictfp class HardCodedCS {
      * <p>This coordinate system is used for testing unit conversions without axes swapping.</p>
      */
     public static final DefaultEllipsoidalCS ELLIPSOIDAL_gon = new DefaultEllipsoidalCS(
-            singletonMap(NAME_KEY, "Ellipsoidal (gon)"),
+            Map.of(NAME_KEY, "Ellipsoidal (gon)"),
             HardCodedAxes.LONGITUDE_gon,
             HardCodedAxes.LATITUDE_gon);
 
@@ -93,7 +91,7 @@ public final strictfp class HardCodedCS {
      * @see #SPHERICAL_ENGINEERING
      */
     public static final DefaultSphericalCS SPHERICAL = new DefaultSphericalCS(
-            singletonMap(NAME_KEY, "Spherical"),
+            Map.of(NAME_KEY, "Spherical"),
             HardCodedAxes.SPHERICAL_LATITUDE,
             HardCodedAxes.SPHERICAL_LONGITUDE,
             HardCodedAxes.GEOCENTRIC_RADIUS);
@@ -105,7 +103,7 @@ public final strictfp class HardCodedCS {
      * <var>{@linkplain HardCodedAxes#ELEVATION elevation}</var> axes.
      */
     public static final DefaultSphericalCS SPHERICAL_ENGINEERING = new DefaultSphericalCS(
-            singletonMap(NAME_KEY, SPHERICAL.getName()),
+            Map.of(NAME_KEY, SPHERICAL.getName()),
             HardCodedAxes.DISTANCE,
             HardCodedAxes.BEARING,
             HardCodedAxes.ELEVATION);
@@ -118,7 +116,7 @@ public final strictfp class HardCodedCS {
      * axes in metres.
      */
     public static final DefaultCartesianCS GEOCENTRIC = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Geocentric"),
+            Map.of(NAME_KEY, "Geocentric"),
             HardCodedAxes.GEOCENTRIC_X,
             HardCodedAxes.GEOCENTRIC_Y,
             HardCodedAxes.GEOCENTRIC_Z);
@@ -133,7 +131,7 @@ public final strictfp class HardCodedCS {
      * @since 0.7
      */
     public static final DefaultCylindricalCS CYLINDRICAL = new DefaultCylindricalCS(
-            singletonMap(NAME_KEY, "Cylindrical"),
+            Map.of(NAME_KEY, "Cylindrical"),
             HardCodedAxes.DISTANCE,
             HardCodedAxes.BEARING,
             HardCodedAxes.Z);
@@ -147,7 +145,7 @@ public final strictfp class HardCodedCS {
      * @since 0.7
      */
     public static final DefaultPolarCS POLAR = new DefaultPolarCS(
-            singletonMap(NAME_KEY, "Polar"),
+            Map.of(NAME_KEY, "Polar"),
             HardCodedAxes.DISTANCE,
             HardCodedAxes.BEARING);
 
@@ -158,7 +156,7 @@ public final strictfp class HardCodedCS {
      * axes in metres.
      */
     public static final DefaultCartesianCS PROJECTED = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Projected"),
+            Map.of(NAME_KEY, "Projected"),
             HardCodedAxes.EASTING,
             HardCodedAxes.NORTHING);
 
@@ -170,7 +168,7 @@ public final strictfp class HardCodedCS {
      * axes in metres.
      */
     public static final DefaultCartesianCS PROJECTED_3D = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Projected"),
+            Map.of(NAME_KEY, "Projected"),
             HardCodedAxes.EASTING,
             HardCodedAxes.NORTHING,
             HardCodedAxes.ELLIPSOIDAL_HEIGHT);
@@ -182,7 +180,7 @@ public final strictfp class HardCodedCS {
      * axes in metres.
      */
     public static final DefaultCartesianCS CARTESIAN_2D = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Cartesian 2D"),
+            Map.of(NAME_KEY, "Cartesian 2D"),
             HardCodedAxes.X,
             HardCodedAxes.Y);
 
@@ -194,7 +192,7 @@ public final strictfp class HardCodedCS {
      * axes in metres.
      */
     public static final DefaultCartesianCS CARTESIAN_3D = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Cartesian 3D"),
+            Map.of(NAME_KEY, "Cartesian 3D"),
             HardCodedAxes.X,
             HardCodedAxes.Y,
             HardCodedAxes.Z);
@@ -206,7 +204,7 @@ public final strictfp class HardCodedCS {
      * axes.
      */
     public static final DefaultCartesianCS GRID = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Grid"),
+            Map.of(NAME_KEY, "Grid"),
             HardCodedAxes.COLUMN,
             HardCodedAxes.ROW);
 
@@ -217,7 +215,7 @@ public final strictfp class HardCodedCS {
      * axes.
      */
     public static final DefaultCartesianCS DISPLAY = new DefaultCartesianCS(
-            singletonMap(NAME_KEY, "Display"),
+            Map.of(NAME_KEY, "Display"),
             HardCodedAxes.DISPLAY_X,
             HardCodedAxes.DISPLAY_Y);
 

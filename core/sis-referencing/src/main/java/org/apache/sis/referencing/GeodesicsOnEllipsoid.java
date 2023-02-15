@@ -22,6 +22,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.math.MathFunctions;
+import org.apache.sis.util.Debug;
 
 import static java.lang.Math.*;
 
@@ -75,15 +76,15 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
-     * Whether to include code used for JUnit tests only. This field should be
-     * set to {@code true} during development and to {@code false} in releases.
+     * Whether to include code used for JUnit tests only. This field can be set to
+     * {@code true} during debugging and should be set to {@code false} in releases.
      *
      * @see #snapshot()
      */
+    @Debug
     static final boolean STORE_LOCAL_VARIABLES = false;
 
     /**
@@ -857,9 +858,9 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
      * Formula is given in appendix B of <a href="https://arxiv.org/pdf/1102.1215.pdf">C.F.F Karney (2011)</a>
      * given <var>x</var> and <var>y</var> the coordinates on a plane coordinate system centered on the antipodal point:
      *
-     * {@preformat math
-     *     μ⁴ + 2μ³ + (1−x²-y²)μ² − 2y²μ - y² = 0
-     * }
+     * <blockquote>
+     * μ⁴ + 2μ³ + (1−x²-y²)μ² − 2y²μ - y² = 0
+     * </blockquote>
      *
      * The results should have only one positive root {@literal (μ > 0)}.
      *

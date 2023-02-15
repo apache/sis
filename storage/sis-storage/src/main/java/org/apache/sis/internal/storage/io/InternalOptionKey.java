@@ -31,7 +31,6 @@ import org.apache.sis.storage.StorageConnector;
  * @param  <T>  the type of option values.
  *
  * @since 1.2
- * @module
  */
 public final class InternalOptionKey<T> extends OptionKey<T> {
     /**

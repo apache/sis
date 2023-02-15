@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.Locale;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -77,7 +76,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 final class GridExtentCRS {
     /**
@@ -210,7 +208,7 @@ final class GridExtentCRS {
      * Creates a properties map to give to CS, CRS or datum constructors.
      */
     private static Map<String,?> properties(final Object name) {
-        return Collections.singletonMap(IdentifiedObject.NAME_KEY, name);
+        return Map.of(IdentifiedObject.NAME_KEY, name);
     }
 
     /**

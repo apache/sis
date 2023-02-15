@@ -48,7 +48,6 @@ import static org.apache.sis.internal.util.Numerics.ceilDiv;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public abstract class Inflater implements Closeable {
     /**
@@ -240,7 +239,7 @@ public abstract class Inflater implements Closeable {
             }
         }
         final int scanlineStride = Math.multiplyExact(sourceWidth, sourcePixelStride * dataType.bytes());
-        return CopyFromBytes.create(inflater.createDataInput(channel, scanlineStride),
+        return CopyFromBytes.create(inflater.createDataInput(channel, scanlineStride, compression.useNativeLibrary()),
                 dataType, chunksPerRow, samplesPerChunk, skipAfterChunks, pixelsPerElement);
     }
 

@@ -39,7 +39,6 @@ import static org.apache.sis.metadata.iso.citation.Citations.toCodeSpace;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.4
- * @module
  */
 @XmlType(name = "CodeType")
 public final class Code {
@@ -176,7 +175,7 @@ public final class Code {
                     return new Code(identifier);
                 }
                 if (!isHTTP) {
-                    isHTTP = code.regionMatches(true, 0, Constants.HTTP, 0, 5);
+                    isHTTP = code.regionMatches(true, 0, Constants.HTTP + ':', 0, 5);
                     if (isHTTP) {
                         fallback = identifier;
                     } else if (!isEPSG) {

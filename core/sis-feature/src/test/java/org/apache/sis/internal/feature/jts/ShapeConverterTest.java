@@ -47,9 +47,8 @@ import static org.opengis.test.Assert.*;
  * @author  Johann Sorel (Puzzle-GIS, Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
-public final strictfp class ShapeConverterTest extends TestCase {
+public final class ShapeConverterTest extends TestCase {
     /**
      * The geometry factory used by the tests.
      */

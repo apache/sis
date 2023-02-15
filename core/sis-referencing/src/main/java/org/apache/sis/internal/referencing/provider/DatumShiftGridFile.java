@@ -18,12 +18,14 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.concurrent.Callable;
 import java.lang.reflect.Array;
-import java.nio.file.Path;
+import java.net.URI;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Angle;
@@ -47,10 +49,10 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
+import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 
 
 /**
@@ -62,7 +64,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
  * sharing data and for {@link #equals(Object)} and {@link #hashCode()} implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param <C>  dimension of the coordinate unit (usually {@link Angle}).
  * @param <T>  dimension of the translation unit. Usually {@link Angle},
@@ -71,16 +73,15 @@ import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
  * @see org.apache.sis.referencing.operation.transform.InterpolatedTransform
  *
  * @since 0.7
- * @module
  */
 abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGrid<C,T> {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -5801692909082130314L;
+    private static final long serialVersionUID = -1690433946781367085L;
 
     /**
-     * Cache of grids loaded so far. The keys are typically {@link java.nio.file.Path}s or a tuple of paths.
+     * Cache of grids loaded so far. The keys are typically {@link URI}s or a tuple of URIs.
      * Values are grids stored by hard references until the amount of data exceed 32768 (about 128 kilobytes
      * if the values use the {@code float} type), in which case the oldest grids will be replaced by soft references.
      *
@@ -88,8 +89,10 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * The use of soft references instead of weak references is on the assumption that users typically use
      * the same few Coordinate Reference Systems for their work. Consequently, we presume that users will not
      * load a lot of grids and are likely to reuse the already loaded grids.
+     *
+     * @see #getOrLoad(URI, URI, Callable)
      */
-    static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
+    private static final Cache<Object, DatumShiftGridFile<?,?>> CACHE = new Cache<Object, DatumShiftGridFile<?,?>>(4, 32*1024, true) {
         @Override protected int cost(final DatumShiftGridFile<?,?> grid) {
             int p = 1;
             for (final Object data : grid.getData()) {
@@ -106,14 +109,17 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     /**
      * The parameter descriptor of the provider that created this grid.
      */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final ParameterDescriptorGroup descriptor;
 
     /**
      * The files from which the grid has been loaded. This is not used directly by this class
      * (except for {@link #equals(Object)} and {@link #hashCode()}), but can be used by math
      * transform for setting the parameter values. Shall never be null and never empty.
+     *
+     * @see <a href="https://issues.apache.org/jira/browse/SIS-569">SIS-569</a>
      */
-    private final Path[] files;
+    private final URI[] files;
 
     /**
      * Number of cells between the start of adjacent rows in the grid. This is usually {@code getGridSize(0)},
@@ -148,14 +154,14 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * in the domain of validity of this grid. Children do not change the way this {@code DatumShiftGrid}
      * performs its calculation; this list is used only at the time of building {@link MathTransform} tree.
      *
-     * <div class="note"><b>Design note:</b>
+     * <h4>Design note</h4>
      * we do not provide sub-grids functionality in the {@link DatumShiftGrid} parent class because
      * the {@link MathTransform} tree will depend on assumptions about {@link #getCoordinateToGrid()},
      * in particular that it contains only translations and scales (no rotation, no shear).
-     * Those assumptions are enforced by the {@link DatumShiftGridFile} constructor.</div>
+     * Those assumptions are enforced by the {@link DatumShiftGridFile} constructor.
      *
-     * This field has protected access for usage by {@link DatumShiftGridGroup} subclass only.
-     * No access to this field should be done except by subclasses.
+     * <p>This field has protected access for usage by {@link DatumShiftGridGroup} subclass only.
+     * No access to this field should be done except by subclasses.</p>
      *
      * @see #setSubGrids(Collection)
      */
@@ -184,7 +190,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
                        final double Δx, final double Δy,
                        final int    nx, final int    ny,
                        final ParameterDescriptorGroup descriptor,
-                       final Path... files) throws NoninvertibleTransformException
+                       final URI... files) throws NoninvertibleTransformException
     {
         super(coordinateUnit, new AffineTransform2D(Δx, 0, 0, Δy, x0, y0).inverse(),
               new int[] {nx, ny}, isCellValueRatio, translationUnit);
@@ -245,13 +251,32 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
+     * Gets the grid from the cache if available, or loads it.
+     *
+     * @param  f1      the main file to load.
+     * @param  f2      a second file to load, or {@code null} if none.
+     * @param  loader  the loader to execute if the grid is not in the cache.
+     * @return the cached or loaded grid.
+     * @throws Exception if an error occurred while loading the grid.
+     *         Caller should handle the exception with {@code canNotLoad(…)}.
+     *
+     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
+     */
+    static DatumShiftGridFile<?,?> getOrLoad(final URI f1, final URI f2, final Callable<DatumShiftGridFile<?,?>> loader)
+            throws Exception
+    {
+        final Object key = (f2 != null) ? new AbstractMap.SimpleImmutableEntry<>(f1, f2) : f1;
+        return CACHE.getOrCreate(key, loader);
+    }
+
+    /**
      * Sets the sub-grids that are direct children of this grid.
      * This method can be invoked only once.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     final void setSubGrids(final Collection<DatumShiftGridFile<C,T>> children) {
         if (subgrids != null) throw new IllegalStateException();
-        subgrids = children.toArray(new DatumShiftGridFile[children.size()]);
+        subgrids = children.toArray(DatumShiftGridFile[]::new);
     }
 
     /**
@@ -286,6 +311,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
 
     /**
      * Formats this grid as a tree with its children.
+     * Used for building a tree representation of children nodes.
      */
     private void toTree(final TreeTable.Node branch) {
         String label = super.toString();
@@ -418,8 +444,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
     }
 
     /**
-     * Sets all parameters for a value of type {@link Path} to the values given to the constructor.
-     * Subclasses may override for defining other kinds of parameters too.
+     * Sets all parameters for a value of type {@link URI} to the values given to the constructor.
      *
      * @param  parameters  the parameter group where to set the values.
      */
@@ -429,8 +454,8 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
         for (final GeneralParameterDescriptor gd : descriptor.descriptors()) {
             if (gd instanceof ParameterDescriptor<?>) {
                 final ParameterDescriptor<?> d = (ParameterDescriptor<?>) gd;
-                if (Path.class.isAssignableFrom(d.getValueClass())) {
-                    if (i >= files.length) break;                               // Safety in case of invalid parameters.
+                if (URI.class.isAssignableFrom(d.getValueClass())) {
+                    if (i >= files.length) break;                       // Safety in case of invalid parameters.
                     parameters.getOrCreate(d).setValue(files[i++]);
                 }
             }
@@ -489,7 +514,6 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     static final class Float<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**
@@ -518,7 +542,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
               final double Δx, final double Δy,
               final int    nx, final int    ny,
               final ParameterDescriptorGroup descriptor,
-              final Path... files) throws NoninvertibleTransformException
+              final URI... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new float[dim][Math.multiplyExact(nx, ny)];
@@ -606,7 +630,6 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.1
-     * @module
      */
     static final class Double<C extends Quantity<C>, T extends Quantity<T>> extends DatumShiftGridFile<C,T> {
         /**
@@ -631,7 +654,7 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
                final double Δx, final double Δy,
                final int    nx, final int    ny,
                final ParameterDescriptorGroup descriptor,
-               final Path... files) throws NoninvertibleTransformException
+               final URI... files) throws NoninvertibleTransformException
         {
             super(coordinateUnit, translationUnit, isCellValueRatio, x0, y0, Δx, Δy, nx, ny, descriptor, files);
             offsets = new double[dim][Math.multiplyExact(nx, ny)];

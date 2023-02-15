@@ -32,7 +32,6 @@ import org.apache.sis.internal.gui.PropertyValueFormats;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 @SuppressWarnings({"serial","CloneableImplementsClone"})            // Not intended to be serialized.
 final class VerboseFormats extends PropertyValueFormats {

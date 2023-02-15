@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.Collections;
 import java.util.Arrays;
 import java.util.Locale;
 import java.text.DateFormat;
@@ -25,7 +24,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValue;
@@ -63,7 +62,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Know Text specification</a>
  *
  * @since 0.6
- * @module
  */
 class MathTransformParser extends AbstractParser {
     /**
@@ -140,7 +138,7 @@ class MathTransformParser extends AbstractParser {
      * @param  mtFactory  the factory to use for creating {@link MathTransform} objects.
      */
     public MathTransformParser(final MathTransformFactory mtFactory) {
-        this(Symbols.getDefault(), Collections.emptyMap(), null, null, null,
+        this(Symbols.getDefault(), Map.of(), null, null, null,
                 new ReferencingFactoryContainer(null, null, null, null, null, mtFactory), null);
     }
 
@@ -286,7 +284,7 @@ class MathTransformParser extends AbstractParser {
         // If we cannot infer the base type, we have to rely on the name.
         try {
             return parseUnit(name);
-        } catch (ParserException e) {
+        } catch (MeasurementParseException e) {
             throw new UnparsableObjectException(errorLocale, Errors.Keys.UnknownUnit_1,
                     new Object[] {name}, element.offset).initCause(e);
         }
@@ -405,9 +403,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a {@code "PARAM_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     PARAM_MT["<classification-name>" {,<parameter>}* ]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "PARAM_MT"} element as an {@link MathTransform} object.
@@ -448,9 +446,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses an {@code "INVERSE_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     INVERSE_MT[<math transform>]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "INVERSE_MT"} element as an {@link MathTransform} object.
@@ -474,9 +472,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a {@code "PASSTHROUGH_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     PASSTHROUGH_MT[<integer>, <math transform>]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "PASSTHROUGH_MT"} element as an {@link MathTransform} object.
@@ -501,9 +499,9 @@ class MathTransformParser extends AbstractParser {
     /**
      * Parses a {@code "CONCAT_MT"} element. This element has the following pattern:
      *
-     * {@preformat text
+     * {@snippet lang="wkt" :
      *     CONCAT_MT[<math transform> {,<math transform>}*]
-     * }
+     *     }
      *
      * @param  parent  the parent element.
      * @return the {@code "CONCAT_MT"} element as an {@link MathTransform} object.

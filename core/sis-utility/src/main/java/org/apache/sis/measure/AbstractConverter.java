@@ -17,7 +17,6 @@
 package org.apache.sis.measure;
 
 import java.util.List;
-import java.util.Collections;
 import java.io.Serializable;
 import javax.measure.UnitConverter;
 import org.apache.sis.util.ArgumentChecks;
@@ -30,7 +29,6 @@ import org.apache.sis.math.DecimalFunctions;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.8
- * @module
  */
 abstract class AbstractConverter implements UnitConverter, Serializable {
     /**
@@ -55,7 +53,7 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
     }
 
     /**
-     * Indicates if this converter is linear in JSR-363 sense (not the usual mathematical sense).
+     * Indicates if this converter is linear in JSR-385 sense (not the usual mathematical sense).
      * The default implementation returns {@code false} for convenience of non-linear conversions.
      * Subclasses should override if their conversions may be identity.
      */
@@ -66,7 +64,7 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
 
     /**
      * If the conversion can be represented by a polynomial equation, returns the coefficients of that equation.
-     * Otherwise returns {@code null}.
+     * Otherwise returns {@code null}. This is the implementation of {@link Units#coefficients(UnitConverter)}.
      */
     Number[] coefficients() {
         return isIdentity() ? new Number[0] : null;
@@ -110,8 +108,10 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      */
     static double scale(final UnitConverter converter) {
         if (converter != null && converter.isLinear() && converter.convert(0) == 0) {
-            // Above check for converter(0) is a paranoiac check since
-            // JSR-363 said that a "linear" converter has no offset.
+            /*
+             * Above check for `converter(0)` is a paranoiac check because
+             * JSR-385 said that a "linear" converter has no offset.
+             */
             return converter.convert(1);
         }
         return Double.NaN;
@@ -155,6 +155,6 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      */
     @Override
     public List<UnitConverter> getConversionSteps() {
-        return Collections.singletonList(this);
+        return List.of(this);
     }
 }

@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.referencing;
 
+import java.util.Set;
 import java.util.Collection;
-import java.util.Collections;
 import java.io.ObjectStreamException;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Length;
@@ -36,11 +36,12 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Pre-defined positional accuracy resulting from some coordinate operations.
+ * Predefined positional accuracy resulting from some coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -48,7 +49,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
  *
  * @since 0.5
- * @module
  */
 @XmlTransient
 public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPositionalAccuracy {
@@ -66,6 +66,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      *
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
+    @Configuration
     public static final double UNKNOWN_ACCURACY = 3000;
 
     /**
@@ -77,6 +78,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      *
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
+    @Configuration
     private static final double DATUM_SHIFT_ACCURACY = 25;
 
     /**
@@ -85,6 +87,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * The result is multiplied by 2 again as a margin because we have no guarantees that the domain
      * of validity of the two datum are close enough for making this concatenation valid.
      */
+    @Configuration
     public static final double INDIRECT_SHIFT_ACCURACY = 100;
 
     /**
@@ -124,7 +127,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
             final InternationalString evaluationMethodDescription, final boolean pass)
     {
         DefaultConformanceResult result = new DefaultConformanceResult(Citations.SIS, evaluationMethodDescription, pass);
-        setResults(Collections.singleton(result));
+        setResults(Set.of(result));
         setMeasureDescription(measureDescription);
         setEvaluationMethodDescription(evaluationMethodDescription);
         setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);

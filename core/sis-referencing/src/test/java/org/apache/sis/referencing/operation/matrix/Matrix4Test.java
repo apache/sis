@@ -29,12 +29,11 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
- * @module
  */
 @DependsOn(SolverTest.class)
-public final strictfp class Matrix4Test extends MatrixTestCase {
+public final class Matrix4Test extends MatrixTestCase {
     /**
      * Returns the size of the matrix of interest for this test class.
      */
@@ -45,8 +44,8 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
      * Ensures that the given matrix is an instance of the expected type.
      */
     @Override
-    void validate(final MatrixSIS matrix) {
-        super.validate(matrix);
+    void validateImplementation(final MatrixSIS matrix) {
+        super.validateImplementation(matrix);
         assertEquals(Matrix4.class, matrix.getClass());
     }
 
@@ -60,23 +59,11 @@ public final strictfp class Matrix4Test extends MatrixTestCase {
         initialize(-7053945420932915425L);
         final double[] elements = createRandomPositiveValues(SIZE * SIZE);
         final Matrix4 matrix = new Matrix4(
-                elements[ 0],
-                elements[ 1],
-                elements[ 2],
-                elements[ 3],
-                elements[ 4],
-                elements[ 5],
-                elements[ 6],
-                elements[ 7],
-                elements[ 8],
-                elements[ 9],
-                elements[10],
-                elements[11],
-                elements[12],
-                elements[13],
-                elements[14],
-                elements[15]);
-        validate(matrix);
+                elements[ 0], elements[ 1], elements[ 2], elements[ 3],
+                elements[ 4], elements[ 5], elements[ 6], elements[ 7],
+                elements[ 8], elements[ 9], elements[10], elements[11],
+                elements[12], elements[13], elements[14], elements[15]);
+        validateImplementation(matrix);
         assertArrayEquals(elements, matrix.getElements(), STRICT);
     }
 

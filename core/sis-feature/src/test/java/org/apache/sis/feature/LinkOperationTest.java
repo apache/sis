@@ -16,12 +16,12 @@
  */
 package org.apache.sis.feature;
 
+import java.util.Map;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static java.util.Collections.singletonMap;
 
 
 /**
@@ -30,13 +30,12 @@ import static java.util.Collections.singletonMap;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @DependsOn({
     AbstractOperationTest.class,
     DenseFeatureTest.class
 })
-public final strictfp class LinkOperationTest extends TestCase {
+public final class LinkOperationTest extends TestCase {
     /**
      * Creates a simple feature type with a link operation.
      * The feature contains the following properties:
@@ -51,9 +50,9 @@ public final strictfp class LinkOperationTest extends TestCase {
      */
     private static DefaultFeatureType city() {
         final DefaultFeatureType city = DefaultFeatureTypeTest.city();
-        final LinkOperation link = new LinkOperation(singletonMap(DefaultFeatureType.NAME_KEY, "name"),
+        final LinkOperation link = new LinkOperation(Map.of(DefaultFeatureType.NAME_KEY, "name"),
                 city.getProperty("city"));
-        return new DefaultFeatureType(singletonMap(DefaultFeatureType.NAME_KEY, "Metropolis"),
+        return new DefaultFeatureType(Map.of(DefaultFeatureType.NAME_KEY, "Metropolis"),
                 false, new DefaultFeatureType[] {city}, link);
     }
 

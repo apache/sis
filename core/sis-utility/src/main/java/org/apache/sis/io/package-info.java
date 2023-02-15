@@ -43,6 +43,5 @@
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 package org.apache.sis.io;

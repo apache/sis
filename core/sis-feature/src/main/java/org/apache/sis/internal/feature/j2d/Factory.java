@@ -44,7 +44,6 @@ import org.apache.sis.util.UnsupportedImplementationException;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 public final class Factory extends Geometries<Shape> {
     /**
@@ -253,7 +252,7 @@ public final class Factory extends Geometries<Shape> {
         for (final Shape geometry : shapes) {
             path.append(geometry, false);
         }
-        // path.trimToSize();       // TODO: uncomment with JDK10.
+        path.trimToSize();
         return new Wrapper(path);
     }
 
@@ -309,7 +308,7 @@ public final class Factory extends Geometries<Shape> {
                     }
                 }
             }
-            // path.trimToSize();       // TODO: uncomment with JDK10.
+            path.trimToSize();
             geometry = path;
         }
         return new Wrapper(geometry);

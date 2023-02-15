@@ -106,7 +106,6 @@ import org.opengis.feature.PropertyNotFoundException;
  * @see org.apache.sis.storage.FeatureNaming
  *
  * @since 0.5
- * @module
  */
 public class DefaultFeatureType extends AbstractIdentifiedType implements FeatureType {
     /**
@@ -157,6 +156,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see #getSuperTypes()
      */
+    @SuppressWarnings("serial")                     // Can be various serializable implementations.
     private final Set<FeatureType> superTypes;
 
     /**
@@ -174,6 +174,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see #getProperties(boolean)
      */
+    @SuppressWarnings("serial")                     // Can be various serializable implementations.
     private final List<PropertyType> properties;
 
     /**
@@ -199,6 +200,8 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * The size of this map may be smaller than the {@link #byName} size.
      * This map shall not be modified after construction.
+     *
+     * @see #indices()
      */
     private transient Map<String, Integer> indices;
 
@@ -353,7 +356,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         assignableTo = new HashSet<>(4);
         assignableTo.add(super.getName());
         scanPropertiesFrom(this, properties);
-        allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(new PropertyType[byName.size()]));
+        allProperties = UnmodifiableArrayList.wrap(byName.values().toArray(PropertyType[]::new));
         /*
          * Now check if the feature is simple/complex or dense/sparse. We perform this check after we finished
          * to create the list of all properties, because some properties may be overridden and we want to take
@@ -876,6 +879,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
     /**
      * Returns the map from names to indices in an array of properties.
      * This is used for {@link DenseFeature} implementation.
+     * Caller shall not modify the returned map.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     final Map<String,Integer> indices() {

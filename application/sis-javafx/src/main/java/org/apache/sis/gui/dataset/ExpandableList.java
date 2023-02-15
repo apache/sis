@@ -46,7 +46,6 @@ import org.opengis.feature.Feature;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class ExpandableList extends TransformationList<Feature,Feature>
         implements Callback<TableColumn<Feature,Feature>, TableCell<Feature,Feature>>,

@@ -32,7 +32,6 @@ import java.io.Serializable;
 import java.io.ObjectOutputStream;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -49,7 +48,6 @@ import org.apache.sis.internal.util.Numerics;
  * @see org.apache.sis.math.Vector
  *
  * @since 0.7
- * @module
  */
 public class IntegerList extends AbstractList<Integer> implements RandomAccess, Serializable, Cloneable {
     /**
@@ -451,7 +449,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return iterator over the integer values in this list.
      *
-     * @since 0.8-jdk8
+     * @since 1.0
      */
     @Override
     public PrimitiveIterator.OfInt iterator() {
@@ -464,7 +462,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      *
      * @return spliterator over the integer values in this list.
      *
-     * @since 0.8-jdk8
+     * @since 1.0
      */
     @Override
     public Spliterator.OfInt spliterator() {
@@ -482,7 +480,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @param parallel  {@code true} for a parallel stream, or {@code false} for a sequential stream.
      * @return a stream of values in this list as primitive types.
      *
-     * @since 0.8-jdk8
+     * @since 1.0
      */
     public IntStream stream(boolean parallel) {
         return StreamSupport.intStream(spliterator(), parallel);
@@ -701,7 +699,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
                 int n = size * bitCount;
                 final int nr = n & OFFSET_MASK;             // Number of remaining values.
                 n >>>= BASE_SHIFT;
-                if (!JDK9.equals(values, 0, n, that.values, 0, n)) {
+                if (!Arrays.equals(values, 0, n, that.values, 0, n)) {
                     return false;
                 }
                 if (nr == 0) return true;

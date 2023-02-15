@@ -17,7 +17,6 @@
 package org.apache.sis.util.iso;
 
 import java.util.List;
-import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
 import java.io.ObjectStreamException;
@@ -62,7 +61,6 @@ import org.apache.sis.xml.Namespaces;
  * @see DefaultScopedName
  *
  * @since 0.3
- * @module
  */
 
 /*
@@ -99,19 +97,19 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * which replace the {@code LocalName} instance by an internal {@code NameValue} object (so the XML element
      * declared here is never marshalled). Example:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gco:LocalName codeSpace=\"A code space\">A name in a scope</gco:LocalName>
-     * }
+     *   }
      *
      * versus
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <gco:TypeName>
      *     <gco:aName>
      *       <gco:CharacterString>Another local name</gco:CharacterString>
      *     </gco:aName>
      *   </gco:TypeName>
-     * }
+     *   }
      */
     @SuppressWarnings("serial")
     @XmlJavaTypeAdapter(CharSequenceAdapter.class)
@@ -223,7 +221,7 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      */
     @Override
     public final List<DefaultLocalName> getParsedNames() {
-        return Collections.singletonList(this);
+        return List.of(this);
     }
 
     /**

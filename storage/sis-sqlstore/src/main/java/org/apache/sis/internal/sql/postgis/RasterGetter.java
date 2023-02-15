@@ -38,7 +38,6 @@ import org.apache.sis.coverage.grid.GridCoverage;
  * @see org.apache.sis.internal.sql.feature.GeometryGetter
  *
  * @since 1.2
- * @module
  */
 final class RasterGetter extends ValueGetter<GridCoverage> {
     /**

@@ -33,9 +33,8 @@ import org.opengis.feature.FeatureAssociationRole;
  * @author  Michael Hausegger
  * @version 0.8
  * @since   0.8
- * @module
  */
-public final strictfp class AssociationRoleBuilderTest extends TestCase {
+public final class AssociationRoleBuilderTest extends TestCase {
     /**
      * Tests the name, designation, definition, description and multiplicity associated to the role.
      */

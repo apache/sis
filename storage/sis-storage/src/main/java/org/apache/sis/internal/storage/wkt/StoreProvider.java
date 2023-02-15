@@ -19,6 +19,7 @@ package org.apache.sis.internal.storage.wkt;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
@@ -34,9 +35,8 @@ import org.apache.sis.util.Version;
  * The provider of WKT {@link Store} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
- * @module
  */
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "prj",
@@ -46,6 +46,13 @@ public final class StoreProvider extends URIDataStore.Provider {
      * The format name.
      */
     public static final String NAME = "WKT";
+
+    /**
+     * The logger used by WKT stores.
+     *
+     * @see #getLogger()
+     */
+    private static final Logger LOGGER = Logger.getLogger("org.apache.sis.storage.wkt");
 
     /**
      * The object to use for verifying if the first keyword is a WKT one.
@@ -182,5 +189,13 @@ public final class StoreProvider extends URIDataStore.Provider {
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
         return new Store(this, connector);
+    }
+
+    /**
+     * {@return the logger used by WKT stores}.
+     */
+    @Override
+    public Logger getLogger() {
+        return LOGGER;
     }
 }

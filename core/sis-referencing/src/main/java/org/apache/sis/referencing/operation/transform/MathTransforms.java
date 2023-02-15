@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Collections;
 import java.util.Optional;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
@@ -32,11 +31,11 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.referencing.DirectPositionView;
-import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -58,12 +57,11 @@ import org.apache.sis.util.Static;
  * GeoAPI factory interfaces instead.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see MathTransformFactory
  *
  * @since 0.5
- * @module
  */
 public final class MathTransforms extends Static {
     /**
@@ -150,7 +148,7 @@ public final class MathTransforms extends Static {
         final LinearTransform tr;
         switch (factors.length) {
             case 0:  return IdentityTransform.create(0);
-            case 1:  return LinearTransform1D.create(factors[0], 0);
+            case 1:  return LinearTransform1D.create(factors[0], null);
             case 2:  tr = new AffineTransform2D(factors[0], 0, 0, factors[1], 0, 0); break;
             default: tr = new ScaleTransform(factors); break;
         }
@@ -200,17 +198,13 @@ public final class MathTransforms extends Static {
             if (Matrices.isAffine(matrix)) {
                 switch (sourceDimension) {
                     case 1: {
-                        return linear(matrix.getElement(0,0), matrix.getElement(0,1));
+                        final MatrixSIS m = MatrixSIS.castOrCopy(matrix);
+                        return LinearTransform1D.create(
+                                DoubleDouble.of(m.getNumber(0,0), true),
+                                DoubleDouble.of(m.getNumber(0,1), true));
                     }
                     case 2: {
-                        if (matrix instanceof ExtendedPrecisionMatrix) {
-                            return new AffineTransform2D(((ExtendedPrecisionMatrix) matrix));
-                        } else {
-                            return new AffineTransform2D(
-                                    matrix.getElement(0,0), matrix.getElement(1,0),
-                                    matrix.getElement(0,1), matrix.getElement(1,1),
-                                    matrix.getElement(0,2), matrix.getElement(1,2));
-                        }
+                        return AffineTransform2D.create(matrix);
                     }
                 }
             } else if (sourceDimension == 2) {
@@ -333,10 +327,10 @@ public final class MathTransforms extends Static {
      * Creates a transform which passes through a subset of coordinates to another transform.
      * This method returns a transform having the following dimensions:
      *
-     * {@preformat java
-     *     Source: firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates
-     *     Target: firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates
-     * }
+     * {@snippet lang="java" :
+     *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
+     *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
+     *     }
      *
      * Affected coordinates will range from {@code firstAffectedCoordinate} inclusive to
      * {@code dimTarget - numTrailingCoordinates} exclusive.
@@ -590,10 +584,10 @@ public final class MathTransforms extends Static {
             if (transform instanceof ConcatenatedTransform) {
                 return ((ConcatenatedTransform) transform).getSteps();
             } else {
-                return Collections.singletonList(transform);
+                return List.of(transform);
             }
         } else {
-            return Collections.emptyList();
+            return List.of();
         }
     }
 
@@ -685,12 +679,12 @@ public final class MathTransforms extends Static {
      * is returned. Invoking this method is equivalent to the following code, except that it may
      * execute faster with some {@code MathTransform} implementations:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     DirectPosition ptSrc = ...;
      *     DirectPosition ptDst = ...;
      *     Matrix matrixDst = derivative(ptSrc);
      *     ptDst = transform(ptSrc, ptDst);
-     * }
+     *     }
      *
      * @param  transform  the transform to use.
      * @param  srcPts     the array containing the source coordinate.

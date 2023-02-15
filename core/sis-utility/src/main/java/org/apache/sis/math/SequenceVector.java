@@ -32,7 +32,6 @@ import org.apache.sis.internal.util.Numerics;
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 abstract class SequenceVector extends Vector implements Serializable {
     /**
@@ -69,7 +68,7 @@ abstract class SequenceVector extends Vector implements Serializable {
     @Override
     final Vector createTransform(final double scale, final double offset) {
         return new Doubles(Double.class,
-                doubleValue(0) * scale + offset,                // TODO: use Math.fma with JDK9.
+                Math.fma(doubleValue(0), scale, offset),
                 increment(0).doubleValue() * scale, length);
     }
 
@@ -195,8 +194,7 @@ abstract class SequenceVector extends Vector implements Serializable {
         /** Computes the value at the given index. */
         @Override public final double doubleValue(final int index) {
             ArgumentChecks.ensureValidIndex(length, index);
-            return first + increment*index;
-            // TODO: use Math.fma with JDK9.
+            return Math.fma(index, increment, first);
         }
 
         /** Returns the string representation of the value at the given index. */

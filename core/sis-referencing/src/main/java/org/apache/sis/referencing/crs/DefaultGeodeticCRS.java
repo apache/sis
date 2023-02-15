@@ -62,7 +62,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.4
- * @module
  */
 @XmlType(name = "GeodeticCRSType", propOrder = {
     "ellipsoidalCS",
@@ -85,6 +84,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private GeodeticDatum datum;
 
     /**
@@ -309,15 +309,15 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     /**
      * Invoked by JAXB at marshalling time.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
      *
-     * {@preformat java
-     *     &#64;Override
-     *     &#64;XmlElements({
-     *       &#64;XmlElement(name = "ellipsoidalCS", type = DefaultEllipsoidalCS.class),
-     *       &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
-     *       &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class)
+     * {@snippet lang="java" :
+     *     @Override
+     *     @XmlElements({
+     *       @XmlElement(name = "ellipsoidalCS", type = DefaultEllipsoidalCS.class),
+     *       @XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *       @XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class)
      *     })
      *     public CoordinateSystem getCoordinateSystem() {
      *         return super.getCoordinateSystem();
@@ -325,7 +325,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
      * }
      *
      * However, our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
-     * for an unknown reason, the unmarshalled CS object is empty.</div>
+     * for an unknown reason, the unmarshalled CS object is empty.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */

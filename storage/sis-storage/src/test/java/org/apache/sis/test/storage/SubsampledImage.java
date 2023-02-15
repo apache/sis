@@ -48,7 +48,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 final class SubsampledImage extends PlanarImage {
     /**
@@ -242,13 +241,13 @@ final class SubsampledImage extends PlanarImage {
      * Computes {@code (coordinate - offset) / subsampling} rounded toward 0.
      * The subsampling offset is assumed 0 in current version.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * in principle we should subtract the <var>subsampling offset</var>. However, that offset is
      * zero in the context of {@link CoverageReadConsistency} test, because coordinates (0,0) of
      * {@linkplain #source} image is the first pixel in the Area Of Interest specified by user,
      * so there are no more offsets at this stage. Note that we are talking about offset in image
      * coordinate system, not to be confused with offset relative to the data bank
-     * (given to the {@link SampleModel} at construction time).</div>
+     * (given to the {@link SampleModel} at construction time).
      */
     private static int divInclusive(final int coordinate, final int subsampling) {
         return floorDiv(coordinate, subsampling);

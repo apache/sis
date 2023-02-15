@@ -45,7 +45,6 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
 final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
     /**
@@ -124,6 +123,7 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * inverse of {@link #getCoordinateToGrid()}. But in this {@code ResidualGrid} case, we need to override with
      * the linear regression computed by {@link LocalizationGridBuilder}.
      */
+    @SuppressWarnings("serial")             // Most SIS implementations are serializable.
     final LinearTransform gridToTarget;
 
     /**
@@ -301,7 +301,6 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.1
      * @since   1.0
-     * @module
      */
     private final class Data extends FormattableObject implements Matrix, Function<int[],Number> {
         /** Coefficients from the denormalization matrix for the row corresponding to this dimension. */
@@ -327,9 +326,8 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
             if ((x | y) < 0 || x >= scanlineStride) {
                 throw new IndexOutOfBoundsException();
             }
-            return c0 * (x + getCellValue(0, x, y)) +                // TODO: use Math.fma with JDK9.
-                   c1 * (y + getCellValue(1, x, y)) +
-                   c2;
+            return Math.fma(x + getCellValue(0, x, y), c0,
+                   Math.fma(y + getCellValue(1, x, y), c1, c2));
         }
 
         /**

@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-public final strictfp class InflaterTest extends TestCase {
+public final class InflaterTest extends TestCase {
     /**
      * Verifies that the inflater constructor makes sure to have a chunk size
      * not greater than maximal buffer capacity.

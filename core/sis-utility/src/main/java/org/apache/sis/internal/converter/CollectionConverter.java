@@ -35,7 +35,6 @@ import org.apache.sis.math.FunctionProperty;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 abstract class CollectionConverter<T> extends SystemConverter<Collection<?>,T> {
     /**

@@ -32,11 +32,10 @@ import org.apache.sis.xml.Namespaces;
  * @author  Touraïvane (IRD)
  * @version 1.3
  * @since   0.3
- * @module
  *
  * @deprecated Renamed {@link AbstractTemporalQuality} for following a renaming in ISO 19157:2013.
  */
-@Deprecated
+@Deprecated(since="1.3")
 @XmlType(name = "AbstractDQ_TemporalAccuracy_Type", namespace = Namespaces.GMD)
 @XmlRootElement(name = "AbstractDQ_TemporalAccuracy", namespace = Namespaces.GMD)
 public class AbstractTemporalAccuracy extends AbstractTemporalQuality implements TemporalAccuracy {

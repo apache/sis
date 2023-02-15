@@ -31,14 +31,13 @@ import org.opengis.referencing.operation.Matrix;
  * └                 ┘</pre></blockquote>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see Matrix1
  * @see Matrix2
  * @see Matrix3
  *
  * @since 0.4
- * @module
  */
 public class Matrix4 extends MatrixSIS {
     /**
@@ -269,21 +268,12 @@ public class Matrix4 extends MatrixSIS {
      */
     @Override
     public final double[] getElements() {
-        final double[] elements = new double[SIZE*SIZE];
-        getElements(elements);
-        return elements;
-    }
-
-    /**
-     * Copies the matrix elements in the given flat array.
-     * The array length shall be at least 16, may also be 32.
-     */
-    @Override
-    final void getElements(final double[] elements) {
-        elements[ 0] = m00;    elements[ 1] = m01;    elements[ 2] = m02;    elements[ 3] = m03;
-        elements[ 4] = m10;    elements[ 5] = m11;    elements[ 6] = m12;    elements[ 7] = m13;
-        elements[ 8] = m20;    elements[ 9] = m21;    elements[10] = m22;    elements[11] = m23;
-        elements[12] = m30;    elements[13] = m31;    elements[14] = m32;    elements[15] = m33;
+        return new double[] {
+            m00, m01, m02, m03,
+            m10, m11, m12, m13,
+            m20, m21, m22, m23,
+            m30, m31, m32, m33
+        };
     }
 
     /**

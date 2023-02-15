@@ -52,7 +52,6 @@ import org.opengis.referencing.cs.ParametricCS;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createParametricCS(String)
  *
  * @since 0.7
- * @module
  */
 @XmlType(name = "ParametricCSType")
 @XmlRootElement(name = "ParametricCS")

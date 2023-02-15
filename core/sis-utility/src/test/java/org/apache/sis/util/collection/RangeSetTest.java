@@ -43,12 +43,11 @@ import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_SECOND;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.measure.RangeTest.class)
-public final strictfp class RangeSetTest extends TestCase {
+public final class RangeSetTest extends TestCase {
     /**
      * Tolerance factor for comparison of floating point numbers.
      * Actually we expect exact matches, because {@link RangeSet} does not perform any calculation
@@ -226,6 +225,8 @@ public final strictfp class RangeSetTest extends TestCase {
 
     /**
      * Tests the {@link RangeSet#indexOfRange(Comparable)} method.
+     * Opportunistically tests {@link RangeSet#indexOfMin(Comparable)}
+     * and {@link RangeSet#indexOfMax(Comparable)} methods as well.
      */
     @Test
     public void testIndexOfRange() {
@@ -235,14 +236,45 @@ public final strictfp class RangeSetTest extends TestCase {
         assertTrue(ranges.add(-20, -10));
         assertTrue(ranges.add( 60,  70));
         assertTrue(ranges.add( -5,  25));
-        assertEquals( 0, ranges.indexOfRange(-15));
-        assertEquals( 1, ranges.indexOfRange( 20));
-        assertEquals( 2, ranges.indexOfRange( 28));
-        assertEquals( 3, ranges.indexOfRange( 49));
-        assertEquals( 4, ranges.indexOfRange( 69));
-        assertEquals(-1, ranges.indexOfRange( 70));
-        assertEquals(-1, ranges.indexOfRange( 26));
-        assertEquals(-1, ranges.indexOfRange(-30));
+        verifyIndexOf(ranges, -15,  0,  0,  0);
+        verifyIndexOf(ranges,  20,  1,  1,  1);
+        verifyIndexOf(ranges,  28,  2,  2,  2);
+        verifyIndexOf(ranges,  49,  3,  3,  3);
+        verifyIndexOf(ranges,  69,  4,  4,  4);
+        verifyIndexOf(ranges,  70, -1,  4,  4);
+        verifyIndexOf(ranges, 100, -1,  4,  5);
+        verifyIndexOf(ranges,  60,  4,  4,  4);
+        verifyIndexOf(ranges,  59, -1,  3,  4);
+        verifyIndexOf(ranges,  26, -1,  1,  2);
+        verifyIndexOf(ranges, -30, -1, -1,  0);
+        verifyIndexOf(ranges, -20,  0,  0,  0);
+        verifyIndexOf(ranges, -21, -1, -1,  0);
+    }
+
+    /**
+     * Verifies the result of calling an {@code indexOf(…)} method.
+     *
+     * @param ranges  the ranges where to search.
+     * @param value   the value to search.
+     * @param index   expected result of {@code indedOfRange(…)}.
+     * @param min     expected result of {@code indedOfMin(…)}.
+     * @param max     expected result of {@code indedOfMax(…)}.
+     */
+    private static void verifyIndexOf(final RangeSet<Integer> ranges,
+            final int value, final int index, final int min, final int max)
+    {
+        assertEquals(index, ranges.indexOfRange(value));
+        assertEquals(min,   ranges.indexOfMin  (value));
+        assertEquals(max,   ranges.indexOfMax  (value));
+        if (index >= 0) {
+            assertTrue(value >= ranges.getMinLong(index));
+            assertTrue(value <  ranges.getMaxLong(index));
+        }
+        final int s = ranges.size();
+        if (min   >= 0) assertTrue(value >= ranges.getMinLong(min  ));
+        if (min+1 <  s) assertTrue(value <  ranges.getMinLong(min+1));
+        if (max   <  s) assertTrue(value <= ranges.getMaxLong(max  ));
+        if (max   >  0) assertTrue(value >  ranges.getMaxLong(max-1));
     }
 
     /**

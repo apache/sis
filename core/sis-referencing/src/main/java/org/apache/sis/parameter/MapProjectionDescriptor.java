@@ -48,7 +48,6 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.6
- * @module
  */
 @XmlTransient
 final class MapProjectionDescriptor extends DefaultParameterDescriptorGroup {

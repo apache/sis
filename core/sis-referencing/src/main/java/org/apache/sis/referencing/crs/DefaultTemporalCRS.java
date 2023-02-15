@@ -73,7 +73,6 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createTemporalCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "TemporalCRSType", propOrder = {
     "coordinateSystem",
@@ -94,6 +93,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @see #getDatum()
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     private TemporalDatum datum;
 
     /**
@@ -231,7 +231,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
              * If it happens anyway, put the fractional amount of seconds in the converter instead of adding another
              * field in this class for such very rare situation. Accuracy should be okay since the offset is small.
              */
-            UnitConverter c = Units.converter(null, new Fraction((int) t, MILLIS_PER_SECOND).simplify());
+            UnitConverter c = Units.converter(null, Fraction.valueOf(t, MILLIS_PER_SECOND));
             toSeconds = c.concatenate(toSeconds);
         }
     }

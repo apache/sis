@@ -38,7 +38,6 @@ import org.apache.sis.util.resources.Vocabulary;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public abstract class CalcAddins extends WeakBase implements XServiceName, XServiceInfo, XLocalizable {
     /**

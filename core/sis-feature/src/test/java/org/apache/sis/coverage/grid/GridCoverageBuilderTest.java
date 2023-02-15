@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public final strictfp class GridCoverageBuilderTest extends TestCase {
+public final class GridCoverageBuilderTest extends TestCase {
     /**
      * Tests {@link GridCoverageBuilder#setValues(RenderedImage)}.
      */

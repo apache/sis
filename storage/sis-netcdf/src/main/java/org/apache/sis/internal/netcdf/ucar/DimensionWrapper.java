@@ -32,7 +32,6 @@ import ucar.nc2.Dimension;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
 final class DimensionWrapper extends org.apache.sis.internal.netcdf.Dimension {
     /**

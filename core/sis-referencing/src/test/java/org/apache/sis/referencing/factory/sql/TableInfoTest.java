@@ -28,9 +28,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class TableInfoTest extends TestCase {
+public final class TableInfoTest extends TestCase {
     /**
      * Tests {@link TableInfo#tableMatches(String, String)}.
      */

@@ -16,9 +16,7 @@
  */
 package org.apache.sis.internal.filter.sqlmm;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Collections;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 
@@ -39,7 +37,6 @@ import org.opengis.filter.Expression;
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
- * @module
  */
 class OneGeometry<R,G> extends SpatialFunction<R> {
     /**
@@ -50,6 +47,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
     /**
      * The expression giving the geometry.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     final Expression<? super R, GeometryWrapper<G>> geometry;
 
     /**
@@ -82,7 +80,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
      */
     @Override
     public List<Expression<? super R, ?>> getParameters() {
-        return Collections.singletonList(unwrap(geometry));
+        return List.of(unwrap(geometry));
     }
 
     /**
@@ -109,6 +107,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
         /**
          * The first argument after the geometry.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         final Expression<? super R, ?> argument;
 
         /**
@@ -133,7 +132,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
          */
         @Override
         public List<Expression<? super R, ?>> getParameters() {
-            return Arrays.asList(unwrap(geometry), argument);       // TODO: use List.of(…) with JDK9.
+            return List.of(unwrap(geometry), argument);
         }
 
         /**

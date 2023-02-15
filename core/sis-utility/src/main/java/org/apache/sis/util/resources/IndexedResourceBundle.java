@@ -16,11 +16,13 @@
  */
 package org.apache.sis.util.resources;
 
+import java.net.URI;
 import java.net.URL;
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Enumeration;
 import java.util.Locale;
@@ -28,6 +30,7 @@ import java.util.MissingResourceException;
 import java.util.NoSuchElementException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Modifier;
 import javax.measure.Unit;
@@ -42,13 +45,13 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.Loggers;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.internal.util.AutoMessageFormat;
 import org.apache.sis.internal.util.MetadataServices;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.measure.RangeFormat;
 import org.apache.sis.measure.Range;
 
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -77,11 +80,15 @@ import static java.util.logging.Logger.getLogger;
  * multiple threads.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public class IndexedResourceBundle extends ResourceBundle implements Localized {
+    /**
+     * The logger for localization events.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.LOCALIZATION);
+
     /**
      * Key used in properties map for localizing some aspects of the operation being executed.
      * The {@code getResources(Map<?,?>)} methods defined in some sub-classes will look for this property.
@@ -95,6 +102,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Resource strings are never cut to this length. However, text replacing {@code "{0}"} in a string like
      * {@code "Parameter name is {0}"} will be cut to this length.
      */
+    @Configuration
     private static final int MAX_STRING_LENGTH = 200;
 
     /**
@@ -154,7 +162,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * @param  base     the resource bundle class.
      * @param  locale   the locale, or {@code null} for the default locale.
      * @return resources in the given locale.
-     * @throws MissingResourceException if resources can't be found.
+     * @throws MissingResourceException if resources cannot be found.
      *
      * @see Vocabulary#getResources(Locale)
      * @see Errors#getResources(Locale)
@@ -304,7 +312,6 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     final String    baseName   = getClass().getCanonicalName();
                     final String    methodName = (key != null) ? "getObject" : "getKeys";
                     final LogRecord record     = new LogRecord(Level.FINER, "Loaded resources for {0} from bundle \"{1}\".");
-                    record.setLoggerName(Loggers.LOCALIZATION);
                     /*
                      * Loads resources from the UTF file.
                      */
@@ -320,7 +327,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         record.setLevel  (Level.WARNING);
                         record.setMessage(exception.getMessage());              // For administrator, use system locale.
                         record.setThrown (exception);
-                        Logging.log(IndexedResourceBundle.class, methodName, record);
+                        Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
                         throw (MissingResourceException) new MissingResourceException(
                                 Exceptions.getLocalizedMessage(exception, locale),   // For users, use requested locale.
                                 baseName, key).initCause(exception);
@@ -339,7 +346,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                         language = "<root>";
                     }
                     record.setParameters(new String[] {language, baseName});
-                    Logging.log(IndexedResourceBundle.class, methodName, record);
+                    Logging.completeAndLog(LOGGER, IndexedResourceBundle.class, methodName, record);
                     resources = null;                                           // Not needed anymore, let GC do its job.
                 }
                 this.values = values;
@@ -375,7 +382,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 keyID = getKeyConstants().getKeyValue(key);
             } catch (ReflectiveOperationException e) {
                 e.addSuppressed(exception);
-                Logging.recoverableException(getLogger(Loggers.LOCALIZATION), getClass(), "handleGetObject", e);
+                Logging.recoverableException(LOGGER, getClass(), "handleGetObject", e);
                 return null;                // This is okay as of 'handleGetObject' contract.
             }
         }
@@ -418,12 +425,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                     text = ((InternationalString) element).toString(getLocale());
                 }
                 replacement = CharSequences.shortSentence(text, MAX_STRING_LENGTH);
-            } else if (element instanceof Throwable) {
-                String message = Exceptions.getLocalizedMessage((Throwable) element, getLocale());
-                if (message == null) {
-                    message = Classes.getShortClassName(element);
-                }
-                replacement = message;
+            } else if (element instanceof URI) {
+                replacement = ((URI) element).getPath();        // For decoding encoded characters.
             } else if (element instanceof Class<?>) {
                 replacement = Classes.getShortName(getPublicType((Class<?>) element));
             } else if (element instanceof ControlledVocabulary) {
@@ -437,6 +440,12 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
                 replacement = s;
             } else if (element.getClass().isArray()) {
                 replacement = Utilities.deepToString(element);
+            } else if (element instanceof Throwable) {
+                String message = Exceptions.getLocalizedMessage((Throwable) element, getLocale());
+                if (message == null) {
+                    message = Classes.getShortClassName(element);
+                }
+                replacement = message;
             }
             /*
              * No need to check for Numbers or Dates instances, since they are
@@ -444,7 +453,7 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
              */
             if (replacement != element) {
                 if (array == arguments) {
-                    array = array.clone();                  // Protect the user-provided array from change.
+                    array = Arrays.copyOf(array, array.length, Object[].class);
                 }
                 array[i] = replacement;
             }
@@ -545,11 +554,11 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * formatted using {@link MessageFormat}. Calling this method is approximately equivalent to
      * calling:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     String pattern = getString(key);
      *     Format f = new MessageFormat(pattern);
      *     return f.format(arg0);
-     * }
+     *     }
      *
      * If {@code arg0} is not already an array, it will be placed into an array of length 1. Using
      * {@link MessageFormat}, all occurrences of "{0}", "{1}", "{2}" in the resource string will be

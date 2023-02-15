@@ -46,7 +46,6 @@ import javafx.scene.input.ClipboardContent;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.PropertyView;
 import org.apache.sis.internal.gui.PropertyValueFormatter;
@@ -56,7 +55,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -83,9 +82,8 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Siddhesh Rane (GSoC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
- * @module
  */
 @DefaultProperty("content")
 public class MetadataTree extends TreeTableView<TreeTable.Node> {
@@ -384,7 +382,7 @@ check:      if (data != null) {
                 flush();
                 value = buffer.toString();
             } catch (IOException e) {               // Should never happen because we append in a StringBuilder.
-                Logging.unexpectedException(getLogger(Modules.APPLICATION), Formatter.class, "call", e);
+                Logging.unexpectedException(LOGGER, Formatter.class, "call", e);
                 // Leave `value` as-is. It will be formatted using `Object.toString()`.
             }
             return new ReadOnlyObjectWrapper<>(value);

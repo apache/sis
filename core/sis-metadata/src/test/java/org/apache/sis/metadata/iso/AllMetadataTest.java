@@ -35,10 +35,9 @@ import org.junit.Test;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   0.3
- * @module
  */
 @DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
-public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
+public final class AllMetadataTest extends PropertyConsistencyCheck {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
@@ -174,7 +173,7 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.quality.CoverageResult.class,
             org.opengis.metadata.quality.DataEvaluation.class,
             org.opengis.metadata.quality.DataQuality.class,
-            org.opengis.metadata.quality.Description.class,
+//          org.opengis.metadata.quality.Description.class,                 // Pending ISO 19157:2022 renaming.
             org.opengis.metadata.quality.DescriptiveResult.class,
             org.opengis.metadata.quality.DomainConsistency.class,
             org.opengis.metadata.quality.Element.class,
@@ -186,7 +185,7 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.quality.Homogeneity.class,
             org.opengis.metadata.quality.IndirectEvaluation.class,
             org.opengis.metadata.quality.LogicalConsistency.class,
-            org.opengis.metadata.quality.Measure.class,
+//          org.opengis.metadata.quality.Measure.class,                     // Pending ISO 19157:2022 renaming.
             org.opengis.metadata.quality.MeasureReference.class,
             org.opengis.metadata.quality.Metaquality.class,
             org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy.class,
@@ -199,7 +198,7 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.quality.Result.class,
             org.opengis.metadata.quality.SampleBasedInspection.class,
             org.opengis.metadata.quality.SourceReference.class,
-            org.opengis.metadata.quality.StandaloneQualityReportInformation.class,
+//          org.opengis.metadata.quality.StandaloneQualityReportInformation.class,      // Pending ISO 19157:2022 renaming.
             org.opengis.metadata.quality.TemporalAccuracy.class,
             org.opengis.metadata.quality.TemporalConsistency.class,
             org.opengis.metadata.quality.TemporalQuality.class,
@@ -208,7 +207,6 @@ public final strictfp class AllMetadataTest extends PropertyConsistencyCheck {
             org.opengis.metadata.quality.ThematicClassificationCorrectness.class,
             org.opengis.metadata.quality.TopologicalConsistency.class,
             org.opengis.metadata.quality.Usability.class,
-            org.opengis.metadata.quality.UsabilityElement.class,
             org.opengis.metadata.quality.ValueStructure.class,
             org.opengis.metadata.spatial.CellGeometry.class,
             org.opengis.metadata.spatial.Dimension.class,

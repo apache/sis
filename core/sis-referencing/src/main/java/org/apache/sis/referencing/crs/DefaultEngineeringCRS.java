@@ -67,7 +67,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)
  *
  * @since 0.4
- * @module
  */
 @XmlType(name = "EngineeringCRSType", propOrder = {
     "abstractCS",
@@ -95,7 +94,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *
      * @see #getDatum()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private EngineeringDatum datum;
 
     /**
@@ -294,19 +293,19 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * Used by JAXB only (invoked by reflection).
      * Only one of {@code getFooCS()} methods can return a non-null value.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * The usual way to handle {@code <xs:choice>} with JAXB is to annotate a single method like below:
      *
-     * {@preformat java
-     *     &#64;Override
-     *     &#64;XmlElements({
-     *       &#64;XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
-     *       &#64;XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
-     *       &#64;XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
-     *       &#64;XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
-     *       &#64;XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
-     *       &#64;XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
-     *       &#64;XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
+     * {@snippet lang="java" :
+     *     @Override
+     *     @XmlElements({
+     *       @XmlElement(name = "cartesianCS",   type = DefaultCartesianCS.class),
+     *       @XmlElement(name = "affineCS",      type = DefaultAffineCS.class),
+     *       @XmlElement(name = "cylindricalCS", type = DefaultCylindricalCS.class),
+     *       @XmlElement(name = "linearCS",      type = DefaultLinearCS.class),
+     *       @XmlElement(name = "polarCS",       type = DefaultPolarCS.class),
+     *       @XmlElement(name = "sphericalCS",   type = DefaultSphericalCS.class),
+     *       @XmlElement(name = "userDefinedCS", type = DefaultUserDefinedCS.class)
      *     })
      *     public CoordinateSystem getCoordinateSystem() {
      *         return super.getCoordinateSystem();
@@ -314,7 +313,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * }
      *
      * However, our attempts to apply this approach worked for {@code DefaultParameterValue} but not for this class:
-     * for an unknown reason, the unmarshalled CS object is empty.</div>
+     * for an unknown reason, the unmarshalled CS object is empty.
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-166">SIS-166</a>
      */

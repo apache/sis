@@ -32,14 +32,11 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.internal.referencing.MathTransformsOrFactory;
 import org.apache.sis.internal.referencing.provider.Wraparound;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -72,12 +69,11 @@ import static java.util.logging.Logger.getLogger;
  * (it may be the [0 … 360]° range, but not necessarily).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.geometry.Envelopes#wraparound(MathTransform, Envelope)
  *
  * @since 1.1
- * @module
  */
 public class WraparoundTransform extends AbstractMathTransform implements Serializable {
     /**
@@ -300,9 +296,9 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * It provides a single method to override if a different wraparound strategy is desired.
      * The default implementation is:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     return Math.IEEEremainder(x, period);
-     * }
+     *     }
      *
      * Subclasses may override this method for applying wraparound only under some conditions,
      * in order to reduce discontinuities.
@@ -536,7 +532,7 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
                 }
             } catch (NoninvertibleTransformException e) {
                 // Should not happen. But if it is the case, just abandon the optimization effort.
-                Logging.recoverableException(getLogger(Modules.REFERENCING), getClass(), "tryConcatenate", e);
+                Logging.recoverableException(LOGGER, getClass(), "tryConcatenate", e);
             }
         }
         return null;

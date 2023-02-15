@@ -29,15 +29,14 @@ import org.apache.sis.internal.xml.StreamWriterDelegate;
  * an alternative approach would have been to provide {@code startIdentation()} and {@code endIndentation()}
  * convenience methods in {@link StaxStreamWriter}, and let subclasses perform their own formatting. It would
  * reduce the need to try to guess some formatting aspects (e.g. whether to format on a single line or not).
- * However, that approach does not integrate very well with JAXB; the {@code Marshaller.JAXB_FORMATTED_OUTPUT}
- * property seems to be ignored when marshalling a fragment using {@code XMLStreamWriter}. Even if that property
- * was supported, there is no standard way as of JDK8 to tell to JAXB to begin the indentation at some level
+ * However, that approach does not integrate very well with JAXB. The {@code Marshaller.JAXB_FORMATTED_OUTPUT}
+ * property seems to be ignored when marshalling a fragment using {@code XMLStreamWriter}.
+ * Even if that property was supported, we found no way to tell to JAXB to begin the indentation at some level
  * (for taking in account the indentation of the elements containing the fragment to marshal with JAXB).</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class FormattedWriter extends StreamWriterDelegate {
     /**

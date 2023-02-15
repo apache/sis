@@ -27,7 +27,6 @@ import org.junit.BeforeClass;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.netcdf.DataTypeTest.class,
@@ -45,7 +44,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.netcdf.NetcdfStoreTest.class,
     org.apache.sis.storage.netcdf.SelfConsistencyTest.class
 })
-public final strictfp class NetcdfTestSuite extends TestSuite {
+public final class NetcdfTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

@@ -128,7 +128,6 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.0
- * @module
  */
 public class GeodeticCalculator {
     /**
@@ -292,10 +291,6 @@ public class GeodeticCalculator {
      * All {@code GeodeticCalculator} methods having a {@link Position} argument
      * or return value will use that specified CRS.
      * That CRS is the value returned by {@link #getPositionCRS()}.
-     *
-     * <h4>Limitations</h4>
-     * Current implementation uses only spherical formulas.
-     * Implementation using ellipsoidal formulas will be provided in a future Apache SIS release.
      *
      * @param  crs  the reference system for the {@link Position} objects.
      * @return a new geodetic calculator using the specified CRS.
@@ -1215,15 +1210,14 @@ public class GeodeticCalculator {
      * The text representation is implementation-specific and may change in any future version.
      * Current implementation is like below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Coordinate reference system: Unspecified datum based upon the GRS 1980 Authalic Sphere
      *   ┌─────────────┬─────────────────┬──────────────────┬─────────────┐
      *   │             │    Latitude     │    Longitude     │   Azimuth   │
      *   │ Start point │  9°39′06.1120″N │ 132°37′37.1248″W │  -17°10′37″ │
      *   │ End point   │ 70°32′45.0206″N │ 109°50′05.0533″E │ -119°03′12″ │
      *   └─────────────┴─────────────────┴──────────────────┴─────────────┘
-     *   Geodesic distance: 9,967,530.74 m
-     * }
+     *   Geodesic distance: 9,967,530.74 m</pre>
      *
      * @return a string representation of this calculator state.
      */

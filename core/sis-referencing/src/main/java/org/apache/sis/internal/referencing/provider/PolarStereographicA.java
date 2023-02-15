@@ -23,6 +23,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.internal.referencing.Formulas;
+import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.measure.Latitude;
@@ -30,17 +31,16 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for <cite>"Polar Stereographic (Variant A)"</cite> projection (EPSG:9810).
+ * The provider for <cite>"Polar Stereographic (variant A)"</cite> projection (EPSG:9810).
  * Also used for the definition of Universal Polar Stereographic (UPS) projection.
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-572">SIS-512</a>
  *
  * @since 0.6
- * @module
  */
 @XmlTransient
 public final class PolarStereographicA extends AbstractStereographic {
@@ -78,7 +78,7 @@ public final class PolarStereographicA extends AbstractStereographic {
      *   <li>No default value</li>
      * </ul>
      */
-    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN = LambertConformal1SP.LATITUDE_OF_ORIGIN;
+    public static final ParameterDescriptor<Double> LATITUDE_OF_ORIGIN;
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of natural origin</cite> (λ₀) parameter value.
@@ -120,18 +120,20 @@ public final class PolarStereographicA extends AbstractStereographic {
     static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder();
+        LATITUDE_OF_ORIGIN = createMandatoryLatitude(builder
+                .addNamesAndIdentifiers(LambertConformal1SP.LATITUDE_OF_ORIGIN)
+                .setRemarks(Resources.formatInternational(Resources.Keys.RestrictedToPoleLatitudes)));
+
         LONGITUDE_OF_ORIGIN = createLongitude(builder
                 .addNamesAndIdentifiers(ObliqueStereographic.LONGITUDE_OF_ORIGIN)
                 .reidentify(Citations.GEOTIFF, "3095")
                 .rename(Citations.GEOTIFF, "StraightVertPoleLong"));
 
         PARAMETERS = builder
-                .addIdentifier(             IDENTIFIER)
-                .addName(                   NAME)
-                .addName(Citations.OGC,     "Polar_Stereographic")
-                .addName(Citations.GEOTIFF, "CT_PolarStereographic")
-                .addName(Citations.PROJ4,   "stere")
-                .addIdentifier(Citations.GEOTIFF, "15")
+                .addIdentifier(IDENTIFIER)
+                .addName(NAME)
+                .addName(Citations.OGC,   "Polar_Stereographic")
+                .addName(Citations.PROJ4, "stere")
                 .createGroupForMapProjection(
                         LATITUDE_OF_ORIGIN,     // Can be only ±90°
                         LONGITUDE_OF_ORIGIN,

@@ -47,7 +47,6 @@ import org.apache.sis.internal.gui.LogHandler;
  * @see Cell
  *
  * @since 1.3
- * @module
  */
 final class ResourceItem extends TreeItem<Resource> {
     /**

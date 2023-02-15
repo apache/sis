@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
-import java.util.Arrays;
+import java.util.List;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.sis.test.DependsOn;
@@ -35,10 +35,9 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 @DependsOn(TypesTest.class)
-public final strictfp class MetadataTest extends TestCase {
+public final class MetadataTest extends TestCase {
     /**
      * Tests the {@link Metadata#equals(Object)} and {@link Metadata#hashCode()}.
      *
@@ -95,12 +94,12 @@ public final strictfp class MetadataTest extends TestCase {
         metadata.author      = person;
         metadata.creator     = "DataProducer";
         metadata.copyright   = copyright;
-        metadata.keywords    = Arrays.asList("sample", "metadata");
+        metadata.keywords    = List.of("sample", "metadata");
         metadata.bounds      = bounds;
         metadata.time        = date("2010-03-01 00:00:00");
-        metadata.links       = Arrays.asList(new Link(new URI("http://first-address.org")),
-                                             new Link(new URI("http://second-address.org")),
-                                             new Link(new URI("http://third-address.org")));
+        metadata.links       = List.of(new Link(new URI("http://first-address.org")),
+                                       new Link(new URI("http://second-address.org")),
+                                       new Link(new URI("http://third-address.org")));
         metadata.links.get(2).type = "website";
         metadata.links.get(0).text = "first";
         return metadata;

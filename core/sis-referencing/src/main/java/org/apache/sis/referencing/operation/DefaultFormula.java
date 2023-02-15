@@ -47,7 +47,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @see org.apache.sis.referencing.operation.transform.MathTransformProvider
  *
  * @since 0.5
- * @module
  */
 public class DefaultFormula extends FormattableObject implements Formula, Serializable {
     /**
@@ -58,13 +57,13 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Formula(s) or procedure used by the operation method.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final InternationalString formula;
 
     /**
      * Reference to a publication giving the formula(s) or procedure used by the coordinate operation method.
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final Citation citation;
 
     /**

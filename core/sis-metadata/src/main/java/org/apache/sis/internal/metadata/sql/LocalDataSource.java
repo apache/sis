@@ -26,7 +26,6 @@ import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -37,8 +36,6 @@ import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Strings;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * A data source for a database stored locally in the {@code $SIS_DATA} directory.
@@ -46,11 +43,15 @@ import static java.util.logging.Logger.getLogger;
  * It provides our {@linkplain #initialize() starting point} for initiating the system-wide connection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public final class LocalDataSource implements DataSource, Comparable<LocalDataSource> {
+    /**
+     * Where to log warnings.
+     */
+    static final Logger LOGGER = Logger.getLogger(Loggers.SQL);
+
     /**
      * The property name for the home of Derby databases.
      */
@@ -127,15 +128,15 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  */
                 Path path = dir.resolve(database);
                 if (home != null) try {
-                    path = Paths.get(home).relativize(path);
+                    path = Path.of(home).relativize(path);
                 } catch (IllegalArgumentException | SecurityException e) {
                     // The path cannot be relativized. This is okay.
-                    Logging.recoverableException(getLogger(Loggers.SQL), LocalDataSource.class, "<init>", e);
+                    Logging.recoverableException(LOGGER, LocalDataSource.class, "<init>", e);
                 }
                 path   = path.normalize();
                 dbFile = path.toString().replace(path.getFileSystem().getSeparator(), "/");
                 switch (dialect) {
-                    case HSQL: path = Paths.get(path.toString() + ".data"); break;
+                    case HSQL: path = Path.of(path.toString() + ".data"); break;
                     // More cases may be added in the future.
                 }
                 create = !Files.exists(path);
@@ -146,7 +147,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                  * if the database does not exist in that directory, because otherwise users could define
                  * SIS_DATA and get the impression that their setting is ignored.
                  */
-                final Path path = Paths.get(home);
+                final Path path = Path.of(home);
                 create = !Files.exists(path.resolve(database)) && Files.isDirectory(path);
                 dbFile = database;
             } else {
@@ -296,8 +297,7 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
                 record.setLevel(Level.WARNING);
                 record.setThrown(e);
             }
-            record.setLoggerName(Loggers.SQL);
-            Logging.log(LocalDataSource.class, "shutdown", record);
+            Logging.completeAndLog(LOGGER, LocalDataSource.class, "shutdown", record);
         }
     }
 

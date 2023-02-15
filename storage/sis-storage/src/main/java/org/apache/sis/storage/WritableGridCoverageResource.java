@@ -28,7 +28,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public interface WritableGridCoverageResource extends GridCoverageResource {
     /**
@@ -45,7 +44,6 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * @author  Johann Sorel (Geomatys)
      * @version 1.2
      * @since   1.2
-     * @module
      */
     interface Option {}
 
@@ -57,7 +55,6 @@ public interface WritableGridCoverageResource extends GridCoverageResource {
      * @author  Johann Sorel (Geomatys)
      * @version 1.2
      * @since   1.2
-     * @module
      */
     enum CommonOption implements Option {
         /**

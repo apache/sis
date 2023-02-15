@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The executor shared by most of Apache SIS library for relatively "heavy" operations.
- * The operations should relatively long tasks, otherwise work-stealing algorithms may
+ * The operations should be relatively long tasks, otherwise work-stealing algorithms may
  * provide better performances. For example, it may be used when each computational unit
  * is an image tile, in which case the thread scheduling overhead is small compared to
  * the size of the computational task.
@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @see java.util.concurrent.ForkJoinPool#commonPool()
  *
  * @since 1.1
- * @module
  */
 @SuppressWarnings("serial")                     // Not intended to be serialized.
 public final class CommonExecutor extends AtomicInteger implements ThreadFactory {
@@ -59,6 +58,7 @@ public final class CommonExecutor extends AtomicInteger implements ThreadFactory
      * If the number of tasks is greater than this parallelism value,
      * extraneous tasks will be queued.
      */
+    @Configuration
     public static final int PARALLELISM = Math.max(Runtime.getRuntime().availableProcessors() - 1, 1);
 
     /**

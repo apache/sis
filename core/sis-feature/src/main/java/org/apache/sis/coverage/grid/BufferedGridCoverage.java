@@ -39,7 +39,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
 
 // Branch-specific imports
-import org.apache.sis.internal.jdk9.JDK9;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 
@@ -78,9 +77,8 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public class BufferedGridCoverage extends GridCoverage {
     /**
@@ -104,8 +102,8 @@ public class BufferedGridCoverage extends GridCoverage {
      * <h4>Usage</h4>
      * Implementation of {@link #render(GridExtent)} method can be like below:
      *
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     public RenderedImage render(GridExtent sliceExtent) throws CannotEvaluateException {
      *         if (sliceExtent == null) {
      *             sliceExtent = gridGeometry.getExtent();
@@ -119,7 +117,7 @@ public class BufferedGridCoverage extends GridCoverage {
      *                 return renderer.createImage();
      *             });
      *         } catch (IllegalGridGeometryException | MismatchedDimensionException e) {
-    *              throw e;
+     *             throw e;
      *         } catch (IllegalArgumentException | ArithmeticException | RasterFormatException e) {
      *             throw new CannotEvaluateException(e.getMessage(), e);
      *         }
@@ -167,7 +165,7 @@ public class BufferedGridCoverage extends GridCoverage {
          */
         final GridExtent extent = domain.getExtent();
         final long expectedSize = getSampleCount(extent, numBands);
-        final long bufferSize = JDK9.multiplyFull(data.getSize(), numBanks);
+        final long bufferSize = Math.multiplyFull(data.getSize(), numBanks);
         if (bufferSize < expectedSize) {
             final StringBuilder b = new StringBuilder();
             for (int i=0; i < extent.getDimension(); i++) {
@@ -303,7 +301,7 @@ public class BufferedGridCoverage extends GridCoverage {
 
         /**
          * Grid size with shifted index. The size of dimension 0 is stored at index 1, the size of dimension 1
-         * is stored in index 2, <i>etc.</i>. Element 0 contains the number of banks. This layout is convenient
+         * is stored in index 2, <i>etc.</i>. Element 0 contains the pixel stride. This layout is convenient
          * for computing index in {@link DataBuffer}.
          */
         private final long[] sizes;
@@ -318,17 +316,18 @@ public class BufferedGridCoverage extends GridCoverage {
          */
         CellAccessor(final BufferedGridCoverage coverage) {
             super(coverage);
-            data = coverage.data;
             final GridExtent extent = coverage.getGridGeometry().getExtent();
-            lower = new long[extent.getDimension()];
-            sizes = new long[lower.length + 1];
-            sizes[0] = data.getNumBanks();
+            final int numBands = coverage.getSampleDimensions().size();
+            data     = coverage.data;
+            banded   = data.getNumBanks() > 1;
+            values   = new double[numBands];
+            lower    = new long[extent.getDimension()];
+            sizes    = new long[lower.length + 1];
+            sizes[0] = banded ? 1 : numBands;
             for (int i=0; i<lower.length; i++) {
                 lower[i]   = extent.getLow(i);
                 sizes[i+1] = extent.getSize(i);
             }
-            banded = sizes[0] > 1;
-            values = new double[coverage.getSampleDimensions().size()];
         }
 
         /**

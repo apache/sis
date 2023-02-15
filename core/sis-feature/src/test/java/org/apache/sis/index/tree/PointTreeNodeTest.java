@@ -30,9 +30,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.1
- * @module
  */
-public final strictfp class PointTreeNodeTest extends TestCase {
+public final class PointTreeNodeTest extends TestCase {
     /**
      * Verifies the value of {@link PointTree#MAXIMUM_DIMENSIONS}.
      * That value is restricted by the maximal capacity of {@code long} type

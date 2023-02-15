@@ -16,7 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
-import java.util.Collections;
+import java.util.List;
 import java.awt.image.DataBuffer;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
@@ -41,9 +41,8 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
-public final strictfp class ConvertedGridCoverageTest extends TestCase {
+public final class ConvertedGridCoverageTest extends TestCase {
     /**
      * Creates a test coverage backed by an image of 2 pixels
      * on a single row with sample values (-1, 3).
@@ -61,12 +60,10 @@ public final strictfp class ConvertedGridCoverageTest extends TestCase {
         /*
          * The "grid to CRS" transform does not matter for this test.
          */
-        final GridGeometry grid = new GridGeometry(new GridExtent(2, 1), PixelInCell.CELL_CENTER,
-                new AffineTransform2D(1, 0, 0, 1, 1, 0), HardCodedCRS.WGS84);
+        final var grid = new GridGeometry(new GridExtent(2, 1), PixelInCell.CELL_CENTER,
+                            new AffineTransform2D(1, 0, 0, 1, 1, 0), HardCodedCRS.WGS84);
 
-        final BufferedGridCoverage coverage = new BufferedGridCoverage(
-                grid, Collections.singletonList(sd), DataBuffer.TYPE_SHORT);
-
+        final var coverage = new BufferedGridCoverage(grid, List.of(sd), DataBuffer.TYPE_SHORT);
         coverage.data.setElem(0, -1);
         coverage.data.setElem(1,  3);
         return coverage;

@@ -19,7 +19,6 @@ package org.apache.sis.filter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Calendar;
@@ -73,7 +72,6 @@ import org.opengis.filter.BetweenComparisonOperator;
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
- * @module
  */
 abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         implements BinaryComparisonOperator<R>, Optimization.OnFilter<R>
@@ -238,7 +236,6 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * @param  left   the first object to compare. Must be non-null.
      * @param  right  the second object to compare. Must be non-null.
      */
-    @SuppressWarnings("null")
     private boolean evaluate(Object left, Object right) {
         /*
          * For numbers, the apply(…) method inherited from parent class will delegate to specialized methods like
@@ -825,7 +822,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
         /** Returns the expression to be compared by this operator, together with boundaries. */
         @Override public List<Expression<? super R, ?>> getExpressions() {
-            return Arrays.asList(lower.expression1, lower.expression2, upper.expression2);
+            return List.of(lower.expression1, lower.expression2, upper.expression2);
         }
 
         /** Returns the expression to be compared. */

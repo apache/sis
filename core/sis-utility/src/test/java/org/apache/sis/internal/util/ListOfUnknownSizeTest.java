@@ -29,9 +29,8 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
-public final strictfp class ListOfUnknownSizeTest extends TestCase {
+public final class ListOfUnknownSizeTest extends TestCase {
     /**
      * Tests {@link ListOfUnknownSize#listIterator()}.
      */

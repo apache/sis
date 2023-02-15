@@ -48,7 +48,6 @@ import org.opengis.feature.Feature;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public abstract class Presentation {
 

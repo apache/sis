@@ -19,12 +19,9 @@ package org.apache.sis.referencing.factory.sql;
 import java.lang.ref.WeakReference;
 import java.sql.SQLException;
 import java.sql.Statement;
-import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.ReferenceQueueConsumer;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -34,12 +31,11 @@ import static java.util.logging.Logger.getLogger;
  * be closed.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see EPSGFactory#canClose(EPSGDataAccess)
  *
  * @since 0.7
- * @module
  */
 final class CloseableReference extends WeakReference<AuthorityCodes> implements Disposable {
     /**
@@ -106,7 +102,7 @@ final class CloseableReference extends WeakReference<AuthorityCodes> implements 
              * Pretend that the logging come from AuthorityCodes because it is closer to a public API (or at
              * least, easier to guess that it is related to the EPSGDataAccess.getAuthorityCodes() method).
              */
-            Logging.unexpectedException(getLogger(Loggers.CRS_FACTORY), AuthorityCodes.class, "close", exception);
+            Logging.unexpectedException(EPSGDataAccess.LOGGER, AuthorityCodes.class, "close", exception);
         }
     }
 }

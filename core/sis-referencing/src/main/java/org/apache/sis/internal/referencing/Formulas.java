@@ -16,10 +16,11 @@
  */
 package org.apache.sis.internal.referencing;
 
+import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.internal.util.Numerics;
-import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.internal.system.Configuration;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 
 import static java.lang.Math.*;
@@ -33,9 +34,8 @@ import static org.apache.sis.internal.metadata.ReferencingServices.NAUTICAL_MILE
  * do not want to expose publicly those arbitrary values (or at least not in a too direct way).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
- * @module
  */
 public final class Formulas extends Static {
     /**
@@ -52,6 +52,7 @@ public final class Formulas extends Static {
      * @see #ANGULAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
+    @Configuration
     public static final double LINEAR_TOLERANCE = 0.01;
 
     /**
@@ -64,6 +65,7 @@ public final class Formulas extends Static {
      * @see #LINEAR_TOLERANCE
      * @see org.apache.sis.internal.util.Numerics#COMPARISON_THRESHOLD
      */
+    @Configuration
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);
 
     /**
@@ -71,6 +73,7 @@ public final class Formulas extends Static {
      * assuming that the unit of measurement is second. Current value is arbitrary
      * and may change in any future Apache SIS version.
      */
+    @Configuration
     public static final double TEMPORAL_TOLERANCE = 60;             // One minute.
 
     /**
@@ -97,7 +100,17 @@ public final class Formulas extends Static {
      *
      * <p>Current value has been determined empirically for allowing {@code GeodesicsOnEllipsoidTest} to pass.</p>
      */
+    @Configuration
     public static final int MAXIMUM_ITERATIONS = 18;
+
+    /**
+     * Whether to use {@link Math#fma(double, double, double)} for performance reasons.
+     * We do not use this flag when the goal is to get better accuracy rather than performance.
+     * Use of FMA brings performance benefits on machines having hardware support,
+     * but come at a high cost on older machines without hardware support.
+     */
+    @Configuration
+    public static final boolean USE_FMA = true;
 
     /**
      * Do not allow instantiation of this class.
@@ -254,9 +267,9 @@ public final class Formulas extends Static {
      * broken when x=0 and |y| ≤ 1.4914711209038602E-154 or conversely. This method does not check for such cases;
      * it is caller responsibility to add this check is necessary, for example as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     double D = max(fastHypot(x, y), max(abs(x), abs(y)));
-     * }
+     *     }
      *
      * According JMH, above check is 1.65 time slower than {@code fastHypot} without checks.
      * We define this {@code fastHypot(…)} method for tracing where {@code sqrt(x² + y²)} is used,

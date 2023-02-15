@@ -18,7 +18,6 @@ package org.apache.sis.gui.referencing;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -44,10 +43,9 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.gui.BackgroundThreads;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Strings;
 
-import static java.util.logging.Logger.getLogger;
+import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
 
 /**
@@ -60,9 +58,8 @@ import static java.util.logging.Logger.getLogger;
  *       (see {@link #type} field).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
- * @module
  */
 final class AuthorityCodes extends ObservableListBase<Code>
         implements Callback<TableColumn.CellDataFeatures<Code,String>, ObservableValue<String>>
@@ -429,7 +426,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
         @Override
         protected PartialResult call() throws Exception {
             long lastTime = System.nanoTime();
-            List<String> codes = Collections.emptyList();
+            List<String> codes = List.of();
             final CRSAuthorityFactory factory = getFactory();
             try {
                 if (loadCodes) {
@@ -521,7 +518,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
     private void errorOccurred(final Throwable e) {
         if (!hasError) {
             hasError = true;    // Not a big problem if we have race condition; error will just be logged twice.
-            Logging.unexpectedException(getLogger(Modules.APPLICATION), AuthorityCodes.class, "get", e);
+            Logging.unexpectedException(LOGGER, AuthorityCodes.class, "get", e);
         }
     }
 }

@@ -69,7 +69,6 @@ import org.apache.sis.util.resources.Messages;
  * @author  Cédric Briançon (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 @XmlType(name = "MD_Georectified_Type", propOrder = {
     "checkPointAvailable",

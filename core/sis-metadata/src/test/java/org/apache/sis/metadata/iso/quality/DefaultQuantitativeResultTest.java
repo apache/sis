@@ -17,8 +17,9 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
 import java.util.Iterator;
-import java.util.Collections;
 import javax.xml.bind.JAXBException;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
@@ -44,9 +45,8 @@ import static org.junit.Assert.*;
  * @author  Guilhem Legal (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
-public final strictfp class DefaultQuantitativeResultTest extends TestCase {
+public final class DefaultQuantitativeResultTest extends TestCase {
     /**
      * Tests {@link DefaultQuantitativeResult#isEmpty()}. The {@code isEmpty()} method needs a special check
      * for the deprecated {@code "errorStatistic"} property because, contrarily to other deprecated properties,
@@ -67,14 +67,13 @@ public final strictfp class DefaultQuantitativeResultTest extends TestCase {
      * Creates a {@code DefaultQuantitativeResult} instance wrapped in an element.
      * The returned element is as below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Quantitative attribute accuracy
      *     ├─Measure
      *     │   └─Name of measure…………………… Some quality flag
      *     └─Quantitative result
      *         ├─Value……………………………………………… The quality is okay
-     *         └─Value record type……………… CharacterSequence
-     * }
+     *         └─Value record type……………… CharacterSequence</pre>
      */
     @SuppressWarnings("deprecation")
     private static Element createResultInsideElement() {
@@ -84,7 +83,7 @@ public final strictfp class DefaultQuantitativeResultTest extends TestCase {
          */
         final RecordType recordType = RecordSchemaSIS.INSTANCE.createRecordType(
                 RecordSchemaSIS.MULTILINE.toInternationalString(),
-                Collections.singletonMap("Result of quality measurement", String.class));
+                Map.of("Result of quality measurement", String.class));
         /*
          * The `Record` constructor invoked at unmarshalling time sets the type
          * to the hard-coded "Single text" value. We need to use the same type.
@@ -98,14 +97,14 @@ public final strictfp class DefaultQuantitativeResultTest extends TestCase {
          */
         assertNotEquals(recordType, record.getRecordType());        // Actually a limitation, not an intended behavior.
         final DefaultQuantitativeResult result = new DefaultQuantitativeResult();
-        result.setValues(Collections.singletonList(record));
+        result.setValues(List.of(record));
         result.setValueType(recordType);
         /*
          * Opportunistically test the redirection implemented in deprecated methods.
          */
         final DefaultQuantitativeAttributeAccuracy element = new DefaultQuantitativeAttributeAccuracy();
-        element.setNamesOfMeasure(Collections.singleton(new SimpleInternationalString("Some quality flag")));
-        element.setResults(Collections.singleton(result));
+        element.setNamesOfMeasure(Set.of(new SimpleInternationalString("Some quality flag")));
+        element.setResults(Set.of(result));
         return element;
     }
 

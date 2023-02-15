@@ -30,7 +30,6 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 final class MultiImageStore extends WorldFileStore implements Aggregate {
     /**

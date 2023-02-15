@@ -31,7 +31,6 @@ import org.apache.sis.util.Utilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 final class ConcatenatedConverter extends AbstractConverter implements LenientComparable {
     /**
@@ -42,11 +41,13 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
     /**
      * The first unit converter to apply.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final UnitConverter c1;
 
     /**
      * The second unit converter to apply, after {@code c1}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final UnitConverter c2;
 
     /**

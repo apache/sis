@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -34,10 +34,9 @@ import static org.opengis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.7
- * @module
  */
 @DependsOn(DefaultPolarCSTest.class)
-public final strictfp class DefaultCylindricalCSTest extends TestCase {
+public final class DefaultCylindricalCSTest extends TestCase {
     /**
      * Tests {@link DefaultCylindricalCS#forConvention(AxesConvention)}
      * with a change from clockwise to counterclockwise axis orientation.
@@ -63,7 +62,7 @@ public final strictfp class DefaultCylindricalCSTest extends TestCase {
                 AxisDirection.SOUTH, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
         final DefaultCylindricalCS cs = new DefaultCylindricalCS(
-                Collections.singletonMap(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),
+                Map.of(DefaultCylindricalCS.NAME_KEY, "Cylindrical"),
                 HardCodedAxes.BEARING,
                 HardCodedAxes.Z,
                 radius);

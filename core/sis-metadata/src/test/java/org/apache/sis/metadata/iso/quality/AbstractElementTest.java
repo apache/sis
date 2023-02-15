@@ -16,98 +16,43 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Iterator;
+import java.util.Collection;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**
  * Tests {@link AbstractElement}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.3
  * @since   0.3
- * @module
  */
-public final strictfp class AbstractElementTest extends TestCase {
+public final class AbstractElementTest extends TestCase {
     /**
-     * Tests the {@link AbstractElement#getDates()} list, which is backed by a custom implementation.
+     * Tests {@link Element#getDates()}.
      */
     @Test
-    public void testDates() {
-        final Date now   = new Date();
-        final Date later = new Date(now.getTime() + 60000);
-        final List<Date> dates = (List<Date>) new AbstractElement().getDates();
-        /*
-         * dates = []
-         */
-        assertTrue("isEmpty()", dates.isEmpty());
-        assertCanNotGet(dates, 2);
-        assertCanNotGet(dates, 1);
-        assertCanNotGet(dates, 0);
-        /*
-         * dates = [now]
-         */
-        assertCanNotAdd(dates, 2, now);
-        assertCanNotAdd(dates, 1, now);
-        dates.add(0, now);
-        assertEquals("size()", 1, dates.size());
-        assertCanNotGet(dates, 2);
-        assertCanNotGet(dates, 1);
-        assertEquals(now, dates.get(0));
-        /*
-         * dates = [now, later]
-         */
-        assertCanNotAdd(dates, 2, later);
-        dates.add(1, later);
-        assertEquals("size()", 2, dates.size());
-        assertCanNotGet(dates, 2);
-        assertEquals(later, dates.get(1));
-        assertEquals(now,   dates.get(0));
-        /*
-         * dates = [later]
-         */
-        assertEquals(now, dates.remove(0));
-        assertEquals("size()", 1, dates.size());
-        assertCanNotGet(dates, 2);
-        assertCanNotGet(dates, 1);
-        assertEquals(later, dates.get(0));
-        /*
-         * dates = [now, later]
-         */
-        dates.add(0, now);
-        assertEquals("size()", 2, dates.size());
-        assertCanNotGet(dates, 2);
-        assertEquals(later, dates.get(1));
-        assertEquals(now,   dates.get(0));
+    public void testGetDates() {
+        final Instant   startTime = Instant.parse("2009-05-08T14:10:00Z");
+        final Instant     endTime = Instant.parse("2009-05-12T21:45:00Z");
+        final DefaultEvaluationMethod method = new DefaultEvaluationMethod();
+        method.setDates(List.of(startTime, endTime));
+        final AbstractElement element = new AbstractElement();
+        element.setEvaluationMethod(method);
 
-        assertSerializedEquals(dates);
-    }
-
-    /**
-     * Asserts that we cannot get a date at the given index in the given list.
-     */
-    private static void assertCanNotGet(final List<Date> dates, final int index) {
-        try {
-            dates.get(index);
-            fail("Should not be allowed to get an element at index " + index);
-        } catch (IndexOutOfBoundsException e) {
-            // This is the expected exception.
-        }
-    }
-
-    /**
-     * Asserts that we cannot get add a date at the given index in the given list.
-     */
-    private static void assertCanNotAdd(final List<Date> dates, final int index, final Date date) {
-        try {
-            dates.add(index, date);
-            fail("Should not be allowed to add an element at index " + index);
-        } catch (IndexOutOfBoundsException e) {
-            // This is the expected exception.
-        }
+        @SuppressWarnings("deprecation")
+        final Collection<? extends Date> dates = element.getDates();
+        assertEquals(2, dates.size());
+        final Iterator<? extends Date> it = dates.iterator();
+        assertEquals(startTime, it.next().toInstant());
+        assertEquals(endTime,   it.next().toInstant());
+        assertFalse (it.hasNext());
     }
 }

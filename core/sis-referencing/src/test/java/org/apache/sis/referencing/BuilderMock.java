@@ -28,9 +28,8 @@ import org.opengis.util.GenericName;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
  * @since   0.4
- * @module
  */
-final strictfp class BuilderMock extends Builder<BuilderMock> {
+final class BuilderMock extends Builder<BuilderMock> {
     /**
      * Creates a new builder.
      */

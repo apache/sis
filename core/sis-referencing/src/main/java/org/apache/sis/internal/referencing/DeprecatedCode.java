@@ -26,16 +26,14 @@ import org.apache.sis.util.Deprecable;
  * An identifier which should not be used anymore.
  * This is used mostly for deprecated EPSG codes.
  *
- * <div class="note"><b>Implementation note:</b>
- * this class opportunistically recycles the {@linkplain #getDescription() description} property into a
- * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)}
- * and {@link #hashCode()} implementations without adding code in this class for taking in account a
- * new field.</div>
+ * <h2>Implementation note</h2>
+ * This class opportunistically recycles the {@linkplain #getDescription() description} property into a
+ * {@linkplain #getRemarks() remarks} property. This is a lazy way to inherit {@link #equals(Object)} and
+ * {@link #hashCode()} implementations without adding code in this class for taking in account a new field.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 public final class DeprecatedCode extends ImmutableIdentifier implements Deprecable {
     /**

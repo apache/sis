@@ -31,7 +31,7 @@ import org.apache.sis.util.ComparisonMode;
  *
  * <blockquote><var>y</var> = {@linkplain #scale}⋅{@linkplain #base}<sup><var>x</var></sup></blockquote>
  *
- * <div class="note"><b>Tip:</b>
+ * <h2>Tip</h2>
  * if a linear transform is applied before this exponential transform, then the equation can be rewritten as:
  * <var>scale</var>⋅<var>base</var><sup><var>a</var> + <var>b</var>⋅<var>x</var></sup> =
  * <var>scale</var>⋅<var>base</var><sup><var>a</var></sup>⋅(<var>base</var><sup><var>b</var></sup>)<sup><var>x</var></sup>
@@ -39,11 +39,10 @@ import org.apache.sis.util.ComparisonMode;
  * It is possible to find back the coefficients of the original linear transform by
  * pre-concatenating a logarithmic transform before the exponential one, as below:
  *
- * {@preformat java
- *   LinearTransform1D linear = MathTransforms.create(exponentialTransform,
- *           LogarithmicTransform1D.create(base, -Math.log(scale) / Math.log(base)));
- * }
- * </div>
+ * {@snippet lang="java" :
+ *     LinearTransform1D linear = MathTransforms.create(exponentialTransform,
+ *             LogarithmicTransform1D.create(base, -Math.log(scale) / Math.log(base)));
+ *     }
  *
  * <h2>Serialization</h2>
  * Serialized instances of this class are not guaranteed to be compatible with future SIS versions.
@@ -53,7 +52,6 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 final class ExponentialTransform1D extends AbstractMathTransform1D implements Serializable {
     /**
@@ -85,6 +83,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
      * The inverse of this transform. Created only when first needed. Serialized in order to avoid
      * rounding error if this transform is actually the one which was created from the inverse.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     private MathTransform1D inverse;
 
     /**
@@ -123,7 +122,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
             return ConstantTransform1D.ZERO;
         }
         if (base == 1) {
-            return LinearTransform1D.create(scale, 0);
+            return LinearTransform1D.create(scale, null);
         }
         return new ExponentialTransform1D(base, scale);
     }
@@ -259,7 +258,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
         final double newScale = lnBase / other.lnBase();
         if (applyOtherFirst) {
             return MathTransforms.concatenate(PowerTransform1D.create(newScale),
-                    LinearTransform1D.create(scale * Math.pow(base, other.offset()), 0));
+                    LinearTransform1D.create(scale * Math.pow(base, other.offset()), null));
         } else {
             final double newOffset;
             if (scale > 0) {

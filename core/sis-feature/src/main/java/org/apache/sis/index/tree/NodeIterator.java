@@ -36,8 +36,8 @@ import org.apache.sis.internal.util.Numerics;
  * @param  <E>  the type of elements stored in the {@link PointTree}.
  *
  * @since 1.1
- * @module
  */
+@SuppressWarnings("CloneableImplementsClone")
 class NodeIterator<E> implements Spliterator<E>, Cloneable {
     /**
      * Sentinel value meaning that iteration is over.

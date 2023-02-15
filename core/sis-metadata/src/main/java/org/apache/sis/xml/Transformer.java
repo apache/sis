@@ -23,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.InvalidPropertiesFormatException;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,7 +34,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Namespace;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
@@ -90,7 +88,6 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * @see javax.xml.transform.Transformer
  *
  * @since 1.0
- * @module
  */
 abstract class Transformer {
     /**
@@ -119,12 +116,11 @@ abstract class Transformer {
      * A flag after type name in files loaded by {@link #load(boolean, String, Set, int)}, meaning that the type itself
      * is in a different namespace than the properties listed below the type. For example in the following:
      *
-     * {@preformat text
+     * <pre class="text">
      *  http://standards.iso.org/iso/19115/-3/mri/1.0
      *   SV_ServiceIdentification !other namespace
      *    citation
-     *    abstract
-     * }
+     *    abstract</pre>
      *
      * {@code SV_ServiceIdentification} type is defined in the {@code "http://standards.iso.org/iso/19115/-3/srv/2.0"}
      * namespace, but the {@code citation} and {@code abstract} properties inherited from {@code Identification} are
@@ -145,7 +141,7 @@ abstract class Transformer {
      * JAXB annotations. For example, given the following XML, this list should contain {@code cit:CI_Citation},
      * {@code cit:date} and {@code cit:CI_Date} (in that order) when the (un)marshalling reaches the "…" location.
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:date>
      *       <cit:CI_Date>
@@ -153,7 +149,7 @@ abstract class Transformer {
      *       </cit:CI_Date>
      *     </cit:date>
      *   </cit:CI_Citation>
-     * }
+     *   }
      */
     private final List<QName> outerElements;
 
@@ -185,7 +181,7 @@ abstract class Transformer {
         namespaces             = new HashMap<>();
         outerElements          = new ArrayList<>();
         renamedAttributes      = new ArrayList<>();
-        outerElementProperties = Collections.emptyMap();
+        outerElementProperties = Map.of();
     }
 
     /**
@@ -365,9 +361,8 @@ abstract class Transformer {
         }
         /*
          * At this point we finished computing the map values. Many values are maps with only 1 entry.
-         * Save a little bit of space by replacing maps of 1 element by Collections.singletonMap(…).
          */
-        m.replaceAll((k, v) -> CollectionsExt.compact(v));
+        m.replaceAll((k, v) -> Map.copyOf(v));
         return m;
     }
 
@@ -386,9 +381,9 @@ abstract class Transformer {
     final List<Attribute> attributes() {
         final List<Attribute> attributes;
         switch (renamedAttributes.size()) {
-            case 0:  attributes = Collections.emptyList(); break;      // Avoid object creation for this common case.
-            case 1:  attributes = Collections.singletonList(renamedAttributes.remove(0)); break;
-            default: attributes = Arrays.asList(renamedAttributes.toArray(new Attribute[renamedAttributes.size()]));
+            case 0:  attributes = List.of(); break;             // Avoid object creation for this common case.
+            case 1:  attributes = List.of(renamedAttributes.remove(0)); break;
+            default: attributes = Arrays.asList(renamedAttributes.toArray(Attribute[]::new));
                      renamedAttributes.clear();
                      break;
         }
@@ -422,7 +417,7 @@ abstract class Transformer {
                         String localPart = value.substring(s+1).trim();
                         QName name = new QName(namespace, localPart, prefix);
                         final Map<String,String> currentMap = outerElementProperties;
-                        outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Collections.emptyMap());
+                        outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Map.of());
                         final boolean changed = (name != (name = convert(name)));
                         outerElementProperties = currentMap;
                         if (changed) {
@@ -458,7 +453,7 @@ abstract class Transformer {
      * For example, given the following XML, this method returns {@code true} for {@code cit:CI_Date} but
      * {@code false} for {@code cit:date}:
      *
-     * {@preformat xml
+     * {@snippet lang="xml" :
      *   <cit:CI_Citation>
      *     <cit:date>
      *       <cit:CI_Date>
@@ -466,7 +461,7 @@ abstract class Transformer {
      *       </cit:CI_Date>
      *     </cit:date>
      *   </cit:CI_Citation>
-     * }
+     *   }
      *
      * This method is based on simple heuristic applicable to OGC/ISO conventions,
      * and may change in any future SIS version depending on new formats to support.
@@ -493,7 +488,7 @@ abstract class Transformer {
         final String localPart = name.getLocalPart();
         if (isTypeElement(localPart)) {
             outerElements.add(name);
-            outerElementProperties = renamingMap(name.getNamespaceURI()).getOrDefault(localPart, Collections.emptyMap());
+            outerElementProperties = renamingMap(name.getNamespaceURI()).getOrDefault(localPart, Map.of());
         }
     }
 
@@ -519,7 +514,7 @@ abstract class Transformer {
                         namespace = XMLConstants.NULL_NS_URI;
                         localPart = null;
                     }
-                    outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Collections.emptyMap());
+                    outerElementProperties = renamingMap(namespace).getOrDefault(localPart, Map.of());
                     break;
                 }
             }

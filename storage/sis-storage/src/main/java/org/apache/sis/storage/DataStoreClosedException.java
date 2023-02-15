@@ -28,7 +28,6 @@ import org.apache.sis.internal.storage.Resources;
  * @author  Marc Le Bihan
  * @version 0.6
  * @since   0.8
- * @module
  */
 public class DataStoreClosedException extends DataStoreException {
     /**

@@ -22,9 +22,8 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
 import java.util.ServiceConfigurationError;
+import java.util.function.Consumer;
 import org.apache.sis.util.logging.Logging;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -34,12 +33,11 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
  *
  * @since 0.3
- * @module
  */
 public final class DefaultFactories extends SystemListener {
     /**
@@ -183,8 +181,7 @@ public final class DefaultFactories extends SystemListener {
              * We were not allowed to invoke Thread.currentThread().getContextClassLoader().
              * But ServiceLoader.load(Class) may be allowed to, since it is part of JDK.
              */
-            Logging.recoverableException(getLogger(Loggers.SYSTEM),
-                    DefaultFactories.class, "createServiceLoader", e);
+            Logging.recoverableException(SystemListener.LOGGER, DefaultFactories.class, "createServiceLoader", e);
             return ServiceLoader.load(service);
         }
     }
@@ -207,33 +204,62 @@ public final class DefaultFactories extends SystemListener {
      * @since 0.8
      */
     public static ClassLoader getContextClassLoader() throws SecurityException {
-        final Thread thread = Thread.currentThread();
-        ClassLoader loader = thread.getContextClassLoader();
-        final Set<ClassLoader> parents = new HashSet<>();
-        for (ClassLoader c = loader; c != null; c = c.getParent()) {
-            parents.add(c);
+        final Walker walker = new Walker();
+        return StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).walk((stream) -> {
+            stream.forEach(walker);
+            return walker.loader;
+        });
+    }
+
+    /**
+     * Action to be executed for each stack frame inspected by {@link #getContextClassLoader()}.
+     * The action is initialized to the context class loader of current thread.
+     * Then it checks if the class loader should be replaced by another one containing at least
+     * the Apache SIS class loader.
+     */
+    private static final class Walker implements Consumer<StackWalker.StackFrame> {
+        /**
+         * The context class loader to be returned by {@link #getContextClassLoader()}.
+         */
+        ClassLoader loader;
+
+        /**
+         * All parents of {@link #loader}.
+         */
+        private final Set<ClassLoader> parents;
+
+        /**
+         * Creates a new walker initialized to the context class loader of current thread.
+         */
+        Walker() {
+            parents = new HashSet<>();
+            setClassLoader(Thread.currentThread().getContextClassLoader());
         }
-        boolean warnings = false;
-        for (final StackTraceElement trace : thread.getStackTrace()) {      // TODO: replace by StackWalker in JDK9.
-            final String element = trace.getClassName();
-            if (element.startsWith(Modules.CLASSNAME_PREFIX)) try {
-                ClassLoader c = Class.forName(element).getClassLoader();
+
+        /**
+         * Set the class loader to the given value, which may be null.
+         */
+        private void setClassLoader(ClassLoader c) {
+            loader = c;
+            while (c != null) {
+                parents.add(c);
+                c = c.getParent();
+            }
+        }
+
+        /**
+         * If the given stack frame is an Apache SIS method, ensures that {@link #loader}
+         * is the SIS class loader or has the SIS class loader as a parent.
+         */
+        @Override
+        public void accept(final StackWalker.StackFrame frame) {
+            if (frame.getClassName().startsWith(Modules.CLASSNAME_PREFIX)) {
+                ClassLoader c = frame.getDeclaringClass().getClassLoader();
                 if (!parents.contains(c)) {
-                    loader = c;
                     parents.clear();
-                    while (c != null) {
-                        parents.add(c);
-                        c = c.getParent();
-                    }
-                }
-            } catch (SecurityException | ClassNotFoundException e) {
-                if (!warnings) {
-                    warnings = true;
-                    Logging.recoverableException(getLogger(Loggers.SYSTEM),
-                            DefaultFactories.class, "getContextClassLoader", e);
+                    setClassLoader(c);
                 }
             }
         }
-        return loader;
     }
 }

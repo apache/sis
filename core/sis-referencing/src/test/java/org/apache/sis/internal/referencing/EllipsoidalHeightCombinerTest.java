@@ -17,7 +17,6 @@
 package org.apache.sis.internal.referencing;
 
 import java.util.Map;
-import java.util.Collections;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -50,13 +49,12 @@ import static org.apache.sis.test.Assert.*;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
  *
  * @since 0.8
- * @module
  */
 @DependsOn({
     org.apache.sis.referencing.CRSTest.class,
     org.apache.sis.internal.referencing.ServicesForMetadataTest.class
 })
-public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
+public final class EllipsoidalHeightCombinerTest extends TestCase {
     /**
      * Creates an instance to be tested.
      */
@@ -74,7 +72,7 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
     @Test
     public void testGeographicCRS() throws FactoryException {
         final EllipsoidalHeightCombiner services = create();
-        final Map<String,String> properties = Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, "WGS 84 (4D)");
+        final var properties = Map.of(CoordinateReferenceSystem.NAME_KEY, "WGS 84 (4D)");
         final GeographicCRS horizontal = HardCodedCRS.WGS84;
         final GeographicCRS volumetric = HardCodedCRS.WGS84_3D;
         final VerticalCRS   vertical   = HardCodedCRS.ELLIPSOIDAL_HEIGHT;
@@ -119,8 +117,8 @@ public final strictfp class EllipsoidalHeightCombinerTest extends TestCase {
     @DependsOnMethod("testGeographicCRS")
     public void testProjectedCRS() throws FactoryException {
         final EllipsoidalHeightCombiner services = create();
-        final GeodeticObjectFactory factory = new GeodeticObjectFactory();
-        final Map<String,String> properties = Collections.singletonMap(CoordinateReferenceSystem.NAME_KEY, "World Mercator (4D)");
+        final var factory = new GeodeticObjectFactory();
+        final var properties = Map.of(CoordinateReferenceSystem.NAME_KEY, "World Mercator (4D)");
         final ProjectedCRS horizontal = factory.createProjectedCRS(properties, HardCodedCRS.WGS84,    HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED);
         final ProjectedCRS volumetric = factory.createProjectedCRS(properties, HardCodedCRS.WGS84_3D, HardCodedConversions.MERCATOR, HardCodedCS.PROJECTED_3D);
         final VerticalCRS  vertical   = HardCodedCRS.ELLIPSOIDAL_HEIGHT;

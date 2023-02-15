@@ -46,7 +46,6 @@ import org.apache.sis.measure.Units;
  * @see <a href="https://cfconventions.org/cf-conventions/cf-conventions.html#_rotated_pole">Rotated pole in CF-conventions</a>
  *
  * @since 1.2
- * @module
  */
 @XmlTransient
 public final class NorthPoleRotation extends AbstractProvider {

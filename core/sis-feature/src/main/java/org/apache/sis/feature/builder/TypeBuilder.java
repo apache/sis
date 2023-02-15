@@ -64,19 +64,18 @@ import org.opengis.feature.PropertyNotFoundException;
  * qualified name} is requested.
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     FeatureTypeBuilder builder = new FeatureTypeBuilder().setNameSpace("MyNameSpace").setName("City");
  *     FeatureType city = builder.build();
- *
+
  *     System.out.println(city.getName());                              // Prints "City"
  *     System.out.println(city.getName().toFullyQualifiedName());       // Prints "MyNameSpace:City"
- * }
+ *     }
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.8
- * @module
  */
 public abstract class TypeBuilder implements Localized {
     /**
@@ -434,7 +433,6 @@ public abstract class TypeBuilder implements Localized {
      * @return element of the given name, or {@code null} if none were found.
      * @throws IllegalArgumentException if the given name is ambiguous.
      */
-    @SuppressWarnings("null")
     final <E extends TypeBuilder> E forName(final List<E> types, final String name, final boolean nonAmbiguous) {
         E best      = null;                     // Best type found so far.
         E ambiguity = null;                     // If two types are found at the same depth, the other type.

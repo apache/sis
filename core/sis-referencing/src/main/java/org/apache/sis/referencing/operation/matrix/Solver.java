@@ -17,9 +17,14 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.util.ArraysExt;
+
+import static org.apache.sis.internal.referencing.Arithmetic.add;
+import static org.apache.sis.internal.referencing.Arithmetic.subtract;
+import static org.apache.sis.internal.referencing.Arithmetic.multiply;
+import static org.apache.sis.internal.referencing.Arithmetic.divide;
 
 
 /**
@@ -29,15 +34,14 @@ import org.apache.sis.util.ArraysExt;
  * JAMA is provided in the public domain.
  *
  * <p>This class implements the {@link Matrix} interface as an implementation convenience.
- * This implementation details can be ignored.</p>
+ * It implements an identity matrix of any size. This implementation details can be ignored.</p>
  *
  * @author  JAMA team
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
- * @module
  */
-final class Solver implements Matrix {                          // Not Cloneable, despite the clone() method.
+final class Solver implements ExtendedPrecisionMatrix {                 // Not Cloneable, despite the clone() method.
     /**
      * The size of the (i, j, s) tuples used internally by {@link #solve(Matrix, Matrix, double[], int, int, boolean)}
      * for storing information about the NaN values.
@@ -48,7 +52,7 @@ final class Solver implements Matrix {                          // Not Cloneable
      * A immutable identity matrix without defined size.
      * This is used only for computing the inverse.
      */
-    private static final Matrix IDENTITY = new Solver();
+    private static final ExtendedPrecisionMatrix IDENTITY = new Solver();
 
     /**
      * For the {@link #IDENTITY} constant only.
@@ -65,20 +69,21 @@ final class Solver implements Matrix {                          // Not Cloneable
     }
 
     /**
+     * Returns 1 for elements on the diagonal, {@code null} otherwise.
+     * This method never throws exception.
+     */
+    @Override
+    public Number getElementOrNull(int j, int i) {
+        return (j == i) ? 1 : null;
+    }
+
+    /**
      * Returns 1 for elements on the diagonal, 0 otherwise.
-     * This method never thrown exception.
+     * This method never throws exception.
      */
     @Override
     public double getElement(final int j, final int i) {
         return (j == i) ? 1 : 0;
-    }
-
-    /**
-     * Unsupported operation since this matrix is immutable.
-     */
-    @Override
-    public void setElement(int j, int i, double d) {
-        throw new UnsupportedOperationException();
     }
 
     /**
@@ -110,17 +115,16 @@ final class Solver implements Matrix {                          // Not Cloneable
     /**
      * Computes the inverse of the given matrix. This method shall be invoked only for square matrices.
      *
-     * @param  X         the matrix to invert, which must be square.
-     * @param  noChange  if {@code true}, do not allow modifications to the {@code X} matrix.
+     * @param  X  the matrix to invert, which must be square.
      * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
-    static MatrixSIS inverse(final Matrix X, final boolean noChange) throws NoninvertibleMatrixException {
+    static GeneralMatrix inverse(final Matrix X) throws NoninvertibleMatrixException {
         final int size = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
             throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.NonInvertibleMatrix_2, size, numCol));
         }
-        return solve(X, IDENTITY, null, size, size, noChange);
+        return solve(MatrixSIS.asExtendedPrecision(X), IDENTITY, size, size);
     }
 
     /**
@@ -131,7 +135,7 @@ final class Solver implements Matrix {                          // Not Cloneable
      * @param  Y  the desired result of {@code X} × <var>U</var>.
      * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
-    static MatrixSIS solve(final Matrix X, final Matrix Y) throws NoninvertibleMatrixException {
+    static GeneralMatrix solve(final Matrix X, final Matrix Y) throws NoninvertibleMatrixException {
         final int size   = X.getNumRow();
         final int numCol = X.getNumCol();
         if (numCol != size) {
@@ -139,14 +143,9 @@ final class Solver implements Matrix {                          // Not Cloneable
         }
         final int innerSize = Y.getNumCol();
         GeneralMatrix.ensureNumRowMatch(size, Y.getNumRow(), innerSize);
-        double[] eltY = null;
-        if (Y instanceof GeneralMatrix) {
-            eltY = ((GeneralMatrix) Y).elements;
-            if (eltY.length == size * innerSize) {
-                eltY = null;                            // Matrix does not contains error terms.
-            }
-        }
-        return solve(X, Y, eltY, size, innerSize, true);
+        return solve(MatrixSIS.asExtendedPrecision(X),
+                     MatrixSIS.asExtendedPrecision(Y),
+                     size, innerSize);
     }
 
     /**
@@ -160,7 +159,7 @@ final class Solver implements Matrix {                          // Not Cloneable
      * <p>This method does <strong>not</strong> checks the matrix size.
      * Check for matrix size shall be performed by the caller like below:</p>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     final int size = X.getNumRow();
      *     if (X.getNumCol() != size) {
      *         throw new NoninvertibleMatrixException("Matrix must be square.");
@@ -168,22 +167,20 @@ final class Solver implements Matrix {                          // Not Cloneable
      *     if (Y.getNumRow() != size) {
      *         throw new MismatchedMatrixSizeException("Matrix row dimensions must agree.");
      *     }
-     * }
+     *     }
      *
      * @param  X          the matrix to invert, which must be square.
      * @param  Y          the desired result of {@code X} × <var>U</var>.
-     * @param  eltY       elements and error terms of the {@code Y} matrix, or {@code null} if not available.
      * @param  size       the value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
      * @param  innerSize  the value of {@code Y.getNumCol()}.
-     * @param  noChange   if {@code true}, do not allow modifications to the {@code X} matrix.
      * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
-    private static MatrixSIS solve(final Matrix X, final Matrix Y, final double[] eltY,
-            final int size, final int innerSize, final boolean noChange) throws NoninvertibleMatrixException
+    private static GeneralMatrix solve(final ExtendedPrecisionMatrix X, final ExtendedPrecisionMatrix Y,
+            final int size, final int innerSize) throws NoninvertibleMatrixException
     {
         assert (X.getNumRow() == size && X.getNumCol() == size) : size;
         assert (Y.getNumRow() == size && Y.getNumCol() == innerSize) || (Y instanceof Solver);
-        final double[] LU = GeneralMatrix.getExtendedElements(X, size, size, noChange);
+        final Number[] LU = X.getElementAsNumbers(true);    // We will write in the LU array.
         final int lastRowOrColumn = size - 1;
         /*
          * indexOfNaN array will be created only if at least one NaN value is found, and those NaN met
@@ -202,7 +199,7 @@ final class Solver implements Matrix {                          // Not Cloneable
              * Note: the iteration below skips the last row, since it is (0, 0, ..., 1).
              */
 searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
-                if (Double.isNaN(LU[flatIndex])) {
+                if (Double.isNaN(doubleValue(LU[flatIndex]))) {
                     final int j = flatIndex / size;
                     final int i = flatIndex % size;
                     /*
@@ -213,7 +210,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                     if (i != lastRowOrColumn) {                     // Enter only if this column is not for translations.
                         columnOfScale = i;                          // The non-translation element is the scale factor.
                         for (int k=lastRowOrColumn; --k>=0;) {      // Scan all other rows in the current column.
-                            if (k != j && LU[k*size + i] != 0) {
+                            if (k != j && LU[k*size + i] != null) {
                                 /*
                                  * Found a non-zero element in the current column.
                                  * We cannot proceed - cancel everything.
@@ -230,7 +227,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                      * column, which is not checked by the loop below).
                      */
                     for (int k=lastRowOrColumn; --k>=0;) {
-                        if (k != i && LU[j*size + k] != 0) {
+                        if (k != i && LU[j*size + k] != null) {
                             if (columnOfScale >= 0) {
                                 /*
                                  * If there is more than 1 non-zero element,
@@ -264,15 +261,13 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             for (int k=0; k<indexCount; k += TUPLE_SIZE) {
                 final int i = indexOfNaN[k  ];
                 final int j = indexOfNaN[k+1];
-                final int flatIndex = j*size + i;
-                LU[flatIndex] = (i == lastRowOrColumn) ? 0 : 1;
-                LU[flatIndex + size*size] = 0;                      // Error term (see 'errorLU') in next method.
+                LU[j*size + i] = (i == lastRowOrColumn) ? null : 1;
             }
         }
         /*
          * Now apply the inversion.
          */
-        final MatrixSIS matrix = solve(LU, Y, eltY, size, innerSize);
+        final GeneralMatrix matrix = solve(LU, Y, size, innerSize);
         /*
          * At this point, the matrix has been inverted. If they were any NaN value in the original
          * matrix, set the corresponding scale factor and offset to NaN in the resulting matrix.
@@ -285,7 +280,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             if (i != lastRowOrColumn) {
                 // Found a scale factor to set to NaN.
                 matrix.setElement(i, j, Double.NaN);                      // Note that i,j indices are interchanged.
-                if (matrix.getElement(i, lastRowOrColumn) != 0) {
+                if (matrix.getElementOrNull(i, lastRowOrColumn) != null) {
                     matrix.setElement(i, lastRowOrColumn, Double.NaN);    // = -offset/scale, so 0 stay 0.
                 }
             } else if (s >= 0) {
@@ -304,41 +299,35 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
      * <p>This method does <strong>not</strong> checks the matrix size.
      * It is caller's responsibility to ensure that the following hold:</p>
      *
-     * {@preformat java
-     *   X.getNumRow() == size;
-     *   X.getNumCol() == size;
-     *   Y.getNumRow() == size;
-     *   Y.getNumCol() == innerSize;
-     * }
+     * {@snippet lang="java" :
+     *     assert X.getNumRow() == size;
+     *     assert X.getNumCol() == size;
+     *     assert Y.getNumRow() == size;
+     *     assert Y.getNumCol() == innerSize;
+     *     }
      *
-     * @param  LU         elements of the {@code X} matrix to invert, including error terms.
+     * @param  LU         elements of the {@code X} matrix to invert.
      * @param  Y          the desired result of {@code X} × <var>U</var>.
-     * @param  eltY       elements and error terms of the {@code Y} matrix, or {@code null} if not available.
      * @param  size       the value of {@code X.getNumRow()}, {@code X.getNumCol()} and {@code Y.getNumRow()}.
      * @param  innerSize  the value of {@code Y.getNumCol()}.
      * @throws NoninvertibleMatrixException if the {@code X} matrix is not square or singular.
      */
-    private static MatrixSIS solve(final double[] LU, final Matrix Y, final double[] eltY,
+    private static GeneralMatrix solve(final Number[] LU, final ExtendedPrecisionMatrix Y,
             final int size, final int innerSize) throws NoninvertibleMatrixException
     {
-        final int errorLU = size * size;
-        assert errorLU == GeneralMatrix.indexOfErrors(size, size, LU);
         final int[] pivot = ArraysExt.range(0, size);
-        final double[]  column = new double[size * 2];  // [0 … size-1] : column values; [size … 2*size-1] : error terms.
-        final DoubleDouble acc = new DoubleDouble();    // Temporary variable for sum ("accumulator") and subtraction.
-        final DoubleDouble rat = new DoubleDouble();    // Temporary variable for products and ratios.
+        final Number[] column = new Number[size];
         for (int i=0; i<size; i++) {
             /*
              * Make a copy of the i-th column.
+             * The array may contain null elements, which stand for zero.
              */
             for (int j=0; j<size; j++) {
-                final int k = j*size + i;
-                column[j]        = LU[k];               // Value
-                column[j + size] = LU[k + errorLU];     // Error
+                column[j] = LU[j*size + i];
             }
             /*
              * Apply previous transformations. This part is equivalent to the following code,
-             * but using double-double arithmetic instead of the primitive 'double' type:
+             * but using double-double arithmetic instead of the primitive `double` type:
              *
              *     double sum = 0;
              *     for (int k=0; k<kmax; k++) {
@@ -349,16 +338,11 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
             for (int j=0; j<size; j++) {
                 final int rowOffset = j*size;
                 final int kmax = Math.min(j,i);
-                acc.clear();
+                Number sum = null;
                 for (int k=0; k<kmax; k++) {
-                    rat.setFrom(LU, rowOffset + k, errorLU);
-                    rat.multiply(column, k, size);
-                    acc.add(rat);
+                    sum = add(sum, multiply(LU[rowOffset + k], column[k]));
                 }
-                acc.subtract(column, j, size);
-                acc.negate();
-                acc.storeTo(column, j, size);
-                acc.storeTo(LU, rowOffset + i, errorLU);
+                LU[rowOffset + i] = column[j] = subtract(column[j], sum);
             }
             /*
              * Find pivot and exchange if necessary. There is no floating-point arithmetic here
@@ -366,21 +350,21 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
              */
             int p = i;
             for (int j=i; ++j < size;) {
-                if (Math.abs(column[j]) > Math.abs(column[p])) {
+                if (Math.abs(doubleValue(column[j])) > Math.abs(doubleValue(column[p]))) {
                     p = j;
                 }
             }
             if (p != i) {
                 final int pRow = p*size;
                 final int iRow = i*size;
-                for (int k=0; k<size; k++) {                                // Swap two full rows.
-                    DoubleDouble.swap(LU, pRow + k, iRow + k, errorLU);
+                for (int k=0; k<size; k++) {                    // Swap two full rows.
+                    ArraysExt.swap(LU, pRow + k, iRow + k);
                 }
                 ArraysExt.swap(pivot, p, i);
             }
             /*
              * Compute multipliers. This part is equivalent to the following code, but
-             * using double-double arithmetic instead of the primitive 'double' type:
+             * using double-double arithmetic instead of the primitive `double` type:
              *
              *     final double sum = LU[i*size + i];
              *     if (sum != 0.0) {
@@ -389,13 +373,11 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
              *         }
              *     }
              */
-            acc.setFrom(LU, i*size + i, errorLU);
-            if (!acc.isZero()) {
+            final Number sum = LU[i*size + i];
+            if (sum != null) {
                 for (int j=i; ++j < size;) {
                     final int t = j*size + i;
-                    rat.setFrom(acc);
-                    rat.inverseDivide(LU, t, errorLU);
-                    rat.storeTo      (LU, t, errorLU);
+                    LU[t] = divide(LU[t], sum);
                 }
             }
         }
@@ -404,8 +386,7 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          * Ensure that the matrix is not singular.
          */
         for (int j=0; j<size; j++) {
-            rat.setFrom(LU, j*size + j, errorLU);
-            if (rat.isZero()) {
+            if (LU[j*size + j] == null) {
                 throw new NoninvertibleMatrixException(Resources.format(Resources.Keys.SingularMatrix));
             }
         }
@@ -413,25 +394,17 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          * Copy right hand side with pivoting. Write the result directly in the elements array
          * of the result matrix. This block does not perform floating-point arithmetic operations.
          */
-        final GeneralMatrix result = GeneralMatrix.createExtendedPrecision(size, innerSize, false);
-        final double[] elements = result.elements;
-        final int errorOffset = size * innerSize;
+        final GeneralMatrix result = GeneralMatrix.create(size, innerSize, false);
+        final Number[] elements = result.elements;
         for (int k=0,j=0; j<size; j++) {
             final int p = pivot[j];
             for (int i=0; i<innerSize; i++) {
-                if (eltY != null) {
-                    final int t = p*innerSize + i;
-                    elements[k]               = eltY[t];
-                    elements[k + errorOffset] = eltY[t + errorOffset];
-                } else {
-                    elements[k] = Y.getElement(p, i);
-                }
-                k++;
+                elements[k++] = Y.getElementOrNull(p, i);
             }
         }
         /*
          * Solve L*Y = B(pivot, :). The inner block is equivalent to the following line,
-         * but using double-double arithmetic instead of 'double' primitive type:
+         * but using double-double arithmetic instead of `double` primitive type:
          *
          *     elements[loRowOffset + i] -= (elements[rowOffset + i] * LU[luRowOffset + k]);
          */
@@ -441,17 +414,14 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
                 final int loRowOffset = j*innerSize;        // Offset of some row after the current row.
                 final int luRowOffset = j*size;             // Offset of the corresponding row in the LU matrix.
                 for (int i=0; i<innerSize; i++) {
-                    acc.setFrom (elements, loRowOffset + i, errorOffset);
-                    rat.setFrom (elements, rowOffset   + i, errorOffset);
-                    rat.multiply(LU,       luRowOffset + k, errorLU);
-                    acc.subtract(rat);
-                    acc.storeTo (elements, loRowOffset + i, errorOffset);
+                    final int t = loRowOffset + i;
+                    elements[t] = subtract(elements[t], multiply(elements[rowOffset + i], LU[luRowOffset + k]));
                 }
             }
         }
         /*
          * Solve U*X = Y. The content of the loop is equivalent to the following line,
-         * but using double-double arithmetic instead of 'double' primitive type:
+         * but using double-double arithmetic instead of `double` primitive type:
          *
          *     double sum = LU[k*size + k];
          *     for (int i=0; i<innerSize; i++) {
@@ -465,25 +435,28 @@ searchNaN:  for (int flatIndex = (size - 1) * size; --flatIndex >= 0;) {
          *     }
          */
         for (int k=size; --k >= 0;) {
-            final int rowOffset = k*innerSize;          // Offset of row computed by current iteration.
-            acc.setFrom(LU, k*size + k, errorLU);       // A diagonal element on the current row.
-            for (int i=0; i<innerSize; i++) {           // Apply to all columns in the current row.
-                rat.setFrom(acc);
-                rat.inverseDivide(elements, rowOffset + i, errorOffset);
-                rat.storeTo      (elements, rowOffset + i, errorOffset);
+            final int rowOffset = k*innerSize;              // Offset of row computed by current iteration.
+            Number sum = LU[k*size + k];                    // A diagonal element on the current row.
+            for (int i=0; i<innerSize; i++) {               // Apply to all columns in the current row.
+                final int t = rowOffset + i;
+                elements[t] = divide(elements[t], sum);
             }
             for (int j=0; j<k; j++) {
-                final int upRowOffset = j*innerSize;    // Offset of a row before (locate upper) the current row.
-                acc.setFrom(LU, j*size + k, errorLU);   // Same column than the diagonal element, but in the upper row.
-                for (int i=0; i<innerSize; i++) {       // Apply to all columns in the upper row.
-                    rat.setFrom(elements, rowOffset + i, errorOffset);
-                    rat.multiply(acc);
-                    rat.subtract(elements, upRowOffset + i, errorOffset);
-                    rat.negate();
-                    rat.storeTo(elements, upRowOffset + i, errorOffset);
+                final int upRowOffset = j*innerSize;        // Offset of a row before (locate upper) the current row.
+                sum = LU[j*size + k];                       // Same column than the diagonal element, but in the upper row.
+                for (int i=0; i<innerSize; i++) {           // Apply to all columns in the upper row.
+                    final int t = upRowOffset + i;
+                    elements[t] = subtract(elements[t], multiply(elements[rowOffset + i], sum));
                 }
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the value with {@code null} replaced by zero.
+     */
+    private static double doubleValue(final Number value) {
+        return (value != null) ? value.doubleValue() : 0;
     }
 }

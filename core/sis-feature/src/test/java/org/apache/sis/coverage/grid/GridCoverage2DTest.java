@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
-import java.util.Collections;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -55,9 +54,8 @@ import static org.apache.sis.test.FeatureAssert.*;
  * @author  Alexis Manin (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
-public strictfp class GridCoverage2DTest extends TestCase {
+public class GridCoverage2DTest extends TestCase {
     /**
      * Width and height of the grid tested in this class.
      */
@@ -68,10 +66,9 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * The image size is 2×2 pixels, the "grid to CRS" transform is identity,
      * the range of sample values is [-97.5 … 105] metres and the packed values are:
      *
-     * {@preformat text
+     * <pre class="text">
      *    2    5
-     *   -5  -10
-     * }
+     *   -5  -10</pre>
      */
     private GridCoverage createTestCoverage() {
         return createTestCoverage(MathTransforms.identity(2));
@@ -82,24 +79,23 @@ public strictfp class GridCoverage2DTest extends TestCase {
      * The domain of source grid indices is the [0 … 1] range in all dimensions.
      */
     private GridCoverage createTestCoverage(final MathTransform gridToCRS) {
-        final GridGeometry grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
-                PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84);
+        final var grid = new GridGeometry(new GridExtent(GRID_SIZE, GRID_SIZE),
+                            PixelInCell.CELL_CENTER, gridToCRS, HardCodedCRS.WGS84);
 
         final MathTransform1D toUnits = (MathTransform1D) MathTransforms.linear(0.5, 100);
         final SampleDimension sd = new SampleDimension.Builder().setName("Some kind of height")
                 .addQuantitative("data", NumberRange.create(-10, true, 10, true), toUnits, Units.METRE)
                 .build();
-        return createTestCoverage(grid, Collections.singletonList(sd));
+        return createTestCoverage(grid, List.of(sd));
     }
 
     /**
      * Creates a {@link GridCoverage} instance to test with fixed sample values.
      * The coverage returned by this method shall contain the following values:
      *
-     * {@preformat text
+     * <pre class="text">
      *    2    5
-     *   -5  -10
-     * }
+     *   -5  -10</pre>
      *
      * @param  grid  the grid geometry of the coverage to create.
      * @param  sd    the sample dimensions of the coverage to create.

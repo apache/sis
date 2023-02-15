@@ -27,7 +27,7 @@ import org.apache.sis.util.Workaround;
  * By default each method does nothing but call the corresponding method on the wrapped instance.
  *
  * <p>This class is the complement of {@link javax.xml.stream.util.StreamReaderDelegate} provided
- * in standard JDK. For an unknown reason, JDK 8 does not provide a {@code StreamWriterDelegate}.</p>
+ * in standard JDK. For an unknown reason, Java 8 does not provide a {@code StreamWriterDelegate}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -35,7 +35,6 @@ import org.apache.sis.util.Workaround;
  * @see javax.xml.stream.util.StreamReaderDelegate
  *
  * @since 0.8
- * @module
  */
 @Workaround(library = "JDK", version = "1.8")
 public class StreamWriterDelegate implements XMLStreamWriter {

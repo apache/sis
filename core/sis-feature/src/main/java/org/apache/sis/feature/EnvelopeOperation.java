@@ -73,7 +73,6 @@ import org.opengis.feature.PropertyType;
  * @author  Alexis Manin (Geomatys)
  * @version 1.1
  * @since   0.7
- * @module
  */
 final class EnvelopeOperation extends AbstractOperation {
     /**
@@ -97,6 +96,7 @@ final class EnvelopeOperation extends AbstractOperation {
      * Note that this is the CRS desired by user of this {@link EnvelopeOperation};
      * it may be unrelated to the CRS of stored geometries.
      */
+    @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
     final CoordinateReferenceSystem targetCRS;
 
     /**
@@ -115,6 +115,7 @@ final class EnvelopeOperation extends AbstractOperation {
      * implementations of {@link DenseFeature} and {@link SparseFeature} have a "all of nothing" behavior anyway.
      * So there is no performance gain to expect from a fine-grained knowledge of which properties declare a CRS.
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final CoordinateOperation[] attributeToCRS;
 
     /**
@@ -125,6 +126,7 @@ final class EnvelopeOperation extends AbstractOperation {
     /**
      * The type of the result returned by the envelope operation.
      */
+    @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
     private final AttributeType<Envelope> resultType;
 
     /**
@@ -279,6 +281,7 @@ final class EnvelopeOperation extends AbstractOperation {
         /**
          * The feature specified to the {@link StringJoinOperation#apply(Feature, ParameterValueGroup)} method.
          */
+        @SuppressWarnings("serial")         // Most SIS implementations are serializable.
         private final Feature feature;
 
         /**

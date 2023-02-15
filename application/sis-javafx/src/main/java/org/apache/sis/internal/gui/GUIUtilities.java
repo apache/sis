@@ -50,7 +50,6 @@ import org.apache.sis.util.Workaround;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.1
- * @module
  */
 public final class GUIUtilities extends Static {
     /**
@@ -298,16 +297,14 @@ walk:   for (final T search : path) {
      * This is known as <cite>longest common subsequence</cite> (LCS) problem.
      * The LCS elements are not required to occupy consecutive positions within the original sequences.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * for the two following lists <var>x</var> and <var>y</var>,
      * the longest common subsequence if given by <var>lcs</var> below:
      *
-     * {@preformat text
+     * <pre class="text">
      *   x   :  1 2   4 6 7   9
      *   y   :  1 2 3     7 8
-     *   lcs :  1 2       7
-     * }
-     * </div>
+     *   lcs :  1 2       7</pre>
      *
      * This algorithm is useful for computing the differences between two sequences.
      *
@@ -334,7 +331,7 @@ walk:   for (final T search : path) {
             if (i >= ny) return y;
             if (x.get(i) != y.get(i)) {
                 if (i == 0) {
-                    prefix = Collections.emptyList();
+                    prefix = List.of();
                 } else {
                     prefix = x.subList(0, i);
                     assert   y.subList(0, i).equals(prefix);
@@ -354,7 +351,7 @@ walk:   for (final T search : path) {
             if (sy == 0) return oy;
             if (x.get(sx - 1) != y.get(sy - 1)) {
                 if (i == 0) {
-                    suffix = Collections.emptyList();
+                    suffix = List.of();
                 } else {
                     suffix = x.subList(sx, nx);
                     assert   y.subList(sy, ny).equals(suffix);

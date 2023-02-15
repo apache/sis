@@ -33,7 +33,6 @@ import org.apache.sis.referencing.datum.DatumShiftGrid;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
  */
 final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTransform implements MathTransform2D {
     /**
@@ -86,7 +85,6 @@ final class InterpolatedGeocentricTransform2D extends InterpolatedGeocentricTran
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     static final class Inverse extends InterpolatedGeocentricTransform.Inverse implements MathTransform2D {
         /**

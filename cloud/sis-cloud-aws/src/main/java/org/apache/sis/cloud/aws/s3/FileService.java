@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.net.URI;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.FileStore;
 import java.nio.file.FileSystem;
@@ -43,6 +44,7 @@ import java.nio.file.NotDirectoryException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributeView;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Containers;
@@ -74,9 +76,8 @@ import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
  * instead of the data to access, and can be a global configuration for the server.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
- * @module
  */
 public class FileService extends FileSystemProvider {
     /**
@@ -171,9 +172,7 @@ public class FileService extends FileSystemProvider {
      * Initializes and returns a new file system identified by a URI.
      * The given URI shall have the following pattern:
      *
-     * {@preformat text
-     *     S3://accessKey@bucket/key
-     * }
+     * <pre class="text">S3://accessKey@bucket/key</pre>
      *
      * In current version all path components after {@code accessKey} are ignored.
      * A future version may allow finer grain control.
@@ -290,7 +289,20 @@ public class FileService extends FileSystemProvider {
             // TODO: we may need a way to get password here.
             fs = fileSystems.computeIfAbsent(accessKey, (key) -> new ClientFileSystem(FileService.this, null, key, null, null));
         }
-        return new KeyPath(fs, uri.getHost(), new String[] {uri.getPath()}, true);
+        String host = uri.getHost();
+        if (host == null) {
+            /*
+             * The host is null if the authority contains characters that are invalid for a host name.
+             * For example if the host contains underscore character ('_'), then it is considered invalid.
+             * We could use the authority instead, but that authority may contain a user name, port number, etc.
+             * Current version do not try to parse that string.
+             */
+            host = uri.getAuthority();
+            if (host == null) host = uri.toString();
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.InvalidBucketName_1, host));
+        }
+        final String path = uri.getPath();
+        return new KeyPath(fs, host, (path != null) ? new String[] {path} : CharSequences.EMPTY_ARRAY, true);
     }
 
     /**
@@ -441,20 +453,17 @@ public class FileService extends FileSystemProvider {
      * @throws UnsupportedOperationException if an unsupported option is specified.
      * @throws IOException if an I/O error occurs.
      */
-    public ResponseInputStream<GetObjectResponse> newInputStream(final Path path, final OpenOption... options) throws IOException {
+    @Override
+    public InputStream newInputStream(final Path path, final OpenOption... options) throws IOException {
+        ensureSupported(options);
         final KeyPath kp = toAbsolute(path, true);
-        for (final OpenOption opt: options) {
-            if (opt == StandardOpenOption.APPEND || opt == StandardOpenOption.WRITE) {
-                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, opt));
-            }
-        }
+        final ResponseInputStream<GetObjectResponse> stream;
         try {
-            final ResponseInputStream<GetObjectResponse> stream = kp.fs.client().getObject(
-                    GetObjectRequest.builder().bucket(kp.bucket).key(kp.key).build());
-            return stream;
+            stream = kp.fs.client().getObject(GetObjectRequest.builder().bucket(kp.bucket).key(kp.key).build());
         } catch (SdkException e) {
             throw failure(path, e);
         }
+        return stream;
     }
 
     /**
@@ -471,9 +480,19 @@ public class FileService extends FileSystemProvider {
     public SeekableByteChannel newByteChannel(final Path path, final Set<? extends OpenOption> options,
             final FileAttribute<?>... attributes) throws IOException
     {
-        final ResponseInputStream<GetObjectResponse> stream =
-                newInputStream(path, options.toArray(new OpenOption[options.size()]));
-        return new CachedByteChannel(stream);
+        ensureSupported(options.toArray(OpenOption[]::new));
+        return new CachedByteChannel(toAbsolute(path, true));
+    }
+
+    /**
+     * Ensures that the given array of options does not contain an unsupported option.
+     */
+    private static void ensureSupported(final OpenOption[] options) {
+        for (final OpenOption opt : options) {
+            if (opt == StandardOpenOption.APPEND || opt == StandardOpenOption.WRITE) {
+                throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, opt));
+            }
+        }
     }
 
     /**

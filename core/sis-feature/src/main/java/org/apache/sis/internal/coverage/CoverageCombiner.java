@@ -70,7 +70,6 @@ import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
  * @see ImageCombiner
  *
  * @since 1.2
- * @module
  */
 public final class CoverageCombiner {
     /**
@@ -266,8 +265,8 @@ next:   for (;;) {
                     for (int i=0; i<srcDim; i++) {
                         if (i == xdim || i == ydim) {
                             final int m = (i == xdim) ? margin.width : margin.height;
-                            minSourceIndices[i] = saturatingSubtract(round(env.getMinimum(i)), m  );
-                            maxSourceIndices[i] = saturatingAdd     (round(env.getMaximum(i)), m-1);
+                            minSourceIndices[i] = saturatingSubtract(round(env.getMinimum(i)), m   );
+                            maxSourceIndices[i] = saturatingAdd     (round(env.getMaximum(i)), m-1L);
                         } else {
                             minSourceIndices[i] = round(centerSourceIndices[i]);
                             maxSourceIndices[i] = minSourceIndices[i];

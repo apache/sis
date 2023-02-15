@@ -27,7 +27,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.0
- * @module
  */
 public class DisjointExtentException extends IllegalGridGeometryException {
     /**
@@ -72,7 +71,7 @@ public class DisjointExtentException extends IllegalGridGeometryException {
      * @param upper  the upper bound specified by user, which is invalid.
      */
     DisjointExtentException(final Object dim, final long min, final long max, final long lower, final long upper) {
-        super(Resources.format(Resources.Keys.GridEnvelopeOutsideCoverage_5, new Object[] {dim, min, max, lower, upper}));
+        super(Resources.format(Resources.Keys.GridExtentsAreDisjoint_5, new Object[] {dim, min, max, lower, upper}));
     }
 
     /**

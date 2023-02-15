@@ -37,7 +37,6 @@ import static org.apache.sis.internal.xml.LegacyNamespaces.VERSION_3_0;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 @XmlRootElement(name="TimePeriod")
 @XmlType(/*name = "TimePeriodType",*/ propOrder = { // TODO: Omitted for now for allowing external modules to define their own type.

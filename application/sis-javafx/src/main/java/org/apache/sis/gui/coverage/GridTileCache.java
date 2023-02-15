@@ -28,9 +28,8 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
-@SuppressWarnings("serial")
+@SuppressWarnings({"serial", "CloneableImplementsClone"})               // Not intended to be serialized.
 final class GridTileCache extends LinkedHashMap<GridTile,GridTile> {
     /**
      * Creates a new cache of tiles.

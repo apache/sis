@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.feature.jts;
 
-import java.util.Collections;
+import java.util.Map;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -43,9 +43,8 @@ import static org.junit.Assert.*;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.0
- * @module
  */
-public final strictfp class JTSTest extends TestCase {
+public final class JTSTest extends TestCase {
     /**
      * Tests {@link JTS#getCoordinateReferenceSystem(Geometry)}.
      *
@@ -66,7 +65,7 @@ public final strictfp class JTSTest extends TestCase {
         /*
          * Test CRS as map value.
          */
-        geometry.setUserData(Collections.singletonMap(JTS.CRS_KEY, CommonCRS.NAD83.geographic()));
+        geometry.setUserData(Map.of(JTS.CRS_KEY, CommonCRS.NAD83.geographic()));
         assertEquals(CommonCRS.NAD83.geographic(), JTS.getCoordinateReferenceSystem(geometry));
         /*
          * Test CRS as srid.

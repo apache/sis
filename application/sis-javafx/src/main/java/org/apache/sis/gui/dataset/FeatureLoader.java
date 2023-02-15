@@ -29,6 +29,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.system.Configuration;
 
 
 /**
@@ -39,7 +40,6 @@ import org.apache.sis.internal.gui.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
     /**
@@ -48,6 +48,7 @@ final class FeatureLoader extends Task<Boolean> implements Consumer<Feature> {
      *
      * @see FeatureList#nextPageLoader
      */
+    @Configuration
     private static final int PAGE_SIZE = 100;
 
     /**

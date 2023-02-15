@@ -39,7 +39,6 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @see <a href="http://geotiff.maptools.org/proj_list/sinusoidal.html">GeoTIFF parameters for Sinusoidal</a>
  *
  * @since 1.0
- * @module
  */
 @XmlTransient
 public class Sinusoidal extends MapProjection {

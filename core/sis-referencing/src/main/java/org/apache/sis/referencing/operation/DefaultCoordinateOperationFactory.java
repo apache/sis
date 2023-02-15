@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.opengis.util.FactoryException;
@@ -41,7 +40,6 @@ import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.system.DefaultFactories;
-import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.referencing.CRS;
@@ -56,10 +54,10 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.NullArgumentException;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -87,20 +85,18 @@ import org.apache.sis.util.Utilities;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 public class DefaultCoordinateOperationFactory extends AbstractFactory implements CoordinateOperationFactory {
     /**
      * Whether this class is allowed to use the EPSG authority factory for searching coordinate operation paths.
      * This flag should always be {@code true}, except temporarily for testing purposes.
      */
+    @Debug
     static final boolean USE_EPSG_FACTORY = true;
 
     /**
-     * The default properties, or an empty map if none. This map shall not change after construction in
-     * order to allow usage without synchronization in multi-thread context. But we do not need to wrap
-     * in a unmodifiable map since {@code DefaultCoordinateOperationFactory} does not provide public
-     * access to it.
+     * The default properties, or an empty map if none. This map shall be immutable
+     * in order to allow usage without synchronization in multi-thread context.
      */
     private final Map<String,?> defaultProperties;
 
@@ -163,7 +159,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public DefaultCoordinateOperationFactory(Map<String,?> properties, final MathTransformFactory factory) {
         if (properties == null || properties.isEmpty()) {
-            properties = Collections.emptyMap();
+            properties = Map.of();
         } else {
             String key   = null;
             Object value = null;
@@ -181,7 +177,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                         .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
             properties.remove(ReferencingFactoryContainer.DATUM_FACTORY);
-            properties = CollectionsExt.compact(properties);
+            properties = Map.copyOf(properties);
         }
         defaultProperties = properties;
         if (factory != null) {
@@ -282,8 +278,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      */
     @Override
     public OperationMethod getOperationMethod(String name) throws FactoryException {
-        name = CharSequences.trimWhitespaces(name);
-        ArgumentChecks.ensureNonEmpty("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
         final MathTransformFactory mtFactory = getMathTransformFactory();
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
@@ -842,9 +837,9 @@ next:   for (int i=components.size(); --i >= 0;) {
      * CoordinateOperationContext) createOperation(…)} when no operation was found in the cache.
      * The default implementation is straightforward:
      *
-     * {@preformat java
-     *   return new CoordinateOperationFinder(registry, this, context);
-     * }
+     * {@snippet lang="java" :
+     *     return new CoordinateOperationFinder(registry, this, context);
+     *     }
      *
      * Subclasses can override this method is they want to modify the way coordinate operations are inferred.
      *
@@ -881,7 +876,7 @@ next:   for (int i=components.size(); --i >= 0;) {
      * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
      */
     @Override
-    @Deprecated
+    @Deprecated(since="0.7")
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS,
                                                final OperationMethod method)

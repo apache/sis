@@ -69,13 +69,13 @@ import org.apache.sis.util.resources.Errors;
  * <h2>Usage</h2>
  * Example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *     ExtentSelector<Foo> selector = new ExtentSelector<>(areaOfInterest);
  *     for (Foo candidate : candidates) {
  *         selector.evaluate(candidate.extent, candidate),
  *     }
  *     Foo best = selector.best();
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -83,7 +83,6 @@ import org.apache.sis.util.resources.Errors;
  * @param  <T>  the type of object to be selected.
  *
  * @since 0.4
- * @module
  */
 public final class ExtentSelector<T> {
     /**

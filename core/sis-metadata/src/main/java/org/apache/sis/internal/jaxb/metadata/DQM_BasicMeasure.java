@@ -29,7 +29,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  * @since   1.3
- * @module
  */
 public final class DQM_BasicMeasure extends PropertyType<DQM_BasicMeasure, BasicMeasure> {
     /**

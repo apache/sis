@@ -41,9 +41,8 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Cullen Rombach (Image Matters)
  * @version 1.0
  * @since   0.3
- * @module
  */
-public final strictfp class CharSequenceSubstitutionTest extends TestCase {
+public final class CharSequenceSubstitutionTest extends TestCase {
     /**
      * Tests unmarshalling of {@code "RS_Identifier"} element. This element was defined in legacy ISO 19139:2007
      * but has been removed in ISO 19115-3. That element is extensively used for Coordinate Reference Systems in

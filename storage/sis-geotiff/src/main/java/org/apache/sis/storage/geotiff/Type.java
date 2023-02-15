@@ -37,9 +37,8 @@ import org.apache.sis.util.resources.Errors;
  * This enumeration rather match the Java primitive type names.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 enum Type {
     /**
@@ -296,21 +295,16 @@ enum Type {
      * </ul>
      */
     RATIONAL(10, (2*Integer.BYTES), false) {
-        private Fraction readFraction(final ChannelDataInput input, final long count) throws IOException {
-            final Fraction value = new Fraction(input.readInt(), input.readInt());
-            for (long i=1; i<count; i++) {
-                ensureSingleton(value.doubleValue(), input.readInt() / (double) input.readInt(), count);
-            }
-            return value;
-        }
-
         @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
             return readFraction(input, count).doubleValue();
         }
 
-        /** Returns the value as a {@link Fraction}. */
+        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return readFractions(input, count);
+        }
+
         @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
-            return readFraction(input, count);
+            return (count == 1) ? readFraction(input, count) : super.readObject(input, count);
         }
     },
 
@@ -322,25 +316,16 @@ enum Type {
      * </ul>
      */
     URATIONAL(5, (2*Integer.BYTES), true) {
-        private Number readFraction(final ChannelDataInput input, final long count) throws IOException {
-            final long n  = input.readUnsignedInt();
-            final long d  = input.readUnsignedInt();
-            final int  ni = (int) n;
-            final int  di = (int) d;
-            final Number value = (ni == n && di == d) ? new Fraction(ni, di) : Double.valueOf(n / (double) d);
-            for (long i=1; i<count; i++) {
-                ensureSingleton(value.doubleValue(), input.readUnsignedInt() / (double) input.readUnsignedInt(), count);
-            }
-            return value;
-        }
-
         @Override public double readDouble(final ChannelDataInput input, final long count) throws IOException {
             return readFraction(input, count).doubleValue();
         }
 
-        /** Returns the value as {@link Faction} if possible or {@link Double} otherwise. */
+        @Override public Object readArray(final ChannelDataInput input, final int count) throws IOException {
+            return readFractions(input, count);
+        }
+
         @Override public Object readObject(final ChannelDataInput input, final long count) throws IOException {
-            return readFraction(input, count);
+            return (count == 1) ? readFraction(input, count) : super.readObject(input, count);
         }
     },
 
@@ -451,10 +436,38 @@ enum Type {
     }
 
     /**
-     * Formats a rational number. This is a helper method for {@link #RATIONAL} and {@link #URATIONAL} types.
+     * Reads the next rational number. This is either a single value or a member of a vector.
      */
-    static String toString(final long numerator, final long denominator) {
-        return new StringBuilder().append(numerator).append('/').append(denominator).toString();
+    private Number nextFraction(final ChannelDataInput input) throws IOException {
+        if (isUnsigned) {
+            return Numerics.fraction(input.readUnsignedInt(), input.readUnsignedInt());
+        } else {
+            return new Fraction(input.readInt(), input.readInt()).unique();
+        }
+    }
+
+    /**
+     * Reads an array of rational numbers.
+     * This is a helper method for {@link #RATIONAL} and {@link #URATIONAL} types.
+     */
+    final Number[] readFractions(final ChannelDataInput input, int count) throws IOException {
+        final Number[] values = new Number[count];
+        for (int i=0; i<count; i++) {
+            values[i] = nextFraction(input);
+        }
+        return values;
+    }
+
+    /**
+     * Reads a rational number, making sure that the value is unique if repeated.
+     * This is a helper method for {@link #RATIONAL} and {@link #URATIONAL} types.
+     */
+    final Number readFraction(final ChannelDataInput input, final long count) throws IOException {
+        final Number value = nextFraction(input);
+        for (long i=1; i<count; i++) {
+            ensureSingleton(value.doubleValue(), nextFraction(input).doubleValue(), count);
+        }
+        return value;
     }
 
     /**
@@ -470,7 +483,7 @@ enum Type {
      * @param  count     the number of values to read.
      * @throws IllegalArgumentException if {@code count} does not have the expected value.
      */
-    static void ensureSingleton(final long previous, final long actual, final long count) {
+    private static void ensureSingleton(final long previous, final long actual, final long count) {
         if (previous != actual) {
             // Even if the methods did not expected an array in argument, we are conceptually reading an array.
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, count));
@@ -480,7 +493,7 @@ enum Type {
     /**
      * Same as {@link #ensureSingleton(long, long, long)} but with floating-point values.
      */
-    static void ensureSingleton(final double previous, final double actual, final long count) {
+    private static void ensureSingleton(final double previous, final double actual, final long count) {
         if (Double.doubleToLongBits(previous) != Double.doubleToLongBits(actual)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, 1, count));
         }
@@ -638,6 +651,8 @@ enum Type {
 
     /**
      * Reads an arbitrary number of values as a Java array.
+     * This is usually (but not necessarily) an array of primitive type.
+     * It may be unsigned values packed in their signed counterpart.
      *
      * @param  input  the input from where to read the values.
      * @param  count  the amount of values.

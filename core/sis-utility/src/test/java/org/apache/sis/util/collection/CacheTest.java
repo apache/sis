@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util.collection;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -36,7 +37,6 @@ import org.apache.sis.test.Performance;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static java.util.Collections.singleton;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -46,10 +46,9 @@ import static org.apache.sis.test.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   0.3
- * @module
  */
 @DependsOn(WeakValueHashMapTest.class)
-public final strictfp class CacheTest extends TestCase {
+public final class CacheTest extends TestCase {
     /**
      * Tests {@link Cache} as a {@link java.util.Map} using strong references.
      * The tested {@code Cache} shall behave like a standard {@link HashMap},
@@ -92,10 +91,10 @@ public final strictfp class CacheTest extends TestCase {
         assertNull("No initial value expected.", handler.peek());
         handler.putAndUnlock(value);
 
-        assertEquals(1,              cache.size());
-        assertEquals(value,          cache.peek(key));
-        assertEquals(singleton(key), cache.keySet());
-        assertEquals(singleton(new SimpleEntry<>(key, value)), cache.entrySet());
+        assertEquals(1,           cache.size());
+        assertEquals(value,       cache.peek(key));
+        assertEquals(Set.of(key), cache.keySet());
+        assertEquals(Set.of(new SimpleEntry<>(key, value)), cache.entrySet());
     }
 
     /**

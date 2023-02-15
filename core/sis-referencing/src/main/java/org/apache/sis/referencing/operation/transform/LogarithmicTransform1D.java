@@ -45,7 +45,6 @@ import org.apache.sis.util.ComparisonMode;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializable {
     /**
@@ -62,6 +61,7 @@ class LogarithmicTransform1D extends AbstractMathTransform1D implements Serializ
      * The inverse of this transform. Created only when first needed. Serialized in order to avoid
      * rounding error if this transform is actually the one which was created from the inverse.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private MathTransform1D inverse;
 
     /**

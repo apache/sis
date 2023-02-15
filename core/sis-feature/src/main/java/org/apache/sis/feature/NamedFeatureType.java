@@ -39,7 +39,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8
  * @since   0.5
- * @module
  */
 final class NamedFeatureType implements FeatureType, Serializable {
     /**
@@ -50,6 +49,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
     /**
      * The name of the feature type for which this {@code NamedFeatureType} is a placeholder.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private final GenericName name;
 
     /**
@@ -58,6 +58,7 @@ final class NamedFeatureType implements FeatureType, Serializable {
      * to create it. This information is stored in case the same {@code NamedFeatureType} instance has been used
      * in more than one {@link DefaultFeatureType}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     volatile FeatureType resolved;
 
     /**

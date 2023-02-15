@@ -84,7 +84,6 @@ import org.opengis.feature.Operation;
  * @see DefaultFeatureType#newInstance()
  *
  * @since 0.5
- * @module
  */
 public abstract class AbstractFeature implements Feature, Serializable {
     /**
@@ -102,6 +101,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
     /**
      * Information about the feature (name, characteristics, <i>etc.</i>).
      */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
     final FeatureType type;
 
     /**
@@ -179,9 +179,9 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *       In other words, the following condition shall hold:</li>
      * </ul>
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     assert property.getType() == getType().getProperty(property.getName());
-     * }
+     *     }
      *
      * This method is useful for storing non-default {@code Attribute} or {@code FeatureAssociation} implementations
      * in this feature. When default implementations are sufficient, the {@link #setPropertyValue(String, Object)}
@@ -298,7 +298,10 @@ public abstract class AbstractFeature implements Feature, Serializable {
         if (Field.isSingleton(attribute.getMaximumOccurs())) {
             return defaultValue;
         } else {
-            // Following is for compliance with getPropertyValue(String) method contract - see its javadoc.
+            /*
+             * Following is for compliance with getPropertyValue(String) method contract - see its javadoc.
+             * We use `Collections` instead of `List.of` for accepting `List.contains(null)`.
+             */
             return (defaultValue != null) ? Collections.singletonList(defaultValue) : Collections.emptyList();
         }
     }
@@ -325,13 +328,13 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * In the case of multi-valued properties (“max. occurs” &gt; 1), the collection returned by this method may
      * or may not be modifiable, at implementation choice. Generally the caller cannot add new elements into the
      * returned collection anyway since {@code Collection<?>} does not allow such operations, and more specific
-     * casts (e.g. {@code Collection<String>} cannot be checked at runtime (at least as of Java 8).
+     * casts (e.g. {@code Collection<String>} cannot be checked at runtime.
      * If a type-safe modifiable collection is desired, the following approach can be used instead:
      *
-     * {@preformat java
-     *   Attribute<String> attribute = Features.cast((Attribute<?>) feature.getProperty(name), String.class);
-     *   Collection<String> values = attribute.getValues();    // This collection is guaranteed to be "live".
-     * }
+     * {@snippet lang="java" :
+     *     Attribute<String> attribute = Features.cast((Attribute<?>) feature.getProperty(name), String.class);
+     *     Collection<String> values = attribute.getValues();    // This collection is guaranteed to be "live".
+     *     }
      *
      * @param  name  the property name.
      * @return value of the specified property, or the
@@ -367,13 +370,13 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Returns the value for the property of the given name if that property exists, or a fallback value otherwise.
      * This method is equivalent to the following code, but potentially more efficient when the property does not exist:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     try {
      *         return getPropertyValue(name);
      *     } catch (PropertyNotFoundException ignore) {
      *         return missingPropertyFallback
      *     }
-     * }
+     *     }
      *
      * Note that if a property of the given name exists but has no value, then this method returns the
      * {@linkplain DefaultAttributeType#getDefaultValue() default value} (which may be {@code null}).
@@ -397,15 +400,17 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * (for example a {@linkplain FeatureOperations#link link} to another property value).
      * Invoking this method is equivalent to performing the following steps:
      *
-     * {@preformat java
-     *     Operation operation = (Operation) type.getProperty(name);
-     *     Property result = operation.apply(this, null);
-     *     if (result instanceof Attribute<?>) {
-     *         return ...;                                      // the attribute value.
-     *     } else if (result instanceof FeatureAssociation) {
-     *         return ...;                                      // the associated feature.
-     *     } else {
-     *         return null;
+     * {@snippet lang="java" :
+     *     public Object getPropertyValue(String name) {
+     *         Operation operation = (Operation) type.getProperty(name);
+     *         Property result = operation.apply(this, null);
+     *         if (result instanceof Attribute<?>) {
+     *             return ...;                                      // the attribute value.
+     *         } else if (result instanceof FeatureAssociation) {
+     *             return ...;                                      // the associated feature.
+     *         } else {
+     *             return null;
+     *         }
      *     }
      * }
      *
@@ -770,11 +775,12 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult conformance result} having a
      * {@linkplain org.apache.sis.metadata.iso.quality.DefaultConformanceResult#pass() pass} value of {@code false}.
      *
-     * <div class="note"><b>Example:</b> given a feature with an attribute named “population”.
+     * <h4>Example</h4>
+     * Given a feature with an attribute named “population”.
      * If this attribute is mandatory ([1 … 1] multiplicity) but no value has been assigned to it,
      * then this {@code quality()} method will return the following data quality report:
      *
-     * {@preformat text
+     * <pre class="text">
      *   Data quality
      *     ├─Scope
      *     │   └─Level………………………………………………… Feature
@@ -784,9 +790,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *         ├─Evaluation method type…… Direct internal
      *         └─Result
      *             ├─Explanation……………………… Missing value for “population” property.
-     *             └─Pass………………………………………… false
-     * }
-     * </div>
+     *             └─Pass………………………………………… false</pre>
      *
      * @return reports on all constraint violations found.
      *
@@ -822,13 +826,13 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * for the given feature and returns {@code true} if there is no recursion.
      * This method must be invoked in a {@code try ... finally} block as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     if (comparisonStart()) try {
      *         // Compare or compute hash code.
      *     } finally {
      *         comparisonEnd();
      *     }
-     * }
+     *     }
      *
      * @return {@code true} if hash code or equality comparison can proceed, or
      *         {@code false} if a recursivity is detected.
@@ -841,7 +845,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * Notifies that the comparison of {@code this} feature is finished.
      */
     final void comparisonEnd() {
-        if (COMPARING.get().remove(this) != Boolean.TRUE) {
+        if (!Boolean.TRUE.equals(COMPARING.get().remove(this))) {
             throw new AssertionError();     // Should never happen.
         }
     }

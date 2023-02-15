@@ -21,11 +21,13 @@ import java.awt.geom.AffineTransform;
 import Jama.Matrix;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.internal.util.DoubleDouble;
+import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
+import static java.lang.StrictMath.*;
 import static org.apache.sis.test.Assert.*;
 
 
@@ -45,11 +47,10 @@ import static org.apache.sis.test.Assert.*;
  * <p>This class uses <a href="http://math.nist.gov/javanumerics/jama">JAMA</a> as the reference implementation.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
- * @module
  */
-public abstract strictfp class MatrixTestCase extends TestCase {
+public abstract class MatrixTestCase extends TestCase {
     /**
      * {@code true} for reusing the same sequences of random numbers in every execution of test cases, or
      * {@code false} for "truly" random sequences of random numbers. This flag can be set to {@code false}
@@ -140,12 +141,46 @@ public abstract strictfp class MatrixTestCase extends TestCase {
 
     /**
      * Validates the given matrix.
-     * The default implementation verifies only the matrix size. Subclasses should override this method
+     * The default implementation verifies the matrix size. Subclasses should override this method
      * for additional checks, typically ensuring that it is an instance of the expected class.
      */
-    void validate(final MatrixSIS matrix) {
+    void validateImplementation(final MatrixSIS matrix) {
         assertEquals("numRow", getNumRow(), matrix.getNumRow());
         assertEquals("numCol", getNumCol(), matrix.getNumCol());
+        validate(matrix);
+    }
+
+    /**
+     * Validates the given matrix by comparing the outcome of different methods.
+     * This is an internal consistency check.
+     *
+     * @param  matrix  the matrix to validate, or {@code null} if none.
+     */
+    public static void validate(final org.opengis.referencing.operation.Matrix matrix) {
+        if (matrix == null) {
+            return;
+        }
+        final int numRow = matrix.getNumRow();
+        final int numCol = matrix.getNumCol();
+        final var extend = MatrixSIS.asExtendedPrecision(matrix);
+        final Number[] numbers  = extend.getElementAsNumbers(false);
+        final double[] elements = (matrix instanceof MatrixSIS) ? ((MatrixSIS) matrix).getElements() : null;
+        assertEquals("getElementAsNumbers", numRow * numCol, numbers.length);
+        if (elements != null) {
+            assertEquals("getElements", numbers.length, elements.length);
+        }
+        for (int k=0; k<numbers.length; k++) {
+            final int j = k / numCol;
+            final int i = k % numCol;
+            final Number number  = numbers[k];
+            final double element = matrix.getElement(j, i);
+            assertEquals("getElementOrNull", number, extend.getElementOrNull(j, i));
+            assertEquals("isZero", number == null, ExtendedPrecisionMatrix.isZero(number));
+            assertEquals("getElement", (number != null) ? number.doubleValue() : 0, element, STRICT);
+            if (elements != null) {
+                assertEquals("getElements", element, elements[k], STRICT);
+            }
+        }
     }
 
     /**
@@ -169,7 +204,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
                 assertEquals(name, e, actual.getNumber(j,i).doubleValue(), tolerance);
                 if (tolerance != STRICT && statistics != null) {
                     synchronized (statistics) {
-                        statistics.accept(StrictMath.abs(e - a));
+                        statistics.accept(abs(e - a));
                     }
                 }
             }
@@ -185,7 +220,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     {
         assertEquals("numRow", numRow, actual.getNumRow());
         assertEquals("numCol", numCol, actual.getNumCol());
-        assertArrayEquals(expected, actual.getElements(), tolerance); // First because more informative in case of failure.
+        assertArrayEquals(expected, actual.getElements(), tolerance);           // First because more informative in case of failure.
         assertTrue(Matrices.create(numRow, numCol, expected).equals(actual, tolerance));
     }
 
@@ -195,7 +230,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
     private static void assertEqualsRelative(final String message, final double expected,
             final MatrixSIS matrix, final int row, final int column)
     {
-        assertEquals(message, expected, matrix.getElement(row, column), StrictMath.abs(expected) * 1E-12);
+        assertEquals(message, expected, matrix.getElement(row, column), abs(expected) * 1E-12);
     }
 
     /**
@@ -205,7 +240,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      */
     private double nextNonZeroRandom() {
         double value = random.nextDouble() * 200 - 100;
-        value += StrictMath.copySign(0.001, value);
+        value += copySign(0.001, value);
         if (random.nextBoolean()) {
             value = 1 / value;
         }
@@ -241,7 +276,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
-        validate(matrix);
+        validateImplementation(matrix);
         /*
          * The JAMA constructor uses column-major array (FORTRAN convention), while SIS uses
          * row-major array. So we have to transpose the JAMA matrix after construction.
@@ -263,7 +298,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.createZero(numRow, numCol);
-        validate(matrix);
+        validateImplementation(matrix);
         final Matrix reference = new Matrix(numRow, numCol);
         /*
          * End of initialization - now perform the actual test.
@@ -294,7 +329,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.createDiagonal(numRow, numCol);
-        validate(matrix);
+        validateImplementation(matrix);
         /*
          * End of initialization - now perform the actual test.
          */
@@ -327,8 +362,8 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
         final MatrixSIS clone  = matrix.clone();
-        validate(matrix);
-        validate(clone);
+        validateImplementation(matrix);
+        validateImplementation(clone);
         assertNotSame("clone", matrix, clone);
         assertEquals("equals", matrix, clone);
         assertEquals("hashCode", matrix.hashCode(), clone.hashCode());
@@ -356,7 +391,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
-        validate(matrix);
+        validateImplementation(matrix);
         /*
          * The JAMA constructor uses column-major array (FORTRAN convention) while SIS uses row-major
          * array. In other words, the JAMA matrix is already transposed from the SIS point of view.
@@ -377,7 +412,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numCol = getNumCol();
         final double[] elements = createRandomPositiveValues(numRow * numCol);
         final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
-        validate(matrix);
+        validateImplementation(matrix);
         final double[] expected = new double[numCol];
         for (int i=0; i<numCol; i++) {
             expected[i] = magnitude(matrix, i, numRow);
@@ -400,7 +435,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final double e = matrix.getElement(j, i);
             sum += e*e;
         }
-        return StrictMath.sqrt(sum);
+        return sqrt(sum);
     }
 
     /**
@@ -454,6 +489,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
              */
             matrix.convertBefore(srcDim, scale, offset);
             assertCoefficientsEqual(at, matrix);
+            validateImplementation(matrix);
         }
     }
 
@@ -506,6 +542,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             at.preConcatenate(pre);
             matrix.convertAfter(tgtDim, scale, offset);
             assertCoefficientsEqual(at, matrix);
+            validateImplementation(matrix);
         }
     }
 
@@ -526,10 +563,11 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             if ((n % 10) == 0) {
                 setRandomValues(at, matrix);
             }
-            at.translate(vector[0] = random.nextDouble() * 50 - 25,
-                         vector[1] = random.nextDouble() * 50 - 25);
+            at.translate(vector[0] = fma(random.nextDouble(), 50, -25),
+                         vector[1] = fma(random.nextDouble(), 50, -25));
             matrix.translate(vector);
             assertMatrixEquals("translate", AffineTransforms2D.toMatrix(at), matrix, TOLERANCE);
+            validateImplementation(matrix);
         }
     }
 
@@ -537,10 +575,10 @@ public abstract strictfp class MatrixTestCase extends TestCase {
      * Sets random values in the given affine transform and a copy of those values in the given matrix.
      */
     private void setRandomValues(final AffineTransform at, final MatrixSIS matrix) {
-        at.setToRotation(random.nextDouble() * StrictMath.PI);
+        at.setToRotation(random.nextDouble() * PI);
         at.scale(nextNonZeroRandom(), nextNonZeroRandom());
-        at.translate(random.nextDouble() * 100 - 50,
-                     random.nextDouble() * 100 - 50);
+        at.translate(fma(random.nextDouble(), 100, - 50),
+                     fma(random.nextDouble(), 100, - 50));
         matrix.setElements(new double[] {
             at.getScaleX(), at.getShearX(), at.getTranslateX(),
             at.getShearY(), at.getScaleY(), at.getTranslateY(),
@@ -565,13 +603,14 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             if ((n % 10) == 0) {
                 setRandomValues(at, matrix);
             }
-            vector[0] = random.nextDouble() * 50 - 25;
-            vector[1] = random.nextDouble() * 50 - 25;
+            vector[0] = fma(random.nextDouble(), 50, -25);
+            vector[1] = fma(random.nextDouble(), 50, -25);
             vector[2] = 1;
             final double[] result = matrix.multiply(vector);        // The result to verify.
             at.transform(vector, 0, vector, 0, 1);                  // The expected result.
             assertEquals("x", vector[0], result[0], TOLERANCE);
             assertEquals("y", vector[1], result[1], TOLERANCE);
+            validateImplementation(matrix);
         }
     }
 
@@ -597,7 +636,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final int nx = random.nextInt(8) + 1;
             elements = new double[numCol * nx];
             for (int k=0; k<elements.length; k++) {
-                elements[k] = 8 - random.nextDouble() * 10;
+                elements[k] = fma(random.nextDouble(), -10, 8);
             }
             final Matrix referenceArg = new Matrix(elements, nx).transpose();
             final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
@@ -607,6 +646,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final Matrix referenceResult = reference.times(referenceArg);
             final MatrixSIS matrixResult = matrix.multiply(matrixArg);
             assertEqualsJAMA(referenceResult, matrixResult, TOLERANCE);
+            validateImplementation(matrix);
         }
     }
 
@@ -637,7 +677,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final int nx = random.nextInt(8) + 1;
             elements = new double[numCol * nx];
             for (int k=0; k<elements.length; k++) {
-                elements[k] = 8 - random.nextDouble() * 10;
+                elements[k] = fma(random.nextDouble(), -10, 8);
             }
             final Matrix referenceArg = new Matrix(elements, nx).transpose();
             final MatrixSIS matrixArg = Matrices.create(numCol, nx, elements);
@@ -647,6 +687,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             final Matrix referenceResult = reference.solve(referenceArg);
             final MatrixSIS matrixResult = matrix.solve(matrixArg);
             assertEqualsJAMA(referenceResult, matrixResult, SolverTest.TOLERANCE);
+            validateImplementation(matrix);
         }
     }
 
@@ -671,6 +712,7 @@ public abstract strictfp class MatrixTestCase extends TestCase {
             }
             final MatrixSIS matrix = Matrices.create(numRow, numCol, elements);
             assertEqualsJAMA(reference.inverse(), matrix.inverse(), TOLERANCE);
+            validateImplementation(matrix);
         }
     }
 
@@ -685,5 +727,6 @@ public abstract strictfp class MatrixTestCase extends TestCase {
         final int numCol = getNumCol();
         final MatrixSIS matrix = Matrices.create(numRow, numCol, createRandomPositiveValues(numRow * numCol));
         assertNotSame(matrix, assertSerializedEquals(matrix));
+        validateImplementation(matrix);
     }
 }

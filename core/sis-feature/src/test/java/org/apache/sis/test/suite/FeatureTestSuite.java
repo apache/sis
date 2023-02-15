@@ -28,7 +28,6 @@ import org.junit.runners.Suite;
  * @author  Johann Sorel (Geomatys)
  * @version 1.3
  * @since   0.5
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.feature.DefaultAttributeTypeTest.class,
@@ -127,7 +126,7 @@ import org.junit.runners.Suite;
     org.apache.sis.index.tree.PointTreeNodeTest.class,
     org.apache.sis.index.tree.PointTreeTest.class
 })
-public final strictfp class FeatureTestSuite extends TestSuite {
+public final class FeatureTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

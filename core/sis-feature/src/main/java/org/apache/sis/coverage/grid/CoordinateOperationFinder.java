@@ -43,10 +43,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.util.Numerics;
-
-import static java.util.logging.Logger.getLogger;
 
 
 /**
@@ -77,9 +74,8 @@ import static java.util.logging.Logger.getLogger;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
- * @module
  */
 final class CoordinateOperationFinder implements Supplier<double[]> {
     /**
@@ -147,12 +143,12 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * This is the concatenation of {@link #source} "grid to CRS" with {@link #forwardChangeOfCRS},
      * possibly with wraparound handling and cached for reuse by {@link #inverse()}:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     forwardChangeOfCRS = changeOfCRS.getMathTransform();
      *     // + wraparound handling if applicable.
      *     gridToCRS = source.getGridToCRS(anchor);
      *     gridToCRS = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
-     * }
+     *     }
      *
      * @see #gridToCRS()
      */
@@ -163,12 +159,12 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * This is the concatenation of {@link #inverseChangeOfCRS} with inverse of {@link #source} "grid to CRS",
      * possibly with wraparound handling:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     inverseChangeOfCRS = forwardChangeOfCRS.inverse();
      *     // + wraparound handling if applicable.
      *     crsToGrid = gridToCRS.inverse();
      *     crsToGrid = MathTransforms.concatenate(inverseChangeOfCRS, crsToGrid);
-     * }
+     *     }
      *
      * @see #inverse()
      * @see #applyWraparound(MathTransform)
@@ -209,14 +205,14 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      * Whether to disable completely all wraparounds checks.
      * If {@code true}, then calculation done in this class should be equivalent to following code:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     forwardChangeOfCRS = changeOfCRS.getMathTransform();
      *     inverseChangeOfCRS = forwardChangeOfCRS.inverse();
      *     gridToCRS          = source.getGridToCRS(anchor);
      *     crsToGrid          = gridToCRS.inverse();
      *     gridToCRS          = MathTransforms.concatenate(gridToCRS, forwardChangeOfCRS);
      *     crsToGrid          = MathTransforms.concatenate(inverseChangeOfCRS, crsToGrid);
-     * }
+     *     }
      *
      * <b>Tip:</b> searching usage of this field should help to identify code doing wraparound handling.
      *
@@ -746,6 +742,6 @@ apply:          if (forwardChangeOfCRS == null) {
      * @param  e       the ignorable exception.
      */
     private static void recoverableException(final String caller, final Exception e) {
-        Logging.recoverableException(getLogger(Modules.RASTER), CoordinateOperationFinder.class, caller, e);
+        Logging.recoverableException(GridExtent.LOGGER, CoordinateOperationFinder.class, caller, e);
     }
 }

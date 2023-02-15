@@ -70,7 +70,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.3
  * @since   0.6
- * @module
  */
 @XmlType(name = "AbstractSingleOperationType", propOrder = {    // See note in class javadoc.
     "method",
@@ -95,7 +94,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      *
      * @see #getMethod()
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private OperationMethod method;
 
     /**
@@ -108,7 +107,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      * @see #getParameterValues()
      * @see #setParameterValues(ParameterValueGroup, Map)
      */
-    @SuppressWarnings("serial")         // Not statically typed as Serializable.
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     ParameterValueGroup parameters;
 
     /**
@@ -393,7 +392,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         if (parameters != null) {
             final List<GeneralParameterValue> values = parameters.values();
             if (values != null) {      // Paranoiac check (should not be allowed).
-                return CC_OperationMethod.filterImplicit(values.toArray(new GeneralParameterValue[values.size()]));
+                return CC_OperationMethod.filterImplicit(values.toArray(GeneralParameterValue[]::new));
             }
         }
         return null;

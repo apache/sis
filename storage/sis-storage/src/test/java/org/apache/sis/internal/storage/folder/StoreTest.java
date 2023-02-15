@@ -20,9 +20,8 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.identification.Identification;
@@ -45,9 +44,8 @@ import static org.junit.Assume.assumeTrue;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   0.8
- * @module
  */
-public final strictfp class StoreTest extends TestCase {
+public final class StoreTest extends TestCase {
     /**
      * Gets the path to the test directory. If the directory is not accessible through the file system
      * (for example if the test data are read from a JAR file), then skip the tests. This happen if the
@@ -57,7 +55,7 @@ public final strictfp class StoreTest extends TestCase {
         final URL sample = StoreTest.class.getResource("test-data/README.txt");
         assertNotNull("Test data not found", sample);
         assumeTrue(sample.getProtocol().equals("file"));
-        return Paths.get(sample.toURI()).getParent();
+        return Path.of(sample.toURI()).getParent();
     }
 
     /**
@@ -69,7 +67,7 @@ public final strictfp class StoreTest extends TestCase {
      */
     @Test
     public void testComponents() throws URISyntaxException, DataStoreException, IOException {
-        final Set<String> identifiers = new HashSet<>(Arrays.asList("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Set<String> identifiers = new HashSet<>(List.of("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
         final Path path = testDirectory();
         try (Store store = new Store(null, new StorageConnector(path), path, null)) {
             assertEquals("Wrong number of data stores.", 4, store.components().size());
@@ -90,7 +88,7 @@ public final strictfp class StoreTest extends TestCase {
     @Test
     public void testSearchProviderParameter() throws URISyntaxException, DataStoreException, IOException {
         final StoreProvider provider = new StoreProvider();
-        final Set<String> identifiers = new HashSet<>(Arrays.asList("Sample 1", "Sample 2", "Sample 3", "data4"));
+        final Set<String> identifiers = new HashSet<>(List.of("Sample 1", "Sample 2", "Sample 3", "data4"));
         final ParameterValueGroup params = StoreProvider.PARAMETERS.createValue();
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");

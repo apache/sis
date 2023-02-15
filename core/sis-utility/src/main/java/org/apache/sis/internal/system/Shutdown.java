@@ -22,17 +22,14 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import org.apache.sis.util.logging.Logging;
 
-import static java.util.logging.Logger.getLogger;
-
 
 /**
  * A central place where to manage SIS shutdown process.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.3
- * @module
  */
 public final class Shutdown extends Thread {
     /**
@@ -201,7 +198,7 @@ public final class Shutdown extends Thread {
             Threads.shutdown(System.nanoTime() + 4000);
         } catch (InterruptedException e) {
             if (caller != null) {
-                Logging.unexpectedException(getLogger(Loggers.SYSTEM), caller, "stop", e);
+                Logging.unexpectedException(SystemListener.LOGGER, caller, "stop", e);
             }
         }
         if (exception != null) {

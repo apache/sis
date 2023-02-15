@@ -25,21 +25,22 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-geotiff} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
- * @module
  */
 @Suite.SuiteClasses({
     org.apache.sis.internal.geotiff.CompressionTest.class,
     org.apache.sis.internal.storage.inflater.InflaterTest.class,
     org.apache.sis.internal.storage.inflater.CCITTRLETest.class,
     org.apache.sis.storage.geotiff.TypeTest.class,
+    org.apache.sis.storage.geotiff.TagsTest.class,
     org.apache.sis.storage.geotiff.GeoKeysTest.class,
+    org.apache.sis.storage.geotiff.GeoCodesTest.class,
     org.apache.sis.storage.geotiff.CRSBuilderTest.class,
     org.apache.sis.storage.geotiff.XMLMetadataTest.class,
     org.apache.sis.storage.geotiff.SelfConsistencyTest.class
 })
-public final strictfp class GeoTiffTestSuite extends TestSuite {
+public final class GeoTiffTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

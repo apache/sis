@@ -67,22 +67,22 @@
  * those arithmetic operations are automatically inferred.
  * For example, this line of code:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *   System.out.println( Units.PASCAL.multiply(1000) );
- * }
+ *   }
  *
  * prints <cite>"kPa"</cite>, i.e. the kilo prefix has been automatically applied
  * (SI prefixes are applied on SI units only, not on other systems).
  * Other example:
  *
- * {@preformat java
+ * {@snippet lang="java" :
  *   Force  f = Quantities.create(4, Units.NEWTON);
  *   Length d = Quantities.create(6, Units.MILLIMETRE);
  *   Time   t = Quantities.create(3, Units.SECOND);
  *   Quantity<?> e = f.multiply(d).divide(t);
  *   System.out.println(e);
  *   System.out.println("Instance of Power: " + (e instanceof Power));
- * }
+ *   }
  *
  * prints <cite>"8 mW"</cite> and <cite>"Instance of Power: true"</cite>,
  * i.e. Apache SIS detects that the result of N⋅m∕s is Watt,
@@ -97,8 +97,7 @@
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
- * @module
  */
 package org.apache.sis.measure;

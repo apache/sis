@@ -57,7 +57,6 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * @see CoordinateFormat
  *
  * @since 0.3
- * @module
  */
 public class GeneralDirectPosition extends AbstractDirectPosition implements Serializable, Cloneable {
     /**
@@ -80,6 +79,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
     /**
      * The coordinate reference system for this position, or {@code null}.
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     private CoordinateReferenceSystem crs;
 
     /**
@@ -110,10 +110,10 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * This constructor assigns the given array directly (without clone) to the {@link #coordinates} field.
      * Consequently, callers shall not recycle the same array for creating many instances.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * the array is not cloned because this is usually not needed, especially in the context of variable
+     * <h4>Implementation notes</h4>
+     * The array is not cloned because this is usually not needed, especially in the context of variable
      * argument lengths since the array is often created implicitly. Furthermore, the {@link #coordinates}
-     * field is public, so cloning the array would not protect the state of this object anyway.</div>
+     * field is public, so cloning the array would not protect the state of this object anyway.
      *
      * <p><b>Caution:</b> if only one number is specified, make sure that the number type is {@code double},
      * {@code float} or {@code long} otherwise the {@link #GeneralDirectPosition(int)} constructor would be
@@ -144,9 +144,9 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * from the given string in <cite>Well Known Text</cite> (WKT) format.
      * The given string is typically a {@code POINT} element like below:
      *
-     * {@preformat wkt
-     *     POINT(6 10)
-     * }
+     * {@snippet lang="wkt" :
+     *   POINT(6 10)
+     *   }
      *
      * However, this constructor is lenient to other types like {@code POINT ZM}.
      *

@@ -47,11 +47,8 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
-import org.apache.sis.internal.system.Modules;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.math.MathFunctions;
-
-import static java.util.logging.Logger.getLogger;
 
 // Branch-dependent imports
 import org.opengis.feature.IdentifiedType;
@@ -70,11 +67,12 @@ import org.opengis.feature.Operation;
  * Formats {@linkplain AbstractFeature features} or {@linkplain DefaultFeatureType feature types} in a tabular format.
  * This format assumes a monospaced font and an encoding supporting drawing box characters (e.g. UTF-8).
  *
- * <div class="note"><b>Example:</b> a feature named “City” and containing 3 properties (“name”, “population” and
- * “twin town”) may be formatted like below. The two first properties are {@linkplain AbstractAttribute attributes}
+ * <h2>Example</h2>
+ * A feature named “City” and containing 3 properties (“name”, “population” and “twin town”)
+ * may be formatted like below. The two first properties are {@linkplain AbstractAttribute attributes}
  * while the last property is an {@linkplain AbstractAssociation association} to another feature.
  *
- * {@preformat text
+ * <pre class="text">
  *   City
  *   ┌────────────┬─────────┬──────────────┬───────────┐
  *   │ Name       │ Type    │ Multiplicity │ Value     │
@@ -82,8 +80,7 @@ import org.opengis.feature.Operation;
  *   │ name       │ String  │ [1 … 1]      │ Paderborn │
  *   │ population │ Integer │ [1 … 1]      │ 143,174   │
  *   │ twin town  │ City    │ [0 … ∞]      │ Le Mans   │
- *   └────────────┴─────────┴──────────────┴───────────┘
- * }</div>
+ *   └────────────┴─────────┴──────────────┴───────────┘</pre>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -92,9 +89,8 @@ import org.opengis.feature.Operation;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
- * @module
  */
 public class FeatureFormat extends TabularFormat<Object> {
     /**
@@ -308,7 +304,6 @@ public class FeatureFormat extends TabularFormat<Object> {
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
-    @SuppressWarnings("null")       // Many false positives in this method.
     public void format(final Object object, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("object",     object);
         ArgumentChecks.ensureNonNull("toAppendTo", toAppendTo);
@@ -588,7 +583,7 @@ public class FeatureFormat extends TabularFormat<Object> {
                                                 final int bits = Float.floatToRawIntBits(f);
                                                 if (bits != illegalNaN) {
                                                     illegalNaN = bits;
-                                                    Logging.recoverableException(getLogger(Modules.FEATURE), FeatureFormat.class, "format", e);
+                                                    Logging.recoverableException(AbstractIdentifiedType.LOGGER, FeatureFormat.class, "format", e);
                                                 }
                                             }
                                         }
@@ -630,9 +625,9 @@ format:                     for (final AttributeType<?> ct : ((AttributeType<?>)
                                 Collection<?> cv = CollectionsExt.singletonOrEmpty(ct.getDefaultValue());
                                 if (feature != null) {
                                     /*
-                                     * Usually, the property 'cp' below is null because all features use the same
+                                     * Usually, the property `cp` below is null because all features use the same
                                      * characteristic value (for example the same unit of measurement),  which is
-                                     * given by the default value 'cv'.  Nevertheless we have to check if current
+                                     * given by the default value `cv`.  Nevertheless we have to check if current
                                      * feature overrides this characteristic.
                                      */
                                     final Property cp = feature.getProperty(propertyType.getName().toString());

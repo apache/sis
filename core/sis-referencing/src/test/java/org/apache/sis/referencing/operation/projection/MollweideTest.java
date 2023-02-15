@@ -33,10 +33,9 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   1.0
- * @module
  */
 @DependsOn(NormalizedProjectionTest.class)
-public final strictfp class MollweideTest extends MapProjectionTestCase {
+public final class MollweideTest extends MapProjectionTestCase {
     /**
      * Creates a new instance of {@link Mollweide} concatenated with the (de)normalization matrices.
      * The new instance is stored in the inherited {@link #transform} field.

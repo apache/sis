@@ -32,7 +32,6 @@ import org.opengis.metadata.Identifier;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.test.ProjectDirectories;
-import org.apache.sis.internal.jdk9.JDK9;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
@@ -52,7 +51,6 @@ import static org.junit.Assert.*;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
- * @module
  */
 public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
     /**
@@ -142,7 +140,7 @@ public final class ParameterNameTableGenerator extends SimpleFileVisitor<Path> {
     private Class<?> getClass(final Path file) throws ClassNotFoundException {
         String name = file.getFileName().toString();
         name = name.substring(0, name.lastIndexOf('.'));    // Remove the ".java" suffix.
-        name = JDK9.getPackageName(getClass()) + '.' + name;
+        name = getClass().getPackageName() + '.' + name;
         return Class.forName(name);
     }
 

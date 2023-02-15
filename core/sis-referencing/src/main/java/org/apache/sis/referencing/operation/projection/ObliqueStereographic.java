@@ -63,9 +63,8 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Emmanuel Giasson (Thales)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
- * @module
  */
 public class ObliqueStereographic extends NormalizedProjection {
     /**
@@ -172,7 +171,7 @@ public class ObliqueStereographic extends NormalizedProjection {
          * by 2 times the radius of the conformal sphere. Since this is a linear operation, we combine it with other
          * linear operations performed by the denormalization matrix.
          */
-        final double R2 = 2 * initializer.radiusOfConformalSphere(sinφ0);
+        final var R2 = initializer.radiusOfConformalSphere(sinφ0).scalb(1);
         denormalize.convertBefore(0, R2, null);
         denormalize.convertBefore(1, R2, null);
     }
@@ -387,7 +386,6 @@ public class ObliqueStereographic extends NormalizedProjection {
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.7
      * @since   0.7
-     * @module
      */
     static final class Spherical extends ObliqueStereographic {
         /**

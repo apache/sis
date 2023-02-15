@@ -47,9 +47,8 @@ import static org.apache.sis.internal.referencing.provider.Orthographic.*;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
- * @module
  */
 public class Orthographic extends NormalizedProjection {
     /**
@@ -116,9 +115,9 @@ public class Orthographic extends NormalizedProjection {
          * since the computed value below is zero in the spherical case.
          */
         if (eccentricity != 0) {
-            final double ν0 = initializer.radiusOfCurvature(sinφ0);
+            final double ν0_cosφ0 = initializer.scaleAtφ(sinφ0, cosφ0);
             final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
-            denormalize.convertBefore(1, null, eccentricitySquared * ν0 * (sinφ0 * cosφ0));
+            denormalize.convertBefore(1, null, eccentricitySquared * ν0_cosφ0 * sinφ0);
         }
     }
 
@@ -167,10 +166,10 @@ public class Orthographic extends NormalizedProjection {
      * Implementation of {@link #transform(double[], int, double[], int, boolean)}
      * with possibility to recycle an existing matrix instance.
      *
-     * <div class="note"><b>Implementation note:</b>
+     * <h4>Implementation note</h4>
      * in other map projections, we use a different class for ellipsoidal formulas.
      * But the orthographic projection is a bit different; for this one it is more
-     * convenient to use {@code if} statements.</div>
+     * convenient to use {@code if} statements.
      *
      * @param  derivative  where to store the Jacobian matrix, or {@code null} if none.
      *         If this matrix is an {@link Inverter} instance, we take that as a flag

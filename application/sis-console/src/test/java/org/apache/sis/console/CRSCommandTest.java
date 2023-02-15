@@ -29,12 +29,11 @@ import static org.junit.Assert.*;
  * Tests the {@link CRSCommand} sub-command.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.3
  * @since   0.8
- * @module
  */
 @DependsOn(CommandRunnerTest.class)
-public final strictfp class CRSCommandTest extends TestCase {
+public final class CRSCommandTest extends TestCase {
     /**
      * The Well Known Text for EPSG:4326 as a regular expression.
      * This string uses the native line separator. Consequently, test cases comparing
@@ -46,18 +45,20 @@ public final strictfp class CRSCommandTest extends TestCase {
      * Creates a new test.
      */
     public CRSCommandTest() {
-        WGS84 =
-            "\\QGeodeticCRS[\"WGS 84\",\n" +
+        final String name = "\"WGS\\E\\s?(?:19)?\\Q84\"";                                       // Accept "WGS 84" or "WGS 1984".
+        WGS84 = "(?m)\\Q" +                                                                     // Multilines.
+            "GeodeticCRS[" + name + ",\n" +
             "  Datum[\"World Geodetic System 1984\",\n" +
-            "    Ellipsoid[\"WGS 84\", 6378137.0, 298.257223563]],\n" +
+            "    Ellipsoid[" + name + ", 6378137.0, 298.257223563]],\n" +
             "  CS[ellipsoidal, 2],\n" +
             "    Axis[\"Latitude (B)\", north],\n" +
             "    Axis[\"Longitude (L)\", east],\n" +
             "    Unit[\"degree\", 0.017453292519943295],\n" +
-            "  Scope[\"Horizontal component of 3D system.\\E.*\\Q\"],\n" +                      // EPSG geodetic dataset provides more details here.
+            "\\E(?:  Scope\\[\".+\"\\],\n)?\\Q" +                                               // Ignore SCOPE[…] if present.
             "  Area[\"\\E.*\\Q\"],\n" +                                                         // Language may vary because of SIS localization.
             "  BBox[-90.00, -180.00, 90.00, 180.00],\n" +
-            "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]]\n\\E";  // Version number of EPSG dataset may vary.
+            "  Id[\"EPSG\", 4326,\\E.*\\Q URI[\"urn:ogc:def:crs:EPSG:\\E.*\\Q:4326\"]]" +       // Version number of EPSG dataset may vary.
+            "\\E(?:,\n  Remark\\[\".+\"\\])?\\]\n";                                             // Ignore trailing REMARK[…] if present.
         /*
          * Insert the native line separator in the expected string. We modify the expected string
          * instead of modifying the `test.outputBuffer` result because we want to verify that the

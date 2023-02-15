@@ -118,7 +118,6 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
  * @since   1.1
- * @module
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
@@ -531,8 +530,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * The returned tile will be automatically cached.
      *
      * <p>A typical implementation is as below:</p>
-     * {@preformat java
-     *     &#64;Override
+     * {@snippet lang="java" :
+     *     @Override
      *     protected Raster computeTile(int tileX, int tileY, WritableRaster tile) {
      *         if (tile == null) {
      *             tile = createTile(tileX, tileY);
@@ -655,7 +654,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     public Point[] getWritableTileIndices() {
         final List<Point> indices = new ArrayList<>();
         if (reference.getWritableTileIndices(indices)) {
-            return indices.toArray(new Point[indices.size()]);
+            return indices.toArray(Point[]::new);
         }
         return null;
     }
@@ -665,24 +664,24 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * This method is provided for subclasses that implement the {@link WritableRenderedImage} interface.
      * This method can be used as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *     class MyImage extends ComputedImage implements WritableRenderedImage {
      *         // Constructor omitted for brevity.
      *
-     *         &#64;Override
+     *         @Override
      *         public WritableRaster getWritableTile(int tileX, int tileY) {
      *             WritableRaster raster = ...;             // Get the writable tile here.
      *             markTileWritable(tileX, tileY, true);
      *             return raster;
      *         }
      *
-     *         &#64;Override
+     *         @Override
      *         public void releaseWritableTile(int tileX, int tileY) {
      *             markTileWritable(tileX, tileY, false);
      *             // Release the raster here.
      *         }
      *     }
-     * }
+     *     }
      *
      * @param  tileX    the <var>x</var> index of the tile to acquire or release.
      * @param  tileY    the <var>y</var> index of the tile to acquire or release.

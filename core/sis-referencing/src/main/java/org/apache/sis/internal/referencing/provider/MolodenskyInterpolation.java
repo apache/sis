@@ -42,9 +42,12 @@ import org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTran
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.7
- * @module
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>
  */
 @XmlTransient
+@Deprecated(since="1.4", forRemoval=true)
+// Note: after removal, delete overrideable method in parent class.
 public final class MolodenskyInterpolation extends FranceGeocentricInterpolation {
     /**
      * Serial number for inter-operability with different versions.

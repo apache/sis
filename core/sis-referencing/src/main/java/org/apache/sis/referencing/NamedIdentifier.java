@@ -91,7 +91,6 @@ import org.apache.sis.util.ArgumentChecks;
  * @see AbstractIdentifiedObject#getName()
  *
  * @since 0.4
- * @module
  */
 public class NamedIdentifier extends ImmutableIdentifier implements GenericName {
     /**

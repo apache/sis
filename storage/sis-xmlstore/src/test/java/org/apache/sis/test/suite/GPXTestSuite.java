@@ -28,9 +28,10 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.gpx.TypesTest.class,
     org.apache.sis.internal.storage.gpx.MetadataTest.class,
     org.apache.sis.internal.storage.gpx.ReaderTest.class,
-    org.apache.sis.internal.storage.gpx.WriterTest.class
+    org.apache.sis.internal.storage.gpx.WriterTest.class,
+    org.apache.sis.internal.storage.gpx.UpdaterTest.class
 })
-public final strictfp class GPXTestSuite extends TestSuite {
+public final class GPXTestSuite extends TestSuite {
     /**
      * Verifies the list of tests before to run the suite.
      * See {@link #verifyTestList(Class, Class[])} for more information.

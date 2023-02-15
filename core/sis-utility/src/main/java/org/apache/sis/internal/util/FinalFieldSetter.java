@@ -18,6 +18,7 @@ package org.apache.sis.internal.util;
 
 import java.lang.reflect.Field;
 import java.io.InvalidClassException;
+import java.lang.reflect.InaccessibleObjectException;
 import org.apache.sis.internal.system.Modules;
 
 
@@ -27,7 +28,7 @@ import org.apache.sis.internal.system.Modules;
  * The usage pattern is:
  *
  * <p><b>On deserialization:</b></p>
- * {@preformat java
+ * {@snippet lang="java" :
  *     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
  *         in.defaultReadObject();
  *         Object someValue = ...;
@@ -49,13 +50,12 @@ import org.apache.sis.internal.system.Modules;
  * since {@code java.security.AccessController} has been deprecated in Java 17.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see <a href="https://openjdk.java.net/jeps/411">JEP-411</a>
  * @see <a href="https://issues.apache.org/jira/browse/SIS-525">SIS-525</a>
  *
  * @since 1.0
- * @module
  */
 public final class FinalFieldSetter {
     /**
@@ -123,7 +123,6 @@ public final class FinalFieldSetter {
      * @return the exception to throw.
      */
     public static RuntimeException cloneFailure(final ReflectiveOperationException cause) {
-        return new RuntimeException(cause);
-        // TODO: use InaccessibleObjectException in JDK9.
+        return (InaccessibleObjectException) new InaccessibleObjectException().initCause(cause);
     }
 }

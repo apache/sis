@@ -33,7 +33,6 @@ import org.apache.sis.util.Deprecable;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
     /**
@@ -50,6 +49,7 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
      * @see #getCodeSpace()
      * @see #getVersion()
      */
+    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
     protected final Citation authority;
 
     /**

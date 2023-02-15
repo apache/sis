@@ -22,8 +22,6 @@ import javax.measure.quantity.Length;
 import javax.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.datum.Ellipsoid;
 
-import static java.lang.Math.*;
-
 
 /**
  * A ellipsoid which is spherical.
@@ -36,7 +34,6 @@ import static java.lang.Math.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.1
  * @since   0.4
- * @module
  */
 @XmlTransient
 final class Sphere extends DefaultEllipsoid {
@@ -96,5 +93,4 @@ final class Sphere extends DefaultEllipsoid {
     public double flatteningDifference(final Ellipsoid other) {
         return 1 / other.getInverseFlattening();
     }
-
 }

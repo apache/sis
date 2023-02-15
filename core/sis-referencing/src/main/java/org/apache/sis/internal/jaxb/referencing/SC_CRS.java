@@ -31,7 +31,6 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7
  * @since   0.6
- * @module
  */
 public final class SC_CRS extends PropertyType<SC_CRS, CoordinateReferenceSystem> {
     /**

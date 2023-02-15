@@ -49,7 +49,6 @@ import org.opengis.referencing.operation.TransformException;
  * @author  Johann Sorel (Geomatys)
  * @version 1.2
  * @since   1.2
- * @module
  */
 public class MapLayers extends MapItem {
     /**
@@ -182,7 +181,7 @@ public class MapLayers extends MapItem {
             case 1 : return Optional.of(envelopes.get(0));
             default : {
                 try {
-                    return Optional.ofNullable(Envelopes.union(envelopes.toArray(new Envelope[envelopes.size()])));
+                    return Optional.ofNullable(Envelopes.union(envelopes.toArray(Envelope[]::new)));
                 } catch (TransformException ex) {
                     throw new DataStoreException(ex.getMessage(), ex);
                 }

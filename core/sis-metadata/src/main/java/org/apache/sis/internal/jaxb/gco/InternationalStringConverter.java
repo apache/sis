@@ -28,7 +28,6 @@ import org.apache.sis.util.SimpleInternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @version 0.3
  * @since   0.3
- * @module
  */
 public final class InternationalStringConverter extends XmlAdapter<String,InternationalString> {
     /**

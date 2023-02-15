@@ -38,7 +38,6 @@ import org.apache.sis.util.resources.Errors;
  * @see org.apache.sis.io.wkt.Colors
  *
  * @since 0.3
- * @module
  */
 public enum X364 {
     /** Reset all attributes to their default value. */ RESET               ((byte)  0, null),
@@ -266,8 +265,7 @@ search: do {
      * @throws IllegalArgumentException if no code has been found for the given color name.
      */
     public static X364 forColorName(String color) throws IllegalArgumentException {
-        color = CharSequences.trimWhitespaces(color);
-        ArgumentChecks.ensureNonEmpty("color", color);
+        ArgumentChecks.ensureNonEmpty("color", color = color.strip());
         for (final X364 code : NAMED) {
             if (color.equalsIgnoreCase(code.color)) {
                 return code;

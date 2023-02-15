@@ -20,13 +20,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.function.Function;
 import java.awt.Color;
 import javax.measure.Unit;
-import javax.measure.format.ParserException;
+import javax.measure.format.MeasurementParseException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
@@ -72,7 +71,6 @@ import ucar.nc2.constants.CF;
  * @see <a href="https://issues.apache.org/jira/browse/SIS-315">SIS-315</a>
  *
  * @since 1.0
- * @module
  */
 public class Convention {
     /**
@@ -297,7 +295,7 @@ public class Convention {
      * <div class="note"><b>Example:</b>
      * consider the following netCDF file (simplified):
      *
-     * {@preformat text
+     * <pre class="text">
      *   dimensions:
      *     grid_y =  161 ;
      *     grid_x =  126 ;
@@ -317,8 +315,7 @@ public class Convention {
      *     ushort SST(data_y, data_x) ;
      *       long_name = "Sea Surface Temperature" ;
      *       dim0 = "Line grids" ;
-     *       dim1 = "Pixel grids" ;
-     * }
+     *       dim1 = "Pixel grids" ;</pre>
      *
      * In this case, even if {@link #namesOfAxisVariables(Variable)} explicitly returns {@code {"Latitude", "Longitude"}}
      * we are still unable to associate the {@code SST} variable to those axes because they have no dimension in common.
@@ -374,7 +371,7 @@ public class Convention {
      * @see #defaultHorizontalCRS(boolean)
      */
     public Set<Linearizer> linearizers(final Decoder decoder) {
-        return Collections.emptySet();
+        return Set.of();
     }
 
     /**
@@ -395,7 +392,7 @@ public class Convention {
      */
     public Set<String> nameOfMappingNode(final Variable data) {
         final String mapping = data.getAttributeAsString(CF.GRID_MAPPING);
-        return (mapping != null) ? Collections.singleton(mapping) : Collections.emptySet();
+        return (mapping != null) ? Set.of(mapping) : Set.of();
     }
 
     /**
@@ -769,9 +766,9 @@ public class Convention {
      *
      * @param  data  the variable for which to get the unit of measurement.
      * @return the unit of measurement, or {@code null} if none or unknown.
-     * @throws ParserException if the unit symbol cannot be parsed.
+     * @throws MeasurementParseException if the unit symbol cannot be parsed.
      */
-    public Unit<?> getUnitFallback(final Variable data) throws ParserException {
+    public Unit<?> getUnitFallback(final Variable data) throws MeasurementParseException {
         return null;
     }
 

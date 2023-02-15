@@ -29,7 +29,6 @@ import org.apache.sis.internal.referencing.provider.LambertConformalBelgium;
 import org.apache.sis.internal.referencing.provider.LambertConformalMichigan;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.internal.util.DoubleDouble;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -48,12 +47,11 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.6
- * @module
  */
 @DependsOn(ConformalProjectionTest.class)
-public final strictfp class LambertConicConformalTest extends MapProjectionTestCase {
+public final class LambertConicConformalTest extends MapProjectionTestCase {
     /**
      * Verifies the value of the constant used in <cite>"Lambert Conic Conformal (2SP Belgium)"</cite> projection.
      *
@@ -61,9 +59,8 @@ public final strictfp class LambertConicConformalTest extends MapProjectionTestC
      */
     @Test
     public void verifyBelgeConstant() {
-        final DoubleDouble BELGE_A = (DoubleDouble) LambertConicConformal.belgeA();
-        BigDecimal a = new BigDecimal(BELGE_A.value);
-        a = a.add     (new BigDecimal(BELGE_A.error));
+        BigDecimal a = new BigDecimal(LambertConicConformal.BELGE_A.value);
+        a = a.add     (new BigDecimal(LambertConicConformal.BELGE_A.error));
         a = a.multiply(new BigDecimal("57.29577951308232087679815481410517"));  // Conversion from radians to degrees.
         a = a.multiply(new BigDecimal(60 * 60));                                // Conversion from degrees to seconds.
         a = a.add     (new BigDecimal("29.2985"));                              // The standard value.

@@ -32,7 +32,6 @@ import org.apache.sis.util.ObjectConverter;
  * @param <E>  the type of elements in this set.
  *
  * @since 0.3
- * @module
  */
 final class DerivedIterator<S,E> implements Iterator<E> {
     /**

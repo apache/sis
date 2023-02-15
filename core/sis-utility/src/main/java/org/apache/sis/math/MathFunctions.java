@@ -23,15 +23,22 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.DoubleDouble;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.min;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
+import static java.lang.Math.cbrt;
+import static java.lang.Math.fma;
+import static java.lang.Math.cos;
+import static java.lang.Math.copySign;
+import static java.lang.Math.multiplyFull;
+import static java.lang.Math.multiplyExact;
 import static java.lang.Float.intBitsToFloat;
 import static java.lang.Float.floatToIntBits;
 import static java.lang.Float.floatToRawIntBits;
 import static java.lang.Double.longBitsToDouble;
 import static java.lang.Double.doubleToLongBits;
 import static java.lang.Double.doubleToRawLongBits;
-import static org.apache.sis.internal.jdk9.JDK9.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.SIGN_BIT_MASK;
 import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
 
@@ -62,13 +69,12 @@ import static org.apache.sis.internal.util.Numerics.SIGNIFICAND_SIZE;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see DecimalFunctions
  * @see org.apache.sis.util.Numbers
  *
  * @since 0.3
- * @module
  */
 public final class MathFunctions extends Static {
     /**
@@ -82,9 +88,9 @@ public final class MathFunctions extends Static {
      * The logarithm of 2 in base 10, which is approximated by {@value}.
      * This constant is useful for converting a power of 2 to a power of 10 as below:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   double exp10 = exp2 * LOG10_2;
-     * }
+     *   }
      *
      * @see Math#log10(double)
      * @see #getExponent(double)
@@ -222,9 +228,8 @@ public final class MathFunctions extends Static {
     /**
      * Returns the magnitude of the given vector. This is defined by:
      *
-     * {@preformat math
-     *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)
-     * }
+     * <pre class="math">
+     *     sqrt(vector[0]² + vector[1]² + … + vector[length-1]²)</pre>
      *
      * If the given vector contains a NaN value, then the result is NaN.
      *
@@ -261,18 +266,15 @@ public final class MathFunctions extends Static {
         while ((v3 = vector[--i]) == 0);
 
         // Usual magnitude computation, but using double-double arithmetic.
-        final DoubleDouble sum = new DoubleDouble();
-        final DoubleDouble dot = new DoubleDouble();
-        sum.setToProduct(v1, v1);
-        dot.setToProduct(v2, v2); sum.add(dot);
-        dot.setToProduct(v3, v3); sum.add(dot);
+        DoubleDouble sum;
+        sum =         DoubleDouble.product(v1, v1);
+        sum = sum.add(DoubleDouble.product(v2, v2));
+        sum = sum.add(DoubleDouble.product(v3, v3));
         while (i != 0) {
-            v1 = vector[--i];
-            dot.setToProduct(v1, v1);
-            sum.add(dot);
+            final double v = vector[--i];
+            sum = sum.add(DoubleDouble.product(v, v));
         }
-        sum.sqrt();
-        return sum.doubleValue();
+        return sum.sqrt().doubleValue();
     }
 
     /**
@@ -362,9 +364,9 @@ public final class MathFunctions extends Static {
                 result = base;
             }
             while ((exponent >>>= 1) != 0) {
-                base = Math.multiplyExact(base, base);
+                base = multiplyExact(base, base);
                 if ((exponent & 1) != 0) {
-                    result = Math.multiplyExact(result, base);
+                    result = multiplyExact(result, base);
                 }
             }
         } else if (exponent < 0) {
@@ -509,9 +511,9 @@ public final class MathFunctions extends Static {
      * This method returns {@code false} for the negative zero ({@code -0.0}).
      * This method is equivalent to the following code, but potentially faster:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return (value == 0) && isPositive(value);
-     * }
+     *   }
      *
      * @param  value  the value to test.
      * @return {@code true} if the given value is +0.0 (not -0.0).
@@ -554,9 +556,9 @@ public final class MathFunctions extends Static {
      * This method returns {@code false} for the positive zero ({@code +0.0}).
      * This method is equivalent to the following code, but potentially faster:
      *
-     * {@preformat java
+     * {@snippet lang="java" :
      *   return (value == 0) && isNegative(value);
-     * }
+     *   }
      *
      * @param  value  the value to test.
      * @return {@code true} if the given value is -0.0 (not +0.0).
@@ -803,7 +805,7 @@ public final class MathFunctions extends Static {
                     int i = primes.length;
                     int n = Short.toUnsignedInt(primes[i - 1]);
                     // Compute by block of 16 values, for reducing the amount of array resize.
-                    primes = Arrays.copyOf(primes, Math.min((index | 0xF) + 1, PRIMES_LENGTH_16_BITS));
+                    primes = Arrays.copyOf(primes, min((index | 0xF) + 1, PRIMES_LENGTH_16_BITS));
                     do {
 testNextNumber:         while (true) {      // Simulate a "goto" statement (usually not recommanded...)
                             final int stopAt = (int) sqrt(n += 2);
@@ -841,7 +843,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
         ArgumentChecks.ensureBetween("number", 2, HIGHEST_SUPPORTED_PRIME_NUMBER, number);
         final short[] primes = MathFunctions.primes;
         int lower = 0;
-        int upper = Math.min(PRIMES_LENGTH_15_BITS, primes.length);
+        int upper = min(PRIMES_LENGTH_15_BITS, primes.length);
         if (number > Short.MAX_VALUE) {
             lower = upper;
             upper = primes.length;
@@ -1040,7 +1042,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
                  */
                 case 2: {
                     final double b = coefficients[lower + 1];
-                    final double q = -0.5 * (b + Math.copySign(sqrt(b*b - 4*a*c), b));
+                    final double q = -0.5 * (b + copySign(sqrt(b*b - 4*a*c), b));
                     final double x1 = q/a;
                     final double x2 = c/q;
                     if (Double.isNaN(x1) && Double.isNaN(x2)) break;
@@ -1071,9 +1073,9 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
                     b = coefficients[lower + 2] / a;
                     a = coefficients[lower + 3] / a;
                     final double a2 = a*a;
-                    final double p = -3./8   * (a2)     +  b;
-                    final double q =  1./8   * (a2*a)   -  1./2  * (a*b)   +  c;
-                    final double r = -3./256 * (a2*a2)  +  1./16 * (a2*b)  -  1./4 * (a*c) + d;
+                    final double p = fma(-3./8,   a2,        b);
+                    final double q = fma( 1./8*   a2 - 1./2 *b, a, c);
+                    final double r = fma(-3./256, a2,  1./16*b)*a2 + fma(-1./4*a, c, d);
                     final double[] roots = solveCubic(-2*p, p*p-4*r, q*q, true);
                     if (roots.length != 4) break;
                     for (int i=0; i<3; i++) {
@@ -1118,7 +1120,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
         final double R = (a*(a*a - 4.5*b) + 13.5*c) / 27;           // R from Numerical Recipes 5.6.10.
         final double Q3 = Q*Q*Q;
         final double R2 = R*R;
-        a /= 3;                                                     // Last term of Numerical Recipes 5.6.12, 17 and 18.
+        a /= -3;                                                    // Last term of Numerical Recipes 5.6.12, 17 and 18.
         if (R2 < Q3) {
             /*
              * Numerical Recipes 5.6.11 and 5.6.12 uses acos(R/sqrt(Q³)). It is possible to rewrite as
@@ -1128,17 +1130,17 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
             b = Math.acos(R/sqrt(Q3)) / 3;                          // θ from Numerical recipes 5.6.11, then b = θ/3.
             c = -2 * sqrt(Q);                                       // First part of Numerical Recipes 5.6.12.
             double[] roots = new double[quartic ? 4 : 3];
-            roots[2] = c*Math.cos(b - 2*Math.PI/3) - a;             // TODO: try Math.fma with JDK9.
-            roots[1] = c*Math.cos(b + 2*Math.PI/3) - a;
-            roots[0] = c*Math.cos(b) - a;
+            roots[2] = fma(c, cos(b - 2*PI/3), a);
+            roots[1] = fma(c, cos(b + 2*PI/3), a);
+            roots[0] = fma(c, cos(b), a);
             if (!quartic) {
                 roots = removeDuplicated(roots);
             }
             return roots;
         }
         if (!quartic) {
-            b = -Math.copySign(Math.cbrt(abs(R) + sqrt(R2 - Q3)), R);       // A from Numerical Recipes 5.6.15.
-            final double x = (b == 0 ? 0 : b + Q/b) - a;
+            b = -copySign(cbrt(abs(R) + sqrt(R2 - Q3)), R);         // A from Numerical Recipes 5.6.15.
+            final double x = (b == 0 ? 0 : b + Q/b) + a;
             if (!Double.isNaN(x)) {
                 return new double[] {x};
             }

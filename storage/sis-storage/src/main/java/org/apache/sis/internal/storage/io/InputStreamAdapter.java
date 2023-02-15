@@ -41,7 +41,6 @@ import org.apache.sis.internal.storage.Resources;
  * @see OutputStreamAdapter
  *
  * @since 0.4
- * @module
  */
 public final class InputStreamAdapter extends InputStream implements Markable {
     /**

@@ -31,7 +31,7 @@ import org.apache.sis.xml.Namespaces;
  * A generalized type to be used for a term, keyword or name.
  * The following schema fragment specifies the expected content contained within this class.
  *
- * {@preformat xml
+ * {@snippet lang="xml" :
  *   <complexType name="CodeType">
  *     <simpleContent>
  *       <extension base="<http://www.w3.org/2001/XMLSchema>string">
@@ -39,7 +39,7 @@ import org.apache.sis.xml.Namespaces;
  *       </extension>
  *     </simpleContent>
  *   </complexType>
- * }
+ *   }
  *
  * {@code NameValue}s are used for:
  *
@@ -55,7 +55,6 @@ import org.apache.sis.xml.Namespaces;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.5
  * @since   0.5
- * @module
  */
 @XmlSeeAlso({
     NameValue.Local.class,

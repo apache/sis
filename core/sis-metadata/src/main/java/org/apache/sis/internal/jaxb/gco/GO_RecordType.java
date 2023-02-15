@@ -29,7 +29,6 @@ import org.apache.sis.util.iso.DefaultRecordType;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  * @since   0.3
- * @module
  */
 public class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {
     /**

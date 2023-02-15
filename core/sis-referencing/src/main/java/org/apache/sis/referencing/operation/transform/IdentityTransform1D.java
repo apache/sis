@@ -22,9 +22,8 @@ package org.apache.sis.referencing.operation.transform;
  * This class is a special case of {@link LinearTransform1D} optimized for speed.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
- * @module
  */
 final class IdentityTransform1D extends LinearTransform1D {
     /**

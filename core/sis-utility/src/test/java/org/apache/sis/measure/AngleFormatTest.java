@@ -36,13 +36,12 @@ import static org.apache.sis.test.TestUtilities.*;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.1
  * @since   0.3
- * @module
  */
 @DependsOn({
   FormattedCharacterIteratorTest.class,
   org.apache.sis.math.MathFunctionsTest.class
 })
-public final strictfp class AngleFormatTest extends TestCase {
+public final class AngleFormatTest extends TestCase {
     /**
      * Tests a pattern with illegal usage of D, M and S symbols.
      */
