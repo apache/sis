@@ -216,11 +216,11 @@ process:    while (i < stopAt) {
                 }
                 if (Character.isJavaIdentifierStart(c)) {
                     int previous = c;
-                    c = content.codePointAt(i);                     // 'i' is already on the next character.
+                    c = content.codePointAt(i);                     // `i` is already on the next character.
                     while (Character.isJavaIdentifierPart(c)) {
                         if (Character.isUpperCase(c) && Character.isLowerCase(previous)) {
                             modified = true;
-                            content.insert(i++, '­');               // Soft hyphen (U+00AD)
+                            content.insert(i++, Characters.SOFT_HYPHEN);
                             stopAt++;
                         }
                         if ((i += Character.charCount(c)) >= stopAt) {
