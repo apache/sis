@@ -24,14 +24,18 @@ import org.apache.sis.parameter.ParameterBuilder;
 
 
 /**
- * The provider for <cite>"Polar Stereographic (Variant B)"</cite> projection (EPSG:9829).
+ * The provider for <cite>"Polar Stereographic (variant B)"</cite> projection (EPSG:9829).
  * This provider includes a <cite>"Latitude of standard parallel"</cite> parameter and
  * determines the hemisphere of the projection from that parameter value.
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
- * @since   0.6
+ * @version 1.4
+ *
+ * @see <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-572">SIS-512</a>
+ *
+ * @since 0.6
  */
 @XmlTransient
 public final class PolarStereographicB extends AbstractStereographic {
@@ -39,6 +43,11 @@ public final class PolarStereographicB extends AbstractStereographic {
      * For cross-version compatibility.
      */
     private static final long serialVersionUID = 5188231050523249971L;
+
+    /**
+     * The EPSG name for this projection.
+     */
+    public static final String NAME = "Polar Stereographic (variant B)";
 
     /**
      * The EPSG identifier, to be preferred to the name when available.
@@ -128,11 +137,12 @@ public final class PolarStereographicB extends AbstractStereographic {
 
         PARAMETERS = builder
                 .addIdentifier(IDENTIFIER)
-                .addName("Polar Stereographic (variant B)")
-                .addName(Citations.S57,  "Polar stereographic")
-                .addName(Citations.S57,  "PST")
-                .addIdentifier(Citations.S57, "11")
-                .addNameAndIdentifier(Citations.PROJ4, PolarStereographicA.PARAMETERS)
+                .addName(NAME)
+                .addName      (Citations.S57,     "Polar stereographic")
+                .addName      (Citations.S57,     "PST")
+                .addIdentifier(Citations.S57,     "11")
+                .addName      (Citations.GEOTIFF, "CT_PolarStereographic")
+                .addIdentifier(Citations.GEOTIFF, "15")
                 .createGroupForMapProjection(
                         STANDARD_PARALLEL,
                         LONGITUDE_OF_ORIGIN,

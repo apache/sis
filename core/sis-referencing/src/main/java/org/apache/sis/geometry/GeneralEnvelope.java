@@ -37,6 +37,7 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.referencing.TemporalAccessor;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -548,7 +549,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * with the added point as an argument will return {@code true}, except if one of the point
      * coordinates was {@link Double#NaN} in which case the corresponding coordinate has been ignored.</p>
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -567,6 +568,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @throws MismatchedDimensionException if the given point does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
+    @ArgumentCheckByAssertion
     public void add(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
         final int beginIndex = beginIndex();
@@ -625,7 +627,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * Adds an envelope object to this envelope.
      * The resulting envelope is the union of the two {@code Envelope} objects.
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -669,6 +671,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see Envelopes#union(Envelope...)
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#add(GeographicBoundingBox)
      */
+    @ArgumentCheckByAssertion
     public void add(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int beginIndex = beginIndex();
@@ -781,7 +784,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
     /**
      * Sets this envelope to the intersection of this envelope with the specified one.
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -825,6 +828,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @see Envelopes#intersect(Envelope...)
      * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)
      */
+    @ArgumentCheckByAssertion
     public void intersect(final Envelope envelope) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int beginIndex = beginIndex();

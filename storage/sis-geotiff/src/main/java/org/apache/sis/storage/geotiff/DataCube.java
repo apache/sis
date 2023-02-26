@@ -219,7 +219,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
                 }
                 /*
                  * The `DataSubset` parent class is the most efficient but has many limitations
-                 * documented in the javadoc of its `readSlice(…)` method. If any pre-condition
+                 * documented in the javadoc of its `readSlice(…)` method. If any precondition
                  * is not met, we need to fallback on the less direct `CompressedSubset` class.
                  */
                 if (compression == Compression.NONE && getPredictor() == Predictor.NONE && canReadDirect(subset)) {

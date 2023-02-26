@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Utilities methods working on {@link java.io} objects.
+ * Utilities methods working on {@link Appendable} objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

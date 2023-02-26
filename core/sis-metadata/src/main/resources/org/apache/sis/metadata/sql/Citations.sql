@@ -4,7 +4,7 @@
 --
 
 --
--- This script creates some tables needed for SIS pre-defined Citation constants.
+-- This script creates some tables needed for SIS predefined Citation constants.
 -- We do not need to create all tables or all table columns here; missing tables
 -- and columns will be added on-the-fly by SIS as needed. Enumeration values are
 -- replaced by VARCHAR on databases that do not support the ENUM type.

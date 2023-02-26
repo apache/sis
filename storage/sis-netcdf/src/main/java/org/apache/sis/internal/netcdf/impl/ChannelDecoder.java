@@ -53,6 +53,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.StandardDateFormat;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -74,7 +75,7 @@ import org.apache.sis.math.Vector;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://portal.opengeospatial.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a>
  *
@@ -1046,11 +1047,13 @@ nextVar:    for (final VariableInfo variable : variables) {
 
     /**
      * Closes the channel.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
+     * @param  lock  ignored because this method can be run asynchronously.
      * @throws IOException if an error occurred while closing the channel.
      */
     @Override
-    public void close() throws IOException {
+    public void close(final DataStore lock) throws IOException {
         input.channel.close();
     }
 

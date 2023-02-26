@@ -33,7 +33,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.FileSystemNotFoundException;
@@ -61,7 +60,10 @@ import org.apache.sis.internal.storage.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @version 1.4
- * @since   0.3
+ *
+ * @see org.apache.sis.io.IO
+ *
+ * @since 0.3
  */
 public final class IOUtilities extends Static {
     /**
@@ -404,7 +406,7 @@ public final class IOUtilities extends Static {
 
     /**
      * Converts a {@link URL} to a {@link Path}. This is equivalent to a call to the standard
-     * {@link URL#toURI()} method followed by a call to the {@link Paths#get(URI)} static method,
+     * {@link URL#toURI()} method followed by a call to the {@link Path#of(URI)} static method,
      * except for the following functionalities:
      *
      * <ul>
@@ -419,7 +421,7 @@ public final class IOUtilities extends Static {
      * @return the path for the given URL, or {@code null} if the given URL was null.
      * @throws IOException if the URL cannot be converted to a path.
      *
-     * @see Paths#get(URI)
+     * @see Path#of(URI)
      */
     public static Path toPath(final URL url, final String encoding) throws IOException {
         if (url == null) {
@@ -427,7 +429,7 @@ public final class IOUtilities extends Static {
         }
         final URI uri = toURI(url, encoding);
         try {
-            return Paths.get(uri);
+            return Path.of(uri);
         } catch (IllegalArgumentException | FileSystemNotFoundException cause) {
             final String message = Exceptions.formatChainedMessages(null,
                     Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause);
@@ -513,9 +515,9 @@ public final class IOUtilities extends Static {
         } else if (path instanceof File) {
             return ((File) path).toPath();
         } else if (path instanceof URI) {
-            return Paths.get((URI) path);
+            return Path.of((URI) path);
         } else if (path instanceof CharSequence) {
-            return Paths.get(path.toString());
+            return Path.of(path.toString());
         } else {
             return null;
         }

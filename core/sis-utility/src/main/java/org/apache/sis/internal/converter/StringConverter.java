@@ -279,7 +279,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
         public Path() {super(java.nio.file.Path.class);}                            // Instantiated by ServiceLoader.
 
         @Override java.nio.file.Path doConvert(String source) throws InvalidPathException {
-            return java.nio.file.Paths.get(source);
+            return java.nio.file.Path.of(source);
         }
     }
 

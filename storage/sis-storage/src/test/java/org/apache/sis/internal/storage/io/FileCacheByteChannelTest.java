@@ -99,15 +99,15 @@ public final class FileCacheByteChannelTest extends TestCase {
                 end = Math.min(end + random.nextInt(40), length);
             } while (start >= end);
             var input = new ComputedInputStream(Math.toIntExact(start), Math.toIntExact(end), random);
-            return new Connection(input, start, end-1, length, true);
+            return new Connection(null, input, start, end-1, length, true);
         }
 
         /**
-         * Marks the given input stream as closed and notify that a new one can be created.
+         * Marks the input stream as closed and notify that a new one can be created.
          */
         @Override
-        protected boolean abort(final InputStream input) throws IOException {
-            input.close();
+        protected boolean abort(final Connection connection) throws IOException {
+            connection.input.close();
             return true;
         }
 
@@ -181,7 +181,7 @@ public final class FileCacheByteChannelTest extends TestCase {
                     end = t;
                 }
                 channel.position(position);
-                channel.endOfInterest(end + 1);
+                channel.rangeOfInterest(position, end + 1);
             }
             channel.readInRandomRegion(buffer);
             while (buffer.hasRemaining()) {
@@ -211,23 +211,23 @@ public final class FileCacheByteChannelTest extends TestCase {
     public void testParseRange() {
         final List<String> rangesUnit = List.of("bytes");
         FileCacheByteChannel.Connection c;
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000/100000", rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, null, "bytes 25000-75000/100000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals( 75000, c.end);
         assertEquals(100000, c.length);
 
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000-75000", rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, null, "bytes 25000-75000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals( 75000, c.end);
         assertEquals(    -1, c.length);
 
-        c = new FileCacheByteChannel.Connection(null, "bytes 25000/100000", rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, null, "bytes 25000/100000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals(100000, c.end);
         assertEquals(100000, c.length);
 
         // Not legal, but we test robustness.
-        c = new FileCacheByteChannel.Connection(null, "25000", rangesUnit);
+        c = new FileCacheByteChannel.Connection(null, null, "25000", rangesUnit);
         assertEquals( 25000, c.start);
         assertEquals(    -1, c.end);
         assertEquals(    -1, c.length);

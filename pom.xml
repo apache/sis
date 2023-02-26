@@ -470,11 +470,6 @@
         <version>2.3.7</version>
         <scope>test</scope>
       </dependency>
-      <dependency>
-        <groupId>org.apache.commons</groupId>
-        <artifactId>commons-compress</artifactId>
-        <version>1.22</version>
-      </dependency>
 
       <!-- Databases -->
       <dependency>

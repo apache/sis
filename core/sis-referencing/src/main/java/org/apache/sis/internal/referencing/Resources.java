@@ -526,6 +526,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short RecursiveCreateCallForCode_2 = 62;
 
         /**
+         * The only valid entries are ±90° or equivalent in alternative angle units.
+         */
+        public static final short RestrictedToPoleLatitudes = 104;
+
+        /**
          * Matrix is singular.
          */
         public static final short SingularMatrix = 63;

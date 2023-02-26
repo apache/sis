@@ -33,6 +33,7 @@ import org.apache.sis.internal.netcdf.Decoder;
 import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.test.ContentVerifier;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * for reading netCDF attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn({
@@ -71,10 +72,9 @@ public final class MetadataReaderTest extends TestCase {
      */
     @Test
     public void testEmbedded() throws IOException, DataStoreException {
-        final Metadata metadata;
-        try (Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
-            metadata = new MetadataReader(input).read();
-        }
+        final Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC);
+        final Metadata metadata = new MetadataReader(input).read();
+        input.close(new DataStoreMock("lock"));
         compareToExpected(metadata);
     }
 
@@ -87,10 +87,9 @@ public final class MetadataReaderTest extends TestCase {
      */
     @Test
     public void testUCAR() throws IOException, DataStoreException {
-        final Metadata metadata;
-        try (Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC)) {
-            metadata = new MetadataReader(input).read();
-        }
+        final Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC);
+        final Metadata metadata = new MetadataReader(input).read();
+        input.close(new DataStoreMock("lock"));
         compareToExpected(metadata);
     }
 

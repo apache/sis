@@ -76,7 +76,7 @@ import org.apache.sis.internal.storage.Resources;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 class Store extends DataStore implements StoreResource, UnstructuredAggregate, DirectoryStream.Filter<Path> {
@@ -274,6 +274,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
             mb.addResourceScope(ScopeCode.valueOf("COLLECTION"), Resources.formatInternational(Resources.Keys.DirectoryContent_1, getDisplayName()));
             mb.addLanguage(locale,   MetadataBuilder.Scope.RESOURCE);
             mb.addEncoding(encoding, MetadataBuilder.Scope.RESOURCE);
+            final GenericName identifier = identifier(null);
             String name = null;
             if (identifier != null) {
                 name = identifier.toString();
@@ -436,28 +437,23 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
 
     /**
      * Closes all children resources.
+     * This method can be invoked asynchronously for interrupting a long reading process
+     * if the children stores also support asynchronous close operations.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                                          // Should never fail.
-        final Collection<Resource> resources = components;
-        if (resources != null) {
-            components = null;                                      // Clear first in case of failure.
-            DataStoreException failure = null;
-            for (final Resource r : resources) {
-                if (r instanceof DataStore) try {
-                    ((DataStore) r).close();
-                } catch (DataStoreException ex) {
-                    if (failure == null) {
-                        failure = ex;
-                    } else {
-                        failure.addSuppressed(ex);
-                    }
-                }
-            }
-            if (failure != null) {
-                throw failure;
-            }
+    public void close() throws DataStoreException {
+        listeners.close();                          // Should never fail.
+        final Collection<Resource> resources;
+        synchronized (this) {
+            resources      = components;
+            components     = List.of();
+            identifier     = null;
+            metadata       = null;
+            structuredView = null;
+            children.clear();
+        }
+        if (resources != null && !resources.isEmpty()) {
+            ConcurrentCloser.RESOURCES.closeAll(resources);
         }
     }
 }

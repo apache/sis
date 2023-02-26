@@ -77,7 +77,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public class BufferedGridCoverage extends GridCoverage {
@@ -301,7 +301,7 @@ public class BufferedGridCoverage extends GridCoverage {
 
         /**
          * Grid size with shifted index. The size of dimension 0 is stored at index 1, the size of dimension 1
-         * is stored in index 2, <i>etc.</i>. Element 0 contains the number of banks. This layout is convenient
+         * is stored in index 2, <i>etc.</i>. Element 0 contains the pixel stride. This layout is convenient
          * for computing index in {@link DataBuffer}.
          */
         private final long[] sizes;
@@ -316,17 +316,18 @@ public class BufferedGridCoverage extends GridCoverage {
          */
         CellAccessor(final BufferedGridCoverage coverage) {
             super(coverage);
-            data = coverage.data;
             final GridExtent extent = coverage.getGridGeometry().getExtent();
-            lower = new long[extent.getDimension()];
-            sizes = new long[lower.length + 1];
-            sizes[0] = data.getNumBanks();
+            final int numBands = coverage.getSampleDimensions().size();
+            data     = coverage.data;
+            banded   = data.getNumBanks() > 1;
+            values   = new double[numBands];
+            lower    = new long[extent.getDimension()];
+            sizes    = new long[lower.length + 1];
+            sizes[0] = banded ? 1 : numBands;
             for (int i=0; i<lower.length; i++) {
                 lower[i]   = extent.getLow(i);
                 sizes[i+1] = extent.getSize(i);
             }
-            banded = sizes[0] > 1;
-            values = new double[coverage.getSampleDimensions().size()];
         }
 
         /**

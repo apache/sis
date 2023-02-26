@@ -728,7 +728,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * point all remaining points are executed:
      *
      * <ol>
-     *   <li>Read a new coverage if zoom as changed more than some threshold value.</li>
+     *   <li>Read a new coverage if zoom has changed more than some threshold value.</li>
      *   <li>Compute statistics on sample values (if needed).</li>
      *   <li>Stretch the color ramp (if requested).</li>
      *   <li>Resample the image and convert to integer values.</li>

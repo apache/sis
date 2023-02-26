@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
+import java.util.function.UnaryOperator;
 import java.io.Reader;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -35,6 +36,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.file.NoSuchFileException;
+import java.nio.file.OpenOption;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.IIOException;
@@ -985,10 +987,7 @@ public class StorageConnector implements Serializable {
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          * If the given storage is already a ReadableByteChannel, then the factory will return it as-is.
          */
-        final ChannelFactory factory = ChannelFactory.prepare(storage, false,
-                getOption(OptionKey.URL_ENCODING),
-                getOption(OptionKey.OPEN_OPTIONS),
-                getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER));
+        final ChannelFactory factory = createChannelFactory(false);
         if (factory == null) {
             return null;
         }
@@ -1310,6 +1309,25 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns a byte channel factory from the storage, or {@code null} if the storage is unsupported.
+     * See {@link ChannelFactory#prepare(Object, boolean, String, OpenOption[])} for more information.
+     *
+     * @param  allowWriteOnly  whether to allow wrapping {@link WritableByteChannel} and {@link OutputStream}.
+     * @return the channel factory for the given input, or {@code null} if the given input is of unknown type.
+     * @throws IOException if an error occurred while processing the given input.
+     */
+    private ChannelFactory createChannelFactory(final boolean allowWriteOnly) throws IOException {
+        ChannelFactory factory = ChannelFactory.prepare(storage, allowWriteOnly,
+                getOption(OptionKey.URL_ENCODING),
+                getOption(OptionKey.OPEN_OPTIONS));
+        final UnaryOperator<ChannelFactory> wrapper = getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER);
+        if (factory != null && wrapper != null) {
+            factory = wrapper.apply(factory);
+        }
+        return factory;
+    }
+
+    /**
      * Creates a view for the storage as a {@link ChannelDataOutput} if possible.
      * This code is a partial copy of {@link #createDataInput()} adapted for output.
      *
@@ -1328,10 +1346,7 @@ public class StorageConnector implements Serializable {
          * URL, URI, File, Path or other types that may be added in future Apache SIS versions.
          * If the given storage is already a WritableByteChannel, then the factory will return it as-is.
          */
-        final ChannelFactory factory = ChannelFactory.prepare(storage, true,
-                getOption(OptionKey.URL_ENCODING),
-                getOption(OptionKey.OPEN_OPTIONS),
-                getOption(InternalOptionKey.CHANNEL_FACTORY_WRAPPER));
+        final ChannelFactory factory = createChannelFactory(true);
         if (factory == null) {
             return null;
         }

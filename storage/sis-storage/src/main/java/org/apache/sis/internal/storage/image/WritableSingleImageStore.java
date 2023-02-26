@@ -23,29 +23,27 @@ import org.opengis.geometry.Envelope;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.UnsupportedQueryException;
+import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.storage.Query;
 
 
 /**
- * A world file store which is expected to contain exactly one image.
- * This class is used for image formats that are restricted to one image per file.
- * Examples: PNG and BMP image formats.
- *
- * <p>See {@link WritableSingleImageStore} for the writable variant of this class.</p>
+ * The writable variant of {@link SingleImageStore}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   1.2
+ * @since   1.4
  */
-final class SingleImageStore extends WorldFileStore implements GridCoverageResource {
+final class WritableSingleImageStore extends WritableStore implements WritableGridCoverageResource {
     /**
      * The singleton resource in this aggregate. Fetched when first needed.
      */
-    private volatile WorldFileResource delegate;
+    private volatile WritableResource delegate;
 
     /**
      * Creates a new store from the given file, URL or stream.
@@ -54,8 +52,8 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */
-    SingleImageStore(final FormatFinder format) throws DataStoreException, IOException {
-        super(format, true);
+    WritableSingleImageStore(final FormatFinder format) throws DataStoreException, IOException {
+        super(format);
     }
 
     /**
@@ -75,10 +73,10 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
      *   <li>{@link #getMetadata()} because it is richer than {@link WorldFileResource#getMetadata()}.</li>
      * </ul>
      */
-    final WorldFileResource delegate() throws DataStoreException {
-        WorldFileResource r = delegate;
+    final WritableResource delegate() throws DataStoreException {
+        WritableResource r = delegate;
         if (r == null) {
-            delegate = r = ((Components) components()).get(MAIN_IMAGE);
+            delegate = r = (WritableResource) ((Components) components()).get(MAIN_IMAGE);
         }
         return r;
     }
@@ -159,5 +157,25 @@ final class SingleImageStore extends WorldFileStore implements GridCoverageResou
     @Override
     public final boolean setLoadingStrategy(RasterLoadingStrategy strategy) throws DataStoreException {
         return delegate().setLoadingStrategy(strategy);
+    }
+
+    /**
+     * Writes a new coverage in the data store for this resource. If a coverage already exists for this resource,
+     * then it will be overwritten only if the {@code TRUNCATE} or {@code UPDATE} option is specified.
+     *
+     * @param  coverage  new data to write in the data store for this resource.
+     * @param  options   configuration of the write operation.
+     */
+    @Override
+    public void write(final GridCoverage coverage, final Option... options) throws DataStoreException {
+        try {
+            if (isMultiImages() == 0) {
+                add(new MemoryGridResource(listeners, coverage));
+            } else {
+                delegate().write(coverage, options);
+            }
+        } catch (IOException e) {
+            throw new DataStoreException(e);
+        }
     }
 }

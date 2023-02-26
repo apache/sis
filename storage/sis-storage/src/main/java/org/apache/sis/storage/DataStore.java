@@ -531,6 +531,11 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * Closes this data store and releases any underlying resources.
      * A {@link CloseEvent} is sent to listeners before the data store is closed.
      *
+     * <p>If this method is invoked asynchronously while a read operation is in progress in another thread,
+     * then the behavior is implementation dependent. Some implementations will interrupt the read process,
+     * for example with an {@link java.nio.channels.AsynchronousCloseException}. This is useful if the data
+     * store was downloading a large file from a network connection.</p>
+     *
      * <h4>Note for implementers</h4>
      * Implementations should invoke {@code listeners.close()} on their first line
      * for sending notification to all listeners before the data store is actually

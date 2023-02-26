@@ -258,7 +258,7 @@ public final class CitationsTest extends TestCase {
         assertNotNull(identifiers);
         try {
             identifiers.add(null);
-            fail("Pre-defined metadata shall be unmodifiable.");
+            fail("Predefined metadata shall be unmodifiable.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
         }

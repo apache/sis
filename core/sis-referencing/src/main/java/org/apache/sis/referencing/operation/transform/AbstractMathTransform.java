@@ -953,6 +953,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      *
      * @param  object  the object to compare with this transform.
      * @return {@code true} if the given object is a transform of the same class and using the same parameter values.
+     * @throws AssertionError if assertions are enabled and the objects are equal but their hash codes are different.
      */
     @Override
     public final boolean equals(final Object object) {

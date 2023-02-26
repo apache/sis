@@ -83,6 +83,7 @@ public interface TileMatrixSet {
      * For each value in the map, the associated key is {@link TileMatrix#getIdentifier()}.
      * Entries are sorted from coarser resolution (highest scale denominator) to most detailed
      * resolution (lowest scale denominator).
+     * This is not necessarily the natural ordering of the {@link GenericName} instances used as keys.
      *
      * @return unmodifiable collection of all {@code TileMatrix} instances with their identifiers.
      */

@@ -785,7 +785,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * The default implementation returns the median (or center) coordinates of this grid extent,
      * but subclasses can override this method if another point is considered more representative.
      *
-     * <p>The {@code anchpr} argument tells {@linkplain GridGeometry#getGridToCRS(PixelInCell) which transform}
+     * <p>The {@code anchor} argument tells {@linkplain GridGeometry#getGridToCRS(PixelInCell) which transform}
      * the caller intend to use for converting the grid coordinates to "real world" coordinates.
      * With the default implementation, the coordinate values returned with {@code CELL_CORNER}
      * are 0.5 cell units higher than the coordinate values returned with {@code CELL_CENTER}.

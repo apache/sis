@@ -61,7 +61,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 public abstract class StaxDataStore extends URIDataStore {
@@ -122,7 +122,7 @@ public abstract class StaxDataStore extends URIDataStore {
      * stream or channel opened for that path.
      *
      * <p>We keep this reference as long as possible in order to use {@link #mark()} and {@link #reset()}
-     * instead of creating new streams for re-reading the data.  If we cannot reset the stream but can
+     * instead of creating new streams for re-reading the data. If we cannot reset the stream but can
      * create a new one, then this field will become a reference to the new stream. This change should be
      * done only in last resort, when there is no way to reuse the existing stream. This is because the
      * streams created by {@link ChannelFactory#inputStream(String, StoreListeners)} are not of the same
@@ -130,7 +130,7 @@ public abstract class StaxDataStore extends URIDataStore {
      *
      * @see #close()
      */
-    private AutoCloseable stream;
+    private volatile AutoCloseable stream;
 
     /**
      * Position of the first byte to read in the {@linkplain #stream}, or a negative value if unknown.
@@ -604,16 +604,21 @@ public abstract class StaxDataStore extends URIDataStore {
      * @throws DataStoreException if an error occurred while closing the input or output stream.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        final AutoCloseable s = stream;
-        stream        = null;
-        storage       = null;
-        inputFactory  = null;
-        outputFactory = null;
-        if (s != null) try {
-            s.close();
+    public void close() throws DataStoreException {
+        try {
+            final AutoCloseable s = stream;
+            if (s != null) s.close();
+        } catch (DataStoreException e) {
+            throw e;
         } catch (Exception e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                outputFactory = null;
+                inputFactory  = null;
+                storage       = null;
+                stream        = null;
+            }
         }
     }
 }

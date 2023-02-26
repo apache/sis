@@ -21,7 +21,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -137,7 +136,7 @@ public final class FXFinder {
      * Creates a new finder.
      */
     private FXFinder(final String setenv) {
-        this.setenv = Paths.get(setenv).normalize();
+        this.setenv = Path.of(setenv).normalize();
         isWindows = setenv.endsWith(WINDOWS_BATCH_EXTENSION);
     }
 
@@ -203,7 +202,7 @@ public final class FXFinder {
             } else if (value.isEmpty()) {
                 value = "(blank)";
             } else if (name.equals("SIS_DATA") && value.equals("bin/../data")) {
-                value = Paths.get(value).toAbsolutePath().toString();
+                value = Path.of(value).toAbsolutePath().toString();
             }
         } catch (SecurityException e) {
             value  = "(unreadable)";

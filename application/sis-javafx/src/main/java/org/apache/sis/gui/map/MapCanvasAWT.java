@@ -40,7 +40,6 @@ import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.concurrent.Task;
 import javafx.util.Callback;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.system.Configuration;
@@ -54,7 +53,7 @@ import org.apache.sis.internal.system.Configuration;
  * controls by the user.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public abstract class MapCanvasAWT extends MapCanvas {
@@ -354,7 +353,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * @see #requestRepaint()
      */
     @Override
-    final Task<?> createWorker(final MapCanvas.Renderer mc) {
+    final RenderingTask<?> createWorker(final MapCanvas.Renderer mc) {
         assert Platform.isFxApplicationThread();
         final Renderer context = (Renderer) mc;
         if (!context.isValid(imageMargin.get(), buffer)) {
@@ -370,7 +369,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * previous resources that we can recycle, either because they have never been created yet or because
      * they are not suitable anymore (for example because the image size changed).
      */
-    private final class Creator extends Task<WritableImage> {
+    private final class Creator extends RenderingTask<WritableImage> {
         /**
          * The user-provided object which will perform the actual rendering.
          * Its {@link Renderer#paint(Graphics2D)} method will be invoked in background thread.
@@ -467,7 +466,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      * The Java2D volatile image will be rendered in background thread, then its content will be
      * transferred to JavaFX image (through {@link BufferedImage} shared array) in JavaFX thread.
      */
-    private final class Updater extends Task<VolatileImage> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
+    private final class Updater extends RenderingTask<VolatileImage> implements Callback<PixelBuffer<IntBuffer>, Rectangle2D> {
         /**
          * The user-provided object which will perform the actual rendering.
          * Its {@link Renderer#paint(Graphics2D)} method will be invoked in background thread.

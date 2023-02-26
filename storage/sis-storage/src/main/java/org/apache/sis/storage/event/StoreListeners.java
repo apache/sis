@@ -953,11 +953,14 @@ public class StoreListeners implements Localized {
         } catch (ExecutionException ex) {
             canNotNotify("close", ex);
         }
-        listeners = null;
         /*
-         * No need to cleanup `cascadedListeners`. It does not hurt (those listeners practically
-         * become no-op) and the objects are probably going to be garbage collected soon anyway.
+         * This `StoreListeners` may not be garbage-collected immediately if the data store has been closed
+         * asynchronously. So clearing the following fields may help to garbage-collect some more resources.
          */
+        synchronized (this) {
+            cascadedListeners = null;
+            listeners = null;
+        }
     }
 
     /**

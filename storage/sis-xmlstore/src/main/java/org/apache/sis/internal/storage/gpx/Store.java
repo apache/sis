@@ -238,6 +238,7 @@ public class Store extends StaxDataStore implements FeatureSet {
     /**
      * Closes only the reader, without closing this store.
      * This method may be invoked before write operation.
+     * It must be invoked inside a synchronized block.
      */
     final void closeReader() throws Exception {
         final Reader r = reader;
@@ -255,6 +256,8 @@ public class Store extends StaxDataStore implements FeatureSet {
     @Override
     public synchronized void close() throws DataStoreException {
         listeners.close();                  // Should never fail.
+        version  = null;
+        metadata = null;
         try {
             closeReader();
         } catch (Exception e) {

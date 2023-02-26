@@ -14,23 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.internal.util;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 
 /**
- * Implementation of the {@link org.apache.sis.internal.netcdf} API as a standalone library.
- * This is useful only for the netCDF binary format (no NcML, no GRIB, no BUFR).
- * This package works with channels instead of files, which is a little bit easier to use
- * in some environments.
+ * Marker annotation for public methods which use assertions for validating users arguments.
+ * This is not recommended for public API, but we do that in a few places where unconditional
+ * argument checks may be too expensive. This annotation is used for tracking those methods.
  *
- * <h2>Reference</h2>
- * <ul>
- *   <li><a href="https://www.ogc.org/standards/netcdf">NetCDF standards on OGC web site</a></li>
- *   <li><a href="https://portal.ogc.org/files/?artifact_id=43734">NetCDF Classic and 64-bit Offset Format (1.0)</a></li>
- *   <li><a href="https://www.unidata.ucar.edu/software/netcdf/docs/file_format_specifications.html">NetCDF on UCAR web site.</a></li>
- * </ul>
- *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- * @since   0.3
+ * @since   1.4
  */
-package org.apache.sis.internal.netcdf.impl;
+@Target({
+    ElementType.METHOD,
+    ElementType.CONSTRUCTOR})
+@Retention(RetentionPolicy.SOURCE)
+public @interface ArgumentCheckByAssertion {
+}
