@@ -91,7 +91,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
     private static final int ZERO_THRESHOLD = 2;
 
     /**
-     * Pre-defined constants frequently used in SIS, sorted in increasing order. This table contains only
+     * Predefined constants frequently used in SIS, sorted in increasing order. This table contains only
      * constants that cannot be inferred by {@link DecimalFunctions#deltaForDoubleToDecimal(double)},
      * for example some transcendental values.
      *

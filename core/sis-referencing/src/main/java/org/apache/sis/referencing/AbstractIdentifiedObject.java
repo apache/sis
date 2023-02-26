@@ -796,6 +796,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * Subclasses shall override {@link #computeHashCode()} instead of this method.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     * @throws AssertionError if assertions are enabled and the value computed by {@link #computeHashCode()} changed.
      */
     @Override
     public final int hashCode() {                       // No need to synchronize; ok if invoked twice.

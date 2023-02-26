@@ -26,6 +26,7 @@ import org.apache.sis.internal.netcdf.impl.ChannelDecoderTest;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.DependsOn;
 import org.opengis.test.dataset.TestData;
@@ -38,7 +39,7 @@ import static org.opengis.test.Assert.*;
  * Tests {@link NetcdfStoreProvider}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn({
@@ -90,9 +91,9 @@ public final class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testDecoderFromStream() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
-        try (Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c)) {
-            assertInstanceOf("decoder", ChannelDecoder.class, decoder);
-        }
+        final Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c);
+        assertInstanceOf("decoder", ChannelDecoder.class, decoder);
+        decoder.close(new DataStoreMock("lock"));
     }
 
     /**
@@ -105,8 +106,8 @@ public final class NetcdfStoreProviderTest extends TestCase {
     @Test
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
-        try (Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c)) {
-            assertInstanceOf("decoder", DecoderWrapper.class, decoder);
-        }
+        final Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c);
+        assertInstanceOf("decoder", DecoderWrapper.class, decoder);
+        decoder.close(new DataStoreMock("lock"));
     }
 }

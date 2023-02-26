@@ -149,7 +149,7 @@ public final class MetadataSourceTest extends TestCase {
         final InternationalString more = new SimpleInternationalString("An open source project.");
         try {
             titles.add(more);
-            fail("Pre-defined metadata should be unmodifiable.");
+            fail("Predefined metadata should be unmodifiable.");
         } catch (UnsupportedOperationException e) {
             // This is the expected exception.
         }

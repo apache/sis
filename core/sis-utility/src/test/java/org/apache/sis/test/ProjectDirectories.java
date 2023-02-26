@@ -21,7 +21,6 @@ import java.net.URL;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -69,7 +68,7 @@ public final class ProjectDirectories {
         assertNotNull("Class not found.", resource);
         Path dir;
         try {
-            dir = Paths.get(resource.toURI()).getParent();
+            dir = Path.of(resource.toURI()).getParent();
         } catch (URISyntaxException e) {
             throw new AssertionError(e);
         }

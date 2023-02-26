@@ -381,26 +381,26 @@ public final class CodeColorizer {
                             }
                             /*
                              * The following code is executed for each word which is a valid Java identifier.
-                             * Different kind of emphase may be applied: bold for Java keywords, some colors
+                             * Different kind of emphasis may be applied: bold for Java keywords, some colors
                              * for OGC/ISO classes, other colors for SIS classes, etc.
                              */
                             final String word = text.substring(lower, upper);
-                            Element emphase = null;
+                            Element emphasis = null;
                             if (JAVA_KEYWORDS.contains(word)) {
-                                emphase = document.createElement("b");
+                                emphasis = document.createElement("b");
                             } else if (isJava) {
                                 final Specifier origin = getSpecifier(word);
                                 if (origin != null) {
-                                    emphase = document.createElement("code");
-                                    emphase.setAttribute("class", origin.style);
+                                    emphasis = document.createElement("code");
+                                    emphasis.setAttribute("class", origin.style);
                                 }
                             }
-                            if (emphase != null) {
-                                emphase.setTextContent(word);
+                            if (emphasis != null) {
+                                emphasis.setTextContent(word);
                                 if (nextSubstringStart != lower) {
                                     parent.insertBefore(document.createTextNode(text.substring(nextSubstringStart, lower)), node);
                                 }
-                                parent.insertBefore(emphase, node);
+                                parent.insertBefore(emphasis, node);
                                 nextSubstringStart = upper;
                             }
                             lower = upper;

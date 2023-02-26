@@ -136,6 +136,7 @@ public class RenderingData implements Cloneable {
 
     /**
      * The pyramid level of {@linkplain #data} loaded by the {@linkplain #coverageLoader}.
+     * Value 0 is finest resolution.
      */
     private int currentPyramidLevel;
 
@@ -393,7 +394,7 @@ public class RenderingData implements Cloneable {
             domain = r.getImageGeometry(BIDIMENSIONAL);
             xyDims = r.getXYDimensions();
         }
-        setImageSpace(domain, ranges, xyDims);
+        setImageSpace(domain, ranges, xyDims);      // Implies `dataGeometry = domain`.
         currentSlice = sliceExtent;
         data = image;
         /*
@@ -420,12 +421,32 @@ public class RenderingData implements Cloneable {
                     toOld = toNew.inverse();
                 }
             }
-            final MathTransform forward = concatenate(PixelInCell.CELL_CORNER, dataGeometry, old, toOld);
-            final MathTransform inverse = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
-            cornerToObjective = MathTransforms.concatenate(forward, cornerToObjective);
-            objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, inverse);
+            /*
+             * `inverse` is the transform from new grid coordinates to old grid coordinates.
+             * `forward` is the converse, with the addition of half-pixel translation terms.
+             */
+            final MathTransform inverse = concatenate(PixelInCell.CELL_CORNER, dataGeometry, old, toOld);
+            final MathTransform forward = concatenate(PixelInCell.CELL_CENTER, old, dataGeometry, toNew);
+            cornerToObjective = MathTransforms.concatenate(inverse, cornerToObjective);
+            objectiveToCenter = MathTransforms.concatenate(objectiveToCenter, forward);
         }
         return true;
+        /*
+         * Note: the `forward` transform above is of particular interest and may be returned in a future version.
+         * It is the transform from new pixel coordinates to old pixel coordinates of the data before resampling
+         * (i.e. ignoring changes caused by user's zoom or pan gestures on the map). Typical values are:
+         *
+         * • An identity transform, meaning that the data changed but the new data uses the same pixel coordinates
+         *   than the previous data. For example the user may have selected a new slice in a three-dimensional cube.
+         * • An affine transform represented by a diagonal matrix, i.e. with only scale factors and no translation.
+         *   It happens when there is a change of resolution between the previous data and the new one, for example
+         *   because a zoom change caused a change of pyramid level in `MultiResolutionCoverageLoader`.
+         *   In such case the scale factors are typically 0.5 (after zoom-in) or 2 (after zoom out).
+         *
+         * That transform has already been applied to `RenderingData` internal state,
+         * but maybe some caller will need to apply that change to its own data.
+         * We wait to see if such need happens.
+         */
     }
 
     /**

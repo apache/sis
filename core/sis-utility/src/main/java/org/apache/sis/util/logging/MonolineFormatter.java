@@ -656,16 +656,16 @@ loop:   for (int i=0; ; i++) {
     @Override
     public String format(final LogRecord record) {
         boolean faint = false;                      // Whether to use faint text for level < INFO.
-        String emphaseStart = "";                   // ANSI escape sequence for bold text if we use it.
-        String emphaseEnd   = "";                   // ANSI escape sequence for stopping bold text if we use it.
+        String emphasisStart = "";                  // ANSI escape sequence for bold text if we use it.
+        String emphasisEnd   = "";                  // ANSI escape sequence for stopping bold text if we use it.
         final Level level = record.getLevel();
         final StringBuffer buffer = this.buffer;
         synchronized (buffer) {
             final boolean colors = (this.colors != null);
             if (colors && level.intValue() >= LEVEL_THRESHOLD.intValue()) {
-                emphaseStart = X364.BOLD.sequence();
-                emphaseEnd   = X364.NORMAL.sequence();
-                faint        = faintSupported;
+                emphasisStart = X364.BOLD.sequence();
+                emphasisEnd   = X364.NORMAL.sequence();
+                faint         = faintSupported;
             }
             buffer.setLength(header.length());
             /*
@@ -689,10 +689,10 @@ loop:   for (int i=0; ; i++) {
                     levelColor = colorAt(level);
                     levelReset = X364.BACKGROUND_DEFAULT.sequence();
                 }
-                final int offset = buffer.append(levelColor).append(emphaseStart).length();
+                final int offset = buffer.append(levelColor).append(emphasisStart).length();
                 final int length = buffer.append(level.getLocalizedName()).length() - offset;
-                buffer.append(emphaseEnd).append(CharSequences.spaces(levelWidth - length));
-                margin += buffer.length() - emphaseEnd.length() - offset;
+                buffer.append(emphasisEnd).append(CharSequences.spaces(levelWidth - length));
+                margin += buffer.length() - emphasisEnd.length() - offset;
                 buffer.append(levelReset).append(' ');
             }
             /*
@@ -721,7 +721,7 @@ loop:   for (int i=0; ; i++) {
                 if (sourceFormat == METHOD) {
                     source = source + '.' + record.getSourceMethodName();
                 }
-                buffer.append(emphaseStart).append('[').append(source).append(']').append(emphaseEnd).append(' ');
+                buffer.append(emphasisStart).append('[').append(source).append(']').append(emphasisEnd).append(' ');
             }
             /*
              * Now prepare the LineAppender for the message. We set a line separator prefixed by some

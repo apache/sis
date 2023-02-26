@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
@@ -32,6 +31,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.Channels;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.referencing.Resources;
@@ -154,15 +154,31 @@ abstract class DatumShiftGridLoader {
      *
      * @param  path  the URI to make absolute.
      * @return an absolute (if possible) URI to the data.
+     * @throws NoSuchFileException if the path can not be made absolute.
+     *         This exception is necessary for letting the caller know that the coordinate operation is
+     *         probably valid but can not be constructed because an optional configuration is missing.
+     *         It is typically because the {@code SIS_DATA} environment variable has not been set.
      */
-    static URI toAbsolutePath(final URI path) {
-        if (!path.isAbsolute() && !path.isOpaque()) {
+    static URI toAbsolutePath(final URI path) throws NoSuchFileException {
+        if (path.isAbsolute()) {
+            return path;
+        }
+        String message;
+        if (path.isOpaque()) {
+            message = Errors.format(Errors.Keys.CanNotOpen_1, path);
+        } else {
             final Path dir = DataDirectory.DATUM_CHANGES.getDirectory();
             if (dir != null) {
                 return dir.resolve(path.getPath()).toUri();
             }
+            final String env = DataDirectory.getenv();
+            if (env == null) {
+                message = Messages.format(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
+            } else {
+                message = Messages.format(Messages.Keys.DataDirectoryNotReadable_2, DataDirectory.ENV, env);
+            }
         }
-        return path;
+        throw new NoSuchFileException(path.toString(), null, message);
     }
 
     /**
@@ -174,7 +190,7 @@ abstract class DatumShiftGridLoader {
      */
     static ReadableByteChannel newByteChannel(final URI path) throws IOException {
         try {
-            return Files.newByteChannel(Paths.get(path));
+            return Files.newByteChannel(Path.of(path));
         } catch (FileSystemNotFoundException e) {
             Logging.ignorableException(AbstractProvider.LOGGER, DatumShiftGridLoader.class, "newByteChannel", e);
         }

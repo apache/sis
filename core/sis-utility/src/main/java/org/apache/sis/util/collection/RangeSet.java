@@ -331,7 +331,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
     @Override
     public int size() {
         assert (length & 1) == 0;                                   // Length must be even.
-        return length >>> 1;
+        return length >> 1;
     }
 
     /**
@@ -1407,7 +1407,40 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
             // The value is equal to an excluded endpoint.
             return -1;
         }
-        return index >>> 1;     // Round toward 0 (odd index are maximum values).
+        return index >> 1;      // Round toward 0 (odd index are maximum values).
+    }
+
+    /**
+     * Returns the index of the range having a minimum value equal or lower than the specified value.
+     * If the given value is lower than the minimal value of all ranges in this set,
+     * then this method returns -1.
+     *
+     * @param  value  the minimum value to search, ignoring inclusiveness/exclusiveness.
+     * @return index of the range having a minimum value equal or lower than the specified value. May be -1.
+     *
+     * @since 1.4
+     */
+    public int indexOfMin(final E value) {
+        int index = binarySearch(value, 0, length);
+        if (index < 0) index = ~index - 1;
+        return index >> 1;                  // Not >>> because we need to preserve the sign.
+    }
+
+    /**
+     * Returns the index of the range having a maximum value equal or greater than the specified value.
+     * If the given value is greater than the maximal value of all ranges in this set,
+     * then this method returns {@link #size()}.
+     *
+     * @param  value  the maximum value to search, ignoring inclusiveness/exclusiveness.
+     * @return index of the range having a maximum value equal or greater than the specified value.
+     *         May be {@link #size()}.
+     *
+     * @since 1.4
+     */
+    public int indexOfMax(final E value) {
+        int index = binarySearch(value, 0, length);
+        if (index < 0) index = ~index;
+        return index >> 1;
     }
 
     /**
@@ -1422,7 +1455,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @throws ClassCastException if range elements are not convertible to {@code long}.
      */
     public long getMinLong(final int index) throws IndexOutOfBoundsException, ClassCastException {
-        return Array.getLong(array, Objects.checkIndex(index, length >>> 1) << 1);
+        return Array.getLong(array, Objects.checkIndex(index, length >> 1) << 1);
     }
 
     /**
@@ -1439,7 +1472,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @see org.apache.sis.measure.NumberRange#getMinDouble()
      */
     public double getMinDouble(final int index) throws IndexOutOfBoundsException, ClassCastException {
-        return Array.getDouble(array, Objects.checkIndex(index, length >>> 1) << 1);
+        return Array.getDouble(array, Objects.checkIndex(index, length >> 1) << 1);
     }
 
     /**
@@ -1454,7 +1487,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @throws ClassCastException if range elements are not convertible to {@code long}.
      */
     public long getMaxLong(final int index) throws IndexOutOfBoundsException, ClassCastException {
-        return Array.getLong(array, (Objects.checkIndex(index, length >>> 1) << 1) | 1);
+        return Array.getLong(array, (Objects.checkIndex(index, length >> 1) << 1) | 1);
     }
 
     /**
@@ -1471,7 +1504,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @see org.apache.sis.measure.NumberRange#getMaxDouble()
      */
     public double getMaxDouble(final int index) throws IndexOutOfBoundsException, ClassCastException {
-        return Array.getDouble(array, (Objects.checkIndex(index, length >>> 1) << 1) | 1);
+        return Array.getDouble(array, (Objects.checkIndex(index, length >> 1) << 1) | 1);
     }
 
     /**

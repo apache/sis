@@ -49,7 +49,6 @@ import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
-import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
@@ -258,19 +257,16 @@ abstract class DatumShiftGridFile<C extends Quantity<C>, T extends Quantity<T>> 
      * @param  f2      a second file to load, or {@code null} if none.
      * @param  loader  the loader to execute if the grid is not in the cache.
      * @return the cached or loaded grid.
-     * @throws FactoryException if an error occurred while loading the grid.
+     * @throws Exception if an error occurred while loading the grid.
+     *         Caller should handle the exception with {@code canNotLoad(…)}.
+     *
+     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
      */
     static DatumShiftGridFile<?,?> getOrLoad(final URI f1, final URI f2, final Callable<DatumShiftGridFile<?,?>> loader)
-            throws FactoryException
+            throws Exception
     {
         final Object key = (f2 != null) ? new AbstractMap.SimpleImmutableEntry<>(f1, f2) : f1;
-        try {
-            return CACHE.getOrCreate(key, loader);
-        } catch (FactoryException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new FactoryDataException(Errors.format(Errors.Keys.CanNotRead_1, f1), e);
-        }
+        return CACHE.getOrCreate(key, loader);
     }
 
     /**

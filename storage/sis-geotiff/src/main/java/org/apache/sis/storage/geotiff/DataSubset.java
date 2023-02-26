@@ -29,6 +29,7 @@ import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.storage.io.Region;
 import org.apache.sis.internal.storage.io.HyperRectangleReader;
 import org.apache.sis.internal.storage.TiledGridCoverage;
@@ -66,7 +67,7 @@ import static java.lang.Math.toIntExact;
  * the same tile indices than {@link DataCube} in order to avoid integer overflow.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 class DataSubset extends TiledGridCoverage implements Localized {
@@ -248,7 +249,10 @@ class DataSubset extends TiledGridCoverage implements Localized {
         /**
          * Stores information about a tile to be loaded.
          *
-         * @param iterator  the iterator for which to create a snapshot of its current position.
+         * @param domain         the iterator for which to create a snapshot of its current position.
+         * @param tileOffsets    the {@link DataSubset#tileOffsets} vector.
+         * @param includedBanks  indices of banks to read, or {@code null} for reading all of them.
+         * @param numTiles       value of {@link DataSubset#numTiles} (total number of tiles in the image).
          */
         Tile(final AOI domain, final Vector tileOffsets, final int[] includedBanks, final int numTiles) {
             super(domain);
@@ -257,6 +261,24 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 p += includedBanks[0] * numTiles;
             }
             byteOffset = tileOffsets.longValue(p);
+        }
+
+        /**
+         * Notifies the input channel about the range of bytes that we are going to read.
+         *
+         * @param tileOffsets    the {@link DataSubset#tileOffsets} vector.
+         * @param tileByteCounts the {@link DataSubset#tileByteCounts} vector.
+         * @param b              indices of banks to read.
+         * @param numTiles       value of {@link DataSubset#numTiles} (total number of tiles in the image).
+         * @param input          the input to notify about the ranges of bytes to read.
+         */
+        final void notifyInputChannel(final Vector tileOffsets, final Vector tileByteCounts,
+                                      int b, final int numTiles, final ChannelDataInput input)
+        {
+            b = indexInTileVector + b * numTiles;
+            final long offset = tileOffsets.longValue(b);
+            final long length = tileByteCounts.longValue(b);
+            input.rangeOfInterest(offset, Numerics.saturatingAdd(offset, length));
         }
 
         /**
@@ -308,6 +330,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * Each tile will either store all sample values in an interleaved fashion inside a single bank
          * (`sourcePixelStride` > 1) or use one separated bank per band (`sourcePixelStride` == 1).
          */
+        final ChannelDataInput input = source.reader.input;
         final int[] includedBanks = (sourcePixelStride == 1) ? includedBands : null;
         final Raster[] result = new Raster[iterator.tileCountInQuery];
         final Tile[] missings = new Tile[iterator.tileCountInQuery];
@@ -319,8 +342,20 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 if (tile != null) {
                     result[iterator.getIndexInResultArray()] = tile;
                 } else {
-                    // Tile not yet loaded. Add to a queue of tiles to load later.
-                    missings[numMissings++] = new Tile(iterator, tileOffsets, includedBanks, numTiles);
+                    /*
+                     * Tile not yet loaded. Add to a queue of tiles to load later.
+                     * Notify the input channel about the ranges of bytes to read.
+                     * This notification is redundant with the same notification
+                     * done in `CompressionChannel.setInputRegion(…)`, but doing
+                     * all notifications in advance gives a chance to group ranges.
+                     */
+                    final Tile missing = new Tile(iterator, tileOffsets, includedBanks, numTiles);
+                    missings[numMissings++] = missing;
+                    if (includedBanks == null) {
+                        missing.notifyInputChannel(tileOffsets, tileByteCounts, 0, numTiles, input);
+                    } else for (int b : includedBanks) {
+                        missing.notifyInputChannel(tileOffsets, tileByteCounts, b, numTiles, input);
+                    }
                 }
             } while (iterator.next());
             if (numMissings != 0) {
@@ -339,7 +374,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 final Point  origin      = new Point();
                 final long[] offsets     = new long[numBanks];
                 final long[] byteCounts  = new long[numBanks];
-                try (Closeable c = createInflater()) {
+                try (Closeable finisher  = createInflater()) {
                     for (int i=0; i<numMissings; i++) {
                         final Tile tile = missings[i];
                         if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
@@ -447,7 +482,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                      final int[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
-        final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by pre-conditions.
+        final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by preconditions.
         final long width  = subtractExact(upper[X_DIMENSION], lower[X_DIMENSION]);
         final long height = subtractExact(upper[Y_DIMENSION], lower[Y_DIMENSION]);
         /*

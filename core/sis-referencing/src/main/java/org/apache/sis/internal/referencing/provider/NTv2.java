@@ -143,7 +143,13 @@ public final class NTv2 extends AbstractProvider {
             throws ParameterNotFoundException, FactoryException
     {
         final Parameters pg = Parameters.castOrWrap(values);
-        final DatumShiftGridFile<Angle,Angle> grid = getOrLoad(provider, pg.getMandatoryValue(FILE), version);
+        final URI file = pg.getMandatoryValue(FILE);
+        final DatumShiftGridFile<Angle,Angle> grid;
+        try {
+            grid = getOrLoad(provider, file, version);
+        } catch (Exception e) {
+            throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
+        }
         return DatumShiftGridFile.createGeodeticTransformation(provider, factory, grid);
     }
 
@@ -154,9 +160,13 @@ public final class NTv2 extends AbstractProvider {
      * @param  provider  the provider which is creating a transform.
      * @param  file      relative or absolute path of the datum shift grid file to load.
      * @param  version   the expected version (1 or 2).
+     * @throws Exception if an error occurred while loading the grid.
+     *         Caller should handle the exception with {@code canNotLoad(…)}.
+     *
+     * @see DatumShiftGridLoader#canNotLoad(String, URI, Exception)
      */
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final Class<? extends AbstractProvider> provider,
-            final URI file, final int version) throws FactoryException
+            final URI file, final int version) throws Exception
     {
         final URI resolved = Loader.toAbsolutePath(file);
         return DatumShiftGridFile.getOrLoad(resolved, null, () -> {
@@ -166,8 +176,6 @@ public final class NTv2 extends AbstractProvider {
                 final Loader loader = new Loader(in, file, version);
                 grid = loader.readAllGrids();
                 loader.report(provider);
-            } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
-                throw DatumShiftGridLoader.canNotLoad(provider.getSimpleName(), file, e);
             }
             return grid.useSharedData();
         }).castTo(Angle.class, Angle.class);

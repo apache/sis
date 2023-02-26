@@ -77,7 +77,7 @@ public class Colors implements Cloneable, Serializable {
     }
 
     /**
-     * Emphases on identification information
+     * Emphasis on identification information
      * ({@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getName() name} and
      *  {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getIdentifiers() identifiers}) only.
      * This map is immutable.

@@ -84,7 +84,7 @@ abstract class CompressionChannel extends PixelChannel {
     public void setInputRegion(final long start, final long byteCount) throws IOException {
         endPosition = Math.addExact(start, byteCount);
         input.seek(start);
-        input.endOfInterest(endPosition);
+        input.rangeOfInterest(start, endPosition);
     }
 
     /**

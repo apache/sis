@@ -63,9 +63,9 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * {@snippet lang="java" :
  *     public static void main(String[] args) throws Exception {
- *         RenameListGenerator gen = new RenameListGenerator(Paths.get("/home/user/project/build/classes"));
- *         gen.add(Paths.get("org/apache/sis/metadata/iso"));
- *         try (final BufferedWriter out = Files.newBufferedWriter(Paths.get("MyOutputFile.lst"))) {
+ *         RenameListGenerator gen = new RenameListGenerator(Path.of("/home/user/project/build/classes"));
+ *         gen.add(Path.of("org/apache/sis/metadata/iso"));
+ *         try (final BufferedWriter out = Files.newBufferedWriter(Path.of("MyOutputFile.lst"))) {
  *             gen.print(out);
  *         }
  *     }

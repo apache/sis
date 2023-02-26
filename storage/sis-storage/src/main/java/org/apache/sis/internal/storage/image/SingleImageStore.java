@@ -27,7 +27,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.UnsupportedQueryException;
-import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.storage.Query;
 
 
@@ -36,11 +35,13 @@ import org.apache.sis.storage.Query;
  * This class is used for image formats that are restricted to one image per file.
  * Examples: PNG and BMP image formats.
  *
+ * <p>See {@link WritableSingleImageStore} for the writable variant of this class.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
-class SingleImageStore extends WorldFileStore implements GridCoverageResource {
+final class SingleImageStore extends WorldFileStore implements GridCoverageResource {
     /**
      * The singleton resource in this aggregate. Fetched when first needed.
      */
@@ -54,7 +55,7 @@ class SingleImageStore extends WorldFileStore implements GridCoverageResource {
      * @throws IOException if an error occurred while creating the image reader instance.
      */
     SingleImageStore(final FormatFinder format) throws DataStoreException, IOException {
-        super(format, false);
+        super(format, true);
     }
 
     /**
@@ -158,33 +159,5 @@ class SingleImageStore extends WorldFileStore implements GridCoverageResource {
     @Override
     public final boolean setLoadingStrategy(RasterLoadingStrategy strategy) throws DataStoreException {
         return delegate().setLoadingStrategy(strategy);
-    }
-
-    /**
-     * The writable variant of {@link MultiImageStore}.
-     */
-    static final class Writable extends SingleImageStore implements WritableGridCoverageResource {
-        /**
-         * Creates a new store from the given file, URL or stream.
-         *
-         * @param  format  information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
-         * @throws DataStoreException if an error occurred while opening the stream.
-         * @throws IOException if an error occurred while creating the image reader instance.
-         */
-        Writable(final FormatFinder format) throws DataStoreException, IOException {
-            super(format);
-        }
-
-        /**
-         * Writes a new coverage in the data store for this resource. If a coverage already exists for this resource,
-         * then it will be overwritten only if the {@code TRUNCATE} or {@code UPDATE} option is specified.
-         *
-         * @param  coverage  new data to write in the data store for this resource.
-         * @param  options   configuration of the write operation.
-         */
-        @Override
-        public void write(GridCoverage coverage, Option... options) throws DataStoreException {
-            ((WritableResource) delegate()).write(coverage, options);
-        }
     }
 }

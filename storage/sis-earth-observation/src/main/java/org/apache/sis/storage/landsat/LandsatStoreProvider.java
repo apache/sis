@@ -17,7 +17,6 @@
 package org.apache.sis.storage.landsat;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.util.logging.Logger;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -193,7 +192,7 @@ public class LandsatStoreProvider extends DataStoreProvider {
      */
     static Path getMetadataFile(final Path directory) {
         if (directory != null) {
-            final Path file = directory.resolve(Paths.get(directory.getFileName().toString().concat("_MTL.txt")));
+            final Path file = directory.resolve(Path.of(directory.getFileName().toString().concat("_MTL.txt")));
             if (Files.isRegularFile(file)) {
                 return file;
             }

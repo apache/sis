@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +55,7 @@ public final class StoreTest extends TestCase {
         final URL sample = StoreTest.class.getResource("test-data/README.txt");
         assertNotNull("Test data not found", sample);
         assumeTrue(sample.getProtocol().equals("file"));
-        return Paths.get(sample.toURI()).getParent();
+        return Path.of(sample.toURI()).getParent();
     }
 
     /**

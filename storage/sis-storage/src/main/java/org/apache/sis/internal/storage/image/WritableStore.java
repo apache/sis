@@ -488,6 +488,9 @@ writeCoeffs:    for (int i=0;; i++) {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * If a read or write operation is in progress in another thread,
+     * then this method blocks until that operation completed.
+     * This restriction is for avoiding data lost.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */

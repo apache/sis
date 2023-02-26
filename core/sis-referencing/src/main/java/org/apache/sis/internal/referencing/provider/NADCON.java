@@ -21,6 +21,7 @@ import java.net.URI;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
+import java.nio.file.NoSuchFileException;
 import java.nio.channels.ReadableByteChannel;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
@@ -34,6 +35,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.CharSequences;
@@ -138,20 +140,27 @@ public final class NADCON extends AbstractProvider {
     public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
             throws ParameterNotFoundException, FactoryException
     {
-        final Parameters pg  = Parameters.castOrWrap(values);
-        return DatumShiftGridFile.createGeodeticTransformation(NADCON.class, factory,
-                getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
+        final Parameters pg = Parameters.castOrWrap(values);
+        try {
+            return DatumShiftGridFile.createGeodeticTransformation(NADCON.class, factory,
+                    getOrLoad(pg.getMandatoryValue(LATITUDE), pg.getMandatoryValue(LONGITUDE)));
+        } catch (NoSuchFileException e) {
+            throw new MissingFactoryResourceException(e.getMessage(), e);
+        } catch (Exception e) {
+            throw new FactoryException(e);
+        }
     }
 
     /**
      * Returns the grid of the given name.
      * This method returns the cached instance if it still exists, or load the grid otherwise.
      *
-     * @param latitudeShifts   relative or absolute path of the grid file for latitude shifts.
-     * @param longitudeShifts  relative or absolute path name of the grid file for longitude shifts.
+     * @param  latitudeShifts   relative or absolute path of the grid file for latitude shifts.
+     * @param  longitudeShifts  relative or absolute path name of the grid file for longitude shifts.
+     * @throws Exception if an error occurred while loading the grid.
      */
     static DatumShiftGridFile<Angle,Angle> getOrLoad(final URI latitudeShifts, final URI longitudeShifts)
-            throws FactoryException
+            throws Exception
     {
         final URI rlat = Loader.toAbsolutePath(latitudeShifts);
         final URI rlon = Loader.toAbsolutePath(longitudeShifts);
@@ -175,6 +184,10 @@ public final class NADCON extends AbstractProvider {
                     new Loader(in, buffer, file).readGrid(fb, loader, null);
                 }
             } catch (IOException | NoninvertibleTransformException | RuntimeException e) {
+                /*
+                 * Handle the exception here instead of by the caller
+                 * because we know which of the 2 files is problematic.
+                 */
                 throw DatumShiftGridLoader.canNotLoad("NADCON", file, e);
             }
             grid = DatumShiftGridCompressed.compress(loader.grid, null, loader.grid.accuracy);

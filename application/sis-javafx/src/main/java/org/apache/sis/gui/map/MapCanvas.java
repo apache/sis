@@ -63,6 +63,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.AbstractEnvelope;
@@ -87,7 +88,6 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
-import org.apache.sis.referencing.IdentifiedObjects;
 
 import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 import static org.apache.sis.internal.util.StandardDateFormat.NANOS_PER_MILLISECOND;
@@ -1051,7 +1051,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * </ol>
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
+     * @version 1.4
      * @since   1.1
      */
     protected abstract static class Renderer {
@@ -1272,7 +1272,7 @@ public abstract class MapCanvas extends PlanarCanvas {
         renderedContentStamp = contentChangeCount;
         final Renderer context = createRenderer();
         if (context != null && context.initialize(floatingPane)) {
-            final Task<?> worker = createWorker(context);
+            final RenderingTask<?> worker = createWorker(context);
             assert renderingInProgress == null : renderingInProgress;
             BackgroundThreads.execute(worker);
             renderingInProgress = worker;       // Set after we know that the task has been scheduled.
@@ -1291,15 +1291,15 @@ public abstract class MapCanvas extends PlanarCanvas {
 
     /**
      * Creates the background task which will invoke {@link Renderer#render()} in a background thread.
-     * The tasks must invoke {@link #renderingCompleted(Task)} in JavaFX thread after completion,
+     * The tasks must invoke {@link #renderingCompleted(RenderingTask)} in JavaFX thread after completion,
      * either successful or not.
      *
      * <p><b>Note:</b> it is important that no other worker is in progress at the time this method is invoked
      * ({@code assert renderingInProgress == null}), otherwise conflicts may happen when workers will update
      * the {@code MapCanvas} fields after they completed their task.</p>
      */
-    Task<?> createWorker(final Renderer renderer) {
-        return new Task<Void>() {
+    RenderingTask<?> createWorker(final Renderer renderer) {
+        return new RenderingTask<Void>() {
             /** Invoked in background thread. */
             @Override protected Void call() throws Exception {
                 renderer.render();
@@ -1327,8 +1327,28 @@ public abstract class MapCanvas extends PlanarCanvas {
      * which is now integrated in the map. That transform will be removed from {@link #floatingPane} transforms.
      * The {@link #transform} result is identity if no zoom, rotation or pan gesture has been applied since last
      * rendering.
+     *
+     * <h4>Use case</h4>
+     * <p>Suppose that the {@link RenderingTask} has been started in response to some user gestures.
+     * For example, the user has zoomed on the map. The renderer has been initialized with a snapshot
+     * of this {@code MapCanvas} state at the time when the {@link Renderer} has been constructed.
+     * From this state, the renderer infers which data region to load at which resolution.</p>
+     *
+     * <p>Suppose that the rendering takes a long time, and during that time the user continues to do
+     * zoom and pan gestures. {@code MapCanvas} records those gestures in an {@link Affine} transform
+     * and will apply those changes on the image created by the <em>previous</em> rendering.
+     * For example if the user did a pan gesture of 100 pixels while the {@link Renderer} was working,
+     * then after the renderer finished to produce an image, that new image will also be translated by
+     * 100 pixels and a new call to {@link #repaint()} will happen later.</p>
+     *
+     * <p>Suppose that a zoom-in gesture caused the {@link Rendeder} to paint an image having a resolution
+     * twice finer than the resolution used in previous rendering. If the user does a translation of 100 pixels
+     * while this rendering is in progress, that "100 pixels" measurement is in units of the old rendering.
+     * It will need to be converted to 200 pixels after the rendering completed.</p>
+     *
+     * @param  task  the background task which has been completed, successfully or not.
      */
-    final void renderingCompleted(final Task<?> task) {
+    final void renderingCompleted(final RenderingTask<?> task) {
         assert Platform.isFxApplicationThread();
         assert renderingInProgress == task : "Expected " + renderingInProgress + " but was " + task;
         // Keep cursor unchanged if contents changed, because caller will invoke `repaint()` again.
@@ -1336,15 +1356,30 @@ public abstract class MapCanvas extends PlanarCanvas {
             restoreCursorAfterPaint();
         }
         renderingInProgress = null;
+        /*
+         * Display coordinates stored in this `MapCanvas` need to be converted to the
+         * new display coordinates, as expected by the new "objective to display" CRS.
+         */
         final Point2D p = changeInProgress.transform(xPanStart, yPanStart);
         xPanStart = p.getX();
         yPanStart = p.getY();
         try {
             changeInProgress.invert();
-            transform.prepend(changeInProgress);
+            transform.append(changeInProgress);
+            /*
+             * Note: intuitively one may expect `prepend(…)` instead of `append(…)` above.
+             * The use of `prepend(…)` would give a `transform` result which would be as if
+             * the transform was the identity transform at the time that rendering started,
+             * and all operations on it are gesture events that occurred while the renderer
+             * was working in background. But actually this is not quite correct.
+             * See the zoom-in discussion in "use case" section in method javadoc.
+             */
         } catch (NonInvertibleTransformException e) {
             unexpectedException("repaint", e);
         }
+        /*
+         * At this point the rendering is completed. If some error occurred, report them.
+         */
         isRendering.set(false);
         final Throwable ex = task.getException();
         if (ex != null) {
@@ -1372,11 +1407,11 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This is especially useful when the first gesture event is a tiny change because the user just started
      * panning or zooming.
      *
-     * <div class="note"><b>Design note:</b>
+     * <h4>Design note:</h4>
      * using a thread for waiting seems a waste of resources, but a thread (likely this one) is going to be used
      * for real after the waiting time is elapsed. That thread usually exists anyway in {@link BackgroundThreads}
      * as an idle thread, and it is unlikely that other parts of this JavaFX application need that thread in same
-     * time (if it happens, other threads will be created).</div>
+     * time (if it happens, other threads will be created).
      *
      * @see #requestRepaint()
      */

@@ -56,14 +56,14 @@ import org.apache.sis.setup.OptionKey;
  * The above list may be extended in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
  */
 final class Store extends URIDataStore implements Filter {
     /**
      * The input stream or reader, set by the constructor and cleared when no longer needed.
      */
-    private StreamSource source;
+    private volatile StreamSource source;
 
     /**
      * The unmarshalled object, initialized only when first needed.
@@ -151,11 +151,11 @@ final class Store extends URIDataStore implements Filter {
     private void unmarshal() throws DataStoreException {
         final StreamSource s = source;
         final Closeable in = input(s);
-        source = null;                          // Cleared first in case of error.
         if (in != null) try {
             try {
                 object = XML.unmarshal(s, properties());
             } finally {
+                source = null;
                 in.close();
             }
         } catch (JAXBException | IOException e) {
@@ -217,19 +217,23 @@ final class Store extends URIDataStore implements Filter {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                      // Should never fail.
-        object = null;
-        final Closeable in = input(source);
-        source = null;                          // Cleared first in case of failure.
-        if (in != null) try {
-            in.close();
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();                      // Should never fail.
+            final Closeable in = input(source);
+            if (in != null) in.close();
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                object = null;
+                source = null;
+            }
         }
     }
 }

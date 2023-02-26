@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gui.io;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -32,6 +33,7 @@ import org.apache.sis.internal.gui.FixedHeaderColumnSize;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.storage.io.ChannelFactory;
+import org.apache.sis.internal.storage.io.FileCacheByteChannel;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 
@@ -45,7 +47,7 @@ import org.apache.sis.storage.event.StoreListeners;
  * in the vast majority of cases when user has no interest in those information.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public final class FileAccessView extends Widget implements UnaryOperator<ChannelFactory> {
@@ -114,6 +116,36 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
             }
 
             /**
+             * Returns a new visual item and adds it as a row in the table of opened files.
+             * This method can be invoked from any thread (usually not the JavaFX one).
+             *
+             * @param  filename  data store name.
+             * @return the view of the row added in the table.
+             */
+            private FileAccessItem newItem(final String filename) {
+                final FileAccessItem item = new FileAccessItem(table.getItems(), filename);
+                Platform.runLater(() -> item.owner.add(item));
+                return item;
+            }
+
+            /**
+             * Returns the readable channel as an input stream.
+             *
+             * @param  filename  data store name.
+             * @param  listeners set of registered {@code StoreListener}s for the data store, or {@code null} if none.
+             * @return the input stream.
+             * @throws DataStoreException if the channel is read-once.
+             * @throws IOException if the input stream or its underlying byte channel cannot be created.
+             */
+            @Override
+            public InputStream inputStream(final String filename, final StoreListeners listeners)
+                    throws DataStoreException, IOException
+            {
+                final InputStream input = factory.inputStream(filename, listeners);
+                return newItem(filename).new InputObserver(input);
+            }
+
+            /**
              * Creates a readable channel and listens (if possible) read operations.
              * Current implementation listens only to {@link SeekableByteChannel}
              * because otherwise we do not know the file size.
@@ -130,8 +162,11 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
             {
                 final ReadableByteChannel channel = factory.readable(filename, listeners);
                 if (channel instanceof SeekableByteChannel) {
-                    final FileAccessItem item = new FileAccessItem(table.getItems(), filename);
-                    Platform.runLater(() -> item.owner.add(item));
+                    final FileAccessItem item = newItem(filename);
+                    if (channel instanceof FileCacheByteChannel) {
+                        ((FileCacheByteChannel) channel).setFilter((input, start, end) ->
+                                item.new InputObserver(input, start));
+                    }
                     return item.new Observer((SeekableByteChannel) channel);
                 }
                 return channel;

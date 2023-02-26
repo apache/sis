@@ -37,7 +37,6 @@ import java.awt.image.DataBufferDouble;
 import java.awt.image.WritableRaster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RasterFormatException;
-import java.nio.channels.Channels;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -46,6 +45,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
+import org.apache.sis.internal.storage.io.InputStreamArrayGetter;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.sql.feature.InfoStatements;
 import org.apache.sis.internal.util.Constants;
@@ -70,7 +70,7 @@ import static org.apache.sis.internal.sql.postgis.Band.OPPOSITE_SIGN;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public final class RasterReader extends RasterFormat {
@@ -398,9 +398,11 @@ public final class RasterReader extends RasterFormat {
      * @throws IOException if an error occurred while reading data from the input stream.
      */
     public ChannelDataInput channel(final InputStream input) throws IOException {
-        if (buffer == null) {
-            buffer = ByteBuffer.allocate(8192);
-        }
-        return new ChannelDataInput("raster", Channels.newChannel(input), buffer, false);
+        return InputStreamArrayGetter.channel("raster", input, () -> {
+            if (buffer == null) {
+                buffer = ByteBuffer.allocate(8192);
+            }
+            return buffer;
+        });
     }
 }

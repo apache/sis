@@ -129,8 +129,8 @@ public final class WorldFileStoreProvider extends PRJDataStore.Provider {
                 }
             }
             if (format.isWritable) {
-                store = isSingleton ? new SingleImageStore.Writable(format)
-                                    : new  MultiImageStore.Writable(format);
+                store = isSingleton ? new WritableSingleImageStore(format)
+                                    : new MultiImageStore.Writable(format);
             } else {
                 store = isSingleton ? new SingleImageStore(format)
                                     : new  MultiImageStore(format);

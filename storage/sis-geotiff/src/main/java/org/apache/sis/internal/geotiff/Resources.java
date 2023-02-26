@@ -152,6 +152,12 @@ public final class Resources extends IndexedResourceBundle {
         public static final short RandomizedProcessApplied = 15;
 
         /**
+         * Interpreted parameter “{0}” as “{1}” because the former is invalid for the “{2}” map
+         * projection.
+         */
+        public static final short ReassignedParameter_3 = 32;
+
+        /**
          * The “{0}” GeoTIFF file does not specify the values format.
          */
         public static final short UndefinedDataFormat_1 = 25;

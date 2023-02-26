@@ -20,14 +20,14 @@ import java.net.URI;
 import java.net.URL;
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystemNotFoundException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Collection;
-import java.util.function.Consumer;
+import java.util.concurrent.Callable;
 import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
 import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.application.Platform;
@@ -48,6 +48,7 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.storage.io.IOUtilities;
 import org.apache.sis.internal.storage.io.ChannelFactory;
 import org.apache.sis.internal.storage.io.InternalOptionKey;
+import org.apache.sis.internal.storage.folder.ConcurrentCloser;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.gui.DataViewer;
 
@@ -73,7 +74,7 @@ import org.apache.sis.gui.DataViewer;
  * @todo Set title. Add progress listener and cancellation capability.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see BackgroundThreads#execute(Runnable)
  *
@@ -135,15 +136,15 @@ public final class DataStoreOpener extends Task<DataStore> {
                     source = ((URL) source).toURI();                // May throw URISyntaxException.
                 }
                 if (source instanceof URI) {                        // May be the result of above URL.toURI().
-                    source = Paths.get((URI) source);               // May throw FileSystemNotFoundException.
+                    source = Path.of((URI) source);                 // May throw FileSystemNotFoundException.
                 }
                 if (source instanceof Path) {                       // May be the result of a previous block.
                     source = ((Path) source).toRealPath();          // May throw IOException.
                 }
             }
-        } catch (URISyntaxException | IOException | IllegalArgumentException e) {
+        } catch (URISyntaxException | FileSystemNotFoundException | IllegalArgumentException e) {
             // Ignore — keep `source` as is (File, URI, URI or non-absolute Path).
-        } catch (DataStoreException | RuntimeException e) {
+        } catch (DataStoreException | IOException | RuntimeException e) {
             source = null;
         }
         key = source;
@@ -353,43 +354,24 @@ public final class DataStoreOpener extends Task<DataStore> {
      * terminated in case some of them were using a data store. The data stores will be closed
      * in parallel.
      *
-     * @throws Exception if an error occurred while closing at least one data store.
+     * @throws DataStoreException if an error occurred while closing at least one data store.
      */
-    static void closeAll() throws Exception {
-        final Closer closer = new Closer();
-        do {
-            // Use `toArray()` because we need a snapshot.
-            Stream.of(CACHE.keySet().toArray()).parallel().forEach(closer);
-        } while (!CACHE.isEmpty());
-        closer.rethrow();
+    static void closeAll() throws DataStoreException {
+        do CLOSER.closeAll(List.copyOf(CACHE.keySet()));
+        while (!CACHE.isEmpty());
     }
 
     /**
-     * The handler in charge of closing the data store and record the failures if some errors happen.
-     * The same handler instance may be used concurrently while closing many data stores in parallel.
+     * Helper for closing concurrently the stores.
      */
-    private static final class Closer implements Consumer<Object> {
-        /** The error that occurred while closing a data store. */
-        private Exception error;
-
-        /** Closes the given data store. */
-        @Override public void accept(final Object source) {
-            final DataStore toClose = CACHE.remove(source);
-            if (source != null) try {
-                toClose.close();
-            } catch (Exception e) {
-                synchronized (this) {
-                    if (error == null) error = e;
-                    else error.addSuppressed(e);
-                }
-            }
+    public static final ConcurrentCloser<Object> CLOSER = new ConcurrentCloser<>() {
+        @Override protected Callable<?> closer(final Object key) {
+            final DataStore store = CACHE.remove(key);
+            if (store != null) return () -> {
+                store.close();
+                return null;
+            };
+            return null;
         }
-
-        /** If an error occurred, re-throws that error. */
-        synchronized void rethrow() throws Exception {
-            if (error != null) {
-                throw error;
-            }
-        }
-    }
+    };
 }

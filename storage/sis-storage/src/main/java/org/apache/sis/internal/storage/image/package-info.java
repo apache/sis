@@ -40,7 +40,7 @@
  * then move in a public package with {@code imageio} package name.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/World_file">World File format description on Wikipedia</a>
  *

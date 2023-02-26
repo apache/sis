@@ -24,7 +24,6 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -75,7 +74,7 @@ public final class DataScriptFormatter extends ScriptRunner {
              Connection c = db.source.getConnection())
         {
             final DataScriptFormatter f = new DataScriptFormatter(c);
-            f.run(Paths.get(arguments[0]), Paths.get(arguments[1]));
+            f.run(Path.of(arguments[0]), Path.of(arguments[1]));
         }
     }
 

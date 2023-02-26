@@ -20,7 +20,7 @@ import java.net.URI;
 import java.util.EnumSet;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.FileSystemNotFoundException;
 import org.apache.sis.storage.DataStores;
@@ -97,7 +97,7 @@ final class MimeTypeCommand extends CommandRunner {
                  */
                 type = DataStores.probeContentType(file);
             } else try {
-                type = Files.probeContentType(Paths.get(uri));
+                type = Files.probeContentType(Path.of(uri));
             } catch (IllegalArgumentException | FileSystemNotFoundException e) {
                 type = DataStores.probeContentType(uri);
             } catch (NoSuchFileException e) {

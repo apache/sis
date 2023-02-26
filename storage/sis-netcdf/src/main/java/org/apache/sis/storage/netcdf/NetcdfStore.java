@@ -261,20 +261,26 @@ public class NetcdfStore extends DataStore implements Aggregate {
 
     /**
      * Closes this netCDF store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing the netCDF file.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                  // Should never fail.
-        final Decoder reader = decoder;
-        decoder    = null;
-        metadata   = null;
-        components = null;
-        if (reader != null) try {
-            reader.close();
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();                  // Should never fail.
+            final Decoder reader = decoder;
+            if (reader != null) {
+                reader.close(this);
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                components = null;
+                metadata   = null;
+                decoder    = null;
+            }
         }
     }
 

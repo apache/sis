@@ -140,7 +140,7 @@ import org.apache.sis.util.resources.Errors;
  * which is usually the case given how inefficient this format is.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.2
  */
 class AsciiGridStore extends RasterStore {
@@ -176,7 +176,7 @@ class AsciiGridStore extends RasterStore {
      * Note that a null value does not necessarily means that the store is closed, because
      * it may have finished to read fully the {@linkplain #coverage}.
      */
-    private CharactersView input;
+    private volatile CharactersView input;
 
     /**
      * The {@code NCOLS} and {@code NROWS} attributes read from the header.
@@ -345,6 +345,7 @@ cellsize:       if (value != null) {
 
     /**
      * Returns the error message for an exception or log record.
+     * Invoke only in contexts where {@link #input} is known to be non-null.
      *
      * @param  rk   {@link Errors.Keys#IllegalValueForProperty_2} or {@link Errors.Keys#MissingValueForProperty_2}.
      * @param  key  key of the header property which was requested.
@@ -539,21 +540,27 @@ cellsize:       if (value != null) {
 
     /**
      * Closes this data store and releases any underlying resources.
+     * This method can be invoked asynchronously for interrupting a long reading process.
      *
      * @throws DataStoreException if an error occurred while closing this data store.
      */
     @Override
-    public synchronized void close() throws DataStoreException {
-        listeners.close();                  // Should never fail.
-        final CharactersView view = input;
-        input        = null;                // Cleared first in case of failure.
-        coverage     = null;
-        gridGeometry = null;
-        super.close();                      // Clear more fields. Never fail.
-        if (view != null) try {
-            view.input.channel.close();
+    public void close() throws DataStoreException {
+        try {
+            listeners.close();                  // Should never fail.
+            final CharactersView view = input;
+            if (view != null) {
+                view.input.channel.close();
+            }
         } catch (IOException e) {
             throw new DataStoreException(e);
+        } finally {
+            synchronized (this) {
+                super.close();                  // Clear more fields. Never fail.
+                gridGeometry = null;
+                coverage     = null;
+                input        = null;
+            }
         }
     }
 

@@ -44,6 +44,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.internal.referencing.WKTUtilities;
 import org.apache.sis.internal.referencing.TemporalAccessor;
+import org.apache.sis.internal.util.ArgumentCheckByAssertion;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
@@ -745,7 +746,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * If it least one coordinate value in the given point is {@link Double#NaN NaN},
      * then this method returns {@code false}.
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -760,6 +761,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @throws MismatchedDimensionException if the specified point does not have the expected number of dimensions.
      * @throws AssertionError if assertions are enabled and the envelopes have mismatched CRS.
      */
+    @ArgumentCheckByAssertion
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
         ensureNonNull("position", position);
         final int dimension = getDimension();
@@ -796,7 +798,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <blockquote><pre>{@linkplain #contains(Envelope, boolean) contains}(envelope, <b>true</b>)</pre></blockquote>
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -816,6 +818,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @since 0.4
      */
+    @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope) throws MismatchedDimensionException {
         return contains(envelope, true);
     }
@@ -826,7 +829,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * envelope, then this method returns {@code true} only if {@code edgesInclusive}
      * is {@code true}.
      *
-     * <p>This method is subject to the same pre-conditions than {@link #contains(Envelope)},
+     * <p>This method is subject to the same preconditions than {@link #contains(Envelope)},
      * and handles envelopes crossing the anti-meridian in the same way.</p>
      *
      * @param  envelope        the envelope to test for inclusion.
@@ -837,6 +840,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @see #intersects(Envelope, boolean)
      */
+    @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();
@@ -924,7 +928,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <blockquote><pre>{@linkplain #intersects(Envelope, boolean) intersects}(envelope, <b>false</b>)</pre></blockquote>
      *
-     * <h4>Pre-conditions</h4>
+     * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS than this envelope.
      * For performance reasons, it will no be verified unless Java assertions are enabled.
      *
@@ -941,6 +945,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @since 0.4
      */
+    @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope) throws MismatchedDimensionException {
         return intersects(envelope, false);
     }
@@ -958,7 +963,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *       <em>or</em> touch each other.</li>
      * </ul>
      *
-     * This method is subject to the same pre-conditions than {@link #intersects(Envelope)},
+     * This method is subject to the same preconditions than {@link #intersects(Envelope)},
      * and handles envelopes crossing the anti-meridian in the same way.
      *
      * @param  envelope  the envelope to test for intersection.
@@ -971,6 +976,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see #contains(Envelope, boolean)
      * @see #equals(Envelope, double, boolean)
      */
+    @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope, final boolean touch) throws MismatchedDimensionException {
         ensureNonNull("envelope", envelope);
         final int dimension = getDimension();

@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * The executor shared by most of Apache SIS library for relatively "heavy" operations.
- * The operations should relatively long tasks, otherwise work-stealing algorithms may
+ * The operations should be relatively long tasks, otherwise work-stealing algorithms may
  * provide better performances. For example, it may be used when each computational unit
  * is an image tile, in which case the thread scheduling overhead is small compared to
  * the size of the computational task.
