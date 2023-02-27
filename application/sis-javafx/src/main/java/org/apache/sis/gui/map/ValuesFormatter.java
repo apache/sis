@@ -165,13 +165,13 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         evaluator = coverage.forConvertedValues(true).evaluator();
         evaluator.setNullIfOutside(true);
         evaluator.setWraparoundEnabled(true);
-        selectedBands = new BitSet();
         if (inherit != null) {
             // Same configuration than previous coverage.
             synchronized (inherit.buffer) {
                 units         = inherit.units;
                 nodata        = inherit.nodata;
                 outsideText   = inherit.outsideText;
+                selectedBands = inherit.selectedBands;
                 sampleFormats = inherit.sampleFormats.clone();
                 for (int i=0; i < sampleFormats.length; i++) {
                     sampleFormats[i] = (NumberFormat) sampleFormats[i].clone();
@@ -183,6 +183,8 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         sampleFormats = new NumberFormat[numBands];
         units         = new String[numBands];
         nodata        = new HashMap<>();
+        selectedBands = new BitSet();
+        selectedBands.set(0, (numBands <= 3) ? numBands : 1, true);
         /*
          * Loop below initializes number formats and unit symbols for all bands, regardless
          * if selected or not. We do that on the assumption that the same format and symbol

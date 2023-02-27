@@ -369,7 +369,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
          */
         final GridGeometry gridGeometry = coverage.gridGeometry;
         final long[] size = new long[gridGeometry.getDimension()];
-        java.util.Arrays.fill(size, 1);
+        Arrays.fill(size, 1);
         try {
             final FractionalGridCoordinates gc = toGridPosition(point);
             try {
@@ -471,7 +471,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
             System.arraycopy(result.getCoordinate(), 0, coordinates, 0, coordinates.length);
         }
         /*
-         * If most cases, the work of this method ends here. The remaining code in this method
+         * In most cases, the work of this method ends here. The remaining code in this method
          * is for handling wraparound axes. If a coordinate is outside the coverage extent,
          * check if a wraparound on some axes would bring the coordinates inside the extent.
          */
