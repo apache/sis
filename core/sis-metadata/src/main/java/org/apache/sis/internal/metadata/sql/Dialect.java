@@ -27,7 +27,7 @@ import org.apache.sis.util.CharSequences;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 public enum Dialect {
@@ -36,37 +36,40 @@ public enum Dialect {
      *
      * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
-    ANSI(null, false, true),
+    ANSI(null, false, true, true),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
      * (for example column with {@code UNIQUE} constraint must explicitly be specified as {@code NOT NULL}).
+     * Furthermore, conversions to {@link java.time} objects are not supported.
+     *
+     * <a href="https://issues.apache.org/jira/browse/DERBY-6445">DERBY-6445</a>
      */
-    DERBY("derby", false, true),
+    DERBY("derby", false, true, false),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
-    HSQL("hsqldb", false, true),
+    HSQL("hsqldb", false, true, true),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
-    POSTGRESQL("postgresql", true, true),
+    POSTGRESQL("postgresql", true, true, true),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
-    ORACLE("oracle", false, true),
+    ORACLE("oracle", false, true, true),
 
     /**
      * The database uses SQLite syntax. This is ANSI, but with several limitations.
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    SQLITE("sqlite", false, false);
+    SQLITE("sqlite", false, false, false);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -96,15 +99,27 @@ public enum Dialect {
     public final boolean supportsAlterTableWithAddConstraint;
 
     /**
+     * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
+     * The JDBC 4.2 specification provides a mapping from {@link java.sql.Types} to temporal objects.
+     * The specification suggests that {@link java.sql.ResultSet#getObject(int, Class)} should accept
+     * those temporal types in the {@link Class} argument, but not all drivers support that.
+     *
+     * @see <a href="https://jcp.org/aboutJava/communityprocess/maintenance/jsr221/JDBC4.2MR-January2014.pdf">JDBC Maintenance Release 4.2</a>
+     */
+    public final boolean supportsJavaTime;
+
+    /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
     private Dialect(final String  protocol,
                     final boolean supportsTableInheritance,
-                    final boolean supportsAlterTableWithAddConstraint)
+                    final boolean supportsAlterTableWithAddConstraint,
+                    final boolean supportsJavaTime)
     {
         this.protocol = protocol;
         this.supportsTableInheritance = supportsTableInheritance;
         this.supportsAlterTableWithAddConstraint = supportsAlterTableWithAddConstraint;
+        this.supportsJavaTime = supportsJavaTime;
     }
 
     /**

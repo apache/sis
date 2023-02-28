@@ -37,6 +37,7 @@ import org.apache.sis.internal.sql.feature.Database;
 import org.apache.sis.internal.sql.feature.ValueGetter;
 import org.apache.sis.internal.sql.feature.Resources;
 import org.apache.sis.internal.sql.feature.SelectionClauseWriter;
+import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
 
@@ -48,7 +49,7 @@ import org.apache.sis.util.Version;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public final class Postgres<G> extends Database<G> {
@@ -67,14 +68,16 @@ public final class Postgres<G> extends Database<G> {
      * @param  source       provider of (pooled) connections to the database.
      * @param  connection   the connection to the database. Should be considered as read-only.
      * @param  metadata     metadata about the database for which a session is created.
+     * @param  dialect      additional information not provided by {@code metadata}.
      * @param  geomLibrary  the factory to use for creating geometric objects.
      * @param  listeners    where to send warnings.
      * @throws SQLException if an error occurred while reading database metadata.
      */
     public Postgres(final DataSource source, final Connection connection, final DatabaseMetaData metadata,
-                    final Geometries<G> geomLibrary, final StoreListeners listeners) throws SQLException
+                    final Dialect dialect, final Geometries<G> geomLibrary, final StoreListeners listeners)
+            throws SQLException
     {
-        super(source, metadata, geomLibrary, listeners);
+        super(source, metadata, dialect, geomLibrary, listeners);
         Version version = null;
         try (Statement st = connection.createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))

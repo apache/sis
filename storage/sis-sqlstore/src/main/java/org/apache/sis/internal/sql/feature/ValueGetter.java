@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.sql.feature;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -24,8 +23,9 @@ import java.sql.SQLException;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalTime;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneOffset;
@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
 
@@ -52,10 +53,45 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
-public abstract class ValueGetter<T> {
+public class ValueGetter<T> {
+    /**
+     * A getter of {@link LocalDate} values from the current row of a {@link ResultSet}.
+     * According JDBC 4.2 specification, {@link java.sql.Types#DATE} shall be mapped to
+     * this class.
+     */
+    static final ValueGetter<LocalDate> LOCAL_DATE = new ValueGetter<>(LocalDate.class);
+
+    /**
+     * A getter of {@link LocalTime} values from the current row of a {@link ResultSet}.
+     * According JDBC 4.2 specification, {@link java.sql.Types#TIME} without timezone
+     * shall be mapped to this class.
+     */
+    static final ValueGetter<LocalTime> LOCAL_TIME = new ValueGetter<>(LocalTime.class);
+
+    /**
+     * A getter of {@link LocalDateTime} values from the current row of a {@link ResultSet}.
+     * According JDBC 4.2 specification, {@link java.sql.Types#TIMESTAMP} without timezone
+     * shall be mapped to this class.
+     */
+    static final ValueGetter<LocalDateTime> LOCAL_DATE_TIME = new ValueGetter<>(LocalDateTime.class);
+
+    /**
+     * A getter of {@link OffsetTime} values from the current row of a {@link ResultSet}.
+     * According JDBC 4.2 specification, {@link java.sql.Types#TIME_WITH_TIMEZONE} shall
+     * be mapped to this class.
+     */
+    static final ValueGetter<OffsetTime> OFFSET_TIME = new ValueGetter<>(OffsetTime.class);
+
+    /**
+     * A getter of {@link OffsetDateTime} values from the current row of a {@link ResultSet}.
+     * According JDBC 4.2 specification, {@link java.sql.Types#TIMESTAMP_WITH_TIMEZONE}
+     * shall be mapped to this class.
+     */
+    static final ValueGetter<OffsetDateTime> OFFSET_DATE_TIME = new ValueGetter<>(OffsetDateTime.class);
+
     /**
      * The type of Java objects fetched from the column.
      * The value shall not be a primitive type; the wrapper class shall be used instead.
@@ -78,10 +114,14 @@ public abstract class ValueGetter<T> {
      * The given result set must have its cursor position on the line to read.
      * This method does not modify the cursor position.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Usage note</h4>
      * The {@code stmts} is the same reference for all features created by a new {@link FeatureIterator} instance,
      * including its dependencies. But the {@code source} will vary depending on whether we are iterating over the
-     * main feature or one of its dependencies.</div>
+     * main feature or one of its dependencies.
+     *
+     * <h4>Default implementation</h4>
+     * The default implementation delegates to {@link ResultSet#getObject(int, Class)}.
+     * This is okay if the database is known to support conversions to {@link #valueType}.
      *
      * @param  stmts        prepared statements for fetching CRS from SRID, or {@code null} if none.
      * @param  source       the result set from which to get the value.
@@ -89,7 +129,9 @@ public abstract class ValueGetter<T> {
      * @return value in the given column. May be {@code null}.
      * @throws Exception if an error occurred. May be an SQL error, a WKB parsing error, <i>etc.</i>
      */
-    public abstract T getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws Exception;
+    public T getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws Exception {
+        return source.getObject(columnIndex, valueType);
+    }
 
     /**
      * A getter of {@link Object} values from the current row of a {@link ResultSet}.
@@ -282,19 +324,22 @@ public abstract class ValueGetter<T> {
     }
 
     /**
-     * A getter of {@link Date} values from the current row of a {@link ResultSet}.
-     * This getter delegates to {@link ResultSet#getDate(int)} and returns that value with no change.
+     * A getter of {@link LocalDate} values from the current row of a {@link ResultSet}.
+     * This getter delegates to {@link ResultSet#getDate(int)} then converts that value
+     * by a call to {@link Date#toLocalDate()}.
      *
-     * @todo Delegate to {@link ResultSet#getDate(int, Calendar)} instead.
+     * <p>This is fallback used when {@link ResultSet#getObject(int, Class)} does not support the
+     * conversion from {@link java.sql.Types#DATE} to Java time API as specified by JDBC 4.2.</p>
      */
-    static final class AsDate extends ValueGetter<Date> {
+    static final class AsLocalDate extends ValueGetter<LocalDate> {
         /** The unique instance of this accessor. */
-        public static final AsDate INSTANCE = new AsDate();
-        private AsDate() {super(Date.class);}
+        public static final AsLocalDate INSTANCE = new AsLocalDate();
+        private AsLocalDate() {super(LocalDate.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Date getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
-            return source.getDate(columnIndex);
+        @Override public LocalDate getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
+            final Date date = source.getDate(columnIndex);
+            return (date != null) ? date.toLocalDate() : null;
         }
     }
 
@@ -303,7 +348,8 @@ public abstract class ValueGetter<T> {
      * This getter delegates to {@link ResultSet#getTime(int)}, then converts the object
      * by a call to {@link Time#toLocalTime()}.
      *
-     * @todo Delegate to {@link ResultSet#getTime(int, Calendar)} instead.
+     * <p>This is fallback used when {@link ResultSet#getObject(int, Class)} does not support the
+     * conversion from {@link java.sql.Types#TIME} to Java time API as specified by JDBC 4.2.</p>
      */
     static final class AsLocalTime extends ValueGetter<LocalTime> {
         /** The unique instance of this accessor. */
@@ -313,26 +359,33 @@ public abstract class ValueGetter<T> {
         /** Fetches the value from the specified column in the given result set. */
         @Override public LocalTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Time time = source.getTime(columnIndex);
-            return (time != null) ? time.toLocalTime() : null;
+            if (time == null) return null;
+            /*
+             * `Time.toLocalTime()` does not use sub-second precision.
+             * However, some databases provide millisecond precision.
+             */
+            final int milli = (int) (time.getTime() % StandardDateFormat.MILLIS_PER_SECOND);
+            return time.toLocalTime().withNano(milli * StandardDateFormat.NANOS_PER_MILLISECOND);
         }
     }
 
     /**
-     * A getter of {@link Instant} values from the current row of a {@link ResultSet}.
-     * This getter delegates to {@link ResultSet#getTimestamp(int)}, then converts the
-     * object by a call to {@link Timestamp#toInstant()}.
+     * A getter of {@link LocalDateTime} values from the current row of a {@link ResultSet}.
+     * This getter delegates to {@link ResultSet#getTimestamp(int)}, then converts the object
+     * by a call to {@link Timestamp#toLocalDateTime()}.
      *
-     * @todo Delegate to {@link ResultSet#getTimestamp(int, Calendar)} instead.
+     * <p>This is fallback used when {@link ResultSet#getObject(int, Class)} does not support the
+     * conversion from {@link java.sql.Types#TIMESTAMP} to Java time API as specified by JDBC 4.2.</p>
      */
-    static final class AsInstant extends ValueGetter<Instant> {
+    static final class AsLocalDateTime extends ValueGetter<LocalDateTime> {
         /** The unique instance of this accessor. */
-        public static final AsInstant INSTANCE = new AsInstant();
-        private AsInstant() {super(Instant.class);}
+        public static final AsLocalDateTime INSTANCE = new AsLocalDateTime();
+        private AsLocalDateTime() {super(LocalDateTime.class);}
 
         /** Fetches the value from the specified column in the given result set. */
-        @Override public Instant getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
+        @Override public LocalDateTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Timestamp time = source.getTimestamp(columnIndex);
-            return (time != null) ? time.toInstant() : null;
+            return (time != null) ? time.toLocalDateTime() : null;
         }
     }
 
@@ -341,7 +394,15 @@ public abstract class ValueGetter<T> {
      * This getter delegates to {@link ResultSet#getTimestamp(int)}, converts the object by a
      * call to {@link Timestamp#toInstant()} then apply the time zone offset.
      *
-     * @todo Delegate to {@link ResultSet#getTimestamp(int, Calendar)} instead.
+     * <p>This is fallback used when {@link ResultSet#getObject(int, Class)} does not support conversion
+     * from {@link java.sql.Types#TIMESTAMP_WITH_TIMEZONE} to Java time API as specified by JDBC 4.2.</p>
+     *
+     * <h4>Implementation note</h4>
+     * PostgreSQL always return the time in the local time zone, while HSQLDB and H2 return the time as
+     * inserted in the database but ignoring the timezone offset. The latter implies that we don't know
+     * how convert a HSQLDB and H2 to local or UTC timezone. Current implementation assumes PostgreSQL
+     * behavior, which is the only one that we can map to {@link OffsetDateTime}.
+     * Specifying a {@link java.util.Calendar} seems to have no effect.
      */
     static final class AsOffsetDateTime extends ValueGetter<OffsetDateTime> {
         /** The unique instance of this accessor. */
@@ -352,17 +413,25 @@ public abstract class ValueGetter<T> {
         @Override public OffsetDateTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Timestamp time = source.getTimestamp(columnIndex);
             if (time == null) return null;
-            final int offsetMinute = time.getTimezoneOffset();
+            final int offsetMinute = -time.getTimezoneOffset();
             return time.toInstant().atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
         }
     }
 
     /**
-     * A getter of {@link OffsetDateTime} values from the current row of a {@link ResultSet}.
-     * This getter delegates to {@link ResultSet#getTime(int)}, converts the object by a call
-     * to {@link Time#toLocalTime()} then apply the time zone offset.
+     * A getter of {@link OffsetTime} values from the current row of a {@link ResultSet}.
+     * This getter delegates to {@link ResultSet#getTime(int)}, converts the object by a
+     * call to {@link Time#toLocalTime()} then apply the time zone offset.
      *
-     * @todo Delegate to {@link ResultSet#getTime(int, Calendar)} instead.
+     * <p>This is fallback used when {@link ResultSet#getObject(int, Class)} does not support conversion
+     * from {@link java.sql.Types#TIME_WITH_TIMEZONE} to Java time API as specified by JDBC 4.2.</p>
+     *
+     * <h4>Implementation note</h4>
+     * PostgreSQL always return the time in the local time zone, while HSQLDB and H2 return the time as
+     * inserted in the database but ignoring the timezone offset. The latter implies that we don't know
+     * how convert a HSQLDB and H2 to local or UTC timezone. Current implementation assumes PostgreSQL
+     * behavior, which is the only one that we can map to {@link OffsetTime}.
+     * Specifying a {@link java.util.Calendar} seems to have no effect.
      */
     static final class AsOffsetTime extends ValueGetter<OffsetTime> {
         /** The unique instance of this accessor. */
@@ -373,8 +442,10 @@ public abstract class ValueGetter<T> {
         @Override public OffsetTime getValue(InfoStatements stmts, ResultSet source, int columnIndex) throws SQLException {
             final Time time = source.getTime(columnIndex);
             if (time == null) return null;
-            final int offsetMinute = time.getTimezoneOffset();
-            return time.toLocalTime().atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
+            final int offsetMinute = -time.getTimezoneOffset();
+            final int milli = (int) (time.getTime() % StandardDateFormat.MILLIS_PER_SECOND);
+            return time.toLocalTime().withNano(milli * StandardDateFormat.NANOS_PER_MILLISECOND)
+                    .atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
         }
     }
 
