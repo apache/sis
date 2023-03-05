@@ -154,9 +154,9 @@ abstract class DatumShiftGridLoader {
      *
      * @param  path  the URI to make absolute.
      * @return an absolute (if possible) URI to the data.
-     * @throws NoSuchFileException if the path can not be made absolute.
+     * @throws NoSuchFileException if the path cannot be made absolute.
      *         This exception is necessary for letting the caller know that the coordinate operation is
-     *         probably valid but can not be constructed because an optional configuration is missing.
+     *         probably valid but cannot be constructed because an optional configuration is missing.
      *         It is typically because the {@code SIS_DATA} environment variable has not been set.
      */
     static URI toAbsolutePath(final URI path) throws NoSuchFileException {
