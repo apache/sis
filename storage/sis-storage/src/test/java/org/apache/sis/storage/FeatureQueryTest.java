@@ -25,6 +25,7 @@ import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -34,6 +35,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.Operation;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.MatchAction;
@@ -318,5 +320,54 @@ public final class FeatureQueryTest extends TestCase {
         final Feature instance = executeAndGetFirst();
         assertEquals("value1",  2, instance.getPropertyValue("value1"));
         assertEquals("value3", 25, instance.getPropertyValue("value3"));
+    }
+
+    /**
+     * Verifies the effect of virtual projections.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testVirtualProjection() throws DataStoreException {
+        final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
+                            new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), Names.createLocalName(null, null, "renamed1"), true),
+                            new FeatureQuery.NamedExpression(ff.literal("a literal"), Names.createLocalName(null, null, "computed"), true));
+
+        // Check result type.
+        final Feature instance = executeAndGetFirst();
+        final FeatureType resultType = instance.getType();
+        assertEquals("Test", resultType.getName().toString());
+        assertEquals(3, resultType.getProperties(true).size());
+        final PropertyType pt1 = resultType.getProperty("value1");
+        final PropertyType pt2 = resultType.getProperty("renamed1");
+        final PropertyType pt3 = resultType.getProperty("computed");
+        assertTrue(pt1 instanceof AttributeType);
+        assertTrue(pt2 instanceof Operation);
+        assertTrue(pt3 instanceof Operation);
+        assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
+        assertTrue(((Operation) pt2).getResult() instanceof AttributeType);
+        assertTrue(((Operation) pt3).getResult() instanceof AttributeType);
+        assertEquals(Integer.class, ((AttributeType)((Operation) pt2).getResult()).getValueClass());
+        assertEquals(String.class,  ((AttributeType)((Operation) pt3).getResult()).getValueClass());
+
+        // Check feature instance.
+        assertEquals(3, instance.getPropertyValue("value1"));
+        assertEquals(3, instance.getPropertyValue("renamed1"));
+        assertEquals("a literal", instance.getPropertyValue("computed"));
+    }
+
+    /**
+     * Verifies a virtual projection on a missing field causes an exception.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testIncorrectVirtualProjection() throws DataStoreException {
+        final FilterFactory<Feature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
+                            new FeatureQuery.NamedExpression(ff.property("valueMissing", Integer.class), Names.createLocalName(null, null, "renamed1"), true));
+
+        assertThrows(DataStoreContentException.class, () -> executeAndGetFirst());
     }
 }

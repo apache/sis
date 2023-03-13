@@ -28,6 +28,7 @@ import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.feature.ExpressionOperation;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
@@ -428,6 +429,13 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         public final GenericName alias;
 
         /**
+         * A virtual expression will only exist as an Operation.
+         * Those are commonly called 'computed fields' and equivalant of
+         * SQL GENERATED ALWAYS keyword for columns.
+         */
+        public final boolean virtual;
+
+        /**
          * Creates a new column with the given expression and no name.
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
@@ -436,10 +444,11 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = null;
+            this.virtual = false;
         }
 
         /**
-         * Creates a new column with the given expression and the given name.
+         * Creates a new persistant column with the given expression and the given name.
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
@@ -448,10 +457,11 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = alias;
+            this.virtual = false;
         }
 
         /**
-         * Creates a new column with the given expression and the given name.
+         * Creates a new persistant column with the given expression and the given name.
          * This constructor creates a {@link org.opengis.util.LocalName} from the given string.
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
@@ -461,6 +471,21 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
+            this.virtual = false;
+        }
+
+        /**
+         * Creates a new column with the given expression and the given name.
+         *
+         * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
+         * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
+         * @param virtual     true to create a computed field, an Operation.
+         */
+        public NamedExpression(final Expression<? super Feature, ?> expression, final GenericName alias, boolean virtual) {
+            ArgumentChecks.ensureNonNull("expression", expression);
+            this.expression = expression;
+            this.alias = alias;
+            this.virtual = virtual;
         }
 
         /**
@@ -593,6 +618,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         int unnamedNumber = 0;          // Sequential number for unnamed expressions.
         Set<String> names = null;       // Names already used, for avoiding collisions.
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
+        final GenericName[] columnNames = new GenericName[projection.length];
         for (int column = 0; column < projection.length; column++) {
             /*
              * For each property, get the expected type (mandatory) and its name (optional).
@@ -649,8 +675,26 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                 name = Names.createLocalName(null, null, text);
             }
             resultType.setName(name);
+            columnNames[column] = name;
         }
-        return ftb.build();
+
+        FeatureType featureType = ftb.build();
+        /*
+         * Build virtual fields.
+         * This operation must be done in a second loop because computed fields
+         * rely on the projected fields only.
+         */
+        for (int column = 0; column < projection.length; column++) {
+            if (projection[column].virtual) {
+                //make current property virtual
+                ftb.properties().remove(columnNames[column]);
+                final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(projection[column].expression);
+                ftb.addProperty(new ExpressionOperation(columnNames[column], fex, featureType));
+            }
+        }
+        featureType = ftb.build();
+
+        return featureType;
     }
 
     /**
