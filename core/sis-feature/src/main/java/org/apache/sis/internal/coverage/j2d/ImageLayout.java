@@ -38,7 +38,7 @@ import org.apache.sis.internal.system.Configuration;
  * those information directly, but provides method for deriving those properties from a given image.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public class ImageLayout {
@@ -71,7 +71,7 @@ public class ImageLayout {
      *
      * @see ImageUtilities#DEFAULT_TILE_SIZE
      */
-    private final int preferredTileWidth, preferredTileHeight;
+    protected final int preferredTileWidth, preferredTileHeight;
 
     /**
      * Whether image size can be modified if needed. Changes are applied only if an image cannot be tiled
@@ -92,8 +92,8 @@ public class ImageLayout {
      */
     public ImageLayout(final Dimension preferredTileSize, final boolean isBoundsAdjustmentAllowed) {
         if (preferredTileSize != null) {
-            preferredTileWidth  = preferredTileSize.width;
-            preferredTileHeight = preferredTileSize.height;
+            preferredTileWidth  = Math.max(1, preferredTileSize.width);
+            preferredTileHeight = Math.max(1, preferredTileSize.height);
         } else {
             preferredTileWidth  = ImageUtilities.DEFAULT_TILE_SIZE;
             preferredTileHeight = ImageUtilities.DEFAULT_TILE_SIZE;
@@ -319,20 +319,22 @@ public class ImageLayout {
     }
 
     /**
-     * Creates a banded sample model of the given type with
-     * {@linkplain #suggestTileSize(RenderedImage, Rectangle, boolean) the suggested tile size} for the given image.
+     * Creates a banded sample model of the given type with an automatic tile size.
+     * At least one of {@code image} and {@code bounds} arguments must be non null.
+     * This method uses the {@linkplain #suggestTileSize(RenderedImage, Rectangle, boolean)
+     * suggested tile size} for the given image and bounds.
      *
-     * @param  type      desired data type as a {@link java.awt.image.DataBuffer} constant.
+     * @param  dataType  desired data type as a {@link java.awt.image.DataBuffer} constant.
      * @param  numBands  desired number of bands.
      * @param  image     the image which will be the source of the image for which a sample model is created.
      * @param  bounds    the bounds of the image to create, or {@code null} if same as {@code image}.
      * @return a banded sample model of the given type with the given number of bands.
      */
-    public BandedSampleModel createBandedSampleModel(final int type, final int numBands,
+    public BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
             final RenderedImage image, final Rectangle bounds)
     {
-        final Dimension tile = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
-        return RasterFactory.unique(new BandedSampleModel(type, tile.width, tile.height, numBands));
+        final Dimension tileSize = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
+        return RasterFactory.unique(new BandedSampleModel(dataType, tileSize.width, tileSize.height, numBands));
     }
 
     /**

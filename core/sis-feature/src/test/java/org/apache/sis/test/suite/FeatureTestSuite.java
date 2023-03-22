@@ -83,6 +83,7 @@ import org.junit.runners.Suite;
     org.apache.sis.feature.builder.FeatureTypeBuilderTest.class,
 
     // Rasters
+    org.apache.sis.internal.coverage.RangeArgumentTest.class,
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.j2d.ImageLayoutTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
@@ -101,6 +102,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,
     org.apache.sis.image.MaskedImageTest.class,
+    org.apache.sis.image.BandAggregateImageTest.class,
     org.apache.sis.image.BandedSampleConverterTest.class,
     org.apache.sis.image.ImageCombinerTest.class,
     org.apache.sis.image.ImageProcessorTest.class,
@@ -121,6 +123,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.ConvertedGridCoverageTest.class,
     org.apache.sis.coverage.grid.TranslatedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
+    org.apache.sis.coverage.grid.DimensionalityReductionTest.class,
 
     // Index and processing
     org.apache.sis.index.tree.PointTreeNodeTest.class,

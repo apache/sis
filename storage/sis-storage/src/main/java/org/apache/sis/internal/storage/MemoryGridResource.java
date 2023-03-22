@@ -27,6 +27,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.image.ImageProcessor;
+import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;

@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.function.Function;
 import java.io.Serializable;
 import java.math.RoundingMode;
 import org.opengis.util.GenericName;
@@ -30,8 +31,12 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
+import org.apache.sis.coverage.grid.DimensionalityReduction;
+import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
@@ -56,7 +61,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public class CoverageQuery extends Query implements Cloneable, Serializable {
@@ -70,6 +75,12 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * This is the "selection" in query terminology.
      */
     private GridGeometry domain;
+
+    /**
+     * The dimensionality reduction to apply on coverage domain, or {@code null} if none.
+     */
+    @SuppressWarnings("serial")     // The target parameterized types are serializable.
+    private Function<GridGeometry, DimensionalityReduction> reduction;
 
     /**
      * 0-based indices of sample dimensions to read, or {@code null} for reading them all.
@@ -103,6 +114,10 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * Note that the given envelope is approximate:
      * Coverages may expand the envelope to an integer amount of tiles.
      *
+     * <p>If a {@linkplain #setAxisSelection(Function) dimensionality reduction} is applied,
+     * the specified envelope can be either the full envelope (with all dimensions)
+     * or an envelope with reduced dimensions.</p>
+     *
      * @param  domain  the approximate area of interest, or {@code null} if none.
      */
     @Override
@@ -118,6 +133,10 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * Sets the desired grid extent and resolution. The given domain is approximate:
      * Coverages may use a different resolution and expand the envelope to an integer amount of tiles.
      *
+     * <p>If a {@linkplain #setAxisSelection(Function) dimensionality reduction} is applied,
+     * the specified domain can be either the full domain (with all dimensions) or a domain
+     * with reduced dimensions.</p>
+     *
      * @param  domain  desired grid extent and resolution, or {@code null} for reading the whole domain.
      */
     public void setSelection(final GridGeometry domain) {
@@ -128,15 +147,79 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * Returns the desired grid extent and resolution.
      * This is the value set by the last call to {@link #setSelection(GridGeometry)}.
      *
-     * <div class="note"><b>Note on terminology:</b>
-     * "selection" is the generic term used in queries for designating a subset of feature instances.
+     * <h4>Note on terminology</h4>
+     * "Selection" is the generic term used in queries for designating a subset of feature instances.
      * In a grid coverage, feature instances are cells or pixels.
-     * So this concept maps to the <cite>coverage domain</cite>.</div>
+     * So this concept maps to the <cite>coverage domain</cite>.
      *
      * @return desired grid extent and resolution, or {@code null} for reading the whole domain.
      */
     public GridGeometry getSelection() {
         return domain;
+    }
+
+    /**
+     * Requests dimensionality reduction by selecting or removing specified domain axes.
+     * The axes to keep or remove are specified by a {@link DimensionalityReduction} object,
+     * which works with indices of <em>grid extent</em> axes. It may be the same indices
+     * than the indices of the CRS axes which will be kept or removed, but not necessarily.
+     * It is the {@link Function} responsibility to map CRS dimensions to grid dimensions if desired.
+     *
+     * <p><b>Example 1:</b> automatically reduce a grid coverage dimensionality
+     * by removing all grid axes with an extent size of 1.</p>
+     *
+     * {@snippet lang="java" :
+     *     query.setAxisSelection(DimensionalityReduction::reduce);
+     *     }
+     *
+     * <p><b>Example 2:</b> take a two-dimensional slice by keeping the two first axes
+     * and selecting the median grid coordinate (0.5 ratio) in all other dimensions.</p>
+     *
+     * {@snippet lang="java" :
+     *     query.setAxisSelection((domain) -> DimensionalityReduction.select2D(domain).withSliceByRatio(0.5));
+     *     }
+     *
+     * @param  reduction  the function to apply for obtaining a dimensionality reduction from a grid coverage,
+     *         or {@code null} if none.
+     *
+     * @see GridCoverageProcessor#selectGridDimensions(GridCoverage, int...)
+     * @see GridCoverageProcessor#removeGridDimensions(GridCoverage, int...)
+     * @see GridCoverageProcessor#reduceDimensionality(GridCoverage)
+     *
+     * @since 1.4
+     */
+    public void setAxisSelection(final Function<GridGeometry, DimensionalityReduction> reduction) {
+        this.reduction = reduction;
+    }
+
+    /**
+     * Returns the dimensionality reduction to apply on coverage domain.
+     * This is the value specified in the last call to {@link #setAxisSelection(Function)}.
+     *
+     * @return the function to apply for obtaining a dimensionality reduction from a grid coverage,
+     *         or {@code null} if none.
+     *
+     * @since 1.4
+     */
+    public Function<GridGeometry, DimensionalityReduction> getAxisSelection() {
+        return reduction;
+    }
+
+    /**
+     * Returns the dimensionality reduction to apply on the specified resource.
+     *
+     * @param  source  the resource for which to create a subset.
+     * @return dimensionality reduction to apply, or {@code null} if none.
+     * @throws DataStoreException if an error occurred while fetching grid geometry.
+     * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
+     * @throws IllegalGridGeometryException if the dimensionality reduction cannot be applied on the grid geometry.
+     */
+    final DimensionalityReduction getAxisSelection(final GridCoverageResource source) throws DataStoreException {
+        if (reduction != null) {
+            DimensionalityReduction r = reduction.apply(source.getGridGeometry());
+            if (!r.isIdentity()) return r;
+        }
+        return null;
     }
 
     /**
@@ -181,10 +264,10 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * Returns the indices of samples dimensions to read, or {@code null} if there is no filtering on range.
      * If non-null, the returned array shall never be empty.
      *
-     * <div class="note"><b>Note on terminology:</b>
-     * "projection" (not to be confused with map projection) is the generic term used in queries
+     * <h4>Note on terminology</h4>
+     * "Projection" (not to be confused with map projection) is the generic term used in queries
      * for designating a subset of feature properties retained in each feature instances.
-     * In a coverage, this concept maps to the <cite>coverage range</cite>.</div>
+     * In a coverage, this concept maps to the <cite>coverage range</cite>.
      *
      * @return 0-based indices of sample dimensions to read, or {@code null} for reading them all.
      */
@@ -193,21 +276,24 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
-     * Converts the sample dimension names to sample dimension indices.
+     * Returns the indices of sample dimensions to read, converting names to indices if needed.
      * This conversion depends on the resource on which the query will be applied.
      *
-     * @param  source  the resource for which to to the conversion.
+     * @param  source  the resource for which to create a subset.
+     * @return 0-based indices of sample dimensions to read. Caller shall not modify.
+     * @throws DataStoreException if an error occurred while fetching sample dimensions.
      */
-    private void namesToIndices(final GridCoverageResource source) throws DataStoreException {
-        if (rangeNames != null) {
+    final int[] getProjection(final GridCoverageResource source) throws DataStoreException {
+        int[] sourceRange = range;
+        if (sourceRange == null && rangeNames != null) {
             final List<SampleDimension> sd = source.getSampleDimensions();
             final int numBands = sd.size();
-            range = new int[rangeNames.length];
+            sourceRange = new int[rangeNames.length];
 next:       for (int i=0; i<rangeNames.length; i++) {
                 final String name = rangeNames[i];
                 for (int j=0; j<numBands; j++) {
                     if (name.equals(sd.get(j).getName().toString())) {
-                        range[i] = j;
+                        sourceRange[i] = j;
                         continue next;
                     }
                 }
@@ -215,8 +301,8 @@ next:       for (int i=0; i<rangeNames.length; i++) {
                             .orElseGet(() -> Vocabulary.formatInternational(Vocabulary.Keys.Unnamed));
                 throw new UnsupportedQueryException(Errors.format(Errors.Keys.PropertyNotFound_2, id, name));
             }
-            rangeNames = null;
         }
+        return sourceRange;
     }
 
     /**
@@ -262,7 +348,8 @@ next:       for (int i=0; i<rangeNames.length; i++) {
      *
      * @param  source  the coverage resource to filter.
      * @return a view over the given coverage resource containing only the given domain and range.
-     * @throws DataStoreException if an error occurred during creation of the subset.
+     * @throws DataStoreException if an error occurred while fetching information from the source.
+     * @throws IllegalGridGeometryException if a dimensionality reduction was requested but cannot be applied.
      *
      * @see GridCoverageResource#subset(CoverageQuerty)
      * @see FeatureQuery#execute(FeatureSet)
@@ -271,9 +358,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
      */
     protected GridCoverageResource execute(final GridCoverageResource source) throws DataStoreException {
         ArgumentChecks.ensureNonNull("source", source);
-        final CoverageQuery query = clone();
-        query.namesToIndices(source);
-        return new CoverageSubset(source, query);
+        return new CoverageSubset(null, source, this);
     }
 
     /**

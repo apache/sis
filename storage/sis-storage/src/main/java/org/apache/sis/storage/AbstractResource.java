@@ -54,7 +54,7 @@ import org.apache.sis.xml.NilReason;
  * Synchronization, when needed, uses {@link #getSynchronizationLock()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public abstract class AbstractResource implements Resource {
@@ -72,6 +72,24 @@ public abstract class AbstractResource implements Resource {
      * @see #getMetadata()
      */
     private volatile Metadata metadata;
+
+    /**
+     * Creates a new resource, potentially as a child of another resource.
+     * The parent resource is typically, but not necessarily, an {@link Aggregate}.
+     *
+     * @param  parent  the parent resource, or {@code null} if none.
+     *
+     * @since 1.4
+     */
+    protected AbstractResource(final Resource parent) {
+        StoreListeners parentListeners = null;
+        if (parent instanceof AbstractResource) {
+            parentListeners = ((AbstractResource) parent).listeners;
+        } else if (parent instanceof DataStore) {
+            parentListeners = ((DataStore) parent).listeners;
+        }
+        listeners = new StoreListeners(parentListeners, this);
+    }
 
     /**
      * Creates a new resource which can send notifications to the given set of listeners.

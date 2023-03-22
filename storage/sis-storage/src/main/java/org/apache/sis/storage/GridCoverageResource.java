@@ -40,7 +40,7 @@ import org.apache.sis.util.ArraysExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 public interface GridCoverageResource extends DataSet {
@@ -171,8 +171,10 @@ public interface GridCoverageResource extends DataSet {
      */
     default GridCoverageResource subset(final Query query) throws UnsupportedQueryException, DataStoreException {
         ArgumentChecks.ensureNonNull("query", query);
-        if (query instanceof CoverageQuery) {
+        if (query instanceof CoverageQuery) try {
             return ((CoverageQuery) query).execute(this);
+        } catch (RuntimeException e) {
+            throw new UnsupportedQueryException(e);
         } else {
             throw new UnsupportedQueryException();
         }

@@ -17,10 +17,12 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -34,11 +36,11 @@ import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArraysExt;
-
-import static org.apache.sis.util.ArgumentChecks.*;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -65,7 +67,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * Serialization should be used only for short term storage or RMI between applications running the same SIS version.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see MathTransforms#passThrough(int, MathTransform, int)
  * @see MathTransforms#compound(MathTransform...)
@@ -121,8 +123,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                                    final MathTransform subTransform,
                                    final int numTrailingCoordinates)
     {
-        ensurePositive("firstAffectedCoordinate", firstAffectedCoordinate);
-        ensurePositive("numTrailingCoordinates",  numTrailingCoordinates);
+        ArgumentChecks.ensurePositive("firstAffectedCoordinate", firstAffectedCoordinate);
+        ArgumentChecks.ensurePositive("numTrailingCoordinates",  numTrailingCoordinates);
         if (subTransform instanceof PassThroughTransform) {
             final PassThroughTransform passThrough = (PassThroughTransform) subTransform;
             this.firstAffectedCoordinate = passThrough.firstAffectedCoordinate + firstAffectedCoordinate;
@@ -148,7 +150,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * {@code dimTarget - numTrailingCoordinates} exclusive.
      *
      * @param  firstAffectedCoordinate  index of the first affected coordinate.
-     * @param  subTransform           the sub-transform to apply on modified coordinates.
+     * @param  subTransform             the sub-transform to apply on modified coordinates.
      * @param  numTrailingCoordinates   number of trailing coordinates to pass through.
      * @return a pass-through transform, not necessarily a {@code PassThroughTransform} instance.
      */
@@ -160,8 +162,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         /*
          * Above checks tried to avoid the creation of PassThroughTransform instance. At this point we cannot
          * avoid it anymore. But maybe we can merge two PassThroughTransforms into a single one. It may happen
-         * if 'subTransform' is a concatenation of a linear transform + pass through transform (in any order).
-         * In such case, moving the linear transform outside 'subTransform' enable above-cited merge.
+         * if `subTransform` is a concatenation of a linear transform + pass through transform (in any order).
+         * In such case, moving the linear transform outside `subTransform` enable above-cited merge.
          */
         if (subTransform instanceof ConcatenatedTransform) {
             MathTransform transform1 = ((ConcatenatedTransform) subTransform).transform1;
@@ -211,6 +213,75 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
+     * Creates a transform which passes through a subset of coordinates to another transform.
+     * The list of modified coordinates is specified by a {@link BitSet} argument where each
+     * bit set to 1 identifies the dimension of a modified coordinate.
+     * The array of modified coordinates can be expanded as below:
+     *
+     * {@snippet lang="java" :
+     *     int[] modifiedCoordinates = bitset.stream().toArray();
+     *     }
+     *
+     * <h4>Limitation</h4>
+     * If the modified coordinates are not at consecutive positions in source coordinate tuples,
+     * then the current implementation of this method adds the following restrictions:
+     *
+     * <ul>
+     *   <li>The sub-transform must have an number of target dimensions equal to the number of source dimensions.</li>
+     *   <li>The sub-transform must be {@linkplain TransformSeparator separable}.</li>
+     * </ul>
+     *
+     * Above restrictions are relaxed if all modified coordinates are at consecutive positions.
+     *
+     * @param  modifiedCoordinates  positions in a source coordinate tuple of the coordinates affected by the transform.
+     * @param  subTransform         the sub-transform to apply on modified coordinates.
+     * @param  resultDim            total number of source dimensions of the pass-through transform to return.
+     * @param  factory              the factory to use for creating transforms, or {@code null} for the default.
+     * @return a pass-through transform for the given set of modified coordinates.
+     * @throws MismatchedDimensionException if the bit set cardinality is not equal
+     *         to the number of source dimensions in {@code subTransform}.
+     * @throws IllegalArgumentException if the index of a modified coordinates is out of bounds.
+     * @throws FactoryException if an error occurred while creating a transform step.
+     *
+     * @see MathTransforms#passThrough(int[], MathTransform, int)
+     *
+     * @since 1.4
+     */
+    public static MathTransform create(final BitSet modifiedCoordinates, final MathTransform subTransform, final int resultDim,
+                                       final MathTransformFactory factory) throws FactoryException
+    {
+        ArgumentChecks.ensurePositive("resultDim", resultDim);
+        final int subDim = subTransform.getSourceDimensions();
+        final int actual = modifiedCoordinates.cardinality();
+        if (actual != subDim) {
+            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
+                                                   "modifiedCoordinates", subDim, actual));
+        }
+        final var sep = new TransformSeparator(subTransform, factory);
+        MathTransform result = MathTransforms.identity(resultDim);
+        int lower, upper = 0, subLower = 0;
+        while ((lower = modifiedCoordinates.nextSetBit(upper)) >= 0) {
+            upper = modifiedCoordinates.nextClearBit(lower);
+            final int subUpper = subLower + (upper - lower);
+            MathTransform step;
+            if (subLower == 0 && subUpper == subDim) {
+                step = subTransform;
+            } else {
+                // Restriction below apply only if the `subTransform` can not be used as a whole.
+                ArgumentChecks.ensureDimensionsMatch("subTransform", subDim, subDim, subTransform);
+                sep.addSourceDimensionRange(subLower, subUpper);
+                sep.addTargetDimensionRange(subLower, subUpper);
+                step = sep.separate();
+            }
+            step   = sep.factory.passThrough(lower, step, resultDim - upper);
+            result = sep.factory.concatenate(result, step);
+            sep.clear();
+            subLower = subUpper;
+        }
+        return result;
+    }
+
+    /**
      * Gets the dimension of input points. This the source dimension of the
      * {@linkplain #subTransform sub-transform} plus the number of pass-through dimensions.
      *
@@ -235,13 +306,6 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Returns the ordered sequence of positive integers defining the positions in a source
      * coordinate tuple of the coordinates affected by this pass-through operation.
-     *
-     * <div class="note"><b>API note:</b> this method is final for now because most of Apache SIS code do
-     * not use the {@code modifiedCoordinates} array. Instead, SIS uses the {@code firstAffectedCoordinate}
-     * and {@code numTrailingCoordinates} information provided to the constructor. Consequently, overriding
-     * this method may be misleading since it would be ignored by SIS. We do not want to make the "really
-     * used" fields public in order to keep the flexibility to replace them by a {@code modifiedCoordinates}
-     * array in a future SIS version.</div>
      *
      * @return Zero-based indices of the modified source coordinates.
      *
@@ -324,11 +388,11 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int dimSource      = subDimSource + numPassThrough;
         final int dimTarget      = subDimTarget + numPassThrough;
         /*
-         * Copy the pass-through coordinates (both before and after the sub-transform) into the 'pasPts'
+         * Copy the pass-through coordinates (both before and after the sub-transform) into the `pasPts`
          * temporary array. This will allow us to compact the coordinates to give to the sub-transform,
-         * so we can process them in a single 'transform' method call. We do that also for avoiding tricky
+         * so we can process them in a single `transform` method call. We do that also for avoiding tricky
          * issues with overlapping regions, because coordinate tuples are not processed automically the
-         * way 'IterationStrategy' expects.
+         * way `IterationStrategy` expects.
          */
         final Object pasPts;
         {
@@ -400,8 +464,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         }
         /*
          * Copies the transformed coordinates to their final location, inserting pass-through
-         * coordinates between them in the process. Note that we avoided to modify 'dstOff'
-         * and 'numPts' before this point, but now we are free to do so since this is the last
+         * coordinates between them in the process. Note that we avoided to modify `dstOff`
+         * and `numPts` before this point, but now we are free to do so since this is the last
          * step.
          */
         int pasOff = numPts * numPassThrough;
@@ -501,7 +565,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     public Matrix derivative(final DirectPosition point) throws TransformException {
         final int nSkipped = firstAffectedCoordinate + numTrailingCoordinates;
         final int transDim = subTransform.getSourceDimensions();
-        ensureDimensionMatches("point", transDim + nSkipped, point);
+        ArgumentChecks.ensureDimensionMatches("point", transDim + nSkipped, point);
         final GeneralDirectPosition subPoint = new GeneralDirectPosition(transDim);
         for (int i=0; i<transDim; i++) {
             subPoint.coordinates[i] = point.getOrdinate(i + firstAffectedCoordinate);
@@ -736,9 +800,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                             return other;                                 // Shortcut avoiding creation of new MathTransforms.
                         }
                         /*
-                         * We enter in this block if some dimensions can be discarded. We want to discard them before the
-                         * PassThroughTransform instead of after. The matrix for that purpose will be computed later.
-                         * Before that, the loop below modifies a copy of the 'other' matrix as if those dimensions were
+                         * We enter in this block if some dimensions can be discarded. We want to discard them before
+                         * the PassThroughTransform instead of after. The matrix for that purpose will be computed later.
+                         * Before that, the loop below modifies a copy of the `other` matrix as if those dimensions were
                          * already removed.
                          */
                         MatrixSIS reduced = MatrixSIS.castOrCopy(m);
@@ -751,17 +815,17 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                             columnsToRemove >>>= (upper - lower);
                         } while (columnsToRemove != 0);
                         /*
-                         * Expands the 'retainedDimensions' bitmask into a list of indices of dimensions to keep.   However
+                         * Expands the `retainedDimensions` bitmask into a list of indices of dimensions to keep.   However
                          * those indices are for dimensions to keep after the PassThroughTransform.  Because we rather want
                          * indices for dimensions to keep before the PassThroughTransform, we need to adjust for difference
-                         * in number of dimensions. This change is represented by the 'change' integer computed above.
+                         * in number of dimensions. This change is represented by the `change` integer computed above.
                          * We apply two strategies:
                          *
-                         *    1) If we keep the sub-transform, then the loop while surely sees the 'firstAffectedCoordinate'
+                         *    1) If we keep the sub-transform, then the loop while surely sees the `firstAffectedCoordinate`
                          *       dimension since we ensured that we keep all sub-transform dimensions. When it happens, we
                          *       add or remove bits at that point for the dimensionality changes.
                          *
-                         *    2) If we do not keep the sub-transform, then code inside 'if (dim == firstAffectedCoordinate)'
+                         *    2) If we do not keep the sub-transform, then code inside `if (dim == firstAffectedCoordinate)`
                          *       should not have been executed. Instead, we will adjust the indices after the loop.
                          */
                         final long leadPassThroughMask = maskLowBits(firstAffectedCoordinate);
@@ -793,7 +857,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
                          * Concatenate:
                          *   1) An affine transform discarding some dimensions (no other operation).
                          *   2) The passthrough transform with less input and output dimensions.
-                         *   3) The 'other' transform with less input dimensions.
+                         *   3) The `other` transform with less input dimensions.
                          */
                         MathTransform tr = proxy.linear(Matrices.createDimensionSelect(dimension + change, indices));
                         if (keepSubTransform) {
@@ -808,7 +872,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         /*
          * Do not invoke super.tryConcatenate(applyOtherFirst, other, factory); we do not want to test if this transform
          * is the inverse of the other transform as it is costly and unnecessary.  If it was the case, the concatenation
-         * of 'this.subTransform' with 'other.subTransform' done at the beginning of this method would have produced the
+         * of `this.subTransform` with `other.subTransform` done at the beginning of this method would have produced the
          * identity transform already.
          */
         return null;

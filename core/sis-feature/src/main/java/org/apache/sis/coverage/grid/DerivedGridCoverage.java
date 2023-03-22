@@ -29,10 +29,10 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * A grid coverage which is derived from a single source coverage,
- * The default implementations of methods in this class assume that this derived coverage
- * uses the same sample dimensions than the source coverage. If it is not the case, then
- * some methods may need to be overridden.
+ * A grid coverage which is derived from a single source coverage.
+ * The default implementations of methods in this class assume that this
+ * derived coverage uses the same sample dimensions than the source coverage.
+ * If it is not the case, then some methods may need to be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -75,7 +75,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
      *
      * @see GridCoverageProcessor.Optimization#REPLACE_SOURCE
      */
-    boolean IsNotRepleacable() {
+    boolean isNotRepleacable() {
         return false;
     }
 
@@ -112,6 +112,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
      * @return a tree representation of the specified elements.
      */
     @Debug
+    @Override
     public TreeTable toTree(final Locale locale, final int bitmask) {
         final TreeTable tree = super.toTree(locale, bitmask);
         final TreeTable.Node branch = tree.getRoot().newChild();

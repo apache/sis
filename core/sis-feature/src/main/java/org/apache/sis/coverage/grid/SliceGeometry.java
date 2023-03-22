@@ -48,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  * That function is invoked (indirectly) by {@link org.apache.sis.internal.coverage.j2d.TiledImage#getProperty(String)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
@@ -67,6 +67,15 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
      * This is usually the array computed by {@link GridExtent#getSubspaceDimensions(int)}.
      */
     private final int[] gridDimensions;
+
+    /**
+     * Dimensions of the slices in the CRS space, or {@code null} if not yet computed.
+     * This is computed as a side-product of {@link #reduce(GridExtent, int)} method call.
+     * This is often the same dimensions than {@link #gridDimensions}, but not necessarily.
+     *
+     * @see #getTargetDimensions()
+     */
+    private int[] crsDimensions;
 
     /**
      * Factory to use for creating new transforms, or {@code null} for default.
@@ -143,7 +152,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
          * elements if `TransformSeparator` detected that dropping a grid dimension does not force us to drop
          * the corresponding CRS dimension, for example because it has a constant value.
          */
-        int[] crsDimensions = gridDimensions;
+        crsDimensions = gridDimensions;
         if (gridToCRS != null) {
             TransformSeparator sep = new TransformSeparator(gridToCRS, factory);
             sep.addSourceDimensions(gridDimensions);
@@ -357,6 +366,16 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             crsDimensions[i] = j;
             selected &= ~(1L << j);
         }
+        return crsDimensions;
+    }
+
+    /**
+     * Returns the dimensions in the slice in the CRS space.
+     * This is a side-product of {@link #reduce(GridExtent, int)}.
+     * Callers should not modify the returned array since it is not cloned.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final int[] getTargetDimensions() {
         return crsDimensions;
     }
 

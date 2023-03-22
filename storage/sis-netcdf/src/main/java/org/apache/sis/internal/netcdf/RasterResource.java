@@ -34,6 +34,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.storage.ResourceOnFileSystem;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Strings;
+import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
@@ -55,7 +56,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.RangeArgument;
 import org.apache.sis.internal.storage.StoreResource;
 
 

@@ -29,13 +29,16 @@ import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.RegionOfInterest;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.coverage.MultiSourcesArgument;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -51,6 +54,7 @@ import org.apache.sis.measure.NumberRange;
  * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.4
  *
  * @see org.apache.sis.image.ImageProcessor
@@ -446,7 +450,7 @@ public class GridCoverageProcessor implements Cloneable {
                 return source;
             } else if (allowSourceReplacement && source instanceof DerivedGridCoverage) {
                 final DerivedGridCoverage derived = (DerivedGridCoverage) source;
-                if (derived.IsNotRepleacable()) break;
+                if (derived.isNotRepleacable()) break;
                 source = derived.source;
             } else {
                 break;
@@ -501,6 +505,180 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
+     * Automatically reduces a grid coverage dimensionality by removing all grid axes with an extent size of 1.
+     * Axes in the reduced grid coverage will be in the same order than in the source coverage.
+     *
+     * @param  source  the coverage to reduce to a lower number of dimensions.
+     * @return the reduced grid coverage, or {@code source} if no grid dimensions can be removed.
+     *
+     * @see DimensionalityReduction#reduce(GridGeometry)
+     *
+     * @since 1.4
+     */
+    public GridCoverage reduceDimensionality(final GridCoverage source) {
+        return DimensionalityReduction.reduce(source.getGridGeometry()).apply(source);
+    }
+
+    /**
+     * Creates a coverage trimmed from the specified grid dimensions.
+     * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
+     * The dimensions to remove are specified as indices of <em>grid extent</em> axes.
+     * It may be the same indices than the indices of the CRS axes which will be removed,
+     * but not necessarily.
+     *
+     * <h4>Constraints</h4>
+     * If the source coverage contains dimensions that are not
+     * {@linkplain org.apache.sis.referencing.operation.transform.TransformSeparator separable}
+     * and if only a subset of those dimensions are specified for removal,
+     * then this method will throw an {@link IllegalGridGeometryException}.
+     *
+     * <p>For each dimension that is removed,
+     * the {@linkplain GridExtent#getSize(int) size} of the grid extent must be 1 cell.
+     * If this condition does not hold, then this method will throw a {@link SubspaceNotSpecifiedException}.
+     * If desired, this restriction can be relaxed by direct use of {@link DimensionalityReduction} as below,
+     * where (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) are grid coordinates of a point
+     * in the desired slice:</p>
+     *
+     * {@snippet lang="java" :
+     *     var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToPass);
+     *     reduction = reduction.withSlicePoint(x, y, z, t);
+     *     GridCoverage output = reduction.apply(source);
+     *     }
+     *
+     * Alternatively the {@code withSlicePoint(…)} call can be omitted if the caller knows that the source
+     * coverage can handle {@linkplain DimensionalityReduction#reverse(GridExtent) ambiguous grid extents}.
+     *
+     * @param  source            the coverage to reduce to a lower number of dimensions.
+     * @param  gridAxesToRemove  indices of each grid dimension to strip from result. Duplicated values are ignored.
+     * @return the reduced grid coverage, or {@code source} if no grid dimensions was specified.
+     * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
+     * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
+     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     *
+     * @see DimensionalityReduction#remove(GridGeometry, int...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage removeGridDimensions(final GridCoverage source, final int... gridAxesToRemove) {
+        var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToRemove);
+        reduction.ensureIsSlice();
+        return reduction.apply(source);
+    }
+
+    /**
+     * Creates a coverage containing only the specified grid dimensions.
+     * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
+     * The dimensions to keep are specified as indices of <em>grid extent</em> axes.
+     * It may be the same indices than the indices of the CRS axes which will pass through,
+     * but not necessarily.
+     *
+     * <p>The axis order in the returned coverage is always the same as in the given {@code source} coverage,
+     * whatever the order in which axes are specified as input in the {@code gridAxesToPass} array.
+     * Duplicated values in the array are also ignored.</p>
+     *
+     * <h4>Constraints</h4>
+     * If the source coverage contains dimensions that are not
+     * {@linkplain org.apache.sis.referencing.operation.transform.TransformSeparator separable}
+     * and if only a subset of those dimensions are selected in the {@code gridAxesToPass} array,
+     * then this method will throw an {@link IllegalGridGeometryException}.
+     *
+     * <p>For each dimension that is not passed to the output grid coverage,
+     * the {@linkplain GridExtent#getSize(int) size} of the grid extent must be 1 cell.
+     * If this condition does not hold, then this method will throw a {@link SubspaceNotSpecifiedException}.
+     * If desired, this restriction can be relaxed by direct use of {@link DimensionalityReduction} as below,
+     * where (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) are grid coordinates of a point
+     * in the desired slice:</p>
+     *
+     * {@snippet lang="java" :
+     *     var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
+     *     reduction = reduction.withSlicePoint(x, y, z, t);
+     *     GridCoverage output = reduction.apply(source);
+     *     }
+     *
+     * Alternatively the {@code withSlicePoint(…)} call can be omitted if the caller knows that the source
+     * coverage can handle {@linkplain DimensionalityReduction#reverse(GridExtent) ambiguous grid extents}.
+     *
+     * @param  source          the coverage to reduce to a lower number of dimensions.
+     * @param  gridAxesToPass  indices of each grid dimension to maintain in result. Order and duplicated values are ignored.
+     * @return the reduced grid coverage, or {@code source} if all grid dimensions where specified.
+     * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
+     * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
+     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     *
+     * @see DimensionalityReduction#select(GridGeometry, int...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage selectGridDimensions(final GridCoverage source, final int... gridAxesToPass) {
+        var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
+        reduction.ensureIsSlice();
+        return reduction.apply(source);
+    }
+
+    /**
+     * Aggregates in a single coverage the ranges of all specified coverages, in order.
+     * The {@linkplain GridCoverage#getSampleDimensions() list of sample dimensions} of
+     * the aggregated coverage will be the concatenation of the lists of all sources.
+     *
+     * <h4>Restrictions</h4>
+     * All coverages shall have compatible domain, defined as below:
+     *
+     * <ul>
+     *   <li>Same CRS.</li>
+     *   <li>Same <cite>grid to CRS</cite> transform except for translation terms.</li>
+     *   <li>Translation terms that differ only by an integer amount of grid cells.</li>
+     * </ul>
+     *
+     * The intersection of the domain of all coverages shall be non-empty,
+     * and all coverages shall use the same data type in their rendered image.
+     *
+     * @param  sources  coverages whose ranges shall be aggregated, in order. At least one coverage must be provided.
+     * @return the aggregated coverage, or {@code sources[0]} returned directly if only one coverage was supplied.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     *
+     * @see #aggregateRanges(GridCoverage[], int[][], ColorModel)
+     * @see ImageProcessor#aggregateBands(RenderedImage...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage aggregateRanges(final GridCoverage... sources) {
+        return aggregateRanges(sources, null, null);
+    }
+
+    /**
+     * Aggregates in a single coverage the specified bands of a sequence of source coverages, in order.
+     * This method performs the same work than {@link #aggregateRanges(GridCoverage...)},
+     * but with the possibility to specify the bands to retain in each source coverage.
+     * The {@code bandsPerSource} argument specifies the bands to select in each source coverage.
+     * That array can be {@code null} for selecting all bands in all source coverages,
+     * or may contain {@code null} elements for selecting all bands of the corresponding coverage.
+     * An empty array element (i.e. zero band to select) discards the corresponding source coverage.
+     * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
+     *
+     * @param  sources  coverages whose bands shall be aggregated, in order. At least one coverage must be provided.
+     * @param  bandsPerSource  bands to use for each source coverage, in order.
+     *                  May be {@code null} or may contain {@code null} elements.
+     * @param  colors   the color model to apply on aggregated image, or {@code null} for inferring
+     *                  a default color model using aggregated number of bands and sample data type.
+     * @return the aggregated coverage, or one of the sources if it can be used directly.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
+     *
+     * @see ImageProcessor#aggregateBands(RenderedImage[], int[][], ColorModel)
+     *
+     * @since 1.4
+     */
+    public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource, ColorModel colors) {
+        final var aggregate = new MultiSourcesArgument<>(sources, bandsPerSource);
+        aggregate.identityAsNull();
+        aggregate.validate(GridCoverage::getSampleDimensions);
+        if (aggregate.isIdentity()) {
+            return aggregate.sources()[0];
+        }
+        return new BandAggregateGridCoverage(aggregate, colors, imageProcessor);
+    }
+
+    /**
      * Invoked when an ignorable exception occurred.
      *
      * @param  caller  the method where the exception occurred.
@@ -521,7 +699,15 @@ public class GridCoverageProcessor implements Cloneable {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final GridCoverageProcessor other = (GridCoverageProcessor) object;
-            return imageProcessor.equals(other.imageProcessor);
+            if (imageProcessor.equals(other.imageProcessor)) {
+                final EnumSet<?> optimizations;
+                synchronized (this) {
+                    optimizations = (EnumSet<?>) this.optimizations.clone();
+                }
+                synchronized (other) {
+                    return optimizations.equals(other.optimizations);
+                }
+            }
         }
         return false;
     }
@@ -532,8 +718,8 @@ public class GridCoverageProcessor implements Cloneable {
      * @return a hash code value for this processor.
      */
     @Override
-    public int hashCode() {
-        return Objects.hash(getClass(), imageProcessor);
+    public synchronized int hashCode() {
+        return Objects.hash(getClass(), imageProcessor, optimizations);
     }
 
     /**

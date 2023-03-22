@@ -141,6 +141,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The same array may be shared by many {@code GridExtent} instances.
      *
      * @see #getAxisType(int)
+     * @see #getAxisTypes()
      */
     private final DimensionNameType[] types;
 
@@ -148,6 +149,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * Minimum and maximum grid coordinates. The first half contains minimum coordinates (inclusive),
      * while the last half contains maximum coordinates (<strong>inclusive</strong>). Note that the
      * later inclusiveness is the opposite of Java2D usage but conforms to ISO specification.
+     *
+     * @see #getLow(int)
+     * @see #getHigh(int)
+     * @see #getCoordinates()
      */
     private final long[] coordinates;
 
@@ -784,6 +789,33 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     }
 
     /**
+     * Returns a grid coordinate at the given relative position between <var>low</var> and <var>high</var>.
+     * The relative position is specified by a ratio between 0 and 1 where
+     * 0   maps to {@linkplain #getLow(int) low} grid coordinates,
+     * 1   maps to {@linkplain #getHigh(int) high grid coordinates} and
+     * 0.5 maps to {@linkplain #getMedian(int) median grid coordinates}.
+     * Ratio values outside the [0 … 1] range result in extrapolations.
+     *
+     * @param  index  the dimension for which to obtain the interpolated coordinate.
+     * @param  ratio  interpolation ratio (0 for low, 0.5 for median, 1 for high coordinate).
+     * @return the interpolated coordinate value in the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() grid dimension}.
+     * @throws ArithmeticException if the extrapolated coordinate cannot be represented as a 64 bits integer.
+     *
+     * @since 1.4
+     */
+    public long getRelative(final int index, final double ratio) {
+        if (ratio == 0.5) {
+            return getMedian(index);        // Special case for avoiding rounding errors.
+        } else if (ratio == 1) {
+            return getHigh(index);          // Special case for avoiding rounding errors.
+        } else {
+            return Math.addExact(getLow(index), Math.round(getSize(index, true) * ratio));
+        }
+    }
+
+    /**
      * Returns the number of integer grid coordinates along the specified dimension.
      * This is equal to {@code getHigh(dimension) - getLow(dimension) + 1}.
      *
@@ -822,6 +854,17 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             return 0x1P64;                          // Unsigned integer overflow. Result is 2^64.
         }
         return Numerics.toUnsignedDouble(size);
+    }
+
+    /**
+     * Returns the low and high coordinates packaged in a single array.
+     * The length of this array is twice the number of dimensions.
+     * Changes in the returned array do not modify this extent.
+     *
+     * @return an array with low coordinates first, followed by high coordinates.
+     */
+    final long[] getCoordinates() {
+        return coordinates.clone();
     }
 
     /**
@@ -905,10 +948,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * {@snippet lang="java" :
      *     int[]  subDimensions = slice4D.getExtent().getSubspaceDimensions(2);
-     *     GridGeometry slice2D = slice4D.reduce(subDimensions);
+     *     GridGeometry slice2D = slice4D.selectDimensions(subDimensions);
      *     }
      *
-     * Note that in this particular example, it would have been more efficient to execute {@code grid.reduce(1,2)} directly.
+     * Note that in this example, it would have been more efficient to execute {@code grid.selectDimensions(1,2)} directly.
      * This {@code getSubspaceDimensions(int)} method is more useful for inferring a {@code slice2D} from a {@code slice4D}
      * which has been created elsewhere, or when we do not really want the {@code slice2D} but only its dimension indices.
      *
@@ -1280,6 +1323,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @see #getSubspaceDimensions(int)
      * @see GridGeometry#selectDimensions(int...)
+     * @see DimensionalityReduction#apply(GridExtent)
      *
      * @since 1.3
      */
@@ -1555,10 +1599,12 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @param  slicePoint        a pre-allocated direct position to be overwritten by this method.
      * @param  sliceRatio        the ratio to apply on all grid dimensions except the ones to keep.
      * @param  dimensionsToKeep  the grid dimension to keep unchanged.
+     *
+     * @see #getRelative(int, double)
      */
     final GridExtent sliceByRatio(final DirectPosition slicePoint, final double sliceRatio, final int[] dimensionsToKeep) {
         for (int i=slicePoint.getDimension(); --i >= 0;) {
-            slicePoint.setOrdinate(i, sliceRatio * getSize(i, true) + getLow(i));       // TODO: use Math.fma
+            slicePoint.setOrdinate(i, Math.fma(sliceRatio, getSize(i, true), getLow(i)));
         }
         for (int i=0; i<dimensionsToKeep.length; i++) {
             slicePoint.setOrdinate(dimensionsToKeep[i], Double.NaN);
@@ -1762,24 +1808,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      */
     private GridExtent combine(final GridExtent other, final boolean union) {
+        ensureSameAxes(other, "other");
         final int n = coordinates.length;
         final int m = n >>> 1;
-        if (n != other.coordinates.length) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "other", m, other.getDimension()));
-        }
-        // First condition below is a fast check for a common case.
-        if (types != other.types && types != null && other.types != null) {
-            for (int i=0; i<m; i++) {
-                final DimensionNameType t1 = types[i];
-                if (t1 != null) {
-                    final DimensionNameType t2 = other.types[i];
-                    if (t2 != null && !t1.equals(t2)) {
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedAxes_3, i, t1, t2));
-                    }
-                }
-            }
-        }
         final long[] clipped = new long[n];
         int i = 0;
         while (i < m) {clipped[i] = extremum(coordinates[i], other.coordinates[i], !union); i++;}
@@ -1801,6 +1832,33 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     private static long extremum(final long a, final long b, final boolean max) {
         return max ? Math.max(a, b) : Math.min(a, b);
+    }
+
+    /**
+     * Ensures that the given grid extent has the same number of dimensions and the same axes than this grid extent.
+     * Only axis names that are specified in both extents are compared. Unspecified names are interpreted as unknown,
+     * which are conservatively interpreted as a match.
+     *
+     * @param  other  grid extent for which to compare the number of dimensions and the axis names.
+     * @param  param  name of the {@code other} parameter, used for formatting the message if an exception is thrown.
+     * @throws IllegalArgumentException if the number of dimensions or at least one axis name does not match.
+     */
+    final void ensureSameAxes(final GridExtent other, final String param) {
+        final int n = coordinates.length;
+        final int m = n >>> 1;
+        if (n != other.coordinates.length) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, param, m, other.getDimension()));
+        }
+        // First condition below is a fast check for a common case.
+        if (types != other.types && types != null && other.types != null) {
+            for (int i=0; i<m; i++) {
+                final DimensionNameType t1, t2;
+                if ((t1 = types[i]) != null && (t2 = other.types[i]) != null && !t1.equals(t2)) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedAxes_3, i, t1, t2));
+                }
+            }
+        }
     }
 
     /**

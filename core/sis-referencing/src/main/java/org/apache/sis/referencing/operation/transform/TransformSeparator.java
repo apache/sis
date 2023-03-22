@@ -94,7 +94,7 @@ public class TransformSeparator {
     /**
      * The factory to use for creating new math transforms.
      */
-    private final MathTransformsOrFactory factory;
+    final MathTransformsOrFactory factory;
 
     /**
      * Whether {@link #separate()} is allowed to add new dimensions in {@link #sourceDimensions}
@@ -191,14 +191,29 @@ public class TransformSeparator {
          * We verify after the copy as a paranoiac safety against concurrent changes.
          */
         for (int i=offset; i<sequence.length; i++) {
-            final int value = sequence[i];
-            if (value <= previous || value >= max) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
-                        Strings.toIndexed("dimensions", i - offset), previous + 1, max - 1, value));
-            }
-            previous = value;
+            String message = validate("dimensions", i - offset, previous, max, previous = sequence[i]);
+            if (message != null) throw new IllegalArgumentException(message);
         }
         return sequence;
+    }
+
+    /**
+     * If the given value is out of bounds, returns the error message for the exception to throw.
+     * This is used during validation of an array expected to be in strictly increasing order.
+     *
+     * @param  name      name of the argument.
+     * @param  i         index of the array element in the argument.
+     * @param  previous  the value during previous iteration.
+     * @param  max       the maximal value, exclusive.
+     * @param  value     the value to validate.
+     * @return {@code null} if the value is valid, otherwise the message to put in an exception.
+     */
+    static String validate(final String name, final int i, final int previous, final int max, final int value) {
+        if (value <= previous || value >= max) {
+            return Errors.format(Errors.Keys.ValueOutOfRange_4,
+                    Strings.toIndexed("dimensions", i), previous + 1, max - 1, value);
+        }
+        return null;
     }
 
     /**

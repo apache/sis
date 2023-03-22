@@ -48,7 +48,7 @@ import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
@@ -419,7 +419,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              */
             if (band == VISIBLE_BAND) {
                 if (isRGB) {
-                    colorModel = ColorModelFactory.createRGB(sm);
+                    colorModel = ColorModelFactory.createRGB(sm).get();     // Should not be empty.
                 } else {
                     try {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);

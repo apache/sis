@@ -33,11 +33,14 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
 /**
- * Selects or reorder bands from a source image. This operation avoid copying sample values;
- * it works by modifying the sample model and color model.
+ * Selects or reorder bands from a source image.
+ * This operation never copies sample values.
+ * Instead, it works by modifying the sample model and color model.
+ * This economical behavior is important for implementation of other
+ * operations on top of this one, such as {@link BandAggregateImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 final class BandSelectImage extends SourceAlignedImage {
@@ -73,7 +76,8 @@ final class BandSelectImage extends SourceAlignedImage {
      * Creates a new "band select" operation for the given source.
      *
      * @param  source  the image in which to select bands.
-     * @param  bands   the bands to select.
+     * @param  bands   the bands to select. Should be a clone of user-specified argument
+     *                 for protection against user changes in the given array.
      */
     static RenderedImage create(final RenderedImage source, final int[] bands) {
         final int numBands = ImageUtilities.getNumBands(source);
@@ -93,6 +97,7 @@ final class BandSelectImage extends SourceAlignedImage {
          * hoping user won't need the color model. We could have tried to create an arbitrary model,
          * but it is difficult to know if it would do more good than harm.
          */
+        final RenderedImage image;
         if (cm != null && source instanceof BufferedImage) {
             final BufferedImage bi = (BufferedImage) source;
             @SuppressWarnings("UseOfObsoleteCollectionType")
@@ -103,11 +108,13 @@ final class BandSelectImage extends SourceAlignedImage {
                     properties.put(key, value);
                 }
             }
-            return new BufferedImage(cm,
+            image = new BufferedImage(cm,
                     bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0, bands),
                     bi.isAlphaPremultiplied(), properties);
+        } else {
+            image = new BandSelectImage(source, cm, bands);
         }
-        return new BandSelectImage(source, cm, bands.clone());
+        return ImageProcessor.unique(image);
     }
 
     /**

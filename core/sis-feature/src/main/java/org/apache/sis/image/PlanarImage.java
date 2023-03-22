@@ -105,7 +105,7 @@ import static java.lang.Math.multiplyFull;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public abstract class PlanarImage implements RenderedImage {
@@ -423,7 +423,7 @@ public abstract class PlanarImage implements RenderedImage {
     public Raster getData() {
         final Rectangle aoi = getBounds();
         final WritableRaster raster = createWritableRaster(aoi);
-        copyData(aoi, raster);
+        copyData(aoi, this, raster);
         return raster;
     }
 
@@ -442,7 +442,7 @@ public abstract class PlanarImage implements RenderedImage {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }
         final WritableRaster raster = createWritableRaster(aoi);
-        copyData(aoi, raster);
+        copyData(aoi, this, raster);
         return raster;
     }
 
@@ -466,7 +466,7 @@ public abstract class PlanarImage implements RenderedImage {
             raster = createWritableRaster(aoi);
         }
         if (!aoi.isEmpty()) {
-            copyData(aoi, raster);
+            copyData(aoi, this, raster);
         }
         return raster;
     }
@@ -476,10 +476,11 @@ public abstract class PlanarImage implements RenderedImage {
      * It is caller responsibility to ensure that all arguments are non-null and that the rectangle is contained
      * inside both this image and the given raster.
      *
-     * @param  aoi     the region of this image to copy.
-     * @param  raster  the raster to hold a copy of this image, or {@code null}.
+     * @param  aoi     the region of the {@code source} image to copy.
+     * @param  source  the source of pixel data.
+     * @param  target  the raster to hold a copy of the source image, or {@code null} for creating a new raster.
      */
-    private void copyData(final Rectangle aoi, final WritableRaster raster) {
+    static void copyData(final Rectangle aoi, final RenderedImage source, final WritableRaster target) {
         /*
          * Iterate over all tiles that interesect the area of interest. For each tile,
          * copy a few rows in a temporary buffer, then copy that buffer to destination.
@@ -487,7 +488,7 @@ public abstract class PlanarImage implements RenderedImage {
          * Note that `tb` should never be empty since we restrict iteration to the tiles
          * that intersect the given area of interest.
          */
-        final TileOpExecutor executor = new TileOpExecutor(this, aoi) {
+        final TileOpExecutor executor = new TileOpExecutor(source, aoi) {
             /** For copying data using data type specified by raster. */ private Object buffer;
             /** For detecting if {@link #buffer} size is sufficient.  */ private int bufferCapacity;
 
@@ -503,12 +504,12 @@ public abstract class PlanarImage implements RenderedImage {
                 while (tb.y < afterLastRow) {
                     final int height = Math.min(tb.height, afterLastRow - tb.y);
                     buffer = tile.getDataElements(tb.x, tb.y, tb.width, height, buffer);
-                    raster.setDataElements(tb.x, tb.y, tb.width, height, buffer);
+                    target.setDataElements(tb.x, tb.y, tb.width, height, buffer);
                     tb.y += height;
                 }
             }
         };
-        executor.readFrom(this);
+        executor.readFrom(source);
     }
 
     /**
@@ -524,6 +525,23 @@ public abstract class PlanarImage implements RenderedImage {
     }
 
     /**
+     * Verifies if the color model is compatible with the sample model.
+     * If the color model is incompatible, then this method returns the name of the mismatched property.
+     * If the returned property is an empty string, then the mismatched property is unidentified.
+     *
+     * @param  sm  the sample model. Shall not be null.
+     * @param  cm  the color model, or {@code null} if unspecified.
+     * @return name of mismatched property (an empty string if unidentified),
+     *         or {@code null} if the color model is null or is compatible.
+     */
+    static String verifyCompatibility(final SampleModel sm, final ColorModel cm) {
+        if (cm == null || cm.isCompatibleSampleModel(sm))  return null;
+        if (cm.getNumComponents() != sm.getNumBands())     return "numComponents";
+        if (cm.getTransferType()  != sm.getTransferType()) return "transferType";
+        return "";
+    }
+
+    /**
      * Verifies whether image layout information are consistent. This method verifies that the coordinates
      * of image upper-left corner are equal to the coordinates of the upper-left corner of the tile in the
      * upper-left corner, and that image size is equal to the sum of the sizes of all tiles. Compatibility
@@ -535,7 +553,7 @@ public abstract class PlanarImage implements RenderedImage {
      * <table class="sis">
      *   <caption>Identifiers of inconsistent values</caption>
      *   <tr><th>Identifier</th>            <th>Meaning</th></tr>
-     *   <tr><td>{@code "SampleModel"}</td> <td>Sample model is incompatible with color model.</td></tr>
+     *   <tr><td>{@code "colorModel"}</td>  <td>Color model is incompatible with sample model.</td></tr>
      *   <tr><td>{@code "tileWidth"}</td>   <td>Tile width is greater than sample model width.</td></tr>
      *   <tr><td>{@code "tileHeight"}</td>  <td>Tile height is greater than sample model height.</td></tr>
      *   <tr><td>{@code "numXTiles"}</td>   <td>Number of tiles on the X axis is inconsistent with image width.</td></tr>
@@ -549,6 +567,8 @@ public abstract class PlanarImage implements RenderedImage {
      * Subclasses may perform additional checks. For example, some subclasses have specialized checks
      * for {@code "minX"}, {@code "minY"}, {@code "tileGridXOffset"} and {@code "tileGridYOffset"}
      * values before to fallback on the more generic {@code "tileX"} and {@code "tileY"} above checks.
+     * The returned identifiers may also have subcategories. For example {@code "colorModel"} may be
+     * subdivided with {@code "colorModel.numBands"} and {@code "colorModel.transferType"}.
      *
      * <h4>Ignorable inconsistency</h4>
      * Inconsistency in {@code "width"} and {@code "height"} values may be acceptable
@@ -565,9 +585,11 @@ public abstract class PlanarImage implements RenderedImage {
         final int tileHeight = getTileHeight();
         final SampleModel sm = getSampleModel();
         if (sm != null) {
-            final ColorModel cm = getColorModel();
+            final String cm = verifyCompatibility(sm, getColorModel());
             if (cm != null) {
-                if (!cm.isCompatibleSampleModel(sm)) return "colorModel";
+                String p = "colorModel";
+                if (!cm.isEmpty()) p = p + '.' + cm;
+                return p;
             }
             /*
              * The SampleModel size represents the physical layout of pixels in the data buffer,

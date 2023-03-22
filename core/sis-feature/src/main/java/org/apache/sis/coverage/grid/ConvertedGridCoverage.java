@@ -224,7 +224,7 @@ final class ConvertedGridCoverage extends DerivedGridCoverage {
      * @see GridCoverageProcessor.Optimization#REPLACE_SOURCE
      */
     @Override
-    final boolean IsNotRepleacable() {
+    final boolean isNotRepleacable() {
         return isUSerDefined;
     }
 

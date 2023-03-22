@@ -63,6 +63,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short AbstractFeatureType_1 = 1;
 
         /**
+         * Omission of the “{0}” grid axes would create ambiguity.
+         */
+        public static final short AmbiguousGridAxisOmission_1 = 84;
+
+        /**
          * Cannot assign characteristics to the “{0}” property.
          */
         public static final short CanNotAssignCharacteristics_1 = 2;
@@ -158,6 +163,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short DependencyNotFound_3 = 18;
 
         /**
+         * Sample dimension index {0} is duplicated.
+         */
+        public static final short DuplicatedSampleDimensionIndex_1 = 85;
+
+        /**
          * Image has zero pixel.
          */
         public static final short EmptyImage = 19;
@@ -242,6 +252,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short ImageIsOpaque = 34;
 
         /**
+         * Color model is incompatible with sample model.
+         */
+        public static final short IncompatibleColorModel = 82;
+
+        /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
          */
         public static final short IncompatibleTile_2 = 35;
@@ -251,6 +266,11 @@ public final class Resources extends IndexedResourceBundle {
          * elements.
          */
         public static final short InsufficientBufferCapacity_3 = 36;
+
+        /**
+         * Sample dimension index {1} is invalid. Expected an index from 0 to {0} inclusive.
+         */
+        public static final short InvalidSampleDimensionIndex_2 = 86;
 
         /**
          * Iteration is finished.
@@ -327,6 +347,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short NonLinearInDimensions_1 = 51;
 
         /**
+         * The dimensions to reduce cannot be separated.
+         */
+        public static final short NonSeparableReducedDimensions = 83;
+
+        /**
          * Value provided by first expression is not a geometry.
          */
         public static final short NotAGeometryAtFirstExpression = 52;
@@ -371,6 +396,11 @@ public final class Resources extends IndexedResourceBundle {
          * No property named “{1}” has been found in “{0}” feature.
          */
         public static final short PropertyNotFound_2 = 59;
+
+        /**
+         * Source images do not intersect.
+         */
+        public static final short SourceImagesDoNotIntersect = 80;
 
         /**
          * Tile ({0}, {1}) is unavailable because of error in a previous calculation attempt.
@@ -432,6 +462,11 @@ public final class Resources extends IndexedResourceBundle {
          * Feature named “{0}” has not yet been resolved.
          */
         public static final short UnresolvedFeatureName_1 = 71;
+
+        /**
+         * No bands have been specified.
+         */
+        public static final short UnspecifiedBands = 81;
 
         /**
          * Coordinate reference system is unspecified.

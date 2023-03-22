@@ -14,15 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.coverage;
 
-import java.util.List;
 import java.util.Locale;
-import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridCoverage;
-import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Localized;
 import org.junit.Test;
@@ -34,19 +29,10 @@ import static org.junit.Assert.*;
  * Tests {@link RangeArgument}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 public final class RangeArgumentTest extends TestCase implements Localized {
-    /**
-     * A resource performing no operation.
-     */
-    private final AbstractGridCoverageResource resource = new AbstractGridCoverageResource(null, false) {
-        @Override public GridGeometry          getGridGeometry()     {throw new UnsupportedOperationException();}
-        @Override public List<SampleDimension> getSampleDimensions() {throw new UnsupportedOperationException();}
-        @Override public GridCoverage read(GridGeometry d, int... r) {throw new UnsupportedOperationException();}
-    };
-
     /**
      * Returns a fixed locale for testing purpose.
      *

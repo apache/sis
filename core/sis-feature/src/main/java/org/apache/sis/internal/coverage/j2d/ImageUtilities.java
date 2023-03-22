@@ -148,8 +148,8 @@ public final class ImageUtilities extends Static {
 
     /**
      * If the given image is showing only one band, returns the index of that band.
-     * Otherwise returns 0. Image showing only one band are SIS-specific (usually an
-     * image show all its bands).
+     * Otherwise returns -1. Image showing only one band are SIS-specific
+     * (usually an image shows all its bands).
      *
      * @param  image  the image for which to get the visible band, or {@code null}.
      * @return index of the visible band, or -1 if there is none or more than one.
@@ -416,7 +416,7 @@ public final class ImageUtilities extends Static {
     }
 
     /**
-     * Returns {@code true} if the given sample model use an integer type.
+     * Returns {@code true} if the given sample model uses an integer type.
      * Returns {@code false} if the type is a floating point type or in case
      * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
      *

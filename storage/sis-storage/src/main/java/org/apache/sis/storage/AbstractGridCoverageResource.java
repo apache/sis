@@ -60,10 +60,22 @@ import org.apache.sis.internal.storage.Resources;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public abstract class AbstractGridCoverageResource extends AbstractResource implements GridCoverageResource {
+    /**
+     * Creates a new resource, potentially as a child of another resource.
+     * The parent resource is typically, but not necessarily, an {@link Aggregate}.
+     *
+     * @param  parent  the parent resource, or {@code null} if none.
+     *
+     * @since 1.4
+     */
+    protected AbstractGridCoverageResource(final Resource parent) {
+        super(parent);
+    }
+
     /**
      * Creates a new resource which can send notifications to the given set of listeners.
      * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of

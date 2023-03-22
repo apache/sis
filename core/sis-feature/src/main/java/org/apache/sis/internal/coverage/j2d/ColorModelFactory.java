@@ -527,17 +527,20 @@ public final class ColorModelFactory {
      * The sample model shall use integer type and have 3 or 4 bands.
      *
      * @param  model  the sample model for which to create a color model.
-     * @return the color model.
+     * @return the color model, or empty if a precondition does not hold.
      */
-    public static ColorModel createRGB(final SampleModel model) {
+    public static Optional<ColorModel> createRGB(final SampleModel model) {
         final int numBands = model.getNumBands();
-        assert numBands >= 3 && numBands <= 4 : numBands;
-        assert ImageUtilities.isIntegerType(model) : model;
-        int bitsPerSample = 0;
-        for (int i=0; i<numBands; i++) {
-            bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+        if (numBands >= 3 && numBands <= 4 && ImageUtilities.isIntegerType(model)) {
+            int bitsPerSample = 0;
+            for (int i=0; i<numBands; i++) {
+                bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+            }
+            if (bitsPerSample <= Byte.SIZE) {
+                return Optional.of(createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3));
+            }
         }
-        return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
+        return Optional.empty();
     }
 
     /**

@@ -139,7 +139,8 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  * consider {@linkplain #clone() cloning} if setter methods are invoked on a shared instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.4
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -372,8 +373,8 @@ public class ImageProcessor implements Cloneable {
     /**
      * Sets the colors to use for given categories in image, or {@code null} is unspecified.
      * This function provides a way to colorize images without knowing in advance the numerical values of pixels.
-     * For example, instead of specifying <cite>"pixel value 0 in blue, 1 in green, 2 in yellow"</cite>,
-     * this function allows to specify <cite>"Lakes in blue, Forests in green, Sand in yellow"</cite>.
+     * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
+     * this function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.
      * It is still possible however to use numerical values if the function desires to do so,
      * since this information is available with {@link Category#getSampleRange()}.
      *
@@ -813,7 +814,79 @@ public class ImageProcessor implements Cloneable {
      */
     public RenderedImage selectBands(final RenderedImage source, final int... bands) {
         ArgumentChecks.ensureNonNull("source", source);
-        return BandSelectImage.create(source, bands);
+        return BandSelectImage.create(source, bands.clone());
+    }
+
+    /**
+     * Aggregates in a single image all the bands of all specified images, in order.
+     * All sources images should map pixel coordinates to the same geospatial locations.
+     * A pixel at coordinates (<var>x</var>, <var>y</var>) in the aggregated image will
+     * contain values from the pixels at the same coordinates in all source images.
+     * The result image will be bounded by the intersection of all source images.
+     *
+     * <h4>Restrictions</h4>
+     * All images shall use the same {@linkplain SampleModel#getDataType() data type},
+     * and all source images shall intersect each other with a non-empty intersection area.
+     * However it is not required that all images have the same bounds or the same tiling scheme.
+     *
+     * <h4>Memory saving</h4>
+     * The returned image may opportunistically share the underlying data arrays of
+     * some source images. Bands are really copied only when sharing is not possible.
+     * The actual strategy may be a mix of both arrays sharing and bands copies.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
+     * </ul>
+     *
+     * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
+     * @return the aggregated image, or {@code sources[0]} returned directly if only one image was supplied.
+     * @throws IllegalArgumentException if there is an incompatibility between some source images.
+     *
+     * @see #aggregateBands(RenderedImage[], int[][], ColorModel)
+     *
+     * @since 1.4
+     */
+    public RenderedImage aggregateBands(final RenderedImage... sources) {
+        return aggregateBands(sources, null, null);
+    }
+
+    /**
+     * Aggregates in a single image the specified bands of a sequence of source images, in order.
+     * This method performs the same work than {@link #aggregateBands(RenderedImage...)},
+     * but with the possibility to specify the bands to retain in each source image.
+     * The {@code bandsPerSource} argument specifies the bands to select in each source image.
+     * That array can be {@code null} for selecting all bands in all source images,
+     * or may contain {@code null} elements for selecting all bands of the corresponding image.
+     * An empty array element (i.e. zero band to select) discards the corresponding source image.
+     * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
+     *
+     * <h4>Restrictions</h4>
+     * <ul>
+     *   <li>All images shall use the same {@linkplain SampleModel#getDataType() data type}.</li>
+     *   <li>All source images shall intersect each other with a non-empty intersection area.</li>
+     *   <li>The same band for a given source image cannot be used twice.</li>
+     * </ul>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
+     * </ul>
+     *
+     * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
+     * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
+     * @param  colors   the color model to apply on aggregated image, or {@code null} for inferring a default color model
+     *                  using aggregated number of bands and sample data type.
+     * @return the aggregated image, or one of the sources if it can be used directly.
+     * @throws IllegalArgumentException if there is an incompatibility between some source images
+     *         or if some band indices are duplicated or outside their range of validity.
+     *
+     * @since 1.4
+     */
+    public RenderedImage aggregateBands(RenderedImage[] sources, int[][] bandsPerSource, ColorModel colors) {
+        return BandAggregateImage.create(sources, bandsPerSource, colors);
     }
 
     /**
@@ -1227,6 +1300,7 @@ public class ImageProcessor implements Cloneable {
             final ErrorHandler  errorHandler;
             final Interpolation interpolation;
             final Number[]      fillValues;
+            final ImageLayout   layout;
             final Function<Category,Color[]> colors;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
@@ -1234,11 +1308,13 @@ public class ImageProcessor implements Cloneable {
                 errorHandler            = this.errorHandler;
                 interpolation           = this.interpolation;
                 fillValues              = this.fillValues;
+                layout                  = this.layout;
                 colors                  = this.colors;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             synchronized (other) {
-                return errorHandler.equals(other.errorHandler)    &&
+                return layout.equals(other.layout)                &&
+                      errorHandler.equals(other.errorHandler)     &&
                       executionMode.equals(other.executionMode)   &&
                       interpolation.equals(other.interpolation)   &&
                       Objects.equals(colors, other.colors)        &&
@@ -1256,8 +1332,8 @@ public class ImageProcessor implements Cloneable {
      */
     @Override
     public synchronized int hashCode() {
-        return Objects.hash(getClass(), errorHandler, executionMode, interpolation)
-                + 37 * Arrays.hashCode(fillValues) + 31 * Objects.hashCode(colors)
+        return Objects.hash(getClass(), errorHandler, executionMode, colors, interpolation, layout)
+                + 37 * Arrays.hashCode(fillValues)
                 + 39 * Arrays.hashCode(positionalAccuracyHints);
     }
 

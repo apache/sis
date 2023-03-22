@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.Map;
 import java.util.List;
+import java.util.BitSet;
 import java.util.Optional;
 import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
@@ -359,6 +360,40 @@ public final class MathTransforms extends Static {
             }
         }
         return PassThroughTransform.create(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
+    }
+
+    /**
+     * Creates a transform which passes through a subset of coordinates to another transform.
+     * The list of modified coordinates is specified by the {@code modifiedCoordinates} argument,
+     * which must be in strictly increasing order.
+     *
+     * @param  modifiedCoordinates  positions in a source coordinate tuple of the coordinates affected by the transform.
+     * @param  subTransform         the sub-transform to apply on modified coordinates.
+     * @param  resultDim            total number of source dimensions of the pass-through transform to return.
+     * @return a pass-through transform for the given set of modified coordinates.
+     * @throws MismatchedDimensionException if the bit set cardinality is not equal
+     *         to the number of source dimensions in {@code subTransform}.
+     * @throws IllegalArgumentException if the index of a modified coordinates is invalid.
+     *
+     * @see PassThroughTransform#create(BitSet, MathTransform, int, MathTransformFactory)
+     *
+     * @since 1.4
+     */
+    public static MathTransform passThrough(final int[] modifiedCoordinates, final MathTransform subTransform, final int resultDim) {
+        final BitSet bitset = new BitSet();
+        int previous = -1;
+        for (int i=0; i < modifiedCoordinates.length; i++) {
+            final int dim = modifiedCoordinates[i];
+            String message = TransformSeparator.validate("modifiedCoordinates", i, previous, resultDim, dim);
+            if (message != null) throw new IllegalArgumentException(message);
+            bitset.set(dim);
+            previous = dim;
+        }
+        try {
+            return PassThroughTransform.create(bitset, subTransform, resultDim, null);
+        } catch (FactoryException e) {
+            throw new IllegalArgumentException(e);              // Should never happen actually.
+        }
     }
 
     /**
