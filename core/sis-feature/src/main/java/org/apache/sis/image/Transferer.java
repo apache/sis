@@ -25,10 +25,13 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferFloat;
 import java.awt.image.DataBufferDouble;
 import java.awt.image.RenderedImage;
+import java.awt.image.RasterFormatException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
+import org.apache.sis.internal.system.Configuration;
+import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.Numerics;
 
 
@@ -46,10 +49,20 @@ import org.apache.sis.internal.util.Numerics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 abstract class Transferer {
+    /**
+     * Approximate size of the buffer to use for copying data from/to a raster, in bits.
+     * The actual buffer size may be smaller or larger, depending on the actual tile size.
+     * This value does not need to be very large.
+     *
+     * @see #prepareTransferRegion(Rectangle, int)
+     */
+    @Configuration
+    private static final int BUFFER_SIZE = 32 * ImageUtilities.DEFAULT_TILE_SIZE * Byte.SIZE;
+
     /**
      * The image tile from which to read sample values.
      */
@@ -101,10 +114,38 @@ abstract class Transferer {
      *
      * @return {@code region.y + region.height}.
      *
-     * @see ImageUtilities#prepareTransferRegion(Rectangle, int)
+     * @see #prepareTransferRegion(Rectangle, int)
      */
     int prepareTransferRegion() {
         return Math.addExact(region.y, region.height);
+    }
+
+    /**
+     * Suggests the height of a transfer region for a tile of the given size. The given region should be
+     * contained inside {@link Raster#getBounds()}. This method modifies {@link Rectangle#height} in-place.
+     * The {@link Rectangle#width} value is never modified, so caller can iterate on all raster rows without
+     * the need to check if the row is incomplete.
+     *
+     * @param  bounds    on input, the region of interest. On output, the suggested transfer region bounds.
+     * @param  dataType  one of {@link DataBuffer} constant. It is okay if an unknown constant is used since
+     *                   this information is used only as a hint for adjusting the {@link #BUFFER_SIZE} value.
+     * @return the maximum <var>y</var> value plus 1. This can be used as stop condition for iterating over rows.
+     * @throws ArithmeticException if the maximum <var>y</var> value overflows 32 bits integer capacity.
+     * @throws RasterFormatException if the given bounds is empty.
+     */
+    static int prepareTransferRegion(final Rectangle bounds, final int dataType) {
+        if (bounds.isEmpty()) {
+            throw new RasterFormatException(Resources.format(Resources.Keys.EmptyTileOrImageRegion));
+        }
+        final int afterLastRow = Math.addExact(bounds.y, bounds.height);
+        int size;
+        try {
+            size = DataBuffer.getDataTypeSize(dataType);
+        } catch (IllegalArgumentException e) {
+            size = Short.SIZE;  // Arbitrary value is okay because this is only a hint for choosing a buffer size.
+        }
+        bounds.height = Math.max(1, Math.min(BUFFER_SIZE / (size * bounds.width), bounds.height));
+        return afterLastRow;
     }
 
     /**
@@ -235,7 +276,7 @@ abstract class Transferer {
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
         @Override int prepareTransferRegion() {
-            return ImageUtilities.prepareTransferRegion(region, DataBuffer.TYPE_DOUBLE);
+            return prepareTransferRegion(region, DataBuffer.TYPE_DOUBLE);
         }
 
         /** Copies source values in temporary buffer, applies conversion then copies to target. */
@@ -267,7 +308,7 @@ abstract class Transferer {
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
         @Override int prepareTransferRegion() {
-            return ImageUtilities.prepareTransferRegion(region, DataBuffer.TYPE_FLOAT);
+            return prepareTransferRegion(region, DataBuffer.TYPE_FLOAT);
         }
 
         /** Copies source values in temporary buffer, applies conversion then copies to target. */
@@ -301,7 +342,7 @@ abstract class Transferer {
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
         @Override final int prepareTransferRegion() {
-            return ImageUtilities.prepareTransferRegion(region, DataBuffer.TYPE_DOUBLE);
+            return prepareTransferRegion(region, DataBuffer.TYPE_DOUBLE);
         }
 
         /** Copies source values in temporary buffer, applies conversion then copies to target. */
@@ -408,7 +449,7 @@ abstract class Transferer {
 
         /** Subdivides the region to process in smaller strips, for smaller {@linkplain #buffer}. */
         @Override final int prepareTransferRegion() {
-            return ImageUtilities.prepareTransferRegion(region, DataBuffer.TYPE_FLOAT);
+            return prepareTransferRegion(region, DataBuffer.TYPE_FLOAT);
         }
 
         /** Copies source values in temporary buffer, applies conversion then copies to target. */
@@ -562,7 +603,7 @@ abstract class Transferer {
     }
 
     /**
-     * Returns {@code true} if the given raster use a data type that can be casted to the {@code float} type
+     * Returns {@code true} if the given raster uses a data type that can be casted to the {@code float} type
      * without precision lost. If the type is unknown, then this method returns {@code false}. Note that this
      * method also returns {@code false} for {@link DataBuffer#TYPE_INT} because conversion of 32 bits integer
      * to the {@code float} type may lost precision digits.

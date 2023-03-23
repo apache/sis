@@ -478,35 +478,25 @@ public abstract class PlanarImage implements RenderedImage {
      *
      * @param  aoi     the region of the {@code source} image to copy.
      * @param  source  the source of pixel data.
-     * @param  target  the raster to hold a copy of the source image, or {@code null} for creating a new raster.
+     * @param  target  the raster to hold a copy of the source image.
      */
     static void copyData(final Rectangle aoi, final RenderedImage source, final WritableRaster target) {
         /*
-         * Iterate over all tiles that interesect the area of interest. For each tile,
-         * copy a few rows in a temporary buffer, then copy that buffer to destination.
-         * The buffer will be reused for each transfer, unless its size is insufficient.
-         * Note that `tb` should never be empty since we restrict iteration to the tiles
-         * that intersect the given area of interest.
+         * Iterate over all tiles that interesect the specified area of interest (AOI).
+         * For each tile, delegate to `WritableRaster.setRect(…)` because that method is
+         * overridden with optimized implementations in various Sun's raster subclasses.
+         * Note that `t` rectangle should never be empty because we restrict iteration
+         * to the tiles that intersect the given area of interest.
          */
         final TileOpExecutor executor = new TileOpExecutor(source, aoi) {
-            /** For copying data using data type specified by raster. */ private Object buffer;
-            /** For detecting if {@link #buffer} size is sufficient.  */ private int bufferCapacity;
-
             /** Invoked for each tile to copy to target raster. */
-            @Override protected void readFrom(final Raster tile) {
-                final Rectangle tb = aoi.intersection(tile.getBounds());        // Bounds of transfer buffer.
-                final int afterLastRow = ImageUtilities.prepareTransferRegion(tb, tile.getTransferType());
-                final int transferCapacity = tb.width * tb.height;
-                if (transferCapacity > bufferCapacity) {
-                    bufferCapacity = transferCapacity;
-                    buffer = null;                          // Will be allocated by Raster.getDataElements(…).
+            @Override protected void readFrom(Raster tile) {
+                final Rectangle bounds = tile.getBounds();
+                final Rectangle t = aoi.intersection(bounds);
+                if (!t.equals(bounds)) {
+                    tile = tile.createChild(t.x, t.y, t.width, t.height, t.x, t.y, null);
                 }
-                while (tb.y < afterLastRow) {
-                    final int height = Math.min(tb.height, afterLastRow - tb.y);
-                    buffer = tile.getDataElements(tb.x, tb.y, tb.width, height, buffer);
-                    target.setDataElements(tb.x, tb.y, tb.width, height, buffer);
-                    tb.y += height;
-                }
+                target.setRect(tile);
             }
         };
         executor.readFrom(source);
