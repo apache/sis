@@ -398,7 +398,7 @@ public class GridCoverageBuilder {
     public GridCoverageBuilder flipGridAxis(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
         if (dimension >= Long.SIZE) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
+            throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
         }
         flippedAxes ^= (1L << dimension);
         return this;

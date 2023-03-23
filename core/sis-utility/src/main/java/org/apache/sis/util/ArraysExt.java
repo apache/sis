@@ -2253,7 +2253,7 @@ public final class ArraysExt extends Static {
     public static int[] unionOfSorted(final int[] array1, final int[] array2) {
         if (array1 == null) return array2;
         if (array2 == null) return array1;
-        int[] union = new int[array1.length + array2.length];
+        int[] union = new int[Math.addExact(array1.length, array2.length)];
         int nu=0;
         for (int ix=0, iy=0;;) {
             if (ix == array1.length) {
