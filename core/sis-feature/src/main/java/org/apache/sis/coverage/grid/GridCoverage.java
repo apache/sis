@@ -106,13 +106,12 @@ public abstract class GridCoverage extends BandedCoverage {
      * @throws IllegalArgumentException if the {@code range} list is empty.
      */
     protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
-        ArgumentChecks.ensureNonNull ("domain", domain);
-        ArgumentChecks.ensureNonEmpty("ranges", ranges);
-        gridGeometry = domain;
+        gridGeometry     = domain;
         sampleDimensions = ranges.toArray(SampleDimension[]::new);
-        ArgumentChecks.ensureNonEmpty("range", sampleDimensions);
+        ArgumentChecks.ensureNonNull ("domain", domain);
+        ArgumentChecks.ensureNonEmpty("ranges", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
-            ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);
+            ArgumentChecks.ensureNonNullElement("ranges", i, sampleDimensions[i]);
         }
     }
 
@@ -214,7 +213,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * converted to a banded sample model.
      */
     DataType getBandType() {
-        return DataType.DOUBLE;     // Must conservative value, should be overridden by subclasses.
+        return DataType.DOUBLE;     // Most conservative value, should be overridden by subclasses.
     }
 
     /**
@@ -410,9 +409,9 @@ public abstract class GridCoverage extends BandedCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image. The given {@code sliceExtent} argument specifies
      * the coordinates of the slice in all dimensions that are not in the two-dimensional image. For example if this grid
-     * coverage has <i>(<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)</i> dimensions and we want to render an image
-     * of data in the <i>(<var>x</var>,<var>y</var>)</i> dimensions, then the given {@code sliceExtent} shall contain the
-     * <i>(<var>z</var>,<var>t</var>)</i> coordinates of the desired slice. Those coordinates are specified in a grid extent
+     * coverage has (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) dimensions and we want to render an image
+     * of data in the (<var>x</var>,<var>y</var>) dimensions, then the given {@code sliceExtent} shall contain the
+     * (<var>z</var>,<var>t</var>) coordinates of the desired slice. Those coordinates are specified in a grid extent
      * where {@linkplain GridExtent#getLow(int) low coordinate} = {@linkplain GridExtent#getHigh(int) high coordinate} in the
      * <var>z</var> and <var>t</var> dimensions. The two dimensions of the data to be shown (<var>x</var> and <var>y</var>
      * in our example) shall be the only dimensions having a {@linkplain GridExtent#getSize(int) size} greater than 1 cell.
@@ -423,7 +422,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * except two have a size of 1 cell. If the grid extent contains more than 2 dimensions with a size greater than one cell,
      * then a {@link SubspaceNotSpecifiedException} is thrown.</p>
      *
-     * <div class="note"><p><b>How to compute a slice extent from a slice point in "real world" coordinates</b></p>
+     * <h4>How to compute a slice extent from a slice point in "real world" coordinates</h4>
      * The {@code sliceExtent} is specified to this method as grid indices. If the <var>z</var> and <var>t</var> values
      * are not grid indices but are relative to some Coordinate Reference System (CRS) instead, then the slice extent can
      * be computed as below. First, a <cite>slice point</cite> containing the <var>z</var> and <var>t</var> coordinates
@@ -437,12 +436,12 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * Then:
      *
-     * <blockquote><code>sliceExtent = {@linkplain #getGridGeometry()}.{@link GridGeometry#derive()
-     * derive()}.{@linkplain GridDerivation#slice(DirectPosition)
-     * slice}(slicePoint).{@linkplain GridDerivation#getIntersection() getIntersection()};</code></blockquote>
+     * {@snippet lang="java" :
+     *     sliceExtent = getGridGeometry().derive().slice(slicePoint).getIntersection();
+     *     }
      *
      * If the {@code slicePoint} CRS is different than this grid coverage CRS (except for the number of dimensions),
-     * a coordinate transformation will be applied as needed.</div>
+     * a coordinate transformation will be applied as needed.
      *
      * <h4>Characteristics of the returned image</h4>
      * Image dimensions <var>x</var> and <var>y</var> map to the first and second dimension respectively of
@@ -473,7 +472,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * This method does not mandate any behavior regarding tiling (size of tiles, their numbering system, <i>etc.</i>).
      * Some implementations may defer data loading until {@linkplain RenderedImage#getTile(int, int) a tile is requested}.</p>
      *
-     * @param  sliceExtent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
+     * @param  sliceExtent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
      *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
      * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.

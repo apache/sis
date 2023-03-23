@@ -48,7 +48,23 @@ import org.apache.sis.measure.NumberRange;
 
 
 /**
- * A predefined set of operations on grid coverages as convenience methods.
+ * A predefined set of operations on grid coverages.
+ * After instantiation, {@code GridCoverageProcessor} can be configured for the following aspects:
+ *
+ * <ul class="verbose">
+ *   <li>
+ *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
+ *   </li><li>
+ *     {@linkplain #setFillValues(Number...) Fill values} to use for cells that cannot be computed.
+ *   </li><li>
+ *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
+ *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
+ *   </li><li>
+ *     {@linkplain #setOptimizations(Set) Optimizations} to enable.
+ *   </li>
+ * </ul>
+ *
+ * For each coverage operations, above properties are combined with parameters given to the operation method.
  *
  * <h2>Thread-safety</h2>
  * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.

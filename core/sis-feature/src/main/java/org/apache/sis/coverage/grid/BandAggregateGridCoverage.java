@@ -134,7 +134,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
      * We do not compute the rendered image in advance (which would have produced better caching) because
      * the image to cache depends on {@code sliceExtent} if this coverage has more than two dimensions.
      *
-     * @param  sliceExtent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
+     * @param  sliceExtent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
      */
     @Override

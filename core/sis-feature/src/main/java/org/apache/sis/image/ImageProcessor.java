@@ -64,7 +64,7 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
 
 
 /**
- * A predefined set of operations on images as convenience methods.
+ * A predefined set of operations on images.
  * After instantiation, {@code ImageProcessor} can be configured for the following aspects:
  *
  * <ul class="verbose">
