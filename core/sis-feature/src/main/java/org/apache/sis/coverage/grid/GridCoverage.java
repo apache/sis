@@ -351,10 +351,19 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     public interface Evaluator extends BandedCoverage.Evaluator {
         /**
-         * Returns the coverage from which this evaluator is fetching sample values.
-         * This is the coverage on which the {@link GridCoverage#evaluator()} method has been invoked.
+         * Returns the grid coverage from which this evaluator is computing sample values.
+         * This is <em>usually</em> the instance on which the {@link GridCoverage#evaluator()}
+         * method has been invoked, but not necessarily. Evaluators are allowed to fetch values
+         * from a different source for better performances or accuracies.
+         *
+         * <h4>Example</h4>
+         * If the values of the enclosing coverage are interpolated from the values of another coverage,
+         * then this evaluator may use directly the values of the latter coverage. Doing so avoid to add
+         * more interpolations on values that are already interpolated.
          *
          * @return the source of sample values for this evaluator.
+         *
+         * @see #toGridCoordinates(DirectPosition)
          */
         @Override
         GridCoverage getCoverage();
@@ -389,6 +398,11 @@ public abstract class GridCoverage extends BandedCoverage {
          * a non-null coordinate reference system (CRS) different than the {@linkplain #getCoverage() coverage} CRS,
          * then this method automatically transforms that position to the {@linkplain #getCoordinateReferenceSystem()
          * coverage CRS} before to compute grid coordinates.
+         *
+         * <p>The returned value are coordinates in the grid of the coverage returned by {@link #getCoverage()}.
+         * This is <em>usually</em> the coverage instance on which {@link GridCoverage#evaluator()} has been invoked,
+         * but not necessarily. Evaluators are allowed to fetch values from a different source for better performances
+         * or accuracies.</p>
          *
          * <p>This method does not put any restriction on the grid coordinates result.
          * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}

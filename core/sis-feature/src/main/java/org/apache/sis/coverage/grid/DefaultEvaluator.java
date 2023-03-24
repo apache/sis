@@ -173,7 +173,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @return the source of sample values for this evaluator.
      */
     @Override
-    public GridCoverage getCoverage() {
+    public final GridCoverage getCoverage() {
         return coverage;
     }
 
@@ -192,7 +192,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
-    public Map<Integer,Long> getDefaultSlice() {
+    public final Map<Integer,Long> getDefaultSlice() {
         if (slice == null) {
             final GridExtent extent = coverage.getGridGeometry().getExtent();
             slice = CollectionsExt.unmodifiableOrCopy(extent.getSliceCoordinates());
@@ -366,6 +366,8 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
          * TODO: instead of restricting to a single point, keep the automatic size (1 or 2),
          * invoke render for each slice, then interpolate. We would keep a value of 1 in the
          * size array if we want to disable interpolation in some particular axis (e.g. time).
+         *
+         * See https://issues.apache.org/jira/browse/SIS-576
          */
         final GridGeometry gridGeometry = coverage.gridGeometry;
         final long[] size = new long[gridGeometry.getDimension()];

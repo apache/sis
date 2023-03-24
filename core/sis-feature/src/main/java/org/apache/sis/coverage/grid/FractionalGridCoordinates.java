@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  * Grid coordinates specify the location of a cell within a {@link GridCoverage}.
  * They are normally integer numbers, but fractional parts may exist for example
  * after converting a geospatial {@link DirectPosition} to grid coordinates.
- * Preserving that fractional part is sometimes useful, e.g. for interpolations.
+ * Preserving that fractional part is needed for interpolations.
  * This class can store such fractional part and can also compute a {@link GridExtent}
  * containing the coordinates, which can be used for requesting data for interpolations.
  *
@@ -68,10 +68,10 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
     /**
      * Creates a new grid coordinates with the given number of dimensions.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Usage note</h4>
      * {@code FractionalGridCoordinates} are usually not created directly, but are instead obtained
      * indirectly for example from the {@linkplain GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
-     * conversion of a geospatial position}.</div>
+     * conversion of a geospatial position}.
      *
      * @param  dimension  the number of dimensions.
      */

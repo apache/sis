@@ -93,9 +93,19 @@ abstract class DerivedGridCoverage extends GridCoverage {
      * That function accepts {@link DirectPosition} in arbitrary Coordinate Reference System;
      * conversions to grid indices are applied by the {@linkplain #source} as needed.
      *
-     * @todo The results returned by {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)}
-     *       would need to be transformed. But it would force us to return a wrapper, which would add
-     *       an indirection level for all others (more important) method calls. Is it worth to do so?
+     * <h4>Differences with usual behavior</h4>
+     * The evaluator returned by the default implementation has two methods with a behavior different
+     * than the intuitively expected ones. Howerver those differences are allowed by methods contract.
+     *
+     * <ul>
+     *   <li>{@link GridCoverage.Evaluator#getCoverage()} returns an instance which is not {@code this}.</li>
+     *   <li>The results returned by {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)}
+     *       are coordinates in a grid potentially inconsistent with {@link #getGridGeometry()}.</li>
+     * </ul>
+     *
+     * Those differences are allowed because otherwise, this method would be forced to use a wrapper at
+     * least for transforming {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)} results.
+     * It would add an indirection level for all others (more important) method calls.
      */
     @Override
     public Evaluator evaluator() {
