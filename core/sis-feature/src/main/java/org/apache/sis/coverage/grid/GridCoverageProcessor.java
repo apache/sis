@@ -336,7 +336,7 @@ public class GridCoverageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source",     source);
         ArgumentChecks.ensureNonNull("converters", converters);
         final List<SampleDimension> sourceBands = source.getSampleDimensions();
-        ArgumentChecks.ensureSizeBetween("converters", 1, sourceBands.size(), converters.length);
+        ArgumentChecks.ensureCountBetween("converters", true, 1, sourceBands.size(), converters.length);
         final SampleDimension[] targetBands = new SampleDimension[converters.length];
         final SampleDimension.Builder builder = new SampleDimension.Builder();
         if (sampleDimensionModifier == null) {

@@ -253,7 +253,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
     public void setProjection(int... range) {
         if (range != null) {
             range = range.clone();
-            ArgumentChecks.ensureNonEmpty("range", range, 0, Integer.MAX_VALUE, true);
+            ArgumentChecks.ensureNonEmptyBounded("range", true, 0, Integer.MAX_VALUE, range);
             // Assign only after we verified that the argument is valid.
         }
         this.range = range;

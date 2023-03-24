@@ -961,7 +961,7 @@ public class ImageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("converters", converters);
         ArgumentChecks.ensureNonNull("targetType", targetType);
-        ArgumentChecks.ensureSizeBetween("converters", 1, ImageUtilities.getNumBands(source), converters.length);
+        ArgumentChecks.ensureCountBetween("converters", true, 1, ImageUtilities.getNumBands(source), converters.length);
         converters = converters.clone();
         for (int i=0; i<converters.length; i++) {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);

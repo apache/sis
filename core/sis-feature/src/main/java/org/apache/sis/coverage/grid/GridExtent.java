@@ -1344,7 +1344,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     static int[] verifyDimensions(int[] indices, final int limit) {
         ArgumentChecks.ensureNonNull("indices", indices);
         final int n = indices.length;
-        ArgumentChecks.ensureSizeBetween("indices", 1, limit, n);
+        ArgumentChecks.ensureCountBetween("indices", false, 1, limit, n);
         indices = indices.clone();
         if (!ArraysExt.isSorted(indices, true)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotStrictlyOrderedDimensions));

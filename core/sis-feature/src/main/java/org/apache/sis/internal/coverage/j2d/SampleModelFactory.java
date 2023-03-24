@@ -211,7 +211,7 @@ public final class SampleModelFactory {
      * @see SampleModel#createSubsetSampleModel(int[])
      */
     public void subsetAndCompress(final int[] bands) {
-        ArgumentChecks.ensureSizeBetween("bands", 1, numBands, bands.length);
+        ArgumentChecks.ensureCountBetween("bands", true, 1, numBands, bands.length);
         if (bankIndices != null) bankIndices = subset(bankIndices, bands, true);
         if (bandOffsets != null) bandOffsets = subset(bandOffsets, bands, bankIndices == null);
         if (bitMasks    != null) {
