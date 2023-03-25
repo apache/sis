@@ -19,7 +19,6 @@ package org.apache.sis.internal.coverage.j2d;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Optional;
 import java.awt.Transparency;
 import java.awt.Color;
 import java.awt.color.ColorSpace;
@@ -52,6 +51,12 @@ import org.apache.sis.util.Debug;
  * @since   1.0
  */
 public final class ColorModelFactory {
+    /**
+     * Band to make visible if an image contains many bands
+     * but a color map is defined for only one band.
+     */
+    public static final int DEFAULT_VISIBLE_BAND = 0;
+
     /**
      * The fully transparent color.
      */
@@ -525,11 +530,12 @@ public final class ColorModelFactory {
     /**
      * Creates a RGB color model for the given sample model.
      * The sample model shall use integer type and have 3 or 4 bands.
+     * This method may return {@code null} if the color model can not be created.
      *
      * @param  model  the sample model for which to create a color model.
-     * @return the color model, or empty if a precondition does not hold.
+     * @return the color model, or null if a precondition does not hold.
      */
-    public static Optional<ColorModel> createRGB(final SampleModel model) {
+    public static ColorModel createRGB(final SampleModel model) {
         final int numBands = model.getNumBands();
         if (numBands >= 3 && numBands <= 4 && ImageUtilities.isIntegerType(model)) {
             int bitsPerSample = 0;
@@ -537,10 +543,10 @@ public final class ColorModelFactory {
                 bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
             }
             if (bitsPerSample <= Byte.SIZE) {
-                return Optional.of(createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3));
+                return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
             }
         }
-        return Optional.empty();
+        return null;
     }
 
     /**
@@ -585,7 +591,7 @@ public final class ColorModelFactory {
      *   <li>Input color model is null.</li>
      *   <li>Given color model is not assignable from the following types:
      *     <ul>
-     *       <li>{@link ComponentColorModel}</li>
+     *       <li>{@link ComponentColorModel} with only one band</li>
      *       <li>{@link MultiBandsIndexColorModel}</li>
      *       <li>{@link ScaledColorModel}</li>
      *     </ul>
@@ -593,35 +599,68 @@ public final class ColorModelFactory {
      *   <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
      * </ul>
      *
-     * <em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>: they're not managed for now, because
-     * they're really designed for a "rigid" case where data buffer values are interpreted directly by the color model.
+     * This method may return {@code null} if the color model can not be created.
+     *
+     * <p><em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>:
+     * those color models not managed for now, because they are really designed for
+     * a "rigid" case where data buffer values are interpreted directly by the color model.</p>
      *
      * @param  cm     the color model, or {@code null}.
      * @param  bands  the bands to select. Must neither be null nor empty.
-     * @return the subset color model, or empty if input was null or if a subset cannot be deduced.
+     * @return the subset color model, or null if input was null or if a subset cannot be deduced.
      */
-    public static Optional<ColorModel> createSubset(final ColorModel cm, final int[] bands) {
+    public static ColorModel createSubset(final ColorModel cm, final int[] bands) {
         assert (bands != null) && bands.length > 0 : bands;
+        int visibleBand = DEFAULT_VISIBLE_BAND;
+        if (cm instanceof MultiBandsIndexColorModel) {
+            visibleBand = ((MultiBandsIndexColorModel) cm).visibleBand;
+        } else if (cm != null) {
+            final ColorSpace cs = cm.getColorSpace();
+            if (cs instanceof ScaledColorSpace) {
+                visibleBand = ((ScaledColorSpace) cs).visibleBand;
+            }
+        }
+        for (int i=0; i<bands.length; i++) {
+            if (bands[i] == visibleBand) {
+                visibleBand = i;
+                break;
+            }
+        }
+        return derive(cm, bands.length, visibleBand);
+    }
+
+    /**
+     * Returns a color model with with the same colors but a different number of bands.
+     * Current implementation supports {@link ComponentColorModel} with only one band,
+     * {@link MultiBandsIndexColorModel} and {@link ScaledColorModel}.
+     * This method may return {@code null} if the color model can not be created.
+     *
+     * @param  cm           the color model, or {@code null}.
+     * @param  numBands     new number of bands.
+     * @param  visibleBand  new visible band.
+     * @return the derived color model, or null if this method does not support the given color model.
+     */
+    public static ColorModel derive(final ColorModel cm, final int numBands, final int visibleBand) {
         if (cm == null) {
-            return Optional.empty();
+            return null;
         }
         final ColorModel subset;
         if (cm instanceof MultiBandsIndexColorModel) {
-            subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
+            subset = ((MultiBandsIndexColorModel) cm).derive(numBands, visibleBand);
         } else if (cm instanceof ScaledColorModel) {
-            subset = ((ScaledColorModel) cm).createSubsetColorModel(bands);
-        } else if (bands.length == 1 && cm instanceof ComponentColorModel) {
+            subset = ((ScaledColorModel) cm).derive(numBands, visibleBand);
+        } else if (numBands == 1 && cm instanceof ComponentColorModel) {
             final int dataType = cm.getTransferType();
             if (dataType < DataBuffer.TYPE_BYTE || dataType > DataBuffer.TYPE_USHORT) {
-                return Optional.empty();
+                return null;
             }
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             subset = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
         } else {
             // TODO: handle other color models.
-            return Optional.empty();
+            return null;
         }
-        return Optional.of(CACHE.unique(subset));
+        return CACHE.unique(subset);
     }
 
     /**

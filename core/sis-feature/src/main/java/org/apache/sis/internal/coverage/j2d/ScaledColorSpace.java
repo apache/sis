@@ -29,7 +29,7 @@ import org.apache.sis.util.Debug;
  * It should be used only when no standard color space can be used.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see ScaledColorModel
  * @see ColorModelFactory#createGrayScale(int, int, int, double, double)
@@ -76,26 +76,23 @@ final class ScaledColorSpace extends ColorSpace {
     ScaledColorSpace(final int numComponents, final int visibleBand, final double minimum, final double maximum) {
         super(TYPE_GRAY, numComponents);
         this.visibleBand = visibleBand;
-        this.maximum = maximum;
-        scale  = ScaledColorModel.RANGE / (maximum - minimum);
-        offset = minimum;
+        this.maximum     = maximum;
+        this.scale       = ScaledColorModel.RANGE / (maximum - minimum);
+        this.offset      = minimum;
     }
 
     /**
-     * Creates a color space for the same range of values than the given space, but a subset of the bands.
+     * Creates a color space for the same range of values than the given space, but a different number of bands.
+     *
+     * @param  numComponents  the new number of components.
+     * @param  visibleBand    the new band to select as the visible band.
      */
-    ScaledColorSpace(final ScaledColorSpace parent, final int[] bands) {
-        super(TYPE_GRAY, bands.length);
-        scale   = parent.scale;
-        offset  = parent.offset;
-        maximum = parent.maximum;
-        for (int i=0; i<bands.length; i++) {
-            if (bands[i] == parent.visibleBand) {
-                visibleBand = i;
-                return;
-            }
-        }
-        visibleBand = 0;
+    ScaledColorSpace(final ScaledColorSpace parent, final int numComponents, final int visibleBand) {
+        super(TYPE_GRAY, numComponents);
+        this.scale       = parent.scale;
+        this.offset      = parent.offset;
+        this.maximum     = parent.maximum;
+        this.visibleBand = visibleBand;
     }
 
     /**

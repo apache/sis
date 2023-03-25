@@ -85,7 +85,7 @@ final class BandSelectImage extends SourceAlignedImage {
             return source;
         }
         ArgumentChecks.ensureNonEmptyBounded("bands", false, 0, numBands - 1, bands);
-        final ColorModel cm = ColorModelFactory.createSubset(source.getColorModel(), bands).orElse(null);
+        final ColorModel cm = ColorModelFactory.createSubset(source.getColorModel(), bands);
         /*
          * If the image is an instance of `BufferedImage`, create the subset immediately
          * (reminder: this operation will not copy pixel data). It allows us to return a

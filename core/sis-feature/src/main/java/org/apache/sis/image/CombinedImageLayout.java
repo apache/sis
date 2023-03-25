@@ -310,40 +310,45 @@ final class CombinedImageLayout extends ImageLayout {
     }
 
     /**
-     * Returns the index of the first band which is flagged as a visible band.
-     * The concept of visible bands is used when an image contains more than one band,
-     * but only one of those bands us used by an {@code IndexColorModel}.
-     */
-    private int getVisibleBand() {
-        int band = 0;
-        for (int i=0; i < sources.length; i++) {
-            final RenderedImage source = sources[i];
-            final int[] bands = bandsPerSource[i];
-            final int visibleBand = ImageUtilities.getVisibleBand(source);
-            if (visibleBand >= 0) {
-                if (bands == null) {
-                    return band + visibleBand;
-                }
-                for (int j=0; j<bands.length; j++) {
-                    if (bands[j] == visibleBand) {
-                        return band + j;
-                    }
-                }
-            }
-            band += (bands != null) ? bands.length : ImageUtilities.getNumBands(source);
-        }
-        return 0;
-    }
-
-    /**
-     * Builds a default color model.
-     * If the combined image has 3 or 4 bands and the data type is an integer storing values on 8 bits,
-     * then this method creates a RGB color model. If there is 4 bands, an RGBA color model is defined.
+     * Builds a default color model with RGB(A) colors or the colors of the first visible band.
+     * If the combined image has 3 or 4 bands and the data type is 8 bits integer (bytes),
+     * then this method returns a RGB or RGBA color model depending if there is 3 or 4 bands.
+     * Otherwise if {@link ImageUtilities#getVisibleBand(RenderedImage)} finds that a source image
+     * declares a visible band, then the returned color model will reuse the colors of that band.
      * Otherwise a grayscale color model is built with a value range inferred from the data-type.
      */
     final ColorModel createColorModel() {
-        return ColorModelFactory.createRGB(sampleModel)
-                .orElseGet(() -> ColorModelFactory.createGrayScale(sampleModel, getVisibleBand(), null));
+        ColorModel colors = ColorModelFactory.createRGB(sampleModel);
+        if (colors != null) {
+            return colors;
+        }
+        int visibleBand = ColorModelFactory.DEFAULT_VISIBLE_BAND;
+        int base = 0;
+search: for (int i=0; i < sources.length; i++) {
+            final RenderedImage source = sources[i];
+            final int[] bands = bandsPerSource[i];
+            final int vb = ImageUtilities.getVisibleBand(source);
+            if (vb >= 0) {
+                if (bands == null) {
+                    visibleBand = base + vb;
+                    colors = source.getColorModel();
+                    break;
+                }
+                for (int j=0; j<bands.length; j++) {
+                    if (bands[j] == vb) {
+                        visibleBand = base + j;
+                        colors = source.getColorModel();
+                        break search;
+                    }
+                }
+            }
+            base += (bands != null) ? bands.length : ImageUtilities.getNumBands(source);
+        }
+        colors = ColorModelFactory.derive(colors, sampleModel.getNumBands(), visibleBand);
+        if (colors != null) {
+            return colors;
+        }
+        return ColorModelFactory.createGrayScale(sampleModel, visibleBand, null);
     }
 
     /**

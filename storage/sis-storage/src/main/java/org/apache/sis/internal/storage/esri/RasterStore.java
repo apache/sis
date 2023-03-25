@@ -77,7 +77,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * Band to make visible if an image contains many bands
      * but a color map is defined for only one band.
      */
-    private static final int VISIBLE_BAND = 0;
+    private static final int VISIBLE_BAND = ColorModelFactory.DEFAULT_VISIBLE_BAND;
 
     /**
      * Keyword for the number of rows in the image.
@@ -419,7 +419,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              */
             if (band == VISIBLE_BAND) {
                 if (isRGB) {
-                    colorModel = ColorModelFactory.createRGB(sm).get();     // Should not be empty.
+                    colorModel = ColorModelFactory.createRGB(sm);       // Should never be null.
                 } else {
                     try {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
@@ -484,7 +484,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         ColorModel cm = colorModel;
         if (!range.isIdentity()) {
             bands = Arrays.asList(range.select(sampleDimensions));
-            cm = range.select(cm).orElse(null);
+            cm = range.select(cm);
             if (cm == null) {
                 final SampleDimension band = bands.get(VISIBLE_BAND);
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
