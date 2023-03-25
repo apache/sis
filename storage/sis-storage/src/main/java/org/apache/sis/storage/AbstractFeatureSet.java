@@ -45,10 +45,22 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public abstract class AbstractFeatureSet extends AbstractResource implements FeatureSet {
+    /**
+     * Creates a new resource, potentially as a child of another resource.
+     * The parent resource is typically, but not necessarily, an {@link Aggregate}.
+     *
+     * @param  parent  the parent resource, or {@code null} if none.
+     *
+     * @since 1.4
+     */
+    protected AbstractFeatureSet(final Resource parent) {
+        super(parent);
+    }
+
     /**
      * Creates a new resource which can send notifications to the given set of listeners.
      * If {@code hidden} is {@code false} (the recommended value), then this resource will have its own set of

@@ -32,8 +32,8 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.Query;
+import org.apache.sis.storage.Resource;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
@@ -57,7 +57,7 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
@@ -87,12 +87,12 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * this verification must be done by the caller. This constructor retains the given {@code sources} array
      * by direct reference; clone, if desired, shall be done by the caller.
      *
-     * @param  parent   listeners of the parent resource, or {@code null} if none.
+     * @param  parent   the parent resource, or {@code null} if none.
      * @param  sources  the sequence of feature sets to expose in a single set.
      *                  Must neither be null, empty nor contain a single element only.
      * @throws DataStoreException if given feature sets does not share any common type.
      */
-    protected ConcatenatedFeatureSet(final StoreListeners parent, final FeatureSet[] sources) throws DataStoreException {
+    protected ConcatenatedFeatureSet(final Resource parent, final FeatureSet[] sources) throws DataStoreException {
         super(parent);
         for (int i=0; i<sources.length; i++) {
             ArgumentChecks.ensureNonNullElement("sources", i, sources[i]);
