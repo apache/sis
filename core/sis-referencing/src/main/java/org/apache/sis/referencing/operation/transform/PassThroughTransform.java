@@ -222,6 +222,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      *     int[] modifiedCoordinates = bitset.stream().toArray();
      *     }
      *
+     * The bitset {@linkplain BitSet#cardinality() cardinality}, which is also the length of above array,
+     * must be equal to the number of source dimensions in the given {@code subTransform}.
+     *
      * <h4>Limitation</h4>
      * If the modified coordinates are not at consecutive positions in source coordinate tuples,
      * then the current implementation of this method adds the following restrictions:
@@ -238,8 +241,8 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
      * @param  resultDim            total number of source dimensions of the pass-through transform to return.
      * @param  factory              the factory to use for creating transforms, or {@code null} for the default.
      * @return a pass-through transform for the given set of modified coordinates.
-     * @throws MismatchedDimensionException if the bit set cardinality is not equal
-     *         to the number of source dimensions in {@code subTransform}.
+     * @throws MismatchedDimensionException if the {@code modifiedCoordinates} bitset cardinality
+     *         is not equal to the number of source dimensions in {@code subTransform}.
      * @throws IllegalArgumentException if the index of a modified coordinates is out of bounds.
      * @throws FactoryException if an error occurred while creating a transform step.
      *
