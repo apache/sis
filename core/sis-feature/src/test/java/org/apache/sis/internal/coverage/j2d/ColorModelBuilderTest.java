@@ -35,21 +35,21 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link Colorizer}.
+ * Tests {@link ColorModelBuilder}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
-public final class ColorizerTest extends TestCase {
+public final class ColorModelBuilderTest extends TestCase {
     /**
-     * Tests the creation of an index color model using {@link Colorizer#Colorizer(Collection)}.
+     * Tests the creation of an index color model using {@link ColorModelBuilder#ColorModelBuilder(Collection)}.
      *
      * @throws TransformException if a sample value cannot be converted.
      */
     @Test
     public void testRangeAndColors() throws TransformException {
-        final Colorizer colorizer = new Colorizer(List.of(
+        final ColorModelBuilder colorizer = new ColorModelBuilder(List.of(
                 new SimpleEntry<>(NumberRange.create(0, true,  0, true), new Color[] {Color.GRAY}),
                 new SimpleEntry<>(NumberRange.create(1, true,  1, true), new Color[] {ColorModelFactory.TRANSPARENT}),
                 new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})));
@@ -85,7 +85,7 @@ public final class ColorizerTest extends TestCase {
     }
 
     /**
-     * Tests the creation of an index color model using {@link Colorizer#Colorizer(Function)}
+     * Tests the creation of an index color model using {@link ColorModelBuilder#ColorModelBuilder(Function)}
      * and an initialization with a {@link SampleDimension}.
      *
      * @throws TransformException if a sample value cannot be converted.
@@ -99,7 +99,7 @@ public final class ColorizerTest extends TestCase {
                 .addQualitative ("Error", MathFunctions.toNanFloat(3))
                 .setName("Temperature").build();
 
-        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE);
         assertTrue("initialize", colorizer.initialize(null, sd));
         final IndexColorModel cm = (IndexColorModel) colorizer.compactColorModel(1, 0);     // Must be first.
         /*

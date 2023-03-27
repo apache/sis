@@ -40,7 +40,7 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
@@ -266,7 +266,7 @@ public class ImageRenderer {
     /**
      * The colors to use for each category. Never {@code null}.
      * The function may return {@code null}, which means transparent.
-     * The default value is {@link Colorizer#GRAYSCALE}.
+     * The default value is {@link ColorModelBuilder#GRAYSCALE}.
      *
      * @see #setCategoryColors(Function)
      */
@@ -362,7 +362,7 @@ public class ImageRenderer {
         this.pixelStride    = toIntExact(pixelStride);
         this.scanlineStride = toIntExact(scanlineStride);
         this.offsetZ        = offsetZ;
-        this.colors         = Colorizer.GRAYSCALE;
+        this.colors         = ColorModelBuilder.GRAYSCALE;
     }
 
     /**
@@ -740,13 +740,13 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {
         final Raster raster = createRaster();
-        final Colorizer colorizer = new Colorizer(colors);
+        final ColorModelBuilder colorizer = new ColorModelBuilder(colors);
         final ColorModel colors;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
             colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
         } else {
-            colors = Colorizer.NULL_COLOR_MODEL;
+            colors = ColorModelBuilder.NULL_COLOR_MODEL;
         }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {

@@ -42,7 +42,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.CompoundTransform;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
@@ -201,30 +201,30 @@ final class Visualization extends ResampledImage {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.OperationRequiresSingleBand));
             }
             /*
-             * Get a `Colorizer` which will compute the `ColorModel` of destination image.
-             * There is different ways to create colorizer, depending on which arguments
-             * were supplied by user. In precedence order:
+             * Get a `ColorModelBuilder` which will compute the `ColorModel` of destination image.
+             * There is different ways to create colorizer, depending on which arguments were supplied by user.
+             * In precedence order:
              *
              *    - rangesAndColor  : Collection<Map.Entry<NumberRange<?>,Color[]>>
              *    - sourceBands     : List<SampleDimension>
              *    - statistics
              */
             boolean initialized;
-            final Colorizer colorizer;
+            final ColorModelBuilder colorizer;
             if (rangesAndColors != null) {
-                colorizer = new Colorizer(rangesAndColors);
+                colorizer = new ColorModelBuilder(rangesAndColors);
                 initialized = true;
             } else {
                 /*
                  * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
                  * in various ways: sample dimensions, scaled color model, statistics in last resort.
                  */
-                colorizer = new Colorizer(categoryColors);
+                colorizer = new ColorModelBuilder(categoryColors);
                 initialized = (sourceBands != null) && colorizer.initialize(source.getSampleModel(), sourceBands.get(visibleBand));
                 if (initialized) {
                     /*
-                     * If we have been able to configure Colorizer using SampleDimension, apply an adjustment based
-                     * on the ScaledColorModel if it exists.  Use case: an image is created with an IndexColorModel
+                     * If we have been able to configure ColorModelBuilder using SampleDimension, apply an adjustment
+                     * based on the ScaledColorModel if it exists. Use case: image is created with an IndexColorModel
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`
                      * above. We want to preserve that contrast enhancement.
                      */
@@ -250,8 +250,8 @@ final class Visualization extends ResampledImage {
             source = BandSelectImage.create(source, new int[] {visibleBand});               // Make single-banded.
             if (!initialized) {
                 /*
-                 * If none of above Colorizer configurations worked, use statistics in last resort. We do that
-                 * after we reduced the image to a single band, in order to reduce the amount of calculations.
+                 * If none of above `ColorModelBuilder` configurations worked, use statistics in last resort.
+                 * We do that after we reduced the image to a single band in order to reduce the amount of calculations.
                  */
                 final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(processor, sourceBands);
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
@@ -286,7 +286,7 @@ final class Visualization extends ResampledImage {
             /*
              * Final image creation after the tile layout has been chosen.
              */
-            sampleModel = layout.createBandedSampleModel(Colorizer.TYPE_COMPACT, NUM_BANDS, source, bounds);
+            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds);
             if (bounds == null) {
                 bounds = ImageUtilities.getBounds(source);
             }

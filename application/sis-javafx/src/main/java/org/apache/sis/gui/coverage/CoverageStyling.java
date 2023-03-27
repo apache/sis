@@ -31,7 +31,7 @@ import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ContextMenu;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
 import org.apache.sis.internal.gui.control.ColorRamp;
@@ -81,7 +81,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
                 return;
             }
         }
-        fallback = Colorizer.GRAYSCALE;
+        fallback = ColorModelBuilder.GRAYSCALE;
     }
 
     /**

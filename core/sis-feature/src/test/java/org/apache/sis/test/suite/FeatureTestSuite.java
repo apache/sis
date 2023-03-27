@@ -87,7 +87,7 @@ import org.junit.runners.Suite;
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.j2d.ImageLayoutTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
-    org.apache.sis.internal.coverage.j2d.ColorizerTest.class,
+    org.apache.sis.internal.coverage.j2d.ColorModelBuilderTest.class,
     org.apache.sis.internal.coverage.j2d.SampleModelFactoryTest.class,
     org.apache.sis.internal.processing.isoline.IsolinesTest.class,
     org.apache.sis.image.DataTypeTest.class,

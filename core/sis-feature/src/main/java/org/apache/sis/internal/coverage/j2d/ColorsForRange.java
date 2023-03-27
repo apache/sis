@@ -48,8 +48,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
 
     /**
      * The range of sample values on which the colors will be applied. Shall never be null.
-     * May be updated after {@link Colorizer#compact()} mapped range of floating point values
-     * to range of {@link IndexColorModel} values.
+     * May be updated after {@link ColorModelBuilder#compact()} mapped range of floating
+     * point values to range of {@link IndexColorModel} values.
      */
     NumberRange<?> sampleRange;
 

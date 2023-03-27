@@ -37,7 +37,7 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -300,14 +300,14 @@ public abstract class GridCoverage extends BandedCoverage {
             final MathTransform1D[] converters, final ImageProcessor processor)
     {
         final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
-        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE);
         final ColorModel colors;
         if (colorizer.initialize(source.getSampleModel(), sampleDimensions[visibleBand]) ||
             colorizer.initialize(source.getColorModel()))
         {
             colors = colorizer.createColorModel(bandType.toDataBufferType(), sampleDimensions.length, visibleBand);
         } else {
-            colors = Colorizer.NULL_COLOR_MODEL;
+            colors = ColorModelBuilder.NULL_COLOR_MODEL;
         }
         return processor.convert(source, getRanges(), converters, bandType, colors);
     }
