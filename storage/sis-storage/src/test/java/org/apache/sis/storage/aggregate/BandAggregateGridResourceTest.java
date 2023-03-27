@@ -108,7 +108,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
         final LocalName testName = Names.createLocalName(null, null, "test-name");
         aggregation = new BandAggregateGridResource(null, testName,
                 new GridCoverageResource[] {firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands},
-                new int[][] {null, new int[] {1, 0}, new int[] {1}}, null, null);
+                new int[][] {null, new int[] {1, 0}, new int[] {1}}, null);
 
         assertEquals(testName, aggregation.getIdentifier().orElse(null));
         assertAllPixelsEqual(aggregation.read(null), 101, 102, 104, 103, 106);

@@ -19,7 +19,6 @@ package org.apache.sis.storage.aggregate;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
-import java.awt.image.ColorModel;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.coverage.SampleDimension;
@@ -60,7 +59,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
- * @see GridCoverageProcessor#aggregateRanges(GridCoverage[], int[][], ColorModel)
+ * @see GridCoverageProcessor#aggregateRanges(GridCoverage[], int[][])
  *
  * @since 1.4
  */
@@ -110,13 +109,6 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
     private final int[][] bandsPerSource;
 
     /**
-     * The color model to apply on aggregated image, or {@code null} for default.
-     * If {@code null}, the color model will be inferred from the aggregated number
-     * of bands and the sample data type.
-     */
-    private final ColorModel colors;
-
-    /**
      * The processor to use for creating grid coverages.
      */
     private final GridCoverageProcessor processor;
@@ -130,7 +122,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      */
     public BandAggregateGridResource(final GridCoverageResource... sources) throws DataStoreException {
-        this(null, null, sources, null, null, null);
+        this(null, null, sources, null, null);
     }
 
     /**
@@ -161,15 +153,13 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * @param  sources         resources whose bands shall be aggregated, in order. At least one resource must be provided.
      * @param  bandsPerSource  sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
      * @param  processor       the processor to use for creating grid coverages, or {@code null} for a default processor.
-     * @param  colors          the color model to apply on aggregated image, or {@code null} for inferring
-     *                         a default color model using aggregated number of bands and sample data type.
      * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     public BandAggregateGridResource(final Resource parent, final GenericName name,
             final GridCoverageResource[] sources, final int[][] bandsPerSource,
-            final GridCoverageProcessor processor, final ColorModel colors) throws DataStoreException
+            final GridCoverageProcessor processor) throws DataStoreException
     {
         super(parent);
         try {
@@ -181,7 +171,6 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
             this.sampleDimensions = List.copyOf(aggregate.ranges());
             this.bandsPerSource   = aggregate.bandsPerSource();
             this.processor        = (processor != null) ? processor : new GridCoverageProcessor();
-            this.colors           = colors;
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);
         }
@@ -374,6 +363,6 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
             cursorIndex = source;
             bandsToLoad[numBandsToLoad++] = bandsForCurrentSource[cursorIndex - cursorBase];
         }
-        return processor.aggregateRanges(coverages, coverageBands, colors);
+        return processor.aggregateRanges(coverages, coverageBands);
     }
 }

@@ -73,8 +73,7 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that cannot be computed.
  *   </li><li>
- *     {@linkplain #setCategoryColors(Function) Category colors} for mapping sample values
- *     (identified by their range, name or unit of measurement) to colors.
+ *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
  *   </li><li>
  *     {@linkplain #setImageResizingPolicy(Resizing) Image resizing policy} to apply
  *     if a requested image size prevent the image to be tiled.
@@ -217,12 +216,24 @@ public class ImageProcessor implements Cloneable {
     private Number[] fillValues;
 
     /**
+     * Colorization algorithm to apply on computed image.
+     * A null value means to use implementation-specific default.
+     *
+     * @see #getColorizer()
+     * @see #setColorizer(Colorizer)
+     */
+    private Colorizer colorizer;
+
+    /**
      * Colors to use for arbitrary categories of sample values. This function can return {@code null}
      * or empty arrays for some categories, which are interpreted as fully transparent pixels.
      *
      * @see #getCategoryColors()
      * @see #setCategoryColors(Function)
+     *
+     * @deprecated Replaced by {@link #colorizer}.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     private Function<Category,Color[]> colors;
 
     /**
@@ -361,11 +372,49 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Returns the colorization algorithm to apply on computed images, or {@code null} for default.
+     * This method returns the value set by the last call to {@link #setColorizer(Colorizer)}.
+     *
+     * @return colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @since 1.4
+     */
+    public synchronized Colorizer getColorizer() {
+        return colorizer;
+    }
+
+    /**
+     * Sets the colorization algorithm to apply on computed images.
+     * The colorizer is invoked when the rendered image produced by an {@code ImageProcessor} operation
+     * needs a {@link ColorModel} which is not straightforward.
+     *
+     * <h4>Examples</h4>
+     * <p>The color model of a {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)}
+     * operation is straightforward: it is the same {@link ColorModel} than the source image.
+     * Consequently the colorizer is not invoked for that operation.</p>
+     *
+     * <p>But by contrast, the color model of an {@link #aggregateBands(RenderedImage...) aggregateBands(…)}
+     * operation can not be determined in such straightforward way.
+     * If three or four bands are aggregated, should they be interpreted as an (A)RGB image?
+     * The {@link Colorizer} allows to specify the desired behavior.</p>
+     *
+     * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @since 1.4
+     */
+    public synchronized void setColorizer(final Colorizer colorizer) {
+        this.colorizer = colorizer;
+    }
+
+    /**
      * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
      * This method returns the function set by the last call to {@link #setCategoryColors(Function)}.
      *
      * @return colors to use for arbitrary categories of sample values, or {@code null} for default.
+     *
+     * @deprecated Replaced by {@link #getColorizer()}.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public synchronized Function<Category,Color[]> getCategoryColors() {
         return colors;
     }
@@ -383,8 +432,12 @@ public class ImageProcessor implements Cloneable {
      * empty arrays for some categories, which are interpreted as fully transparent pixels.</p>
      *
      * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
+     *
+     * @deprecated Replaced by {@link #setColorizer(Colorizer)}.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public synchronized void setCategoryColors(final Function<Category,Color[]> colors) {
+        setColorizer(colors != null ? Colorizer.forCategories(colors) : null);
         this.colors = colors;
     }
 
@@ -837,19 +890,19 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>(none)</li>
+     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
      * </ul>
      *
      * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
      * @return the aggregated image, or {@code sources[0]} returned directly if only one image was supplied.
      * @throws IllegalArgumentException if there is an incompatibility between some source images.
      *
-     * @see #aggregateBands(RenderedImage[], int[][], ColorModel)
+     * @see #aggregateBands(RenderedImage[], int[][])
      *
      * @since 1.4
      */
     public RenderedImage aggregateBands(final RenderedImage... sources) {
-        return aggregateBands(sources, null, null);
+        return aggregateBands(sources, (int[][]) null);
     }
 
     /**
@@ -872,21 +925,24 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>(none)</li>
+     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
      * </ul>
      *
      * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
      * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
-     * @param  colors   the color model to apply on aggregated image, or {@code null} for inferring a default color model
-     *                  using aggregated number of bands and sample data type.
      * @return the aggregated image, or one of the sources if it can be used directly.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      *
      * @since 1.4
      */
-    public RenderedImage aggregateBands(RenderedImage[] sources, int[][] bandsPerSource, ColorModel colors) {
-        return BandAggregateImage.create(sources, bandsPerSource, colors);
+    public RenderedImage aggregateBands(RenderedImage[] sources, int[][] bandsPerSource) {
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        final Colorizer colorizer;
+        synchronized (this) {
+            colorizer = this.colorizer;
+        }
+        return BandAggregateImage.create(sources, bandsPerSource, colorizer);
     }
 
     /**
@@ -939,7 +995,7 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>(none)</li>
+     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
      * </ul>
      *
      * <h4>Result relationship with source</h4>
@@ -950,13 +1006,14 @@ public class ImageProcessor implements Cloneable {
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of data in the image resulting from conversions.
-     * @param  colorModel    color model of resulting image, or {@code null}.
      * @return the image which computes converted values from the given source.
      *
      * @see GridCoverageProcessor#convert(GridCoverage, MathTransform1D[], Function)
+     *
+     * @since 1.4
      */
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
-                MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
+                                 MathTransform1D[] converters, final DataType targetType)
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("converters", converters);
@@ -967,12 +1024,33 @@ public class ImageProcessor implements Cloneable {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
         }
         final ImageLayout layout;
+        final Colorizer colorizer;
         synchronized (this) {
             layout = this.layout;
+            colorizer = this.colorizer;
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, layout,
-                sourceRanges, converters, targetType.toDataBufferType(), colorModel));
+        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters,
+                                                   targetType.toDataBufferType(), colorizer));
+    }
+
+    /**
+     * @deprecated Replaced by {@link #convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType)}
+     *             with a color model inferred from the {@link Colorizer}.
+     *
+     * @param  colorModel  color model of resulting image, or {@code null}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
+    public synchronized RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
+                MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
+    {
+        final Colorizer old = colorizer;
+        try {
+            colorizer = Colorizer.forInstance(colorModel);
+            return convert(source, sourceRanges, converters, targetType);
+        } finally {
+            colorizer = old;
+        }
     }
 
     /**
@@ -1301,6 +1379,7 @@ public class ImageProcessor implements Cloneable {
             final Interpolation interpolation;
             final Number[]      fillValues;
             final ImageLayout   layout;
+            final Colorizer     colorizer;
             final Function<Category,Color[]> colors;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
@@ -1309,6 +1388,7 @@ public class ImageProcessor implements Cloneable {
                 interpolation           = this.interpolation;
                 fillValues              = this.fillValues;
                 layout                  = this.layout;
+                colorizer               = this.colorizer;
                 colors                  = this.colors;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
@@ -1317,6 +1397,7 @@ public class ImageProcessor implements Cloneable {
                       errorHandler.equals(other.errorHandler)     &&
                       executionMode.equals(other.executionMode)   &&
                       interpolation.equals(other.interpolation)   &&
+                      Objects.equals(colorizer, other.colorizer)  &&
                       Objects.equals(colors, other.colors)        &&
                       Arrays.equals(fillValues, other.fillValues) &&
                       Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
@@ -1332,7 +1413,7 @@ public class ImageProcessor implements Cloneable {
      */
     @Override
     public synchronized int hashCode() {
-        return Objects.hash(getClass(), errorHandler, executionMode, colors, interpolation, layout)
+        return Objects.hash(getClass(), errorHandler, executionMode, colorizer, interpolation, layout)
                 + 37 * Arrays.hashCode(fillValues)
                 + 39 * Arrays.hashCode(positionalAccuracyHints);
     }

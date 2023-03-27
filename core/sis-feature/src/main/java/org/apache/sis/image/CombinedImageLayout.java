@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Optional;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -24,7 +25,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
@@ -310,18 +310,15 @@ final class CombinedImageLayout extends ImageLayout {
     }
 
     /**
-     * Builds a default color model with RGB(A) colors or the colors of the first visible band.
-     * If the combined image has 3 or 4 bands and the data type is 8 bits integer (bytes),
-     * then this method returns a RGB or RGBA color model depending if there is 3 or 4 bands.
-     * Otherwise if {@link ImageUtilities#getVisibleBand(RenderedImage)} finds that a source image
-     * declares a visible band, then the returned color model will reuse the colors of that band.
+     * Builds a default color model with the colors of the first visible band found in source images.
+     * If a band is declared visible according {@link ImageUtilities#getVisibleBand(RenderedImage)},
+     * then the returned color model will reuse the colors of that visible band.
      * Otherwise a grayscale color model is built with a value range inferred from the data-type.
+     *
+     * @param  colorizer  user-supplied provider of color model, or {@code null} if none.
      */
-    final ColorModel createColorModel() {
-        ColorModel colors = ColorModelFactory.createRGB(sampleModel);
-        if (colors != null) {
-            return colors;
-        }
+    final ColorModel createColorModel(final Colorizer colorizer) {
+        ColorModel colors = null;
         int visibleBand = ColorModelFactory.DEFAULT_VISIBLE_BAND;
         int base = 0;
 search: for (int i=0; i < sources.length; i++) {
@@ -344,28 +341,16 @@ search: for (int i=0; i < sources.length; i++) {
             }
             base += (bands != null) ? bands.length : ImageUtilities.getNumBands(source);
         }
+        if (colorizer != null) {
+            Optional<ColorModel> candidate = colorizer.apply(new Colorizer.Target(sampleModel, null, visibleBand));
+            if (candidate.isPresent()) {
+                return candidate.get();
+            }
+        }
         colors = ColorModelFactory.derive(colors, sampleModel.getNumBands(), visibleBand);
         if (colors != null) {
             return colors;
         }
         return ColorModelFactory.createGrayScale(sampleModel, visibleBand, null);
-    }
-
-    /**
-     * Ensures that a user-supplied color model is compatible.
-     *
-     * @param  name  parameter name of the user-supplied color model.
-     * @param  cm    the color model to validate. Can be {@code null}.
-     * @throws IllegalArgumentException if the color model is incompatible.
-     */
-    void ensureCompatible(final String name, final ColorModel cm) {
-        final String reason = PlanarImage.verifyCompatibility(sampleModel, cm);
-        if (reason != null) {
-            String message = Resources.format(Resources.Keys.IncompatibleColorModel);
-            if (!reason.isEmpty()) {
-                message = message + ' ' + Errors.format(Errors.Keys.IllegalValueForProperty_2, reason, name);
-            }
-            throw new IllegalArgumentException(message);
-        }
     }
 }

@@ -32,6 +32,7 @@ import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
@@ -185,14 +186,14 @@ class BandedSampleConverter extends ComputedImage {
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of this image resulting from conversion of given image.
      *                       Shall be one of {@link DataBuffer} constants.
-     * @param  colorModel    the color model for the expected range of values, or {@code null}.
+     * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
      *
      * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType, ColorModel)
      */
     static BandedSampleConverter create(RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
-            final int targetType, final ColorModel colorModel)
+            final int targetType, final Colorizer colorizer)
     {
         /*
          * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
@@ -203,6 +204,14 @@ class BandedSampleConverter extends ComputedImage {
         }
         final int numBands = converters.length;
         final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null);
+        final int visibleBand = ImageUtilities.getVisibleBand(source);
+        ColorModel colorModel = null;
+        if (colorizer != null) {
+            colorModel = colorizer.apply(new Colorizer.Target(sampleModel, null, visibleBand)).orElse(null);
+        }
+        if (colorModel == null) {
+            colorModel = ColorModelFactory.createGrayScale(sampleModel, visibleBand, null);
+        }
         /*
          * If the source image is writable, then changes in the converted image may be retro-propagated
          * to that source image. If we fail to compute the required inverse transforms, log a notice at

@@ -77,14 +77,14 @@ final class BandAggregateImage extends ComputedImage {
      *
      * @param  sources          images to combine, in order.
      * @param  bandsPerSource   bands to use for each source image, in order. May contain {@code null} elements.
-     * @param  colors           the color model to use for this image, or {@code null} for automatic.
+     * @param  colorizer        provider of color model to use for this image, or {@code null} for automatic.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      * @return the band aggregate image.
      */
     @Workaround(library="JDK", version="1.8")
-    static RenderedImage create(RenderedImage[] sources, int[][] bandsPerSource, ColorModel colors) {
-        var image = new BandAggregateImage(CombinedImageLayout.create(sources, bandsPerSource), colors);
+    static RenderedImage create(RenderedImage[] sources, int[][] bandsPerSource, Colorizer colorizer) {
+        var image = new BandAggregateImage(CombinedImageLayout.create(sources, bandsPerSource), colorizer);
         if (image.filteredSources.length == 1) {
             final RenderedImage c = image.filteredSources[0];
             if (image.colorModel == null) {
@@ -101,25 +101,21 @@ final class BandAggregateImage extends ComputedImage {
     /**
      * Creates a new aggregation of bands.
      *
-     * @param  layout  pixel and tile coordinate spaces of this image, together with sample model.
-     * @param  colors  the color model to use for this image, or {@code null} for automatic.
+     * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
+     * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
      */
-    private BandAggregateImage(final CombinedImageLayout layout, ColorModel colors) {
+    private BandAggregateImage(final CombinedImageLayout layout, final Colorizer colorizer) {
         super(layout.sampleModel, layout.sources);
         final Rectangle r = layout.domain;
-        minX     = r.x;
-        minY     = r.y;
-        width    = r.width;
-        height   = r.height;
-        minTileX = layout.minTileX;
-        minTileY = layout.minTileY;
-        if (colors == null) {
-            colors = layout.createColorModel();
-        } else {
-            layout.ensureCompatible("colors", colors);
-        }
-        colorModel = colors;
+        minX            = r.x;
+        minY            = r.y;
+        width           = r.width;
+        height          = r.height;
+        minTileX        = layout.minTileX;
+        minTileY        = layout.minTileY;
         filteredSources = layout.getFilteredSources();
+        colorModel      = layout.createColorModel(colorizer);
+        ensureCompatible(colorModel);
     }
 
     /** Returns the information inferred at construction time. */

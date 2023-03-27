@@ -156,7 +156,7 @@ public final class ImageUtilities extends Static {
             }
             final SampleModel sm = image.getSampleModel();
             if (sm != null && sm.getNumBands() == 1) {           // Should never be null, but we are paranoiac.
-                return 0;
+                return ColorModelFactory.DEFAULT_VISIBLE_BAND;
             }
         }
         return -1;

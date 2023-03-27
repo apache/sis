@@ -652,13 +652,13 @@ public class GridCoverageProcessor implements Cloneable {
      * @return the aggregated coverage, or {@code sources[0]} returned directly if only one coverage was supplied.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      *
-     * @see #aggregateRanges(GridCoverage[], int[][], ColorModel)
+     * @see #aggregateRanges(GridCoverage[], int[][])
      * @see ImageProcessor#aggregateBands(RenderedImage...)
      *
      * @since 1.4
      */
     public GridCoverage aggregateRanges(final GridCoverage... sources) {
-        return aggregateRanges(sources, null, null);
+        return aggregateRanges(sources, (int[][]) null);
     }
 
     /**
@@ -674,24 +674,22 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  sources  coverages whose bands shall be aggregated, in order. At least one coverage must be provided.
      * @param  bandsPerSource  bands to use for each source coverage, in order.
      *                  May be {@code null} or may contain {@code null} elements.
-     * @param  colors   the color model to apply on aggregated image, or {@code null} for inferring
-     *                  a default color model using aggregated number of bands and sample data type.
      * @return the aggregated coverage, or one of the sources if it can be used directly.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      *
-     * @see ImageProcessor#aggregateBands(RenderedImage[], int[][], ColorModel)
+     * @see ImageProcessor#aggregateBands(RenderedImage[], int[][])
      *
      * @since 1.4
      */
-    public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource, ColorModel colors) {
+    public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
         final var aggregate = new MultiSourcesArgument<>(sources, bandsPerSource);
         aggregate.identityAsNull();
         aggregate.validate(GridCoverage::getSampleDimensions);
         if (aggregate.isIdentity()) {
             return aggregate.sources()[0];
         }
-        return new BandAggregateGridCoverage(aggregate, colors, imageProcessor);
+        return new BandAggregateGridCoverage(aggregate, imageProcessor);
     }
 
     /**

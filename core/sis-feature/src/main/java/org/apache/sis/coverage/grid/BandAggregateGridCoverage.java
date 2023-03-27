@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Map;
 import java.util.TreeMap;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
@@ -76,14 +75,9 @@ final class BandAggregateGridCoverage extends GridCoverage {
     private final DataType dataType;
 
     /**
-     * The color model to apply on aggregated image, or {@code null} for default.
-     * If {@code null}, the color model will be inferred from the aggregated number
-     * of bands and the sample data type.
-     */
-    private final ColorModel colors;
-
-    /**
      * The processor to use for creating images.
+     * The processor {@linkplain ImageProcessor#getColorizer() colorizer}
+     * will determine the color model applied on the aggregated images.
      */
     private final ImageProcessor processor;
 
@@ -91,20 +85,16 @@ final class BandAggregateGridCoverage extends GridCoverage {
      * Creates a new band aggregated coverage from the given sources.
      *
      * @param  aggregate  the source grid coverages together with bands to select.
-     * @param  colors     the color model to apply on aggregated image, or {@code null} for default.
      * @param  processor  the processor to use for creating images.
      * @throws IllegalArgumentException if there is an incompatibility between some source coverages
      *         or if some band indices are duplicated or outside their range of validity.
      */
-    BandAggregateGridCoverage(final MultiSourcesArgument<GridCoverage> aggregate, final ColorModel colors,
-                              final ImageProcessor processor)
-    {
+    BandAggregateGridCoverage(final MultiSourcesArgument<GridCoverage> aggregate, final ImageProcessor processor) {
         super(aggregate.domain(GridCoverage::getGridGeometry), aggregate.ranges());
         this.sources           = aggregate.sources();
         this.bandsPerSource    = aggregate.bandsPerSource();
         this.numBands          = aggregate.numBands();
         this.sourceOfGridToCRS = aggregate.sourceOfGridToCRS();
-        this.colors            = colors;
         this.processor         = processor;
         this.dataType          = sources[0].getBandType();
         for (int i=1; i < sources.length; i++) {
@@ -150,7 +140,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
         for (int i=0; i<images.length; i++) {
             images[i] = sources[i].render(sliceExtent);
         }
-        return processor.aggregateBands(images, bandsPerSource, colors);
+        return processor.aggregateBands(images, bandsPerSource);
     }
 
     /**

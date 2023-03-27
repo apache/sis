@@ -29,13 +29,13 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Colors to apply on a range of sample values. Instances of {@code ColorsForRange} are temporary, used only
- * the time needed for {@link ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])}.
+ * Colors to apply on a range of sample values. Instances of {@code ColorsForRange} are usually temporary,
+ * used only the time needed for {@link ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
  *
- * @see ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])
+ * @see ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])
  *
  * @since 1.1
  */

@@ -156,7 +156,7 @@ public final class BandAggregateImageTest extends TestCase {
             new int[] {1},      // Take second band of image 1.
             null,               // Take all bands of image 2.
             new int[] {0}       // Take first band of image 1.
-        }, null);
+        });
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
