@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.DoubleUnaryOperator;
 import java.awt.Color;
@@ -34,7 +33,6 @@ import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
 import java.nio.DoubleBuffer;
 import javax.measure.Quantity;
-import org.apache.sis.coverage.Category;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -43,10 +41,12 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.CompoundTransform;
 import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -60,10 +60,56 @@ import org.apache.sis.util.collection.BackingStoreException;
  * {@link WritableRaster#setPixel(int, int, int[])} has more efficient implementations for integers.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 final class Visualization extends ResampledImage {
+    /**
+     * A colorization target handled in a special way by {@link Colorizer} factory methods.
+     * The fields in this class are set when the {@link Colorizer#apply(Target)} work needs
+     * to be done by the caller instead. This special case is needed because the ranges and
+     * categories specified by the user are relative to the source image while colorization
+     * operation needs ranges and categories relative to the target image.
+     */
+    static final class Target extends Colorizer.Target {
+        /**
+         * Colors to apply on the sample value ranges, as supplied by user.
+         */
+        Map<NumberRange<?>,Color[]> rangeColors;
+
+        /**
+         * Colors to apply on the sample dimensions, as supplied by user.
+         */
+        Function<Category,Color[]> categoryColors;
+
+        /**
+         * Whether the {@link Builder} has information about {@link SampleDimension} categories.
+         */
+        private final boolean hasCategories;
+
+        /**
+         * Creates a new target with the sample model of the image to colorize.
+         *
+         * @param  model          sample model of the computed image to colorize (mandatory).
+         * @param  visibleBand    the band to colorize if the colorization algorithm uses only one band, or -1 if none.
+         * @param  hasCategories  whether the builder has information about {@link SampleDimension} categories.
+         */
+        Target(final SampleModel model, final int visibleBand, final boolean hasCategories) {
+            super(model, null, visibleBand);
+            this.hasCategories = hasCategories;
+        }
+
+        /**
+         * Returns {@code true} if {@code orElse(…)} should not try alternative colorizers.
+         *
+         * @return whether {@link #orElse(Colorizer)} should not try alternative.
+         */
+        @Override
+        boolean isConsumed() {
+            return (rangeColors != null) || (hasCategories && categoryColors != null);
+        }
+    }
+
     /**
      * Builds an image where all sample values are indices of colors in an {@link IndexColorModel}.
      * If the given image stores sample values as unsigned bytes or short integers, then those values
@@ -72,8 +118,8 @@ final class Visualization extends ResampledImage {
      *
      * <p>This builder accepts two kinds of input:</p>
      * <ul>
-     *   <li>Non-null {@code sourceBands} and {@link ImageProcessor#getCategoryColors()}.</li>
-     *   <li>Non-null {@code rangesAndColors}.</li>
+     *   <li>Non-null {@link #sourceBands} and {@link Target#categoryColors}.</li>
+     *   <li>Non-null {@link Target#rangeColors}.</li>
      * </ul>
      *
      * The resulting image is suitable for visualization purposes but should not be used for computation purposes.
@@ -91,7 +137,7 @@ final class Visualization extends ResampledImage {
         private static final int NUM_BANDS = 1;
 
         /** Band to make visible. */
-        private static final int VISIBLE_BAND = 0;
+        private static final int VISIBLE_BAND = ColorModelFactory.DEFAULT_VISIBLE_BAND;
 
         ////  ┌─────────────────────────────────────┐
         ////  │ Arguments given by user             │
@@ -109,9 +155,6 @@ final class Visualization extends ResampledImage {
         /** Description of {@link #source} bands, or {@code null} if none. */
         private List<SampleDimension> sourceBands;
 
-        /** Colors to apply for range of sample values in source image, or {@code null} if none. */
-        private Collection<Map.Entry<NumberRange<?>,Color[]>> rangesAndColors;
-
         ////  ┌─────────────────────────────────────┐
         ////  │ Given by ImageProcesor.configure(…) │
         ////  └─────────────────────────────────────┘
@@ -122,8 +165,8 @@ final class Visualization extends ResampledImage {
         /** Object to use for performing interpolations. */
         Interpolation interpolation;
 
-        /** The colors to use for given categories of sample values, or {@code null} is unspecified. */
-        Function<Category,Color[]> categoryColors;
+        /** Provider of colors to apply for range of sample values in source image, or {@code null} if none. */
+        Colorizer colorizer;
 
         /** Values to use for pixels in this image that cannot be mapped to pixels in source image. */
         Number[] fillValues;
@@ -162,20 +205,6 @@ final class Visualization extends ResampledImage {
         }
 
         /**
-         * Creates a builder for a visualization image with colors specified for range of values.
-         * Current version assumes that target image bounds are the same than source image bounds
-         * and that there is no change of pixel coordinates, but this is not a real restriction.
-         * The {@code bounds} and {@code toSource} arguments could be added back in the future if useful.
-         *
-         * @param source           the image for which to replace the color model.
-         * @param rangesAndColors  range of sample values in source image associated to colors to apply.
-         */
-        Builder(final RenderedImage source, final Collection<Map.Entry<NumberRange<?>,Color[]>> rangesAndColors) {
-            this.source          = source;
-            this.rangesAndColors = rangesAndColors;
-        }
-
-        /**
          * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
          * If the source image stores sample values as unsigned bytes or short integers, then those values
          * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
@@ -195,59 +224,91 @@ final class Visualization extends ResampledImage {
          *         cannot be converted to sample values in the recolored image.
          */
         RenderedImage create(final ImageProcessor processor) throws NoninvertibleTransformException {
-            final int visibleBand = ImageUtilities.getVisibleBand(source);
+            final RenderedImage coloredSource = source;
+            final int visibleBand = ImageUtilities.getVisibleBand(coloredSource);
             if (visibleBand < 0) {
                 // This restriction may be relaxed in a future version if we implement conversion to RGB images.
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.OperationRequiresSingleBand));
             }
             /*
+             * Skip any previous `RecoloredImage` since we will replace the `ColorModel` by a new one.
+             * Keep only the band to make visible in order to reduce the amount of calculation during
+             * resampling and for saving memory.
+             */
+            while (source instanceof RecoloredImage) {
+                source = ((RecoloredImage) source).source;
+            }
+            source = BandSelectImage.create(source, new int[] {visibleBand});
+            /*
+             * If there is no conversion of pixel coordinates, there is no need for interpolations.
+             * In such case the `Visualization.computeTile(…)` implementation takes a shortcut which
+             * requires the tile layout of destination image to be the same as source image.
+             * Otherwise combine interpolation and value conversions in a single operation.
+             */
+            if (toSource == null) {
+                toSource = MathTransforms.identity(BIDIMENSIONAL);
+            }
+            final boolean shortcut = toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds));
+            if (shortcut) {
+                layout = ImageLayout.fixedSize(source);
+            }
+            /*
+             * Sample values will be unconditionally converted to integers in the [0 … 255] range.
+             * The sample model is a mandatory argument before we invoke user-supplied colorizer,
+             * which must be done before to build the color model.
+             */
+            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds);
+            final Target target = new Target(sampleModel, visibleBand, sourceBands != null);
+            if (colorizer != null) {
+                colorModel = colorizer.apply(target).orElse(null);
+            }
+            /*
              * Get a `ColorModelBuilder` which will compute the `ColorModel` of destination image.
-             * There is different ways to create colorizer, depending on which arguments were supplied by user.
+             * There is different ways to setup the builder, depending on which `Colorizer` is used.
              * In precedence order:
              *
-             *    - rangesAndColor  : Collection<Map.Entry<NumberRange<?>,Color[]>>
-             *    - sourceBands     : List<SampleDimension>
+             *    - rangeColors  : Map<NumberRange<?>,Color[]>
+             *    - sourceBands  : List<SampleDimension>
              *    - statistics
              */
             boolean initialized;
-            final ColorModelBuilder colorizer;
-            if (rangesAndColors != null) {
-                colorizer = new ColorModelBuilder(rangesAndColors);
+            final ColorModelBuilder builder;
+            if (target.rangeColors != null) {
+                builder = new ColorModelBuilder(target.rangeColors.entrySet());
                 initialized = true;
             } else {
                 /*
                  * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
-                 * in various ways: sample dimensions, scaled color model, statistics in last resort.
+                 * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
-                colorizer = new ColorModelBuilder(categoryColors);
-                initialized = (sourceBands != null) && colorizer.initialize(source.getSampleModel(), sourceBands.get(visibleBand));
+                builder = new ColorModelBuilder(target.categoryColors);
+                initialized = (sourceBands != null) && builder.initialize(coloredSource.getSampleModel(), sourceBands.get(visibleBand));
                 if (initialized) {
                     /*
                      * If we have been able to configure ColorModelBuilder using SampleDimension, apply an adjustment
                      * based on the ScaledColorModel if it exists. Use case: image is created with an IndexColorModel
-                     * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`
-                     * above. We want to preserve that contrast enhancement.
+                     * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`.
+                     * We want to preserve that contrast enhancement.
                      */
-                    colorizer.rescaleMainRange(source.getColorModel());
+                    builder.rescaleMainRange(coloredSource.getColorModel());
                 } else {
                     /*
                      * If we have not been able to use the SampleDimension, try to use the ColorModel or SampleModel.
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.
                      */
-                    initialized = colorizer.initialize(source.getColorModel());
+                    initialized = builder.initialize(coloredSource.getColorModel());
                     if (!initialized) {
-                        if (source instanceof RecoloredImage) {
-                            final RecoloredImage colored = (RecoloredImage) source;
-                            colorizer.initialize(colored.minimum, colored.maximum);
+                        if (coloredSource instanceof RecoloredImage) {
+                            final RecoloredImage colored = (RecoloredImage) coloredSource;
+                            builder.initialize(colored.minimum, colored.maximum);
                             initialized = true;
                         } else {
-                            initialized = colorizer.initialize(source.getSampleModel(), visibleBand);
+                            initialized = builder.initialize(coloredSource.getSampleModel(), visibleBand);
                         }
                     }
                 }
             }
-            source = BandSelectImage.create(source, new int[] {visibleBand});               // Make single-banded.
             if (!initialized) {
                 /*
                  * If none of above `ColorModelBuilder` configurations worked, use statistics in last resort.
@@ -255,38 +316,20 @@ final class Visualization extends ResampledImage {
                  */
                 final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(processor, sourceBands);
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
-                colorizer.initialize(statistics.minimum(), statistics.maximum());
+                builder.initialize(statistics.minimum(), statistics.maximum());
             }
-            /*
-             * If we reach this point, sample values need to be converted to integers in [0 … 255] range.
-             * Skip any previous `RecoloredImage` since we are replacing the `ColorModel` by a new one.
-             */
-            while (source instanceof RecoloredImage) {
-                source = ((RecoloredImage) source).source;
+            if (colorModel == null) {
+                colorModel = builder.compactColorModel(NUM_BANDS, VISIBLE_BAND);
             }
-            colorModel = colorizer.compactColorModel(NUM_BANDS, VISIBLE_BAND);
             converters = new MathTransform1D[] {
-                colorizer.getSampleToIndexValues()          // Must be after `compactColorModel(…)`.
+                builder.getSampleToIndexValues()            // Must be after `compactColorModel(…)`.
             };
-            /*
-             * If there is no conversion of pixel coordinates, there is no need for interpolations.
-             * In such case the `Visualization.computeTile(…)` implementation takes a shortcut which
-             * requires the tile layout of destination image to be the same as source image.
-             */
-            if (toSource == null) {
-                toSource = MathTransforms.identity(BIDIMENSIONAL);
-            }
-            if (toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds))) {
-                layout        = ImageLayout.fixedSize(source);
+            if (shortcut) {
                 interpolation = Interpolation.NEAREST;
             } else {
                 interpolation = combine(interpolation.toCompatible(source), converters);
                 converters    = null;
             }
-            /*
-             * Final image creation after the tile layout has been chosen.
-             */
-            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds);
             if (bounds == null) {
                 bounds = ImageUtilities.getBounds(source);
             }

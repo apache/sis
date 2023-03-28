@@ -26,6 +26,7 @@ import java.awt.Color;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.IndexColorModel;
+import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
@@ -81,7 +82,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
         private final int visibleBand;
 
         /**
-         * Creates a new record with the sample model of the image to colorize.
+         * Creates a new target with the sample model of the image to colorize.
          *
          * @param  model        sample model of the computed image to colorize (mandatory).
          * @param  ranges       description of the bands of the computed image to colorize, or {@code null} if none.
@@ -135,6 +136,17 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
         public OptionalInt getVisibleBand() {
             return (visibleBand >= 0) ? OptionalInt.of(visibleBand) : OptionalInt.empty();
         }
+
+        /**
+         * Returns {@code true} if {@code orElse(…)} should not try alternative colorizers.
+         * This is used only for {@link Visualization} operation, which is a special case
+         * because it merges 3 operations in a single one.
+         *
+         * @return whether {@link #orElse(Colorizer)} should not try alternative.
+         */
+        boolean isConsumed() {
+            return false;
+        }
     }
 
     /**
@@ -175,18 +187,24 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      *
      * @param  colors  the colors to use for the specified range of sample values.
      * @return a colorizer which will interpolate the given colors in the given range of values.
+     *
+     * @see ImageProcessor#visualize(RenderedImage, List)
      */
     public static Colorizer forRanges(final Map<NumberRange<?>,Color[]> colors) {
         ArgumentChecks.ensureNonEmpty("colors", colors.entrySet());
         final var factory = ColorModelFactory.piecewise(colors);
         return (target) -> {
-            final OptionalInt visibleBand = target.getVisibleBand();
-            if (visibleBand.isEmpty()) {
-                return Optional.empty();
+            if (target instanceof Visualization.Target) {
+                ((Visualization.Target) target).rangeColors = colors;
+            } else {
+                final OptionalInt visibleBand = target.getVisibleBand();
+                if (!visibleBand.isEmpty()) {
+                    final SampleModel model = target.getSampleModel();
+                    final int numBands = model.getNumBands();
+                    return Optional.ofNullable(factory.createColorModel(model.getDataType(), numBands, visibleBand.getAsInt()));
+                }
             }
-            final SampleModel model = target.getSampleModel();
-            final int numBands = model.getNumBands();
-            return Optional.ofNullable(factory.createColorModel(model.getDataType(), numBands, visibleBand.getAsInt()));
+            return Optional.empty();
         };
     }
 
@@ -202,18 +220,24 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      *
      * @param  colors  colors to use for arbitrary categories of sample values.
      * @return a colorizer which will apply colors determined by the {@link Category} of sample values.
+     *
+     * @see ImageProcessor#visualize(RenderedImage, List)
      */
     public static Colorizer forCategories(final Function<Category,Color[]> colors) {
         ArgumentChecks.ensureNonNull("colors", colors);
         return (target) -> {
-            final int visibleBand = target.getVisibleBand().orElse(-1);
-            if (visibleBand >= 0) {
-                final List<SampleDimension> ranges = target.getRanges().orElse(null);
-                if (visibleBand < ranges.size()) {
-                    final SampleModel model = target.getSampleModel();
-                    final var c = new ColorModelBuilder(colors);
-                    c.initialize(model, ranges.get(visibleBand));
-                    return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
+            if (target instanceof Visualization.Target) {
+                ((Visualization.Target) target).categoryColors = colors;
+            } else {
+                final int visibleBand = target.getVisibleBand().orElse(-1);
+                if (visibleBand >= 0) {
+                    final List<SampleDimension> ranges = target.getRanges().orElse(null);
+                    if (visibleBand < ranges.size()) {
+                        final SampleModel model = target.getSampleModel();
+                        final var c = new ColorModelBuilder(colors);
+                        c.initialize(model, ranges.get(visibleBand));
+                        return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
+                    }
                 }
             }
             return Optional.empty();
@@ -255,10 +279,10 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      */
     default Colorizer orElse(final Colorizer alternative) {
         ArgumentChecks.ensureNonNull("alternative", alternative);
-        return (model) -> {
-            var result = apply(model);
-            if (result.isEmpty()) {
-                result = alternative.apply(model);
+        return (target) -> {
+            var result = apply(target);
+            if (result.isEmpty() && !target.isConsumed()) {
+                result = alternative.apply(target);
             }
             return result;
         };

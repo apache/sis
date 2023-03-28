@@ -32,6 +32,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.internal.map.coverage.RenderingWorkaround;
@@ -67,9 +68,9 @@ final class ImageConverter extends Task<Statistics[]> {
      * Colors to apply on the mask image when that image is overlay on top of another image.
      * Current value is a transparent yellow color.
      */
-    private static final Map<NumberRange<?>,Color[]> MASK_TRANSPARENCY = Map.of(
+    private static final Colorizer MASK_TRANSPARENCY = Colorizer.forRanges(Map.of(
             NumberRange.create(0, true, 0, true), new Color[] {ColorModelFactory.TRANSPARENT},
-            NumberRange.create(1, true, 1, true), new Color[] {new Color(0x30FFFF00, true)});
+            NumberRange.create(1, true, 1, true), new Color[] {new Color(0x30FFFF00, true)}));
 
     /**
      * The Java2D image to convert.
@@ -207,9 +208,13 @@ final class ImageConverter extends Task<Statistics[]> {
     private RenderedImage getMask(final ImageProcessor processor) {
         final Object mask = source.getProperty(PlanarImage.MASK_KEY);
         if (mask instanceof RenderedImage) try {
-            return processor.visualize((RenderedImage) mask, MASK_TRANSPARENCY);
+            processor.setColorizer(MASK_TRANSPARENCY);
+            return processor.visualize((RenderedImage) mask, (java.util.List) null);
         } catch (IllegalArgumentException e) {
-            // Ignore, we will not apply any mask. Declare PropertyView.setImage(…) as the public method.
+            /*
+             * Ignore, we will not apply any mask over the thumbnail image.
+             * `PropertyView.setImage(…)` is declared as the public method.
+             */
             Logging.recoverableException(LOGGER, PropertyView.class, "setImage", e);
         }
         return null;

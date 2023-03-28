@@ -164,6 +164,7 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Properties (size, tile size, sample model, <i>etc.</i>) of destination images.
+     * Shall never be null. Default value is {@link ImageLayout#DEFAULT}.
      *
      * @see #getImageLayout()
      * @see #setImageLayout(ImageLayout)
@@ -1213,12 +1214,24 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  source  the image to recolor for visualization purposes.
      * @param  colors  colors to use for each range of values in the source image.
-     * @return recolored image for visualization purposes only.
+     * @deprecated Replaced by {@link #visualize(RenderedImage, List)} with {@code null} list argument
+     *             and colors map inferred from the {@link Colorizer}.
      */
-    public RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
+    @Deprecated(since="1.4", forRemoval=true)
+    public synchronized RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
+        /*
+         * TODO: after removal of this method, search for usages of
+         * `visualize(RenderedImage, List)` and remove unecessary `(List) null` cast.
+         */
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("colors", colors);
-        return visualize(new Visualization.Builder(source, colors.entrySet()));
+        final Colorizer old = colorizer;
+        try {
+            colorizer = Colorizer.forRanges(colors);
+            return visualize(new Visualization.Builder(null, source, null, null));
+        } finally {
+            colorizer = old;
+        }
     }
 
     /**
@@ -1227,31 +1240,75 @@ public class ImageProcessor implements Cloneable {
      * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
      * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
      *
-     * <p>This method is similar to {@link #visualize(RenderedImage, Map)}
-     * except that the {@link Map} argument is splitted in two parts: the ranges (map keys) are
-     * {@linkplain Category#getSampleRange() encapsulated in <code>Category</code>} objects, themselves
-     * {@linkplain SampleDimension#getCategories() encapsulated in <code>SampleDimension</code>} objects.
-     * The colors (map values) are determined by a function receiving {@link Category} inputs.
-     * This separation makes easier to apply colors based on criterion other than numerical values.
-     * For example, colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
-     * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
-     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
-     * the ranges of values in the destination image.</p>
-     *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
      * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
+     * <h4>Specifying colors for ranges of pixel values</h4>
+     * When no {@link SampleDimension} information is available, the recommended way to specify colors is like below.
+     * In this example, <var>min</var> and <var>max</var> are minimum and maximum values
+     * (inclusive in this example, but they could be exclusive as well) in the <em>source</em> image.
+     * Those extrema can be floating point values. This example specifies only one range of values,
+     * but arbitrary numbers of non-overlapping ranges are allowed.
+     *
+     * {@snippet lang="java" :
+     *     NumberRange<?> range = NumberRange.create(min, true, max, true);
+     *     Color[] colors = {Color.BLUE, Color.MAGENTA, Color.RED};
+     *     processor.setColorizer(Colorizer.forRanges(Map.of(range, colors)));
+     *     RenderedImage visualization = processor.visualize(source, null);
+     *     }
+     *
+     * The map given to the colorizer specifies the colors to use for different ranges of values in the source image.
+     * The ranges of values in the returned image may not be the same; this method is free to rescale them.
+     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
+     * the ranges of values in the destination image.
+     *
+     * <h4>Specifying colors for sample dimension categories</h4>
+     * If {@link SampleDimension} information is available, a more flexible way to specify colors
+     * is to associate colors to category names instead of predetermined ranges of pixel values.
+     * The ranges will be inferred indirectly, {@linkplain Category#getSampleRange() from the categories}
+     * themselves {@linkplain SampleDimension#getCategories() encapsulated in sample dimensions}.
+     * The colors are determined by a function receiving {@link Category} inputs.
+     *
+     * {@snippet lang="java" :
+     *     Map<String,Color[]> colors = Map.of(
+     *         "Temperature", new Color[] {Color.BLUE, Color.MAGENTA, Color.RED},
+     *         "Wind speed",  new Color[] {Color.GREEN, Color.CYAN, Color.BLUE});
+     *
+     *     processor.setColorizer(Colorizer.forCategories((category) ->
+     *         colors.get(category.getName().toString(Locale.ENGLISH))));
+     *
+     *     RenderedImage visualization = processor.visualize(source, ranges);
+     *     }
+     *
+     * This separation makes easier to apply colors based on criterion other than numerical values.
+     * For example, colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
+     * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
+     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
+     * the ranges of values in the destination image.
+     *
+     * <p>The two approaches can be combined. For example the following colorizer will choose colors based
+     * on sample dimensions if available, or fallback on predefined ranges of pixel values otherwise:</p>
+     *
+     * {@snippet lang="java" :
+     *     Function<Category,Color[]>  flexible   = ...;
+     *     Map<NumberRange<?>,Color[]> predefined = ...;
+     *     processor.setColorizer(Colorizer.forCategories(flexible).orElse(Colorizer.forRanges(predefined)));
+     *     }
+     *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
      * </ul>
      *
      * @param  source  the image to recolor for visualization purposes.
      * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
      *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      * @return recolored image for visualization purposes only.
+     *
+     * @see Colorizer#forRanges(Map)
+     * @see Colorizer#forCategories(Function)
      */
     public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
         ArgumentChecks.ensureNonNull("source", source);
@@ -1285,7 +1342,7 @@ public class ImageProcessor implements Cloneable {
      *       if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
-     *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
      * </ul>
      *
      * @param  source    the image to be resampled and recolored.
@@ -1313,7 +1370,7 @@ public class ImageProcessor implements Cloneable {
         synchronized (this) {
             builder.layout                  = layout;
             builder.interpolation           = interpolation;
-            builder.categoryColors          = colors;
+            builder.colorizer               = colorizer;
             builder.fillValues              = fillValues;
             builder.positionalAccuracyHints = positionalAccuracyHints;
         }
