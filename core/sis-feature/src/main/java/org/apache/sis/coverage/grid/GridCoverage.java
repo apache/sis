@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -36,8 +35,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -58,7 +56,7 @@ import org.opengis.coverage.CannotEvaluateException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public abstract class GridCoverage extends BandedCoverage {
@@ -207,6 +205,19 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
+     * Returns the background value of each sample dimension.
+     * The array length is the number of sample dimensions (bands).
+     * Some array element may be {@code null} if the corresponding band has no background value.
+     *
+     * @return background value of each sample dimension.
+     *
+     * @see SampleDimension#getBackground()
+     */
+    final Number[] getBackground() {
+        return SampleDimensions.backgrounds(sampleDimensions);
+    }
+
+    /**
      * Returns the data type identifying the primitive type used for storing sample values in each band.
      * We assume no packed sample model (e.g. no packing of 4 byte ARGB values in a single 32-bits integer).
      * If the sample model is packed, the value returned by this method should be as if the image has been
@@ -289,6 +300,9 @@ public abstract class GridCoverage extends BandedCoverage {
 
     /**
      * Creates a new image of the given data type which will compute values using the given converters.
+     * The {@link #sampleDimensions} declared in this {@code GridCoverage} instances shall be applicable
+     * to the returned image, as it will be assigned to the image property
+     * {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY}.
      *
      * @param  source      the image for which to convert sample values.
      * @param  bandType    the type of data in the bands resulting from conversion of given image.
@@ -299,17 +313,12 @@ public abstract class GridCoverage extends BandedCoverage {
     final RenderedImage convert(final RenderedImage source, final DataType bandType,
             final MathTransform1D[] converters, final ImageProcessor processor)
     {
-        final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
-        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE);
-        final ColorModel colors;
-        if (colorizer.initialize(source.getSampleModel(), sampleDimensions[visibleBand]) ||
-            colorizer.initialize(source.getColorModel()))
-        {
-            colors = colorizer.createColorModel(bandType.toDataBufferType(), sampleDimensions.length, visibleBand);
-        } else {
-            colors = ColorModelBuilder.NULL_COLOR_MODEL;
+        try {
+            SampleDimensions.CONVERTED_BANDS.set(sampleDimensions);
+            return processor.convert(source, getRanges(), converters, bandType);
+        } finally {
+            SampleDimensions.CONVERTED_BANDS.remove();
         }
-        return processor.convert(source, getRanges(), converters, bandType, colors);
     }
 
     /**

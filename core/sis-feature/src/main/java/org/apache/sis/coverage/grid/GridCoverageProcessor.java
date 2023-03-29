@@ -36,6 +36,7 @@ import org.apache.sis.coverage.RegionOfInterest;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.coverage.MultiSourcesArgument;
@@ -56,6 +57,8 @@ import org.apache.sis.measure.NumberRange;
  *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
  *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for cells that cannot be computed.
+ *   </li><li>
+ *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
  *   </li><li>
  *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
  *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
@@ -86,11 +89,27 @@ public class GridCoverageProcessor implements Cloneable {
     private static final WeakHashSet<ImageProcessor> PROCESSORS = new WeakHashSet<>(ImageProcessor.class);
 
     /**
-     * Returns an unique instance of the given processor. Both the given and the returned processors
-     * shall be unmodified, because they may be shared by many {@link GridCoverage} instances.
+     * Returns a unique instance of the given processor. Both the given and the returned processors shall not
+     * be modified after this method call, because they may be shared by many {@link GridCoverage} instances.
+     * It implies that the given processor shall <em>not</em> be {@link #imageProcessor}. It must be a clone.
+     *
+     * @param  clone  a clone of {@link #imageProcessor} for which to return a unique instance.
+     * @return a unique instance of the given clone. Shall not be modified by the caller.
      */
-    static ImageProcessor unique(final ImageProcessor image) {
-        return PROCESSORS.unique(image);
+    static ImageProcessor unique(final ImageProcessor clone) {
+        return PROCESSORS.unique(clone);
+    }
+
+    /**
+     * Returns a unique instance of the current state of {@link #imageProcessor}.
+     * Callers shall not modify the returned object because it may be shared by many {@link GridCoverage} instances.
+     */
+    private ImageProcessor snapshot() {
+        ImageProcessor shared = PROCESSORS.get(imageProcessor);
+        if (shared == null) {
+            shared = unique(imageProcessor.clone());
+        }
+        return shared;
     }
 
     /**
@@ -148,6 +167,64 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public void setInterpolation(final Interpolation method) {
         imageProcessor.setInterpolation(method);
+    }
+
+    /**
+     * Returns the values to use for pixels that cannot be computed.
+     * The default implementation delegates to the image processor.
+     *
+     * @return fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
+     *
+     * @see ImageProcessor#getFillValues()
+     *
+     * @since 1.2
+     */
+    public Number[] getFillValues() {
+        return imageProcessor.getFillValues();
+    }
+
+    /**
+     * Sets the values to use for pixels that cannot be computed.
+     * The default implementation delegates to the image processor.
+     *
+     * @param  values  fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
+     *
+     * @see ImageProcessor#setFillValues(Number...)
+     *
+     * @since 1.2
+     */
+    public void setFillValues(final Number... values) {
+        imageProcessor.setFillValues(values);
+    }
+
+    /**
+     * Returns the colorization algorithm to apply on computed images.
+     * The default implementation delegates to the image processor.
+     *
+     * @return colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @see ImageProcessor#getColorizer()
+     *
+     * @since 1.4
+     */
+    public Colorizer getColorizer() {
+        return imageProcessor.getColorizer();
+    }
+
+    /**
+     * Sets the colorization algorithm to apply on computed images.
+     * The colorizer is used by {@link #convert(GridCoverage, MathTransform1D[], Function) convert(…)}
+     * and {@link #aggregateRanges(GridCoverage...) aggregateRanges(…)} operations among others.
+     * The default implementation delegates to the image processor.
+     *
+     * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @see ImageProcessor#setColorizer(Colorizer)
+     *
+     * @since 1.4
+     */
+    public void setColorizer(final Colorizer colorizer) {
+        imageProcessor.setColorizer(colorizer);
     }
 
     /**
@@ -246,34 +323,6 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the values to use for pixels that cannot be computed.
-     * The default implementation delegates to the image processor.
-     *
-     * @return fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
-     *
-     * @see ImageProcessor#getFillValues()
-     *
-     * @since 1.2
-     */
-    public Number[] getFillValues() {
-        return imageProcessor.getFillValues();
-    }
-
-    /**
-     * Sets the values to use for pixels that cannot be computed.
-     * The default implementation delegates to the image processor.
-     *
-     * @param  values  fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
-     *
-     * @see ImageProcessor#setFillValues(Number...)
-     *
-     * @since 1.2
-     */
-    public void setFillValues(final Number... values) {
-        imageProcessor.setFillValues(values);
-    }
-
-    /**
      * Applies a mask defined by a region of interest (ROI). If {@code maskInside} is {@code true},
      * then all pixels inside the given ROI are set to the {@linkplain #getFillValues() fill values}.
      * If {@code maskInside} is {@code false}, then the mask is reversed:
@@ -359,7 +408,7 @@ public class GridCoverageProcessor implements Cloneable {
             builder.clear();
         }
         return new ConvertedGridCoverage(source, UnmodifiableArrayList.wrap(targetBands),
-                                         converters, true, unique(imageProcessor), true);
+                                         converters, true, snapshot(), true);
     }
 
     /**
@@ -484,6 +533,7 @@ public class GridCoverageProcessor implements Cloneable {
         }
         final GridCoverage resampled;
         try {
+            // `ResampledGridCoverage` will create itself a clone of `imageProcessor`.
             resampled = ResampledGridCoverage.create(source, target, imageProcessor, allowOperationReplacement);
         } catch (IllegalGridGeometryException e) {
             final Throwable cause = e.getCause();
@@ -689,7 +739,7 @@ public class GridCoverageProcessor implements Cloneable {
         if (aggregate.isIdentity()) {
             return aggregate.sources()[0];
         }
-        return new BandAggregateGridCoverage(aggregate, imageProcessor);
+        return new BandAggregateGridCoverage(aggregate, snapshot());
     }
 
     /**

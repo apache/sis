@@ -50,8 +50,16 @@ final class BandSelectImage extends SourceAlignedImage {
      * @see #getProperty(String)
      */
     private static final Set<String> INHERITED_PROPERTIES = Set.of(
-            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY,         // Properties to forward as-is.
-            SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);            // Properties to forward after band reduction.
+            GRID_GEOMETRY_KEY, POSITIONAL_ACCURACY_KEY,                         // Properties to forward as-is.
+            SAMPLE_DIMENSIONS_KEY, SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);     // Properties to forward after band reduction.
+
+    /**
+     * Inherited properties that require band reduction.
+     * Shall be a subset of {@link #INHERITED_PROPERTIES}.
+     * All values must be arrays.
+     */
+    private static final Set<String> REDUCED_PROPERTIES = Set.of(
+            SAMPLE_DIMENSIONS_KEY, SAMPLE_RESOLUTIONS_KEY, STATISTICS_KEY);
 
     /**
      * The selected bands.
@@ -144,7 +152,7 @@ final class BandSelectImage extends SourceAlignedImage {
      */
     private static Object getProperty(final RenderedImage source, final String key, final int[] bands) {
         final Object value = source.getProperty(key);
-        if (value != null && (key.equals(SAMPLE_RESOLUTIONS_KEY) || key.equals(STATISTICS_KEY))) {
+        if (value != null && REDUCED_PROPERTIES.contains(key)) {
             final Class<?> componentType = value.getClass().getComponentType();
             if (componentType != null) {
                 final Object reduced = Array.newInstance(componentType, bands.length);

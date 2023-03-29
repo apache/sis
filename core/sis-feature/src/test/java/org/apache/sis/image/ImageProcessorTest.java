@@ -34,11 +34,38 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests {@link ImageProcessor}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 @DependsOn(org.apache.sis.internal.processing.isoline.IsolinesTest.class)
 public final class ImageProcessorTest extends TestCase {
+    /**
+     * The processor to test.
+     */
+    private final ImageProcessor processor;
+
+    /**
+     * Creates a new test case.
+     */
+    public ImageProcessorTest() {
+        processor = new ImageProcessor();
+    }
+
+    /**
+     * Tests {@link ImageProcessor#addUserProperties(RenderedImage, Map)}.
+     */
+    @Test
+    public void testAddUserProperties() {
+        final String key = "my-property";
+        final String value = "my-value";
+        final RenderedImage source = new BufferedImage(2, 2, BufferedImage.TYPE_BYTE_BINARY);
+        final RenderedImage image  = processor.addUserProperties(source, Map.of(key, value));
+        assertSame(BufferedImage.UndefinedProperty, source.getProperty(key));
+        assertSame(BufferedImage.UndefinedProperty,  image.getProperty("another-property"));
+        assertSame(value, image.getProperty(key));
+        assertArrayEquals(new String[] {key}, image.getPropertyNames());
+    }
+
     /**
      * Tests {@link ImageProcessor#isolines(RenderedImage, double[][], MathTransform)}.
      */
@@ -46,8 +73,6 @@ public final class ImageProcessorTest extends TestCase {
     public void testIsolines() {
         final BufferedImage image = new BufferedImage(3, 3, BufferedImage.TYPE_BYTE_BINARY);
         image.getRaster().setSample(1, 1, 0, 1);
-
-        final ImageProcessor processor = new ImageProcessor();
         boolean parallel = false;
         do {
             processor.setExecutionMode(parallel ? ImageProcessor.Mode.SEQUENTIAL : ImageProcessor.Mode.PARALLEL);

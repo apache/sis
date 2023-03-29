@@ -41,7 +41,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.CompoundTransform;
 import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
-import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
@@ -118,7 +117,7 @@ final class Visualization extends ResampledImage {
      *
      * <p>This builder accepts two kinds of input:</p>
      * <ul>
-     *   <li>Non-null {@link #sourceBands} and {@link Target#categoryColors}.</li>
+     *   <li>Non-null {@link #sampleDimensions} and {@link Target#categoryColors}.</li>
      *   <li>Non-null {@link Target#rangeColors}.</li>
      * </ul>
      *
@@ -136,8 +135,8 @@ final class Visualization extends ResampledImage {
         /** Number of bands of the image to create. */
         private static final int NUM_BANDS = 1;
 
-        /** Band to make visible. */
-        private static final int VISIBLE_BAND = ColorModelFactory.DEFAULT_VISIBLE_BAND;
+        /** Band to make visible among the remaining {@value #NUM_BANDS} bands. */
+        private static final int VISIBLE_BAND = 0;
 
         ////  ┌─────────────────────────────────────┐
         ////  │ Arguments given by user             │
@@ -153,7 +152,7 @@ final class Visualization extends ResampledImage {
         private MathTransform toSource;
 
         /** Description of {@link #source} bands, or {@code null} if none. */
-        private List<SampleDimension> sourceBands;
+        private SampleDimension[] sampleDimensions;
 
         ////  ┌─────────────────────────────────────┐
         ////  │ Given by ImageProcesor.configure(…) │
@@ -190,18 +189,30 @@ final class Visualization extends ResampledImage {
         /**
          * Creates a builder for a visualization image with colors inferred from sample dimensions.
          *
-         * @param bounds       desired domain of pixel coordinates, or {@code null} if same as {@code source} image.
-         * @param source       the image for which to replace the color model.
-         * @param toSource     pixel coordinates conversion to {@code source} image, or {@code null} if none.
-         * @param sourceBands  description of {@code source} bands.
+         * @param bounds    desired domain of pixel coordinates, or {@code null} if same as {@code source} image.
+         * @param source    the image for which to replace the color model.
+         * @param toSource  pixel coordinates conversion to {@code source} image, or {@code null} if none.
          */
+        Builder(final Rectangle bounds, final RenderedImage source, final MathTransform toSource) {
+            this.bounds   = bounds;
+            this.source   = source;
+            this.toSource = toSource;
+            Object ranges = source.getProperty(SAMPLE_DIMENSIONS_KEY);
+            if (ranges instanceof SampleDimension[]) {
+                sampleDimensions = (SampleDimension[]) ranges;
+            }
+        }
+
+        @Deprecated(since="1.4", forRemoval=true)
         Builder(final Rectangle bounds, final RenderedImage source, final MathTransform toSource,
-                final List<SampleDimension> sourceBands)
+                final List<SampleDimension> sampleDimensions)
         {
-            this.bounds      = bounds;
-            this.source      = source;
-            this.toSource    = toSource;
-            this.sourceBands = sourceBands;
+            this.bounds   = bounds;
+            this.source   = source;
+            this.toSource = toSource;
+            if (sampleDimensions != null) {
+                this.sampleDimensions = sampleDimensions.toArray(SampleDimension[]::new);
+            }
         }
 
         /**
@@ -232,13 +243,16 @@ final class Visualization extends ResampledImage {
             }
             /*
              * Skip any previous `RecoloredImage` since we will replace the `ColorModel` by a new one.
+             * Discards image properties such as statistics because this image is not for computation.
              * Keep only the band to make visible in order to reduce the amount of calculation during
              * resampling and for saving memory.
              */
-            while (source instanceof RecoloredImage) {
-                source = ((RecoloredImage) source).source;
+            while (source instanceof ImageAdapter) {
+                source = ((ImageAdapter) source).source;
             }
             source = BandSelectImage.create(source, new int[] {visibleBand});
+            final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.length)
+                                            ? sampleDimensions[visibleBand] : null;
             /*
              * If there is no conversion of pixel coordinates, there is no need for interpolations.
              * In such case the `Visualization.computeTile(…)` implementation takes a shortcut which
@@ -258,7 +272,7 @@ final class Visualization extends ResampledImage {
              * which must be done before to build the color model.
              */
             sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds);
-            final Target target = new Target(sampleModel, visibleBand, sourceBands != null);
+            final Target target = new Target(sampleModel, VISIBLE_BAND, visibleSD != null);
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);
             }
@@ -267,8 +281,8 @@ final class Visualization extends ResampledImage {
              * There is different ways to setup the builder, depending on which `Colorizer` is used.
              * In precedence order:
              *
-             *    - rangeColors  : Map<NumberRange<?>,Color[]>
-             *    - sourceBands  : List<SampleDimension>
+             *    - rangeColors      : Map<NumberRange<?>,Color[]>
+             *    - sampleDimensions : SampleDimension[]
              *    - statistics
              */
             boolean initialized;
@@ -282,7 +296,7 @@ final class Visualization extends ResampledImage {
                  * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
                 builder = new ColorModelBuilder(target.categoryColors);
-                initialized = (sourceBands != null) && builder.initialize(coloredSource.getSampleModel(), sourceBands.get(visibleBand));
+                initialized = builder.initialize(coloredSource.getSampleModel(), visibleSD);
                 if (initialized) {
                     /*
                      * If we have been able to configure ColorModelBuilder using SampleDimension, apply an adjustment
@@ -314,7 +328,7 @@ final class Visualization extends ResampledImage {
                  * If none of above `ColorModelBuilder` configurations worked, use statistics in last resort.
                  * We do that after we reduced the image to a single band in order to reduce the amount of calculations.
                  */
-                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(processor, sourceBands);
+                final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(visibleSD);
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
                 builder.initialize(statistics.minimum(), statistics.maximum());
             }

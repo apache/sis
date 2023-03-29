@@ -118,9 +118,12 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
 
         /**
          * Returns a description of the bands of the image to colorize.
-         * This is typically obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+         * This information may be present if the image operation is invoked by a
+         * {@link org.apache.sis.coverage.grid.GridCoverageProcessor} operation,
+         * or if the source image contains the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property
          *
          * @return description of the bands of the image to colorize.
+         * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()
          */
         public Optional<List<SampleDimension>> getRanges() {
             return Optional.ofNullable(ranges);
@@ -132,6 +135,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
          * This information is ignored if the colorization uses many bands (e.g. {@link #ARGB}).
          *
          * @return the band to colorize if the colorization algorithm uses only one band.
+         * @see org.apache.sis.coverage.grid.ImageRenderer#setVisibleBand(int)
          */
         public OptionalInt getVisibleBand() {
             return (visibleBand >= 0) ? OptionalInt.of(visibleBand) : OptionalInt.empty();
@@ -188,7 +192,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * @param  colors  the colors to use for the specified range of sample values.
      * @return a colorizer which will interpolate the given colors in the given range of values.
      *
-     * @see ImageProcessor#visualize(RenderedImage, List)
+     * @see ImageProcessor#visualize(RenderedImage)
      */
     public static Colorizer forRanges(final Map<NumberRange<?>,Color[]> colors) {
         ArgumentChecks.ensureNonEmpty("colors", colors.entrySet());
@@ -209,19 +213,26 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
     }
 
     /**
-     * Creates a colorizer which will associate colors to coverage categories.
+     * Creates a colorizer which will interpolate colors in ranges identified by categories.
+     * This colorizer is similar to {@link #forRanges(Map)} (with the same limitations) except that instead of mapping
+     * colors to predefined ranges of pixel values, it maps colors to {@linkplain Category#getName() category names},
+     * {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement} or other properties.
      * The given function provides a way to colorize images without knowing in advance the numerical values of pixels.
      * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
      * the given function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.
+     * The function can return {@code null} or empty color arrays for some categories,
+     * which are interpreted as fully transparent pixels.
      *
      * <p>This colorizer is used when {@link Target#getRanges()} provides a non-empty value.
-     * The given function can return {@code null} or empty arrays for some categories,
-     * which are interpreted as fully transparent pixels.</p>
+     * That value is typically fetched from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property,
+     * which is itself typically fetched from {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     * If no sample dimension information is available, then this colorizer do not build a color model.
+     * A fallback can be specified with {@link #orElse(Colorizer)}.</p>
      *
      * @param  colors  colors to use for arbitrary categories of sample values.
      * @return a colorizer which will apply colors determined by the {@link Category} of sample values.
      *
-     * @see ImageProcessor#visualize(RenderedImage, List)
+     * @see ImageProcessor#visualize(RenderedImage)
      */
     public static Colorizer forCategories(final Function<Category,Color[]> colors) {
         ArgumentChecks.ensureNonNull("colors", colors);
@@ -235,8 +246,9 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                     if (visibleBand < ranges.size()) {
                         final SampleModel model = target.getSampleModel();
                         final var c = new ColorModelBuilder(colors);
-                        c.initialize(model, ranges.get(visibleBand));
-                        return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
+                        if (c.initialize(model, ranges.get(visibleBand))) {
+                            return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
+                        }
                     }
                 }
             }

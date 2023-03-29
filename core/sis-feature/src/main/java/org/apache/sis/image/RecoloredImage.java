@@ -44,7 +44,7 @@ import org.apache.sis.measure.NumberRange;
  * for {@link ImageProcessor}, defined here for reducing {@link ImageProcessor} size.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 final class RecoloredImage extends ImageAdapter {
@@ -226,18 +226,9 @@ final class RecoloredImage extends ImageAdapter {
             }
             value = modifiers.get("sampleDimensions");
             if (value != null) {
-                if (value instanceof List<?>) {
-                    final List<?> ranges = (List<?>) value;
-                    if (visibleBand < ranges.size()) {
-                        value = ranges.get(visibleBand);
-                    }
-                }
-                if (value != null) {
-                    if (value instanceof SampleDimension) {
-                        range = (SampleDimension) value;
-                    } else {
-                        throw illegalPropertyType(modifiers, "sampleDimensions", value);
-                    }
+                range = getSampleDimension(value, visibleBand);
+                if (range == null) {
+                    throw illegalPropertyType(modifiers, "sampleDimensions", value);
                 }
             }
         }
@@ -249,7 +240,7 @@ final class RecoloredImage extends ImageAdapter {
             if (statistics == null) {
                 if (statsAllBands == null) {
                     final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[visibleBand + 1];
-                    sampleFilters[visibleBand] = processor.filterNodataValues(nodataValues);
+                    sampleFilters[visibleBand] = ImageProcessor.filterNodataValues(nodataValues);
                     statsAllBands = processor.valueOfStatistics(statsSource, areaOfInterest, sampleFilters);
                 }
                 if (statsAllBands != null && visibleBand < statsAllBands.length) {
@@ -282,6 +273,9 @@ final class RecoloredImage extends ImageAdapter {
             final int size = icm.getMapSize();
             int validMin = 0;
             int validMax = size - 1;        // Inclusive.
+            if (range == null) {
+                range = getSampleDimension(source.getProperty(PlanarImage.SAMPLE_DIMENSIONS_KEY), visibleBand);
+            }
             if (range != null) {
                 double span = 0;
                 for (final Category category : range.getCategories()) {
@@ -343,6 +337,28 @@ final class RecoloredImage extends ImageAdapter {
             }
         }
         return ImageProcessor.unique(new RecoloredImage(source, cm, minimum, maximum));
+    }
+
+    /**
+     * Gets the sample dimension from the given property value.
+     *
+     * @param  value        the property value.
+     * @param  visibleBand  index of the element to fetch if the property is a list or an array.
+     * @return the sample dimension at the given visible band index, or {@code null} if none.
+     */
+    private static SampleDimension getSampleDimension(Object value, final int visibleBand) {
+        if (value instanceof SampleDimension[]) {
+            final var ranges = (SampleDimension[]) value;
+            if (visibleBand < ranges.length) {
+                return ranges[visibleBand];
+            }
+        } else if (value instanceof List<?>) {
+            final var ranges = (List<?>) value;
+            if (visibleBand < ranges.size()) {
+                value = ranges.get(visibleBand);
+            }
+        }
+        return (value instanceof SampleDimension) ? (SampleDimension) value : null;
     }
 
     /**

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Graphics2D;
@@ -29,7 +30,6 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.NoninvertibleTransformException;
-import java.util.logging.Logger;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -194,7 +194,7 @@ public class RenderingData implements Cloneable {
      * @see #setImageSpace(GridGeometry, List, int[])
      * @see #statistics()
      */
-    private List<SampleDimension> dataRanges;
+    private SampleDimension[] dataRanges;
 
     /**
      * Conversion or transformation from {@linkplain #data} CRS to {@linkplain PlanarCanvas#getObjectiveCRS()
@@ -306,10 +306,10 @@ public class RenderingData implements Cloneable {
      */
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     public final void setImageSpace(final GridGeometry domain, final List<SampleDimension> ranges, final int[] xyDims) {
-        processor.setFillValues(SampleDimensions.backgrounds(ranges));
-        dataRanges   = ranges;      // Not cloned because already an unmodifiable list.
+        dataRanges   = (ranges != null) ? ranges.toArray(SampleDimension[]::new) : null;
         dataGeometry = domain;
         xyDimensions = xyDims;
+        processor.setFillValues(SampleDimensions.backgrounds(dataRanges));
         /*
          * If the grid geometry does not define a "grid to CRS" transform, set it to an identity transform.
          * We do that because this class needs a complete `GridGeometry` as much as possible.
@@ -536,7 +536,7 @@ public class RenderingData implements Cloneable {
                     image = coarse.render(sliceExtent);
                 }
             }
-            statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(processor, dataRanges));
+            statistics = processor.valueOfStatistics(image, null, SampleDimensions.toSampleFilters(dataRanges));
         }
         final Map<String,Object> modifiers = new HashMap<>(8);
         modifiers.put("statistics", statistics);
@@ -652,7 +652,8 @@ public class RenderingData implements Cloneable {
         }
         /*
          * Apply a map projection on the image, then convert the floating point results to integer values
-         * that we can use with IndexColorModel.
+         * that we can use with `IndexColorModel`. The two operations (resampling and conversions) are
+         * combined in a single "visualization" operation of efficiency.
          *
          * TODO: if `colors` is null, instead of defaulting to `ColorModelBuilder.GRAYSCALE` we should get the colors
          *       from the current ColorModel. This work should be done in `ColorModelBuilder` by converting the ranges
@@ -661,11 +662,28 @@ public class RenderingData implements Cloneable {
          */
         if (CREATE_INDEX_COLOR_MODEL) {
             final ColorModelType ct = ColorModelType.find(recoloredImage.getColorModel());
-            if (ct.isSlow || (ct.useColorRamp && processor.getCategoryColors() != null)) {
-                return processor.visualize(recoloredImage, bounds, displayToCenter, dataRanges);
+            if (ct.isSlow || (ct.useColorRamp && processor.getColorizer() != null)) {
+                return processor.visualize(withSampleDimensions(recoloredImage), bounds, displayToCenter);
             }
         }
         return processor.resample(recoloredImage, bounds, displayToCenter);
+    }
+
+    /**
+     * Returns an image augmented with the sample dimensions if not already present.
+     * If the property is present but with a different value, the {@link #dataRanges}
+     * will overwrite the image property value.
+     *
+     * @param  image  the image for which to add a property if not already present.
+     * @return image augmented with the given property.
+     */
+    private RenderedImage withSampleDimensions(RenderedImage image) {
+        final String key = PlanarImage.SAMPLE_DIMENSIONS_KEY;
+        final SampleDimension[] value = dataRanges;
+        if (!Objects.deepEquals(image.getProperty(key), value)) {
+            image = processor.addUserProperties(image, Map.of(key, value));
+        }
+        return image;
     }
 
     /**

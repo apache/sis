@@ -161,7 +161,7 @@ public final class StatisticsCalculatorTest extends TestCase {
     public void testWithSampleFilters() {
         final ImageProcessor operations = new ImageProcessor();
         sampleFilters = new DoubleUnaryOperator[] {
-            operations.filterNodataValues(100, 51324, 51323, 201, 310)
+            ImageProcessor.filterNodataValues(100, 51324, 51323, 201, 310)
         };
         compareParallelWithSequential(operations, 101, 51322);
     }

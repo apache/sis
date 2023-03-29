@@ -618,7 +618,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.2
      */
-    public DoubleUnaryOperator filterNodataValues(final Number... values) {
+    public static DoubleUnaryOperator filterNodataValues(final Number... values) {
         return (values != null) ? StatisticsCalculator.filterNodataValues(values) : null;
     }
 
@@ -820,9 +820,12 @@ public class ImageProcessor implements Cloneable {
      *   </tr><tr>
      *     <td>{@code "sampleDimensions"}</td>
      *     <td>Meaning of pixel values.</td>
-     *     <td>{@link SampleDimension}</td>
+     *     <td>{@link SampleDimension} or {@code SampleDimension[]}</td>
      *   </tr>
      * </table>
+     *
+     * <b>Note:</b> if no value is associated to the {@code "sampleDimensions"} key, then the default
+     * value will be the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property value if defined.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -844,6 +847,44 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage stretchColorRamp(final RenderedImage source, final Map<String,?> modifiers) {
         ArgumentChecks.ensureNonNull("source", source);
         return RecoloredImage.stretchColorRamp(this, source, modifiers);
+    }
+
+    /**
+     * Returns an image augmented with user-defined property values.
+     * The specified properties overwrite any property that may be defined by the source image.
+     * When an {@linkplain RenderedImage#getProperty(String) image property value is requested}, the steps are:
+     *
+     * <ol>
+     *   <li>If the {@code properties} map has an entry for the property name, returns the associated value.
+     *       It may be {@code null}.</li>
+     *   <li>Otherwise if the property is defined by the source image, returns its value.
+     *       It may be {@code null}.</li>
+     *   <li>Otherwise returns {@link java.awt.Image#UndefinedProperty}.</li>
+     * </ol>
+     *
+     * The given {@code properties} map is retained by reference in the returned image.
+     * The {@code Map} is <em>not</em> copied in order to allow
+     * the use of custom implementations doing deferred calculations.
+     * If the caller intends to modify the map content after this method call,
+     * (s)he should use a {@link java.util.concurrent.ConcurrentMap}.
+     *
+     * <p>The returned image is "live": changes in {@code source} image properties or in
+     * {@code properties} map entries are immediately reflected in the returned image.</p>
+     *
+     * <p>Null are valid image property values. An entry associated with the {@code null}
+     * value in the {@code properties} map is not the same as an absence of entry.</p>
+     *
+     * @param  source       the source image to augment with user-specified property values.
+     * @param  properties   properties overwriting or completing {@code source} properties.
+     * @return an image augmented with the specified properties.
+     *
+     * @see RenderedImage#getPropertyNames()
+     * @see RenderedImage#getProperty(String)
+     *
+     * @since 1.4
+     */
+    public RenderedImage addUserProperties(final RenderedImage source, final Map<String,Object> properties) {
+        return unique(new UserProperties(source, properties));
     }
 
     /**
@@ -937,7 +978,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.4
      */
-    public RenderedImage aggregateBands(RenderedImage[] sources, int[][] bandsPerSource) {
+    public RenderedImage aggregateBands(final RenderedImage[] sources, final int[][] bandsPerSource) {
         ArgumentChecks.ensureNonEmpty("sources", sources);
         final Colorizer colorizer;
         synchronized (this) {
@@ -1214,8 +1255,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  source  the image to recolor for visualization purposes.
      * @param  colors  colors to use for each range of values in the source image.
-     * @deprecated Replaced by {@link #visualize(RenderedImage, List)} with {@code null} list argument
-     *             and colors map inferred from the {@link Colorizer}.
+     * @deprecated Replaced by {@link #visualize(RenderedImage)} with colors map inferred from the {@link Colorizer}.
      */
     @Deprecated(since="1.4", forRemoval=true)
     public synchronized RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
@@ -1235,6 +1275,19 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * @deprecated Replaced by {@link #visualize(RenderedImage)} with sample dimensions
+     *             read from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property.
+     *
+     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
+     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
+    public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return visualize(new Visualization.Builder(null, source, null, ranges));
+    }
+
+    /**
      * Returns an image where all sample values are indices of colors in an {@link IndexColorModel}.
      * If the given image stores sample values as unsigned bytes or short integers, then those values
      * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
@@ -1244,7 +1297,26 @@ public class ImageProcessor implements Cloneable {
      * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
-     * <h4>Specifying colors for ranges of pixel values</h4>
+     * <h4>How to specify colors</h4>
+     * The image colors can be controlled by the {@link Colorizer} set on this image processor.
+     * It is possible to {@linkplain Colorizer#forInstance(ColorModel) specify explicitely} the
+     * {@link ColorModel} to use, but this approach is unsafe because it depends on the pixel values
+     * <em>after</em> their conversion to the visualization image, which is implementation dependent.
+     * A safer approach is to define colors relative to pixel values <em>before</em> their conversions.
+     * It can be done in two ways, depending on whether the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY}
+     * image property is defined or not.
+     * Those two ways are described in next sections and can be combined in a chain of fallbacks.
+     * For example the following colorizer will choose colors based on sample dimensions if available,
+     * or fallback on predefined ranges of pixel values otherwise:
+     *
+     * {@snippet lang="java" :
+     *     Function<Category,Color[]>  flexible   = ...;
+     *     Map<NumberRange<?>,Color[]> predefined = ...;
+     *     processor.setColorizer(Colorizer.forCategories(flexible)     // Preferred way.
+     *                    .orElse(Colorizer.forRanges(predefined)));    // Fallback.
+     *     }
+     *
+     * <h5>Specifying colors for ranges of pixel values</h5>
      * When no {@link SampleDimension} information is available, the recommended way to specify colors is like below.
      * In this example, <var>min</var> and <var>max</var> are minimum and maximum values
      * (inclusive in this example, but they could be exclusive as well) in the <em>source</em> image.
@@ -1263,7 +1335,7 @@ public class ImageProcessor implements Cloneable {
      * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
      * the ranges of values in the destination image.
      *
-     * <h4>Specifying colors for sample dimension categories</h4>
+     * <h5>Specifying colors for sample dimension categories</h5>
      * If {@link SampleDimension} information is available, a more flexible way to specify colors
      * is to associate colors to category names instead of predetermined ranges of pixel values.
      * The ranges will be inferred indirectly, {@linkplain Category#getSampleRange() from the categories}
@@ -1287,15 +1359,6 @@ public class ImageProcessor implements Cloneable {
      * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
      * the ranges of values in the destination image.
      *
-     * <p>The two approaches can be combined. For example the following colorizer will choose colors based
-     * on sample dimensions if available, or fallback on predefined ranges of pixel values otherwise:</p>
-     *
-     * {@snippet lang="java" :
-     *     Function<Category,Color[]>  flexible   = ...;
-     *     Map<NumberRange<?>,Color[]> predefined = ...;
-     *     processor.setColorizer(Colorizer.forCategories(flexible).orElse(Colorizer.forRanges(predefined)));
-     *     }
-     *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
@@ -1303,16 +1366,17 @@ public class ImageProcessor implements Cloneable {
      * </ul>
      *
      * @param  source  the image to recolor for visualization purposes.
-     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
-     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      * @return recolored image for visualization purposes only.
      *
      * @see Colorizer#forRanges(Map)
      * @see Colorizer#forCategories(Function)
+     * @see PlanarImage#SAMPLE_DIMENSIONS_KEY
+     *
+     * @since 1.4
      */
-    public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
+    public RenderedImage visualize(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        return visualize(new Visualization.Builder(null, source, null, ranges));
+        return visualize(new Visualization.Builder(null, source, null));
     }
 
     /**
@@ -1322,7 +1386,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <ol>
      *   <li><code>{@linkplain #resample(RenderedImage, Rectangle, MathTransform) resample}(source, bounds, toSource)</code></li>
-     *   <li><code>{@linkplain #visualize(RenderedImage, List) visualize}(resampled, ranges)</code></li>
+     *   <li><code>{@linkplain #visualize(RenderedImage) visualize}(resampled)</code></li>
      * </ol>
      *
      * Combining above steps may be advantageous when the {@code resample(…)} result is not needed for anything
@@ -1349,10 +1413,26 @@ public class ImageProcessor implements Cloneable {
      * @param  bounds    domain of pixel coordinates of resampled image to create.
      *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
      * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
-     * @param  ranges    description of {@code source} bands, or {@code null} if none. This is typically
-     *                   obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      * @return resampled and recolored image for visualization purposes only.
+     *
+     * @since 1.4
      */
+    public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource) {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("bounds",   bounds);
+        ArgumentChecks.ensureNonNull("toSource", toSource);
+        ensureNonEmpty(bounds);
+        return visualize(new Visualization.Builder(bounds, source, toSource));
+    }
+
+    /**
+     * @deprecated Replaced by {@link #visualize(RenderedImage, Rectangle, MathTransform)} with
+     *             sample dimensions read from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property.
+     *
+     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
+     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
     public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
                                    final List<SampleDimension> ranges)
     {

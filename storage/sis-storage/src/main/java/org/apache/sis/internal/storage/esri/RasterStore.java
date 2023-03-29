@@ -473,24 +473,24 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     final GridCoverage2D createCoverage(final GridGeometry domain, final RangeArgument range,
                                         final WritableRaster data, final Statistics stats)
     {
+        final SampleDimension[] bands = range.select(sampleDimensions);
         Hashtable<String,Object> properties = null;
         if (stats != null) {
             final Statistics[] as = new Statistics[range.getNumBands()];
             Arrays.fill(as, stats);
             properties = new Hashtable<>();
             properties.put(PlanarImage.STATISTICS_KEY, as);
+            properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands);
         }
-        List<SampleDimension> bands = sampleDimensions;
         ColorModel cm = colorModel;
         if (!range.isIdentity()) {
-            bands = Arrays.asList(range.select(sampleDimensions));
             cm = range.select(cm);
             if (cm == null) {
-                final SampleDimension band = bands.get(VISIBLE_BAND);
+                final SampleDimension band = bands[VISIBLE_BAND];
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
             }
         }
-        return new GridCoverage2D(domain, bands, new BufferedImage(cm, data, false, properties));
+        return new GridCoverage2D(domain, Arrays.asList(bands), new BufferedImage(cm, data, false, properties));
     }
 
     /**

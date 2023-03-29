@@ -34,12 +34,12 @@ import org.apache.sis.util.Disposable;
  * indices), and all methods fetching tiles, delegate to the wrapped image.
  *
  * <h2>Design note</h2>
- * most non-abstract methods are final because {@link PixelIterator} (among others) relies
+ * Most non-abstract methods are final because {@link PixelIterator} (among others) relies
  * on the fact that it can unwrap this image and still get the same pixel values.
  *
  * <h2>Relationship with other classes</h2>
  * This class is similar to {@link SourceAlignedImage} except that it does not extend {@link ComputedImage}
- * and forward {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.
+ * and forwards {@link #getTile(int, int)}, {@link #getData()} and other data methods to the source image.
  *
  * <h2>Requirements for subclasses</h2>
  * All subclasses shall override {@link #equals(Object)} and {@link #hashCode()}.
@@ -80,7 +80,7 @@ abstract class ImageAdapter extends PlanarImage {
     /**
      * Returns the names of properties of wrapped image.
      *
-     * @return all recognized property names.
+     * @return all recognized property names, or {@code null} if none.
      */
     @Override
     public String[] getPropertyNames() {

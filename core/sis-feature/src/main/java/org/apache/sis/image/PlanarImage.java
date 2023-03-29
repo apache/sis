@@ -37,6 +37,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.GridGeometry;       // For javadoc
+import org.apache.sis.coverage.SampleDimension;
 
 import static java.lang.Math.multiplyFull;
 
@@ -144,6 +145,17 @@ public abstract class PlanarImage implements RenderedImage {
     public static final String POSITIONAL_ACCURACY_KEY = "org.apache.sis.PositionalAccuracy";
 
     /**
+     * Key for a property defining a conversion from pixel values to the units of measurement.
+     * The value should be an array of {@link SampleDimension} instances.
+     * The array length should be the number of bands.
+     *
+     * @see org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()
+     *
+     * @since 1.4
+     */
+    public static final String SAMPLE_DIMENSIONS_KEY = "org.apache.sis.SampleDimensions";
+
+    /**
      * Key of a property defining the resolutions of sample values in each band. This property is recommended
      * for images having sample values as floating point numbers. For example if sample values were computed by
      * <var>value</var> = <var>integer</var> × <var>scale factor</var>, then the resolution is the scale factor.
@@ -155,7 +167,7 @@ public abstract class PlanarImage implements RenderedImage {
      * {@linkplain org.apache.sis.coverage.grid.GridCoverage#forConvertedValues(boolean) conversions from
      * integer values to floating point values}.</p>
      */
-    public static final String SAMPLE_RESOLUTIONS_KEY = "org.apache.sis.SampleResolution";
+    public static final String SAMPLE_RESOLUTIONS_KEY = "org.apache.sis.SampleResolutions";
 
     /**
      * Key of property providing statistics on sample values in each band. Providing a value for this key
@@ -230,6 +242,9 @@ public abstract class PlanarImage implements RenderedImage {
      *   </tr><tr>
      *     <td>{@value #POSITIONAL_ACCURACY_KEY}</td>
      *     <td>Estimation of positional accuracy, typically in metres or pixel units.</td>
+     *   </tr><tr>
+     *     <td>{@value #SAMPLE_DIMENSIONS_KEY}</td>
+     *     <td>Conversions from pixel values to the units of measurement for each band.</td>
      *   </tr><tr>
      *     <td>{@value #SAMPLE_RESOLUTIONS_KEY}</td>
      *     <td>Resolutions of sample values in each band.</td>
