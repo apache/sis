@@ -197,9 +197,12 @@ final class Visualization extends ResampledImage {
             this.bounds   = bounds;
             this.source   = source;
             this.toSource = toSource;
-            Object ranges = source.getProperty(SAMPLE_DIMENSIONS_KEY);
-            if (ranges instanceof SampleDimension[]) {
-                sampleDimensions = (SampleDimension[]) ranges;
+            sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
+            if (sampleDimensions == null) {
+                Object ranges = source.getProperty(SAMPLE_DIMENSIONS_KEY);
+                if (ranges instanceof SampleDimension[]) {
+                    sampleDimensions = (SampleDimension[]) ranges;
+                }
             }
         }
 
@@ -247,8 +250,19 @@ final class Visualization extends ResampledImage {
              * Keep only the band to make visible in order to reduce the amount of calculation during
              * resampling and for saving memory.
              */
-            while (source instanceof ImageAdapter) {
-                source = ((ImageAdapter) source).source;
+            if (toSource == null) {
+                toSource = MathTransforms.identity(BIDIMENSIONAL);
+            }
+            for (;;) {
+                if (source instanceof ImageAdapter) {
+                    source = ((ImageAdapter) source).source;
+                } else if (source instanceof ResampledImage) {
+                    final ResampledImage r = (ResampledImage) source;
+                    toSource = MathTransforms.concatenate(toSource, r.toSource);
+                    source   = r.getSource();
+                } else {
+                    break;
+                }
             }
             source = BandSelectImage.create(source, new int[] {visibleBand});
             final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.length)
@@ -259,9 +273,6 @@ final class Visualization extends ResampledImage {
              * requires the tile layout of destination image to be the same as source image.
              * Otherwise combine interpolation and value conversions in a single operation.
              */
-            if (toSource == null) {
-                toSource = MathTransforms.identity(BIDIMENSIONAL);
-            }
             final boolean shortcut = toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds));
             if (shortcut) {
                 layout = ImageLayout.fixedSize(source);

@@ -483,6 +483,8 @@ public class GridCoverageBuilder {
                  */
                 if (bands != null) {
                     properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands.toArray(SampleDimension[]::new));
+                } else {
+                    properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
                 }
                 if (raster instanceof WritableRaster) {
                     final WritableRaster wr = (WritableRaster) raster;

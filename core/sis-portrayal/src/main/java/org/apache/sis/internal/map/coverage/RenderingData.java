@@ -662,28 +662,14 @@ public class RenderingData implements Cloneable {
          */
         if (CREATE_INDEX_COLOR_MODEL) {
             final ColorModelType ct = ColorModelType.find(recoloredImage.getColorModel());
-            if (ct.isSlow || (ct.useColorRamp && processor.getColorizer() != null)) {
-                return processor.visualize(withSampleDimensions(recoloredImage), bounds, displayToCenter);
+            if (ct.isSlow || (ct.useColorRamp && processor.getColorizer() != null)) try {
+                SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(dataRanges);
+                return processor.visualize(recoloredImage, bounds, displayToCenter);
+            } finally {
+                SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
             }
         }
         return processor.resample(recoloredImage, bounds, displayToCenter);
-    }
-
-    /**
-     * Returns an image augmented with the sample dimensions if not already present.
-     * If the property is present but with a different value, the {@link #dataRanges}
-     * will overwrite the image property value.
-     *
-     * @param  image  the image for which to add a property if not already present.
-     * @return image augmented with the given property.
-     */
-    private RenderedImage withSampleDimensions(RenderedImage image) {
-        final String key = PlanarImage.SAMPLE_DIMENSIONS_KEY;
-        final SampleDimension[] value = dataRanges;
-        if (!Objects.deepEquals(image.getProperty(key), value)) {
-            image = processor.addUserProperties(image, Map.of(key, value));
-        }
-        return image;
     }
 
     /**

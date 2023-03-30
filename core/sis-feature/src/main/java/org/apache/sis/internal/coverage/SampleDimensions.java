@@ -37,14 +37,33 @@ import org.apache.sis.util.Static;
  */
 public final class SampleDimensions extends Static {
     /**
-     * The sample dimensions of a {@link org.apache.sis.image.BandedSampleConverter} image.
-     * We use this thread-local variable as an internal workaround for an parameter that we
-     * do not expose in the public API of {@link ImageProcessor}.
+     * A hidden argument passed to some {@link ImageProcessor} operations.
+     * Used for a parameter that we do not want to expose in the public API,
+     * because {@link ImageProcessor} is not supposed to know grid coverages.
+     * We may revisit in future Apache SIS version if we find a better way to
+     * pass this information.
      *
-     * <p>The content of the array in this thread-local variable shall not be modified,
-     * because it may be a direct reference to an internal array (not a clone).</p>
+     * This is used in:
+     * <ul>
+     *   <li>The <em>target</em> sample dimensions of a {@link org.apache.sis.image.BandedSampleConverter} image.</li>
+     *   <li>The <em>source</em> sample dimensions of a {@link org.apache.sis.image.Visualization} image.</li>
+     * </ul>
+     *
+     * Usage pattern:
+     *
+     * {@snippet lang="java" :
+     *     try {
+     *         SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(dataRanges);
+     *         return imageProcessor.doSomeStuff(...);
+     *     } finally {
+     *         SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
+     *     }
+     *     }
+     *
+     * The content of the array in this thread-local variable shall not be modified,
+     * because it may be a direct reference to an internal array (not a clone).
      */
-    public static final ThreadLocal<SampleDimension[]> CONVERTED_BANDS = new ThreadLocal<>();
+    public static final ThreadLocal<SampleDimension[]> IMAGE_PROCESSOR_ARGUMENT = new ThreadLocal<>();
 
     /**
      * Do not allow instantiation of this class.

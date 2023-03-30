@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.awt.Shape;
 import java.awt.Rectangle;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
@@ -39,6 +38,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.coverage.MultiSourcesArgument;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
@@ -220,6 +220,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
      *
      * @see ImageProcessor#setColorizer(Colorizer)
+     * @see #visualize(GridCoverage, GridExtent)
      *
      * @since 1.4
      */
@@ -328,6 +329,12 @@ public class GridCoverageProcessor implements Cloneable {
      * If {@code maskInside} is {@code false}, then the mask is reversed:
      * the pixels set to fill values are the ones outside the ROI.
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getFillValues() Fill values} values to assign to pixels inside/outside the region of interest.</li>
+     * </ul>
+     *
      * @param  source      the coverage on which to apply a mask.
      * @param  mask        region (in arbitrary CRS) of the mask.
      * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
@@ -369,13 +376,19 @@ public class GridCoverageProcessor implements Cloneable {
      * If the source coverage is backed by a {@link java.awt.image.WritableRenderedImage},
      * then changes in the source coverage are reflected in the returned coverage and conversely.
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
+     * </ul>
+     *
      * @param  source      the coverage for which to convert sample values.
      * @param  converters  the transfer functions to apply on each sample dimension of the source coverage.
      * @param  sampleDimensionModifier  a callback for modifying the {@link SampleDimension.Builder} default
      *         configuration for each sample dimension of the target coverage, or {@code null} if none.
      * @return the coverage which computes converted values from the given source.
      *
-     * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType, ColorModel)
+     * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType)
      *
      * @since 1.3
      */
@@ -428,6 +441,12 @@ public class GridCoverageProcessor implements Cloneable {
      * <ul>
      *   <li>{@link Optimization#REPLACE_SOURCE} for merging many calls
      *       of this {@code translate(…)} method into a single translation.</li>
+     * </ul>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
      * </ul>
      *
      * @param  source       the grid coverage to translate.
@@ -486,6 +505,15 @@ public class GridCoverageProcessor implements Cloneable {
      *       or {@code translate(…)} method into a single resampling.</li>
      *   <li>{@link Optimization#REPLACE_OPERATION} for replacing {@code resample(…)} operation
      *       by {@code translate(…)} when possible.</li>
+     * </ul>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
+     *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
+     *       for enabling faster resampling at the cost of lower precision.</li>
      * </ul>
      *
      * @param  source  the grid coverage to resample.
@@ -740,6 +768,57 @@ public class GridCoverageProcessor implements Cloneable {
             return aggregate.sources()[0];
         }
         return new BandAggregateGridCoverage(aggregate, snapshot());
+    }
+
+    /**
+     * Renders the given grid coverage as an image suitable for displaying purpose.
+     * The resulting image is for visualization only and should not be used for computational purposes.
+     * There is no guarantee about the number of bands in returned image or about which formula is used
+     * for converting floating point values to integer values.
+     *
+     * <h4>How to specify colors</h4>
+     * The image colors can be controlled by the {@link Colorizer} set on this coverage processor.
+     * The recommended way is to associate colors to {@linkplain Category#getName() category names},
+     * {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}
+     * or other category properties. Example:
+     *
+     * {@snippet lang="java" :
+     *     Map<String,Color[]> colors = Map.of(
+     *         "Temperature", new Color[] {Color.BLUE, Color.MAGENTA, Color.RED},
+     *         "Wind speed",  new Color[] {Color.GREEN, Color.CYAN, Color.BLUE});
+     *
+     *     processor.setColorizer(Colorizer.forCategories((category) ->
+     *         colors.get(category.getName().toString(Locale.ENGLISH))));
+     *
+     *     RenderedImage visualization = processor.visualize(source, slice);
+     *     }
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
+     * </ul>
+     *
+     * @param  source  the grid coverage to visualize.
+     * @param  slice   the slice and extent to render, or {@code null} for the whole coverage.
+     * @return rendered image for visualization purposes only.
+     * @throws IllegalArgumentException if the given extent does not have the same number of dimensions
+     *         than the specified coverage or does not intersect.
+     *
+     * @see ImageProcessor#visualize(RenderedImage)
+     *
+     * @since 1.4
+     */
+    public RenderedImage visualize(final GridCoverage source, final GridExtent slice) {
+        ArgumentChecks.ensureNonNull("source", source);
+        final SampleDimension[] bands = source.getSampleDimensions().toArray(SampleDimension[]::new);
+        final RenderedImage image = source.render(slice);
+        try {
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(bands);
+            return imageProcessor.visualize(image);
+        } finally {
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
+        }
     }
 
     /**

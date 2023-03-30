@@ -993,6 +993,12 @@ public class ImageProcessor implements Cloneable {
      * If {@code maskInside} is {@code false}, then the mask is reversed:
      * the pixels set to fill values are the ones outside the shape.
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getFillValues() Fill values} values to assign to pixels inside/outside the shape.</li>
+     * </ul>
+     *
      * @param  source      the image on which to apply a mask.
      * @param  mask        geometric area (in pixel coordinates) of the mask.
      * @param  maskInside  {@code true} for masking pixels inside the shape, or {@code false} for masking outside.
@@ -1037,7 +1043,7 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * <h4>Result relationship with source</h4>
@@ -1135,7 +1141,7 @@ public class ImageProcessor implements Cloneable {
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
      *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
-     * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
+     * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
      *
      * @see GridCoverageProcessor#resample(GridCoverage, GridGeometry)
@@ -1362,7 +1368,7 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  source  the image to recolor for visualization purposes.
@@ -1406,14 +1412,16 @@ public class ImageProcessor implements Cloneable {
      *       if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
-     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  source    the image to be resampled and recolored.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
      *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
-     * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
+     * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled and recolored image for visualization purposes only.
+     *
+     * @see #resample(RenderedImage, Rectangle, MathTransform)
      *
      * @since 1.4
      */

@@ -59,6 +59,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
 
     /**
      * Extents of the slice to take in the {@linkplain #geometry}.
+     * May be {@code null} if unknown.
      */
     private final GridExtent sliceExtent;
 
@@ -189,6 +190,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
         }
         GeneralEnvelope subArea = null;
         if (useSubExtent && cornerToCRS != null) try {
+            // `extent` is non-null if `useSubExtent` is true.
             subArea = extent.toEnvelope(cornerToCRS, gridToCRS, null);
         } catch (TransformException e) {
             // GridGeometry.reduce(…) is the public method invoking indirectly this method.

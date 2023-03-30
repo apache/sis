@@ -99,8 +99,8 @@ class BandedSampleConverter extends ComputedImage {
     /**
      * Description of bands, or {@code null} if unknown.
      * Not used by this class, but provided as a {@value #SAMPLE_DIMENSIONS_KEY} property.
-     * The value is fetched from {@link SampleDimensions#CONVERTED_BANDS} for avoiding to
-     * expose a {@code SampleDimension[]} argument in public {@link ImageProcessor} API.
+     * The value is fetched from {@link SampleDimensions#IMAGE_PROCESSOR_ARGUMENT} for avoiding
+     * to expose a {@code SampleDimension[]} argument in public {@link ImageProcessor} API.
      *
      * @see #getProperty(String)
      */
@@ -221,7 +221,7 @@ class BandedSampleConverter extends ComputedImage {
         }
         final int numBands = converters.length;
         final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null);
-        final SampleDimension[] sampleDimensions = SampleDimensions.CONVERTED_BANDS.get();
+        final SampleDimension[] sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         ColorModel colorModel = ColorModelBuilder.NULL_COLOR_MODEL;
         if (colorizer != null) {

@@ -447,7 +447,7 @@ public class ImageRenderer {
     public GridGeometry getImageGeometry(final int dimCRS) {
         GridGeometry ig = imageGeometry;
         if (ig == null || dimCRS != GridCoverage2D.BIDIMENSIONAL) {
-            if (isSameGeometry(dimCRS)) {
+            if (imageUseSameGeometry(dimCRS)) {
                 ig = geometry;
             } else try {
                 ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory)
@@ -515,7 +515,7 @@ public class ImageRenderer {
      * can return {@link #geometry} directly. This common case avoids the need for more costly computation with
      * {@link SliceGeometry}.
      */
-    private boolean isSameGeometry(final int dimCRS) {
+    private boolean imageUseSameGeometry(final int dimCRS) {
         final int tgtDim = geometry.getTargetDimension();
         ArgumentChecks.ensureBetween("dimCRS", GridCoverage2D.BIDIMENSIONAL, tgtDim, dimCRS);
         if (tgtDim == dimCRS && geometry.getDimension() == gridDimensions.length) {
@@ -762,7 +762,7 @@ public class ImageRenderer {
         }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {
-            if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
+            if (imageUseSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
                 imageGeometry = geometry;
             } else {
                 supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory);

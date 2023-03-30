@@ -314,10 +314,10 @@ public abstract class GridCoverage extends BandedCoverage {
             final MathTransform1D[] converters, final ImageProcessor processor)
     {
         try {
-            SampleDimensions.CONVERTED_BANDS.set(sampleDimensions);
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(sampleDimensions);
             return processor.convert(source, getRanges(), converters, bandType);
         } finally {
-            SampleDimensions.CONVERTED_BANDS.remove();
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
         }
     }
 
