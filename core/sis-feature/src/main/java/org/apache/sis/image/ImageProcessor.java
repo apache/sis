@@ -405,6 +405,7 @@ public class ImageProcessor implements Cloneable {
      */
     public synchronized void setColorizer(final Colorizer colorizer) {
         this.colorizer = colorizer;
+        colors = null;
     }
 
     /**
@@ -438,8 +439,10 @@ public class ImageProcessor implements Cloneable {
      */
     @Deprecated(since="1.4", forRemoval=true)
     public synchronized void setCategoryColors(final Function<Category,Color[]> colors) {
-        setColorizer(colors != null ? Colorizer.forCategories(colors) : null);
-        this.colors = colors;
+        if (colors != this.colors) {
+            setColorizer(colors != null ? Colorizer.forCategories(colors) : null);
+            this.colors = colors;
+        }
     }
 
     /**

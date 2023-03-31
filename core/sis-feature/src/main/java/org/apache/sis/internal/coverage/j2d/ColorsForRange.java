@@ -18,8 +18,8 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.IntUnaryOperator;
 import java.awt.Color;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.coverage.Category;
@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
  * used only the time needed for {@link ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])
  *
@@ -55,7 +55,12 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
 
     /**
      * The colors to apply on the range of sample values.
-     * A null or empty array means transparent.
+     * An empty array means that the category is explicitly specified as transparent.
+     * A null value means that the category is unrecognized, in which case the default
+     * is grayscale for quantitative category and transparent for qualitative category.
+     *
+     * @see #isUndefined()
+     * @see #toARGB()
      */
     private final Color[] colors;
 
@@ -84,7 +89,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      *
      * @param  name         a name identifying the range of values, or {@code null} for automatic.
      * @param  sampleRange  range of sample values on which the colors will be applied.
-     * @param  colors       colors to apply on the range of sample values, or {@code null} for transparent.
+     * @param  colors       colors to apply on the range of sample values, or {@code null} for default.
      * @param  isData       whether this entry should be taken as main data (not fill values).
      */
     ColorsForRange(final CharSequence name, final NumberRange<?> sampleRange, final Color[] colors, final boolean isData) {
@@ -93,6 +98,14 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
         this.sampleRange = sampleRange;
         this.colors      = colors;
         this.isData      = isData;
+    }
+
+    /**
+     * Returns {@code true} if no color has been specified for this range.
+     * Note that "undefined" is not the same as fully transparent color.
+     */
+    final boolean isUndefined() {
+        return colors == null;
     }
 
     /**
@@ -108,7 +121,9 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
         final ColorsForRange[] entries = new ColorsForRange[colors.size()];
         int n = 0;
         for (final Map.Entry<NumberRange<?>,Color[]> entry : colors) {
-            entries[n++] = new ColorsForRange(null, entry.getKey(), entry.getValue(), true);
+            final NumberRange<?> range = entry.getKey();
+            boolean singleton = Objects.equals(range.getMinValue(), range.getMaxValue());
+            entries[n++] = new ColorsForRange(null, range, entry.getValue(), !singleton);
         }
         return ArraysExt.resize(entries, n);            // `resize` should not be needed, but we are paranoiac.
     }
@@ -119,9 +134,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     @Override
     public String toString() {
         final StringBuilder buffer = new StringBuilder(name).append(": ").append(sampleRange);
-        if (colors != null) {
-            appendColorRange(buffer, colors.length, (i) -> colors[i].getRGB());
-        }
+        appendColorRange(buffer, toARGB());
         return buffer.toString();
     }
 
@@ -135,14 +148,14 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * @param  count   number of ARGB codes.
      * @param  colors  providers of ARGB codes for given indices.
      */
-    static void appendColorRange(final StringBuilder buffer, final int count, final IntUnaryOperator colors) {
-        if (count != 0) {
+    static void appendColorRange(final StringBuilder buffer, final int[] colors) {
+        if (colors != null && colors.length != 0) {
             String s = " → ARGB[";
             int i = 0;
             do {
-                buffer.append(s).append(Integer.toHexString(colors.applyAsInt(i)).toUpperCase());
+                buffer.append(s).append(Integer.toHexString(colors[i]).toUpperCase());
                 s = " … ";
-            } while (i < (i = count-1));
+            } while (i < (i = colors.length - 1));
             buffer.append(']');
         }
     }
@@ -165,8 +178,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     private int getAlpha() {
         int max = 0;
         if (colors != null) {
-            for (int i=0; i<colors.length; i++) {
-                final int alpha = colors[i].getAlpha();
+            for (final Color color : colors) {
+                final int alpha = color.getAlpha();
                 if (alpha > max) {
                     if (alpha >= 0xFF) {
                         return 0xFF;
@@ -174,6 +187,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
                     max = alpha;
                 }
             }
+        } else if (isData) {
+            return 0xFF;
         }
         return max;
     }
@@ -199,6 +214,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
             if ((combined & 0xFF000000) != 0) {
                 return ARGB;
             }
+        } else if (isData) {
+            return new int[] {0xFF000000, 0xFFFFFFFF};
         }
         return ArraysExt.EMPTY_INT;
     }

@@ -111,8 +111,16 @@ public final class ColorModelBuilder {
             (category) -> category.isQuantitative() ? new Color[] {Color.BLACK, Color.WHITE} : null;
 
     /**
-     * The colors to use for each category. Never {@code null}.
-     * The function may return {@code null}, which means transparent.
+     * The colors to use for each category. Never {@code null} (default value is grayscale).
+     * The function may return {@code null}, which means that the category is not recognized.
+     * If no category is recognized, no {@link ColorModel} will be built using that function.
+     * An empty array is interpreted as a color specified as transparent.
+     *
+     * <h4>Default value</h4>
+     * Default value is {@link #GRAYSCALE}.
+     * If the function returns {@code null} for an unrecognized category,
+     * the default colors for that category will be the same as {@link #GRAYSCALE}:
+     * grayscale for quantitative categories and transparent for qualitative categories.
      */
     private final Function<Category,Color[]> colors;
 
@@ -151,11 +159,15 @@ public final class ColorModelBuilder {
      * The {@code ColorModelBuilder} is considered initialized after this constructor;
      * callers shall <strong>not</strong> invoke an {@code initialize(…)} method.
      *
+     * <p>The {@code colors} map shall not be null or empty but may contain {@code null} values.
+     * Null values default to a fully transparent color when the range contains a single value,
+     * and to grayscale colors otherwise.
+     * Empty arrays of colors are interpreted as explicitly transparent.</p>
+     *
      * @param  colors  the colors to use for each range of values in source image.
-     *                 A {@code null} entry value means transparent.
      */
     public ColorModelBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors) {
-        ArgumentChecks.ensureNonNull("colors", colors);
+        ArgumentChecks.ensureNonEmpty("colors", colors);
         entries = ColorsForRange.list(colors);
         this.colors = GRAYSCALE;
     }
@@ -165,7 +177,7 @@ public final class ColorModelBuilder {
      * Callers need to invoke an {@code initialize(…)} method after this constructor.
      *
      * @param  colors  the colors to use for each category, or {@code null} for default.
-     *                 The function may return {@code null}, which means transparent.
+     *                 The function may return {@code null} for unrecognized categories.
      */
     public ColorModelBuilder(final Function<Category,Color[]> colors) {
         this.colors = (colors != null) ? colors : GRAYSCALE;
@@ -206,26 +218,30 @@ public final class ColorModelBuilder {
             this.source = source;
             final List<Category> categories = source.getCategories();
             if (!categories.isEmpty()) {
+                boolean isUndefined = true;
                 boolean missingNodata = true;
                 ColorsForRange[] entries = new ColorsForRange[categories.size()];
                 for (int i=0; i<entries.length; i++) {
-                    final Category category = categories.get(i);
-                    entries[i] = new ColorsForRange(category, colors);
-                    missingNodata &= category.isQuantitative();
+                    final var range = new ColorsForRange(categories.get(i), colors);
+                    isUndefined &= range.isUndefined();
+                    missingNodata &= range.isData;
+                    entries[i] = range;
                 }
-                /*
-                 * If the model uses floating point values and there is no "no data" category, add one.
-                 * We force a "no data" category because floating point values may be NaN.
-                 */
-                if (missingNodata && (model == null || !ImageUtilities.isIntegerType(model))) {
-                    final int count = entries.length;
-                    entries = Arrays.copyOf(entries, count + 1);
-                    entries[count] = new ColorsForRange(TRANSPARENT,
-                            NumberRange.create(Float.class, Float.NaN), null, false);
+                if (!isUndefined) {
+                    /*
+                     * If the model uses floating point values and there is no "no data" category, add one.
+                     * We force a "no data" category because floating point values may be NaN.
+                     */
+                    if (missingNodata && (model == null || !ImageUtilities.isIntegerType(model))) {
+                        final int count = entries.length;
+                        entries = Arrays.copyOf(entries, count + 1);
+                        entries[count] = new ColorsForRange(TRANSPARENT,
+                                NumberRange.create(Float.class, Float.NaN), null, false);
+                    }
+                    // Leave `target` to null. It will be computed by `compact()` if needed.
+                    this.entries = entries;
+                    return true;
                 }
-                // Leave `target` to null. It will be computed by `compact()` if needed.
-                this.entries = entries;
-                return true;
             }
         }
         return false;
@@ -274,6 +290,26 @@ public final class ColorModelBuilder {
                 initialize(scs.offset, scs.maximum);
                 return true;
             }
+            /*
+             * If the color model uses integer type, compute the maximal value based on the number of bits.
+             * The main use case is `IndexColorModel` with values on 16 bits but with a color ramp that does
+             * not exploit the full range allowed by 16 bits.
+             */
+            if (ImageUtilities.isIntegerType(source.getTransferType())) {
+                long maximum = Numerics.bitmask(source.getPixelSize()) - 1;
+                long minimum = 0;
+                if (source instanceof IndexColorModel) {
+                    final IndexColorModel indexed = (IndexColorModel) source;
+                    int t = indexed.getMapSize();
+                    if (t <= maximum) maximum = t - 1L;     // Inclusive.
+                    t = indexed.getTransparentPixel();
+                    if (t == 0) minimum = 1;
+                }
+                if (minimum < maximum) {
+                    initialize(minimum, maximum);
+                    return true;
+                }
+            }
         }
         return false;
     }
@@ -315,7 +351,7 @@ public final class ColorModelBuilder {
         final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
-            entries[i] = new ColorsForRange(category, category.getName() == TRANSPARENT ? GRAYSCALE : colors);
+            entries[i] = new ColorsForRange(category, colors);
         }
         this.entries = entries;
     }
@@ -494,7 +530,7 @@ reuse:  if (source != null) {
                 span += sourceRange.getSpan();
                 final ColorsForRange[] tmp = Arrays.copyOf(entries, ++count);
                 System.arraycopy(entries, deferred, tmp, ++deferred, count - deferred);
-                tmp[deferred-1] = new ColorsForRange(null, sourceRange, new Color[] {Color.BLACK, Color.WHITE}, true);
+                tmp[deferred-1] = new ColorsForRange(null, sourceRange, null, true);
                 entries = tmp;
             }
         }

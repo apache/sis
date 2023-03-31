@@ -412,13 +412,6 @@ public class CoverageCanvas extends MapCanvasAWT {
     }
 
     /**
-     * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
-     */
-    final Function<Category, java.awt.Color[]> getCategoryColors() {
-        return data.processor.getCategoryColors();
-    }
-
-    /**
      * Sets the colors to use for given categories in image. Invoking this method causes a repaint event,
      * so it should be invoked only if at least one color is known to have changed.
      *

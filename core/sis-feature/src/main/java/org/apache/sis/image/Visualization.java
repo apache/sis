@@ -264,7 +264,7 @@ final class Visualization extends ResampledImage {
                     break;
                 }
             }
-            source = BandSelectImage.create(source, new int[] {visibleBand});
+            source = BandSelectImage.create(source, visibleBand);
             final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.length)
                                             ? sampleDimensions[visibleBand] : null;
             /*
@@ -298,8 +298,9 @@ final class Visualization extends ResampledImage {
              */
             boolean initialized;
             final ColorModelBuilder builder;
-            if (target.rangeColors != null) {
-                builder = new ColorModelBuilder(target.rangeColors.entrySet());
+            final var rangeColors = target.rangeColors;
+            if (rangeColors != null && !rangeColors.isEmpty()) {
+                builder = new ColorModelBuilder(rangeColors.entrySet());
                 initialized = true;
             } else {
                 /*
@@ -307,6 +308,7 @@ final class Visualization extends ResampledImage {
                  * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
                 builder = new ColorModelBuilder(target.categoryColors);
+                final ColorModel colorModel = coloredSource.getColorModel();
                 initialized = builder.initialize(coloredSource.getSampleModel(), visibleSD);
                 if (initialized) {
                     /*
@@ -315,14 +317,15 @@ final class Visualization extends ResampledImage {
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`.
                      * We want to preserve that contrast enhancement.
                      */
-                    builder.rescaleMainRange(coloredSource.getColorModel());
+                    builder.rescaleMainRange(colorModel);
                 } else {
                     /*
+                     * At this point there is no more user-supplied colors (through `Colorizer`) that we can use.
                      * If we have not been able to use the SampleDimension, try to use the ColorModel or SampleModel.
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.
                      */
-                    initialized = builder.initialize(coloredSource.getColorModel());
+                    initialized = builder.initialize(colorModel);
                     if (!initialized) {
                         if (coloredSource instanceof RecoloredImage) {
                             final RecoloredImage colored = (RecoloredImage) coloredSource;

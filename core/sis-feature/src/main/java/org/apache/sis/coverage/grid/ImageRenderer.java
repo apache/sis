@@ -667,7 +667,7 @@ public class ImageRenderer {
      * transparent for qualitative categories (typically "no data" values).
      *
      * <h4>Example</h4>
-     * the following code specifies a color palette from blue to red with white in the middle.
+     * The following code specifies a color palette from blue to red with white in the middle.
      * This is useful for data with a clear 0 (white) in the middle of the range,
      * with a minimal value equals to the negative of the maximal value.
      *

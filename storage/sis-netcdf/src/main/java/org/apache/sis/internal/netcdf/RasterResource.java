@@ -67,7 +67,7 @@ import org.apache.sis.internal.storage.StoreResource;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
@@ -727,7 +727,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
         }
         final Variable main = data[visibleBand];
         final Raster raster = new Raster(targetDomain, UnmodifiableArrayList.wrap(bands), imageBuffer,
-                String.valueOf(identifier), rangeIndices.getPixelStride(), bandOffsets, visibleBand,
+                rangeIndices.getPixelStride(), bandOffsets, visibleBand,
                 main.decoder.convention().getColors(main));
         logReadOperation(location, targetDomain, startTime);
         return raster;

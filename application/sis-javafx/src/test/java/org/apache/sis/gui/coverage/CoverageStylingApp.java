@@ -27,6 +27,7 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.internal.gui.Resources;
+import org.apache.sis.internal.gui.control.ColorRamp;
 import org.apache.sis.measure.Units;
 
 
@@ -34,7 +35,7 @@ import org.apache.sis.measure.Units;
  * Shows category table built by {@link CoverageStyling} with arbitrary data.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public final class CoverageStylingApp extends Application {
@@ -77,7 +78,7 @@ public final class CoverageStylingApp extends Application {
                 .build();
 
         final CoverageStyling styling = new CoverageStyling(null);
-        styling.setARGB(band.getCategories().get(1), new int[] {0xFF607080});
+        styling.applyColors(band.getCategories().get(1), new ColorRamp(0xFF607080));
         final TableView<Category> table = styling.createCategoryTable(
                 Resources.forLocale(null), Vocabulary.getResources((Locale) null));
         table.getItems().setAll(band.getCategories());

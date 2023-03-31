@@ -87,7 +87,7 @@ final class BandSelectImage extends SourceAlignedImage {
      * @param  bands   the bands to select. Should be a clone of user-specified argument
      *                 for protection against user changes in the given array.
      */
-    static RenderedImage create(final RenderedImage source, final int[] bands) {
+    static RenderedImage create(final RenderedImage source, final int... bands) {
         final int numBands = ImageUtilities.getNumBands(source);
         if (bands.length == numBands && ArraysExt.isRange(0, bands)) {
             return source;

@@ -17,6 +17,7 @@
 package org.apache.sis.internal.gui.control;
 
 import java.util.Arrays;
+import java.util.Objects;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.paint.Color;
@@ -33,9 +34,10 @@ import org.apache.sis.util.resources.Vocabulary;
  * A single color or a gradient of colors shown as a rectangle in a {@link ColorCell}.
  * Can also produce a string representation to be shown in a list.
  * Instances should be considered immutable.
+ * The same instance may be shared by many cells.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see ColorCell#getItem()
  *
@@ -59,14 +61,25 @@ public final class ColorRamp {
     }
 
     /**
-     * Default color ramp.
+     * Original colors of the rendered image.
      */
-    static final ColorRamp GRAYSCALE = new ColorRamp(0xFF000000, 0xFFFFFFFF);
+    public static final ColorRamp DEFAULT = new ColorRamp(Vocabulary.format(Vocabulary.Keys.OriginalColors));
 
     /**
-     * Blue – Cyan – White – Yellow – Red.
+     * Grayscale color ramp.
      */
-    static final ColorRamp BELL = new ColorRamp(0xFF0000FF, 0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000);
+    private static final ColorRamp GRAYSCALE = new ColorRamp(0xFF000000, 0xFFFFFFFF);
+
+    /**
+     * Default colors to put in a {@link ColorCell} combox box.
+     * This array shall not be modified.
+     */
+    static final ColorRamp[] DEFAULTS = {
+        DEFAULT,
+        GRAYSCALE,
+        new ColorRamp(0xFF0000FF, 0xFF00FFFF, 0xFFFFFFFF, 0xFFFFFF00, 0xFFFF0000),  // Blue – Cyan – White – Yellow – Red.
+        new ColorRamp(0xFF0000FF, 0xFFFF00FF, 0xFFFF0000)                           // Blue – Magenta – Red.
+    };
 
     /**
      * ARGB codes of this single color or color ramp.
@@ -75,6 +88,8 @@ public final class ColorRamp {
      * <p><strong>This array should be read-only.</strong> We make it public because this class is internal.
      * If this {@code ColorRamp} class moves to public API, then we would need to replace this public access
      * by an accessor doing a copy.</p>
+     *
+     * @see #isTransparent()
      */
     public final int[] colors;
 
@@ -112,9 +127,19 @@ public final class ColorRamp {
 
     /**
      * Creates a new item for the given colors.
+     *
+     * @param  colors  ARGB codes of this single color or color ramp.
      */
-    ColorRamp(final int... colors) {
+    public ColorRamp(final int... colors) {
         this.colors = colors;
+    }
+
+    /**
+     * Creates a new item for the given text.
+     */
+    private ColorRamp(final String text) {
+        colors = null;
+        name = text;
     }
 
     /**
@@ -158,7 +183,7 @@ public final class ColorRamp {
      * @return color or gradient paint for table cell, or {@code null} if none.
      */
     final Paint paint() {
-        if (paint == null) {
+        if (paint == null && colors != null) {
             switch (colors.length) {
                 case 0: break;
                 case 1: {
@@ -223,11 +248,17 @@ public final class ColorRamp {
      * Returns whether the given object is equal to this {@code ColorRamp}.
      * This is used for locating this {@code ColorRamp} in a {@link ComboBox}.
      *
-     * @param  other  the object to compare with {@code this} for equality.
+     * @param  obj  the object to compare with {@code this} for equality.
      * @return whether the given object is equal to this color ramp.
      */
     @Override
-    public boolean equals(final Object other) {
-        return (other instanceof ColorRamp) && Arrays.equals(colors, ((ColorRamp) other).colors);
+    public boolean equals(final Object obj) {
+        if (obj instanceof ColorRamp) {
+            final ColorRamp other = (ColorRamp) obj;
+            if (Arrays.equals(colors, other.colors)) {
+                return (colors != null) || Objects.equals(name, other.name);
+            }
+        }
+        return false;
     }
 }

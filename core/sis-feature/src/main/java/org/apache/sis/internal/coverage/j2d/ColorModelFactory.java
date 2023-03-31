@@ -299,14 +299,17 @@ public final class ColorModelFactory {
     /**
      * Prepares a factory of color models interpolated for the ranges in the given map entries.
      * The {@link ColorModel} instances will be shared among all callers in the running virtual machine.
+     * The {@code colors} map shall not be null or empty but may contain {@code null} values.
+     * Null values default to fully transparent color when the range contains a single value,
+     * and to grayscale otherwise. Empty arrays of colors are interpreted as explicitly transparent.
      *
      * @param  colors  the colors to use for each range of sample values.
-     *                 The map may contain {@code null} values, which means transparent.
      * @return a factory of color model suitable for {@link RenderedImage} objects with values in the given ranges.
      */
     public static ColorModelFactory piecewise(final Map<NumberRange<?>, Color[]> colors) {
-        return PIECEWISES.intern(new ColorModelFactory(DataBuffer.TYPE_BYTE, 0, DEFAULT_VISIBLE_BAND,
-                                                       ColorsForRange.list(colors.entrySet())));
+        final var entries = colors.entrySet();
+        ArgumentChecks.ensureNonEmpty("colors", entries);
+        return PIECEWISES.intern(new ColorModelFactory(DataBuffer.TYPE_BYTE, 0, DEFAULT_VISIBLE_BAND, ColorsForRange.list(entries)));
     }
 
     /**
@@ -474,6 +477,7 @@ public final class ColorModelFactory {
     public static ColorModel createColorScale(final int dataType, final int numBands, final int visibleBand,
                                               final double lower, final double upper, final Color... colors)
     {
+        ArgumentChecks.ensureNonEmpty("colors", colors);
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
             new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true)
         });
@@ -849,10 +853,7 @@ public final class ColorModelFactory {
             buffer.append(System.lineSeparator()).append(CharSequences.spaces(9 - start.length())).append(start);
             if (i < ARGB.length) {
                 buffer.append('…');
-                final int[] colors = ARGB[i];
-                if (colors != null) {
-                    ColorsForRange.appendColorRange(buffer, colors.length, (j) -> colors[j]);
-                }
+                ColorsForRange.appendColorRange(buffer, ARGB[i]);
             }
         }
         return buffer.toString();

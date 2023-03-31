@@ -953,6 +953,11 @@ public final class Vocabulary extends IndexedResourceBundle {
         public static final short OriginInCellCenter = 155;
 
         /**
+         * Original colors
+         */
+        public static final short OriginalColors = 272;
+
+        /**
          * Other surface
          */
         public static final short OtherSurface = 156;

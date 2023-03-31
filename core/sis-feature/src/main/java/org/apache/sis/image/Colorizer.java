@@ -181,9 +181,27 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
 
     /**
      * Creates a colorizer which will interpolate colors in multiple ranges of values.
-     * When the image data type is 8 or 16 bits integer, this colorizer creates {@link IndexColorModel} instances.
+     * The range of pixel values are specified by {@link NumberRange} elements,
+     * and the colors to interpolate in each range are specified by {@code Color[]} arrays.
+     * Empty arrays (i.e. no color) are interpreted as an explicit request for full transparency.
+     *
+     * <p>When the image data type is 8 or 16 bits integer,
+     * this colorizer creates {@link IndexColorModel} instances.
      * For other kinds of data type such as floating points,
-     * this colorizer creates a non-standard (and potentially slow) color model.
+     * this colorizer creates a non-standard (and potentially slow) color model.</p>
+     *
+     * <h4>Default colors</h4>
+     * The {@code colors} map shall not be null or empty but may contain {@code null} values.
+     * Those null values are translated to default sets of colors in an implementation dependent way.
+     * In current implementation, the defaults are:
+     *
+     * <ul>
+     *   <li>If the range minimum and maximum values are not equal, default to grayscale colors.</li>
+     *   <li>Otherwise default to a fully transparent color.</li>
+     * </ul>
+     *
+     * Those defaults may change in any future Apache SIS version.
+     * For example a future version may first tries to preserve the existing colors of an image.
      *
      * <h4>Limitations</h4>
      * In current implementation, the non-standard color model ignores the specified colors.
@@ -195,7 +213,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * @see ImageProcessor#visualize(RenderedImage)
      */
     public static Colorizer forRanges(final Map<NumberRange<?>,Color[]> colors) {
-        ArgumentChecks.ensureNonEmpty("colors", colors.entrySet());
+        // Can not use `Map.copyOf(colors)` because it may contain null values.
         final var factory = ColorModelFactory.piecewise(colors);
         return (target) -> {
             if (target instanceof Visualization.Target) {
@@ -220,14 +238,31 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * The given function provides a way to colorize images without knowing in advance the numerical values of pixels.
      * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
      * the given function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.
-     * The function can return {@code null} or empty color arrays for some categories,
-     * which are interpreted as fully transparent pixels.
      *
-     * <p>This colorizer is used when {@link Target#getRanges()} provides a non-empty value.
+     * <h4>Default colors</h4>
+     * The given function can return {@code null} or empty color arrays for some categories.
+     * An empty array (i.e. no color) is interpreted as an explicit request for transparency.
+     * But null arrays are interpreted as unrecognized category,
+     * in which case the defaults are implementation dependent.
+     * In current implementation, the defaults are:
+     *
+     * <ul>
+     *   <li>If all categories are unrecognized, then the colorizer returns an empty value.</li>
+     *   <li>Otherwise, {@linkplain Category#isQuantitative() quantitative} categories default to grayscale colors.</li>
+     *   <li>Otherwise qualitative categories default to a fully transparent color.</li>
+     * </ul>
+     *
+     * Those defaults may change in any future Apache SIS version.
+     * For example a future version may first tries to preserve the existing colors of an image.
+     *
+     * <h4>Conditions</h4>
+     * This colorizer is used when {@link Target#getRanges()} provides a non-empty value.
      * That value is typically fetched from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property,
      * which is itself typically fetched from {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
-     * If no sample dimension information is available, then this colorizer do not build a color model.
-     * A fallback can be specified with {@link #orElse(Colorizer)}.</p>
+     * If no sample dimension information is available,
+     * or if the specified function did not returned at non-null value for at least one category,
+     * then this colorizer does not build a color model.
+     * A fallback can be specified with {@link #orElse(Colorizer)}.
      *
      * @param  colors  colors to use for arbitrary categories of sample values.
      * @return a colorizer which will apply colors determined by the {@link Category} of sample values.
