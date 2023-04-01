@@ -52,7 +52,7 @@ public final class ColorModelBuilderTest extends TestCase {
         final ColorModelBuilder colorizer = new ColorModelBuilder(List.of(
                 new SimpleEntry<>(NumberRange.create(0, true,  0, true), new Color[] {Color.GRAY}),
                 new SimpleEntry<>(NumberRange.create(1, true,  1, true), new Color[] {ColorModelFactory.TRANSPARENT}),
-                new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})));
+                new SimpleEntry<>(NumberRange.create(2, true, 15, true), new Color[] {Color.BLUE, Color.WHITE, Color.RED})), null);
         /*
          * No conversion of sample values should be necessary because the
          * above-given ranges already fit in a 4-bits IndexColormodel.
@@ -99,7 +99,7 @@ public final class ColorModelBuilderTest extends TestCase {
                 .addQualitative ("Error", MathFunctions.toNanFloat(3))
                 .setName("Temperature").build();
 
-        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE);
+        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null);
         assertTrue("initialize", colorizer.initialize(null, sd));
         final IndexColorModel cm = (IndexColorModel) colorizer.compactColorModel(1, 0);     // Must be first.
         /*

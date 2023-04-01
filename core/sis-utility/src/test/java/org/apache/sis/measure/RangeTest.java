@@ -30,7 +30,7 @@ import static org.apache.sis.test.Assert.*;
  *
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 public final class RangeTest extends TestCase {
@@ -101,6 +101,21 @@ public final class RangeTest extends TestCase {
     public void testConstructorErrors01() {
         assumeTrue(Range.class.desiredAssertionStatus());
         new Range(String.class, 123.233, true, 8740.09, true);
+    }
+
+    /**
+     * Tests {@link Range#isEmpty()}.
+     */
+    @Test
+    public void testIsEmpty() {
+        assertFalse(new Range<>(Float.class, 3f,        true, 5f,        true).isEmpty());
+        assertFalse(new Range<>(Float.class, 3f,        true, 3f,        true).isEmpty());
+        assertTrue (new Range<>(Float.class, 3f,        true, 3f,       false).isEmpty());
+        assertTrue (new Range<>(Float.class, 3f,       false, 3f,        true).isEmpty());
+        assertTrue (new Range<>(Float.class, 3f,       false, 3f,       false).isEmpty());
+        assertFalse(new Range<>(Float.class, Float.NaN, true, 5f,        true).isEmpty());
+        assertFalse(new Range<>(Float.class, 3f,        true, Float.NaN, true).isEmpty());
+        assertTrue (new Range<>(Float.class, Float.NaN, true, Float.NaN, true).isEmpty());
     }
 
     /**

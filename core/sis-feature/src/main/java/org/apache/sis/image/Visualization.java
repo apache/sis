@@ -287,6 +287,7 @@ final class Visualization extends ResampledImage {
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);
             }
+            final ColorModel sourceCM = coloredSource.getColorModel();
             /*
              * Get a `ColorModelBuilder` which will compute the `ColorModel` of destination image.
              * There is different ways to setup the builder, depending on which `Colorizer` is used.
@@ -300,15 +301,14 @@ final class Visualization extends ResampledImage {
             final ColorModelBuilder builder;
             final var rangeColors = target.rangeColors;
             if (rangeColors != null && !rangeColors.isEmpty()) {
-                builder = new ColorModelBuilder(rangeColors.entrySet());
+                builder = new ColorModelBuilder(rangeColors.entrySet(), sourceCM);
                 initialized = true;
             } else {
                 /*
                  * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
                  * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
-                builder = new ColorModelBuilder(target.categoryColors);
-                final ColorModel colorModel = coloredSource.getColorModel();
+                builder = new ColorModelBuilder(target.categoryColors, sourceCM);
                 initialized = builder.initialize(coloredSource.getSampleModel(), visibleSD);
                 if (initialized) {
                     /*
@@ -317,7 +317,7 @@ final class Visualization extends ResampledImage {
                      * determined by the SampleModel, then user enhanced contrast by a call to `stretchColorRamp(…)`.
                      * We want to preserve that contrast enhancement.
                      */
-                    builder.rescaleMainRange(colorModel);
+                    builder.rescaleMainRange(sourceCM);
                 } else {
                     /*
                      * At this point there is no more user-supplied colors (through `Colorizer`) that we can use.
@@ -325,7 +325,7 @@ final class Visualization extends ResampledImage {
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.
                      */
-                    initialized = builder.initialize(colorModel);
+                    initialized = builder.initialize(sourceCM);
                     if (!initialized) {
                         if (coloredSource instanceof RecoloredImage) {
                             final RecoloredImage colored = (RecoloredImage) coloredSource;
@@ -353,6 +353,9 @@ final class Visualization extends ResampledImage {
                 builder.getSampleToIndexValues()            // Must be after `compactColorModel(…)`.
             };
             if (shortcut) {
+                if (converters[0].isIdentity() && colorModel.equals(sourceCM)) {
+                    return coloredSource;
+                }
                 interpolation = Interpolation.NEAREST;
             } else {
                 interpolation = combine(interpolation.toCompatible(source), converters);

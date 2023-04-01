@@ -122,7 +122,7 @@ final class CoverageControls extends ViewAndControls {
              *   - Color stretching
              */
             interpolation = InterpolationConverter.button(view);
-            stretching = Stretching.createButton((p,o,n) -> view.setStyling(n));
+            stretching = Stretching.createButton((p,o,n) -> view.setStretching(n));
             final GridPane valuesControl = Styles.createControlGrid(0,
                 label(vocabulary, Vocabulary.Keys.Interpolation, interpolation),
                 label(vocabulary, Vocabulary.Keys.Stretching, stretching));

@@ -32,6 +32,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ContextMenu;
 import org.opengis.util.InternationalString;
 import org.apache.sis.coverage.Category;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
 import org.apache.sis.internal.gui.control.ColorRamp;
@@ -53,7 +54,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     /**
      * Customized colors selected by user. Keys are English names of categories.
      *
-     * @see #key(Category)
+     * @see #apply(Category)
      */
     private final Map<String,ColorRamp> customizedColors;
 
@@ -65,9 +66,13 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     /**
      * Creates a new styling instance.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     CoverageStyling(final CoverageCanvas canvas) {
         customizedColors = new HashMap<>();
         this.canvas = canvas;
+        if (canvas != null) {
+            canvas.setColorizer(Colorizer.forCategories(this));
+        }
     }
 
     /**
@@ -77,7 +82,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     final void copyStyling(final CoverageStyling source) {
         customizedColors.putAll(source.customizedColors);
         if (canvas != null) {
-            canvas.setCategoryColors(customizedColors.isEmpty() ? null : this);
+            canvas.stylingChanged();
         }
     }
 
@@ -92,7 +97,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         customizedColors.clear();
         items.setAll(content);
         if (canvas != null) {
-            canvas.setCategoryColors(null);
+            canvas.stylingChanged();
         }
     }
 
@@ -146,8 +151,8 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     }
 
     /**
-     * Associates colors to the given category.
-     * This is invoked when users confirmed that (s)he wants to use the selected colors.
+     * Associates colors to the given category. This method is invoked when new categories are shown
+     * in table column managed by this {@code CoverageStyling}, and when user selects new colors.
      *
      * @param  category  the category for which to assign new color(s).
      * @param  colors    the new color for the given category, or {@code null} for resetting default value.
@@ -163,8 +168,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
             old = customizedColors.remove(key);
         }
         if (canvas != null && !Objects.equals(colors, old)) {
-            canvas.setCategoryColors(customizedColors.isEmpty() ? null : this);
-            // Above method call causes a repaint event even if value is the same.
+            canvas.stylingChanged();
         }
         return category.isQuantitative() ? ColorRamp.Type.GRADIENT : ColorRamp.Type.SOLID;
     }

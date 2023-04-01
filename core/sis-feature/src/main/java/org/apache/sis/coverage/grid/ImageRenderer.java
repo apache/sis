@@ -661,8 +661,9 @@ public class ImageRenderer {
 
     /**
      * Specifies the colors to apply for each category in a sample dimension.
-     * The given function can return {@code null}, which means transparent.
-     * If this method is never invoked, then the default is a grayscale for
+     * The given function can return {@code null} for unrecognized categories.
+     * If this method is never invoked, or if a category is unrecognized,
+     * then the default is a grayscale for
      * {@linkplain Category#isQuantitative() quantitative categories} and
      * transparent for qualitative categories (typically "no data" values).
      *
@@ -752,7 +753,7 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {
         final Raster raster = createRaster();
-        final ColorModelBuilder colorizer = new ColorModelBuilder(colors);
+        final ColorModelBuilder colorizer = new ColorModelBuilder(colors, null);
         final ColorModel colors;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {

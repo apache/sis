@@ -51,8 +51,9 @@ import org.apache.sis.util.resources.Vocabulary;
  * <ol>
  *   <li>Create a new {@link ColorModelBuilder} instance.</li>
  *   <li>Invoke one of {@code initialize(…)} methods.</li>
- *   <li>Invoke {@link #createColorModel(int, int, int)}.</li>
- *   <li>Discards {@code ColorModelBuilder}; each instance should be used only once.</li>
+ *   <li>Invoke {@link #createColorModel(int, int, int)} or {@link #compactColorModel(int, int)}.</li>
+ *   <li>Invoke {@link #getSampleToIndexValues()} if this auxiliary information is useful.</li>
+ *   <li>Discards {@code ColorModelBuilder}. Each instance shall be used only once.</li>
  * </ol>
  *
  * There is no {@code initialize(Raster)} or {@code initialize(RenderedImage)} method because if those methods
@@ -126,8 +127,8 @@ public final class ColorModelBuilder {
 
     /**
      * The colors to use for each range of values in the source image.
-     * Entries will be sorted and modified in place.
-     * The array may be null if unspecified, but shall not contain null element.
+     * This array is initially null and created by an {@code initialize(…)} method.
+     * After initialization, this array shall not contain null element.
      */
     private ColorsForRange[] entries;
 
@@ -146,13 +147,25 @@ public final class ColorModelBuilder {
      * <p>This sample dimension should not be returned to the user because it may not contain meaningful values.
      * For example, it may contain an "artificial" transfer function for computing a {@link MathTransform1D} from
      * source range to the [0 … 255] value range.</p>
+     *
+     * @see #getSampleToIndexValues()
      */
     private SampleDimension target;
 
     /**
-     * Default range of values to use if no explicitly specified by a {@link Category}.
+     * Default range of values to use if not explicitly specified by a {@link Category}.
      */
     private NumberRange<?> defaultRange;
+
+    /**
+     * Colors to inherit if a range of values is undefined, or {@code null} if none.
+     * This field should be non-null only when this builder is used for styling an image before visualization.
+     * This field should be null when this builder is created for creating a new image because the meaning of
+     * pixel values may be completely different (i.e. meaning of {@linkplain #source} may not be applicable).
+     *
+     * @see ColorsForRange#isUndefined()
+     */
+    private final ColorModel inheritedColors;
 
     /**
      * Creates a new colorizer which will apply colors on the given range of values in source image.
@@ -164,11 +177,14 @@ public final class ColorModelBuilder {
      * and to grayscale colors otherwise.
      * Empty arrays of colors are interpreted as explicitly transparent.</p>
      *
-     * @param  colors  the colors to use for each range of values in source image.
+     * @param  colors     the colors to use for each range of values in source image.
+     * @param  inherited  the colors to use as fallback if some ranges have undefined colors, or {@code null}.
+     *                    Should be non-null only for styling an exiting image before visualization.
      */
-    public ColorModelBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors) {
+    public ColorModelBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
         ArgumentChecks.ensureNonEmpty("colors", colors);
-        entries = ColorsForRange.list(colors);
+        entries = ColorsForRange.list(colors, inherited);
+        inheritedColors = inherited;
         this.colors = GRAYSCALE;
     }
 
@@ -176,11 +192,19 @@ public final class ColorModelBuilder {
      * Creates a new colorizer which will use the given function for determining the colors to apply.
      * Callers need to invoke an {@code initialize(…)} method after this constructor.
      *
-     * @param  colors  the colors to use for each category, or {@code null} for default.
-     *                 The function may return {@code null} for unrecognized categories.
+     * <p>The {@code inherited} parameter is non-null when this builder is created for styling
+     * an existing image before visualization. This parameter should be null when this builder
+     * is created for creating a new image, even when that new image is derived from a source,
+     * because the meaning of pixel values may be completely different.</p>
+     *
+     * @param  colors     the colors to use for each category, or {@code null} for default.
+     *                    The function may return {@code null} for unrecognized categories.
+     * @param  inherited  the colors to use as fallback for unrecognized categories, or {@code null}.
+     *                    Should be non-null only for styling an exiting image before visualization.
      */
-    public ColorModelBuilder(final Function<Category,Color[]> colors) {
+    public ColorModelBuilder(final Function<Category,Color[]> colors, final ColorModel inherited) {
         this.colors = (colors != null) ? colors : GRAYSCALE;
+        inheritedColors = inherited;
     }
 
     /**
@@ -222,7 +246,7 @@ public final class ColorModelBuilder {
                 boolean missingNodata = true;
                 ColorsForRange[] entries = new ColorsForRange[categories.size()];
                 for (int i=0; i<entries.length; i++) {
-                    final var range = new ColorsForRange(categories.get(i), colors);
+                    final var range = new ColorsForRange(categories.get(i), colors, inheritedColors);
                     isUndefined &= range.isUndefined();
                     missingNodata &= range.isData;
                     entries[i] = range;
@@ -236,7 +260,7 @@ public final class ColorModelBuilder {
                         final int count = entries.length;
                         entries = Arrays.copyOf(entries, count + 1);
                         entries[count] = new ColorsForRange(TRANSPARENT,
-                                NumberRange.create(Float.class, Float.NaN), null, false);
+                                NumberRange.create(Float.class, Float.NaN), null, false, inheritedColors);
                     }
                     // Leave `target` to null. It will be computed by `compact()` if needed.
                     this.entries = entries;
@@ -351,7 +375,9 @@ public final class ColorModelBuilder {
         final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
-            entries[i] = new ColorsForRange(category, colors);
+            final var range = new ColorsForRange(category.forConvertedValues(true), colors, inheritedColors);
+            range.sampleRange = category.getSampleRange();
+            entries[i] = range;
         }
         this.entries = entries;
     }
@@ -530,7 +556,7 @@ reuse:  if (source != null) {
                 span += sourceRange.getSpan();
                 final ColorsForRange[] tmp = Arrays.copyOf(entries, ++count);
                 System.arraycopy(entries, deferred, tmp, ++deferred, count - deferred);
-                tmp[deferred-1] = new ColorsForRange(null, sourceRange, null, true);
+                tmp[deferred-1] = new ColorsForRange(null, sourceRange, null, true, null);
                 entries = tmp;
             }
         }

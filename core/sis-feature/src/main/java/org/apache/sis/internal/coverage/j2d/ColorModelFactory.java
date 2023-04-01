@@ -209,7 +209,7 @@ public final class ColorModelFactory {
                             }
                         }
                     }
-                    codes [  count] = entry.toARGB();
+                    codes [  count] = entry.toARGB(upper - lower);
                     starts[  count] = lower;
                     starts[++count] = upper;
                 }
@@ -309,7 +309,8 @@ public final class ColorModelFactory {
     public static ColorModelFactory piecewise(final Map<NumberRange<?>, Color[]> colors) {
         final var entries = colors.entrySet();
         ArgumentChecks.ensureNonEmpty("colors", entries);
-        return PIECEWISES.intern(new ColorModelFactory(DataBuffer.TYPE_BYTE, 0, DEFAULT_VISIBLE_BAND, ColorsForRange.list(entries)));
+        final var ranges = ColorsForRange.list(entries, null);
+        return PIECEWISES.intern(new ColorModelFactory(DataBuffer.TYPE_BYTE, 0, DEFAULT_VISIBLE_BAND, ranges));
     }
 
     /**
@@ -479,7 +480,7 @@ public final class ColorModelFactory {
     {
         ArgumentChecks.ensureNonEmpty("colors", colors);
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
-            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true)
+            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true, null)
         });
     }
 
@@ -779,7 +780,7 @@ public final class ColorModelFactory {
     /**
      * Copies {@code colors} into {@code ARGB} array from index {@code lower} inclusive to index {@code upper} exclusive.
      * If {@code upper-lower} is not equal to the length of {@code colors} array, then colors will be interpolated.
-     * The given {@code colors} array must be initialized with zero values in the {@code lower} … {@code upper} range.
+     * The given {@code ARGB} array must be initialized with zero values in the {@code lower} … {@code upper} range.
      *
      * @param  colors  colors to copy into the {@code ARGB} array.
      * @param  ARGB    array of integer to write ARGB values into.
@@ -795,6 +796,10 @@ public final class ColorModelFactory {
         switch (upper - lower) {
             case 1: ARGB[lower] = colors[0];                            // fall through
             case 0: return;
+        }
+        if (upper - lower == colors.length) {
+            System.arraycopy(colors, 0, ARGB, 0, colors.length);
+            return;
         }
         /*
          * Prepares the coefficients for the iteration.

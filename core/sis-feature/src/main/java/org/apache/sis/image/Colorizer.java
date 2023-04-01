@@ -191,17 +191,18 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * this colorizer creates a non-standard (and potentially slow) color model.</p>
      *
      * <h4>Default colors</h4>
-     * The {@code colors} map shall not be null or empty but may contain {@code null} values.
-     * Those null values are translated to default sets of colors in an implementation dependent way.
+     * The given {@code colors} map can associate to some keys a null or an empty color arrays.
+     * An empty array (i.e. no color) is interpreted as an explicit request for transparency.
+     * But null values are interpreted as unspecified colors,
+     * in which case the defaults are implementation dependent.
      * In current implementation, the defaults are:
      *
      * <ul>
-     *   <li>If the range minimum and maximum values are not equal, default to grayscale colors.</li>
+     *   <li>If this colorizer is used for {@linkplain ImageProcessor#visualize(RenderedImage) visualization},
+     *       try to keep the existing colors of the image to visualize.</li>
+     *   <li>Otherwise if the range minimum and maximum values are not equal, default to grayscale colors.</li>
      *   <li>Otherwise default to a fully transparent color.</li>
      * </ul>
-     *
-     * Those defaults may change in any future Apache SIS version.
-     * For example a future version may first tries to preserve the existing colors of an image.
      *
      * <h4>Limitations</h4>
      * In current implementation, the non-standard color model ignores the specified colors.
@@ -247,13 +248,12 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * In current implementation, the defaults are:
      *
      * <ul>
-     *   <li>If all categories are unrecognized, then the colorizer returns an empty value.</li>
+     *   <li>If this colorizer is used for {@linkplain ImageProcessor#visualize(RenderedImage) visualization},
+     *       try to keep the existing colors of the image to visualize.</li>
+     *   <li>Otherwise if all categories are unrecognized, then the colorizer returns an empty value.</li>
      *   <li>Otherwise, {@linkplain Category#isQuantitative() quantitative} categories default to grayscale colors.</li>
      *   <li>Otherwise qualitative categories default to a fully transparent color.</li>
      * </ul>
-     *
-     * Those defaults may change in any future Apache SIS version.
-     * For example a future version may first tries to preserve the existing colors of an image.
      *
      * <h4>Conditions</h4>
      * This colorizer is used when {@link Target#getRanges()} provides a non-empty value.
@@ -280,7 +280,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                     final List<SampleDimension> ranges = target.getRanges().orElse(null);
                     if (visibleBand < ranges.size()) {
                         final SampleModel model = target.getSampleModel();
-                        final var c = new ColorModelBuilder(colors);
+                        final var c = new ColorModelBuilder(colors, null);
                         if (c.initialize(model, ranges.get(visibleBand))) {
                             return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
                         }

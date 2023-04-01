@@ -292,7 +292,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
             if (row != null) {
                 final S item = row.getItem();
                 if (item != null) {
-                    type = handler.applyColors(item, colors);
+                    type = handler.applyColors(item, (colors != ColorRamp.DEFAULT) ? colors : null);
                 }
             }
         }

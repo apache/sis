@@ -304,8 +304,7 @@ final class RecoloredImage extends ImageAdapter {
             Arrays.fill(ARGB, end+1, validMax+1, icm.getRGB(validMax));
             final float scale = (float) ((validMax - validMin) / (maximum - minimum));
             for (int i = start; i <= end; i++) {
-                final float s = (i - start) * scale + validMin;
-                ARGB[i] = icm.getRGB(Math.round(s));
+                ARGB[i] = icm.getRGB(Math.round((i - start) * scale) + validMin);
             }
             final SampleModel sm = source.getSampleModel();
             cm = ColorModelFactory.createIndexColorModel(sm.getNumBands(), visibleBand, ARGB, icm.hasAlpha(), icm.getTransparentPixel());

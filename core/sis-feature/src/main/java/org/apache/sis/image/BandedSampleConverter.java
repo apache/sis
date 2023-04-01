@@ -238,7 +238,7 @@ class BandedSampleConverter extends ComputedImage {
             if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.length) {
                 sd = sampleDimensions[visibleBand];
             }
-            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE);
+            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null);
             if (builder.initialize(source.getSampleModel(), sd) ||
                 builder.initialize(source.getColorModel()))
             {
