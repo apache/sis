@@ -168,13 +168,13 @@ public final class ColorModelBuilder {
     private final ColorModel inheritedColors;
 
     /**
-     * Creates a new colorizer which will apply colors on the given range of values in source image.
+     * Creates a new colorizer which will apply colors on the given ranges of values in source image.
      * The {@code ColorModelBuilder} is considered initialized after this constructor;
      * callers shall <strong>not</strong> invoke an {@code initialize(…)} method.
      *
      * <p>The {@code colors} map shall not be null or empty but may contain {@code null} values.
      * Null values default to a fully transparent color when the range contains a single value,
-     * and to grayscale colors otherwise.
+     * and to grayscale colors otherwise, unless {@code inherited} is non-null.
      * Empty arrays of colors are interpreted as explicitly transparent.</p>
      *
      * @param  colors     the colors to use for each range of values in source image.
@@ -182,7 +182,6 @@ public final class ColorModelBuilder {
      *                    Should be non-null only for styling an exiting image before visualization.
      */
     public ColorModelBuilder(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
-        ArgumentChecks.ensureNonEmpty("colors", colors);
         entries = ColorsForRange.list(colors, inherited);
         inheritedColors = inherited;
         this.colors = GRAYSCALE;
@@ -517,12 +516,12 @@ reuse:  if (source != null) {
                      * computing a transfer function, but those categories should not be returned to user.
                      */
                     if (Double.isNaN(value)) {
-                        builder.mapQualitative(entry.name, targetRange, (float) value);
+                        builder.mapQualitative(entry.name(), targetRange, (float) value);
                     } else {
                         if (value == entry.sampleRange.getMaxDouble()) {
                             sourceRange = NumberRange.create(value - 0.5, true, value + 0.5, false);
                         }
-                        builder.addQuantitative(entry.name, targetRange, sourceRange);
+                        builder.addQuantitative(entry.name(), targetRange, sourceRange);
                         themes = (themes != null) ? themes.unionAny(sourceRange) : sourceRange;
                     }
                 }
@@ -578,7 +577,7 @@ reuse:  if (source != null) {
             }
             final NumberRange<Integer> samples = NumberRange.create(lower, true, upper, false);
             if (mapper.put(samples, entry) == null) {
-                builder.addQuantitative(entry.name, samples, entry.sampleRange);
+                builder.addQuantitative(entry.name(), samples, entry.sampleRange);
             }
             lower = upper;
         }

@@ -18,6 +18,7 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.awt.Transparency;
 import java.awt.Color;
@@ -299,17 +300,15 @@ public final class ColorModelFactory {
     /**
      * Prepares a factory of color models interpolated for the ranges in the given map entries.
      * The {@link ColorModel} instances will be shared among all callers in the running virtual machine.
-     * The {@code colors} map shall not be null or empty but may contain {@code null} values.
+     * The {@code colors} list shall not be null or empty but may contain {@code null} values.
      * Null values default to fully transparent color when the range contains a single value,
      * and to grayscale otherwise. Empty arrays of colors are interpreted as explicitly transparent.
      *
      * @param  colors  the colors to use for each range of sample values.
      * @return a factory of color model suitable for {@link RenderedImage} objects with values in the given ranges.
      */
-    public static ColorModelFactory piecewise(final Map<NumberRange<?>, Color[]> colors) {
-        final var entries = colors.entrySet();
-        ArgumentChecks.ensureNonEmpty("colors", entries);
-        final var ranges = ColorsForRange.list(entries, null);
+    public static ColorModelFactory piecewise(final Collection<Map.Entry<NumberRange<?>, Color[]>> colors) {
+        final var ranges = ColorsForRange.list(colors, null);
         return PIECEWISES.intern(new ColorModelFactory(DataBuffer.TYPE_BYTE, 0, DEFAULT_VISIBLE_BAND, ranges));
     }
 
@@ -465,7 +464,8 @@ public final class ColorModelFactory {
 
     /**
      * Returns a color model interpolated for the given range of values.
-     * This is a convenience method for {@link #piecewise(Map)} when the map contains only one element.
+     * This is a convenience method for {@link #piecewise(Collection)}
+     * when the map contains only one element.
      *
      * @param  dataType     the color model type.
      * @param  numBands     the number of bands for the color model (usually 1).

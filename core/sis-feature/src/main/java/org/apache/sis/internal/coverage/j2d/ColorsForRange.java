@@ -42,10 +42,12 @@ import org.apache.sis.util.ArraysExt;
  */
 final class ColorsForRange implements Comparable<ColorsForRange> {
     /**
-     * A name identifying the range of values. the category name is used if available,
-     * otherwise this is a string representation of the range.
+     * A name identifying the range of values, or {@code null} if not yet computed.
+     * The category name is used if available, otherwise this is a string representation of the range.
+     *
+     * @see #name()
      */
-    final CharSequence name;
+    private CharSequence name;
 
     /**
      * The range of sample values on which the colors will be applied. Shall never be null.
@@ -110,18 +112,18 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     /**
      * Creates a new instance for the given range of values.
      *
-     * @param  name          a name identifying the range of values, or {@code null} for automatic.
-     * @param  sampleRange   range of sample values on which the colors will be applied.
-     * @param  colors        colors to apply on the range of sample values, or {@code null} for default.
-     * @param  isData        whether this entry should be taken as main data (not fill values).
-     * @param  inherited     the original colors to use as fallback, or {@code null} if none.
-     *                       Should be non-null only for styling an exiting image before visualization.
+     * @param  name         a name identifying the range of values, or {@code null} for automatic.
+     * @param  sampleRange  range of sample values on which the colors will be applied.
+     * @param  colors       colors to apply on the range of sample values, or {@code null} for default.
+     * @param  isData       whether this entry should be taken as main data (not fill values).
+     * @param  inherited    the original colors to use as fallback, or {@code null} if none.
+     *                      Should be non-null only for styling an exiting image before visualization.
      */
     ColorsForRange(final CharSequence name, final NumberRange<?> sampleRange, final Color[] colors,
                    final boolean isData, final ColorModel inherited)
     {
         ArgumentChecks.ensureNonNull("sampleRange", sampleRange);
-        this.name        = (name != null) ? name : sampleRange.toString();
+        this.name        = name;
         this.sampleRange = originalSampleRange = sampleRange;
         this.isData      = isData;
         this.colors      = colors;
@@ -146,12 +148,12 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * The {@link #category} of each entry is left to null.
      *
      * @param  colors     the colors to use for each range of sample values.
-     *                    A {@code null} entry value means transparent.
      * @param  inherited  the original color model from which to inherit undefined colors, or {@code null} if none.
      * @return colors to use for each range of values in the source image.
      *         Never null and does not contain null elements.
      */
     static ColorsForRange[] list(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
+        ArgumentChecks.ensureNonEmpty("colors", colors);
         final ColorsForRange[] entries = new ColorsForRange[colors.size()];
         int n = 0;
         for (final Map.Entry<NumberRange<?>,Color[]> entry : colors) {
@@ -163,11 +165,21 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     }
 
     /**
+     * Returns the name pf this range of colors.
+     */
+    final CharSequence name() {
+        if (name == null) {
+            name = sampleRange.toString();
+        }
+        return name;
+    }
+
+    /**
      * Returns a string representation for debugging purposes.
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(name).append(": ").append(sampleRange);
+        final StringBuilder buffer = new StringBuilder(name()).append(": ").append(sampleRange);
         appendColorRange(buffer, toARGB(2));
         return buffer.toString();
     }

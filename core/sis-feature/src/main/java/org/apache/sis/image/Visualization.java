@@ -74,7 +74,7 @@ final class Visualization extends ResampledImage {
         /**
          * Colors to apply on the sample value ranges, as supplied by user.
          */
-        Map<NumberRange<?>,Color[]> rangeColors;
+        List<Map.Entry<NumberRange<?>,Color[]>> rangeColors;
 
         /**
          * Colors to apply on the sample dimensions, as supplied by user.
@@ -299,9 +299,8 @@ final class Visualization extends ResampledImage {
              */
             boolean initialized;
             final ColorModelBuilder builder;
-            final var rangeColors = target.rangeColors;
-            if (rangeColors != null && !rangeColors.isEmpty()) {
-                builder = new ColorModelBuilder(rangeColors.entrySet(), sourceCM);
+            if (target.rangeColors != null) {
+                builder = new ColorModelBuilder(target.rangeColors, sourceCM);
                 initialized = true;
             } else {
                 /*

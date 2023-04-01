@@ -16,6 +16,8 @@
  */
 package org.apache.sis.image;
 
+import java.util.ArrayList;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Map;
 import java.util.List;
 import java.util.Objects;
@@ -214,11 +216,20 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
      * @see ImageProcessor#visualize(RenderedImage)
      */
     public static Colorizer forRanges(final Map<NumberRange<?>,Color[]> colors) {
-        // Can not use `Map.copyOf(colors)` because it may contain null values.
-        final var factory = ColorModelFactory.piecewise(colors);
+        final var list = new ArrayList<Map.Entry<NumberRange<?>,Color[]>>(colors.size());
+        for (final Map.Entry<NumberRange<?>,Color[]> entry : colors.entrySet()) {
+            var range = entry.getKey();
+            var value = entry.getValue();
+            if (value != null) {
+                value = value.clone();
+            }
+            list.add(new SimpleImmutableEntry<>(range, value));
+        }
+        final var entries = List.copyOf(list);
+        final var factory = ColorModelFactory.piecewise(entries);
         return (target) -> {
             if (target instanceof Visualization.Target) {
-                ((Visualization.Target) target).rangeColors = colors;
+                ((Visualization.Target) target).rangeColors = entries;
             } else {
                 final OptionalInt visibleBand = target.getVisibleBand();
                 if (!visibleBand.isEmpty()) {
