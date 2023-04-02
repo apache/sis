@@ -71,7 +71,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @version 1.4
  * @since   1.4
  */
-public final class DimensionalityReduction implements UnaryOperator<GridCoverage>, Serializable {
+public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -79,6 +79,8 @@ public final class DimensionalityReduction implements UnaryOperator<GridCoverage
 
     /**
      * The source grid geometry with all dimensions.
+     *
+     * @see #getSourceGridGeometry()
      */
     private final GridGeometry sourceGeometry;
 
@@ -163,7 +165,8 @@ public final class DimensionalityReduction implements UnaryOperator<GridCoverage
     }
 
     /**
-     * Creates information about reducing the number of dimensions of the specified grid geometry.
+     * Reduces the dimension of the specified grid geometry by retaining the axes specified in the given bitset.
+     * Axes in the reduced grid geometry will be in the same order than in the source geometry:
      *
      * @param  source    the grid geometry on which to select a subset of its grid dimensions.
      * @param  gridAxes  bitmask of indices of source grid dimensions to keep in the reduced grid.
@@ -171,7 +174,7 @@ public final class DimensionalityReduction implements UnaryOperator<GridCoverage
      * @param  factory   the factory to use for creating new math transforms, or {@code null} if none.
      * @throws FactoryException if the dimensions to kept cannot be separated from the dimensions to omit.
      */
-    private DimensionalityReduction(final GridGeometry source, final BitSet gridAxes, final MathTransformFactory factory)
+    protected DimensionalityReduction(final GridGeometry source, final BitSet gridAxes, final MathTransformFactory factory)
             throws FactoryException
     {
         gridAxesToPass   = toArray(gridAxes);
