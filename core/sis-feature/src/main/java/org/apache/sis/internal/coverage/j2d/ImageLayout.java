@@ -27,6 +27,7 @@ import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.image.ComputedImage;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.internal.util.Strings;
@@ -324,17 +325,26 @@ public class ImageLayout {
      * This method uses the {@linkplain #suggestTileSize(RenderedImage, Rectangle, boolean)
      * suggested tile size} for the given image and bounds.
      *
+     * <p>This method constructs the simplest possible banded sample model:
+     * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
+     * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.</p>
+     *
      * @param  dataType  desired data type as a {@link java.awt.image.DataBuffer} constant.
      * @param  numBands  desired number of bands.
      * @param  image     the image which will be the source of the image for which a sample model is created.
      * @param  bounds    the bounds of the image to create, or {@code null} if same as {@code image}.
+     * @param  scanlineStride  the line stride of the of the image data, or ≤ 0 for automatic.
      * @return a banded sample model of the given type with the given number of bands.
      */
     public BandedSampleModel createBandedSampleModel(final int dataType, final int numBands,
-            final RenderedImage image, final Rectangle bounds)
+            final RenderedImage image, final Rectangle bounds, int scanlineStride)
     {
         final Dimension tileSize = suggestTileSize(image, bounds, isBoundsAdjustmentAllowed);
-        return RasterFactory.unique(new BandedSampleModel(dataType, tileSize.width, tileSize.height, numBands));
+        if (scanlineStride <= 0) {
+            scanlineStride = tileSize.width;
+        }
+        return RasterFactory.unique(new BandedSampleModel(dataType, tileSize.width, tileSize.height,
+                                    scanlineStride, ArraysExt.range(0, numBands), new int[numBands]));
     }
 
     /**

@@ -20,11 +20,19 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
+import java.awt.image.SampleModel;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.DataBufferShort;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.DataBufferInt;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferDouble;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.Workaround;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
@@ -71,20 +79,27 @@ final class BandAggregateImage extends ComputedImage {
     private final int minTileX, minTileY;
 
     /**
+     * Whether all sources have tiles at the same locations and use the same scanline stride.
+     * In such case, it is possible to share references to data arrays without copying them.
+     */
+    private final boolean allowSharing;
+
+    /**
      * Creates a new aggregation of bands.
-     * This static method is a workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
      *
-     * @param  sources          images to combine, in order.
-     * @param  bandsPerSource   bands to use for each source image, in order. May contain {@code null} elements.
-     * @param  colorizer        provider of color model to use for this image, or {@code null} for automatic.
+     * @param  sources         images to combine, in order.
+     * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
+     * @param  colorizer       provider of color model to use for this image, or {@code null} for automatic.
+     * @param  allowSharing    whether to allow the sharing of data buffers (instead of copying) if possible.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      * @return the band aggregate image.
      */
-    @Workaround(library="JDK", version="1.8")
-    static RenderedImage create(RenderedImage[] sources, int[][] bandsPerSource, Colorizer colorizer) {
-        var image = new BandAggregateImage(CombinedImageLayout.create(sources, bandsPerSource), colorizer);
+    static RenderedImage create(final RenderedImage[] sources, final int[][] bandsPerSource,
+                                final Colorizer colorizer, final boolean allowSharing)
+    {
+        final var layout = CombinedImageLayout.create(sources, bandsPerSource, allowSharing);
+        final var image  = new BandAggregateImage(layout, colorizer);
         if (image.filteredSources.length == 1) {
             final RenderedImage c = image.filteredSources[0];
             if (image.colorModel == null) {
@@ -95,7 +110,7 @@ final class BandAggregateImage extends ComputedImage {
                 return c;
             }
         }
-        return ImageProcessor.unique(image);
+        return image;
     }
 
     /**
@@ -113,6 +128,7 @@ final class BandAggregateImage extends ComputedImage {
         height          = r.height;
         minTileX        = layout.minTileX;
         minTileY        = layout.minTileY;
+        allowSharing    = layout.allowSharing;
         filteredSources = layout.getFilteredSources();
         colorModel      = layout.createColorModel(colorizer);
         ensureCompatible(colorModel);
@@ -128,16 +144,33 @@ final class BandAggregateImage extends ComputedImage {
     @Override public int        getMinTileY()   {return minTileY;}
 
     /**
-     * Creates a raster sharing containing a copy of the selected bands in source images.
+     * Creates a raster containing the selected bands of source images.
      *
-     * @param  tileX     the column index of the tile to compute.
-     * @param  tileY     the row index of the tile to compute.
-     * @param  previous  the previous tile, reused if non-null.
-     *
-     * @todo Share data arrays instead of copying when possible.
+     * @param  tileX  the column index of the tile to compute.
+     * @param  tileY  the row index of the tile to compute.
+     * @param  tile   the previous tile, reused if non-null.
      */
     @Override
     protected Raster computeTile(final int tileX, final int tileY, WritableRaster tile) {
+        /*
+         * If we are allowed to share the data arrays, try that first.
+         */
+        if (allowSharing) {
+            final Sharing sharing = Sharing.create(sampleModel.getDataType(), sampleModel.getNumBands());
+            if (sharing != null) {
+                final DataBuffer buffer = sharing.createDataBuffer(
+                        Math.multiplyFull(tileX - minTileX, getTileWidth())  + minX,
+                        Math.multiplyFull(tileY - minTileY, getTileHeight()) + minY,
+                        filteredSources);
+                if (buffer != null) {
+                    return Raster.createRaster(sampleModel, buffer, computeTileLocation(tileX, tileY));
+                }
+            }
+        }
+        /*
+         * Fallback when the data arrays can not be shared.
+         * This code copies all sample values in new arrays.
+         */
         if (tile == null) {
             tile = createTile(tileX, tileY);
         }
@@ -153,6 +186,253 @@ final class BandAggregateImage extends ComputedImage {
             copyData(aoi, source, target);
         }
         return tile;
+    }
+
+    /**
+     * A builder of data buffers sharing arrays of source images.
+     * There is a subclass for each supported data type.
+     */
+    private abstract static class Sharing {
+        /**
+         * The offsets of the first valid element into each bank array.
+         * Will be computed with the assumption that all offsets are zero
+         * in the target {@link java.awt.image.BandedSampleModel}.
+         */
+        protected final int[] offsets;
+
+        /**
+         * For subclass constructors.
+         */
+        protected Sharing(final int numBands) {
+            offsets = new int[numBands];
+        }
+
+        /**
+         * Creates a new builder.
+         *
+         * @param  dataType  the data type as one of {@link DataBuffer} constants.
+         * @param  numBands  number of banks of the data buffer to create.
+         * @return the data buffer, or {@code null} if the dat type is not recognized.
+         */
+        static Sharing create(final int dataType, final int numBands) {
+            switch (dataType) {
+                case DataBuffer.TYPE_BYTE:   return new Bytes   (numBands);
+                case DataBuffer.TYPE_SHORT:  return new Shorts  (numBands);
+                case DataBuffer.TYPE_USHORT: return new UShorts (numBands);
+                case DataBuffer.TYPE_INT:    return new Integers(numBands);
+                case DataBuffer.TYPE_FLOAT:  return new Floats  (numBands);
+                case DataBuffer.TYPE_DOUBLE: return new Doubles (numBands);
+            }
+            return null;
+        }
+
+        /**
+         * Creates a data buffer sharing the arrays of all given sources, in order.
+         * This method assumes a target {@link java.awt.image.BandedSampleModel} where
+         * all band offsets are zero and where bank indices define an identity mapping.
+         *
+         * @param  x        <var>x</var> pixel coordinate of the tile.
+         * @param  y        <var>y</var> pixel coordinate of the tile.
+         * @param  sources  the sources for which to aggregate all bands.
+         * @return a data buffer containing the aggregation of all bands, or {@code null} if it can not be created.
+         */
+        final DataBuffer createDataBuffer(final long x, final long y, final RenderedImage[] sources) {
+            int band = 0;
+            int size = Integer.MAX_VALUE;
+            for (final RenderedImage source : sources) {
+                final int tileWidth  = source.getTileWidth();
+                final int tileHeight = source.getTileHeight();
+                long tileX = x - source.getTileGridXOffset();
+                long tileY = y - source.getTileGridYOffset();
+                if (((tileX % tileWidth) | (tileY % tileHeight)) != 0) {
+                    return null;    // Source tile not aligned on target tile.
+                }
+                tileX /= tileWidth;
+                tileY /= tileHeight;
+                final Raster raster = source.getTile(Math.toIntExact(tileX), Math.toIntExact(tileY));
+                final SampleModel c = raster.getSampleModel();
+                if (!(c instanceof ComponentSampleModel)) {
+                    return null;    // Should never happen if `BandAggregateImage.allowSharing` is true.
+                }
+                final var   sm       = (ComponentSampleModel) c;
+                final var   buffer   = raster.getDataBuffer();
+                final int[] offsets1 = buffer.getOffsets();
+                final int[] offsets2 = sm.getBandOffsets();
+                final int[] indices  = sm.getBankIndices();
+                for (int i=0; i<indices.length; i++) {
+                    final int b = indices[i];
+                    takeReference(buffer, b, band);
+                    offsets[band] = offsets1[b] + offsets2[i];      // Assume zero offset in target `BandedSampleModel`.
+                    band++;
+                }
+                size = Math.min(size, buffer.getSize());
+            }
+            final DataBuffer buffer = build(size);
+            assert buffer.getNumBanks() == band;
+            return buffer;
+        }
+
+        /**
+         * Takes a reference to an array in the given data buffer.
+         *
+         * @param source  the data buffer from which to take a reference to an array.
+         * @param src     bank index of the reference to take.
+         * @param dst     band index where to store the reference.
+         */
+        abstract void takeReference(DataBuffer source, int src, int dst);
+
+        /**
+         * Builds the data buffer after all references have been taken.
+         * The data buffer shall specify {@link #offsets} to the buffer constructor.
+         *
+         * @param  size  number of elements in the data buffer.
+         * @return the new data buffer.
+         */
+        abstract DataBuffer build(int size);
+    }
+
+    /**
+     * A builder of data buffer of {@link DataBuffer#TYPE_BYTE}.
+     */
+    private static final class Bytes extends Sharing {
+        /** The shared arrays. */
+        private final byte[][] data;
+
+        /** Creates a new builder. */
+        Bytes(final int numBands) {
+            super(numBands);
+            data = new byte[numBands][];
+        }
+
+        /** Takes a reference to an array in the given data buffer. */
+        @Override void takeReference(DataBuffer buffer, int src, int dst) {
+            data[dst] = ((DataBufferByte) buffer).getData(src);
+        }
+
+        /** Builds the data buffer after all references have been taken. */
+        @Override DataBuffer build(int size) {
+            return new DataBufferByte(data, size, offsets);
+        }
+    }
+
+    /**
+     * A builder of data buffer of {@link DataBuffer#TYPE_SHORT}.
+     */
+    private static final class Shorts extends Sharing {
+        /** The shared arrays. */
+        private final short[][] data;
+
+        /** Creates a new builder. */
+        Shorts(final int numBands) {
+            super(numBands);
+            data = new short[numBands][];
+        }
+
+        /** Takes a reference to an array in the given data buffer. */
+        @Override void takeReference(DataBuffer buffer, int src, int dst) {
+            data[dst] = ((DataBufferShort) buffer).getData(src);
+        }
+
+        /** Builds the data buffer after all references have been taken. */
+        @Override DataBuffer build(int size) {
+            return new DataBufferShort(data, size, offsets);
+        }
+    }
+
+    /**
+     * A builder of data buffer of {@link DataBuffer#TYPE_USHORT}.
+     */
+    private static final class UShorts extends Sharing {
+        /** The shared arrays. */
+        private final short[][] data;
+
+        /** Creates a new builder. */
+        UShorts(final int numBands) {
+            super(numBands);
+            data = new short[numBands][];
+        }
+
+        /** Takes a reference to an array in the given data buffer. */
+        @Override void takeReference(DataBuffer buffer, int src, int dst) {
+            data[dst] = ((DataBufferUShort) buffer).getData(src);
+        }
+
+        /** Builds the data buffer after all references have been taken. */
+        @Override DataBuffer build(int size) {
+            return new DataBufferUShort(data, size, offsets);
+        }
+    }
+
+    /**
+     * A builder of data buffer of {@link DataBuffer#TYPE_INT}.
+     */
+    private static final class Integers extends Sharing {
+        /** The shared arrays. */
+        private final int[][] data;
+
+        /** Creates a new builder. */
+        Integers(final int numBands) {
+            super(numBands);
+            data = new int[numBands][];
+        }
+
+        /** Takes a reference to an array in the given data buffer. */
+        @Override void takeReference(DataBuffer buffer, int src, int dst) {
+            data[dst] = ((DataBufferInt) buffer).getData(src);
+        }
+
+        /** Builds the data buffer after all references have been taken. */
+        @Override DataBuffer build(int size) {
+            return new DataBufferInt(data, size, offsets);
+        }
+    }
+
+    /**
+     * A builder of data buffer of {@link DataBuffer#TYPE_FLOAT}.
+     */
+    private static final class Floats extends Sharing {
+        /** The shared arrays. */
+        private final float[][] data;
+
+        /** Creates a new builder. */
+        Floats(final int numBands) {
+            super(numBands);
+            data = new float[numBands][];
+        }
+
+        /** Takes a reference to an array in the given data buffer. */
+        @Override void takeReference(DataBuffer buffer, int src, int dst) {
+            data[dst] = ((DataBufferFloat) buffer).getData(src);
+        }
+
+        /** Builds the data buffer after all references have been taken. */
+        @Override DataBuffer build(int size) {
+            return new DataBufferFloat(data, size, offsets);
+        }
+    }
+
+    /**
+     * A builder of data buffer of {@link DataBuffer#TYPE_DOUBLE}.
+     */
+    private static final class Doubles extends Sharing {
+        /** The shared arrays. */
+        private final double[][] data;
+
+        /** Creates a new builder. */
+        Doubles(final int numBands) {
+            super(numBands);
+            data = new double[numBands][];
+        }
+
+        /** Takes a reference to an array in the given data buffer. */
+        @Override void takeReference(DataBuffer buffer, int src, int dst) {
+            data[dst] = ((DataBufferDouble) buffer).getData(src);
+        }
+
+        /** Builds the data buffer after all references have been taken. */
+        @Override DataBuffer build(int size) {
+            return new DataBufferDouble(data, size, offsets);
+        }
     }
 
     /**

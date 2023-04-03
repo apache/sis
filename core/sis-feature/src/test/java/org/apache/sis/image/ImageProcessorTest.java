@@ -17,7 +17,10 @@
 package org.apache.sis.image;
 
 import java.util.Map;
+import java.util.stream.IntStream;
 import java.awt.Shape;
+import java.awt.Rectangle;
+import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import org.apache.sis.internal.processing.isoline.IsolinesTest;
@@ -49,6 +52,34 @@ public final class ImageProcessorTest extends TestCase {
      */
     public ImageProcessorTest() {
         processor = new ImageProcessor();
+    }
+
+    /**
+     * Tests {@link ImageProcessor#aggregateBands(RenderedImage...)}.
+     *
+     * @see BandAggregateImageTest
+     */
+    @Test
+    public void testBandAggregate() {
+        final int width  = 3;
+        final int height = 4;
+        final BufferedImage im1 = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        final BufferedImage im2 = new BufferedImage(width, height, BufferedImage.TYPE_BYTE_GRAY);
+        im1.getRaster().setSamples(0, 0, width, height, 0, IntStream.range(0, width*height).map(s -> s +  10).toArray());
+        im2.getRaster().setSamples(0, 0, width, height, 0, IntStream.range(0, width*height).map(s -> s + 100).toArray());
+
+        final Raster data = processor.aggregateBands(im1, im2).getData();
+        assertEquals(new Rectangle(0, 0, width, height), data.getBounds());
+        assertEquals(2, data.getNumBands());
+        assertArrayEquals(
+            new int[] {
+                10, 100,  11, 101,  12, 102,
+                13, 103,  14, 104,  15, 105,
+                16, 106,  17, 107,  18, 108,
+                19, 109,  20, 110,  21, 111
+            },
+            data.getPixels(0, 0, width, height, (int[]) null)
+        );
     }
 
     /**

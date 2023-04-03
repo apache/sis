@@ -24,6 +24,8 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
+import java.awt.image.BandedSampleModel;
+import java.awt.image.ComponentSampleModel;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.internal.feature.Resources;
@@ -68,8 +70,11 @@ final class CombinedImageLayout extends ImageLayout {
 
     /**
      * The sample model of the combined image.
+     * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
+     * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
+     * This simplicity is needed by current implementation of {@link BandAggregateImage}.
      */
-    final SampleModel sampleModel;
+    final BandedSampleModel sampleModel;
 
     /**
      * The domain of pixel coordinates in the combined image. All sources images are assumed to use
@@ -97,6 +102,12 @@ final class CombinedImageLayout extends ImageLayout {
     private final boolean exactTileSize;
 
     /**
+     * Whether all sources have tiles at the same locations and use the same scanline stride.
+     * In such case, it is possible to share references to data arrays without copying them.
+     */
+    final boolean allowSharing;
+
+    /**
      * Computes the layout of an image combining all the specified source images.
      * The optional {@code bandsPerSource} argument specifies the bands to select in each source images.
      * That array can be {@code null} for selecting all bands in all source images,
@@ -109,40 +120,61 @@ final class CombinedImageLayout extends ImageLayout {
      *
      * @param  sources         images to combine, in order.
      * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
+     * @param  allowSharing    whether to allow the sharing of data buffers (instead of copying) if possible.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      */
     @Workaround(library="JDK", version="1.8")
-    static CombinedImageLayout create(RenderedImage[] sources, int[][] bandsPerSource) {
+    static CombinedImageLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
         final var aggregate = new MultiSourcesArgument<RenderedImage>(sources, bandsPerSource);
         aggregate.identityAsNull();
         aggregate.validate(ImageUtilities::getNumBands);
 
         sources            = aggregate.sources();
         bandsPerSource     = aggregate.bandsPerSource();
-        Rectangle domain   = null;
+        Rectangle domain   = null;          // Nullity check used for telling when the first image is processed.
+        int scanlineStride = 0;
+        int tileWidth      = 0;
+        int tileHeight     = 0;
+        int tileAlignX     = 0;
+        int tileAlignY     = 0;
         int commonDataType = DataBuffer.TYPE_UNDEFINED;
         for (final RenderedImage source : sources) {
             /*
-             * Ensure that all images use the same data type.
-             * Get the domain of the combined image to create.
-             *
-             * TODO: current implementation computes the intersection of all sources.
-             * But a future version should allow users to specify if they want intersection,
-             * union or strict mode instead. A "strict" mode would prevent the combination of
-             * images using different domains (i.e. raise an error if domains are not the same).
+             * Ensure that all images use the same data type. This is mandatory.
+             * If in addition all images use the same pixel and scanline stride,
+             * we may be able to share their buffers instead of copying values.
              */
-            final int dataType = source.getSampleModel().getDataType();
+            final SampleModel sm = source.getSampleModel();
+            if (allowSharing && (allowSharing = (sm instanceof ComponentSampleModel))) {
+                final ComponentSampleModel csm = (ComponentSampleModel) sm;
+                if (allowSharing = (csm.getPixelStride() == 1)) {
+                    allowSharing &= scanlineStride == (scanlineStride = csm.getScanlineStride());
+                    allowSharing &= tileWidth      == (tileWidth      = source.getTileWidth());
+                    allowSharing &= tileHeight     == (tileHeight     = source.getTileHeight());
+                    allowSharing &= tileAlignX     == (tileAlignX     = Math.floorMod(source.getTileGridXOffset(), tileWidth));
+                    allowSharing &= tileAlignY     == (tileAlignY     = Math.floorMod(source.getTileGridYOffset(), tileHeight));
+                    allowSharing |= (domain == null);
+                }
+            }
+            final int dataType = sm.getDataType();
             if (domain == null) {
                 domain = ImageUtilities.getBounds(source);
                 commonDataType = dataType;
             } else {
+                if (dataType != commonDataType) {
+                    throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedDataType));
+                }
+                /*
+                 * Get the domain of the combined image to create.
+                 * TODO: current implementation computes the intersection of all sources.
+                 * But a future version should allow users to specify if they want intersection,
+                 * union or strict mode instead. A "strict" mode would prevent the combination of
+                 * images using different domains (i.e. raise an error if domains are not the same).
+                 */
                 ImageUtilities.clipBounds(source, domain);
                 if (domain.isEmpty()) {
                     throw new DisjointExtentException(Resources.format(Resources.Keys.SourceImagesDoNotIntersect));
-                }
-                if (dataType != commonDataType) {
-                    throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedDataType));
                 }
             }
         }
@@ -153,7 +185,7 @@ final class CombinedImageLayout extends ImageLayout {
         /*
          * Tile size is chosen after the domain has been computed, because we prefer a tile size which
          * is a divisor of the combined image size. Tile sizes of existing source images are preferred,
-         * especially when the tiles are aligned, for increasing the chances that computation a tile of
+         * especially when the tiles are aligned, for increasing the chances that computing a tile of
          * the combined image causes the computation of a single tile of each source image.
          */
         long cx, cy;        // A combination of tile size with alignment on the tile matrix grid.
@@ -168,10 +200,11 @@ final class CombinedImageLayout extends ImageLayout {
         }
         final var preferredTileSize = new Dimension((int) cx, (int) cy);
         final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
+        allowSharing &= exactTileSize;
         return new CombinedImageLayout(sources, bandsPerSource, domain, preferredTileSize, exactTileSize,
                 chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
                 chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height),
-                commonDataType, aggregate.numBands());
+                commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
     }
 
     /**
@@ -182,11 +215,13 @@ final class CombinedImageLayout extends ImageLayout {
      * @param  domain             bounds of the image to create.
      * @param  preferredTileSize  the preferred tile size.
      * @param  commonDataType     data type of the combined image.
+     * @param  scanlineStride     common scanline stride if data buffers will be shared, or 0 if no sharing.
      * @param  numBands           number of bands of the image to create.
      */
     private CombinedImageLayout(final RenderedImage[] sources, final int[][] bandsPerSource,
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
-            final int minTileX, final int minTileY, final int commonDataType, final int numBands)
+            final int minTileX, final int minTileY, final int commonDataType, final int numBands,
+            final int scanlineStride)
     {
         super(preferredTileSize, false);
         this.exactTileSize  = exactTileSize;
@@ -195,7 +230,8 @@ final class CombinedImageLayout extends ImageLayout {
         this.domain         = domain;
         this.minTileX       = minTileX;
         this.minTileY       = minTileY;
-        this.sampleModel    = createBandedSampleModel(commonDataType, numBands, null, domain);
+        this.allowSharing   = (scanlineStride > 0);
+        this.sampleModel    = createBandedSampleModel(commonDataType, numBands, null, domain, scanlineStride);
         // Sample model must be last (all other fields must be initialized before).
     }
 
@@ -218,7 +254,7 @@ final class CombinedImageLayout extends ImageLayout {
      */
     private static long chooseTileSize(final long current, final int tileSize, final int imageSize, final int offset) {
         if ((imageSize % tileSize) == 0) {
-            long c = Math.abs(offset % tileSize);       // How close the grid are aligned (ideal would be zero).
+            long c = Math.floorMod(offset, tileSize);   // How close the grid are aligned (ideal would be zero).
             c <<= Integer.SIZE;                         // Pack grid offset in higher bits.
             c |= tileSize;                              // Pack tile size in lower bits.
             /*

@@ -16,12 +16,16 @@
  */
 package org.apache.sis.image;
 
+import java.util.HashSet;
+import java.util.stream.IntStream;
+import java.util.function.Consumer;
 import java.awt.Rectangle;
+import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.util.stream.IntStream;
+import org.apache.sis.internal.coverage.j2d.RasterFactory;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
@@ -40,22 +44,34 @@ import static org.junit.Assert.*;
  */
 public final class BandAggregateImageTest extends TestCase {
     /**
-     * The image processor to use for testing band aggregations.
+     * Whether to allow the sharing of data arrays.
+     * If {@code false}, tests will force copies.
      */
-    private final ImageProcessor processor;
+    private boolean allowSharing;
 
     /**
      * Creates a new test case.
      */
     public BandAggregateImageTest() {
-        processor = new ImageProcessor();
+        allowSharing = true;            // This is the default mode of `ImageProcessor`.
+    }
+
+    /**
+     * Tests the aggregation of two untiled images with forced copy of sample values.
+     * This is the simplest case in this test class.
+     */
+    @Test
+    public void copyUntiledImages() {
+        allowSharing = false;
+        aggregateUntiledImages();
     }
 
     /**
      * Tests the aggregation of two untiled images having the same bounds and only one band.
-     * This is the simplest case in this test class.
+     * Sample values should not be copied unless forced to.
      */
     @Test
+    @DependsOnMethod("copyUntiledImages")
     public void aggregateUntiledImages() {
         final int width  = 3;
         final int height = 4;
@@ -64,7 +80,7 @@ public final class BandAggregateImageTest extends TestCase {
         im1.getRaster().setSamples(0, 0, width, height, 0, IntStream.range(0, width*height).map(s -> s + 1).toArray());
         im2.getRaster().setSamples(0, 0, width, height, 0, IntStream.range(0, width*height).map(s -> s * 2).toArray());
 
-        final RenderedImage result = processor.aggregateBands(im1, im2);
+        final RenderedImage result = BandAggregateImage.create(new RenderedImage[] {im1, im2}, null, null, allowSharing);
         assertNotNull(result);
         assertEquals(0, result.getMinTileX());
         assertEquals(0, result.getMinTileY());
@@ -83,19 +99,23 @@ public final class BandAggregateImageTest extends TestCase {
             },
             tile.getPixels(0, 0, width, height, (int[]) null)
         );
+        verifySharing(result, allowSharing);
     }
 
     /**
      * Tests the aggregation of two tiled images having the same tile matrix.
      * The same test is executed many times with different but equivalent classes of sample models.
+     * Bands may be copied or references, depending on the sample models.
      */
     @Test
     @DependsOnMethod("aggregateUntiledImages")
     public void aggregateSimilarlyTiledImages() {
-        aggregateSimilarlyTiledImages(true,  true);
-        aggregateSimilarlyTiledImages(false, false);
-        aggregateSimilarlyTiledImages(true,  false);
-        aggregateSimilarlyTiledImages(false, true);
+        do {
+            aggregateSimilarlyTiledImages(true,  true);
+            aggregateSimilarlyTiledImages(false, false);
+            aggregateSimilarlyTiledImages(true,  false);
+            aggregateSimilarlyTiledImages(false, true);
+        } while ((allowSharing = !allowSharing) == false);      // Loop executed exactly twice.
     }
 
     /**
@@ -114,7 +134,7 @@ public final class BandAggregateImageTest extends TestCase {
         final TiledImageMock im2 = new TiledImageMock(DataBuffer.TYPE_USHORT, 2, minX, minY, width, height, 3, 3, 3, 4, secondBanded);
         initializeAllTiles(im1, im2);
 
-        RenderedImage result = processor.aggregateBands(im1, im2);
+        RenderedImage result = BandAggregateImage.create(new RenderedImage[] {im1, im2}, null, null, allowSharing);
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -148,15 +168,16 @@ public final class BandAggregateImageTest extends TestCase {
             },
             raster.getPixels(minX, minY, width, height, (int[]) null)
         );
+        verifySharing(result, allowSharing && allowSharing(im1, im2));
         /*
          * Repeat the test with a custom band selection.
          * One of the source images is used twice, but with a different selection of bands.
          */
-        result = processor.aggregateBands(new RenderedImage[] {im1, im2, im1}, new int[][] {
+        result = BandAggregateImage.create(new RenderedImage[] {im1, im2, im1}, new int[][] {
             new int[] {1},      // Take second band of image 1.
             null,               // Take all bands of image 2.
             new int[] {0}       // Take first band of image 1.
-        });
+        }, null, allowSharing);
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -189,10 +210,15 @@ public final class BandAggregateImageTest extends TestCase {
             },
             raster.getPixels(minX, minY, width, height, (int[]) null)
         );
+        /*
+         * Do not invoke `verifySharing(result)` because this test
+         * references the same `DataBuffer` more than once.
+         */
     }
 
     /**
      * Tests the aggregation of three tiled images having different tile matrices.
+     * A copy of sample values can not be avoided in this case.
      */
     @Test
     @DependsOnMethod("aggregateSimilarlyTiledImages")
@@ -211,7 +237,9 @@ public final class BandAggregateImageTest extends TestCase {
         final TiledImageMock oneTile  = new TiledImageMock(DataBuffer.TYPE_FLOAT, 1, minX, minY, width, height, 8, 4, 5, 6, true);
         initializeAllTiles(tiled2x2, tiled4x1, oneTile);
 
-        final RenderedImage result = processor.aggregateBands(tiled2x2, tiled4x1, oneTile);
+        final RenderedImage result = BandAggregateImage.create(
+                new RenderedImage[] {tiled2x2, tiled4x1, oneTile}, null, null, allowSharing);
+
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -236,10 +264,12 @@ public final class BandAggregateImageTest extends TestCase {
             },
             raster.getPixels(minX, minY, width, height, (int[]) null)
         );
+        verifySharing(result, false);
     }
 
     /**
      * Tests the aggregation of three tiled images having different extents and different tile matrices.
+     * A copy of sample values can not be avoided in this case.
      */
     @Test
     @DependsOnMethod("aggregateImagesUsingSameExtentButDifferentTileSizes")
@@ -258,7 +288,9 @@ public final class BandAggregateImageTest extends TestCase {
         final TiledImageMock tiled6x6 = new TiledImageMock(DataBuffer.TYPE_SHORT, 1, 2, 0, 12,  6,  6,  6, 0, 0, true);
         initializeAllTiles(untiled, tiled2x2, tiled4x4, tiled6x6);
 
-        final RenderedImage result = processor.aggregateBands(untiled, tiled2x2, tiled4x4, tiled6x6);
+        final RenderedImage result = BandAggregateImage.create(
+                new RenderedImage[] {untiled, tiled2x2, tiled4x4, tiled6x6}, null, null, allowSharing);
+
         assertNotNull(result);
         assertEquals(4, result.getMinX());
         assertEquals(2, result.getMinY());
@@ -284,6 +316,7 @@ public final class BandAggregateImageTest extends TestCase {
             },
             raster.getPixels(4, 2, 8, 4, (int[]) null)
         );
+        verifySharing(result, false);
     }
 
     /**
@@ -303,6 +336,57 @@ public final class BandAggregateImageTest extends TestCase {
             final int numBands = image.getSampleModel().getNumBands();
             image.initializeAllTiles(ArraysExt.range(0, numBands), band * 1000);
             band += numBands;
+        }
+    }
+
+    /**
+     * Returns {@code true} if the sample model used by the given sources makes possible to share
+     * the internal data arrays. This method should be invoked for {@link TiledImageMock} having
+     * more than 1 band, because their sample model is selected randomly.
+     */
+    private static boolean allowSharing(final RenderedImage... sources) {
+        for (final RenderedImage source : sources) {
+            if (!(source.getSampleModel() instanceof BandedSampleModel)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Verifies if the given image reuses the data arrays of all its source.
+     *
+     * @param  result   the result of band aggregation.
+     * @param  sharing  whether the caller expects the result to share data arrays.
+     */
+    private static void verifySharing(final RenderedImage result, final boolean sharing) {
+        final var arrays = new HashSet<Object>();
+        for (final RenderedImage source : result.getSources()) {
+            forAllDataArrays(source, (data) -> assertTrue("Found two references to the same array.", arrays.add(data)));
+        }
+        final String message = sharing
+                ? "Expected the target image to reference an existing array."
+                : "Expected only copies, no references to existing arrays.";
+        forAllDataArrays(result, (data) -> assertEquals(message, sharing, arrays.remove(data)));
+        assertEquals("Expected sharing of either all arrays or none of them.", sharing, arrays.isEmpty());
+    }
+
+    /**
+     * Performs the given action on data arrays for all bands of all tiles of the given image.
+     *
+     * @param  source  the image for which to get data arrays.
+     * @param  action  the action to execute for each data arrays.
+     */
+    private static void forAllDataArrays(final RenderedImage source, final Consumer<Object> action) {
+        for (int x = source.getNumXTiles(); --x >= 0;) {
+            final int tileX = source.getMinTileX() + x;
+            for (int y = source.getNumYTiles(); --y >= 0;) {
+                final int tileY = source.getMinTileY() + y;
+                final DataBuffer buffer = source.getTile(tileX, tileY).getDataBuffer();
+                for (int b = buffer.getNumBanks(); --b >= 0;) {
+                    action.accept(RasterFactory.createBuffer(buffer, b).array());
+                }
+            }
         }
     }
 }

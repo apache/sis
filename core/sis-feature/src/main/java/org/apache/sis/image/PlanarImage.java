@@ -541,8 +541,8 @@ public abstract class PlanarImage implements RenderedImage {
      */
     static String verifyCompatibility(final SampleModel sm, final ColorModel cm) {
         if (cm == null || cm.isCompatibleSampleModel(sm))  return null;
-        if (cm.getNumComponents() != sm.getNumBands())     return "numComponents";
         if (cm.getTransferType()  != sm.getTransferType()) return "transferType";
+        if (cm.getNumComponents() != sm.getNumBands())     return "numComponents";
         return "";
     }
 

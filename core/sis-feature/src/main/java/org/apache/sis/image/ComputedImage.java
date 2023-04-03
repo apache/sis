@@ -260,7 +260,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Ensures that a user-supplied color model is compatible.
+     * Ensures that a user-supplied color model is compatible with the sample model.
      * This is a helper method for argument validation in sub-classes constructors.
      *
      * @param  colors  the color model to validate. Can be {@code null}.
@@ -586,10 +586,21 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @return initially empty tile for the given indices (cannot be null).
      */
     protected WritableRaster createTile(final int tileX, final int tileY) {
+        return WritableRaster.createWritableRaster(getSampleModel(), computeTileLocation(tileX, tileY));
+    }
+
+    /**
+     * Returns the location of the tile to create for the given tile indices.
+     *
+     * @param  tileX  the column index of the tile to create.
+     * @param  tileY  the row index of the tile to create.
+     * @return location of the tile to create.
+     */
+    final Point computeTileLocation(final int tileX, final int tileY) {
         // A temporary `int` overflow may occur before the final addition.
         final int x = Math.toIntExact((((long) tileX) - getMinTileX()) * getTileWidth()  + getMinX());
         final int y = Math.toIntExact((((long) tileY) - getMinTileY()) * getTileHeight() + getMinY());
-        return WritableRaster.createWritableRaster(getSampleModel(), new Point(x,y));
+        return new Point(x,y);
     }
 
     /**

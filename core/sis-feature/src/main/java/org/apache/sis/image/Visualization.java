@@ -282,7 +282,7 @@ final class Visualization extends ResampledImage {
              * The sample model is a mandatory argument before we invoke user-supplied colorizer,
              * which must be done before to build the color model.
              */
-            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds);
+            sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds, 0);
             final Target target = new Target(sampleModel, VISIBLE_BAND, visibleSD != null);
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);

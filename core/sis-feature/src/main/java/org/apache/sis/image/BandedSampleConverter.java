@@ -220,7 +220,7 @@ class BandedSampleConverter extends ComputedImage {
             source = ((RecoloredImage) source).source;
         }
         final int numBands = converters.length;
-        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null);
+        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null, 0);
         final SampleDimension[] sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
         final int visibleBand = ImageUtilities.getVisibleBand(source);
         ColorModel colorModel = ColorModelBuilder.NULL_COLOR_MODEL;

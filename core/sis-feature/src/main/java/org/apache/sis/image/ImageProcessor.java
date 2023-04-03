@@ -987,7 +987,7 @@ public class ImageProcessor implements Cloneable {
         synchronized (this) {
             colorizer = this.colorizer;
         }
-        return BandAggregateImage.create(sources, bandsPerSource, colorizer);
+        return unique(BandAggregateImage.create(sources, bandsPerSource, colorizer, true));
     }
 
     /**

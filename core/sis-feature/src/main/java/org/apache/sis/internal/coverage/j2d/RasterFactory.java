@@ -53,7 +53,7 @@ import org.apache.sis.util.collection.WeakHashSet;
  * creating {@link BufferedImage} since that kind of images wraps a single raster.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.0
  */
 public final class RasterFactory extends Static {
@@ -221,6 +221,34 @@ public final class RasterFactory extends Static {
             case DOUBLE: return DoubleBuffer.allocate(capacity);
             default: throw new AssertionError(dataType);
         }
+    }
+
+    /**
+     * Creates a NIO buffer wrapping an existing Java2D buffer.
+     * The buffer will be a view over the valid portion of the data array.
+     * The buffer position is zero. The capacity and limit are the number of valid elements.
+     *
+     * @param  data  the Java2D buffer to wrap.
+     * @param  bank  bank index of the data array to wrap.
+     * @return buffer wrapping the data array of the specified bank.
+     */
+    public static Buffer createBuffer(final DataBuffer data, final int bank) {
+        Buffer buffer;
+        switch (data.getDataType()) {
+            case DataBuffer.TYPE_BYTE:   buffer = ByteBuffer  .wrap(((DataBufferByte)   data).getData(bank)); break;
+            case DataBuffer.TYPE_USHORT: buffer = ShortBuffer .wrap(((DataBufferUShort) data).getData(bank)); break;
+            case DataBuffer.TYPE_SHORT:  buffer = ShortBuffer .wrap(((DataBufferShort)  data).getData(bank)); break;
+            case DataBuffer.TYPE_INT:    buffer = IntBuffer   .wrap(((DataBufferInt)    data).getData(bank)); break;
+            case DataBuffer.TYPE_FLOAT:  buffer = FloatBuffer .wrap(((DataBufferFloat)  data).getData(bank)); break;
+            case DataBuffer.TYPE_DOUBLE: buffer = DoubleBuffer.wrap(((DataBufferDouble) data).getData(bank)); break;
+            default: throw new AssertionError();
+        }
+        final int lower = data.getOffsets()[bank];
+        final int upper = lower + data.getSize();
+        if (lower != 0 || upper != buffer.capacity()) {
+            buffer.position(lower).limit(upper).slice();        // TODO: use slice(lower, length) with JDK13.
+        }
+        return buffer;
     }
 
     /**
