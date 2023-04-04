@@ -291,7 +291,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
                     final List<SampleDimension> ranges = target.getRanges().orElse(null);
                     if (visibleBand < ranges.size()) {
                         final SampleModel model = target.getSampleModel();
-                        final var c = new ColorModelBuilder(colors, null);
+                        final var c = new ColorModelBuilder(colors, null, false);
                         if (c.initialize(model, ranges.get(visibleBand))) {
                             return Optional.ofNullable(c.createColorModel(model.getDataType(), model.getNumBands(), visibleBand));
                         }

@@ -753,7 +753,7 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {
         final Raster raster = createRaster();
-        final ColorModelBuilder colorizer = new ColorModelBuilder(colors, null);
+        final var colorizer = new ColorModelBuilder(colors, null, false);
         final ColorModel colors;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {

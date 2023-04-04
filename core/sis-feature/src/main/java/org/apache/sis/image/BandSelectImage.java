@@ -78,6 +78,7 @@ final class BandSelectImage extends SourceAlignedImage {
     private BandSelectImage(final RenderedImage source, final ColorModel cm, final int[] bands) {
         super(source, cm, source.getSampleModel().createSubsetSampleModel(bands));
         this.bands = bands;
+        ensureCompatible(cm);
     }
 
     /**

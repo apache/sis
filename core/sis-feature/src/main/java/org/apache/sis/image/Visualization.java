@@ -287,7 +287,8 @@ final class Visualization extends ResampledImage {
             if (colorizer != null) {
                 colorModel = colorizer.apply(target).orElse(null);
             }
-            final ColorModel sourceCM = coloredSource.getColorModel();
+            final SampleModel sourceSM = coloredSource.getSampleModel();
+            final ColorModel  sourceCM = coloredSource.getColorModel();
             /*
              * Get a `ColorModelBuilder` which will compute the `ColorModel` of destination image.
              * There is different ways to setup the builder, depending on which `Colorizer` is used.
@@ -307,8 +308,8 @@ final class Visualization extends ResampledImage {
                  * Ranges of sample values were not specified explicitly. Instead, we will try to infer them
                  * in various ways: sample dimensions, scaled color model, or image statistics in last resort.
                  */
-                builder = new ColorModelBuilder(target.categoryColors, sourceCM);
-                initialized = builder.initialize(coloredSource.getSampleModel(), visibleSD);
+                builder = new ColorModelBuilder(target.categoryColors, sourceCM, true);
+                initialized = builder.initialize(sourceSM, visibleSD);
                 if (initialized) {
                     /*
                      * If we have been able to configure ColorModelBuilder using SampleDimension, apply an adjustment
@@ -328,10 +329,10 @@ final class Visualization extends ResampledImage {
                     if (!initialized) {
                         if (coloredSource instanceof RecoloredImage) {
                             final RecoloredImage colored = (RecoloredImage) coloredSource;
-                            builder.initialize(colored.minimum, colored.maximum);
+                            builder.initialize(colored.minimum, colored.maximum, sourceSM.getDataType());
                             initialized = true;
                         } else {
-                            initialized = builder.initialize(coloredSource.getSampleModel(), visibleBand);
+                            initialized = builder.initialize(sourceSM, visibleBand);
                         }
                     }
                 }
@@ -343,13 +344,13 @@ final class Visualization extends ResampledImage {
                  */
                 final DoubleUnaryOperator[] sampleFilters = SampleDimensions.toSampleFilters(visibleSD);
                 final Statistics statistics = processor.valueOfStatistics(source, null, sampleFilters)[VISIBLE_BAND];
-                builder.initialize(statistics.minimum(), statistics.maximum());
+                builder.initialize(statistics.minimum(), statistics.maximum(), sourceSM.getDataType());
             }
             if (colorModel == null) {
-                colorModel = builder.compactColorModel(NUM_BANDS, VISIBLE_BAND);
+                colorModel = builder.createColorModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, VISIBLE_BAND);
             }
             converters = new MathTransform1D[] {
-                builder.getSampleToIndexValues()            // Must be after `compactColorModel(…)`.
+                builder.getSampleToIndexValues()            // Must be after `createColorModel(…)`.
             };
             if (shortcut) {
                 if (converters[0].isIdentity() && colorModel.equals(sourceCM)) {

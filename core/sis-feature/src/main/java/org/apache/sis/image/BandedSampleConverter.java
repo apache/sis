@@ -131,6 +131,7 @@ class BandedSampleConverter extends ComputedImage {
         this.colorModel = colorModel;
         this.converters = converters;
         this.sampleDimensions = sampleDimensions;
+        ensureCompatible(colorModel);
         /*
          * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
          * If the converters are linear (which is the most common case), the middle value does not matter
@@ -238,7 +239,7 @@ class BandedSampleConverter extends ComputedImage {
             if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.length) {
                 sd = sampleDimensions[visibleBand];
             }
-            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null);
+            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, false);
             if (builder.initialize(source.getSampleModel(), sd) ||
                 builder.initialize(source.getColorModel()))
             {

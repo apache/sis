@@ -17,7 +17,6 @@
 package org.apache.sis.internal.coverage.j2d;
 
 import java.util.List;
-import java.util.Collection;
 import java.util.AbstractMap.SimpleEntry;
 import java.awt.Color;
 import java.awt.image.DataBuffer;
@@ -43,7 +42,7 @@ import static org.junit.Assert.*;
  */
 public final class ColorModelBuilderTest extends TestCase {
     /**
-     * Tests the creation of an index color model using {@link ColorModelBuilder#ColorModelBuilder(Collection)}.
+     * Tests the creation of an index color model using explicit range of sample values.
      *
      * @throws TransformException if a sample value cannot be converted.
      */
@@ -85,8 +84,7 @@ public final class ColorModelBuilderTest extends TestCase {
     }
 
     /**
-     * Tests the creation of an index color model using {@link ColorModelBuilder#ColorModelBuilder(Function)}
-     * and an initialization with a {@link SampleDimension}.
+     * Tests the creation of an index color model using sample dimensions.
      *
      * @throws TransformException if a sample value cannot be converted.
      */
@@ -99,9 +97,9 @@ public final class ColorModelBuilderTest extends TestCase {
                 .addQualitative ("Error", MathFunctions.toNanFloat(3))
                 .setName("Temperature").build();
 
-        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null);
+        final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, true);
         assertTrue("initialize", colorizer.initialize(null, sd));
-        final IndexColorModel cm = (IndexColorModel) colorizer.compactColorModel(1, 0);     // Must be first.
+        final var cm = (IndexColorModel) colorizer.createColorModel(ColorModelBuilder.TYPE_COMPACT, 1, 0);      // Must be first.
         /*
          * Test conversion of a few sample values to packed values.
          */

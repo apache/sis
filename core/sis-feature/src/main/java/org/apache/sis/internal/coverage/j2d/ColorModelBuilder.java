@@ -51,7 +51,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * <ol>
  *   <li>Create a new {@link ColorModelBuilder} instance.</li>
  *   <li>Invoke one of {@code initialize(…)} methods.</li>
- *   <li>Invoke {@link #createColorModel(int, int, int)} or {@link #compactColorModel(int, int)}.</li>
+ *   <li>Invoke {@link #createColorModel(int, int, int)}.</li>
  *   <li>Invoke {@link #getSampleToIndexValues()} if this auxiliary information is useful.</li>
  *   <li>Discards {@code ColorModelBuilder}. Each instance shall be used only once.</li>
  * </ol>
@@ -99,10 +99,15 @@ public final class ColorModelBuilder {
     private static final int MAX_VALUE = 0xFF;
 
     /**
-     * The type resulting from sample values conversion applied by {@link #compactColorModel(int, int)}.
-     * Current value is {@link DataBuffer#TYPE_BYTE}.
+     * The type resulting from sample values conversion in compact mode.
+     * The value is {@link DataBuffer#TYPE_BYTE}.
      */
     public static final int TYPE_COMPACT = DataBuffer.TYPE_BYTE;
+
+    /**
+     * Whether to rescale the range of sample values to the {@link #TYPE_COMPACT} range.
+     */
+    private final boolean compact;
 
     /**
      * Applies a gray scale to quantitative category and transparent colors to qualitative categories.
@@ -177,6 +182,9 @@ public final class ColorModelBuilder {
      * and to grayscale colors otherwise, unless {@code inherited} is non-null.
      * Empty arrays of colors are interpreted as explicitly transparent.</p>
      *
+     * <p>This constructor creates a builder in compact mode, unless all specified ranges
+     * already fit in {@link #TYPE_COMPACT} range.</p>
+     *
      * @param  colors     the colors to use for each range of values in source image.
      * @param  inherited  the colors to use as fallback if some ranges have undefined colors, or {@code null}.
      *                    Should be non-null only for styling an exiting image before visualization.
@@ -185,6 +193,14 @@ public final class ColorModelBuilder {
         entries = ColorsForRange.list(colors, inherited);
         inheritedColors = inherited;
         this.colors = GRAYSCALE;
+        for (final Map.Entry<NumberRange<?>,Color[]> entry : colors) {
+            final NumberRange<?> range = entry.getKey();
+            if (range.getMinDouble() < 0 || range.getMaxDouble() >= MAX_VALUE + 1) {
+                compact = true;
+                return;
+            }
+        }
+        compact = false;
     }
 
     /**
@@ -200,10 +216,12 @@ public final class ColorModelBuilder {
      *                    The function may return {@code null} for unrecognized categories.
      * @param  inherited  the colors to use as fallback for unrecognized categories, or {@code null}.
      *                    Should be non-null only for styling an exiting image before visualization.
+     * @param  compact    Whether to rescale the range of sample values to the {@link #TYPE_COMPACT} range.
      */
-    public ColorModelBuilder(final Function<Category,Color[]> colors, final ColorModel inherited) {
+    public ColorModelBuilder(final Function<Category,Color[]> colors, final ColorModel inherited, final boolean compact) {
         this.colors = (colors != null) ? colors : GRAYSCALE;
         inheritedColors = inherited;
+        this.compact = compact;
     }
 
     /**
@@ -220,6 +238,9 @@ public final class ColorModelBuilder {
 
     /**
      * Returns {@code true} if the given range is already the [0 … 255] range.
+     *
+     * @see #TYPE_COMPACT
+     * @see #compact()
      */
     private static boolean isAlreadyScaled(final NumberRange<?> range) {
         return range.getMinDouble(true) == 0 && range.getMaxDouble(true) == MAX_VALUE;
@@ -310,7 +331,7 @@ public final class ColorModelBuilder {
             final ColorSpace cs = source.getColorSpace();
             if (cs instanceof ScaledColorSpace) {
                 final ScaledColorSpace scs = (ScaledColorSpace) cs;
-                initialize(scs.offset, scs.maximum);
+                initialize(scs.offset, scs.maximum, source.getTransferType());
                 return true;
             }
             /*
@@ -343,29 +364,60 @@ public final class ColorModelBuilder {
      */
 
     /**
-     * Applies colors on the given range of values. The 0 index will be reserved for NaN value,
+     * Applies colors on the given range of values.
+     * In compact mode, the 0 index will be reserved for NaN value
      * and indices in the [1 … 255] will be mapped to the given range.
      *
      * <p>This method is typically used as a last resort fallback when all other {@code initialize(…)}
      * methods failed or cannot be applied. This method assumes that no {@link Category} information
      * is available.</p>
      *
+     * @param  minimum   minimum value, inclusive.
+     * @param  maximum   maximum value, inclusive.
+     * @param  dataType  type of sample values.
+     * @throws IllegalStateException if a sample dimension is already defined on this colorizer.
+     */
+    public void initialize(final double minimum, final double maximum, final int dataType) {
+        checkInitializationStatus(false);
+        ArgumentChecks.ensureFinite("minimum", minimum);
+        ArgumentChecks.ensureFinite("maximum", maximum);
+        if (ImageUtilities.isIntegerType(dataType)) {
+            defaultRange = NumberRange.create(Math.round(minimum), true, Math.round(maximum), true);
+        } else {
+            defaultRange = NumberRange.create(minimum, true, maximum, true);
+        }
+        applyDefaultRange();
+    }
+
+    /**
+     * Applies colors on the given range of values.
+     * This method does the same work than {@link #initialize(double, double, int)},
+     * but is preferred to the latter when the sample values are known to be integer values.
+     *
      * @param  minimum  minimum value, inclusive.
      * @param  maximum  maximum value, inclusive.
      * @throws IllegalStateException if a sample dimension is already defined on this colorizer.
      */
-    public void initialize(final double minimum, final double maximum) {
+    public void initialize(final long minimum, final long maximum) {
         checkInitializationStatus(false);
-        ArgumentChecks.ensureFinite("minimum", minimum);
-        ArgumentChecks.ensureFinite("maximum", maximum);
         defaultRange = NumberRange.create(minimum, true, maximum, true);
-        target = new SampleDimension.Builder()
-                .setBackground(TRANSPARENT, 0)
-                .addQuantitative(COLOR_INDEX, NumberRange.create(1, true, MAX_VALUE, true), defaultRange)
-                .setName(VISUAL).build();
+        applyDefaultRange();
+    }
+
+    /**
+     * Initializes this builder with the {@link #defaultRange} value.
+     */
+    private void applyDefaultRange() {
+        final var builder = new SampleDimension.Builder().setName(VISUAL);
+        if (compact) {
+            var samples = NumberRange.create(1, true, MAX_VALUE, true);
+            builder.setBackground(TRANSPARENT, 0).addQuantitative(COLOR_INDEX, samples, defaultRange);
+        } else {
+            builder.addQuantitative(COLOR_INDEX, defaultRange, identity(), null);
+        }
+        target = builder.build();
         /*
          * We created a synthetic `SampleDimension` with the specified range of values.
-         * Recompute `source` and `entries` fields for consistency with the new ranges.
          * The `source` is recreated as a matter of principle, but will not be used by
          * `compact()` because `target` will take precedence.
          */
@@ -603,6 +655,13 @@ reuse:  if (source != null) {
      * This method builds up the color model from each set of colors associated to ranges in the given array.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
      *
+     * <h4>Compact mode</h4>
+     * If the {@code compact} argument given to the constructor was {@code true},
+     * then the color model has colors interpolated in the [0 … 255] range of values.
+     * Conversions from range specified at construction time to the [0 … 255] range is
+     * given by {@link #getSampleToIndexValues()}. Images using this color model shall
+     * use a {@link DataBuffer} of type {@link #TYPE_COMPACT}.
+     *
      * @param  dataType     the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
      *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
      *                      or {@link DataBuffer#TYPE_DOUBLE}.
@@ -612,29 +671,15 @@ reuse:  if (source != null) {
      * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
      * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
      */
-    public ColorModel createColorModel(final int dataType, final int numBands, final int visibleBand) {
+    public ColorModel createColorModel(int dataType, final int numBands, final int visibleBand) {
         checkInitializationStatus(true);
+        if (compact) {
+            compact();
+            dataType = TYPE_COMPACT;
+        }
         ArgumentChecks.ensureStrictlyPositive("numBands", numBands);
         ArgumentChecks.ensureBetween("visibleBand", 0, numBands - 1, visibleBand);
         return ColorModelFactory.createPiecewise(dataType, numBands, visibleBand, entries);
-    }
-
-    /**
-     * Returns a color model with colors interpolated in the [0 … 255] range of values.
-     * Conversions from range specified at construction time to the [0 … 255] range is
-     * given by {@link #getSampleToIndexValues()}. Images using this color model shall
-     * use a {@link DataBuffer} of type {@link #TYPE_COMPACT}.
-     *
-     * @param  numBands     the number of bands for the color model (usually 1). The returned color model will render only
-     *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
-     *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
-     * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
-     * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
-     */
-    public ColorModel compactColorModel(final int numBands, final int visibleBand) {
-        checkInitializationStatus(true);
-        compact();
-        return createColorModel(TYPE_COMPACT, numBands, visibleBand);
     }
 
     /**
