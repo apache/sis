@@ -183,14 +183,14 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * If this field is set to a non-null value, then this assignment should be done
      * soon after construction time before any tile computation started.
      *
-     * <div class="note"><b>Note on interaction with tile cache</b><br>
+     * <h4>Note on interaction with tile cache</h4>
      * The use of a destination image may produce unexpected result if {@link #computeTile(int, int, WritableRaster)}
      * is invoked two times or more for the same destination tile. It may look like a problem because computed tiles
      * can be discarded and recomputed at any time. However, this problem should not happen because tiles computed by
      * this {@code ComputedImage} will not be discarded as long as {@code destination} has a reference to that tile.
      * If a {@code ComputedImage} tile has been discarded, then it implies that the corresponding {@code destination}
      * tile has been discarded as well, in which case the tile computation will restart from scratch; it will not be
-     * a recomputation of only this {@code ComputedImage} on top of an old {@code destination} tile.</div>
+     * a recomputation of only this {@code ComputedImage} on top of an old {@code destination} tile.
      *
      * @see #setDestination(WritableRenderedImage)
      */
@@ -203,10 +203,12 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * and the {@linkplain SampleModel#getHeight() sample model height}
      * determines this {@linkplain #getTileHeight() image tile height}.
      *
-     * <div class="note"><b>Design note:</b>
+     * <h4>Design note:</h4>
      * {@code ComputedImage} requires the sample model to have exactly the desired tile size
      * otherwise tiles created by {@link #createTile(int, int)} will consume more memory
-     * than needed.</div>
+     * than needed.
+     *
+     * @see #getSampleModel()
      */
     protected final SampleModel sampleModel;
 
@@ -406,10 +408,10 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
      * Returns the width of tiles in this image. The default implementation returns {@link SampleModel#getWidth()}.
      *
-     * <div class="note"><b>Note:</b>
-     * a raster can have a smaller width than its sample model, for example when a raster is a view over a subregion
+     * <h4>Note</h4>
+     * A raster can have a smaller width than its sample model, for example when a raster is a view over a subregion
      * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
-     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.</div>
+     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.
      *
      * @return the width of this image in pixels.
      */
@@ -421,10 +423,10 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     /**
      * Returns the height of tiles in this image. The default implementation returns {@link SampleModel#getHeight()}.
      *
-     * <div class="note"><b>Note:</b>
-     * a raster can have a smaller height than its sample model, for example when a raster is a view over a subregion
+     * <h4>Note</h4>
+     * A raster can have a smaller height than its sample model, for example when a raster is a view over a subregion
      * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
-     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.</div>
+     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.
      *
      * @return the height of this image in pixels.
      */
@@ -586,21 +588,10 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @return initially empty tile for the given indices (cannot be null).
      */
     protected WritableRaster createTile(final int tileX, final int tileY) {
-        return WritableRaster.createWritableRaster(getSampleModel(), computeTileLocation(tileX, tileY));
-    }
-
-    /**
-     * Returns the location of the tile to create for the given tile indices.
-     *
-     * @param  tileX  the column index of the tile to create.
-     * @param  tileY  the row index of the tile to create.
-     * @return location of the tile to create.
-     */
-    final Point computeTileLocation(final int tileX, final int tileY) {
         // A temporary `int` overflow may occur before the final addition.
         final int x = Math.toIntExact((((long) tileX) - getMinTileX()) * getTileWidth()  + getMinX());
         final int y = Math.toIntExact((((long) tileY) - getMinTileY()) * getTileHeight() + getMinY());
-        return new Point(x,y);
+        return WritableRaster.createWritableRaster(sampleModel, new Point(x,y));
     }
 
     /**

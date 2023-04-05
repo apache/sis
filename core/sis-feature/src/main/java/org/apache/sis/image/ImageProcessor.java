@@ -922,6 +922,11 @@ public class ImageProcessor implements Cloneable {
      * contain values from the pixels at the same coordinates in all source images.
      * The result image will be bounded by the intersection of all source images.
      *
+     * <p>If all source images are {@link WritableRenderedImage} instances,
+     * then the returned image will also be a {@link WritableRenderedImage}.
+     * In such case values written in the returned image will be copied back
+     * to the source images.</p>
+     *
      * <h4>Restrictions</h4>
      * All images shall use the same {@linkplain SampleModel#getDataType() data type},
      * and all source images shall intersect each other with a non-empty intersection area.

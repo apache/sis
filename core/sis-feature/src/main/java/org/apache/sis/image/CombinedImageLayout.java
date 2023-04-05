@@ -26,6 +26,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.internal.feature.Resources;
@@ -61,6 +62,12 @@ final class CombinedImageLayout extends ImageLayout {
     final RenderedImage[] sources;
 
     /**
+     * The source images with only the user-specified bands.
+     * Those images are views, the pixels are not copied.
+     */
+    final RenderedImage[] filteredSources;
+
+    /**
      * Ordered (not necessarily sorted) indices of bands to select in each source image.
      * The length of this array is always equal to the length of the {@link #sources} array.
      * A {@code null} element means that all bands of the corresponding image should be used.
@@ -70,7 +77,7 @@ final class CombinedImageLayout extends ImageLayout {
 
     /**
      * The sample model of the combined image.
-     * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zero and
+     * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zeros and
      * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
      * This simplicity is needed by current implementation of {@link BandAggregateImage}.
      */
@@ -100,12 +107,6 @@ final class CombinedImageLayout extends ImageLayout {
      * reduce the amount of tiles requested in that source image.
      */
     private final boolean exactTileSize;
-
-    /**
-     * Whether all sources have tiles at the same locations and use the same scanline stride.
-     * In such case, it is possible to share references to data arrays without copying them.
-     */
-    final boolean allowSharing;
 
     /**
      * Computes the layout of an image combining all the specified source images.
@@ -230,9 +231,20 @@ final class CombinedImageLayout extends ImageLayout {
         this.domain         = domain;
         this.minTileX       = minTileX;
         this.minTileY       = minTileY;
-        this.allowSharing   = (scanlineStride > 0);
         this.sampleModel    = createBandedSampleModel(commonDataType, numBands, null, domain, scanlineStride);
-        // Sample model must be last (all other fields must be initialized before).
+        /*
+         * Note: above call to `createBandedSampleModel(…)` must be last,
+         * except for `filteredSources` which is not needed by that method.
+         */
+        filteredSources = new RenderedImage[sources.length];
+        for (int i=0; i<filteredSources.length; i++) {
+            RenderedImage source = sources[i];
+            final int[] bands = bandsPerSource[i];
+            if (bands != null) {
+                source = BandSelectImage.create(source, bands);
+            }
+            filteredSources[i] = source;
+        }
     }
 
     /**
@@ -327,22 +339,17 @@ final class CombinedImageLayout extends ImageLayout {
     }
 
     /**
-     * Returns the source images with only the user-specified bands.
-     * The returned images are views; the bands are not copied.
+     * Returns {@code true} if all filtered sources are writable.
      *
-     * @return the source images with only user-supplied bands.
+     * @return whether a destination using all filtered sources could be writable.
      */
-    final RenderedImage[] getFilteredSources() {
-        final RenderedImage[] images = new RenderedImage[sources.length];
-        for (int i=0; i<images.length; i++) {
-            RenderedImage source = sources[i];
-            final int[] bands = bandsPerSource[i];
-            if (bands != null) {
-                source = BandSelectImage.create(source, bands);
+    final boolean isWritable() {
+        for (final RenderedImage source : filteredSources) {
+            if (!(source instanceof WritableRenderedImage)) {
+                return false;
             }
-            images[i] = source;
         }
-        return images;
+        return true;
     }
 
     /**

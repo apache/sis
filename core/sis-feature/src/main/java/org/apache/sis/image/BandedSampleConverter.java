@@ -27,7 +27,6 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
-import java.awt.image.TileObserver;
 import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -36,7 +35,6 @@ import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
-import org.apache.sis.internal.coverage.j2d.WriteSupport;
 import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.Numbers;
@@ -72,7 +70,7 @@ import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
  * @version 1.4
  * @since   1.1
  */
-class BandedSampleConverter extends ComputedImage {
+class BandedSampleConverter extends WritableComputedImage {
     /*
      * Do not extend `SourceAlignedImage` because we want to inherit the `getNumTiles()`
      * and `getTileGridOffset()` methods defined by `PlanarImage`.
@@ -430,17 +428,6 @@ class BandedSampleConverter extends ComputedImage {
         private final MathTransform1D[] inverses;
 
         /**
-         * The observers, or {@code null} if none. This is a copy-on-write array:
-         * values are never modified after construction (new arrays are created).
-         *
-         * This field is declared volatile because it is read without synchronization by
-         * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
-         * it is okay to omit synchronization for that method but we still need the memory effect.
-         */
-        @SuppressWarnings("VolatileArrayField")
-        private volatile TileObserver[] observers;
-
-        /**
          * Creates a new writable image which will compute values using the given converters.
          */
         Writable(final WritableRenderedImage source,  final BandedSampleModel sampleModel,
@@ -450,74 +437,6 @@ class BandedSampleConverter extends ComputedImage {
         {
             super(source, sampleModel, colorModel, ranges, converters, sampleDimensions);
             this.inverses = inverses;
-        }
-
-        /**
-         * Adds an observer to be notified when a tile is checked out for writing.
-         * If the observer is already present, it will receive multiple notifications.
-         *
-         * @param  observer  the observer to notify.
-         */
-        @Override
-        public synchronized void addTileObserver(final TileObserver observer) {
-            observers = WriteSupport.addTileObserver(observers, observer);
-        }
-
-        /**
-         * Removes an observer from the list of observers notified when a tile is checked out for writing.
-         * If the observer was not registered, nothing happens. If the observer was registered for multiple
-         * notifications, it will now be registered for one fewer.
-         *
-         * @param  observer  the observer to stop notifying.
-         */
-        @Override
-        public synchronized void removeTileObserver(final TileObserver observer) {
-            observers = WriteSupport.removeTileObserver(observers, observer);
-        }
-
-        /**
-         * Sets or clears whether a tile is checked out for writing and notifies the listener if needed.
-         *
-         * @param  tileX    the <var>x</var> index of the tile to acquire or release.
-         * @param  tileY    the <var>y</var> index of the tile to acquire or release.
-         * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
-         */
-        @Override
-        protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
-            final boolean notify = super.markTileWritable(tileX, tileY, writing);
-            if (notify) {
-                WriteSupport.fireTileUpdate(observers, this, tileX, tileY, writing);
-            }
-            return notify;
-        }
-
-        /**
-         * Checks out a tile for writing.
-         *
-         * @param  tileX  the <var>x</var> index of the tile.
-         * @param  tileY  the <var>y</var> index of the tile.
-         * @return the specified tile as a writable tile.
-         */
-        @Override
-        public WritableRaster getWritableTile(final int tileX, final int tileY) {
-            final WritableRaster tile = (WritableRaster) getTile(tileX, tileY);
-            markTileWritable(tileX, tileY, true);
-            return tile;
-        }
-
-        /**
-         * Relinquishes the right to write to a tile. If the tile goes from having one writer to
-         * having no writers, the values are inverse converted and written in the original image.
-         * If the caller continues to write to the tile, the results are undefined.
-         *
-         * @param  tileX  the <var>x</var> index of the tile.
-         * @param  tileY  the <var>y</var> index of the tile.
-         */
-        @Override
-        public void releaseWritableTile(final int tileX, final int tileY) {
-            if (markTileWritable(tileX, tileY, false)) {
-                setData(getTile(tileX, tileY));
-            }
         }
 
         /**
