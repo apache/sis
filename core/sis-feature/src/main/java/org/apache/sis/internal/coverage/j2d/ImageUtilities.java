@@ -486,9 +486,16 @@ public final class ImageUtilities extends Static {
     /**
      * Converts a <var>x</var> pixel coordinates to a tile index.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
+     * but Apache SIS tries to handle the most general cases when possible.
+     *
      * @param  image  the image containing tiles.
      * @param  x      the pixel coordinate for which to get tile index.
      * @return tile index for the given pixel coordinate.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int pixelToTileX(final RenderedImage image, final int x) {
         return toIntExact(floorDiv((x - (long) image.getTileGridXOffset()), image.getTileWidth()));
@@ -496,10 +503,12 @@ public final class ImageUtilities extends Static {
 
     /**
      * Converts a <var>y</var> pixel coordinates to a tile index.
+     * See {@link #pixelToTileX(RenderedImage, int)} for an implementation note.
      *
      * @param  image  the image containing tiles.
      * @param  y      the pixel coordinate for which to get tile index.
      * @return tile index for the given pixel coordinate.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int pixelToTileY(final RenderedImage image, final int y) {
         return toIntExact(floorDiv((y - (long) image.getTileGridYOffset()), image.getTileHeight()));
@@ -509,9 +518,16 @@ public final class ImageUtilities extends Static {
      * Converts a tile column index to smallest <var>x</var> pixel coordinate inside the tile.
      * The returned value is a coordinate of the pixel in upper-left corner.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
+     * but Apache SIS tries to handle the most general cases when possible.
+     *
      * @param  image  the image containing tiles.
      * @param  tileX  the tile index for which to get pixel coordinate.
      * @return smallest <var>x</var> pixel coordinate inside the tile.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int tileToPixelX(final RenderedImage image, final int tileX) {
         // Following `long` arithmetic never overflows even if all values are `Integer.MAX_VALUE`.
@@ -521,10 +537,12 @@ public final class ImageUtilities extends Static {
     /**
      * Converts a tile row index to smallest <var>y</var> pixel coordinate inside the tile.
      * The returned value is a coordinate of the pixel in upper-left corner.
+     * See {@link #tileToPixelX(RenderedImage, int)} for an implementation note.
      *
      * @param  image  the image containing tiles.
      * @param  tileY  the tile index for which to get pixel coordinate.
      * @return smallest <var>y</var> pixel coordinate inside the tile.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int tileToPixelY(final RenderedImage image, final int tileY) {
         return toIntExact(multiplyFull(tileY, image.getTileHeight()) + image.getTileGridYOffset());
@@ -534,9 +552,15 @@ public final class ImageUtilities extends Static {
      * Converts pixel coordinates to pixel indices.
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * The intend is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
+     *
      * @param  image   the image containing tiles.
      * @param  pixels  the pixel coordinates for which to get tile indices.
      * @return tile indices that fully contain the pixel coordinates.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle pixelsToTiles(final RenderedImage image, final Rectangle pixels) {
         final Rectangle r = new Rectangle();
@@ -562,9 +586,15 @@ public final class ImageUtilities extends Static {
      * Tiles will be fully included in the returned range of pixel indices.
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * The intend is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
+     *
      * @param  image  the image containing tiles.
      * @param  tiles  the tile indices for which to get pixel coordinates.
      * @return pixel coordinates that fully contain the tiles.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle tilesToPixels(final RenderedImage image, final Rectangle tiles) {
         final Rectangle r = new Rectangle();

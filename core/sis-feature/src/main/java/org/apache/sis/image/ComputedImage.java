@@ -43,6 +43,7 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -401,37 +402,41 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @return the sample model of this image.
      */
     @Override
-    public SampleModel getSampleModel() {
+    public final SampleModel getSampleModel() {
         return sampleModel;
     }
 
     /**
-     * Returns the width of tiles in this image. The default implementation returns {@link SampleModel#getWidth()}.
+     * Returns the width of tiles in this image.
+     * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getWidth()}.
      *
-     * <h4>Note</h4>
-     * A raster can have a smaller width than its sample model, for example when a raster is a view over a subregion
-     * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
-     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.
+     * <h4>Design note</h4>
+     * In theory it is legal to have a tile width smaller than the sample model width,
+     * for example when a raster is a view over a subregion of another raster.
+     * But this is not allowed in {@code ComputedImage} class, because it would
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.
      *
      * @return the width of this image in pixels.
      */
     @Override
-    public int getTileWidth() {
+    public final int getTileWidth() {
         return sampleModel.getWidth();
     }
 
     /**
-     * Returns the height of tiles in this image. The default implementation returns {@link SampleModel#getHeight()}.
+     * Returns the height of tiles in this image.
+     * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getHeight()}.
      *
-     * <h4>Note</h4>
-     * A raster can have a smaller height than its sample model, for example when a raster is a view over a subregion
-     * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
-     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.
+     * <h4>Design note</h4>
+     * In theory it is legal to have a tile height smaller than the sample model height,
+     * for example when a raster is a view over a subregion of another raster.
+     * But this is not allowed in {@code ComputedImage} class, because it would
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.
      *
      * @return the height of this image in pixels.
      */
     @Override
-    public int getTileHeight() {
+    public final int getTileHeight() {
         return sampleModel.getHeight();
     }
 
@@ -588,9 +593,8 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @return initially empty tile for the given indices (cannot be null).
      */
     protected WritableRaster createTile(final int tileX, final int tileY) {
-        // A temporary `int` overflow may occur before the final addition.
-        final int x = Math.toIntExact((((long) tileX) - getMinTileX()) * getTileWidth()  + getMinX());
-        final int y = Math.toIntExact((((long) tileY) - getMinTileY()) * getTileHeight() + getMinY());
+        final int x = ImageUtilities.tileToPixelX(this, tileX);
+        final int y = ImageUtilities.tileToPixelY(this, tileY);
         return WritableRaster.createWritableRaster(sampleModel, new Point(x,y));
     }
 
