@@ -25,10 +25,13 @@ import java.awt.image.Raster;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.TileObserver;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 
 
@@ -43,7 +46,7 @@ import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
  * @version 1.4
  * @since   1.1
  */
-final class BandSelectImage extends SourceAlignedImage {
+class BandSelectImage extends SourceAlignedImage {
     /**
      * Properties to inherit from the source image, after bands reduction if applicable.
      *
@@ -119,6 +122,8 @@ final class BandSelectImage extends SourceAlignedImage {
             image = new BufferedImage(cm,
                     bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0, bands),
                     bi.isAlphaPremultiplied(), properties);
+        } else if (source instanceof WritableRenderedImage) {
+            image = new Writable(source, cm, bands);
         } else {
             image = new BandSelectImage(source, cm, bands);
         }
@@ -187,6 +192,75 @@ final class BandSelectImage extends SourceAlignedImage {
          * But we don't because that method is overridden in various Java2D `SunWritableRaster` classes.
          */
         return parent.createChild(x, y, parent.getWidth(), parent.getHeight(), x, y, bands);
+    }
+
+    /**
+     * Applies the band selection on the given writable raster.
+     * The child is created in the same way than {@code computeTile(…)}.
+     */
+    final WritableRaster apply(final WritableRaster parent) {
+        final int x = parent.getMinX();
+        final int y = parent.getMinY();
+        return parent.createWritableChild(x, y, parent.getWidth(), parent.getHeight(), x, y, bands);
+    }
+
+    /**
+     * A {@code BandSelectImage} where the source is a writable rendered image.
+     */
+    private static final class Writable extends BandSelectImage implements WritableRenderedImage {
+        /** Creates a new "band select" operation for the given source. */
+        Writable(final RenderedImage source, final ColorModel cm, final int[] bands) {
+            super(source, cm, bands);
+        }
+
+        /** Returns the source as a writable image. */
+        private WritableRenderedImage target() {
+            return (WritableRenderedImage) getSource();
+        }
+
+        /** Checks out a tile for writing. */
+        @Override public WritableRaster getWritableTile(final int tileX, final int tileY) {
+            markTileWritable(tileX, tileY, true);
+            final WritableRaster parent = target().getWritableTile(tileX, tileY);
+            return apply(parent);
+        }
+
+        /** Relinquishes the right to write to a tile. */
+        @Override public void releaseWritableTile(final int tileX, final int tileY) {
+            target().releaseWritableTile(tileX, tileY);
+            markTileWritable(tileX, tileY, false);
+        }
+
+        /** Adds an observer to be notified when a tile is checked out for writing. */
+        @Override public void addTileObserver(final TileObserver observer) {
+            target().addTileObserver(observer);
+        }
+
+        /** Removes an observer from the list of observers notified when a tile is checked out for writing. */
+        @Override public void removeTileObserver(final TileObserver observer) {
+            target().removeTileObserver(observer);
+        }
+
+        /** Sets a region of the image to the contents of the given raster. */
+        @Override public void setData(final Raster data) {
+            final WritableRenderedImage target = target();
+            final var executor = new TileOpExecutor(target, data.getBounds()) {
+                @Override protected void writeTo(final WritableRaster tile) {
+                    apply(tile).setRect(data);
+                }
+            };
+            executor.writeTo(target);
+        }
+
+        /** Restores the identity behavior for writable image. */
+        @Override public int hashCode() {
+            return System.identityHashCode(this);
+        }
+
+        /** Restores the identity behavior for writable image. */
+        @Override public boolean equals(final Object object) {
+            return object == this;
+        }
     }
 
     /**

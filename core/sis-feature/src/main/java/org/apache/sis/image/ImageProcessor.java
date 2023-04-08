@@ -899,6 +899,10 @@ public class ImageProcessor implements Cloneable {
      * pixel values are not copied. Consequently, changes in the source image are reflected
      * immediately in the returned image.</p>
      *
+     * <p>If the given image is an instance of {@link WritableRenderedImage},
+     * then the returned image will also be a {@link WritableRenderedImage}.
+     * In such case values written in the returned image will be written directly in the source image.</p>
+     *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
@@ -964,6 +968,11 @@ public class ImageProcessor implements Cloneable {
      * or may contain {@code null} elements for selecting all bands of the corresponding image.
      * An empty array element (i.e. zero band to select) discards the corresponding source image.
      * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
+     *
+     * <p>If all source images are {@link WritableRenderedImage} instances,
+     * then the returned image will also be a {@link WritableRenderedImage}.
+     * In such case values written in the returned image will be copied back
+     * to the source images.</p>
      *
      * <h4>Restrictions</h4>
      * <ul>
