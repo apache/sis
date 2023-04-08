@@ -33,7 +33,7 @@ import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
-import org.apache.sis.internal.coverage.MultiSourcesArgument;
+import org.apache.sis.internal.coverage.MultiSourceArgument;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 
 
@@ -54,7 +54,7 @@ import org.apache.sis.coverage.grid.DisjointExtentException;
  *
  * @since 1.4
  */
-final class CombinedImageLayout extends ImageLayout {
+final class MultiSourceLayout extends ImageLayout {
     /**
      * The source images. This is a copy of the user-specified array,
      * except that images associated to an empty set of bands are discarded.
@@ -126,8 +126,8 @@ final class CombinedImageLayout extends ImageLayout {
      *         or if some band indices are duplicated or outside their range of validity.
      */
     @Workaround(library="JDK", version="1.8")
-    static CombinedImageLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
-        final var aggregate = new MultiSourcesArgument<RenderedImage>(sources, bandsPerSource);
+    static MultiSourceLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
+        final var aggregate = new MultiSourceArgument<RenderedImage>(sources, bandsPerSource);
         aggregate.identityAsNull();
         aggregate.validate(ImageUtilities::getNumBands);
 
@@ -202,7 +202,7 @@ final class CombinedImageLayout extends ImageLayout {
         final var preferredTileSize = new Dimension((int) cx, (int) cy);
         final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
         allowSharing &= exactTileSize;
-        return new CombinedImageLayout(sources, bandsPerSource, domain, preferredTileSize, exactTileSize,
+        return new MultiSourceLayout(sources, bandsPerSource, domain, preferredTileSize, exactTileSize,
                 chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
                 chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height),
                 commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
@@ -219,7 +219,7 @@ final class CombinedImageLayout extends ImageLayout {
      * @param  scanlineStride     common scanline stride if data buffers will be shared, or 0 if no sharing.
      * @param  numBands           number of bands of the image to create.
      */
-    private CombinedImageLayout(final RenderedImage[] sources, final int[][] bandsPerSource,
+    private MultiSourceLayout(final RenderedImage[] sources, final int[][] bandsPerSource,
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
             final int minTileX, final int minTileY, final int commonDataType, final int numBands,
             final int scanlineStride)

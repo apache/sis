@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.coverage.MultiSourcesArgument;
+import org.apache.sis.internal.coverage.MultiSourceArgument;
 import org.apache.sis.internal.util.CollectionsExt;
 
 
@@ -89,7 +89,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
      * @throws IllegalArgumentException if there is an incompatibility between some source coverages
      *         or if some band indices are duplicated or outside their range of validity.
      */
-    BandAggregateGridCoverage(final MultiSourcesArgument<GridCoverage> aggregate, final ImageProcessor processor) {
+    BandAggregateGridCoverage(final MultiSourceArgument<GridCoverage> aggregate, final ImageProcessor processor) {
         super(aggregate.domain(GridCoverage::getGridGeometry), aggregate.ranges());
         this.sources           = aggregate.sources();
         this.bandsPerSource    = aggregate.bandsPerSource();

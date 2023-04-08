@@ -39,7 +39,7 @@ import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.internal.coverage.SampleDimensions;
-import org.apache.sis.internal.coverage.MultiSourcesArgument;
+import org.apache.sis.internal.coverage.MultiSourceArgument;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -761,7 +761,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
-        final var aggregate = new MultiSourcesArgument<>(sources, bandsPerSource);
+        final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
         aggregate.identityAsNull();
         aggregate.validate(GridCoverage::getSampleDimensions);
         if (aggregate.isIdentity()) {

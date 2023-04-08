@@ -102,12 +102,11 @@ abstract class BandSharing {
      * Prepares sharing the arrays of the given sources when possible.
      * This method does not allocate new {@link DataBuffer} banks.
      *
-     * @param  x        <var>x</var> pixel coordinate of the tile.
-     * @param  y        <var>y</var> pixel coordinate of the tile.
-     * @param  sources  the sources for which to aggregate all bands.
+     * @param  location  smallest (<var>x</var>,<var>y</var>) pixel coordinates of the tile.
+     * @param  sources   the sources for which to aggregate all bands.
      * @return data buffer size, or 0 if there is nothing to share.
      */
-    private int prepare(final long x, final long y, final RenderedImage[] sources) {
+    private int prepare(final Point location, final RenderedImage[] sources) {
         final int tileWidth      = target.getWidth();
         final int tileHeight     = target.getHeight();
         final int scanlineStride = target.getScanlineStride();
@@ -121,17 +120,15 @@ abstract class BandSharing {
             if (source.getTileWidth()  == tileWidth &&
                 source.getTileHeight() == tileHeight)
             {
-                long tileX = x - source.getTileGridXOffset();
-                long tileY = y - source.getTileGridYOffset();
+                int tileX = Math.subtractExact(location.x, source.getTileGridXOffset());
+                int tileY = Math.subtractExact(location.y, source.getTileGridYOffset());
                 if (((tileX % tileWidth) | (tileY % tileHeight)) == 0) {
                     tileX /= tileWidth;
                     tileY /= tileHeight;
-                    final int tx = Math.toIntExact(tileX);
-                    final int ty = Math.toIntExact(tileY);
                     final int n  = si << 1;
-                    sourceTileIndices[n  ] = tx;
-                    sourceTileIndices[n+1] = ty;
-                    final Raster raster = source.getTile(tx, ty);
+                    sourceTileIndices[n  ] = tileX;
+                    sourceTileIndices[n+1] = tileY;
+                    final Raster raster = source.getTile(tileX, tileY);
                     final SampleModel c = raster.getSampleModel();
                     if (c instanceof ComponentSampleModel) {
                         final var sm = (ComponentSampleModel) c;
@@ -172,18 +169,16 @@ abstract class BandSharing {
      * Creates a raster sharing the arrays of given sources when possible.
      * This method assumes a target {@link BandedSampleModel} where all band offsets.
      *
-     * @param  x        <var>x</var> pixel coordinate of the tile.
-     * @param  y        <var>y</var> pixel coordinate of the tile.
-     * @param  sources  the sources for which to aggregate all bands.
-     * @return a raster containing the aggregation of all bands, or {@code null} if the is nothing to share.
+     * @param  location  smallest (<var>x</var>,<var>y</var>) pixel coordinates of the tile.
+     * @param  sources   the sources for which to aggregate all bands.
+     * @return a raster  containing the aggregation of all bands, or {@code null} if there is nothing to share.
      */
-    final BandSharedRaster createRaster(final long x, final long y, final RenderedImage[] sources) {
-        final int size = prepare(x, y, sources);
+    final BandSharedRaster createRaster(final Point location, final RenderedImage[] sources) {
+        final int size = prepare(location, sources);
         if (size == 0) {
             return null;
         }
         final DataBuffer buffer = allocate(size);
-        final var location = new Point(Math.toIntExact(x), Math.toIntExact(y));
         return new BandSharedRaster(sourceTileIndices, parents, target, buffer, location);
     }
 

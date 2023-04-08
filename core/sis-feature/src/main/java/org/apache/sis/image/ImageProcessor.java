@@ -976,6 +976,7 @@ public class ImageProcessor implements Cloneable {
      * This operation uses the following properties in addition to method parameters:
      * <ul>
      *   <li>{@linkplain #getColorizer() Colorizer}.</li>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
      * </ul>
      *
      * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
@@ -989,10 +990,12 @@ public class ImageProcessor implements Cloneable {
     public RenderedImage aggregateBands(final RenderedImage[] sources, final int[][] bandsPerSource) {
         ArgumentChecks.ensureNonEmpty("sources", sources);
         final Colorizer colorizer;
+        final boolean parallel;
         synchronized (this) {
             colorizer = this.colorizer;
+            parallel = executionMode != Mode.SEQUENTIAL;
         }
-        return unique(BandAggregateImage.create(sources, bandsPerSource, colorizer, true));
+        return unique(BandAggregateImage.create(sources, bandsPerSource, colorizer, true, parallel));
     }
 
     /**
@@ -1503,6 +1506,7 @@ public class ImageProcessor implements Cloneable {
      * @throws ImagingOpException if an error occurred during calculation.
      */
     public List<NavigableMap<Double,Shape>> isolines(final RenderedImage data, final double[][] levels, final MathTransform gridToCRS) {
+        ArgumentChecks.ensureNonNull("data", data);
         final boolean parallel;
         synchronized (this) {
             parallel = parallel(data);

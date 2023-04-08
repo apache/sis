@@ -16,8 +16,6 @@
  */
 package org.apache.sis.image;
 
-import java.util.Arrays;
-import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.BandedSampleModel;
@@ -43,34 +41,7 @@ import org.apache.sis.internal.coverage.j2d.ImageUtilities;
  *
  * @since 1.4
  */
-class BandAggregateImage extends WritableComputedImage {
-    /**
-     * The source images with only the bands to aggregate, in order.
-     * Those images are views; the band sample values are not copied.
-     */
-    protected final RenderedImage[] filteredSources;
-
-    /**
-     * Color model of the aggregated image.
-     *
-     * @see #getColorModel()
-     */
-    private final ColorModel colorModel;
-
-    /**
-     * Domain of pixel coordinates. All images shall share the same pixel coordinate space,
-     * meaning that a pixel at coordinates (<var>x</var>, <var>y</var>) in this image will
-     * contain the sample values of all source images at the same coordinates.
-     * It does <em>not</em> mean that all source images shall have the same bounds.
-     */
-    private final int minX, minY, width, height;
-
-    /**
-     * Index of the first tile. Contrarily to pixel coordinates,
-     * the tile coordinate space does not need to be the same for all images.
-     */
-    private final int minTileX, minTileY;
-
+class BandAggregateImage extends MultiSourceImage {
     /**
      * Whether the sharing of data arrays is allowed.
      * When a source tile has the same bounds and scanline stride than the target tile,
@@ -87,19 +58,20 @@ class BandAggregateImage extends WritableComputedImage {
      * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
      * @param  colorizer       provider of color model to use for this image, or {@code null} for automatic.
      * @param  allowSharing    whether to allow the sharing of data buffers (instead of copying) if possible.
+     * @param  parallel        whether parallel computation is allowed.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      * @return the band aggregate image.
      */
     static RenderedImage create(final RenderedImage[] sources, final int[][] bandsPerSource,
-                                final Colorizer colorizer, final boolean allowSharing)
+                                final Colorizer colorizer, final boolean allowSharing, final boolean parallel)
     {
-        final var layout = CombinedImageLayout.create(sources, bandsPerSource, allowSharing);
+        final var layout = MultiSourceLayout.create(sources, bandsPerSource, allowSharing);
         final BandAggregateImage image;
         if (layout.isWritable()) {
-            image = new Writable(layout, colorizer, allowSharing);
+            image = new Writable(layout, colorizer, allowSharing, parallel);
         } else {
-            image = new BandAggregateImage(layout, colorizer, allowSharing);
+            image = new BandAggregateImage(layout, colorizer, allowSharing, parallel);
         }
         if (image.filteredSources.length == 1) {
             final RenderedImage c = image.filteredSources[0];
@@ -120,29 +92,12 @@ class BandAggregateImage extends WritableComputedImage {
      * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
      * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
      */
-    BandAggregateImage(final CombinedImageLayout layout, final Colorizer colorizer, final boolean allowSharing) {
-        super(layout.sampleModel, layout.sources);
+    BandAggregateImage(final MultiSourceLayout layout, final Colorizer colorizer,
+                       final boolean allowSharing, final boolean parallel)
+    {
+        super(layout, colorizer, parallel);
         this.allowSharing = allowSharing;
-        final Rectangle r = layout.domain;
-        minX            = r.x;
-        minY            = r.y;
-        width           = r.width;
-        height          = r.height;
-        minTileX        = layout.minTileX;
-        minTileY        = layout.minTileY;
-        filteredSources = layout.filteredSources;
-        colorModel      = layout.createColorModel(colorizer);
-        ensureCompatible(colorModel);
     }
-
-    /** Returns the information inferred at construction time. */
-    @Override public ColorModel getColorModel() {return colorModel;}
-    @Override public int        getWidth()      {return width;}
-    @Override public int        getHeight()     {return height;}
-    @Override public int        getMinX()       {return minX;}
-    @Override public int        getMinY()       {return minY;}
-    @Override public int        getMinTileX()   {return minTileX;}
-    @Override public int        getMinTileY()   {return minTileY;}
 
     /**
      * Creates a raster containing the selected bands of source images.
@@ -159,15 +114,13 @@ class BandAggregateImage extends WritableComputedImage {
         /*
          * If we are allowed to share the data arrays, try that first.
          * The cast to `BandedSampleModel` is safe because this is the
-         * type given by `CombinedImageLayout` in the constructor.
+         * type given by `MultiSourceLayout` in the constructor.
          */
         BandSharedRaster shared = null;
         if (allowSharing) {
             final BandSharing sharing = BandSharing.create((BandedSampleModel) sampleModel);
             if (sharing != null) {
-                final long x = Math.multiplyFull(tileX - minTileX, getTileWidth())  + minX;
-                final long y = Math.multiplyFull(tileY - minTileY, getTileHeight()) + minY;
-                tile = shared = sharing.createRaster(x, y, filteredSources);
+                tile = shared = sharing.createRaster(tileToPixel(tileX, tileY), filteredSources);
             }
         }
         /*
@@ -206,8 +159,10 @@ class BandAggregateImage extends WritableComputedImage {
          * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
          * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
          */
-        Writable(final CombinedImageLayout layout, final Colorizer colorizer, final boolean allowSharing) {
-            super(layout, colorizer, allowSharing);
+        Writable(final MultiSourceLayout layout, final Colorizer colorizer,
+                 final boolean allowSharing, final boolean parallel)
+        {
+            super(layout, colorizer, allowSharing, parallel);
         }
 
         /**
@@ -292,31 +247,10 @@ class BandAggregateImage extends WritableComputedImage {
     }
 
     /**
-     * Returns a hash code value for this image.
-     */
-    @Override
-    public int hashCode() {
-        return sampleModel.hashCode() + 37 * (Arrays.hashCode(filteredSources) + 31 * Objects.hashCode(colorModel));
-    }
-
-    /**
      * Compares the given object with this image for equality.
-     *
-     * <h4>Implementation note</h4>
-     * We do not invoke {@link #equalsBase(Object)} for saving the comparisons of {@link ComputedImage#sources} array.
-     * The comparison of {@link #filteredSources} array will indirectly include the comparison of raw source images.
      */
     @Override
     public boolean equals(final Object object) {
-        if (object instanceof BandAggregateImage) {
-            final BandAggregateImage other = (BandAggregateImage) object;
-            return minTileX == other.minTileX &&
-                   minTileY == other.minTileY &&
-                   getBounds().equals(other.getBounds()) &&
-                   sampleModel.equals(other.sampleModel) &&
-                   Objects.equals(colorModel, other.colorModel) &&
-                   Arrays.equals(filteredSources, other.filteredSources);
-        }
-        return false;
+        return super.equals(object) && ((BandAggregateImage) object).allowSharing == allowSharing;
     }
 }

@@ -95,7 +95,7 @@ public final class BandAggregateImageTest extends TestCase {
         im2.getRaster().setSamples(0, 0, width, height, 0, IntStream.range(0, width*height).map(s -> s * 2).toArray());
         sourceImages = new RenderedImage[] {im1, im2};
 
-        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing);
+        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, false);
         assertNotNull(result);
         assertEquals(0, result.getMinTileX());
         assertEquals(0, result.getMinTileY());
@@ -188,7 +188,7 @@ public final class BandAggregateImageTest extends TestCase {
         initializeAllTiles(im1, im2);
         sourceImages = new RenderedImage[] {im1, im2};
 
-        RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing);
+        RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, false);
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -255,7 +255,7 @@ public final class BandAggregateImageTest extends TestCase {
             new int[] {1},      // Take second band of image 1.
             null,               // Take all bands of image 2.
             new int[] {0}       // Take first band of image 1.
-        }, null, allowSharing);
+        }, null, allowSharing, false);
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -316,7 +316,7 @@ public final class BandAggregateImageTest extends TestCase {
         initializeAllTiles(tiled2x2, tiled4x1, oneTile);
         sourceImages = new RenderedImage[] {tiled2x2, tiled4x1, oneTile};
 
-        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing);
+        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, false);
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -350,7 +350,25 @@ public final class BandAggregateImageTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testImagesUsingSameExtentButDifferentTileSizes")
-    public void testImagesUsingDifferentExtentsAndDifferentSquaredTiling() {
+    public void testImagesUsingDifferentExtentsAndDifferentTiling() {
+        testHeterogeneous(false);
+    }
+
+    /**
+     * Tests {@link BandAggregateImage#prefetch(Rectangle)}.
+     */
+    @Test
+    @DependsOnMethod("testImagesUsingDifferentExtentsAndDifferentTiling")
+    public void testPrefetch() {
+        testHeterogeneous(true);
+    }
+
+    /**
+     * Implementation of test methods using tiles of different extents and different tile matrices.
+     *
+     * @param  prefetch  whether to test prefetch operation.
+     */
+    private void testHeterogeneous(final boolean prefetch) {
         /*
          * Tip: band number match image tile width. i.e:
          *
@@ -366,7 +384,7 @@ public final class BandAggregateImageTest extends TestCase {
         initializeAllTiles(untiled, tiled2x2, tiled4x4, tiled6x6);
         sourceImages = new RenderedImage[] {untiled, tiled2x2, tiled4x4, tiled6x6};
 
-        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing);
+        RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, prefetch);
         assertNotNull(result);
         assertEquals(4, result.getMinX());
         assertEquals(2, result.getMinY());
@@ -380,6 +398,9 @@ public final class BandAggregateImageTest extends TestCase {
         assertEquals(2, result.getNumYTiles());
         assertEquals(6, result.getSampleModel().getNumBands());
 
+        if (prefetch) {
+            result = new ImageProcessor().prefetch(result, new Rectangle(4, 2, 8, 4));
+        }
         final Raster raster = result.getData();
         assertEquals(new Rectangle(4, 2, 8, 4), raster.getBounds());
         assertArrayEquals(
@@ -392,7 +413,9 @@ public final class BandAggregateImageTest extends TestCase {
             },
             raster.getPixels(4, 2, 8, 4, (int[]) null)
         );
-        verifySharing(result, false, allowSharing, true, false, false, false);
+        if (!prefetch) {
+            verifySharing(result, false, allowSharing, true, false, false, false);
+        }
     }
 
     /**

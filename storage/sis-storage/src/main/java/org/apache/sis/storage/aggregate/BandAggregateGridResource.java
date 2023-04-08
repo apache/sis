@@ -26,7 +26,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
-import org.apache.sis.internal.coverage.MultiSourcesArgument;
+import org.apache.sis.internal.coverage.MultiSourceArgument;
 import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.GridCoverageResource;
@@ -163,7 +163,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
     {
         super(parent);
         try {
-            final var aggregate = new MultiSourcesArgument<GridCoverageResource>(sources, bandsPerSource);
+            final var aggregate = new MultiSourceArgument<GridCoverageResource>(sources, bandsPerSource);
             aggregate.validate(BandAggregateGridResource::range);
             this.name             = name;
             this.sources          = aggregate.sources();

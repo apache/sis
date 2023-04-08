@@ -50,7 +50,7 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @since 1.4
  */
-public final class MultiSourcesArgument<S> {
+public final class MultiSourceArgument<S> {
     /**
      * The sources of sample dimensions with empty sources removed.
      * After a {@code validate(…)} method has been invoked, this array become a
@@ -101,7 +101,7 @@ public final class MultiSourcesArgument<S> {
      * @param  sources         the sources from which to get the sample dimensions.
      * @param  bandsPerSource  sample dimensions for each source. May contain {@code null} elements.
      */
-    public MultiSourcesArgument(final S[] sources, final int[][] bandsPerSource) {
+    public MultiSourceArgument(final S[] sources, final int[][] bandsPerSource) {
         this.sources = sources;
         this.bandsPerSource = bandsPerSource;
         sourceOfGridToCRS = -1;
