@@ -85,18 +85,40 @@ class BandSelectImage extends SourceAlignedImage {
     }
 
     /**
+     * If the given image is already a band select operation, returns the original source
+     * and updates the band indices. If there is no replacement, then the {@code image}
+     * argument is returned as-is and the {@code bands} array shall be unmodified.
+     *
+     * @param  image  the image to check.
+     * @param  bands  the band to select in the specified source.
+     *                Will be updated in-place if the source is replaced.
+     * @return the source of the image, or {@code image} if no replacement.
+     */
+    static RenderedImage unwrap(final RenderedImage image, final int[] bands) {
+        if (image instanceof BandSelectImage) {
+            final var select = (BandSelectImage) image;
+            for (int i=0; i<bands.length; i++) {
+                bands[i] = select.bands[bands[i]];
+            }
+            return select.getSource();
+        }
+        return image;
+    }
+
+    /**
      * Creates a new "band select" operation for the given source.
      *
      * @param  source  the image in which to select bands.
-     * @param  bands   the bands to select. Should be a clone of user-specified argument
-     *                 for protection against user changes in the given array.
+     * @param  bands   the bands to select. Shall be a clone of user-specified argument
+     *                 because it may be modified in-place.
      */
-    static RenderedImage create(final RenderedImage source, final int... bands) {
+    static RenderedImage create(RenderedImage source, int... bands) {
         final int numBands = ImageUtilities.getNumBands(source);
         if (bands.length == numBands && ArraysExt.isRange(0, bands)) {
             return source;
         }
         ArgumentChecks.ensureNonEmptyBounded("bands", false, 0, numBands - 1, bands);
+        source = unwrap(source, bands);
         final ColorModel cm = ColorModelFactory.createSubset(source.getColorModel(), bands);
         /*
          * If the image is an instance of `BufferedImage`, create the subset immediately

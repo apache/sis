@@ -17,11 +17,9 @@
 package org.apache.sis.image;
 
 import java.awt.Point;
-import java.util.Arrays;
 import java.util.Objects;
 import java.awt.Rectangle;
 import java.awt.image.ColorModel;
-import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.util.Disposable;
@@ -41,13 +39,6 @@ import org.apache.sis.util.Disposable;
  * @since   1.4
  */
 abstract class MultiSourceImage extends WritableComputedImage {
-    /**
-     * The source images, potentially with a preprocessing applied.
-     * Those sources may be different than {@link #getSources()} for example with the
-     * application of a "band select" operation for retaining only the bands needed.
-     */
-    protected final RenderedImage[] filteredSources;
-
     /**
      * Color model of this image.
      *
@@ -82,7 +73,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
      * @param  parallel   whether parallel computation is allowed.
      */
     MultiSourceImage(final MultiSourceLayout layout, final Colorizer colorizer, final boolean parallel) {
-        super(layout.sampleModel, layout.sources);
+        super(layout.sampleModel, layout.filteredSources);
         final Rectangle r = layout.domain;
         minX            = r.x;
         minY            = r.y;
@@ -90,7 +81,6 @@ abstract class MultiSourceImage extends WritableComputedImage {
         height          = r.height;
         minTileX        = layout.minTileX;
         minTileY        = layout.minTileY;
-        filteredSources = layout.filteredSources;
         colorModel      = layout.createColorModel(colorizer);
         ensureCompatible(colorModel);
         this.parallel = parallel;
@@ -129,7 +119,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
          * tile indices for each source because the tile numbering may not be the same.
          */
         final Rectangle aoi = ImageUtilities.tilesToPixels(this, tiles);
-        return new MultiSourcePrefetch(filteredSources, aoi).run(parallel);
+        return new MultiSourcePrefetch(getSourceArray(), aoi).run(parallel);
     }
 
     /**
@@ -137,7 +127,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
      */
     @Override
     public int hashCode() {
-        return hashCodeBase() + 37 * (Arrays.hashCode(filteredSources) + 31 * Objects.hashCode(colorModel));
+        return hashCodeBase() + 37 * Objects.hashCode(colorModel);
     }
 
     /**
@@ -151,8 +141,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
                    minTileX == other.minTileX &&
                    minTileY == other.minTileY &&
                    getBounds().equals(other.getBounds()) &&
-                   Objects.equals(colorModel, other.colorModel) &&
-                   Arrays.equals(filteredSources, other.filteredSources);
+                   Objects.equals(colorModel, other.colorModel);
         }
         return false;
     }

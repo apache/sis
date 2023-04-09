@@ -1245,7 +1245,7 @@ public class ImageProcessor implements Cloneable {
         if (source == null || source instanceof BufferedImage || source instanceof TiledImage) {
             return source;
         }
-        while (source instanceof PrefetchedImage) {
+        if (source instanceof PrefetchedImage) {
             source = ((PrefetchedImage) source).source;
         }
         final boolean parallel;
@@ -1254,7 +1254,7 @@ public class ImageProcessor implements Cloneable {
             parallel = parallel(source);
             errorListener = errorHandler;
         }
-        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, errorListener, parallel);
+        final var image = new PrefetchedImage(source, areaOfInterest, errorListener, parallel);
         return image.isEmpty() ? source : image;
     }
 

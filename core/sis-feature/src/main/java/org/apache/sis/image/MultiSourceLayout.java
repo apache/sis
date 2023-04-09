@@ -59,7 +59,7 @@ final class MultiSourceLayout extends ImageLayout {
      * The source images. This is a copy of the user-specified array,
      * except that images associated to an empty set of bands are discarded.
      */
-    final RenderedImage[] sources;
+    private final RenderedImage[] sources;
 
     /**
      * The source images with only the user-specified bands.
@@ -129,6 +129,7 @@ final class MultiSourceLayout extends ImageLayout {
     static MultiSourceLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
         final var aggregate = new MultiSourceArgument<RenderedImage>(sources, bandsPerSource);
         aggregate.identityAsNull();
+        aggregate.unwrap(BandSelectImage::unwrap);
         aggregate.validate(ImageUtilities::getNumBands);
 
         sources            = aggregate.sources();
@@ -241,7 +242,7 @@ final class MultiSourceLayout extends ImageLayout {
             RenderedImage source = sources[i];
             final int[] bands = bandsPerSource[i];
             if (bands != null) {
-                source = BandSelectImage.create(source, bands);
+                source = BandSelectImage.create(source, bands.clone());
             }
             filteredSources[i] = source;
         }

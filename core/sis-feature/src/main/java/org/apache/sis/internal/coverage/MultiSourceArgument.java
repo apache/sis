@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.BiFunction;
 import java.util.function.ToIntFunction;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -40,8 +41,9 @@ import org.apache.sis.util.ComparisonMode;
  * <p>Instances of this class should be short-lived.
  * They are used only the time needed for constructing an image or coverage operation.</p>
  *
- * @todo Verify if a source is itself an aggregated image or coverage,
- *       and provide a way to get a flattened view of such nested aggregations.
+ * <p>This class can optionally verify if a source is itself an aggregated image or coverage.
+ * This is done by an "unwrapper", which should be specified in order to provide a flattened
+ * view of nested aggregations.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -71,6 +73,13 @@ public final class MultiSourceArgument<S> {
      * Whether to allow null elements in {@link #bandsPerSource} for meaning "all bands".
      */
     private boolean identityAsNull;
+
+    /**
+     * A function which, given an (image, bands) pair, may return the source of the image.
+     * If the source is returned, then the bands array is updated with the indices in that
+     * source.
+     */
+    private BiFunction<S,int[],S> unwrapper;
 
     /**
      * Union of all selected bands in all specified sources, or {@code null} if not applicable.
@@ -118,6 +127,19 @@ public final class MultiSourceArgument<S> {
     }
 
     /**
+     * Specifies a function which, given an (image, bands) pair, may return the source of the image.
+     * If the source is returned, then the bands array is updated with the indices in that source.
+     * The function shall modify the given {@code int[]} in-place and return the new source,
+     * or return the {@code S} value unchanged if no unwrapping has been done.
+     *
+     * @param  filter  the function to invoke for getting the source of an image or coverage.
+     */
+    public void unwrap(final BiFunction<S,int[],S> filter) {
+        if (validated) throw new IllegalStateException();
+        unwrapper = filter;
+    }
+
+    /**
      * Clones and validates the arguments given to the constructor.
      *
      * @param  counter  method to invoke for counting the number of bands in a source.
@@ -147,8 +169,8 @@ public final class MultiSourceArgument<S> {
      *
      * <p>Exactly one of {@code getter} or {@code count} arguments shall be non-null.</p>
      *
-     * @param  getter          method to invoke for getting the list of sample dimensions.
-     * @param  counter         method to invoke for counting the number of bands in a source.
+     * @param  getter   method to invoke for getting the list of sample dimensions.
+     * @param  counter  method to invoke for counting the number of bands in a source.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     private void validate(final Function<S, List<SampleDimension>> getter, final ToIntFunction<S> counter) {
@@ -183,56 +205,67 @@ public final class MultiSourceArgument<S> {
                 // Note that the source is allowed to be null in this particular case.
                 continue;
             }
-            final S source = sources[i];
-            sources[filteredCount] = source;
+            S source = sources[i];
             ArgumentChecks.ensureNonNullElement("sources", i, source);
             /*
              * Get the number of bands, or optionally the bands themselves.
              * This information is required before to validate arguments.
              */
-            final List<SampleDimension> bands;
-            final int n;
-            if (getter != null) {
-                bands = getter.apply(source);
-                n = bands.size();
-            } else {
-                bands = null;
-                n = counter.applyAsInt(source);
+            List<SampleDimension> sourceBands;
+            int numSourceBands;
+            RangeArgument range;
+            do {
+                if (getter != null) {
+                    sourceBands = getter.apply(source);
+                    numSourceBands = sourceBands.size();
+                } else {
+                    sourceBands = null;
+                    numSourceBands = counter.applyAsInt(source);
+                }
+                range = RangeArgument.validate(numSourceBands, selected, null);
+                selected = range.getSelectedBands();
+                /*
+                 * Verify if the source is a nested aggregation, in order to get a flattened view.
+                 * This replacement must be done before the optimization for consecutive images.
+                 */
+            } while (unwrapper != null && source != (source = unwrapper.apply(source, selected)));
+            /*
+             * Store now the sample dimensions before the `selected` array get modified.
+             */
+            if (ranges != null) {
+                for (int b : selected) {
+                    ranges.add(sourceBands.get(b));
+                }
             }
             /*
-             * If the next source is the same than the source in current iteration, merge the bands together.
+             * If the source in current iteration is the same than the previous source, merge the bands together.
              * The `BandAggregateGridResource.read(…)` implementation relies on that optimization.
              */
-            final int next = i+1;
-            if (next < sourceCount && sources[next] == source) {
-                final int[] nextBands = bandsPerSource[next];
-                ArgumentChecks.ensureNonNullElement("bandsPerSource", i,    selected);
-                ArgumentChecks.ensureNonNullElement("bandsPerSource", next, nextBands);
-                final int[] merged = Arrays.copyOf(selected, selected.length + nextBands.length);
-                System.arraycopy(nextBands, 0, merged, selected.length, nextBands.length);
-                bandsPerSource[next] = merged;
-                bandsPerSource[i] = ArraysExt.EMPTY_INT;
-                continue;
+            if (filteredCount > 0 && sources[filteredCount-1] == source) {
+                final int[] previous = bandsPerSource[--filteredCount];
+                ArgumentChecks.ensureNonNullElement("bandsPerSource", filteredCount,   previous);
+                ArgumentChecks.ensureNonNullElement("bandsPerSource", filteredCount+1, selected);
+                numBands -= previous.length;   // Rollback the value added in previous iteration.
+
+                final int[] merged = Arrays.copyOf(previous, previous.length + selected.length);
+                System.arraycopy(selected, 0, merged, previous.length, selected.length);
+                range = RangeArgument.validate(numSourceBands, merged, null);
+                selected = range.getSelectedBands();
             }
             /*
-             * Validate the `bandsPerSource` argument given at construction time.
-             * Then store a copy of that argument.
+             * Store a copy of the `bandsPerSource` argument given at construction time.
+             * Its validation has been done by `RangeArgument.validate(…)` above calls.
              */
-            final var range = RangeArgument.validate(n, selected, null);
             if (range.isIdentity()) {
-                selected = (pool != null) ? pool.computeIfAbsent(n, (k) -> ArraysExt.range(0, k)) : null;
-                if (ranges != null) {
-                    ranges.addAll(bands);
-                }
-            } else {
-                selected = range.getSelectedBands();
-                if (ranges != null) {
-                    for (int b : selected) {
-                        ranges.add(bands.get(b));
-                    }
+                if (pool != null) {
+                    int[] previous = pool.putIfAbsent(numSourceBands, selected);
+                    if (previous != null) selected = previous;
+                } else {
+                    selected = null;
                 }
             }
-            bandsPerSource[filteredCount++] = selected;
+            bandsPerSource[filteredCount] = selected;
+            sources[filteredCount++] = source;
             numBands += range.getNumBands();
         }
         sources = ArraysExt.resize(sources, filteredCount);

@@ -73,8 +73,8 @@ class BandAggregateImage extends MultiSourceImage {
         } else {
             image = new BandAggregateImage(layout, colorizer, allowSharing, parallel);
         }
-        if (image.filteredSources.length == 1) {
-            final RenderedImage c = image.filteredSources[0];
+        if (image.getNumSources() == 1) {
+            final RenderedImage c = image.getSource();
             if (image.colorModel == null) {
                 return c;
             }
@@ -92,8 +92,8 @@ class BandAggregateImage extends MultiSourceImage {
      * @param  layout     pixel and tile coordinate spaces of this image, together with sample model.
      * @param  colorizer  provider of color model to use for this image, or {@code null} for automatic.
      */
-    BandAggregateImage(final MultiSourceLayout layout, final Colorizer colorizer,
-                       final boolean allowSharing, final boolean parallel)
+    private BandAggregateImage(final MultiSourceLayout layout, final Colorizer colorizer,
+                               final boolean allowSharing, final boolean parallel)
     {
         super(layout, colorizer, parallel);
         this.allowSharing = allowSharing;
@@ -120,7 +120,7 @@ class BandAggregateImage extends MultiSourceImage {
         if (allowSharing) {
             final BandSharing sharing = BandSharing.create((BandedSampleModel) sampleModel);
             if (sharing != null) {
-                tile = shared = sharing.createRaster(tileToPixel(tileX, tileY), filteredSources);
+                tile = shared = sharing.createRaster(tileToPixel(tileX, tileY), getSourceArray());
             }
         }
         /*
@@ -131,8 +131,9 @@ class BandAggregateImage extends MultiSourceImage {
             tile = createTile(tileX, tileY);
         }
         int band = 0;
-        for (int i=0; i < filteredSources.length; i++) {
-            final RenderedImage source = filteredSources[i];
+        final int n = getNumSources();
+        for (int i=0; i<n; i++) {
+            final RenderedImage source = getSource(i);
             final int numBands = ImageUtilities.getNumBands(source);
             if (shared == null || shared.needCopy(i)) {
                 final Rectangle aoi = tile.getBounds();
@@ -172,7 +173,7 @@ class BandAggregateImage extends MultiSourceImage {
         public WritableRaster getWritableTile(final int tileX, final int tileY) {
             final WritableRaster tile = (WritableRaster) getTile(tileX, tileY);
             if (tile instanceof BandSharedRaster) {
-                ((BandSharedRaster) tile).acquireWritableTiles(filteredSources);
+                ((BandSharedRaster) tile).acquireWritableTiles(getSourceArray());
             }
             try {
                 markTileWritable(tileX, tileY, true);
@@ -210,8 +211,9 @@ class BandAggregateImage extends MultiSourceImage {
         public void setData(final Raster tile) {
             final BandSharedRaster shared = (tile instanceof BandSharedRaster) ? (BandSharedRaster) tile : null;
             int band = 0;
-            for (int i=0; i < filteredSources.length; i++) {
-                final var target = (WritableRenderedImage) filteredSources[i];
+            final int n = getNumSources();
+            for (int i=0; i<n; i++) {
+                final var target = (WritableRenderedImage) getSource(i);
                 final int numBands = ImageUtilities.getNumBands(target);
                 if (shared == null || shared.needCopy(i)) {
                     final Rectangle aoi = tile.getBounds();

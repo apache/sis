@@ -338,6 +338,24 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
+     * Returns the sources as an array.
+     * A future version may remove this method if Java allows unmodifiable arrays.
+     */
+    final RenderedImage[] getSourceArray() {
+        return sources.clone();
+    }
+
+    /**
+     * Returns the number of sources, or 0 if none or unknown.
+     * This is the size of the vector returned by {@link #getSources()}.
+     *
+     * @return number of sources, or 0 if none or unknown.
+     */
+    final int getNumSources() {
+        return (sources != null) ? sources.length : 0;
+    }
+
+    /**
      * Returns the source at the given index.
      *
      * @param  index  index of the desired source.
