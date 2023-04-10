@@ -21,8 +21,8 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.BiFunction;
 import java.util.function.ToIntFunction;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -41,8 +41,8 @@ import org.apache.sis.util.ComparisonMode;
  * <p>Instances of this class should be short-lived.
  * They are used only the time needed for constructing an image or coverage operation.</p>
  *
- * <p>This class can optionally verify if a source is itself an aggregated image or coverage.
- * This is done by an "unwrapper", which should be specified in order to provide a flattened
+ * <p>This class can optionally verify if some sources are themselves aggregated images or coverages.
+ * This is done by an {@link #unwrap(Consumer)}, which should be invoked in order to get a flattened
  * view of nested aggregations.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -54,18 +54,19 @@ import org.apache.sis.util.ComparisonMode;
  */
 public final class MultiSourceArgument<S> {
     /**
-     * The sources of sample dimensions with empty sources removed.
-     * After a {@code validate(…)} method has been invoked, this array become a
-     * (potentially modified) copy of the array argument given to the constructor.
+     * The user-specified sources, usually grid coverages or rendered images.
+     * This is initially a copy of the array specified at construction time.
+     * This array is modified in-place by {@code validate(…)} methods for
+     * removing empty sources and flattening nested aggregations.
      */
     private S[] sources;
 
     /**
-     * Indices of selected sample dimensions for each source.
-     * After a {@code validate(…)} method has been invoked, this array become a
-     * (potentially modified) copy of the array argument given to the constructor,
-     * with the same length than {@link #sources} and all elements themselves copied.
+     * Indices of selected bands or sample dimensions for each source.
+     * The length of this array must be always equal to the {@link #sources} array length.
      * The array is non-null but may contain {@code null} elements for meaning "all bands".
+     * This array is modified in-place by {@code validate(…)} methods for removing empty
+     * elements and flattening nested aggregations.
      */
     private int[][] bandsPerSource;
 
@@ -75,11 +76,9 @@ public final class MultiSourceArgument<S> {
     private boolean identityAsNull;
 
     /**
-     * A function which, given an (image, bands) pair, may return the source of the image.
-     * If the source is returned, then the bands array is updated with the indices in that
-     * source.
+     * A method which may decompose a source in a sequence of deeper sources associated with their bands to select.
      */
-    private BiFunction<S,int[],S> unwrapper;
+    private Consumer<Unwrapper> unwrapper;
 
     /**
      * Union of all selected bands in all specified sources, or {@code null} if not applicable.
@@ -105,15 +104,36 @@ public final class MultiSourceArgument<S> {
 
     /**
      * Prepares an argument validator for the given sources and bands arguments.
-     * One of the {@code validate(…)} method should be invoked after this constructor.
+     * The optional {@code bandsPerSource} argument specifies the bands to select in each source images.
+     * That array can be {@code null} for selecting all bands in all source images,
+     * or may contain {@code null} elements for selecting all bands of the corresponding image.
+     * An empty array element (i.e. zero band to select) discards the corresponding source image.
+     *
+     * <p>One of the {@code validate(…)} method shall be invoked after this constructor.</p>
      *
      * @param  sources         the sources from which to get the sample dimensions.
      * @param  bandsPerSource  sample dimensions for each source. May contain {@code null} elements.
      */
-    public MultiSourceArgument(final S[] sources, final int[][] bandsPerSource) {
-        this.sources = sources;
+    public MultiSourceArgument(S[] sources, int[][] bandsPerSource) {
+        /*
+         * Ensure that both arrays are non-null and have the same length.
+         * Copy those arrays because their content will be overwritten.
+         */
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        final int n = sources.length;
+        if (bandsPerSource != null) {
+            if (bandsPerSource.length > n) {
+                throw new IllegalArgumentException(Errors.format(
+                        Errors.Keys.TooManyCollectionElements_3,
+                        "bandsPerSource", bandsPerSource.length, n));
+            }
+            bandsPerSource = Arrays.copyOf(bandsPerSource, n);
+        } else {
+            bandsPerSource = new int[n][];
+        }
+        this.sources        = sources.clone();
         this.bandsPerSource = bandsPerSource;
-        sourceOfGridToCRS = -1;
+        sourceOfGridToCRS   = -1;
     }
 
     /**
@@ -127,16 +147,91 @@ public final class MultiSourceArgument<S> {
     }
 
     /**
-     * Specifies a function which, given an (image, bands) pair, may return the source of the image.
-     * If the source is returned, then the bands array is updated with the indices in that source.
-     * The function shall modify the given {@code int[]} in-place and return the new source,
-     * or return the {@code S} value unchanged if no unwrapping has been done.
+     * Specifies a method which, given a source, may decompose that source
+     * in a sequence of deeper sources associated with their bands to select.
+     * The consumer will be invoked for all sources specified to the constructor.
+     * If a source can be decomposed, then the specified consumer should invoke
+     * {@code apply(…)} on the given {@code Unwrapper} instance.
      *
-     * @param  filter  the function to invoke for getting the source of an image or coverage.
+     * @param  filter  the method to invoke for getting the sources of an image or coverage.
      */
-    public void unwrap(final BiFunction<S,int[],S> filter) {
+    public void unwrap(final Consumer<Unwrapper> filter) {
         if (validated) throw new IllegalStateException();
         unwrapper = filter;
+    }
+
+    /**
+     * Asks to the {@linkplain #unwrapper} if the given source can be decomposed into deeper sources.
+     *
+     * @param  index   index of {@code source} in the {@link #sources} array.
+     * @param  source  the source to potentially unwrap.
+     * @param  bands   the bands to use in the source. Shall not be {@code null}.
+     * @return whether the source has been decomposed.
+     */
+    private boolean unwrap(int index, S source, int[] bands) {
+        if (unwrapper == null) {
+            return false;
+        }
+        final Unwrapper handler = new Unwrapper(index, source, bands);
+        unwrapper.accept(handler);
+        return handler.done;
+    }
+
+    /**
+     * Replace a user-supplied source by a deeper source with the bands to select.
+     * This is used for getting a flattened view of nested aggregations.
+     */
+    public final class Unwrapper {
+        /**
+         * Index of {@link #source} in the {@link #sources} array.
+         */
+        private final int index;
+
+        /**
+         * The source to potentially unwrap.
+         */
+        public final S source;
+
+        /**
+         * The bands to use in the source (never {@code null}).
+         * This array shall not modified because it may be a reference to an internal array.
+         */
+        public final int[] bands;
+
+        /**
+         * Whether the source has been decomposed in deeper sources.
+         */
+        private boolean done;
+
+        /**
+         * Creates a new instance to be submitted to user-supplied {@link #unwrapper}.
+         */
+        private Unwrapper(final int index, final S source, final int[] bands) {
+            this.index  = index;
+            this.source = source;
+            this.bands  = bands;
+        }
+
+        /**
+         * Notifies the enclosing {@code MultiSourceArgument} that the {@linkplain #source}
+         * shall be replaced by deeper sources. The {@code componentBands} array specifies
+         * the bands to use for each source and shall take in account the {@link #bands} subset.
+         *
+         * @param components      the deeper sources to use in replacement to {@link #source}.
+         * @param componentBands  the bands to use in replacement for {@link #bands}.
+         */
+        public void apply(final S[] components, final int[][] componentBands) {
+            final int n = components.length;
+            if (componentBands.length != n) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
+            }
+            if (done) throw new IllegalStateException();
+            sources = ArraysExt.insert(sources, index+1, n-1);
+            bandsPerSource = ArraysExt.insert(bandsPerSource, index+1, n-1);
+            System.arraycopy(components, 0, sources, index, n);
+            System.arraycopy(componentBands, 0, bandsPerSource, index, n);
+            done = true;
+        }
     }
 
     /**
@@ -174,47 +269,27 @@ public final class MultiSourceArgument<S> {
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     private void validate(final Function<S, List<SampleDimension>> getter, final ToIntFunction<S> counter) {
+        final HashMap<Integer,int[]> pool = identityAsNull ? null : new HashMap<>();
+        int filteredCount = 0;
         /*
-         * Ensure that both arrays are non-null and have the same length.
-         * Copy those arrays as their content may be overwritten.
-         */
-        ArgumentChecks.ensureNonEmpty("sources", sources);
-        final int sourceCount = sources.length;
-        if (bandsPerSource != null) {
-            if (bandsPerSource.length > sourceCount) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.TooManyCollectionElements_3,
-                        "bandsPerSource", bandsPerSource.length, sourceCount));
-            }
-            bandsPerSource = Arrays.copyOf(bandsPerSource, sourceCount);
-        } else {
-            bandsPerSource = new int[sourceCount][];
-        }
-        sources = sources.clone();
-        /*
-         * Compute the number of sources and the total number of bands.
          * This loop ensures that all band indices are in their ranges of validity
          * with no duplicated value, then stores a copy of the band indices or null.
          * If an empty array of bands is specified, then the source is omitted.
          */
-        final HashMap<Integer,int[]> pool = identityAsNull ? null : new HashMap<>();
-        int filteredCount = 0;
-        for (int i=0; i<sourceCount; i++) {
-            int[] selected = bandsPerSource[i];
-            if (selected != null && selected.length == 0) {
-                // Note that the source is allowed to be null in this particular case.
-                continue;
-            }
-            S source = sources[i];
-            ArgumentChecks.ensureNonNullElement("sources", i, source);
-            /*
-             * Get the number of bands, or optionally the bands themselves.
-             * This information is required before to validate arguments.
-             */
+next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may change during the loop.
+            S source;
+            int[] selected;
             List<SampleDimension> sourceBands;
             int numSourceBands;
             RangeArgument range;
             do {
+                selected = bandsPerSource[i];
+                if (selected != null && selected.length == 0) {
+                    // Note that the source is allowed to be null in this particular case.
+                    continue next;
+                }
+                source = sources[i];
+                ArgumentChecks.ensureNonNullElement("sources", i, source);
                 if (getter != null) {
                     sourceBands = getter.apply(source);
                     numSourceBands = sourceBands.size();
@@ -228,9 +303,10 @@ public final class MultiSourceArgument<S> {
                  * Verify if the source is a nested aggregation, in order to get a flattened view.
                  * This replacement must be done before the optimization for consecutive images.
                  */
-            } while (unwrapper != null && source != (source = unwrapper.apply(source, selected)));
+            } while (unwrap(i, source, selected));
             /*
              * Store now the sample dimensions before the `selected` array get modified.
+             * Should be done only after `RangeArgument.validate(…)` has been successful.
              */
             if (ranges != null) {
                 for (int b : selected) {

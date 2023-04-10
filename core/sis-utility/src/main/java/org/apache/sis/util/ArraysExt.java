@@ -644,7 +644,7 @@ public final class ArraysExt extends Static {
         if (length == 0) {
             return array;               // May be null
         }
-        ArgumentChecks.ensureNonNull ("array",  array);
+        ArgumentChecks.ensureNonNull("array",  array);
         final int arrayLength = Array.getLength(array);
         ArgumentChecks.ensureBetween("first", 0, arrayLength, first);
         ArgumentChecks.ensurePositive("length", length);

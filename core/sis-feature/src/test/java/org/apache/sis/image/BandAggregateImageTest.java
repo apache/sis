@@ -71,6 +71,13 @@ public final class BandAggregateImageTest extends TestCase {
     }
 
     /**
+     * Creates the band aggregate instance to test using current value of {@link #sourceImages}.
+     */
+    private RenderedImage createBandAggregate() {
+        return BandAggregateImage.create(sourceImages, null, null, false, allowSharing, false);
+    }
+
+    /**
      * Tests the aggregation of two untiled images with forced copy of sample values.
      * This is the simplest case in this test class.
      */
@@ -95,7 +102,7 @@ public final class BandAggregateImageTest extends TestCase {
         im2.getRaster().setSamples(0, 0, width, height, 0, IntStream.range(0, width*height).map(s -> s * 2).toArray());
         sourceImages = new RenderedImage[] {im1, im2};
 
-        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, false);
+        final RenderedImage result = createBandAggregate();
         assertNotNull(result);
         assertEquals(0, result.getMinTileX());
         assertEquals(0, result.getMinTileY());
@@ -186,9 +193,8 @@ public final class BandAggregateImageTest extends TestCase {
         final TiledImageMock im1 = new TiledImageMock(DataBuffer.TYPE_USHORT, 2, minX, minY, width, height, 3, 3, 1, 2, firstBanded);
         final TiledImageMock im2 = new TiledImageMock(DataBuffer.TYPE_USHORT, 2, minX, minY, width, height, 3, 3, 3, 4, secondBanded);
         initializeAllTiles(im1, im2);
-        sourceImages = new RenderedImage[] {im1, im2};
 
-        RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, false);
+        RenderedImage result = createBandAggregate();
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -255,7 +261,7 @@ public final class BandAggregateImageTest extends TestCase {
             new int[] {1},      // Take second band of image 1.
             null,               // Take all bands of image 2.
             new int[] {0}       // Take first band of image 1.
-        }, null, allowSharing, false);
+        }, null, false, allowSharing, false);
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -314,9 +320,8 @@ public final class BandAggregateImageTest extends TestCase {
         final TiledImageMock tiled4x1 = new TiledImageMock(DataBuffer.TYPE_FLOAT, 1, minX, minY, width, height, 4, 1, 3, 4, true);
         final TiledImageMock oneTile  = new TiledImageMock(DataBuffer.TYPE_FLOAT, 1, minX, minY, width, height, 8, 4, 5, 6, true);
         initializeAllTiles(tiled2x2, tiled4x1, oneTile);
-        sourceImages = new RenderedImage[] {tiled2x2, tiled4x1, oneTile};
 
-        final RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, false);
+        final RenderedImage result = createBandAggregate();
         assertNotNull(result);
         assertEquals(minX,   result.getMinX());
         assertEquals(minY,   result.getMinY());
@@ -382,9 +387,8 @@ public final class BandAggregateImageTest extends TestCase {
         final TiledImageMock tiled4x4 = new TiledImageMock(DataBuffer.TYPE_SHORT, 2, 4, 2,  8,  8,  4,  4, 0, 0, true);
         final TiledImageMock tiled6x6 = new TiledImageMock(DataBuffer.TYPE_SHORT, 1, 2, 0, 12,  6,  6,  6, 0, 0, true);
         initializeAllTiles(untiled, tiled2x2, tiled4x4, tiled6x6);
-        sourceImages = new RenderedImage[] {untiled, tiled2x2, tiled4x4, tiled6x6};
 
-        RenderedImage result = BandAggregateImage.create(sourceImages, null, null, allowSharing, prefetch);
+        RenderedImage result = BandAggregateImage.create(sourceImages, null, null, false, allowSharing, prefetch);
         assertNotNull(result);
         assertEquals(4, result.getMinX());
         assertEquals(2, result.getMinY());
@@ -419,6 +423,31 @@ public final class BandAggregateImageTest extends TestCase {
     }
 
     /**
+     * Tests aggregation of aggregated images. The result should be a flattened view.
+     * Opportunistically tests a "band select" operation after the aggregation.
+     */
+    @Test
+    public void testNestedAggregation() {
+        final int minX   =  7;
+        final int minY   = -5;
+        final int width  =  6;
+        final int height =  4;
+        final TiledImageMock im1 = new TiledImageMock(DataBuffer.TYPE_USHORT, 3, minX, minY, width, height, 3, 2, 1, 2, true);
+        final TiledImageMock im2 = new TiledImageMock(DataBuffer.TYPE_USHORT, 1, minX, minY, width, height, 3, 2, 3, 4, true);
+        final TiledImageMock im3 = new TiledImageMock(DataBuffer.TYPE_USHORT, 2, minX, minY, width, height, 3, 2, 2, 1, true);
+        initializeAllTiles(im1, im2, im3);
+
+        RenderedImage result;
+        result = BandAggregateImage.create(new RenderedImage[] {im2, im3},    null, null, false, allowSharing, false);
+        result = BandAggregateImage.create(new RenderedImage[] {im1, result}, null, null, false, allowSharing, false);
+        assertArrayEquals(sourceImages, ((BandAggregateImage) result).getSourceArray());
+
+        assertSame(im1, BandSelectImage.create(result, 0, 1, 2));
+        assertSame(im2, BandSelectImage.create(result, 3));
+        assertSame(im3, BandSelectImage.create(result, 4, 5));
+    }
+
+    /**
      * Initializes all bands of all input images to testing values.
      * The testing values are defined by a "BTYX" pattern where:
      * <ol>
@@ -429,7 +458,8 @@ public final class BandAggregateImageTest extends TestCase {
      *   <li><var>X</var> is the <var>x</var> coordinate (column 0-based index) of the sample value relative to current tile.</li>
      * </ol>
      */
-    private static void initializeAllTiles(final TiledImageMock... images) {
+    private void initializeAllTiles(final TiledImageMock... images) {
+        sourceImages = images;
         int band = 0;
         for (final TiledImageMock image : images) {
             final int numBands = image.getSampleModel().getNumBands();

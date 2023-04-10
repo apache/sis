@@ -44,7 +44,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
      *
      * @see #getColorModel()
      */
-    protected final ColorModel colorModel;
+    private final ColorModel colorModel;
 
     /**
      * Domain of pixel coordinates. All images shall share the same pixel coordinate space,
@@ -63,7 +63,7 @@ abstract class MultiSourceImage extends WritableComputedImage {
     /**
      * Whether parallel computation is allowed.
      */
-    private final boolean parallel;
+    final boolean parallel;
 
     /**
      * Creates a new multi-sources image.

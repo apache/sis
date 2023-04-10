@@ -25,6 +25,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.MultiSourceArgument;
 
 
 /**
@@ -51,20 +52,92 @@ class BandAggregateImage extends MultiSourceImage {
      */
     private final boolean allowSharing;
 
+    /*
+     * The method declaration order below is a little bit unusual,
+     * but it follows an execution order.
+     */
+
+    /**
+     * Returns potentially deeper sources than the user-supplied image.
+     * This method unwraps {@link BandSelectImage} for making possible to detect that two
+     * consecutive images are actually the same image, with only different bands selected.
+     *
+     * @param  unwrapper  a handler where to supply the result of an aggregate decomposition.
+     */
+    static void unwrap(final MultiSourceArgument<RenderedImage>.Unwrapper unwrapper) {
+        RenderedImage source = unwrapper.source;
+        int[] bands = unwrapper.bands;
+        while (source instanceof ImageAdapter) {
+            source = ((ImageAdapter) source).source;
+        }
+        if (source instanceof BandSelectImage) {
+            final var select = (BandSelectImage) source;
+            bands  = select.getSourceBands(bands);
+            source = select.getSource();
+        }
+        if (source instanceof BandAggregateImage) {
+            ((BandAggregateImage) source).subset(bands, null, unwrapper);
+        } else if (source != unwrapper.source) {
+            unwrapper.apply(new RenderedImage[] {source}, new int[][] {bands});
+        }
+    }
+
+    /**
+     * Decomposes this aggregate for the specified subset of bands.
+     * The result can be used either for creating a new aggregate,
+     * or consumed by {@code unwrapper} for flattening an aggregation.
+     *
+     * <p>This is a kind of constructor, but for an image derived from this instance.
+     * The returned image may be one of the source images for simplifying the result.</p>
+     *
+     * @param  bands      the bands to keep.
+     * @param  colors     the colors to apply, or {@code null} if unspecified.
+     * @param  unwrapper  where to provide decomposition result, or {@code null} for creating the image immediately.
+     * @return an image with a subset of the bands of this image, or {@code null} if {@code unwrapper} was non-null.
+     */
+    final RenderedImage subset(final int[] bands, final ColorModel colors,
+            final MultiSourceArgument<RenderedImage>.Unwrapper unwrapper)
+    {
+        final RenderedImage[] sources = new RenderedImage[bands.length];
+        final int[][] bandsPerSource = new int[bands.length][];
+        int lower=0, upper=0, sourceIndex = -1;
+        RenderedImage source = null;
+        for (int i=0; i<bands.length; i++) {
+            final int band = bands[i];
+            if (band < lower) {
+                lower = upper = 0;
+                sourceIndex = -1;
+            }
+            while (band >= upper) {
+                source = getSource(++sourceIndex);
+                lower  = upper;
+                upper += ImageUtilities.getNumBands(source);
+            }
+            sources[i] = source;
+            bandsPerSource[i] = new int[] {band - lower};
+        }
+        if (unwrapper != null) {
+            unwrapper.apply(sources, bandsPerSource);
+            return null;
+        }
+        return create(sources, bandsPerSource, (colors != null) ? Colorizer.forInstance(colors) : null, false, allowSharing, parallel);
+    }
+
     /**
      * Creates a new aggregation of bands.
      *
      * @param  sources         images to combine, in order.
      * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
      * @param  colorizer       provider of color model to use for this image, or {@code null} for automatic.
+     * @param  forceColors     whether to force application of {@code colorizer} when a source image is returned.
      * @param  allowSharing    whether to allow the sharing of data buffers (instead of copying) if possible.
      * @param  parallel        whether parallel computation is allowed.
      * @throws IllegalArgumentException if there is an incompatibility between some source images
      *         or if some band indices are duplicated or outside their range of validity.
      * @return the band aggregate image.
      */
-    static RenderedImage create(final RenderedImage[] sources, final int[][] bandsPerSource,
-                                final Colorizer colorizer, final boolean allowSharing, final boolean parallel)
+    static RenderedImage create(final RenderedImage[] sources, final int[][] bandsPerSource, final Colorizer colorizer,
+                                final boolean forceColors, final boolean allowSharing, final boolean parallel)
     {
         final var layout = MultiSourceLayout.create(sources, bandsPerSource, allowSharing);
         final BandAggregateImage image;
@@ -74,16 +147,13 @@ class BandAggregateImage extends MultiSourceImage {
             image = new BandAggregateImage(layout, colorizer, allowSharing, parallel);
         }
         if (image.getNumSources() == 1) {
-            final RenderedImage c = image.getSource();
-            if (image.colorModel == null) {
-                return c;
+            RenderedImage source = image.getSource();
+            if ((forceColors && colorizer != null)) {
+                source = RecoloredImage.applySameColors(source, image);
             }
-            final ColorModel cm = c.getColorModel();
-            if (cm == null || image.colorModel.equals(cm)) {
-                return c;
-            }
+            return source;
         }
-        return image;
+        return ImageProcessor.unique(image);
     }
 
     /**

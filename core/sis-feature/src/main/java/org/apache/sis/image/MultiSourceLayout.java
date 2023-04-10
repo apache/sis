@@ -129,7 +129,7 @@ final class MultiSourceLayout extends ImageLayout {
     static MultiSourceLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
         final var aggregate = new MultiSourceArgument<RenderedImage>(sources, bandsPerSource);
         aggregate.identityAsNull();
-        aggregate.unwrap(BandSelectImage::unwrap);
+        aggregate.unwrap(BandAggregateImage::unwrap);
         aggregate.validate(ImageUtilities::getNumBands);
 
         sources            = aggregate.sources();
@@ -242,7 +242,7 @@ final class MultiSourceLayout extends ImageLayout {
             RenderedImage source = sources[i];
             final int[] bands = bandsPerSource[i];
             if (bands != null) {
-                source = BandSelectImage.create(source, bands.clone());
+                source = BandSelectImage.create(source, bands);
             }
             filteredSources[i] = source;
         }

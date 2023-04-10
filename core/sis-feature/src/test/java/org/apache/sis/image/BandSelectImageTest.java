@@ -231,4 +231,18 @@ public final class BandSelectImageTest extends TestCase {
         writable.setData(data);
         assertValuesEqual(writable.getData(), 0, expectedSampleValues());
     }
+
+    /**
+     * Tests a band select on an image which is already a band select.
+     * The nested operations should be simplified to a single band select operation.
+     */
+    @Test
+    public void testNestedBandSelect() {
+        createImage(3, 2, true);
+        final ImageProcessor processor = new ImageProcessor();
+        RenderedImage test = processor.selectBands(image, 1, 2);
+        test = processor.selectBands(test, 1);
+        assertSame(image, ((BandSelectImage) test).getSource());
+        assertValuesEqual(test.getData(), 0, expectedSampleValues());
+    }
 }

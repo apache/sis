@@ -85,32 +85,28 @@ class BandSelectImage extends SourceAlignedImage {
     }
 
     /**
-     * If the given image is already a band select operation, returns the original source
-     * and updates the band indices. If there is no replacement, then the {@code image}
-     * argument is returned as-is and the {@code bands} array shall be unmodified.
+     * Returns the indices of bands in the source image for the given bands in this image.
+     * A reference to the given array will be returned if the band indices are the same.
      *
-     * @param  image  the image to check.
-     * @param  bands  the band to select in the specified source.
-     *                Will be updated in-place if the source is replaced.
-     * @return the source of the image, or {@code image} if no replacement.
+     * @param  bands  the band to select in this image.
+     * @return the bands to select in source image.
+     *
+     * @see #getSource()
      */
-    static RenderedImage unwrap(final RenderedImage image, final int[] bands) {
-        if (image instanceof BandSelectImage) {
-            final var select = (BandSelectImage) image;
-            for (int i=0; i<bands.length; i++) {
-                bands[i] = select.bands[bands[i]];
-            }
-            return select.getSource();
+    final int[] getSourceBands(final int[] subset) {
+        final int[] select = new int[subset.length];
+        for (int i=0; i<subset.length; i++) {
+            select[i] = bands[subset[i]];
         }
-        return image;
+        return Arrays.equals(subset, select) ? subset : select;
     }
 
     /**
      * Creates a new "band select" operation for the given source.
      *
      * @param  source  the image in which to select bands.
-     * @param  bands   the bands to select. Shall be a clone of user-specified argument
-     *                 because it may be modified in-place.
+     * @param  bands   the bands to select. Not cloned in order to share common arrays when possible.
+     *                 If that array instance was user-supplied, then it should be cloned by caller.
      */
     static RenderedImage create(RenderedImage source, int... bands) {
         final int numBands = ImageUtilities.getNumBands(source);
@@ -118,8 +114,23 @@ class BandSelectImage extends SourceAlignedImage {
             return source;
         }
         ArgumentChecks.ensureNonEmptyBounded("bands", false, 0, numBands - 1, bands);
-        source = unwrap(source, bands);
         final ColorModel cm = ColorModelFactory.createSubset(source.getColorModel(), bands);
+        /*
+         * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
+         * than changing the color model. Operations adding properties such as stastics are kept because this
+         * class can inherit some of them (see `REDUCED_PROPERTIES`).
+         */
+        if (source instanceof RecoloredImage) {
+            source = ((RecoloredImage) source).source;
+        }
+        if (source instanceof BandSelectImage) {
+            final var select = (BandSelectImage) source;
+            bands  = select.getSourceBands(bands);
+            source = select.getSource();
+        }
+        if (source instanceof BandAggregateImage) {
+            return ((BandAggregateImage) source).subset(bands, cm, null);
+        }
         /*
          * If the image is an instance of `BufferedImage`, create the subset immediately
          * (reminder: this operation will not copy pixel data). It allows us to return a

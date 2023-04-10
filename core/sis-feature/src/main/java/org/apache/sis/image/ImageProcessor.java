@@ -1004,7 +1004,7 @@ public class ImageProcessor implements Cloneable {
             colorizer = this.colorizer;
             parallel = executionMode != Mode.SEQUENTIAL;
         }
-        return unique(BandAggregateImage.create(sources, bandsPerSource, colorizer, true, parallel));
+        return BandAggregateImage.create(sources, bandsPerSource, colorizer, true, true, parallel);
     }
 
     /**
