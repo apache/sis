@@ -359,7 +359,7 @@ final class MultiSourceLayout extends ImageLayout {
      * then the returned color model will reuse the colors of that visible band.
      * Otherwise a grayscale color model is built with a value range inferred from the data-type.
      *
-     * @param  colorizer  user-supplied provider of color model, or {@code null} if none.
+     * @param  colorizer  user supplied provider of color model, or {@code null} if none.
      */
     final ColorModel createColorModel(final Colorizer colorizer) {
         ColorModel colors = null;

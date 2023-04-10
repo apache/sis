@@ -413,7 +413,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * Sets the colorization algorithm to apply on rendered images.
      * Should be an algorithm based on coverage categories.
      *
-     * <p>{@code CoverageCanvas} can not detect when the given colorizer changes its internal state.
+     * <p>{@code CoverageCanvas} cannot detect when the given colorizer changes its internal state.
      * The {@link #stylingChanged()} method should be invoked explicitly when such change occurs.</p>
      *
      * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.

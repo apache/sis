@@ -395,7 +395,7 @@ public class ImageProcessor implements Cloneable {
      * Consequently the colorizer is not invoked for that operation.</p>
      *
      * <p>But by contrast, the color model of an {@link #aggregateBands(RenderedImage...) aggregateBands(…)}
-     * operation can not be determined in such straightforward way.
+     * operation cannot be determined in such straightforward way.
      * If three or four bands are aggregated, should they be interpreted as an (A)RGB image?
      * The {@link Colorizer} allows to specify the desired behavior.</p>
      *
@@ -1325,7 +1325,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <h4>How to specify colors</h4>
      * The image colors can be controlled by the {@link Colorizer} set on this image processor.
-     * It is possible to {@linkplain Colorizer#forInstance(ColorModel) specify explicitely} the
+     * It is possible to {@linkplain Colorizer#forInstance(ColorModel) specify explicitly} the
      * {@link ColorModel} to use, but this approach is unsafe because it depends on the pixel values
      * <em>after</em> their conversion to the visualization image, which is implementation dependent.
      * A safer approach is to define colors relative to pixel values <em>before</em> their conversions.

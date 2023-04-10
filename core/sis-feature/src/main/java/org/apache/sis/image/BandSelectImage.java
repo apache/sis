@@ -106,7 +106,7 @@ class BandSelectImage extends SourceAlignedImage {
      *
      * @param  source  the image in which to select bands.
      * @param  bands   the bands to select. Not cloned in order to share common arrays when possible.
-     *                 If that array instance was user-supplied, then it should be cloned by caller.
+     *                 If that array instance was user supplied, then it should be cloned by caller.
      */
     static RenderedImage create(RenderedImage source, int... bands) {
         final int numBands = ImageUtilities.getNumBands(source);

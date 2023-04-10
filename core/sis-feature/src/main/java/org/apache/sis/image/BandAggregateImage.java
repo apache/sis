@@ -58,7 +58,7 @@ class BandAggregateImage extends MultiSourceImage {
      */
 
     /**
-     * Returns potentially deeper sources than the user-supplied image.
+     * Returns potentially deeper sources than the user supplied image.
      * This method unwraps {@link BandSelectImage} for making possible to detect that two
      * consecutive images are actually the same image, with only different bands selected.
      *
@@ -194,7 +194,7 @@ class BandAggregateImage extends MultiSourceImage {
             }
         }
         /*
-         * Fallback when the data arrays can not be shared.
+         * Fallback when the data arrays cannot be shared.
          * This code copies all sample values in new arrays.
          */
         if (tile == null) {

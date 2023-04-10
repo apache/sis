@@ -225,7 +225,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
     /**
      * Returns all CRS components for the dimensions where the bit is set.
      * There is one CRS for each range of consecutive dimension indices.
-     * If at least one CRS can not be fetched, then this method returns {@code null}.
+     * If at least one CRS cannot be fetched, then this method returns {@code null}.
      *
      * @param  crs   the CRS for which to get components.
      * @param  axes  dimensions (or axis indices) of the components to get.
@@ -614,7 +614,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
     }
 
     /**
-     * Returns {@code true} if the {@code actual} CRS is equals, ignore metadata, to the one in {@code expected}.
+     * Returns {@code true} if the {@code actual} CRS is equal, ignore metadata, to the one in {@code expected}.
      * If any CRS is null, this method conservatively returns {@code true}.
      * This is used for assertions only.
      */

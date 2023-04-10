@@ -250,7 +250,7 @@ public final class BandAggregateImageTest extends TestCase {
             expected[119] = 250;
             assertSame(target, result.getTile(tileX, tileY));
             assertArrayEquals(expected, result.getData().getPixels(minX, minY, width, height, (int[]) null));
-            return;             // Can not continue the tests because the source images have been modified.
+            return;             // Cannot continue the tests because the source images have been modified.
         }
         /*
          * Repeat the test with a custom band selection.
@@ -302,7 +302,7 @@ public final class BandAggregateImageTest extends TestCase {
 
     /**
      * Tests the aggregation of three tiled images having different tile matrices.
-     * A copy of sample values can not be avoided in this case.
+     * A copy of sample values cannot be avoided in this case.
      */
     @Test
     @DependsOnMethod("testSimilarlyTiledImages")
@@ -351,7 +351,7 @@ public final class BandAggregateImageTest extends TestCase {
 
     /**
      * Tests the aggregation of three tiled images having different extents and different tile matrices.
-     * A copy of sample values can not be avoided in this case, except on the second image.
+     * A copy of sample values cannot be avoided in this case, except on the second image.
      */
     @Test
     @DependsOnMethod("testImagesUsingSameExtentButDifferentTileSizes")

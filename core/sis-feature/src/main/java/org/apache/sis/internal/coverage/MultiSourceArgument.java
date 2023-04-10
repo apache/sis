@@ -178,7 +178,7 @@ public final class MultiSourceArgument<S> {
     }
 
     /**
-     * Replace a user-supplied source by a deeper source with the bands to select.
+     * Replace a user supplied source by a deeper source with the bands to select.
      * This is used for getting a flattened view of nested aggregations.
      */
     public final class Unwrapper {
@@ -204,7 +204,7 @@ public final class MultiSourceArgument<S> {
         private boolean done;
 
         /**
-         * Creates a new instance to be submitted to user-supplied {@link #unwrapper}.
+         * Creates a new instance to be submitted to user supplied {@link #unwrapper}.
          */
         private Unwrapper(final int index, final S source, final int[] bands) {
             this.index  = index;

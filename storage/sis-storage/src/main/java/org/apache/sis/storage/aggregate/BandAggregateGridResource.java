@@ -205,7 +205,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * This is the name specified at construction time.
      *
      * @return an identifier for the band aggregation.
-     * @throws DataStoreException if the identifier can not be obtained.
+     * @throws DataStoreException if the identifier cannot be obtained.
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
@@ -217,7 +217,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * This grid geometry is inferred from the grid geometries of resources specified at construction time.
      *
      * @return extent of grid coordinates together with their mapping to "real world" coordinates.
-     * @throws DataStoreException if the grid geometry can not be obtained.
+     * @throws DataStoreException if the grid geometry cannot be obtained.
      */
     @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
@@ -229,7 +229,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * This is the union or a subset of the union of the ranges of all resources specified at construction time.
      *
      * @return ranges of sample values together with their mapping to "real values".
-     * @throws DataStoreException if the sample dimensions can not be obtained.
+     * @throws DataStoreException if the sample dimensions cannot be obtained.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")

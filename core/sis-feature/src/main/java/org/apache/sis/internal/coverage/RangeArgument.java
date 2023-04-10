@@ -366,7 +366,7 @@ public final class RangeArgument {
 
     /**
      * Returns a color model for the bands specified by the user.
-     * This method may return {@code null} if the color model can not be created.
+     * This method may return {@code null} if the color model cannot be created.
      *
      * @param  colors  the original color model with all bands. Can be {@code null}.
      * @return the color model for a subset of bands, or null if the given color model was null.

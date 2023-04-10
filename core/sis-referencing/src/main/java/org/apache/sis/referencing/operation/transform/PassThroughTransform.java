@@ -270,7 +270,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
             if (subLower == 0 && subUpper == subDim) {
                 step = subTransform;
             } else {
-                // Restriction below apply only if the `subTransform` can not be used as a whole.
+                // Restriction below apply only if the `subTransform` cannot be used as a whole.
                 ArgumentChecks.ensureDimensionsMatch("subTransform", subDim, subDim, subTransform);
                 sep.addSourceDimensionRange(subLower, subUpper);
                 sep.addTargetDimensionRange(subLower, subUpper);

@@ -137,7 +137,7 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * <p>If no colors were explicitly defined but a fallback exists, then this method considers
      * this range as defined for allowing {@link ColorModelBuilder} to inherit those colors with
      * the range of values specified by {@link #originalSampleRange}. We conceptually accept any
-     * {@link #inheritedColors} even if {@link #toARGB(int)} can not handle all of them.</p>
+     * {@link #inheritedColors} even if {@link #toARGB(int)} cannot handle all of them.</p>
      */
     final boolean isUndefined() {
         return colors == null && inheritedColors == null;

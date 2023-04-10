@@ -279,7 +279,7 @@ final class Visualization extends ResampledImage {
             }
             /*
              * Sample values will be unconditionally converted to integers in the [0 … 255] range.
-             * The sample model is a mandatory argument before we invoke user-supplied colorizer,
+             * The sample model is a mandatory argument before we invoke user supplied colorizer,
              * which must be done before to build the color model.
              */
             sampleModel = layout.createBandedSampleModel(ColorModelBuilder.TYPE_COMPACT, NUM_BANDS, source, bounds, 0);
@@ -320,7 +320,7 @@ final class Visualization extends ResampledImage {
                     builder.rescaleMainRange(sourceCM);
                 } else {
                     /*
-                     * At this point there is no more user-supplied colors (through `Colorizer`) that we can use.
+                     * At this point there is no more user supplied colors (through `Colorizer`) that we can use.
                      * If we have not been able to use the SampleDimension, try to use the ColorModel or SampleModel.
                      * There is no call to `rescaleMainRange(…)` because the following code already uses the range
                      * specified by the ColorModel, if available.

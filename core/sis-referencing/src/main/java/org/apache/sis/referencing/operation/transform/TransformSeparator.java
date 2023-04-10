@@ -599,7 +599,7 @@ public class TransformSeparator {
              * If all source dimensions not in the sub-transform are consecutive numbers, we can use our passthrough
              * transform implementation. The "consecutive numbers" requirement (expressed in the `if` statement below)
              * is a consequence of a limitation in our current implementation: our current passthrough transform does
-             * not accept arbitrary indices for modified coordinates. We can not delegate to the static factory method
+             * not accept arbitrary indices for modified coordinates. We cannot delegate to the static factory method
              * `MathTransforms.passThrough(int[] modifiedCoordinates, ...)` because that method itself relies on this
              * `TransformSeparator` for separating the transform components at non-consecutive indices.
              */

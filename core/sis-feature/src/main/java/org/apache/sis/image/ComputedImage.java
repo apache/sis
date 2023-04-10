@@ -263,7 +263,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
     }
 
     /**
-     * Ensures that a user-supplied color model is compatible with the sample model.
+     * Ensures that a user supplied color model is compatible with the sample model.
      * This is a helper method for argument validation in sub-classes constructors.
      *
      * @param  colors  the color model to validate. Can be {@code null}.

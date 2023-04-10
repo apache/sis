@@ -329,7 +329,7 @@ public interface Colorizer extends Function<Colorizer.Target, Optional<ColorMode
 
     /**
      * Returns a new colorizer which will apply the specified alternative
-     * if this colorizer can not infer a color model.
+     * if this colorizer cannot infer a color model.
      *
      * @param  alternative  the alternative strategy for creating a color model.
      * @return a new colorizer which will attempt to apply {@code this} first,

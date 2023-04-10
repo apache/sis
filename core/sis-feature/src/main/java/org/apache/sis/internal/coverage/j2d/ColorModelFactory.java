@@ -597,7 +597,7 @@ public final class ColorModelFactory {
     /**
      * Creates a RGB color model for the given sample model.
      * The sample model shall use integer type and have 3 or 4 bands.
-     * This method may return {@code null} if the color model can not be created.
+     * This method may return {@code null} if the color model cannot be created.
      *
      * @param  model  the sample model for which to create a color model.
      * @return the color model, or null if a precondition does not hold.
@@ -666,7 +666,7 @@ public final class ColorModelFactory {
      *   <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
      * </ul>
      *
-     * This method may return {@code null} if the color model can not be created.
+     * This method may return {@code null} if the color model cannot be created.
      *
      * <p><em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>:
      * those color models not managed for now, because they are really designed for
@@ -700,7 +700,7 @@ public final class ColorModelFactory {
      * Returns a color model with with the same colors but a different number of bands.
      * Current implementation supports {@link ComponentColorModel} with only one band,
      * {@link MultiBandsIndexColorModel} and {@link ScaledColorModel}.
-     * This method may return {@code null} if the color model can not be created.
+     * This method may return {@code null} if the color model cannot be created.
      *
      * @param  cm           the color model, or {@code null}.
      * @param  numBands     new number of bands.
