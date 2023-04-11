@@ -105,10 +105,11 @@ class BandSelectImage extends SourceAlignedImage {
      * Creates a new "band select" operation for the given source.
      *
      * @param  source  the image in which to select bands.
+     * @param  unwrap  whether to allow unwrapping of {@link BandAggregateImage} source.
      * @param  bands   the bands to select. Not cloned in order to share common arrays when possible.
      *                 If that array instance was user supplied, then it should be cloned by caller.
      */
-    static RenderedImage create(RenderedImage source, int... bands) {
+    static RenderedImage create(RenderedImage source, final boolean unwrap, int... bands) {
         final int numBands = ImageUtilities.getNumBands(source);
         if (bands.length == numBands && ArraysExt.isRange(0, bands)) {
             return source;
@@ -128,7 +129,7 @@ class BandSelectImage extends SourceAlignedImage {
             bands  = select.getSourceBands(bands);
             source = select.getSource();
         }
-        if (source instanceof BandAggregateImage) {
+        if (unwrap && source instanceof BandAggregateImage) {
             return ((BandAggregateImage) source).subset(bands, cm, null);
         }
         /*

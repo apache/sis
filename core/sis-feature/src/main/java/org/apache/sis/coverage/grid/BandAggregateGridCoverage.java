@@ -92,7 +92,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
     BandAggregateGridCoverage(final MultiSourceArgument<GridCoverage> aggregate, final ImageProcessor processor) {
         super(aggregate.domain(GridCoverage::getGridGeometry), aggregate.ranges());
         this.sources           = aggregate.sources();
-        this.bandsPerSource    = aggregate.bandsPerSource();
+        this.bandsPerSource    = aggregate.bandsPerSource(true);
         this.numBands          = aggregate.numBands();
         this.sourceOfGridToCRS = aggregate.sourceOfGridToCRS();
         this.processor         = processor;

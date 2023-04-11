@@ -42,6 +42,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
@@ -473,7 +474,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      *         or does not use a supported bits pattern.
      */
     private static Long toNodataKey(final int band, final float value) {
-        return (((long) MathFunctions.toNanOrdinal(value)) << Integer.SIZE) | band;
+        return Numerics.tuple(MathFunctions.toNanOrdinal(value), band);
     }
 
     /**

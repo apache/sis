@@ -27,6 +27,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -97,7 +98,7 @@ public final class RangeArgument {
         if (ranges == null || ranges.length == 0) {
             packed = new long[numSampleDimensions];
             for (int i=1; i<numSampleDimensions; i++) {
-                packed[i] = (((long) i) << Integer.SIZE) | i;
+                packed[i] = Numerics.tuple(i, i);
             }
         } else {
             /*
@@ -110,7 +111,7 @@ public final class RangeArgument {
                     throw new IllegalArgumentException(resources(listeners).getString(
                             Resources.Keys.InvalidSampleDimensionIndex_2, numSampleDimensions - 1, r));
                 }
-                packed[i] = (((long) r) << Integer.SIZE) | i;
+                packed[i] = Numerics.tuple(r, i);
             }
             /*
              * Sort by increasing `range` value, but keep together with index in `ranges` where each
@@ -152,7 +153,7 @@ public final class RangeArgument {
             return false;
         }
         for (int i=0; i<packed.length; i++) {
-            if (packed[i] != ((((long) i) << Integer.SIZE) | i)) {
+            if (packed[i] != Numerics.tuple(i, i)) {
                 return false;
             }
         }

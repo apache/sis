@@ -116,6 +116,10 @@ class BandAggregateImage extends MultiSourceImage {
             sources[i] = source;
             bandsPerSource[i] = new int[] {band - lower};
         }
+        /*
+         * Tne same image may be repeated many times in the `sources` array, each time with only one band specified.
+         * But we rely on `create(…)` post-processing for merging multiple references to a single one for each image.
+         */
         if (unwrapper != null) {
             unwrapper.apply(sources, bandsPerSource);
             return null;
@@ -146,14 +150,23 @@ class BandAggregateImage extends MultiSourceImage {
         } else {
             image = new BandAggregateImage(layout, colorizer, allowSharing, parallel);
         }
+        RenderedImage result = image;
         if (image.getNumSources() == 1) {
-            RenderedImage source = image.getSource();
+            result = image.getSource();
             if ((forceColors && colorizer != null)) {
-                source = RecoloredImage.applySameColors(source, image);
+                result = RecoloredImage.applySameColors(result, image);
             }
-            return source;
+        } else {
+            result = ImageProcessor.unique(result);
         }
-        return ImageProcessor.unique(image);
+        /*
+         * If we need to use `BandSelectImage` for reordering bands, the `unwrap` argument
+         * MUST be false for avoiding `StackOverflowError` with never-ending recusivity.
+         */
+        if (layout.bandSelect != null) {
+            result = BandSelectImage.create(result, false, layout.bandSelect);
+        }
+        return result;
     }
 
     /**

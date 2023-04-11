@@ -442,9 +442,9 @@ public final class BandAggregateImageTest extends TestCase {
         result = BandAggregateImage.create(new RenderedImage[] {im1, result}, null, null, false, allowSharing, false);
         assertArrayEquals(sourceImages, ((BandAggregateImage) result).getSourceArray());
 
-        assertSame(im1, BandSelectImage.create(result, 0, 1, 2));
-        assertSame(im2, BandSelectImage.create(result, 3));
-        assertSame(im3, BandSelectImage.create(result, 4, 5));
+        assertSame(im1, BandSelectImage.create(result, true, 0, 1, 2));
+        assertSame(im2, BandSelectImage.create(result, true, 3));
+        assertSame(im3, BandSelectImage.create(result, true, 4, 5));
     }
 
     /**
@@ -458,6 +458,7 @@ public final class BandAggregateImageTest extends TestCase {
      *   <li><var>X</var> is the <var>x</var> coordinate (column 0-based index) of the sample value relative to current tile.</li>
      * </ol>
      */
+    @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     private void initializeAllTiles(final TiledImageMock... images) {
         sourceImages = images;
         int band = 0;

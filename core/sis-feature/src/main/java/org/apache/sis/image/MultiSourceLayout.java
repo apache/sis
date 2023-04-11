@@ -76,6 +76,11 @@ final class MultiSourceLayout extends ImageLayout {
     private final int[][] bandsPerSource;
 
     /**
+     * Final band select operation to apply on the aggregated result, or {@code null} if none.
+     */
+    final int[] bandSelect;
+
+    /**
      * The sample model of the combined image.
      * All {@linkplain BandedSampleModel#getBandOffsets() band offsets} are zeros and
      * all {@linkplain BandedSampleModel#getBankIndices() bank indices} are identity mapping.
@@ -128,12 +133,12 @@ final class MultiSourceLayout extends ImageLayout {
     @Workaround(library="JDK", version="1.8")
     static MultiSourceLayout create(RenderedImage[] sources, int[][] bandsPerSource, boolean allowSharing) {
         final var aggregate = new MultiSourceArgument<RenderedImage>(sources, bandsPerSource);
-        aggregate.identityAsNull();
         aggregate.unwrap(BandAggregateImage::unwrap);
         aggregate.validate(ImageUtilities::getNumBands);
 
+        int[] bandSelect   = aggregate.mergeDuplicatedSources();
         sources            = aggregate.sources();
-        bandsPerSource     = aggregate.bandsPerSource();
+        bandsPerSource     = aggregate.bandsPerSource(true);
         Rectangle domain   = null;          // Nullity check used for telling when the first image is processed.
         int scanlineStride = 0;
         int tileWidth      = 0;
@@ -203,7 +208,7 @@ final class MultiSourceLayout extends ImageLayout {
         final var preferredTileSize = new Dimension((int) cx, (int) cy);
         final boolean exactTileSize = ((cx | cy) >>> Integer.SIZE) == 0;
         allowSharing &= exactTileSize;
-        return new MultiSourceLayout(sources, bandsPerSource, domain, preferredTileSize, exactTileSize,
+        return new MultiSourceLayout(sources, bandsPerSource, bandSelect, domain, preferredTileSize, exactTileSize,
                 chooseMinTile(tileGridXOffset, domain.x, preferredTileSize.width),
                 chooseMinTile(tileGridYOffset, domain.y, preferredTileSize.height),
                 commonDataType, aggregate.numBands(), allowSharing ? scanlineStride : 0);
@@ -214,13 +219,14 @@ final class MultiSourceLayout extends ImageLayout {
      *
      * @param  sources            images to combine, in order.
      * @param  bandsPerSource     bands to use for each source image, in order. May contain {@code null} elements.
+     * @param  bandSelect         final band select operation to apply on the aggregated result, or {@code null}.
      * @param  domain             bounds of the image to create.
      * @param  preferredTileSize  the preferred tile size.
      * @param  commonDataType     data type of the combined image.
      * @param  scanlineStride     common scanline stride if data buffers will be shared, or 0 if no sharing.
      * @param  numBands           number of bands of the image to create.
      */
-    private MultiSourceLayout(final RenderedImage[] sources, final int[][] bandsPerSource,
+    private MultiSourceLayout(final RenderedImage[] sources, final int[][] bandsPerSource, final int[] bandSelect,
             final Rectangle domain, final Dimension preferredTileSize, final boolean exactTileSize,
             final int minTileX, final int minTileY, final int commonDataType, final int numBands,
             final int scanlineStride)
@@ -228,6 +234,7 @@ final class MultiSourceLayout extends ImageLayout {
         super(preferredTileSize, false);
         this.exactTileSize  = exactTileSize;
         this.bandsPerSource = bandsPerSource;
+        this.bandSelect     = bandSelect;
         this.sources        = sources;
         this.domain         = domain;
         this.minTileX       = minTileX;
@@ -242,7 +249,7 @@ final class MultiSourceLayout extends ImageLayout {
             RenderedImage source = sources[i];
             final int[] bands = bandsPerSource[i];
             if (bands != null) {
-                source = BandSelectImage.create(source, bands);
+                source = BandSelectImage.create(source, true, bands);
             }
             filteredSources[i] = source;
         }

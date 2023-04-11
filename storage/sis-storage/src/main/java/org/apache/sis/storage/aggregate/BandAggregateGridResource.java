@@ -133,8 +133,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * <p>The {@code bandsPerSource} argument specifies the bands to select in each resource.
      * That array can be {@code null} for selecting all bands in all resources,
      * or may contain {@code null} elements for selecting all bands of the corresponding resource.
-     * An empty array element (i.e. zero band to select) discards the corresponding resource.
-     * In the latter case, the discarded element in the {@code sources} array may be {@code null}.</p>
+     * An empty array element (i.e. zero band to select) discards the corresponding resource.</p>
      *
      * <h4>Restrictions</h4>
      * All resources shall have compatible domain, defined as below:
@@ -169,7 +168,7 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
             this.sources          = aggregate.sources();
             this.gridGeometry     = aggregate.domain(BandAggregateGridResource::domain);
             this.sampleDimensions = List.copyOf(aggregate.ranges());
-            this.bandsPerSource   = aggregate.bandsPerSource();
+            this.bandsPerSource   = aggregate.bandsPerSource(false);
             this.processor        = (processor != null) ? processor : new GridCoverageProcessor();
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);

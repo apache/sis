@@ -17,9 +17,11 @@
 package org.apache.sis.internal.coverage;
 
 import java.util.List;
+import java.util.BitSet;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -27,6 +29,7 @@ import java.util.function.ToIntFunction;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -45,6 +48,9 @@ import org.apache.sis.util.ComparisonMode;
  * This is done by an {@link #unwrap(Consumer)}, which should be invoked in order to get a flattened
  * view of nested aggregations.</p>
  *
+ * <p>All methods in this class may return direct references to internal arrays.
+ * This is okay if instances of this class are discarded immediately after usage.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
@@ -52,33 +58,61 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @since 1.4
  */
+@SuppressWarnings("ReturnOfCollectionOrArrayField")     // See class Javadoc.
 public final class MultiSourceArgument<S> {
     /**
      * The user-specified sources, usually grid coverages or rendered images.
      * This is initially a copy of the array specified at construction time.
      * This array is modified in-place by {@code validate(…)} methods for
      * removing empty sources and flattening nested aggregations.
+     *
+     * @see #sources()
      */
     private S[] sources;
 
     /**
      * Indices of selected bands or sample dimensions for each source.
+     * This array is modified in-place by {@code validate(…)} methods
+     * for removing empty elements and flattening nested aggregations.
+     *
      * The length of this array must be always equal to the {@link #sources} array length.
-     * The array is non-null but may contain {@code null} elements for meaning "all bands".
-     * This array is modified in-place by {@code validate(…)} methods for removing empty
-     * elements and flattening nested aggregations.
+     * The array is non-null but may contain {@code null} elements for meaning "all bands"
+     * before validation. After validation, all null elements are replaced by sequences.
+     *
+     * @see #bandsPerSource(boolean)
      */
     private int[][] bandsPerSource;
 
     /**
-     * Whether to allow null elements in {@link #bandsPerSource} for meaning "all bands".
+     * Number of bands per source. This array is built by {@code validate(…)} methods.
      */
-    private boolean identityAsNull;
+    private int[] numBandsPerSource;
 
     /**
-     * A method which may decompose a source in a sequence of deeper sources associated with their bands to select.
+     * Whether the bands selection for a given source is an identity operation.
+     * For a source at index <var>i</var>, the bit <var>i</var> is set to 1 if
+     * {@code bandsPerSource[i]} is a sequence selecting all bands in order.
+     *
+     * <p>This field is initially null and assigned on validation.
+     * Consequently this field can also be used for checking whether
+     * one of the {@code validate(…)} methods has been invoked.</p>
+     *
+     * @see #validate(Function)
+     * @see #validate(ToIntFunction)
      */
-    private Consumer<Unwrapper> unwrapper;
+    private BitSet isIdentity;
+
+    /**
+     * Number of valid elements in {@link #sources} array after empty elements have been removed.
+     * This is initially zero and is set after a {@code validate(…)} method has been invoked.
+     */
+    private int validatedSourceCount;
+
+    /**
+     * Total number of bands. This is the length of the {@link #ranges} list,
+     * except that this information is provided even if {@code ranges} is null.
+     */
+    private int totalBandCount;
 
     /**
      * Union of all selected bands in all specified sources, or {@code null} if not applicable.
@@ -86,21 +120,18 @@ public final class MultiSourceArgument<S> {
     private List<SampleDimension> ranges;
 
     /**
-     * Total number of bands. This is the length of the {@link #ranges} list,
-     * except that this information is provided even if {@code ranges} is null.
-     */
-    private int numBands;
-
-    /**
      * Index of a source having the same "grid to CRS" transform than the grid geometry
      * returned by {@link #domain(Function)}. If there is none, then this value is -1.
      */
-    private int sourceOfGridToCRS;
+    private int sourceOfGridToCRS = -1;
 
     /**
-     * Whether one of the {@code validate(…)} methods has been invoked.
+     * A method which may decompose a source in a sequence of deeper sources associated with their bands to select.
+     * Shall be set (if desired) before a {@code validate(…)} method is invoked.
+     *
+     * @see #unwrap(Consumer)
      */
-    private boolean validated;
+    private Consumer<Unwrapper> unwrapper;
 
     /**
      * Prepares an argument validator for the given sources and bands arguments.
@@ -133,17 +164,19 @@ public final class MultiSourceArgument<S> {
         }
         this.sources        = sources.clone();
         this.bandsPerSource = bandsPerSource;
-        sourceOfGridToCRS   = -1;
+        numBandsPerSource   = new int[sources.length];
     }
 
     /**
-     * Requests the use of {@code null} elements for meaning "all bands".
-     * The null elements can appear in the {@link #bandsPerSource()} array,
-     * but the array itself will still never null.
+     * Ensures that a {@code validate(…)} method has been invoked (or not).
+     *
+     * @param  expected  {@code true} if the caller expects validation to be done, or
+     *                   {@code false} if the caller expects validation to not be done yet.
      */
-    public void identityAsNull() {
-        if (validated) throw new IllegalStateException();
-        identityAsNull = true;
+    private void checkValidationState(final boolean expected) {
+        if ((isIdentity == null) == expected) {
+            throw new IllegalStateException();
+        }
     }
 
     /**
@@ -156,7 +189,7 @@ public final class MultiSourceArgument<S> {
      * @param  filter  the method to invoke for getting the sources of an image or coverage.
      */
     public void unwrap(final Consumer<Unwrapper> filter) {
-        if (validated) throw new IllegalStateException();
+        checkValidationState(false);
         unwrapper = filter;
     }
 
@@ -226,9 +259,9 @@ public final class MultiSourceArgument<S> {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedArrayLengths));
             }
             if (done) throw new IllegalStateException();
-            sources = ArraysExt.insert(sources, index+1, n-1);
+            sources        = ArraysExt.insert(sources,        index+1, n-1);
             bandsPerSource = ArraysExt.insert(bandsPerSource, index+1, n-1);
-            System.arraycopy(components, 0, sources, index, n);
+            System.arraycopy(components,     0, sources,        index, n);
             System.arraycopy(componentBands, 0, bandsPerSource, index, n);
             done = true;
         }
@@ -241,41 +274,39 @@ public final class MultiSourceArgument<S> {
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     public void validate(final ToIntFunction<S> counter) {
+        checkValidationState(false);
         validate(null, Objects.requireNonNull(counter));
     }
 
     /**
      * Clones and validates the arguments given to the constructor.
      * Also computes the union of bands in the sources given at construction time.
-     * The union result is stored in {@link #ranges}.
+     * The union result is stored in {@link #ranges()}.
      *
      * @param  getter  method to invoke for getting the list of sample dimensions.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     public void validate(final Function<S, List<SampleDimension>> getter) {
+        checkValidationState(false);
         ranges = new ArrayList<>();
         validate(Objects.requireNonNull(getter), null);
     }
 
     /**
-     * Computes the union of bands in the sources given at construction time.
-     * This method also verifies the indices in band arguments.
-     * Sources with no indices are removed from the iterator.
+     * Clones and validates the arguments given to the constructor.
+     * This method ensures that all band indices are in their ranges of validity with no duplicated value.
+     * Then this method stores a copy of the band indices, replacing {@code null} values by sequences.
+     * If an empty array of bands is specified, then the corresponding source is omitted.
      *
-     * <p>Exactly one of {@code getter} or {@code count} arguments shall be non-null.</p>
+     * <p>Exactly one of {@code getter} or {@code counter} arguments shall be non-null.</p>
      *
      * @param  getter   method to invoke for getting the list of sample dimensions.
      * @param  counter  method to invoke for counting the number of bands in a source.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
     private void validate(final Function<S, List<SampleDimension>> getter, final ToIntFunction<S> counter) {
-        final HashMap<Integer,int[]> pool = identityAsNull ? null : new HashMap<>();
-        int filteredCount = 0;
-        /*
-         * This loop ensures that all band indices are in their ranges of validity
-         * with no duplicated value, then stores a copy of the band indices or null.
-         * If an empty array of bands is specified, then the source is omitted.
-         */
+        final HashMap<Integer,int[]> identityPool = new HashMap<>();
+        isIdentity = new BitSet();
 next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may change during the loop.
             S source;
             int[] selected;
@@ -301,52 +332,120 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
                 selected = range.getSelectedBands();
                 /*
                  * Verify if the source is a nested aggregation, in order to get a flattened view.
-                 * This replacement must be done before the optimization for consecutive images.
+                 * This replacement must be done before the check for duplicated image references.
+                 * The call to `unwrap` may result in a need to grow `numBandsPerSource` array.
                  */
             } while (unwrap(i, source, selected));
             /*
-             * Store now the sample dimensions before the `selected` array get modified.
-             * Should be done only after `RangeArgument.validate(…)` has been successful.
+             * Now that the arguments have been validated, overwrite the array elements.
+             * The new values may be written at an index lower than `i` if some empty
+             * sources have been excluded.
              */
+            if (validatedSourceCount >= numBandsPerSource.length) {
+                // Needed if `unwrap(source)` has expanded the sources array.
+                numBandsPerSource = Arrays.copyOf(numBandsPerSource, sources.length);
+            }
             if (ranges != null) {
-                for (int b : selected) {
-                    ranges.add(sourceBands.get(b));
+                for (int j : selected) {
+                    ranges.add(sourceBands.get(j));
                 }
             }
-            /*
-             * If the source in current iteration is the same than the previous source, merge the bands together.
-             * The `BandAggregateGridResource.read(…)` implementation relies on that optimization.
-             */
-            if (filteredCount > 0 && sources[filteredCount-1] == source) {
-                final int[] previous = bandsPerSource[--filteredCount];
-                ArgumentChecks.ensureNonNullElement("bandsPerSource", filteredCount,   previous);
-                ArgumentChecks.ensureNonNullElement("bandsPerSource", filteredCount+1, selected);
-                numBands -= previous.length;   // Rollback the value added in previous iteration.
-
-                final int[] merged = Arrays.copyOf(previous, previous.length + selected.length);
-                System.arraycopy(selected, 0, merged, previous.length, selected.length);
-                range = RangeArgument.validate(numSourceBands, merged, null);
-                selected = range.getSelectedBands();
-            }
-            /*
-             * Store a copy of the `bandsPerSource` argument given at construction time.
-             * Its validation has been done by `RangeArgument.validate(…)` above calls.
-             */
             if (range.isIdentity()) {
-                if (pool != null) {
-                    int[] previous = pool.putIfAbsent(numSourceBands, selected);
-                    if (previous != null) selected = previous;
-                } else {
-                    selected = null;
-                }
+                isIdentity.set(validatedSourceCount);
+                int[] previous = identityPool.putIfAbsent(numSourceBands, selected);
+                if (previous != null) selected = previous;
             }
-            bandsPerSource[filteredCount] = selected;
-            sources[filteredCount++] = source;
-            numBands += range.getNumBands();
+            sources          [validatedSourceCount] = source;
+            bandsPerSource   [validatedSourceCount] = selected;
+            numBandsPerSource[validatedSourceCount] = numSourceBands;
+            totalBandCount += range.getNumBands();
+            validatedSourceCount++;
         }
-        sources = ArraysExt.resize(sources, filteredCount);
-        bandsPerSource = ArraysExt.resize(bandsPerSource, filteredCount);
-        validated = true;
+    }
+
+    /**
+     * If the same sources are repeated many times, merges them in a single reference.
+     * The {@link #sources()} and {@link #bandsPerSource(boolean)} values are modified in-place.
+     * The bands associated to each source reference are merged together, but not necessarily in the same order.
+     * Caller must perform a "band select" operation using the array returned by this method
+     * in order to reconstitute the band order specified by the user.
+     *
+     * <h4>Use cases</h4>
+     * {@code BandAggregateImage.subset(…)} and
+     * {@code BandAggregateGridResource.read(…)}
+     * implementations rely on this optimization.
+     *
+     * @return the bands to specify in a "band select" operation for reconstituting the user-specified band order.
+     *         If all band selections are identity operations, then this method returns {@code null}.
+     */
+    public int[] mergeDuplicatedSources() {
+        checkValidationState(true);
+        if (isIdentity.cardinality() == validatedSourceCount) {
+            return null;
+        }
+        /*
+         * Merge together the bands of all sources that are repeated.
+         * The band indices are stored in 64 bits tuples as below:
+         *
+         *     (band in source) | (band in target aggregate)
+         */
+        final var mergedBands = new IdentityHashMap<S,long[]>();
+        int targetBand = 0;
+        for (int i=0; i<validatedSourceCount; i++) {
+            final int[] selected = bandsPerSource[i];
+            final long[] tuples = new long[selected.length];
+            for (int j=0; j<selected.length; j++) {
+                tuples[j] = Numerics.tuple(selected[j], targetBand++);
+            }
+            mergedBands.merge(sources[i], tuples, ArraysExt::concatenate);
+        }
+        /*
+         * Iterate again over the sources, rewriting the arrays with consolidated bands.
+         * We need to keep trace of how the bands were reordered.
+         */
+        final int[] reordered = new int[totalBandCount];
+        final int count = validatedSourceCount;
+        validatedSourceCount = 0;
+        targetBand = 0;
+        for (int i=0; i<count; i++) {
+            final S      source = sources[i];
+            final long[] tuples = mergedBands.remove(source);
+            if (tuples != null) {
+                boolean noop = isIdentity.get(i);
+                int[] selected = bandsPerSource[i];
+                if (tuples.length > selected.length) {
+                    /*
+                     * Found a case where the same source appears two ore more times.
+                     * Sort the bands in increasing order for making easier to detect
+                     * duplicated values, and because it increases the chances to get
+                     * an identity selection (bands in same order) for that source.
+                     */
+                    Arrays.sort(tuples);
+                    selected = new int[tuples.length];
+                    noop = (tuples.length == numBandsPerSource[i]) && ArraysExt.isRange(0, selected);
+                }
+                /*
+                 * Rewrite the `selected` array with the potentially merged bands.
+                 * If the source was not repeated, `selected` should be unchanged.
+                 * But we loop anyway because we also need to write `reordered`.
+                 */
+                for (int j=0; j < tuples.length; j++) {
+                    final long t = tuples[j];
+                    final int sourceBand = (int) (t >>> Integer.SIZE);
+                    reordered[(int) t] = sourceBand + targetBand;
+                    selected[j] = sourceBand;
+                }
+                targetBand += tuples.length;
+                bandsPerSource[validatedSourceCount] = selected;
+                isIdentity.set(validatedSourceCount, noop);
+                sources[validatedSourceCount++] = source;
+            }
+        }
+        final int n = isIdentity.length();
+        if (n > validatedSourceCount) {
+            isIdentity.clear(validatedSourceCount, n);
+        }
+        return reordered;
     }
 
     /**
@@ -355,7 +454,8 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      * @return whether {@code sources[0]} could be used directly.
      */
     public boolean isIdentity() {
-        return bandsPerSource.length == 1 && bandsPerSource[0] == null;
+        checkValidationState(true);
+        return validatedSourceCount == 1 && isIdentity.cardinality() == 1;
     }
 
     /**
@@ -364,9 +464,48 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      *
      * @return all validated sources.
      */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public S[] sources() {
-        if (validated) return sources;
+        checkValidationState(true);
+        return sources = ArraysExt.resize(sources, validatedSourceCount);
+    }
+
+    /**
+     * Returns the indices of selected bands as (potentially modified)
+     * copies of the arrays argument given to the constructor.
+     *
+     * @param  identityAsNull  whether to use {@code null} elements for meaning "all bands".
+     * @return indices of selected sample dimensions for each source.
+     *         Never null but may contain null elements if {@code identityAsNull} is {@code true}.
+     */
+    public int[][] bandsPerSource(final boolean identityAsNull) {
+        checkValidationState(true);
+        bandsPerSource = ArraysExt.resize(bandsPerSource, validatedSourceCount);
+        if (identityAsNull) {
+            for (int i=0; (i = isIdentity.nextSetBit(i)) >= 0; i++) {
+                bandsPerSource[i] = null;
+            }
+        }
+        return bandsPerSource;
+    }
+
+    /**
+     * Returns the total number of bands.
+     *
+     * @return total number of bands.
+     */
+    public int numBands() {
+        checkValidationState(true);
+        return totalBandCount;
+    }
+
+    /**
+     * Returns the union of all selected bands in all specified sources.
+     * The returned list is modifiable.
+     *
+     * @return all selected sample dimensions.
+     */
+    public List<SampleDimension> ranges() {
+        if (ranges != null) return ranges;
         throw new IllegalStateException();
     }
 
@@ -381,8 +520,9 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      * @todo Current implementation requires that all grid geometry are equal. We need to relax that.
      */
     public GridGeometry domain(final Function<S, GridGeometry> getter) {
+        checkValidationState(true);
         GridGeometry intersection = getter.apply(sources[0]);
-        for (int i=1; i < sources.length; i++) {
+        for (int i=1; i < validatedSourceCount; i++) {
             if (!intersection.equals(getter.apply(sources[i]), ComparisonMode.IGNORE_METADATA)) {
                 throw new IllegalGridGeometryException("Not yet supported on coverages with different grid geometries.");
             }
@@ -392,47 +532,13 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
     }
 
     /**
-     * Returns the union of all selected bands in all specified sources.
-     * The returned list is modifiable.
-     *
-     * @return all selected sample dimensions.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<SampleDimension> ranges() {
-        if (ranges != null) return ranges;
-        throw new IllegalStateException();
-    }
-
-    /**
-     * Returns the total number of bands.
-     *
-     * @return total number of bands.
-     */
-    public int numBands() {
-        if (validated) return numBands;
-        throw new IllegalStateException();
-    }
-
-    /**
-     * Returns the indices of selected bands as (potentially modified)
-     * copies of the arrays argument given to the constructor.
-     *
-     * @return indices of selected sample dimensions for each source.
-     *         Never null but may contain null elements if {@link #identityAsNull()} has been invoked.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public int[][] bandsPerSource() {
-        if (validated) return bandsPerSource;
-        throw new IllegalStateException();
-    }
-
-    /**
      * Returns the index of a source having the same "grid to CRS" transform than the grid geometry
      * returned by {@link #domain(Function)}.
      *
      * @return index of a sources having the same "grid to CRS" than the domain, or -1 if none.
      */
     public int sourceOfGridToCRS() {
+        checkValidationState(true);
         return sourceOfGridToCRS;
     }
 }

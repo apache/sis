@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see Arrays
  *
@@ -1185,6 +1185,91 @@ public final class ArraysExt extends Static {
     }
 
     /**
+     * Returns the concatenation of all given arrays. This method performs the following checks:
+     *
+     * <ul>
+     *   <li>If the {@code arrays} argument is {@code null} or contains only {@code null}
+     *       elements, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the {@code arrays} argument contains exactly one non-null array with
+     *       a length greater than zero, then that array is returned. It is not copied.</li>
+     *   <li>Otherwise a new array with a length equals to the sum of the length of every
+     *       non-null arrays is created, and the content of non-null arrays are appended
+     *       in the new array in declaration order.</li>
+     * </ul>
+     *
+     * @param  <T>     the type of arrays.
+     * @param  arrays  the arrays to concatenate, or {@code null}.
+     * @return the concatenation of all non-null arrays (may be a direct reference to one
+     *         of the given array if it can be returned with no change), or {@code null}.
+     *
+     * @see #append(Object[], Object)
+     * @see #unionOfSorted(int[], int[])
+     */
+    @SafeVarargs
+    public static <T> T[] concatenate(final T[]... arrays) {
+        T[] result = null;
+        if (arrays != null) {
+            int length = 0;
+            for (T[] array : arrays) {
+                if (array != null) {
+                    length += array.length;
+                }
+            }
+            int offset = 0;
+            for (T[] array : arrays) {
+                if (array != null) {
+                    if (result == null) {
+                        if (array.length == length) {
+                            return array;
+                        }
+                        result = Arrays.copyOf(array, length);
+                    } else {
+                        System.arraycopy(array, 0, result, offset, array.length);
+                    }
+                    offset += array.length;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the concatenation of the given arrays.
+     * If any of the supplied arrays is null or empty, then the other array is returned directly (not copied).
+     *
+     * @param  a1  the first array to concatenate, or {@code null}.
+     * @param  a2  the second array to concatenate, or {@code null}.
+     * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
+     *
+     * @since 1.4
+     */
+    public static long[] concatenate(final long[] a1, final long[] a2) {
+        if (a1 == null || a1.length == 0) return a2;
+        if (a2 == null || a2.length == 0) return a1;
+        final long[] copy = Arrays.copyOf(a1, a1.length + a2.length);
+        System.arraycopy(a2, 0, copy, a1.length, a2.length);
+        return copy;
+    }
+
+    /**
+     * Returns the concatenation of the given arrays.
+     * If any of the supplied arrays is null or empty, then the other array is returned directly (not copied).
+     *
+     * @param  a1  the first array to concatenate, or {@code null}.
+     * @param  a2  the second array to concatenate, or {@code null}.
+     * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
+     *
+     * @since 1.4
+     */
+    public static int[] concatenate(final int[] a1, final int[] a2) {
+        if (a1 == null || a1.length == 0) return a2;
+        if (a2 == null || a2.length == 0) return a1;
+        final int[] copy = Arrays.copyOf(a1, a1.length + a2.length);
+        System.arraycopy(a2, 0, copy, a1.length, a2.length);
+        return copy;
+    }
+
+    /**
      * Removes the duplicated elements in the given array. This method should be invoked only for small arrays,
      * typically less than 10 distinct elements. For larger arrays, use {@link java.util.LinkedHashSet} instead.
      *
@@ -2178,55 +2263,6 @@ public final class ArraysExt extends Static {
             }
         }
         return false;
-    }
-
-    /**
-     * Returns the concatenation of all given arrays. This method performs the following checks:
-     *
-     * <ul>
-     *   <li>If the {@code arrays} argument is {@code null} or contains only {@code null}
-     *       elements, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the {@code arrays} argument contains exactly one non-null array with
-     *       a length greater than zero, then that array is returned. It is not copied.</li>
-     *   <li>Otherwise a new array with a length equals to the sum of the length of every
-     *       non-null arrays is created, and the content of non-null arrays are appended
-     *       in the new array in declaration order.</li>
-     * </ul>
-     *
-     * @param  <T>     the type of arrays.
-     * @param  arrays  the arrays to concatenate, or {@code null}.
-     * @return the concatenation of all non-null arrays (may be a direct reference to one
-     *         of the given array if it can be returned with no change), or {@code null}.
-     *
-     * @see #append(Object[], Object)
-     * @see #unionOfSorted(int[], int[])
-     */
-    @SafeVarargs
-    public static <T> T[] concatenate(final T[]... arrays) {
-        T[] result = null;
-        if (arrays != null) {
-            int length = 0;
-            for (T[] array : arrays) {
-                if (array != null) {
-                    length += array.length;
-                }
-            }
-            int offset = 0;
-            for (T[] array : arrays) {
-                if (array != null) {
-                    if (result == null) {
-                        if (array.length == length) {
-                            return array;
-                        }
-                        result = Arrays.copyOf(array, length);
-                    } else {
-                        System.arraycopy(array, 0, result, offset, array.length);
-                    }
-                    offset += array.length;
-                }
-            }
-        }
-        return result;
     }
 
     /**

@@ -714,17 +714,8 @@ public class GridCoverageProcessor implements Cloneable {
      * The {@linkplain GridCoverage#getSampleDimensions() list of sample dimensions} of
      * the aggregated coverage will be the concatenation of the lists of all sources.
      *
-     * <h4>Restrictions</h4>
-     * All coverages shall have compatible domain, defined as below:
-     *
-     * <ul>
-     *   <li>Same CRS.</li>
-     *   <li>Same <cite>grid to CRS</cite> transform except for translation terms.</li>
-     *   <li>Translation terms that differ only by an integer amount of grid cells.</li>
-     * </ul>
-     *
-     * The intersection of the domain of all coverages shall be non-empty,
-     * and all coverages shall use the same data type in their rendered image.
+     * <p>This convenience method delegates to {@link #aggregateRanges(GridCoverage[], int[][])}.
+     * See that method for more information on restrictions.</p>
      *
      * @param  sources  coverages whose ranges shall be aggregated, in order. At least one coverage must be provided.
      * @return the aggregated coverage, or {@code sources[0]} returned directly if only one coverage was supplied.
@@ -742,16 +733,23 @@ public class GridCoverageProcessor implements Cloneable {
     /**
      * Aggregates in a single coverage the specified bands of a sequence of source coverages, in order.
      * This method performs the same work than {@link #aggregateRanges(GridCoverage...)},
-     * but with the possibility to specify the bands to retain in each source coverage.
-     * The {@code bandsPerSource} argument specifies the bands to select in each source coverage.
-     * That array can be {@code null} for selecting all bands in all source coverages,
-     * or may contain {@code null} elements for selecting all bands of the corresponding coverage.
-     * An empty array element (i.e. zero band to select) discards the corresponding source coverage.
-     * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
+     * but with the possibility to specify the sample dimensions to retain in each source coverage.
+     * The {@code bandsPerSource} argument specifies the sample dimensions to keep, in order.
+     * That array can be {@code null} for selecting all sample dimensions in all source coverages,
+     * or may contain {@code null} elements for selecting all sample dimensions of the corresponding coverage.
+     * An empty array element (i.e. zero sample dimension to select) discards the corresponding source coverage.
+     *
+     * <h4>Restrictions</h4>
+     * <ul>
+     *   <li>All coverage shall use the same CRS.</li>
+     *   <li>All coverage shall use the same <cite>grid to CRS</cite> transform except for translation terms.</li>
+     *   <li>Translation terms in <cite>grid to CRS</cite> can differ only by an integer amount of grid cells.</li>
+     *   <li>The intersection of the domain of all coverages shall be non-empty.</li>
+     *   <li>All coverages shall use the same data type in their rendered image.</li>
+     * </ul>
      *
      * @param  sources  coverages whose bands shall be aggregated, in order. At least one coverage must be provided.
-     * @param  bandsPerSource  bands to use for each source coverage, in order.
-     *                  May be {@code null} or may contain {@code null} elements.
+     * @param  bandsPerSource  bands to use for each source coverage, in order. May contain {@code null} elements.
      * @return the aggregated coverage, or one of the sources if it can be used directly.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
@@ -762,7 +760,6 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
         final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
-        aggregate.identityAsNull();
         aggregate.validate(GridCoverage::getSampleDimensions);
         if (aggregate.isIdentity()) {
             return aggregate.sources()[0];

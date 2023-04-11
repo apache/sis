@@ -264,7 +264,7 @@ final class Visualization extends ResampledImage {
                     break;
                 }
             }
-            source = BandSelectImage.create(source, visibleBand);
+            source = BandSelectImage.create(source, true, visibleBand);
             final SampleDimension visibleSD = (sampleDimensions != null && visibleBand < sampleDimensions.length)
                                             ? sampleDimensions[visibleBand] : null;
             /*

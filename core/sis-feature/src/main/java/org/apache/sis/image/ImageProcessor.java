@@ -916,7 +916,7 @@ public class ImageProcessor implements Cloneable {
      */
     public RenderedImage selectBands(final RenderedImage source, final int... bands) {
         ArgumentChecks.ensureNonNull("source", source);
-        return BandSelectImage.create(source, bands.clone());
+        return BandSelectImage.create(source, true, bands.clone());
     }
 
     /**
@@ -926,26 +926,9 @@ public class ImageProcessor implements Cloneable {
      * contain values from the pixels at the same coordinates in all source images.
      * The result image will be bounded by the intersection of all source images.
      *
-     * <p>If all source images are {@link WritableRenderedImage} instances,
-     * then the returned image will also be a {@link WritableRenderedImage}.
-     * In such case values written in the returned image will be copied back
-     * to the source images.</p>
-     *
-     * <h4>Restrictions</h4>
-     * All images shall use the same {@linkplain SampleModel#getDataType() data type},
-     * and all source images shall intersect each other with a non-empty intersection area.
-     * However it is not required that all images have the same bounds or the same tiling scheme.
-     *
-     * <h4>Memory saving</h4>
-     * The returned image may opportunistically share the underlying data arrays of
-     * some source images. Bands are really copied only when sharing is not possible.
-     * The actual strategy may be a mix of both arrays sharing and bands copies.
-     *
-     * <h4>Properties used</h4>
-     * This operation uses the following properties in addition to method parameters:
-     * <ul>
-     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
-     * </ul>
+     * <p>This convenience method delegates to {@link #aggregateBands(RenderedImage[], int[][])}.
+     * See that method for more information on restrictions, writable images, memory saving and
+     * properties used.</p>
      *
      * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
      * @return the aggregated image, or {@code sources[0]} returned directly if only one image was supplied.
@@ -969,17 +952,27 @@ public class ImageProcessor implements Cloneable {
      * An empty array element (i.e. zero band to select) discards the corresponding source image.
      * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
      *
-     * <p>If all source images are {@link WritableRenderedImage} instances,
+     * <h4>Restrictions</h4>
+     * All images shall use the same {@linkplain SampleModel#getDataType() data type},
+     * and all source images shall intersect each other with a non-empty intersection area.
+     * However it is not required that all images have the same bounds or the same tiling scheme.
+     *
+     * <h4>Writable image</h4>
+     * If all source images are {@link WritableRenderedImage} instances,
      * then the returned image will also be a {@link WritableRenderedImage}.
      * In such case values written in the returned image will be copied back
-     * to the source images.</p>
+     * to the source images.
      *
-     * <h4>Restrictions</h4>
-     * <ul>
-     *   <li>All images shall use the same {@linkplain SampleModel#getDataType() data type}.</li>
-     *   <li>All source images shall intersect each other with a non-empty intersection area.</li>
-     *   <li>The same band for a given source image cannot be used twice.</li>
-     * </ul>
+     * <h4>Memory saving</h4>
+     * The returned image may opportunistically share the underlying data arrays of
+     * some source images. Bands are really copied only when sharing is not possible.
+     * The actual strategy may be a mix of both arrays sharing and bands copies.
+     *
+     * <h4>Repeated bands</h4>
+     * For any value of <var>i</var>, the array at {@code bandsPerSource[i]} shall not contain duplicated values.
+     * This restriction is for capturing common errors, in order to reduce the risk of accidental band repetition.
+     * However the same band can be repeated indirectly if the same image is repeated at different values of <var>i</var>.
+     * But even when a source band is referenced many times, all occurrences still share pixel data copied at most once.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
