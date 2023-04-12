@@ -17,7 +17,6 @@
 package org.apache.sis.internal.coverage;
 
 import java.util.List;
-import java.util.BitSet;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -84,14 +83,8 @@ public final class MultiSourceArgument<S> {
     private int[][] bandsPerSource;
 
     /**
-     * Number of bands per source. This array is built by {@code validate(…)} methods.
-     */
-    private int[] numBandsPerSource;
-
-    /**
-     * Whether the bands selection for a given source is an identity operation.
-     * For a source at index <var>i</var>, the bit <var>i</var> is set to 1 if
-     * {@code bandsPerSource[i]} is a sequence selecting all bands in order.
+     * Number of bands for each source source. This information is necessary
+     * for determining whether a selection of bands is an identity operation.
      *
      * <p>This field is initially null and assigned on validation.
      * Consequently this field can also be used for checking whether
@@ -100,7 +93,7 @@ public final class MultiSourceArgument<S> {
      * @see #validate(Function)
      * @see #validate(ToIntFunction)
      */
-    private BitSet isIdentity;
+    private int[] numBandsPerSource;
 
     /**
      * Number of valid elements in {@link #sources} array after empty elements have been removed.
@@ -164,7 +157,6 @@ public final class MultiSourceArgument<S> {
         }
         this.sources        = sources.clone();
         this.bandsPerSource = bandsPerSource;
-        numBandsPerSource   = new int[sources.length];
     }
 
     /**
@@ -174,7 +166,7 @@ public final class MultiSourceArgument<S> {
      *                   {@code false} if the caller expects validation to not be done yet.
      */
     private void checkValidationState(final boolean expected) {
-        if ((isIdentity == null) == expected) {
+        if ((numBandsPerSource == null) == expected) {
             throw new IllegalStateException();
         }
     }
@@ -306,7 +298,7 @@ public final class MultiSourceArgument<S> {
      */
     private void validate(final Function<S, List<SampleDimension>> getter, final ToIntFunction<S> counter) {
         final HashMap<Integer,int[]> identityPool = new HashMap<>();
-        isIdentity = new BitSet();
+        numBandsPerSource = new int[sources.length];
 next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may change during the loop.
             S source;
             int[] selected;
@@ -351,7 +343,6 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
                 }
             }
             if (range.isIdentity()) {
-                isIdentity.set(validatedSourceCount);
                 int[] previous = identityPool.putIfAbsent(numSourceBands, selected);
                 if (previous != null) selected = previous;
             }
@@ -376,13 +367,9 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      * implementations rely on this optimization.
      *
      * @return the bands to specify in a "band select" operation for reconstituting the user-specified band order.
-     *         If all band selections are identity operations, then this method returns {@code null}.
      */
     public int[] mergeDuplicatedSources() {
         checkValidationState(true);
-        if (isIdentity.cardinality() == validatedSourceCount) {
-            return null;
-        }
         /*
          * Merge together the bands of all sources that are repeated.
          * The band indices are stored in 64 bits tuples as below:
@@ -411,7 +398,6 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
             final S      source = sources[i];
             final long[] tuples = mergedBands.remove(source);
             if (tuples != null) {
-                boolean noop = isIdentity.get(i);
                 int[] selected = bandsPerSource[i];
                 if (tuples.length > selected.length) {
                     /*
@@ -422,7 +408,6 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
                      */
                     Arrays.sort(tuples);
                     selected = new int[tuples.length];
-                    noop = (tuples.length == numBandsPerSource[i]) && ArraysExt.isRange(0, selected);
                 }
                 /*
                  * Rewrite the `selected` array with the potentially merged bands.
@@ -436,14 +421,10 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
                     selected[j] = sourceBand;
                 }
                 targetBand += tuples.length;
+                numBandsPerSource[validatedSourceCount] = numBandsPerSource[i];
                 bandsPerSource[validatedSourceCount] = selected;
-                isIdentity.set(validatedSourceCount, noop);
                 sources[validatedSourceCount++] = source;
             }
-        }
-        final int n = isIdentity.length();
-        if (n > validatedSourceCount) {
-            isIdentity.clear(validatedSourceCount, n);
         }
         return reordered;
     }
@@ -455,7 +436,18 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      */
     public boolean isIdentity() {
         checkValidationState(true);
-        return validatedSourceCount == 1 && isIdentity.cardinality() == 1;
+        return validatedSourceCount == 1 && isIdentity(0);
+    }
+
+    /**
+     * Returns {@code true} if the band selection at the specified index is an identity operation.
+     *
+     * @param  i  index of a source.
+     * @return whether band selection for that source is an identity operation.
+     */
+    private boolean isIdentity(final int i) {
+        final int[] selected = bandsPerSource[i];
+        return selected.length == numBandsPerSource[i] && ArraysExt.isRange(0, selected);
     }
 
     /**
@@ -481,8 +473,10 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
         checkValidationState(true);
         bandsPerSource = ArraysExt.resize(bandsPerSource, validatedSourceCount);
         if (identityAsNull) {
-            for (int i=0; (i = isIdentity.nextSetBit(i)) >= 0; i++) {
-                bandsPerSource[i] = null;
+            for (int i=0; i<validatedSourceCount; i++) {
+                if (isIdentity(i)) {
+                    bandsPerSource[i] = null;
+                }
             }
         }
         return bandsPerSource;

@@ -163,10 +163,7 @@ class BandAggregateImage extends MultiSourceImage {
          * If we need to use `BandSelectImage` for reordering bands, the `unwrap` argument
          * MUST be false for avoiding `StackOverflowError` with never-ending recusivity.
          */
-        if (layout.bandSelect != null) {
-            result = BandSelectImage.create(result, false, layout.bandSelect);
-        }
-        return result;
+        return BandSelectImage.create(result, false, layout.bandSelect);
     }
 
     /**

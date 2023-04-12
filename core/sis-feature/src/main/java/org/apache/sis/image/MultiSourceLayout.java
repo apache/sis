@@ -76,7 +76,7 @@ final class MultiSourceLayout extends ImageLayout {
     private final int[][] bandsPerSource;
 
     /**
-     * Final band select operation to apply on the aggregated result, or {@code null} if none.
+     * Final band select operation to apply on the aggregated result.
      */
     final int[] bandSelect;
 
@@ -219,7 +219,7 @@ final class MultiSourceLayout extends ImageLayout {
      *
      * @param  sources            images to combine, in order.
      * @param  bandsPerSource     bands to use for each source image, in order. May contain {@code null} elements.
-     * @param  bandSelect         final band select operation to apply on the aggregated result, or {@code null}.
+     * @param  bandSelect         final band select operation to apply on the aggregated result.
      * @param  domain             bounds of the image to create.
      * @param  preferredTileSize  the preferred tile size.
      * @param  commonDataType     data type of the combined image.
