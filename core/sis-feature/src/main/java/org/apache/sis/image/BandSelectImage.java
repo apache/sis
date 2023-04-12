@@ -33,6 +33,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
 
 
 /**
@@ -153,7 +154,7 @@ class BandSelectImage extends SourceAlignedImage {
                     properties.put(key, value);
                 }
             }
-            image = new BufferedImage(cm,
+            image = new ObservableImage(cm,
                     bi.getRaster().createWritableChild(0, 0, bi.getWidth(), bi.getHeight(), 0, 0, bands),
                     bi.isAlphaPremultiplied(), properties);
         } else if (source instanceof WritableRenderedImage) {

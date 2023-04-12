@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -48,6 +47,7 @@ import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
 import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
@@ -490,7 +490,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
             }
         }
-        return new GridCoverage2D(domain, Arrays.asList(bands), new BufferedImage(cm, data, false, properties));
+        return new GridCoverage2D(domain, Arrays.asList(bands), new ObservableImage(cm, data, false, properties));
     }
 
     /**

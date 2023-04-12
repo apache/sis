@@ -43,6 +43,7 @@ import org.apache.sis.coverage.Category;
 import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
@@ -792,7 +793,7 @@ public class ImageRenderer {
      * The use of a {@link BufferedImage} subclass is desired because Java2D rendering pipeline has optimizations
      * in the form {@code if (image instanceof BufferedImage)}.
      */
-    private static final class Untiled extends BufferedImage {
+    private static final class Untiled extends ObservableImage {
         /**
          * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key,
          * or {@code null} if not yet computed.

@@ -84,7 +84,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public synchronized void addTileObserver(final TileObserver observer) {
-        observers = WriteSupport.addTileObserver(observers, observer);
+        observers = ObservableImage.addTileObserver(observers, observer);
     }
 
     /**
@@ -96,7 +96,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
      */
     @Override
     public synchronized void removeTileObserver(final TileObserver observer) {
-        observers = WriteSupport.removeTileObserver(observers, observer);
+        observers = ObservableImage.removeTileObserver(observers, observer);
     }
 
     /**
@@ -116,7 +116,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             count = writables.merge(key, 1, (old, one) -> old + 1);
         }
         if (count <= 1) {
-            WriteSupport.fireTileUpdate(observers, this, tileX, tileY, true);
+            ObservableImage.fireTileUpdate(observers, this, tileX, tileY, true);
         }
         return tile;
     }
@@ -145,7 +145,7 @@ public class WritableTiledImage extends TiledImage implements WritableRenderedIm
             throw new IllegalArgumentException(Resources.format(Resources.Keys.TileNotWritable_2, tileX, tileY));
         }
         if (close) {
-            WriteSupport.fireTileUpdate(observers, this, tileX, tileY, false);
+            ObservableImage.fireTileUpdate(observers, this, tileX, tileY, false);
         }
     }
 

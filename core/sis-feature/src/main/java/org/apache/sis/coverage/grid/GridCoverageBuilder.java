@@ -37,6 +37,7 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
@@ -489,7 +490,7 @@ public class GridCoverageBuilder {
                 if (raster instanceof WritableRaster) {
                     final WritableRaster wr = (WritableRaster) raster;
                     if (colors != null && (wr.getMinX() | wr.getMinY()) == 0) {
-                        image = new BufferedImage(colors, wr, false, properties);
+                        image = new ObservableImage(colors, wr, false, properties);
                     } else {
                         image = new WritableTiledImage(properties, colors, wr.getWidth(), wr.getHeight(), 0, 0, wr);
                     }
