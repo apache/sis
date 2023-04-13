@@ -36,6 +36,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -89,7 +90,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * and no more addition are in progress.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class CoverageAggregator extends Group<GroupBySample> {
@@ -141,6 +142,8 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * @param  resources  resources to add.
      * @throws DataStoreException if a resource cannot be used.
+     *
+     * @see #add(GridCoverageResource)
      */
     public void addAll(final Stream<? extends GridCoverageResource> resources) throws DataStoreException {
         try {
@@ -153,6 +156,27 @@ public final class CoverageAggregator extends Group<GroupBySample> {
             });
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);
+        }
+    }
+
+    /**
+     * Adds the given coverage. This method can be invoked from any thread.
+     *
+     * @param  coverage  coverage to add.
+     *
+     * @since 1.4
+     */
+    public void add(final GridCoverage coverage) {
+        final GroupBySample bySample = GroupBySample.getOrAdd(members, coverage.getSampleDimensions());
+        final GridSlice slice = new GridSlice(coverage);
+        final List<GridSlice> slices;
+        try {
+            slices = slice.getList(bySample.members, strategy).members;
+        } catch (NoninvertibleTransformException e) {
+            throw new IllegalGridGeometryException(e);
+        }
+        synchronized (slices) {
+            slices.add(slice);
         }
     }
 

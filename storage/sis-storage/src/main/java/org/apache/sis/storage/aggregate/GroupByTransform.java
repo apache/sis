@@ -112,7 +112,7 @@ final class GroupByTransform extends Group<GridSlice> {
     }
 
     /**
-     * Returns dimensions to aggregate, in order of recommendation.
+     * Returns grid dimensions to aggregate, in order of recommendation.
      * Aggregations should use the first dimension in the returned list.
      *
      * @todo A future version should add {@code findMosaicDimensions()}, which should be tested first.

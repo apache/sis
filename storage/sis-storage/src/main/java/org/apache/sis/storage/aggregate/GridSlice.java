@@ -26,8 +26,10 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.util.Numbers;
@@ -42,7 +44,7 @@ import org.apache.sis.util.Numbers;
  * are grouped by "grid to CRS" transform in the {@link GroupByTransform#members} list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 final class GridSlice {
@@ -62,6 +64,17 @@ final class GridSlice {
      * after initialization of {@link #setOffset(MatrixSIS)}.
      */
     private final long[] offset;
+
+    /**
+     * Creates a new slice for the specified coverage.
+     *
+     * @param  slice  coverage associated to this slice.
+     */
+    GridSlice(final GridCoverage slice) {
+        resource = new MemoryGridResource(null, slice);
+        geometry = slice.getGridGeometry();
+        offset   = new long[geometry.getDimension()];
+    }
 
     /**
      * Creates a new slice for the specified resource.

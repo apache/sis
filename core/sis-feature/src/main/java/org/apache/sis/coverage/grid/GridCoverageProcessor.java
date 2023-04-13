@@ -594,6 +594,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.3
      */
     public GridCoverage resample(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
+        ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
     }
@@ -610,6 +611,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage reduceDimensionality(final GridCoverage source) {
+        ArgumentChecks.ensureNonNull("source", source);
         return DimensionalityReduction.reduce(source.getGridGeometry()).apply(source);
     }
 
@@ -654,6 +656,7 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage removeGridDimensions(final GridCoverage source, final int... gridAxesToRemove) {
+        ArgumentChecks.ensureNonNull("source", source);
         var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToRemove);
         reduction.ensureIsSlice();
         return reduction.apply(source);
@@ -704,15 +707,37 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage selectGridDimensions(final GridCoverage source, final int... gridAxesToPass) {
+        ArgumentChecks.ensureNonNull("source", source);
         var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
         reduction.ensureIsSlice();
         return reduction.apply(source);
     }
 
     /**
+     * Selects a subset of sample dimensions (bands) in the given coverage.
+     * This method can also be used for changing sample dimension order or
+     * for repeating the same sample dimension from the source coverage.
+     * If the specified {@code bands} indices select all sample dimensions
+     * in the same order, then {@code source} is returned directly.
+     *
+     * @param  source  the coverage in which to select sample dimensions.
+     * @param  bands   indices of sample dimensions to retain.
+     * @return coverage width selected sample dimensions.
+     * @throws IllegalArgumentException if a sample dimension index is invalid.
+     *
+     * @see ImageProcessor#selectBands(RenderedImage, int...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage selectSampleDimensions(final GridCoverage source, final int... bands) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return aggregateRanges(new GridCoverage[] {source}, new int[][] {bands});
+    }
+
+    /**
      * Aggregates in a single coverage the ranges of all specified coverages, in order.
      * The {@linkplain GridCoverage#getSampleDimensions() list of sample dimensions} of
-     * the aggregated coverage will be the concatenation of the lists of all sources.
+     * the aggregated coverage will be the concatenation of the lists from all sources.
      *
      * <p>This convenience method delegates to {@link #aggregateRanges(GridCoverage[], int[][])}.
      * See that method for more information on restrictions.</p>
