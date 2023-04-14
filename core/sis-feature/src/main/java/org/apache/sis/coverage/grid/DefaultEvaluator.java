@@ -639,7 +639,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
             }
         }
         // Modify fields only after everything else succeeded.
-        position     = new FractionalGridCoordinates.Position(crsToGrid.getTargetDimensions());
+        position    = new FractionalGridCoordinates.Position(crsToGrid.getTargetDimensions());
         inputCRS    = crs;
         inputToGrid = crsToGrid;
     }

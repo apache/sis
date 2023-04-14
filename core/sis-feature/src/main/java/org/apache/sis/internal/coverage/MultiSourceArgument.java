@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
+import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
@@ -32,11 +33,10 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ComparisonMode;
 
 
 /**
- * Helper class for building a list of sample dimensions from aggregated sources.
+ * Helper class for building a combined domain or range from aggregated sources.
  * This helper class is shared for aggregation operations on different sources:
  * rendered images, grid coverages and resources.
  *
@@ -111,6 +111,12 @@ public final class MultiSourceArgument<S> {
      * Union of all selected bands in all specified sources, or {@code null} if not applicable.
      */
     private List<SampleDimension> ranges;
+
+    /**
+     * Translations in units of grid cells to apply for obtaining a grid geometry
+     * compatible with the "grid to CRS" transform of a source.
+     */
+    private long[][] gridTranslations;
 
     /**
      * Index of a source having the same "grid to CRS" transform than the grid geometry
@@ -510,19 +516,28 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
      * @param  getter  the method to invoke for getting grid geometry from a source.
      * @return intersection of all grid geometries.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
-     *
-     * @todo Current implementation requires that all grid geometry are equal. We need to relax that.
      */
     public GridGeometry domain(final Function<S, GridGeometry> getter) {
         checkValidationState(true);
-        GridGeometry intersection = getter.apply(sources[0]);
-        for (int i=1; i < validatedSourceCount; i++) {
-            if (!intersection.equals(getter.apply(sources[i]), ComparisonMode.IGNORE_METADATA)) {
-                throw new IllegalGridGeometryException("Not yet supported on coverages with different grid geometries.");
-            }
-        }
-        sourceOfGridToCRS = 0;      // TODO: to be computed when different grid geometries will be allowed. Prefer widest extent.
-        return intersection;
+        final var finder = new CommonDomainFinder(PixelInCell.CELL_CORNER);
+        finder.setFromGridAligned(Arrays.stream(sources).map(getter).toArray(GridGeometry[]::new));
+        sourceOfGridToCRS = finder.sourceOfGridToCRS();
+        gridTranslations  = finder.gridTranslations();
+        return finder.result();
+    }
+
+    /**
+     * Returns the translations in units of grid cells to apply for obtaining a grid geometry
+     * compatible with the "grid to CRS" transform of a source.
+     *
+     * <p>The returned array should not be modified because it is not cloned.</p>
+     *
+     * @return translations from the common grid geometry to all items. This array is not cloned.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    public long[][] gridTranslations() {
+        checkValidationState(true);
+        return gridTranslations;
     }
 
     /**

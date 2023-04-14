@@ -124,6 +124,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.TranslatedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
     org.apache.sis.coverage.grid.DimensionalityReductionTest.class,
+    org.apache.sis.coverage.grid.BandAggregateGridCoverageTest.class,
 
     // Index and processing
     org.apache.sis.index.tree.PointTreeNodeTest.class,

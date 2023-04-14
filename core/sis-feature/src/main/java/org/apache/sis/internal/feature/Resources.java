@@ -257,6 +257,11 @@ public final class Resources extends IndexedResourceBundle {
         public static final short IncompatibleColorModel = 82;
 
         /**
+         * At least two coverages have mutually incompatible grid geometries.
+         */
+        public static final short IncompatibleGridGeometries = 87;
+
+        /**
          * The ({0}, {1}) tile has an unexpected size, number of bands or sample layout.
          */
         public static final short IncompatibleTile_2 = 35;

@@ -51,7 +51,7 @@ final class GroupByTransform extends Group<GridSlice> {
     private final GridGeometry geometry;
 
     /**
-     * Value or {@code geometry.getGridToCRS(PixelInCell.CELL_CORNER)}.
+     * Value of {@code geometry.getGridToCRS(GridSlice.CELL_ANCHOR)}.
      * All {@linkplain #members} of this group use this transform,
      * possibly with integer differences in translation terms.
      */
@@ -68,7 +68,7 @@ final class GroupByTransform extends Group<GridSlice> {
      * Creates a new group of objects associated to the given transform.
      *
      * @param  geometry   geometry of the grid coverage or resource.
-     * @param  gridToCRS  value or {@code geometry.getGridToCRS(PixelInCell.CELL_CORNER)}.
+     * @param  gridToCRS  value of {@code geometry.getGridToCRS(GridSlice.CELL_ANCHOR)}.
      * @param  strategy   algorithm to apply when more than one grid coverage can be found at the same grid index.
      */
     GroupByTransform(final GridGeometry geometry, final MathTransform gridToCRS, final MergeStrategy strategy) {

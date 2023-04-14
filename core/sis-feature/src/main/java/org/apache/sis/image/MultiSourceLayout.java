@@ -34,6 +34,7 @@ import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.MultiSourceArgument;
+import org.apache.sis.internal.coverage.CommonDomainFinder;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 
 
@@ -174,12 +175,18 @@ final class MultiSourceLayout extends ImageLayout {
                 }
                 /*
                  * Get the domain of the combined image to create.
-                 * TODO: current implementation computes the intersection of all sources.
-                 * But a future version should allow users to specify if they want intersection,
-                 * union or strict mode instead. A "strict" mode would prevent the combination of
-                 * images using different domains (i.e. raise an error if domains are not the same).
+                 * Current implementation computes the intersection of all sources.
                  */
-                ImageUtilities.clipBounds(source, domain);
+                if (CommonDomainFinder.INTERSECTION) {
+                    ImageUtilities.clipBounds(source, domain);
+                } else if (!domain.equals(ImageUtilities.getBounds(source))) {
+                    /*
+                     * TODO: a future version should allow users to specify if they want intersection,
+                     * union or strict mode instead. A "strict" mode would prevent the combination of
+                     * images using different domains (i.e. raise an error if domains are not the same).
+                     */
+                    throw new IllegalArgumentException();
+                }
                 if (domain.isEmpty()) {
                     throw new DisjointExtentException(Resources.format(Resources.Keys.SourceImagesDoNotIntersect));
                 }

@@ -1724,18 +1724,18 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         ArgumentChecks.ensureNonNull("translation", translation);
         final int m = getDimension();
         final int length = Math.min(m, translation.length);
-        if (!isZero(translation, length)) {
-            final GridExtent translated = new GridExtent(this);
-            final long[] c = translated.coordinates;
-            for (int i=0; i < length; i++) {
-                final int  j = i + m;
-                final long t = translation[i];
-                c[i] = Math.addExact(c[i], t);
-                c[j] = Math.addExact(c[j], t);
-            }
-            return translated;
+        if (isZero(translation, length)) {
+            return this;
         }
-        return this;
+        final GridExtent translated = new GridExtent(this);
+        final long[] c = translated.coordinates;
+        for (int i=0; i < length; i++) {
+            final int  j = i + m;
+            final long t = translation[i];
+            c[i] = Math.addExact(c[i], t);
+            c[j] = Math.addExact(c[j], t);
+        }
+        return translated;
     }
 
     /**

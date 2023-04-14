@@ -65,6 +65,12 @@ final class BandAggregateGridCoverage extends GridCoverage {
     private final int numBands;
 
     /**
+     * Translations in units of grid cells to apply on an extent of this grid coverage
+     * for getting a "grid to CRS" transform compatible with each source.
+     */
+    private final long[][] gridTranslations;
+
+    /**
      * Index of a sources having the same "grid to CRS" than this grid coverage, or -1 if none.
      */
     private final int sourceOfGridToCRS;
@@ -94,6 +100,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
         this.sources           = aggregate.sources();
         this.bandsPerSource    = aggregate.bandsPerSource(true);
         this.numBands          = aggregate.numBands();
+        this.gridTranslations  = aggregate.gridTranslations();
         this.sourceOfGridToCRS = aggregate.sourceOfGridToCRS();
         this.processor         = processor;
         this.dataType          = sources[0].getBandType();
@@ -138,7 +145,7 @@ final class BandAggregateGridCoverage extends GridCoverage {
         }
         final RenderedImage[] images = new RenderedImage[sources.length];
         for (int i=0; i<images.length; i++) {
-            images[i] = sources[i].render(sliceExtent);
+            images[i] = sources[i].render(sliceExtent.translate(gridTranslations[i]));
         }
         return processor.aggregateBands(images, bandsPerSource);
     }
