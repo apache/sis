@@ -24,6 +24,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -72,10 +73,11 @@ final class GridSlice {
     /**
      * Creates a new slice for the specified coverage.
      *
-     * @param  slice  coverage associated to this slice.
+     * @param  parent  listeners of the parent resource, or {@code null} if none.
+     * @param  slice   coverage associated to this slice.
      */
-    GridSlice(final GridCoverage slice) {
-        resource = new MemoryGridResource(null, slice);
+    GridSlice(final StoreListeners parent, final GridCoverage slice) {
+        resource = new MemoryGridResource(parent, slice);
         geometry = slice.getGridGeometry();
         offset   = new long[geometry.getDimension()];
     }

@@ -28,7 +28,7 @@ import static org.junit.Assert.*;
  * Tests {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class CoverageAggregatorTest extends TestCase {
@@ -39,7 +39,7 @@ public final class CoverageAggregatorTest extends TestCase {
      */
     @Test
     public void testEmpty() throws DataStoreException {
-        final var aggregator = new CoverageAggregator(null);
-        assertTrue(((Aggregate) aggregator.build()).components().isEmpty());
+        final var aggregator = new CoverageAggregator();
+        assertTrue(((Aggregate) aggregator.build(null)).components().isEmpty());
     }
 }

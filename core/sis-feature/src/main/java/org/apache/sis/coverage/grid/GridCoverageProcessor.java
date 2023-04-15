@@ -773,7 +773,7 @@ public class GridCoverageProcessor implements Cloneable {
      *   <li>All coverages shall use the same data type in their rendered image.</li>
      * </ul>
      *
-     * Some of those restrictions may be relaxed in future versions.
+     * Some of those restrictions may be relaxed in future Apache SIS versions.
      *
      * @param  sources  coverages whose bands shall be aggregated, in order. At least one coverage must be provided.
      * @param  bandsPerSource  bands to use for each source coverage, in order. May contain {@code null} elements.

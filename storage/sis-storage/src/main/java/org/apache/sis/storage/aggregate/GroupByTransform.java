@@ -78,7 +78,7 @@ final class GroupByTransform extends Group<GridSlice> {
     }
 
     /**
-     * Returns a name for this group.
+     * Creates a name for this group for use in metadata (not a persistent identifier).
      * This is used as the resource name if an aggregated resource needs to be created.
      * Current implementation assumes that the main reason why many groups may exist is
      * that they differ by their resolution.

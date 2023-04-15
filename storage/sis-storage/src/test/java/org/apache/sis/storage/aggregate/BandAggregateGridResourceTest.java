@@ -68,6 +68,18 @@ public final class BandAggregateGridResourceTest extends TestCase {
     }
 
     /**
+     * Creates a new aggregation of all sample dimensions of all specified grid coverage resources.
+     * The new resource has no identifier and no parent, and uses a default processor with default color model.
+     *
+     * @param  sources  resources whose bands shall be aggregated, in order. At least one resource must be provided.
+     * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     */
+    private static BandAggregateGridResource create(final GridCoverageResource... sources) throws DataStoreException {
+        return new BandAggregateGridResource(null, sources, null, null);
+    }
+
+    /**
      * Tests aggregation of two resources having one band each.
      * All source coverages share the same grid geometry.
      *
@@ -77,7 +89,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
     public void aggregateBandsFromSingleBandSources() throws DataStoreException {
         final GridCoverageResource first  = singleValuePerBand(17);
         final GridCoverageResource second = singleValuePerBand(23);
-        final var aggregation = new BandAggregateGridResource(first, second);
+        final var aggregation = create(first, second);
 
         assertAllPixelsEqual(aggregation.read(null), 17, 23);
         assertAllPixelsEqual(aggregation.read(null, 0), 17);
@@ -96,7 +108,7 @@ public final class BandAggregateGridResourceTest extends TestCase {
         final GridCoverageResource thirdAndFourthBands = singleValuePerBand(103, 104);
         final GridCoverageResource fifthAndSixthBands  = singleValuePerBand(105, 106);
 
-        var aggregation = new BandAggregateGridResource(firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands);
+        var aggregation = create(firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands);
         aggregation.getIdentifier().ifPresent(name -> fail("No name provided at creation, but one was returned: " + name));
         assertAllPixelsEqual(aggregation.read(null), 101, 102, 103, 104, 105, 106);
         assertAllPixelsEqual(aggregation.read(null, 1, 2, 4, 5), 102, 103, 105, 106);
@@ -106,10 +118,11 @@ public final class BandAggregateGridResourceTest extends TestCase {
          * In addition, band order in one of the 3 coverages is modified.
          */
         final LocalName testName = Names.createLocalName(null, null, "test-name");
-        aggregation = new BandAggregateGridResource(null, testName,
+        aggregation = new BandAggregateGridResource(null,
                 new GridCoverageResource[] {firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands},
                 new int[][] {null, new int[] {1, 0}, new int[] {1}}, null);
 
+        aggregation.setIdentifier(testName);
         assertEquals(testName, aggregation.getIdentifier().orElse(null));
         assertAllPixelsEqual(aggregation.read(null), 101, 102, 104, 103, 106);
         assertAllPixelsEqual(aggregation.read(null, 2, 4), 104, 106);

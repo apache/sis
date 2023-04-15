@@ -58,11 +58,11 @@ abstract class Group<E> {
     }
 
     /**
-     * Creates a name for this group.
+     * Creates a name for this group for use in metadata (not a persistent identifier).
      * This is used as the resource name if an aggregated resource needs to be created.
      *
      * @param  locale  the locale for the name to return, or {@code null} for the default.
-     * @return a name which can be used as aggregation name.
+     * @return a name which can be used as aggregation name for metadata purposes.
      */
     abstract String createName(Locale locale);
 

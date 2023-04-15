@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.TransformException;
@@ -55,7 +56,14 @@ import org.apache.sis.util.ArraysExt;
  */
 final class ConcatenatedGridResource extends AbstractGridCoverageResource implements AggregatedResource {
     /**
-     * Name of this resource.
+     * The identifier for this aggregate, or {@code null} if none.
+     * This is optionally supplied by users for their own purposes.
+     * There is no default value.
+     */
+    private GenericName identifier;
+
+    /**
+     * Name of this resource to use in metadata.
      */
     private String name;
 
@@ -198,6 +206,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
 
     /**
      * Returns a coverage with the same data than this coverage but a different merge strategy.
+     * This is the implementation of {@link MergeStrategy#apply(Resource)} public method.
      */
     @Override
     public final synchronized Resource apply(final MergeStrategy s) {
@@ -212,6 +221,24 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     @Override
     public void setName(final String name) {
         this.name = name;
+    }
+
+    /**
+     * Sets the identifier of this resource.
+     */
+    @Override
+    public void setIdentifier(final GenericName identifier) {
+        this.identifier = identifier;
+    }
+
+
+    /**
+     * Returns the resource persistent identifier as specified by the
+     * user in {@link CoverageAggregator}. There is no default value.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(identifier);
     }
 
     /**

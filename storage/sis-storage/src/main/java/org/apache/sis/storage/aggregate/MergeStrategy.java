@@ -32,14 +32,15 @@ import org.apache.sis.internal.util.Strings;
  * A merge may happen if an aggregated coverage is created with {@link CoverageAggregator},
  * and the extent of some source coverages are overlapping in the dimension to aggregate.
  *
- * <div class="note"><b>Example:</b>
- * a collection of {@link GridCoverage} instances may represent the same phenomenon
+ * <h2>Example</h2>
+ * A collection of {@link GridCoverage} instances may represent the same phenomenon
  * (for example Sea Surface Temperature) over the same geographic area but at different dates and times.
  * {@link CoverageAggregator} can be used for building a single data cube with a time axis.
  * But if two coverages have overlapping time ranges, and if a user request data in the overlapping region,
  * then the aggregated coverages have more than one source coverages capable to provide the requested data.
- * This enumeration specify how to handle this multiplicity.</div>
+ * This enumeration specify how to handle this multiplicity.
  *
+ * <h2>Default behavior</h2>
  * If no merge strategy is specified, then the default behavior is to throw
  * {@link SubspaceNotSpecifiedException} when the {@link GridCoverage#render(GridExtent)} method
  * is invoked and more than one source coverage (slice) is found for a specified grid index.

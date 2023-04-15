@@ -27,7 +27,9 @@ import java.util.IdentityHashMap;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
@@ -36,6 +38,7 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.coverage.grid.GridCoverage;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -43,12 +46,19 @@ import org.apache.sis.util.collection.BackingStoreException;
 
 /**
  * Creates a grid coverage resource from an aggregation of an arbitrary number of other resources.
+ * This class accepts heterogeneous resources (a <cite>data lake</cite>), organizes them in a tree
+ * of resources as described in the next section, then performs different kinds of aggregation:
  *
- * <div class="note"><b>Example:</b>
- * a collection of {@link GridCoverage} instances may represent the same phenomenon
- * (for example Sea Surface Temperature) over the same geographic area but at different dates and times.
- * {@link CoverageAggregator} can be used for building a single data cube with a time axis.</div>
+ * <ul class="verbose">
+ *   <li><b>Creation of a data cube from a collection of slices:</b>
+ *     If a collection of {@link GridCoverageResource} instances represent the same phenomenon
+ *     (for example Sea Surface Temperature) over the same geographic area but at different dates and times.
+ *     {@code CoverageAggregator} can be used for building a single data cube with a time axis.</li>
+ *   <li><b>Aggregation of bands:</b>
+ *     Resources having different sample dimensions can be combined in a single resource.</li>
+ * </ul>
  *
+ * <h2>Generated resource tree</h2>
  * All source coverages should share the same CRS and have the same ranges (sample dimensions).
  * If this is not the case, then the source coverages will be grouped in different aggregates
  * with an uniform CRS and set of ranges in each sub-aggregates.
@@ -100,7 +110,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     private final StoreListeners listeners;
 
     /**
-     * The aggregates which where the sources of components added during a call to {@link #addComponents(Aggregate)}.
+     * The aggregates which were the sources of components added during a call to {@link #addComponents(Aggregate)}.
      * This is used for reusing existing aggregates instead of {@link GroupAggregate} when the content is the same.
      */
     private final Map<Set<Resource>, Queue<Aggregate>> aggregates;
@@ -114,6 +124,23 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     private volatile MergeStrategy strategy;
 
     /**
+     * The processor to use for creating grid coverages. Created only when first needed.
+     * This is used for specifying the color model when creating band aggregated resources.
+     *
+     * @see #processor()
+     */
+    private GridCoverageProcessor processor;
+
+    /**
+     * Creates an initially empty aggregator with no listeners and a default grid coverage processor.
+     *
+     * @since 1.4
+     */
+    public CoverageAggregator() {
+        this(null);
+    }
+
+    /**
      * Creates an initially empty aggregator.
      *
      * @param listeners  listeners of the parent resource, or {@code null} if none.
@@ -125,8 +152,9 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
-     * Returns a name of the aggregate to be created.
+     * Creates a name for this group for use in metadata (not a persistent identifier).
      * This is used only if this aggregator find resources having different sample dimensions.
+     * In such case, this name will be the default name of the root resource.
      *
      * @param  locale  the locale for the name to return, or {@code null} for the default.
      * @return a name which can be used as aggregation name, or {@code null} if none.
@@ -134,29 +162,6 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     @Override
     final String createName(final Locale locale) {
         return (listeners != null) ? listeners.getSourceName() : null;
-    }
-
-    /**
-     * Adds all grid resources provided by the given stream. This method can be invoked from any thread.
-     * It delegates to {@link #add(GridCoverageResource)} for each element in the stream.
-     *
-     * @param  resources  resources to add.
-     * @throws DataStoreException if a resource cannot be used.
-     *
-     * @see #add(GridCoverageResource)
-     */
-    public void addAll(final Stream<? extends GridCoverageResource> resources) throws DataStoreException {
-        try {
-            resources.forEach((resource) -> {
-                try {
-                    add(resource);
-                } catch (DataStoreException e) {
-                    throw new BackingStoreException(e);
-                }
-            });
-        } catch (BackingStoreException e) {
-            throw e.unwrapOrRethrow(DataStoreException.class);
-        }
     }
 
     /**
@@ -168,7 +173,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      */
     public void add(final GridCoverage coverage) {
         final GroupBySample bySample = GroupBySample.getOrAdd(members, coverage.getSampleDimensions());
-        final GridSlice slice = new GridSlice(coverage);
+        final GridSlice slice = new GridSlice(listeners, coverage);
         final List<GridSlice> slices;
         try {
             slices = slice.getList(bySample.members, strategy).members;
@@ -183,6 +188,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     /**
      * Adds the given resource. This method can be invoked from any thread.
      * This method does <em>not</em> recursively decomposes an {@link Aggregate} into its component.
+     * If such decomposition is desired, see {@link #addComponents(Aggregate)} instead.
      *
      * @param  resource  resource to add.
      * @throws DataStoreException if the resource cannot be used.
@@ -226,12 +232,12 @@ public final class CoverageAggregator extends Group<GroupBySample> {
                 hasDuplicated = true;       // Should never happen, but we are paranoiac.
             }
         }
+        /*
+         * Remember the aggregate that we just added. If after the user finished to add all components,
+         * we discover that we still have the exact same set of components than the given aggregate,
+         * then we will use `resource` instead of creating a `GroupAggregate` with the same content.
+         */
         if (!(hasDuplicated || components.isEmpty())) {
-            /*
-             * We should not have 2 aggregates with the same components.
-             * But if it happens anyway, put the aggregates in a queue.
-             * Each aggregate will be used at most once.
-             */
             synchronized (aggregates) {
                 aggregates.computeIfAbsent(components, (k) -> new ArrayDeque<>(1)).add(resource);
             }
@@ -261,6 +267,95 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
+     * Adds all grid resources provided by the given stream. This method can be invoked from any thread.
+     * It delegates to {@link #add(GridCoverageResource)} for each element in the stream.
+     * {@link Aggregate} instances are added as-is (not decomposed in their components).
+     *
+     * @param  resources  resources to add.
+     * @throws DataStoreException if a resource cannot be used.
+     *
+     * @see #add(GridCoverageResource)
+     */
+    public void addAll(final Stream<? extends GridCoverageResource> resources) throws DataStoreException {
+        try {
+            resources.forEach((resource) -> {
+                try {
+                    add(resource);
+                } catch (DataStoreException e) {
+                    throw new BackingStoreException(e);
+                }
+            });
+        } catch (BackingStoreException e) {
+            throw e.unwrapOrRethrow(DataStoreException.class);
+        }
+    }
+
+    /**
+     * Adds a resource whose range is the aggregation of the ranges of a sequence of resources.
+     * This method combines homogeneous grid coverage resources by "stacking" their sample dimensions (bands).
+     * The grid geometry is typically the same for all resources, but some variations described below are allowed.
+     * The number of sample dimensions in the aggregated coverage is the sum of the number of sample dimensions in
+     * each individual resource, unless a subset of sample dimensions is specified.
+     *
+     * <p>The {@code bandsPerSource} argument specifies the bands to select in each resource.
+     * That array can be {@code null} for selecting all bands in all resources,
+     * or may contain {@code null} elements for selecting all bands of the corresponding resource.
+     * An empty array element (i.e. zero band to select) discards the corresponding resource.</p>
+     *
+     * <h4>Restrictions</h4>
+     * <ul>
+     *   <li>All resources shall use the same coordinate reference system (CRS).</li>
+     *   <li>All resources shall have the same {@linkplain GridCoverageResource#getGridGeometry() domain}, except
+     *       for the grid extent and the translation terms which can vary by integer numbers of grid cells.</li>
+     *   <li>All grid extents shall intersect and the intersection area shall be non-empty.</li>
+     *   <li>If coverage data are stored in {@link java.awt.image.RenderedImage} instances,
+     *       then all images shall use the same data type.</li>
+     * </ul>
+     *
+     * Some of those restrictions may be relaxed in future Apache SIS versions.
+     *
+     * @param  sources         resources whose bands shall be aggregated, in order. At least one resource must be provided.
+     * @param  bandsPerSource  sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
+     * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
+     *
+     * @see #getColorizer()
+     * @see GridCoverageProcessor#aggregateRanges(GridCoverage[], int[][])
+     *
+     * @since 1.4
+     */
+    public void addRangeAggregate(final GridCoverageResource[] sources, final int[][] bandsPerSource) throws DataStoreException {
+        add(new BandAggregateGridResource(listeners, sources, bandsPerSource, processor()));
+    }
+
+    /**
+     * Returns the colorization algorithm to apply on computed images.
+     * This algorithm is used for all resources added by {@link #addRangeAggregate(GridCoverageResource[], int[][])},
+     *
+     * @return colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @since 1.4
+     */
+    public Colorizer getColorizer() {
+        return processor().getColorizer();
+    }
+
+    /**
+     * Sets the colorization algorithm to apply on computed images.
+     * This algorithm applies to all resources added by {@link #addRangeAggregate(GridCoverageResource[], int[][])},
+     * including resources already added before this method is invoked.
+     * If this method is never invoked, the default value is {@code null}.
+     *
+     * @param  colorizer  colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @since 1.4
+     */
+    public void setColorizer(final Colorizer colorizer) {
+        processor().setColorizer(colorizer);
+    }
+
+    /**
      * Returns the algorithm to apply when more than one grid coverage can be found at the same grid index.
      * This is the most recent value set by a call to {@link #setMergeStrategy(MergeStrategy)},
      * or {@code null} if no strategy has been specified. In the latter case,
@@ -277,7 +372,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * Sets the algorithm to apply when more than one grid coverage can be found at the same grid index.
      * The new strategy applies to the <em>next</em> coverages to be added;
      * previously added coverage may or may not be impacted by this change (see below).
-     * Consequently, this method should usually be invoked before to add the first coverage.
+     * For avoiding hard-to-predict behavior, this method should be invoked before to add the first coverage.
      *
      * <h4>Effect on previously added coverages</h4>
      * The merge strategy of previously added coverages is not modified by this method call, except
@@ -285,7 +380,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * (data cube) than a coverage added after this method call.
      * In such case, the strategy set by this call to {@code setMergeStrategy(…)} prevails.
      * Said otherwise, the merge strategy of a data cube is the strategy which was active
-     * at the time of the most recently added slice.
+     * at the time of the most recently added slice for that data cube.
      *
      * @param  strategy  new algorithm to apply for merging source coverages at the same grid index,
      *                   or {@code null} if none.
@@ -295,19 +390,50 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
+     * Returns the processor to use for creating grid coverages.
+     */
+    private synchronized GridCoverageProcessor processor() {
+        if (processor == null) {
+            processor = new GridCoverageProcessor();
+        }
+        return processor;
+    }
+
+    /**
      * Builds a resource which is the aggregation or concatenation of all components added to this aggregator.
      * The returned resource will be an instance of {@link GridCoverageResource} if possible,
      * or an instance of {@link Aggregate} if some heterogeneity in grid geometries or sample dimensions
-     * prevent the concatenation of all coverages in a single resource.
+     * prevents the concatenation of all coverages in a single resource.
      *
-     * <p>This method is not thread safe. If the {@code add(…)} and {@code addAll(…)} methods were invoked
-     * in background threads, then all additions must be finished before this method is invoked.</p>
+     * <p>An identifier can optionally be specified for the resource.
+     * This identifier will be used if this method creates an aggregated or concatenated resource,
+     * but it will be ignored if this method returns directly one of the resource specified to the
+     * {@code add(…)} methods.</p>
      *
+     * <h4>Multi-threading</h4>
+     * If the {@code add(…)} and {@code addAll(…)} methods were invoked in background threads,
+     * then all additions must be finished before this method is invoked.
+     *
+     * @param  identifier  identifier to assign to the aggregated resource, or {@code null} if none.
      * @return the aggregation or concatenation of all components added to this aggregator.
+     *
+     * @since 1.4
      */
-    public Resource build() {
+    public synchronized Resource build(final GenericName identifier) {
         final GroupAggregate aggregate = prepareAggregate(listeners);
         aggregate.fillWithChildAggregates(this, GroupBySample::createComponents);
-        return aggregate.simplify(this);
+        final Resource result = aggregate.simplify(this);
+        if (result instanceof AggregatedResource) {
+            ((AggregatedResource) result).setIdentifier(identifier);
+        }
+        return result;
+    }
+
+    /**
+     * @deprecated Replaced by {@link #build(GenericName)}.
+     */
+    @Deprecated
+    public Resource build() {
+        return build(null);
     }
 }

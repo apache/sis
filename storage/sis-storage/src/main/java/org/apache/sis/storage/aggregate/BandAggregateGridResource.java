@@ -33,6 +33,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -40,7 +41,7 @@ import org.apache.sis.util.collection.BackingStoreException;
 
 /**
  * A resource whose range is the aggregation of the ranges of a sequence of resources.
- * This class combines homogeneous {@link GridCoverageResource}s by "stacking" their bands.
+ * This class combines homogeneous {@link GridCoverageResource}s by "stacking" their sample dimensions.
  * The grid geometry is typically the same for all resources, but some variations described below are allowed.
  * The number of sample dimensions in the aggregated coverage is the sum of the number of sample dimensions in
  * each individual resource, unless a subset of sample dimensions is specified.
@@ -49,7 +50,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * <ul>
  *   <li>All resources shall use the same coordinate reference system (CRS).</li>
  *   <li>All resources shall have the same {@linkplain GridCoverageResource#getGridGeometry() domain}, except
- *       for the grid extent and the translation terms which can vary by integer amounts of grid cells.</li>
+ *       for the grid extent and the translation terms which can vary by integer numbers of grid cells.</li>
  *   <li>All grid extents shall intersect and the intersection area shall be non-empty.</li>
  *   <li>If coverage data are stored in {@link java.awt.image.RenderedImage} instances,
  *       then all images shall use the same data type.</li>
@@ -59,17 +60,17 @@ import org.apache.sis.util.collection.BackingStoreException;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
- * @see GridCoverageProcessor#aggregateRanges(GridCoverage[], int[][])
+ * @see CoverageAggregator#addRangeAggregate(GridCoverageResource[], int[][])
  *
  * @since 1.4
  */
-public class BandAggregateGridResource extends AbstractGridCoverageResource {
+final class BandAggregateGridResource extends AbstractGridCoverageResource implements AggregatedResource {
     /**
-     * Identifier of this resource.
+     * Persistent identifier of this resource, or {@code null} if none.
      *
      * @see #getIdentifier()
      */
-    private final GenericName name;
+    private GenericName identifier;
 
     /**
      * The source grid coverage resources.
@@ -114,18 +115,6 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
     private final GridCoverageProcessor processor;
 
     /**
-     * Creates a new aggregation of all sample dimensions of all specified grid coverage resources.
-     * The new resource has no name and no parent, and use a default processor with default color model.
-     *
-     * @param  sources  resources whose bands shall be aggregated, in order. At least one resource must be provided.
-     * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
-     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
-     */
-    public BandAggregateGridResource(final GridCoverageResource... sources) throws DataStoreException {
-        this(null, null, sources, null, null);
-    }
-
-    /**
      * Creates a new range aggregation of grid coverage resources.
      * The {@linkplain #getSampleDimensions() list of sample dimensions} of the aggregated resource
      * will be the concatenation of the lists of all sources, or a subset of this concatenation.
@@ -147,24 +136,22 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
      * The intersection of the domain of all resources shall be non-empty,
      * and all resources shall use the same data type in their rendered image.
      *
-     * @param  parent          the parent resource, or {@code null} if none.
-     * @param  name            name of the combined grid coverage resource, or {@code null} if none.
-     * @param  sources         resources whose bands shall be aggregated, in order. At least one resource must be provided.
-     * @param  bandsPerSource  sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
-     * @param  processor       the processor to use for creating grid coverages, or {@code null} for a default processor.
+     * @param  parentListeners  listeners of the parent resource, or {@code null} if none.
+     * @param  sources          resources whose bands shall be aggregated, in order. At least one resource must be provided.
+     * @param  bandsPerSource   sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
+     * @param  processor        the processor to use for creating grid coverages, or {@code null} for a default processor.
      * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
      */
-    public BandAggregateGridResource(final Resource parent, final GenericName name,
+    BandAggregateGridResource(final StoreListeners parentListeners,
             final GridCoverageResource[] sources, final int[][] bandsPerSource,
             final GridCoverageProcessor processor) throws DataStoreException
     {
-        super(parent);
+        super(parentListeners, false);
         try {
             final var aggregate = new MultiSourceArgument<GridCoverageResource>(sources, bandsPerSource);
             aggregate.validate(BandAggregateGridResource::range);
-            this.name             = name;
             this.sources          = aggregate.sources();
             this.gridGeometry     = aggregate.domain(BandAggregateGridResource::domain);
             this.sampleDimensions = List.copyOf(aggregate.ranges());
@@ -199,16 +186,32 @@ public class BandAggregateGridResource extends AbstractGridCoverageResource {
         }
     }
 
+    /** Not applicable to this implementation. */
+    @Override public Resource apply(MergeStrategy strategy) {return this;}
+
+    /** Not applicable to this implementation. */
+    @Override public void setName(String name) {}
+
+    /**
+     * Sets the identifier of this resource. This is invoked by {@link CoverageAggregator} only
+     * and should not be invoked anymore after this resource has been returned to the user.
+     *
+     * @param  identifier  identifier of the combined grid coverage resource, or {@code null} if none.
+     */
+    @Override
+    public void setIdentifier(final GenericName identifier) {
+        this.identifier = identifier;
+    }
+
     /**
      * Returns the resource identifier if available.
-     * This is the name specified at construction time.
      *
      * @return an identifier for the band aggregation.
      * @throws DataStoreException if the identifier cannot be obtained.
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.ofNullable(name);
+        return Optional.ofNullable(identifier);
     }
 
     /**
