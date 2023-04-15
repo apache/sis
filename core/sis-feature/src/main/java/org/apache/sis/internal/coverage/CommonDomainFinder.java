@@ -155,6 +155,7 @@ public final class CommonDomainFinder {
          * having the same origin. This criterion is arbitrary and may change in future version.
          */
         GridGeometry fallback = null;
+        GridExtent   location = null;
         for (final Map.Entry<GridGeometry,long[]> entry : gridTranslations.entrySet()) {
             final GridGeometry item   = entry.getKey();
             final GridExtent actual   = item.getExtent();
@@ -164,16 +165,19 @@ public final class CommonDomainFinder {
                 reference = item;
                 return;
             }
-            if (fallback == null && extent.getLow().equals(item.getExtent().getLow())) {
+            // Arbitrary criterion (may be revisited in any future version).
+            if (fallback == null && expected.getLow().equals(actual.getLow())) {
+                location = expected;
                 fallback = item;
             }
         }
         if (fallback == null) {
             fallback = reference;
+            location = extent;
         }
         setGridToCRS(items, fallback);
         try {
-            reference = fallback.relocate(extent);
+            reference = fallback.relocate(location);
         } catch (TransformException e) {
             throw new IllegalGridGeometryException(Resources.format(Resources.Keys.IncompatibleGridGeometries), e);
         }

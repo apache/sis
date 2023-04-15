@@ -75,7 +75,7 @@ public final class BandAggregateGridCoverageTest extends TestCase {
      * coordinates are different. The intersection is not equal to any source extent.
      */
     @Test
-    public void testNoCommonGridGeometry() {
+    public void testDifferentExtent() {
         final GridCoverage c1 = createCoverage(-2, 4, 3, -1, 100, 200);
         final GridCoverage c2 = createCoverage(-1, 3, 3, -1, 300);
         final GridCoverage cr = processor.aggregateRanges(c1, c2);
@@ -85,6 +85,38 @@ public final class BandAggregateGridCoverageTest extends TestCase {
         assertEquals(extent(-1, 4, 1, 5), extent);
         assertEquals(3, cr.getSampleDimensions().size());
         assertPixelsEqual(cr, 101, 201, 303, 102, 202, 304);
+    }
+
+    /**
+     * Tests aggregation with two coverages having equivalent extent but different "grid to CRS".
+     * This test indirectly verifies that the {@link BandAggregateGridCoverage#gridTranslations}
+     * array is correctly computed and used.
+     */
+    @Test
+    public void testDifferentGridToCRS() {
+        final GridCoverage c1 = createCoverage(-2, 4, 3, -1, 100, 200);
+        final GridCoverage c2 = createCoverage(-1, 2, 2, +1, 300);
+        final GridCoverage cr = processor.aggregateRanges(c1, c2);
+        assertEquals   (c1.getGridGeometry(), cr.getGridGeometry());
+        assertNotEquals(c2.getGridGeometry(), cr.getGridGeometry());
+        assertEquals   (3, cr.getSampleDimensions().size());
+        assertPixelsEqual(cr, 100, 200, 300, 101, 201, 301, 102, 202, 302,
+                              103, 203, 303, 104, 204, 304, 105, 205, 305);
+    }
+
+    /**
+     * Tests aggregation with two coverages having a translation in both grid extents and "grid to CRS" transforms.
+     */
+    @Test
+    public void testDifferentExtentAndGridToCRS() {
+        final GridCoverage c1 = createCoverage(-2, 4, 3, -1, 100, 200);
+        final GridCoverage c2 = createCoverage( 0, 2, 2, +1, 300);
+        final GridCoverage cr = processor.aggregateRanges(c1, c2);
+        assertNotEquals(c1.getGridGeometry(), cr.getGridGeometry());
+        assertNotEquals(c2.getGridGeometry(), cr.getGridGeometry());
+        assertEquals   (3, cr.getSampleDimensions().size());
+        assertPixelsEqual(cr, 101, 201, 300, 102, 202, 301,
+                              104, 204, 303, 105, 205, 304);
     }
 
     /**
