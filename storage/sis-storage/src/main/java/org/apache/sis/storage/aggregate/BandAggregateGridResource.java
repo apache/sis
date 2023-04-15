@@ -151,6 +151,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
         super(parentListeners, false);
         try {
             final var aggregate = new MultiSourceArgument<GridCoverageResource>(sources, bandsPerSource);
+            aggregate.unwrap(BandAggregateGridResource::unwrap);
             aggregate.validate(BandAggregateGridResource::range);
             this.sources          = aggregate.sources();
             this.gridGeometry     = aggregate.domain(BandAggregateGridResource::domain);
@@ -183,6 +184,20 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
             return source.getSampleDimensions();
         } catch (DataStoreException e) {
             throw new BackingStoreException(e);
+        }
+    }
+
+    /**
+     * Returns potentially deeper sources than the user supplied coverage resource.
+     * This method unwraps {@link BandAggregateGridResource} for making possible to detect that
+     * two consecutive resources are actually the same resource, with only different bands selected.
+     *
+     * @param  unwrapper  a handler where to supply the result of an aggregate decomposition.
+     */
+    private static void unwrap(final MultiSourceArgument<GridCoverageResource>.Unwrapper unwrapper) {
+        if (unwrapper.source instanceof BandAggregateGridResource) {
+            final var aggregate = (BandAggregateGridResource) unwrapper.source;
+            unwrapper.applySubset(aggregate.sources, aggregate.bandsPerSource, BandAggregateGridResource::range);
         }
     }
 

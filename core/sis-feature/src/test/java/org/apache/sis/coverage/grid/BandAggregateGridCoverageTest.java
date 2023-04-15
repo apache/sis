@@ -120,6 +120,20 @@ public final class BandAggregateGridCoverageTest extends TestCase {
     }
 
     /**
+     * Tests aggregation of two coverages where one of them is itself another aggregation.
+     */
+    @Test
+    public void testNestedAggregation() {
+        final GridCoverage c1 = createCoverage(-2, 4, 3, -1, 100, 200);
+        final GridCoverage c2 = createCoverage( 0, 2, 2, +1, 300);
+        final GridCoverage c3 = createCoverage(-2, 4, 3, -1, 400);
+        final GridCoverage cr = processor.aggregateRanges(
+                                processor.aggregateRanges(c1, c2), c3);
+        assertPixelsEqual(cr, 101, 201, 300, 401, 102, 202, 301, 402,
+                              104, 204, 303, 404, 105, 205, 304, 405);
+    }
+
+    /**
      * Returns a two-dimensional grid extents with the given bounding box.
      * The maximal coordinates are exclusive.
      */

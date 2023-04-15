@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToIntFunction;
+import java.lang.reflect.Array;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -241,6 +242,51 @@ public final class MultiSourceArgument<S> {
             this.index  = index;
             this.source = source;
             this.bands  = bands;
+        }
+
+        /**
+         * Invoke {@code apply(…)} with components that are a subset of an existing aggregate.
+         * This is a helper method for decomposing an aggregate into its component.
+         *
+         * @param sources         all sources of the aggregate to decompose.
+         * @param bandsPerSource  selected bands of the aggregate to decompose. May contain null elements.
+         * @param getter          same getter as {@link #validate(Function)}, used for getting the number of bands.
+         */
+        public void applySubset(final S[] sources, final int[][] bandsPerSource,
+                                final Function<S, List<SampleDimension>> getter)
+        {
+            @SuppressWarnings("unchecked")
+            final S[] components = (S[]) Array.newInstance(sources.getClass().getComponentType(), bands.length);
+            final int[][] componentBands = new int[bands.length][];
+
+            int   sourceIndex = -1;
+            int[] sourceBands = null;       // Value of `bandsPerSource[sourceIndex]`.
+            S     component   = null;       // Value of `sources[sourceIndex]` potentially used as component.
+            int   lower=0, upper=0;         // Range of band indices in which `component` is valid.
+            for (int i=0; i<bands.length; i++) {
+                int band = bands[i];
+                if (band < lower) {
+                    lower = upper = 0;
+                    sourceIndex = -1;
+                }
+                while (band >= upper) {
+                    component   = sources[++sourceIndex];
+                    sourceBands = bandsPerSource[sourceIndex];
+                    lower       = upper;
+                    upper      += (sourceBands != null) ? sourceBands.length : getter.apply(component).size();
+                }
+                band -= lower;
+                if (sourceBands != null) {
+                    band = sourceBands[band];
+                }
+                componentBands[i] = new int[] {band};
+                components[i] = component;
+            }
+            /*
+             * Tne same component may be repeated many times in the `sources` array, each time with only one band specified.
+             * We rely on the encloding class post-processing for merging multiple references to a single one for each source.
+             */
+            apply(components, componentBands);
         }
 
         /**

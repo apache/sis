@@ -114,6 +114,20 @@ final class BandAggregateGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns potentially deeper sources than the user supplied coverage.
+     * This method unwraps {@link BandAggregateGridCoverage} for making possible to detect that
+     * two consecutive coverages are actually the same coverage, with only different bands selected.
+     *
+     * @param  unwrapper  a handler where to supply the result of an aggregate decomposition.
+     */
+    static void unwrap(final MultiSourceArgument<GridCoverage>.Unwrapper unwrapper) {
+        if (unwrapper.source instanceof BandAggregateGridCoverage) {
+            final var aggregate = (BandAggregateGridCoverage) unwrapper.source;
+            unwrapper.applySubset(aggregate.sources, aggregate.bandsPerSource, GridCoverage::getSampleDimensions);
+        }
+    }
+
+    /**
      * Returns the data type identifying the primitive type used for storing sample values in each band.
      */
     @Override

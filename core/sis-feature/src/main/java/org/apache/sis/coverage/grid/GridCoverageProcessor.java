@@ -276,23 +276,24 @@ public class GridCoverageProcessor implements Cloneable {
          * Allows the replacement of an operation by a more efficient one.
          * This optimization is enabled by default.
          *
-         * <div class="note"><b>Example:</b>
-         * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
+         * <h4>Example</h4>
+         * If the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
          * that cause the resampling to be a translation of the grid by an integer amount of cells, then by default
          * {@link GridCoverageProcessor} will use the {@link #shiftGrid(GridCoverage, long[]) shiftGrid(…)}
-         * algorithm instead. This option can be cleared for forcing a full resampling operation in all cases.</div>
+         * algorithm instead. This option can be cleared for forcing a full resampling operation in all cases.
          */
         REPLACE_OPERATION,
 
         /**
          * Allows the replacement of source parameter by a more fundamental source.
+         * This replacement may change the results, but usually with better accuracy.
          * This optimization is enabled by default.
          *
-         * <div class="note"><b>Example:</b>
-         * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with a source
+         * <h4>Example</h4>
+         * If the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with a source
          * grid coverage which is itself the result of a previous resampling, then instead of resampling an
          * already resampled coverage, by default {@link GridCoverageProcessor} will resample the original
-         * coverage. This option can be cleared for disabling that replacement.</div>
+         * coverage. This option can be cleared for disabling that replacement.
          */
         REPLACE_SOURCE
     }
@@ -787,6 +788,7 @@ public class GridCoverageProcessor implements Cloneable {
      */
     public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
         final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
+        aggregate.unwrap(BandAggregateGridCoverage::unwrap);
         aggregate.validate(GridCoverage::getSampleDimensions);
         if (aggregate.isIdentity()) {
             return aggregate.sources()[0];
