@@ -30,6 +30,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.BufferedGridCoverage;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
@@ -60,9 +61,15 @@ public final class BandAggregateGridResourceTest extends TestCase {
     private final GridGeometry domain;
 
     /**
+     * The processor to give to {@link BandAggregateGridResource} constructor.
+     */
+    private final GridCoverageProcessor processor;
+
+    /**
      * Creates a new test case.
      */
     public BandAggregateGridResourceTest() {
+        processor = new GridCoverageProcessor();
         domain = new GridGeometry(new GridExtent(WIDTH, HEIGHT), PixelInCell.CELL_CENTER,
                                   MathTransforms.identity(2), HardCodedCRS.WGS84);
     }
@@ -75,8 +82,8 @@ public final class BandAggregateGridResourceTest extends TestCase {
      * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      */
-    private static BandAggregateGridResource create(final GridCoverageResource... sources) throws DataStoreException {
-        return new BandAggregateGridResource(null, sources, null, null);
+    private BandAggregateGridResource create(final GridCoverageResource... sources) throws DataStoreException {
+        return new BandAggregateGridResource(null, sources, null, processor);
     }
 
     /**
@@ -120,12 +127,33 @@ public final class BandAggregateGridResourceTest extends TestCase {
         final LocalName testName = Names.createLocalName(null, null, "test-name");
         aggregation = new BandAggregateGridResource(null,
                 new GridCoverageResource[] {firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands},
-                new int[][] {null, new int[] {1, 0}, new int[] {1}}, null);
+                new int[][] {null, new int[] {1, 0}, new int[] {1}}, processor);
 
         aggregation.setIdentifier(testName);
         assertEquals(testName, aggregation.getIdentifier().orElse(null));
         assertAllPixelsEqual(aggregation.read(null), 101, 102, 104, 103, 106);
         assertAllPixelsEqual(aggregation.read(null, 2, 4), 104, 106);
+    }
+
+    /**
+     * Tests aggregation of resources using {@link CoverageAggregator}.
+     *
+     * @throws DataStoreException if an error occurred while reading a resource.
+     */
+    @Test
+    public void usingCoverageAggregator() throws DataStoreException {
+        final GridCoverageResource first  = singleValuePerBand(17);
+        final GridCoverageResource second = singleValuePerBand(23);
+        final var aggregator = new CoverageAggregator(null, processor);
+        aggregator.addRangeAggregate(first, second);
+        /*
+         * If the result is not an instance of `MemoryGridResource`,
+         * this is a bug in `BandAggregateGridResource.create(…)`.
+         */
+        final var aggregation = (MemoryGridResource) aggregator.build(null);
+        assertAllPixelsEqual(aggregation.read(null), 17, 23);
+        assertAllPixelsEqual(aggregation.read(null, 0), 17);
+        assertAllPixelsEqual(aggregation.read(null, 1), 23);
     }
 
     /**

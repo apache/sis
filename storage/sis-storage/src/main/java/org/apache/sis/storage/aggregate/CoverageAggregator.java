@@ -132,7 +132,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     private GridCoverageProcessor processor;
 
     /**
-     * Creates an initially empty aggregator with no listeners and a default grid coverage processor.
+     * Creates an initially empty aggregator with no listeners.
      *
      * @since 1.4
      */
@@ -141,7 +141,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     }
 
     /**
-     * Creates an initially empty aggregator.
+     * Creates an initially empty aggregator with the given listeners.
      *
      * @param listeners  listeners of the parent resource, or {@code null} if none.
      *        This is usually the listeners of the {@link org.apache.sis.storage.DataStore}.
@@ -149,6 +149,18 @@ public final class CoverageAggregator extends Group<GroupBySample> {
     public CoverageAggregator(final StoreListeners listeners) {
         this.listeners = listeners;
         aggregates = new HashMap<>();
+    }
+
+    /**
+     * Creates an initially empty aggregator with the given listeners and coverage processor.
+     *
+     * @param listeners  listeners of the parent resource, or {@code null} if none.
+     * @param processor  the processor to use if an operation needs to be applied on coverages,
+     *                   or {@code null} for a default processor.
+     */
+    CoverageAggregator(final StoreListeners listeners, final GridCoverageProcessor processor) {
+        this(listeners);
+        this.processor = processor;
     }
 
     /**
@@ -295,12 +307,32 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * This method combines homogeneous grid coverage resources by "stacking" their sample dimensions (bands).
      * The grid geometry is typically the same for all resources, but some variations described below are allowed.
      * The number of sample dimensions in the aggregated coverage is the sum of the number of sample dimensions in
-     * each individual resource, unless a subset of sample dimensions is specified.
+     * each individual resource.
      *
-     * <p>The {@code bandsPerSource} argument specifies the bands to select in each resource.
-     * That array can be {@code null} for selecting all bands in all resources,
-     * or may contain {@code null} elements for selecting all bands of the corresponding resource.
-     * An empty array element (i.e. zero band to select) discards the corresponding resource.</p>
+     * <p>This convenience method delegates to {@link #addRangeAggregate(GridCoverageResource[], int[][])}.
+     * See that method for more information on restrictions.</p>
+     *
+     * @param  sources  resources whose bands shall be aggregated, in order.
+     * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     *
+     * @see #getColorizer()
+     * @see GridCoverageProcessor#aggregateRanges(GridCoverage...)
+     *
+     * @since 1.4
+     */
+    public void addRangeAggregate(final GridCoverageResource... sources) throws DataStoreException {
+        addRangeAggregate(sources, (int[][]) null);
+    }
+
+    /**
+     * Adds a resource whose range is the aggregation of the specified bands of a sequence of resources.
+     * This method performs the same work than {@link #addRangeAggregate(GridCoverageResource...)},
+     * but with the possibility to specify the sample dimensions to retain in each source coverage.
+     * The {@code bandsPerSource} argument specifies the sample dimensions to keep, in order.
+     * That array can be {@code null} for selecting all sample dimensions in all source coverages,
+     * or may contain {@code null} elements for selecting all sample dimensions of the corresponding coverage.
+     * An empty array element (i.e. zero sample dimension to select) discards the corresponding source coverage.
      *
      * <h4>Restrictions</h4>
      * <ul>
@@ -314,7 +346,7 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      *
      * Some of those restrictions may be relaxed in future Apache SIS versions.
      *
-     * @param  sources         resources whose bands shall be aggregated, in order. At least one resource must be provided.
+     * @param  sources         resources whose bands shall be aggregated, in order.
      * @param  bandsPerSource  sample dimensions for each source. May be {@code null} or may contain {@code null} elements.
      * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
@@ -326,7 +358,9 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.4
      */
     public void addRangeAggregate(final GridCoverageResource[] sources, final int[][] bandsPerSource) throws DataStoreException {
-        add(new BandAggregateGridResource(listeners, sources, bandsPerSource, processor()));
+        if (sources.length != 0) {
+            add(BandAggregateGridResource.create(listeners, sources, bandsPerSource, processor()));
+        }
     }
 
     /**
