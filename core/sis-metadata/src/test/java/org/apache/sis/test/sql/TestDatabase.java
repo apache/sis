@@ -26,6 +26,7 @@ import java.sql.SQLDataException;
 import org.postgresql.PGProperty;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.apache.derby.jdbc.EmbeddedDataSource;
+import org.apache.sis.internal.metadata.sql.Dialect;
 import org.apache.sis.internal.metadata.sql.LocalDataSource;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.test.TestCase;
@@ -62,7 +63,7 @@ import static org.junit.Assume.assumeTrue;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 public class TestDatabase implements AutoCloseable {
@@ -89,10 +90,17 @@ public class TestDatabase implements AutoCloseable {
     public final DataSource source;
 
     /**
+     * The SQL flavor used by the database, or {@code ANSI} if unspecified.
+     * May be used for identifying the database software.
+     */
+    public final Dialect dialect;
+
+    /**
      * Creates a new test database for the given data source.
      */
-    private TestDatabase(final DataSource source) {
-        this.source = source;
+    private TestDatabase(final DataSource source, final Dialect dialect) {
+        this.source  = source;
+        this.dialect = dialect;
     }
 
     /**
@@ -107,13 +115,13 @@ public class TestDatabase implements AutoCloseable {
      */
     public static TestDatabase create(final String name) throws SQLException {
         if (TEST_DATABASE != null) {
-            return new TestDatabase(TEST_DATABASE);
+            return new TestDatabase(TEST_DATABASE, Dialect.ANSI);
         }
         final EmbeddedDataSource ds = new EmbeddedDataSource();
         ds.setDatabaseName("memory:" + name);
         ds.setDataSourceName("Apache SIS test database");
         ds.setCreateDatabase("create");
-        return new TestDatabase(ds) {
+        return new TestDatabase(ds, Dialect.DERBY) {
             @Override public void close() throws SQLException {
                 final EmbeddedDataSource ds = (EmbeddedDataSource) source;
                 ds.setCreateDatabase("no");
@@ -157,7 +165,7 @@ public class TestDatabase implements AutoCloseable {
             ds = simple;
             pool = null;
         }
-        return new TestDatabase(ds) {
+        return new TestDatabase(ds, Dialect.HSQL) {
             @Override public void close() throws SQLException {
                 try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
                     s.execute("SHUTDOWN");
@@ -186,7 +194,7 @@ public class TestDatabase implements AutoCloseable {
         final String url = "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1";
         final org.h2.jdbcx.JdbcDataSource ds = new org.h2.jdbcx.JdbcDataSource();
         ds.setURL(url);
-        return new TestDatabase(ds) {
+        return new TestDatabase(ds, Dialect.ANSI) {
             @Override public void close() throws SQLException {
                 try (Connection c = ds.getConnection(); Statement s = c.createStatement()) {
                     s.execute("SHUTDOWN");
@@ -250,7 +258,7 @@ public class TestDatabase implements AutoCloseable {
             assumeFalse("This test needs a PostgreSQL database named \"" + NAME + "\".", "3D000".equals(state));
             throw e;
         }
-        return new TestDatabase(ds) {
+        return new TestDatabase(ds, Dialect.POSTGRESQL) {
             @Override public void close() throws SQLException {
                 final PGSimpleDataSource ds = (PGSimpleDataSource) source;
                 try (Connection c = ds.getConnection()) {

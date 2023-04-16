@@ -120,7 +120,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * @since 0.4
      */
     public static Version valueOf(final int... components) {
-        ArgumentChecks.ensureNonEmpty("components", components, Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+        ArgumentChecks.ensureNonEmptyBounded("components", false, Integer.MIN_VALUE, Integer.MAX_VALUE, components);
         final Version version;
         final int major = components[0];
         if (components.length == 1) {

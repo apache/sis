@@ -24,9 +24,9 @@ import org.apache.sis.util.ArgumentChecks;
  * A view over the low or high grid envelope coordinates.
  * This is not a general-purpose grid coordinates since it assumes a {@link GridExtent} coordinates layout.
  *
- * <div class="note"><b>Upcoming API generalization:</b>
+ * <h2>Upcoming API generalization</h2>
  * this class may implement the {@code GridCoordinates} interface in a future Apache SIS version.
- * This is pending GeoAPI update.</div>
+ * This is pending GeoAPI update.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

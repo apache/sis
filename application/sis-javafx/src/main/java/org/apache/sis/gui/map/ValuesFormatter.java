@@ -42,6 +42,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.logging.Logging;
+import org.apache.sis.internal.util.Numerics;
 
 import static org.apache.sis.internal.gui.LogHandler.LOGGER;
 
@@ -165,13 +166,13 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         evaluator = coverage.forConvertedValues(true).evaluator();
         evaluator.setNullIfOutside(true);
         evaluator.setWraparoundEnabled(true);
-        selectedBands = new BitSet();
         if (inherit != null) {
             // Same configuration than previous coverage.
             synchronized (inherit.buffer) {
                 units         = inherit.units;
                 nodata        = inherit.nodata;
                 outsideText   = inherit.outsideText;
+                selectedBands = inherit.selectedBands;
                 sampleFormats = inherit.sampleFormats.clone();
                 for (int i=0; i < sampleFormats.length; i++) {
                     sampleFormats[i] = (NumberFormat) sampleFormats[i].clone();
@@ -183,6 +184,8 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         sampleFormats = new NumberFormat[numBands];
         units         = new String[numBands];
         nodata        = new HashMap<>();
+        selectedBands = new BitSet();
+        selectedBands.set(0, (numBands <= 3) ? numBands : 1, true);
         /*
          * Loop below initializes number formats and unit symbols for all bands, regardless
          * if selected or not. We do that on the assumption that the same format and symbol
@@ -471,7 +474,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
      *         or does not use a supported bits pattern.
      */
     private static Long toNodataKey(final int band, final float value) {
-        return (((long) MathFunctions.toNanOrdinal(value)) << Integer.SIZE) | band;
+        return Numerics.tuple(MathFunctions.toNanOrdinal(value), band);
     }
 
     /**

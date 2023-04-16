@@ -27,7 +27,6 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.PackedColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
-import java.awt.image.RasterFormatException;
 import java.awt.image.SampleModel;
 import java.awt.image.SinglePixelPackedSampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
@@ -42,7 +41,6 @@ import org.apache.sis.util.resources.Vocabulary;
 import static java.lang.Math.abs;
 import static java.lang.Math.rint;
 import static java.lang.Math.floorDiv;
-import static java.lang.Math.addExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
 import static org.apache.sis.internal.util.Numerics.COMPARISON_THRESHOLD;
@@ -71,16 +69,6 @@ public final class ImageUtilities extends Static {
      */
     @Configuration
     public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
-
-    /**
-     * Approximate size of the buffer to use for copying data from/to a raster, in bits.
-     * The actual buffer size may be smaller or larger, depending on the actual tile size.
-     * This value does not need to be very large. The current value is 8 kb.
-     *
-     * @see #prepareTransferRegion(Rectangle, int)
-     */
-    @Configuration
-    private static final int BUFFER_SIZE = 32 * DEFAULT_TILE_SIZE * Byte.SIZE;
 
     /**
      * The logger for operations on images and rasters.
@@ -148,8 +136,8 @@ public final class ImageUtilities extends Static {
 
     /**
      * If the given image is showing only one band, returns the index of that band.
-     * Otherwise returns 0. Image showing only one band are SIS-specific (usually an
-     * image show all its bands).
+     * Otherwise returns -1. Image showing only one band are SIS-specific
+     * (usually an image shows all its bands).
      *
      * @param  image  the image for which to get the visible band, or {@code null}.
      * @return index of the visible band, or -1 if there is none or more than one.
@@ -168,7 +156,7 @@ public final class ImageUtilities extends Static {
             }
             final SampleModel sm = image.getSampleModel();
             if (sm != null && sm.getNumBands() == 1) {           // Should never be null, but we are paranoiac.
-                return 0;
+                return ColorModelFactory.DEFAULT_VISIBLE_BAND;
             }
         }
         return -1;
@@ -416,7 +404,7 @@ public final class ImageUtilities extends Static {
     }
 
     /**
-     * Returns {@code true} if the given sample model use an integer type.
+     * Returns {@code true} if the given sample model uses an integer type.
      * Returns {@code false} if the type is a floating point type or in case
      * of doubt (e.g. for {@link DataBuffer#TYPE_UNDEFINED}).
      *
@@ -498,9 +486,16 @@ public final class ImageUtilities extends Static {
     /**
      * Converts a <var>x</var> pixel coordinates to a tile index.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
+     * but Apache SIS tries to handle the most general cases when possible.
+     *
      * @param  image  the image containing tiles.
      * @param  x      the pixel coordinate for which to get tile index.
      * @return tile index for the given pixel coordinate.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int pixelToTileX(final RenderedImage image, final int x) {
         return toIntExact(floorDiv((x - (long) image.getTileGridXOffset()), image.getTileWidth()));
@@ -508,10 +503,12 @@ public final class ImageUtilities extends Static {
 
     /**
      * Converts a <var>y</var> pixel coordinates to a tile index.
+     * See {@link #pixelToTileX(RenderedImage, int)} for an implementation note.
      *
      * @param  image  the image containing tiles.
      * @param  y      the pixel coordinate for which to get tile index.
      * @return tile index for the given pixel coordinate.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int pixelToTileY(final RenderedImage image, final int y) {
         return toIntExact(floorDiv((y - (long) image.getTileGridYOffset()), image.getTileHeight()));
@@ -521,9 +518,16 @@ public final class ImageUtilities extends Static {
      * Converts a tile column index to smallest <var>x</var> pixel coordinate inside the tile.
      * The returned value is a coordinate of the pixel in upper-left corner.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
+     * but Apache SIS tries to handle the most general cases when possible.
+     *
      * @param  image  the image containing tiles.
      * @param  tileX  the tile index for which to get pixel coordinate.
      * @return smallest <var>x</var> pixel coordinate inside the tile.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int tileToPixelX(final RenderedImage image, final int tileX) {
         // Following `long` arithmetic never overflows even if all values are `Integer.MAX_VALUE`.
@@ -533,10 +537,12 @@ public final class ImageUtilities extends Static {
     /**
      * Converts a tile row index to smallest <var>y</var> pixel coordinate inside the tile.
      * The returned value is a coordinate of the pixel in upper-left corner.
+     * See {@link #tileToPixelX(RenderedImage, int)} for an implementation note.
      *
      * @param  image  the image containing tiles.
      * @param  tileY  the tile index for which to get pixel coordinate.
      * @return smallest <var>y</var> pixel coordinate inside the tile.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static int tileToPixelY(final RenderedImage image, final int tileY) {
         return toIntExact(multiplyFull(tileY, image.getTileHeight()) + image.getTileGridYOffset());
@@ -546,9 +552,15 @@ public final class ImageUtilities extends Static {
      * Converts pixel coordinates to pixel indices.
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * The intend is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
+     *
      * @param  image   the image containing tiles.
      * @param  pixels  the pixel coordinates for which to get tile indices.
      * @return tile indices that fully contain the pixel coordinates.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle pixelsToTiles(final RenderedImage image, final Rectangle pixels) {
         final Rectangle r = new Rectangle();
@@ -574,9 +586,15 @@ public final class ImageUtilities extends Static {
      * Tiles will be fully included in the returned range of pixel indices.
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
+     * <h4>Implementation note</h4>
+     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * values because the former does not assume that image coordinates start at the beginning of first tile.
+     * The intend is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
+     *
      * @param  image  the image containing tiles.
      * @param  tiles  the tile indices for which to get pixel coordinates.
      * @return pixel coordinates that fully contain the tiles.
+     * @throws ArithmeticException if the result overflows 32 bits integer.
      */
     public static Rectangle tilesToPixels(final RenderedImage image, final Rectangle tiles) {
         final Rectangle r = new Rectangle();
@@ -592,34 +610,6 @@ public final class ImageUtilities extends Static {
             r.height = toIntExact(((((long) tiles.y) + tiles.height) * size) + offset - r.y);
         }
         return r;
-    }
-
-    /**
-     * Suggests the height of a transfer region for a tile of the given size. The given region should be
-     * contained inside {@link Raster#getBounds()}. This method modifies {@link Rectangle#height} in-place.
-     * The {@link Rectangle#width} value is never modified, so caller can iterate on all raster rows without
-     * the need to check if the row is incomplete.
-     *
-     * @param  bounds    on input, the region of interest. On output, the suggested transfer region bounds.
-     * @param  dataType  one of {@link DataBuffer} constant. It is okay if an unknown constant is used since
-     *                   this information is used only as a hint for adjusting the {@link #BUFFER_SIZE} value.
-     * @return the maximum <var>y</var> value plus 1. This can be used as stop condition for iterating over rows.
-     * @throws ArithmeticException if the maximum <var>y</var> value overflows 32 bits integer capacity.
-     * @throws RasterFormatException if the given bounds is empty.
-     */
-    public static int prepareTransferRegion(final Rectangle bounds, final int dataType) {
-        if (bounds.isEmpty()) {
-            throw new RasterFormatException(Resources.format(Resources.Keys.EmptyTileOrImageRegion));
-        }
-        final int afterLastRow = addExact(bounds.y, bounds.height);
-        int size;
-        try {
-            size = DataBuffer.getDataTypeSize(dataType);
-        } catch (IllegalArgumentException e) {
-            size = Short.SIZE;  // Arbitrary value is okay because this is only a hint for choosing a buffer size.
-        }
-        bounds.height = Math.max(1, Math.min(BUFFER_SIZE / (size * bounds.width), bounds.height));
-        return afterLastRow;
     }
 
     /**

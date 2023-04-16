@@ -105,11 +105,11 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromPixelCorner() {
-        final long[]         low     = new long[] {100, 300, 3, 6};
-        final long[]         high    = new long[] {200, 400, 4, 7};
-        final GridExtent    extent   = new GridExtent(null, low, high, true);
-        final MathTransform identity = MathTransforms.identity(4);
-        final GridGeometry  grid     = new GridGeometry(extent, PixelInCell.CELL_CORNER, identity, null);
+        final long[] low   = new long[] {100, 300, 3, 6};
+        final long[] high  = new long[] {200, 400, 4, 7};
+        final var extent   = new GridExtent(null, low, high, true);
+        final var identity = MathTransforms.identity(4);
+        final var grid     = new GridGeometry(extent, PixelInCell.CELL_CORNER, identity, null);
         /*
          * Verify properties that should be stored "as-is".
          */
@@ -150,11 +150,11 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromPixelCenter() {
-        final long[]        low      = new long[] { 0,   0, 2};
-        final long[]        high     = new long[] {99, 199, 4};
-        final GridExtent    extent   = new GridExtent(null, low, high, true);
-        final MathTransform identity = MathTransforms.identity(3);
-        final GridGeometry  grid     = new GridGeometry(extent, PixelInCell.CELL_CENTER, identity, null);
+        final long[] low   = new long[] { 0,   0, 2};
+        final long[] high  = new long[] {99, 199, 4};
+        final var extent   = new GridExtent(null, low, high, true);
+        final var identity = MathTransforms.identity(3);
+        final var grid     = new GridGeometry(extent, PixelInCell.CELL_CENTER, identity, null);
         /*
          * Verify properties that should be stored "as-is".
          */
@@ -196,11 +196,11 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testFromOtherDefinedAtCorner() throws TransformException {
-        long[]        low       = new long[] {  1,   3, 2};
-        long[]        high      = new long[] {101, 203, 4};
-        GridExtent    extent    = new GridExtent(null, low, high, false);
-        MathTransform gridToCRS = MathTransforms.translation(5, 7, 8);
-        GridGeometry  grid      = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, null);
+        long[] low    = new long[] {  1,   3, 2};
+        long[] high   = new long[] {101, 203, 4};
+        var extent    = new GridExtent(null, low, high, false);
+        var gridToCRS = MathTransforms.translation(5, 7, 8);
+        var grid      = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, null);
 
         low    = new long[] { 11,  35, 20};
         high   = new long[] {120, 250, 39};
@@ -258,14 +258,14 @@ public final class GridGeometryTest extends TestCase {
      */
     @Test
     public void testShifted() {
-        final long[]        low      = new long[] {100, 300};
-        final long[]        high     = new long[] {200, 400};
-        final GridExtent    extent   = new GridExtent(null, low, high, true);
-        final MathTransform identity = MathTransforms.linear(new Matrix3(
+        final long[] low    = new long[] {100, 300};
+        final long[] high   = new long[] {200, 400};
+        final var extent    = new GridExtent(null, low, high, true);
+        final var gridToCRS = MathTransforms.linear(new Matrix3(
                 1, 0, 0.5,
                 0, 1, 0.5,
                 0, 0, 1));
-        final GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, identity, null);
+        final GridGeometry grid = new GridGeometry(extent, PixelInCell.CELL_CENTER, gridToCRS, null);
         assertTrue("gridToCRS.isIdentity", grid.getGridToCRS(PixelInCell.CELL_CORNER).isIdentity());
         verifyGridToCRS(grid);
     }

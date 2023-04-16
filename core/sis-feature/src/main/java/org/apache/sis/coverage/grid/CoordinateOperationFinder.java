@@ -233,10 +233,11 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
     }
 
     /**
-     * Verifies whether the presence of a CRS considered mandatory, unless the CRS of opposite grid
-     * is also missing.
+     * Verifies the presence of a CRS considered mandatory,
+     * unless the CRS of the opposite grid is also missing.
      *
      * @param  rs  {@code true} is source CRS is mandatory, {@code false} if target CRS is mandatory.
+     * @throws IncompleteGridGeometryException if a mandatory CRS is missing.
      */
     final void verifyPresenceOfCRS(final boolean rs) {
         if ((rs ? target : source).isDefined(GridGeometry.CRS)) {

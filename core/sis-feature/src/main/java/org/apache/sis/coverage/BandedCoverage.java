@@ -137,7 +137,14 @@ public abstract class BandedCoverage {
     public interface Evaluator extends Function<DirectPosition, double[]> {
         /**
          * Returns the coverage from which this evaluator is computing sample values.
-         * This is the coverage on which the {@link BandedCoverage#evaluator()} method has been invoked.
+         * This is <em>usually</em> the instance on which the {@link BandedCoverage#evaluator()}
+         * method has been invoked, but not necessarily. Evaluators are allowed to fetch values
+         * from a different source for better performances or accuracies.
+         *
+         * <h4>Example</h4>
+         * If the values of the enclosing coverage are interpolated from the values of another coverage,
+         * then this evaluator may use directly the values of the latter coverage. Doing so avoid to add
+         * more interpolations on values that are already interpolated.
          *
          * @return the source of sample values for this evaluator.
          */

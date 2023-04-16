@@ -240,9 +240,9 @@ public final class IOUtilities extends Static {
     }
 
     /**
-     * Returns the given path without the directories and without the extension.
-     * For example if the given path is {@code "/Users/name/Map.png"}, then this
-     * method returns {@code "Map"}.
+     * Returns the given path without the directories and without the last extension.
+     * For example if the given path is {@code "/Users/name/Map.png"}, then this method returns {@code "Map"}.
+     * If the given path is {@code "image/tile.raw.gz"}, then this method returns {@code "tile.raw"}.
      *
      * @param  path  the path from which to get the filename without extension, or {@code null}.
      * @return the filename without extension, or {@code null} if none.

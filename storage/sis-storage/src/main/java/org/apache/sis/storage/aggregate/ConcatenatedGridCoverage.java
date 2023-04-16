@@ -247,7 +247,7 @@ final class ConcatenatedGridCoverage extends GridCoverage {
      * Invoking this method may cause the loading of data from {@link ConcatenatedGridResource}.
      * Most recently used slices are cached for future invocations of this method.
      *
-     * @param  extent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
+     * @param  extent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
      */
     @Override

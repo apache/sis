@@ -20,8 +20,13 @@ import org.apache.sis.internal.feature.Resources;
 
 
 /**
- * Thrown when operations on a {@link GridGeometry} result in an area which
- * does not intersect anymore the {@link GridExtent} of the {@link GridGeometry}.
+ * Thrown when the domain of two grid coverages or images do not intersect.
+ * The domain of a {@link GridCoverage} is its {@link GridGeometry}.
+ * The domain of a {@link java.awt.image.RenderedImage} is its range of pixel coordinates,
+ * which can be part of a grid geometry definition.
+ *
+ * <p>This exception may also be thrown when operations on a {@link GridGeometry} result in an area
+ * which does not intersect anymore the {@link GridExtent} of the original {@link GridGeometry}.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

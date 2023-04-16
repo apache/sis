@@ -110,13 +110,13 @@ public abstract class Interpolation {
      * If the given image uses an index color model, interpolating the indexed values does not produce the
      * expected colors. Safest approach is to disable completely interpolations in that case.
      *
-     * <div class="note"><b>Note:</b>
-     * we could interpolate if we knew that all index values, without exception (i.e. no index for missing values),
+     * <h4>Design note</h4>
+     * We could interpolate if we knew that all index values, without exception (i.e. no index for missing values),
      * are related to measurements by a linear function. In practice it rarely happens, because there is usually
      * at least one index value reserved for missing values. Scientific data in SIS are usually stored as floating
      * point type (with missing values mapped to NaN), which cannot be associated to {@link IndexColorModel}.
      * For now we do not try to perform a more sophisticated detection of which interpolations are allowed,
-     * but a future SIS version may revisit this policy if needed.</div>
+     * but a future SIS version may revisit this policy if needed.
      *
      * @return {@link #NEAREST} if interpolations should be restricted to nearest-neighbor, or {@code this} otherwise.
      */

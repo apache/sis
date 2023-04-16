@@ -199,6 +199,19 @@ public final class Numerics extends Static {
     }
 
     /**
+     * Returns a 64 bits value made of the juxtaposition of the two given 32 bits values.
+     * The resulting tuple can be decomposed back in the two 32 bits integer components with
+     * {@code (int) (tuple >>> Integer.SIZE)} for high part and {@code (int) tuple} for the low part.
+     *
+     * @param  hi   the 32 higher bits.
+     * @param  low  the 32 lower bits.
+     * @return the two given 32 bits integers juxtaposed in a 64 bits integer.
+     */
+    public static long tuple(final int hi, final int low) {
+        return (((long) hi) << Integer.SIZE) | Integer.toUnsignedLong(low);
+    }
+
+    /**
      * Returns {@code true} if the given number is an integer value.
      * Special cases:
      *

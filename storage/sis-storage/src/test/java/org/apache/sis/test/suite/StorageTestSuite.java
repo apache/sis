@@ -42,13 +42,13 @@ import org.junit.BeforeClass;
     org.apache.sis.internal.storage.io.FileCacheByteChannelTest.class,
     org.apache.sis.internal.storage.io.InputStreamArrayGetterTest.class,
     org.apache.sis.internal.storage.MetadataBuilderTest.class,
-    org.apache.sis.internal.storage.RangeArgumentTest.class,
     org.apache.sis.internal.storage.MemoryGridResourceTest.class,
     org.apache.sis.storage.FeatureNamingTest.class,
     org.apache.sis.storage.ProbeResultTest.class,
     org.apache.sis.storage.StorageConnectorTest.class,
     org.apache.sis.storage.DataStoreProviderTest.class,
     org.apache.sis.storage.event.StoreListenersTest.class,
+    org.apache.sis.storage.CoverageSubsetTest.class,
     org.apache.sis.storage.CoverageQueryTest.class,
     org.apache.sis.storage.FeatureQueryTest.class,
     org.apache.sis.internal.storage.xml.MimeTypeDetectorTest.class,
@@ -69,6 +69,7 @@ import org.junit.BeforeClass;
     org.apache.sis.storage.aggregate.JoinFeatureSetTest.class,
     org.apache.sis.storage.aggregate.ConcatenatedFeatureSetTest.class,
     org.apache.sis.storage.aggregate.CoverageAggregatorTest.class,
+    org.apache.sis.storage.aggregate.BandAggregateGridResourceTest.class,
     org.apache.sis.storage.DataStoresTest.class
 })
 public final class StorageTestSuite extends TestSuite {

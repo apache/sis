@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -37,8 +36,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -56,7 +54,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public abstract class GridCoverage extends BandedCoverage {
@@ -104,13 +102,12 @@ public abstract class GridCoverage extends BandedCoverage {
      * @throws IllegalArgumentException if the {@code range} list is empty.
      */
     protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
-        ArgumentChecks.ensureNonNull ("domain", domain);
-        ArgumentChecks.ensureNonEmpty("ranges", ranges);
-        gridGeometry = domain;
+        gridGeometry     = domain;
         sampleDimensions = ranges.toArray(SampleDimension[]::new);
-        ArgumentChecks.ensureNonEmpty("range", sampleDimensions);
+        ArgumentChecks.ensureNonNull ("domain", domain);
+        ArgumentChecks.ensureNonEmpty("ranges", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
-            ArgumentChecks.ensureNonNullElement("range", i, sampleDimensions[i]);
+            ArgumentChecks.ensureNonNullElement("ranges", i, sampleDimensions[i]);
         }
     }
 
@@ -206,13 +203,26 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
+     * Returns the background value of each sample dimension.
+     * The array length is the number of sample dimensions (bands).
+     * Some array element may be {@code null} if the corresponding band has no background value.
+     *
+     * @return background value of each sample dimension.
+     *
+     * @see SampleDimension#getBackground()
+     */
+    final Number[] getBackground() {
+        return SampleDimensions.backgrounds(sampleDimensions);
+    }
+
+    /**
      * Returns the data type identifying the primitive type used for storing sample values in each band.
      * We assume no packed sample model (e.g. no packing of 4 byte ARGB values in a single 32-bits integer).
      * If the sample model is packed, the value returned by this method should be as if the image has been
      * converted to a banded sample model.
      */
     DataType getBandType() {
-        return DataType.DOUBLE;     // Must conservative value, should be overridden by subclasses.
+        return DataType.DOUBLE;     // Most conservative value, should be overridden by subclasses.
     }
 
     /**
@@ -288,6 +298,9 @@ public abstract class GridCoverage extends BandedCoverage {
 
     /**
      * Creates a new image of the given data type which will compute values using the given converters.
+     * The {@link #sampleDimensions} declared in this {@code GridCoverage} instances shall be applicable
+     * to the returned image, as it will be assigned to the image property
+     * {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY}.
      *
      * @param  source      the image for which to convert sample values.
      * @param  bandType    the type of data in the bands resulting from conversion of given image.
@@ -298,17 +311,12 @@ public abstract class GridCoverage extends BandedCoverage {
     final RenderedImage convert(final RenderedImage source, final DataType bandType,
             final MathTransform1D[] converters, final ImageProcessor processor)
     {
-        final int visibleBand = Math.max(0, ImageUtilities.getVisibleBand(source));
-        final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
-        final ColorModel colors;
-        if (colorizer.initialize(source.getSampleModel(), sampleDimensions[visibleBand]) ||
-            colorizer.initialize(source.getColorModel()))
-        {
-            colors = colorizer.createColorModel(bandType.toDataBufferType(), sampleDimensions.length, visibleBand);
-        } else {
-            colors = Colorizer.NULL_COLOR_MODEL;
+        try {
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(sampleDimensions);
+            return processor.convert(source, getRanges(), converters, bandType);
+        } finally {
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
         }
-        return processor.convert(source, getRanges(), converters, bandType, colors);
     }
 
     /**
@@ -350,10 +358,19 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     public interface Evaluator extends BandedCoverage.Evaluator {
         /**
-         * Returns the coverage from which this evaluator is fetching sample values.
-         * This is the coverage on which the {@link GridCoverage#evaluator()} method has been invoked.
+         * Returns the grid coverage from which this evaluator is computing sample values.
+         * This is <em>usually</em> the instance on which the {@link GridCoverage#evaluator()}
+         * method has been invoked, but not necessarily. Evaluators are allowed to fetch values
+         * from a different source for better performances or accuracies.
+         *
+         * <h4>Example</h4>
+         * If the values of the enclosing coverage are interpolated from the values of another coverage,
+         * then this evaluator may use directly the values of the latter coverage. Doing so avoid to add
+         * more interpolations on values that are already interpolated.
          *
          * @return the source of sample values for this evaluator.
+         *
+         * @see #toGridCoordinates(DirectPosition)
          */
         @Override
         GridCoverage getCoverage();
@@ -389,6 +406,11 @@ public abstract class GridCoverage extends BandedCoverage {
          * then this method automatically transforms that position to the {@linkplain #getCoordinateReferenceSystem()
          * coverage CRS} before to compute grid coordinates.
          *
+         * <p>The returned value are coordinates in the grid of the coverage returned by {@link #getCoverage()}.
+         * This is <em>usually</em> the coverage instance on which {@link GridCoverage#evaluator()} has been invoked,
+         * but not necessarily. Evaluators are allowed to fetch values from a different source for better performances
+         * or accuracies.</p>
+         *
          * <p>This method does not put any restriction on the grid coordinates result.
          * The result may be outside the {@linkplain GridGeometry#getExtent() grid extent}
          * if the {@linkplain GridGeometry#getGridToCRS(PixelInCell) grid to CRS} transform allows it.</p>
@@ -408,9 +430,9 @@ public abstract class GridCoverage extends BandedCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image. The given {@code sliceExtent} argument specifies
      * the coordinates of the slice in all dimensions that are not in the two-dimensional image. For example if this grid
-     * coverage has <i>(<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)</i> dimensions and we want to render an image
-     * of data in the <i>(<var>x</var>,<var>y</var>)</i> dimensions, then the given {@code sliceExtent} shall contain the
-     * <i>(<var>z</var>,<var>t</var>)</i> coordinates of the desired slice. Those coordinates are specified in a grid extent
+     * coverage has (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>) dimensions and we want to render an image
+     * of data in the (<var>x</var>,<var>y</var>) dimensions, then the given {@code sliceExtent} shall contain the
+     * (<var>z</var>,<var>t</var>) coordinates of the desired slice. Those coordinates are specified in a grid extent
      * where {@linkplain GridExtent#getLow(int) low coordinate} = {@linkplain GridExtent#getHigh(int) high coordinate} in the
      * <var>z</var> and <var>t</var> dimensions. The two dimensions of the data to be shown (<var>x</var> and <var>y</var>
      * in our example) shall be the only dimensions having a {@linkplain GridExtent#getSize(int) size} greater than 1 cell.
@@ -421,7 +443,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * except two have a size of 1 cell. If the grid extent contains more than 2 dimensions with a size greater than one cell,
      * then a {@link SubspaceNotSpecifiedException} is thrown.</p>
      *
-     * <div class="note"><p><b>How to compute a slice extent from a slice point in "real world" coordinates</b></p>
+     * <h4>How to compute a slice extent from a slice point in "real world" coordinates</h4>
      * The {@code sliceExtent} is specified to this method as grid indices. If the <var>z</var> and <var>t</var> values
      * are not grid indices but are relative to some Coordinate Reference System (CRS) instead, then the slice extent can
      * be computed as below. First, a <cite>slice point</cite> containing the <var>z</var> and <var>t</var> coordinates
@@ -435,12 +457,12 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * Then:
      *
-     * <blockquote><code>sliceExtent = {@linkplain #getGridGeometry()}.{@link GridGeometry#derive()
-     * derive()}.{@linkplain GridDerivation#slice(DirectPosition)
-     * slice}(slicePoint).{@linkplain GridDerivation#getIntersection() getIntersection()};</code></blockquote>
+     * {@snippet lang="java" :
+     *     sliceExtent = getGridGeometry().derive().slice(slicePoint).getIntersection();
+     *     }
      *
      * If the {@code slicePoint} CRS is different than this grid coverage CRS (except for the number of dimensions),
-     * a coordinate transformation will be applied as needed.</div>
+     * a coordinate transformation will be applied as needed.
      *
      * <h4>Characteristics of the returned image</h4>
      * Image dimensions <var>x</var> and <var>y</var> map to the first and second dimension respectively of
@@ -471,7 +493,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * This method does not mandate any behavior regarding tiling (size of tiles, their numbering system, <i>etc.</i>).
      * Some implementations may defer data loading until {@linkplain RenderedImage#getTile(int, int) a tile is requested}.</p>
      *
-     * @param  sliceExtent  a subspace of this grid coverage extent where all dimensions except two have a size of 1 cell.
+     * @param  sliceExtent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
      *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
      * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.

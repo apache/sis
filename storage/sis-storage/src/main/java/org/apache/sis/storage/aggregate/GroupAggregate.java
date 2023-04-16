@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.TransformException;
@@ -47,7 +48,7 @@ import org.apache.sis.geometry.ImmutableEnvelope;
  * it would not be a persistent identifier.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 final class GroupAggregate extends AbstractResource implements Aggregate, AggregatedResource {
@@ -55,6 +56,15 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      * Minimum number of components for keeping this aggregate after analysis.
      */
     private static final int KEEP_ALIVE = 2;
+
+    /**
+     * The identifier for this aggregate, or {@code null} if none.
+     * This is optionally supplied by users for their own purposes.
+     * There is no default value.
+     *
+     * @see #getIdentifier()
+     */
+    private GenericName identifier;
 
     /**
      * Name of this aggregate, or {@code null} if none.
@@ -66,6 +76,8 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
      * The components of this aggregate. Array elements are initially null, but should all become non-null
      * after a {@code fill(…)} method has been invoked. If the length is smaller than {@value #KEEP_ALIVE},
      * then this aggregate is only a temporary object.
+     *
+     * @see #components()
      */
     private final Resource[] components;
 
@@ -151,6 +163,7 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
 
     /**
      * Returns an aggregate with the same data than this aggregate but a different merge strategy.
+     * This is the implementation of {@link MergeStrategy#apply(Resource)} public method.
      */
     @Override
     public final synchronized Resource apply(final MergeStrategy strategy) {
@@ -224,6 +237,24 @@ final class GroupAggregate extends AbstractResource implements Aggregate, Aggreg
             return c;
         }
         return aggregator.existingAggregate(components).orElse(this);
+    }
+
+    /**
+     * Sets the identifier of this resource.
+     */
+    @Override
+    public void setIdentifier(final GenericName identifier) {
+        this.identifier = identifier;
+    }
+
+
+    /**
+     * Returns the resource persistent identifier as specified by the
+     * user in {@link CoverageAggregator}. There is no default value.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(identifier);
     }
 
     /**

@@ -31,7 +31,7 @@ import static org.apache.sis.test.Assert.*;
 
 
 /**
- * Test conversions using the units declared in {@link Units}.
+ * Test parsing, formatting and other operations on the units declared in {@link Units}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)

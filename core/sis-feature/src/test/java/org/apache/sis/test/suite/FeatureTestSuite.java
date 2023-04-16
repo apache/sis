@@ -26,7 +26,7 @@ import org.junit.runners.Suite;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 @Suite.SuiteClasses({
@@ -81,10 +81,11 @@ import org.junit.runners.Suite;
     org.apache.sis.feature.builder.FeatureTypeBuilderTest.class,
 
     // Rasters
+    org.apache.sis.internal.coverage.RangeArgumentTest.class,
     org.apache.sis.internal.coverage.j2d.ImageUtilitiesTest.class,
     org.apache.sis.internal.coverage.j2d.ImageLayoutTest.class,
     org.apache.sis.internal.coverage.j2d.ScaledColorSpaceTest.class,
-    org.apache.sis.internal.coverage.j2d.ColorizerTest.class,
+    org.apache.sis.internal.coverage.j2d.ColorModelBuilderTest.class,
     org.apache.sis.internal.coverage.j2d.SampleModelFactoryTest.class,
     org.apache.sis.internal.processing.isoline.IsolinesTest.class,
     org.apache.sis.image.DataTypeTest.class,
@@ -99,6 +100,7 @@ import org.junit.runners.Suite;
     org.apache.sis.image.ResamplingGridTest.class,
     org.apache.sis.image.ResampledImageTest.class,
     org.apache.sis.image.MaskedImageTest.class,
+    org.apache.sis.image.BandAggregateImageTest.class,
     org.apache.sis.image.BandedSampleConverterTest.class,
     org.apache.sis.image.ImageCombinerTest.class,
     org.apache.sis.image.ImageProcessorTest.class,
@@ -119,6 +121,8 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.grid.ConvertedGridCoverageTest.class,
     org.apache.sis.coverage.grid.TranslatedGridCoverageTest.class,
     org.apache.sis.coverage.grid.ResampledGridCoverageTest.class,
+    org.apache.sis.coverage.grid.DimensionalityReductionTest.class,
+    org.apache.sis.coverage.grid.BandAggregateGridCoverageTest.class,
 
     // Index and processing
     org.apache.sis.index.tree.PointTreeNodeTest.class,

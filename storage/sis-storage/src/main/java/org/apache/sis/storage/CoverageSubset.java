@@ -16,8 +16,11 @@
  */
 package org.apache.sis.storage;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
@@ -27,7 +30,10 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridClippingMode;
+import org.apache.sis.coverage.grid.DimensionalityReduction;
 import org.apache.sis.coverage.grid.DisjointExtentException;
+import org.apache.sis.internal.coverage.RangeArgument;
+import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.storage.StoreUtilities;
@@ -40,31 +46,79 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * arguments of {@link GridCoverageResource#read(GridGeometry, int...)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 final class CoverageSubset extends AbstractGridCoverageResource {
+    /**
+     * Name for this coverage subset, or {@code null} if none.
+     */
+    private final GenericName name;
+
     /**
      * The coverage resource instance which provides the data.
      */
     private final GridCoverageResource source;
 
     /**
-     * The domain and range to read from the {@linkplain #source} coverage.
+     * The domain of this resource, computed when first requested.
+     * Sometime but not always the same as {@link #areaOfInterest}.
+     * If {@link #reduction} is non-null, then this is the reduced grid geometry.
+     *
+     * @see #getGridGeometry()
      */
-    private final CoverageQuery query;
+    private GridGeometry gridGeometry;
+
+    /**
+     * The domain specified in the query, potentially with dimensions added for a slice.
+     * The number of dimensions should be the same as {@linkplain #source} grid geometry.
+     * May be {@code null} if no area of interest has been specified.
+     */
+    private final GridGeometry areaOfInterest;
+
+    /**
+     * The dimensionality reduction to apply on the coverages, or {@code null} if none.
+     */
+    private final DimensionalityReduction reduction;
+
+    /**
+     * Number of additional cells to read on each border of the source grid coverage.
+     */
+    private final int sourceDomainExpansion;
+
+    /**
+     * 0-based indices of sample dimensions to read, or {@code null} for reading them all.
+     */
+    private final int[] selectedRange;
 
     /**
      * Creates a new coverage resource by filtering the given coverage using the given query.
-     * This given query is stored as-is (it is not cloned neither optimized).
      *
-     * @param source  the coverage resource instances which provides the data.
-     * @param query   the domain and range to read from the {@code source} coverage.
+     * @param  name    name for this coverage subset, or {@code null} if none.
+     * @param  source  the coverage resource instances which provides the data.
+     * @param  query   the domain and range to read from the {@code source} coverage.
+     * @throws DataStoreException if an error occurred while reading from the source resource.
      */
-    CoverageSubset(final GridCoverageResource source, final CoverageQuery query) {
-        super(source instanceof AbstractResource ? ((AbstractResource) source).listeners : null, false);
+    CoverageSubset(final GenericName name, final GridCoverageResource source, final CoverageQuery query) throws DataStoreException {
+        super(source);
+        this.name   = name;
         this.source = source;
-        this.query  = query;
+        reduction   = query.getAxisSelection(source);
+        GridGeometry selection = query.getSelection();
+        if (selection != null && reduction != null && reduction.isReduced(selection)) {
+            selection = reduction.reverse(selection);
+        }
+        areaOfInterest        = selection;
+        selectedRange         = query.getProjection(source);
+        sourceDomainExpansion = query.getSourceDomainExpansion();
+    }
+
+    /**
+     * Returns the name for this resource if specified.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(name);
     }
 
     /**
@@ -82,6 +136,24 @@ final class CoverageSubset extends AbstractGridCoverageResource {
     }
 
     /**
+     * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
+     * In absence of dimensionality reduction, this is the same resolution than the source resource.
+     *
+     * @return preferred resolutions for read operations in this data store, or an empty array if none.
+     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     */
+    @Override
+    public List<double[]> getResolutions() throws DataStoreException {
+        List<double[]> resolutions = source.getResolutions();
+        if (reduction != null) {
+            resolutions.stream().map((resolution) -> {
+                return reduction.apply(new DirectPositionView.Double(resolution)).getCoordinate();
+            }).collect(Collectors.toList());        // TODO: replace by Stream.toList() on JDK16.
+        }
+        return resolutions;
+    }
+
+    /**
      * Returns the valid extent of grid coordinates clipped to the area specified in the query.
      * It should be the geometry of the coverage that we get when invoking {@link #read read(…)}
      * with {@code null} arguments, but this is not guaranteed.
@@ -92,20 +164,27 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      *         or if the grid geometry cannot be clipped to the query area.
      */
     @Override
-    public GridGeometry getGridGeometry() throws DataStoreException {
-        /*
-         * The grid should be fully contained in the resource specified at construction time,
-         * including margin expansion (if any), because data may not exist outside that area.
-         * This requirement is specified by `GridClippingMode.STRICT`.
-         */
-        return clip(source.getGridGeometry(), GridRoundingMode.NEAREST, GridClippingMode.STRICT);
+    public synchronized GridGeometry getGridGeometry() throws DataStoreException {
+        GridGeometry domain = gridGeometry;
+        if (domain == null) {
+            /*
+             * The grid should be fully contained in the resource specified at construction time,
+             * including margin expansion (if any), because data may not exist outside that area.
+             * This requirement is specified by `GridClippingMode.STRICT`.
+             */
+            domain = clip(source.getGridGeometry(), GridRoundingMode.NEAREST, GridClippingMode.STRICT);
+            if (reduction != null) {
+                domain = reduction.apply(domain);
+            }
+            gridGeometry = domain;      // Set only on success.
+        }
+        return domain;
     }
 
     /**
      * Clips the given domain to the area of interest specified by the query. If any grid geometry is null,
-     * the other one is returned. The {@code domain} argument should be the domain to read as specified to
-     * {@link #read(GridGeometry, int...)}, or the full {@code CoverageSubset} domain if no value were given
-     * to the {@code read(…)} method.
+     * the other one is returned. The {@code domain} argument should have the number of dimensions expected
+     * by the {@linkplain #source}, using {@link #reduction} if necessary for changing the dimensionality.
      *
      * @param  domain    the domain requested in a read operation, or {@code null}.
      * @param  rounding  whether to clip to nearest box or an enclosing box.
@@ -116,15 +195,13 @@ final class CoverageSubset extends AbstractGridCoverageResource {
     private GridGeometry clip(final GridGeometry domain, final GridRoundingMode rounding, final GridClippingMode clipping)
             throws DataStoreException
     {
-        final GridGeometry areaOfInterest = query.getSelection();
         if (domain == null) return areaOfInterest;
         if (areaOfInterest == null) return domain;
         try {
             final GridDerivation derivation = domain.derive().rounding(rounding).clipping(clipping);
-            final int expansion = query.getSourceDomainExpansion();
-            if (expansion != 0) {
+            if (sourceDomainExpansion != 0) {
                 final int[] margins = new int[domain.getDimension()];
-                Arrays.fill(margins, expansion);
+                Arrays.fill(margins, sourceDomainExpansion);
                 derivation.margin(margins);
             }
             return derivation.subgrid(areaOfInterest).build();
@@ -152,17 +229,16 @@ final class CoverageSubset extends AbstractGridCoverageResource {
     @Override
     public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         final List<SampleDimension> dimensions = source.getSampleDimensions();
-        final int[] range = query.getProjection();
-        if (range == null) {
+        if (selectedRange == null) {
             return dimensions;
         }
-        final SampleDimension[] subset = new SampleDimension[range.length];
-        for (int i=0; i<range.length; i++) {
-            final int j = range[i];
+        final SampleDimension[] subset = new SampleDimension[selectedRange.length];
+        for (int i=0; i < selectedRange.length; i++) {
+            final int j = selectedRange[i];
             try {
                 subset[i] = dimensions.get(j);
             } catch (IndexOutOfBoundsException e) {
-                throw new DataStoreException(invalidRange(dimensions.size(), j), e);
+                throw new DataStoreException(e);
             }
         }
         return UnmodifiableArrayList.wrap(subset);
@@ -190,8 +266,10 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      * Loads a subset of the grid coverage represented by this resource.
      * The domain to be read by the resource is computed as below:
      * <ul>
-     *   <li>If the query specifies a {@link CoverageQuery#getSelection() domain},
-     *       the given domain is intersected with the query domain.</li>
+     *   <li>If the query specifies a {@linkplain CoverageQuery#getAxisSelection() dimensionality reduction},
+     *       the given domain is inflated to the number of dimensions of the source.</li>
+     *   <li>If the query specifies an {@linkplain CoverageQuery#getSelection() area of interest},
+     *       the given domain is intersected with the query selection.</li>
      *   <li>If the query specifies a {@linkplain CoverageQuery#getSourceDomainExpansion() domain expansion},
      *       the given domain is expanded by the amount specified in the query.</li>
      * </ul>
@@ -203,6 +281,13 @@ final class CoverageSubset extends AbstractGridCoverageResource {
      */
     @Override
     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+        /*
+         * Need to convert to the full number of dimensions first, even if the domain is null,
+         * because this operation may return a domain with slice coordinates.
+         */
+        if (reduction != null) {
+            domain = reduction.reverse(domain);
+        }
         if (domain == null) {
             domain = source.getGridGeometry();
         }
@@ -211,32 +296,21 @@ final class CoverageSubset extends AbstractGridCoverageResource {
          * specified `domain` but inside the source domain, which may be larger.
          */
         domain = clip(domain, GridRoundingMode.ENCLOSING, GridClippingMode.BORDER_EXPANSION);
-        final int[] qr = query.getProjection();
-        if (ranges == null) {
-            ranges = qr;
-        } else if (qr != null) {
-            final int[] sub = new int[ranges.length];
+        if (selectedRange != null) {
+            final var validation = RangeArgument.validate(selectedRange.length, ranges, listeners);
+            ranges = new int[validation.getNumBands()];
             for (int i=0; i<ranges.length; i++) {
-                final int j = ranges[i];
-                if (j >= 0 && j < qr.length) {
-                    sub[i] = qr[j];
-                } else {
-                    throw new IllegalArgumentException(invalidRange(qr.length, j));
-                }
+                ranges[validation.getTargetIndex(i)] = selectedRange[validation.getSourceIndex(i)];
             }
-            ranges = sub;
         }
-        return source.read(domain, ranges);
-    }
-
-    /**
-     * Creates an exception message for an invalid range index.
-     *
-     * @param size   number of sample dimensions in source coverage.
-     * @param index  the index which is out of bounds.
-     */
-    private String invalidRange(final int size, final int index) {
-        return Resources.forLocale(listeners.getLocale()).getString(
-                Resources.Keys.InvalidSampleDimensionIndex_2, size - 1, index);
+        /*
+         * Read the coverage will all dimensions, then provide a view
+         * with a reduced number of dimensions if that was requested.
+         */
+        GridCoverage coverage = source.read(domain, ranges);
+        if (reduction != null) {
+            coverage = reduction.apply(coverage);
+        }
+        return coverage;
     }
 }

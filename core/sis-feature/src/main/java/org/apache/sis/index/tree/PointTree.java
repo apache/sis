@@ -218,7 +218,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
         ArgumentChecks.ensureStrictlyPositive("nodeCapacity", nodeCapacity);
         final int n = bounds.getDimension();
         if (n > MAXIMUM_DIMENSIONS) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, n));
+            throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, n));
         }
         treeRegion = new double[n*2];
         boolean isValid = (n >= 2);

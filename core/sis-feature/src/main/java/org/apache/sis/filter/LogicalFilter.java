@@ -22,7 +22,6 @@ import java.util.LinkedHashSet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
-import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
 import org.apache.sis.internal.geoapi.filter.LogicalOperator;
@@ -62,9 +61,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     LogicalFilter(final Collection<? extends Filter<? super R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
         operands = op.toArray(Filter[]::new);
-        if (operands.length < 2) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.TooFewArguments_2, 2, operands.length));
-        }
+        ArgumentChecks.ensureCountBetween("operands", true, 2, Integer.MAX_VALUE, operands.length);
         for (int i=0; i<operands.length; i++) {
             ArgumentChecks.ensureNonNullElement("operands", i, operands[i]);
         }

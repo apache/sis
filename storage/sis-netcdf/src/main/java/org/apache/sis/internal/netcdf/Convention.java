@@ -34,6 +34,7 @@ import org.apache.sis.referencing.operation.transform.TransferFunction;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.Category;
@@ -780,7 +781,7 @@ public class Convention {
      * @return the band on which {@link #getColors(Variable)} will apply.
      */
     public int getVisibleBand() {
-        return 0;
+        return ColorModelFactory.DEFAULT_VISIBLE_BAND;
     }
 
     /**

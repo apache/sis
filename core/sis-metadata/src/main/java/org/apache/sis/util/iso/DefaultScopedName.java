@@ -116,7 +116,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     protected DefaultScopedName(final NameSpace scope, final List<? extends CharSequence> names) {
         ArgumentChecks.ensureNonNull("names", names);
         final int size = names.size();
-        ArgumentChecks.ensureSizeBetween("names", 2, Integer.MAX_VALUE, size);
+        ArgumentChecks.ensureCountBetween("names", true, 2, Integer.MAX_VALUE, size);
         DefaultNameSpace ns = DefaultNameSpace.castOrCopy(scope);
         final boolean global = ns.isGlobal();
         int i = 0;

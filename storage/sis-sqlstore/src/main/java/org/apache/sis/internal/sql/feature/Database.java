@@ -96,7 +96,7 @@ import org.apache.sis.util.Debug;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public class Database<G> extends Syntax  {
@@ -176,6 +176,14 @@ public class Database<G> extends Syntax  {
     final boolean supportsCatalogs, supportsSchemas;
 
     /**
+     * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
+     * The JDBC 4.2 specification provides a mapping from {@link java.sql.Types} to temporal objects.
+     * The specification suggests that {@link java.sql.ResultSet#getObject(int, Class)} should accept
+     * those temporal types in the {@link Class} argument, but not all drivers support that.
+     */
+    private final boolean supportsJavaTime;
+
+    /**
      * The converter from filters/expressions to the {@code WHERE} part of SQL statement.
      * This is initialized when first needed, then kept unmodified for the database lifetime.
      * Subclasses may provide a specialized instance if their database supports an extended
@@ -214,11 +222,12 @@ public class Database<G> extends Syntax  {
      *
      * @param  source       provider of (pooled) connections to the database.
      * @param  metadata     metadata about the database.
+     * @param  dialect      additional information not provided by {@code metadata}.
      * @param  geomLibrary  the factory to use for creating geometric objects.
      * @param  listeners    where to send warnings.
      * @throws SQLException if an error occurred while reading database metadata.
      */
-    protected Database(final DataSource source, final DatabaseMetaData metadata,
+    protected Database(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
                        final Geometries<G> geomLibrary, final StoreListeners listeners)
             throws SQLException
     {
@@ -246,6 +255,7 @@ public class Database<G> extends Syntax  {
         this.tablesByNames = new FeatureNaming<>();
         supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
+        supportsJavaTime   = dialect.supportsJavaTime;
     }
 
     /**
@@ -270,11 +280,12 @@ public class Database<G> extends Syntax  {
     {
         final DatabaseMetaData metadata = connection.getMetaData();
         final Geometries<?> g = Geometries.implementation(geomLibrary);
+        final Dialect dialect = Dialect.guess(metadata);
         final Database<?> db;
-        switch (Dialect.guess(metadata)) {
-            case POSTGRESQL: db = new Postgres<>(source, connection, metadata, g, listeners); break;
+        switch (dialect) {
+            case POSTGRESQL: db = new Postgres<>(source, connection, metadata, dialect, g, listeners); break;
             default: {
-                db = new Database<>(source, metadata, g, listeners);
+                db = new Database<>(source, metadata, dialect, g, listeners);
                 break;
             }
         }
@@ -565,11 +576,11 @@ public class Database<G> extends Syntax  {
             case Types.CHAR:
             case Types.VARCHAR:
             case Types.LONGVARCHAR:               return ValueGetter.AsString.INSTANCE;
-            case Types.DATE:                      return ValueGetter.AsDate.INSTANCE;
-            case Types.TIME:                      return ValueGetter.AsLocalTime.INSTANCE;
-            case Types.TIMESTAMP:                 return ValueGetter.AsInstant.INSTANCE;
-            case Types.TIME_WITH_TIMEZONE:        return ValueGetter.AsOffsetTime.INSTANCE;
-            case Types.TIMESTAMP_WITH_TIMEZONE:   return ValueGetter.AsOffsetDateTime.INSTANCE;
+            case Types.DATE:                      return supportsJavaTime ? ValueGetter.LOCAL_DATE       : ValueGetter.AsLocalDate.INSTANCE;
+            case Types.TIME:                      return supportsJavaTime ? ValueGetter.LOCAL_TIME       : ValueGetter.AsLocalTime.INSTANCE;
+            case Types.TIMESTAMP:                 return supportsJavaTime ? ValueGetter.LOCAL_DATE_TIME  : ValueGetter.AsLocalDateTime.INSTANCE;
+            case Types.TIME_WITH_TIMEZONE:        return supportsJavaTime ? ValueGetter.OFFSET_TIME      : ValueGetter.AsOffsetTime.INSTANCE;
+            case Types.TIMESTAMP_WITH_TIMEZONE:   return supportsJavaTime ? ValueGetter.OFFSET_DATE_TIME : ValueGetter.AsOffsetDateTime.INSTANCE;
             case Types.BLOB:                      return ValueGetter.AsBytes.INSTANCE;
             case Types.OTHER:
             case Types.JAVA_OBJECT:               return getDefaultMapping();

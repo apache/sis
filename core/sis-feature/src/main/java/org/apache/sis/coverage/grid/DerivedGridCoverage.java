@@ -29,10 +29,10 @@ import org.apache.sis.util.Debug;
 
 
 /**
- * A grid coverage which is derived from a single source coverage,
- * The default implementations of methods in this class assume that this derived coverage
- * uses the same sample dimensions than the source coverage. If it is not the case, then
- * some methods may need to be overridden.
+ * A grid coverage which is derived from a single source coverage.
+ * The default implementations of methods in this class assume that this
+ * derived coverage uses the same sample dimensions than the source coverage.
+ * If it is not the case, then some methods may need to be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3
@@ -75,7 +75,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
      *
      * @see GridCoverageProcessor.Optimization#REPLACE_SOURCE
      */
-    boolean IsNotRepleacable() {
+    boolean isNotRepleacable() {
         return false;
     }
 
@@ -93,9 +93,19 @@ abstract class DerivedGridCoverage extends GridCoverage {
      * That function accepts {@link DirectPosition} in arbitrary Coordinate Reference System;
      * conversions to grid indices are applied by the {@linkplain #source} as needed.
      *
-     * @todo The results returned by {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)}
-     *       would need to be transformed. But it would force us to return a wrapper, which would add
-     *       an indirection level for all others (more important) method calls. Is it worth to do so?
+     * <h4>Differences with usual behavior</h4>
+     * The evaluator returned by the default implementation has two methods with a behavior different
+     * than the intuitively expected ones. Howerver those differences are allowed by methods contract.
+     *
+     * <ul>
+     *   <li>{@link GridCoverage.Evaluator#getCoverage()} returns an instance which is not {@code this}.</li>
+     *   <li>The results returned by {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)}
+     *       are coordinates in a grid potentially inconsistent with {@link #getGridGeometry()}.</li>
+     * </ul>
+     *
+     * Those differences are allowed because otherwise, this method would be forced to use a wrapper at
+     * least for transforming {@link GridCoverage.Evaluator#toGridCoordinates(DirectPosition)} results.
+     * It would add an indirection level for all others (more important) method calls.
      */
     @Override
     public Evaluator evaluator() {
@@ -112,6 +122,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
      * @return a tree representation of the specified elements.
      */
     @Debug
+    @Override
     public TreeTable toTree(final Locale locale, final int bitmask) {
         final TreeTable tree = super.toTree(locale, bitmask);
         final TreeTable.Node branch = tree.getRoot().newChild();

@@ -51,8 +51,8 @@ import org.apache.sis.util.Debug;
  * is a forest” and some other values for <cite>quantitative</cite> information like a temperature
  * measurements.
  *
- * <div class="note"><b>Example:</b>
- * an image of sea surface temperature (SST) could define the following categories:
+ * <h2>Example</h2>
+ * An image of sea surface temperature (SST) could define the following categories:
  * <table class="sis">
  *   <caption>Example of categories in a sample dimension</caption>
  *   <tr><th>Values range</th> <th>Meaning</th></tr>
@@ -62,7 +62,6 @@ import org.apache.sis.util.Debug;
  *   <tr><td>[10…210]</td>     <td>Temperature to be converted into Celsius degrees through a linear equation</td></tr>
  * </table>
  * In this example, sample values in range [10…210] define a quantitative category, while all others categories are qualitative.
- * </div>
  *
  * <h2>Relationship with metadata</h2>
  * This class provides the same information than ISO 19115 {@code org.opengis.metadata.content.SampleDimension},
@@ -647,8 +646,8 @@ public class SampleDimension implements Serializable {
          * Sets an identification of the sample dimension as a character sequence.
          * This is a convenience method for creating a {@link GenericName} from the given characters.
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #setName(GenericName)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #setName(GenericName)}.
          *
          * @param  name  identification of the sample dimension.
          * @return {@code this}, for method call chaining.
@@ -661,8 +660,8 @@ public class SampleDimension implements Serializable {
          * Sets an identification of the sample dimension as a band number.
          * This method should be used only when no more descriptive name is available.
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #setName(GenericName)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #setName(GenericName)}.
          *
          * @param  band  sequence identifier of the sample dimension to create.
          * @return {@code this}, for method call chaining.
@@ -777,13 +776,13 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for samples of the given boolean value.
          * The {@code true} value is represented by 1 and the {@code false} value is represented by 0.
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -799,13 +798,13 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for samples of the given tiny (8 bits) integer value.
          * The argument is treated as a signed integer ({@value Byte#MIN_VALUE} to {@value Byte#MAX_VALUE}).
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -820,13 +819,13 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for samples of the given short (16 bits) integer value.
          * The argument is treated as a signed integer ({@value Short#MIN_VALUE} to {@value Short#MAX_VALUE}).
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -841,13 +840,13 @@ public class SampleDimension implements Serializable {
          * Adds a qualitative category for samples of the given integer value.
          * The argument is treated as a signed integer ({@value Integer#MIN_VALUE} to {@value Integer#MAX_VALUE}).
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -861,13 +860,13 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given floating-point value.
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -888,13 +887,13 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples of the given double precision floating-point value.
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object,
          *                 or {@code null} for a default "no data" name.
@@ -915,13 +914,13 @@ public class SampleDimension implements Serializable {
         /**
          * Adds a qualitative category for samples in the given range of values.
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQualitative(CharSequence, NumberRange)}.
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
@@ -941,10 +940,10 @@ public class SampleDimension implements Serializable {
          * This is the most generic method for adding a qualitative category.
          * All other {@code addQualitative(name, …)} methods are convenience methods delegating their work to this method.
          *
-         * <div class="note"><b>Usage note:</b>
-         * the {@link #setBackground(CharSequence, Number)} method should be used instead of this method
+         * <h4>Usage note</h4>
+         * The {@link #setBackground(CharSequence, Number)} method should be used instead of this method
          * when the aim is to define a default "no data" category to use when the missing value cannot
-         * be categorized more precisely (cloud, instrument error, <i>etc</i>).</div>
+         * be categorized more precisely (cloud, instrument error, <i>etc</i>).
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "no data" name.
@@ -966,8 +965,8 @@ public class SampleDimension implements Serializable {
          * (not necessarily the {@link Float#NaN} canonical value)
          * and that value shall not have been used by another category.
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #mapQualitative(CharSequence, NumberRange, float)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #mapQualitative(CharSequence, NumberRange, float)}.
          *
          * @param  name       the category name as a {@link String} or {@link InternationalString} object,
          *                    or {@code null} for a default "no data" name.
@@ -1034,8 +1033,8 @@ public class SampleDimension implements Serializable {
          * <p><b>Warning:</b> this method is provided for convenience when the scale and offset factors are not explicitly specified.
          * If those factor are available, then the other {@code addQuantitative(name, samples, …)} methods are more reliable.</p>
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
          *
          * @param  name        the category name as a {@link String} or {@link InternationalString} object,
          *                     or {@code null} for a default "data" name.
@@ -1073,8 +1072,8 @@ public class SampleDimension implements Serializable {
          * Adds a quantitative category for values ranging from {@code minimum} to {@code maximum} inclusive
          * in the given units of measurement. The transfer function is set to identity.
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "data" name.
@@ -1092,8 +1091,8 @@ public class SampleDimension implements Serializable {
          * Adds a quantitative category for values ranging from {@code minimum} to {@code maximum} inclusive
          * in the given units of measurement. The transfer function is set to identity.
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
          *
          * @param  name     the category name as a {@link String} or {@link InternationalString} object,
          *                  or {@code null} for a default "data" name.
@@ -1115,8 +1114,8 @@ public class SampleDimension implements Serializable {
          *
          * Results of above conversion are measurements in the units specified by the {@code units} argument.
          *
-         * <div class="note"><b>Implementation note:</b>
-         * this convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.</div>
+         * <h4>Default implementation</h4>
+         * This convenience method delegates to {@link #addQuantitative(CharSequence, NumberRange, MathTransform1D, Unit)}.
          *
          * @param  name    the category name as a {@link String} or {@link InternationalString} object.
          *                 or {@code null} for a default "data" name.

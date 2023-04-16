@@ -47,18 +47,11 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * Basic access to grid data values backed by a <var>n</var>-dimensional {@link DataBuffer}.
  * Those data can be shown as an untiled {@link RenderedImage}.
  * Images are created when {@link #render(GridExtent)} is invoked instead of at construction time.
- * This delayed construction makes this class better suited to <var>n</var>-dimensional grids since
- * those grids cannot be wrapped into a single {@link RenderedImage}.
+ * This delayed construction makes this class better suited to <var>n</var>-dimensional grids
+ * because those grids cannot be wrapped into a single {@link RenderedImage}.
  *
- * <div class="note"><b>Comparison with alternatives:</b>
- * this class expects all data to reside in-memory and does not support tiling.
- * Pixels are stored in a row-major fashion with all bands in a single array <em>or</em> one array per band.
- * By contrast, {@link GridCoverage2D} allows more flexibility in data layout and supports tiling with data
- * loaded or computed on-the-fly, but is restricted to two-dimensional images (which may be slices in a
- * <var>n</var>-dimensional grid).</div>
- *
- * The number of bands is determined by the number of {@link SampleDimension}s specified at construction time.
- * The {@linkplain DataBuffer#getNumBanks() number of banks} is either 1 or the number of bands.
+ * <p>The number of bands is determined by the number of {@link SampleDimension}s specified at construction time.
+ * The {@linkplain DataBuffer#getNumBanks() number of banks} is either 1 or the number of bands.</p>
  *
  * <ul class="verbose">
  *   <li>If the number of banks is 1, all data are packed in a single array with band indices varying fastest,
@@ -74,6 +67,13 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * will define the {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height},
  * but different dimensions may be used depending on which dimensions are identified as the
  * {@linkplain GridExtent#getSubspaceDimensions(int) subspace dimensions}.
+ *
+ * <h2>Restrictions</h2>
+ * This class expects all data to reside in-memory and does not support tiling.
+ * Pixels are stored in a row-major fashion with all bands in a single array <em>or</em> one array per band.
+ * By contrast, {@link GridCoverage2D} allows more flexibility in data layout and supports tiling with data
+ * loaded or computed on-the-fly, but is restricted to two-dimensional images
+ * (which may be slices in a <var>n</var>-dimensional grid).
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

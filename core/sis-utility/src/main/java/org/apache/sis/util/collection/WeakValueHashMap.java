@@ -23,6 +23,7 @@ import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Arrays;
+import java.util.function.Function;
 import java.lang.ref.WeakReference;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
@@ -72,7 +73,7 @@ import static org.apache.sis.util.collection.WeakEntry.*;
  * then the caller can synchronize on {@code this}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param <K>  the class of key elements.
  * @param <V>  the class of value elements.
@@ -290,7 +291,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return whether {@link #count} matches the expected value.
      */
     @Debug
-    final boolean isValid() {
+    private boolean isValid() {
         if (!Thread.holdsLock(this)) {
             throw new AssertionError();
         }
@@ -316,7 +317,7 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      *
      * @param  key  the key (cannot be null).
      */
-    final int keyHashCode(final Object key) {
+    private int keyHashCode(final Object key) {
         switch (comparisonMode) {
             case IDENTITY:    return System.identityHashCode(key);
             case EQUALS:      return key.hashCode();
@@ -331,13 +332,56 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @param  k1  the first key (cannot be null).
      * @paral  k2  the second key.
      */
-    final boolean keyEquals(final Object k1, final Object k2) {
+    private boolean keyEquals(final Object k1, final Object k2) {
         switch (comparisonMode) {
             case IDENTITY:    return k1 == k2;
             case EQUALS:      return k1.equals(k2);
             case DEEP_EQUALS: return Objects.deepEquals(k1, k2);
             default: throw new AssertionError(comparisonMode);
         }
+    }
+
+    /**
+     * Locates the entry for the given key and, if present, invokes the given getter method.
+     *
+     * @param  <R>           type of value returned by the getter method.
+     * @param  key           key of the entry to search in this map.
+     * @param  getter        getter method to invoke on the entry.
+     * @param  defaultValue  value to return if there is no entry for the given key.
+     * @return result of the getter function invoked on the entry, or the default value if there is no entry.
+     */
+    @SuppressWarnings("unchecked")
+    private synchronized <R> R get(final Object key, final Function<Entry,R> getter, final R defaultValue) {
+        assert isValid();
+        if (key != null) {
+            final Entry[] table = this.table;
+            final int index = (keyHashCode(key) & HASH_MASK) % table.length;
+            for (Entry e = table[index]; e != null; e = (Entry) e.next) {
+                if (keyEquals(key, e.key)) {
+                    return getter.apply(e);
+                }
+            }
+        }
+        return defaultValue;
+    }
+
+    /**
+     * If this map contains the specified key, returns the instance contained in this map.
+     * Otherwise returns the given {@code key} instance.
+     *
+     * <p>This method can be useful when the keys are potentially large objects.
+     * It allows to opportunistically share existing instances, a little bit like
+     * when using {@link WeakHashSet} except that this method does not add the given
+     * key to this map if not present.</p>
+     *
+     * @param  key  key to look for in this map.
+     * @return the key instance in this map which is equal to the specified key, or {@code key} if none.
+     *
+     * @since 1.4
+     */
+    @SuppressWarnings("unchecked")
+    public K intern(final K key) {
+        return get(key, Entry::getKey, key);
     }
 
     /**
@@ -349,15 +393,15 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      */
     @Override
     public boolean containsKey(final Object key) {
-        return get(key) != null;
+        return get(key, Function.identity(), null) != null;
     }
 
     /**
-     * Returns {@code true} if this map maps one or more keys to this value.
+     * Returns {@code true} if this map maps one or more keys to the specified value.
      * Null values are considered never present.
      *
      * @param  value  value whose presence in this map is to be tested.
-     * @return {@code true} if this map maps one or more keys to this value.
+     * @return {@code true} if this map maps one or more keys to the specified value.
      */
     @Override
     public synchronized boolean containsValue(final Object value) {
@@ -373,19 +417,24 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
      * @return the value to which this map maps the specified key.
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public synchronized V get(final Object key) {
-        assert isValid();
-        if (key != null) {
-            final Entry[] table = this.table;
-            final int index = (keyHashCode(key) & HASH_MASK) % table.length;
-            for (Entry e = table[index]; e != null; e = (Entry) e.next) {
-                if (keyEquals(key, e.key)) {
-                    return e.get();
-                }
-            }
-        }
-        return null;
+    public V get(final Object key) {
+        return get(key, Entry::get, null);
+    }
+
+    /**
+     * Returns the value to which this map maps the specified key.
+     * Returns {@code defaultValue} if the map contains no mapping for this key.
+     * Null keys are considered never present.
+     *
+     * @param  key  key whose associated value is to be returned.
+     * @param  defaultValue  the default mapping of the key.
+     * @return the value to which this map maps the specified key.
+     *
+     * @since 1.4
+     */
+    @Override
+    public V getOrDefault(final Object key, final V defaultValue) {
+        return get(key, Entry::get, defaultValue);
     }
 
     /**

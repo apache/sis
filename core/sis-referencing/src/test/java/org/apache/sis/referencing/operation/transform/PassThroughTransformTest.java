@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Random;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
@@ -42,7 +43,7 @@ import static org.apache.sis.test.Assert.*;
  * Tests {@link PassThroughTransform}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn({
@@ -82,7 +83,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
      * Tests the pass through transform using an identity transform.
      * The "pass-through" of such transform shall be itself the identity transform.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if a test coordinate tuple cannot be transformed.
      */
     @Test
     public void testIdentity() throws TransformException {
@@ -94,7 +95,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
      * Tests the pass-through transform using an affine transform.
      * The "pass-through" of such transforms are optimized using matrix arithmetic.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if a test coordinate tuple cannot be transformed.
      */
     @Test
     public void testLinear() throws TransformException {
@@ -109,7 +110,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
      * Tests the general pass-through transform.
      * This test uses a non-linear sub-transform for preventing the factory method to optimize.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if a test coordinate tuple cannot be transformed.
      */
     @Test
     public void testPassthrough() throws TransformException {
@@ -119,7 +120,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * Tests the general pass-through transform with a sub-transform going from 3D to 2D points.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if a test coordinate tuple cannot be transformed.
      */
     @Test
     public void testDimensionDecrease() throws TransformException {
@@ -130,7 +131,7 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * Tests the general pass-through transform with a sub-transform going from 2D to 3D points.
      *
-     * @throws TransformException should never happen.
+     * @throws TransformException if a test coordinate tuple cannot be transformed.
      */
     @Test
     public void testDimensionIncrease() throws TransformException {
@@ -140,6 +141,9 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
 
     /**
      * Tests a pass-through transform built using the given sub-transform.
+     * This method uses (indirectly) the {@link PassThroughTransform#create(int, MathTransform, int)}
+     * factory method with various {@code firstAffectedCoordinate} and {@code numTrailingCoordinates}
+     * argument values.
      *
      * @param  subTransform   the sub-transform to use for building pass-through transform.
      * @param  expectedClass  the expected implementation class of pass-through transforms.
@@ -174,9 +178,10 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
 
     /**
      * Tests the current {@linkplain #transform transform} using an array of random coordinate values,
-     * and compares the result against the expected ones. This method computes itself the expected results.
+     * and compares the result against the expected ones. This method computes itself the expected results
+     * on the assumption that all modified coordinates are consecutive.
      *
-     * @param  subTransform           the sub transform used by the current pass-through transform.
+     * @param  subTransform             the sub transform used by the current pass-through transform.
      * @param  firstAffectedCoordinate  first input/output dimension used by {@code subTransform}.
      * @throws TransformException if a transform failed.
      */
@@ -286,5 +291,49 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
                 0, 0, 0, 1, 0, 0,
                 0, 0, 0, 0, 1, 0,
                 0, 0, 0, 0, 0, 1}), MathTransforms.getMatrix(steps.get(2)), 0);
+    }
+
+    /**
+     * Tests the creation of a pass-through transform with modified coordinates that are not consecutive.
+     * This is a test of {@link PassThroughTransform#create(BitSet, MathTransform, int, MathTransformFactory)}
+     * factory method.
+     *
+     * @throws FactoryException if an error occurred while combining the transforms.
+     * @throws TransformException if a test coordinate tuple cannot be transformed.
+     */
+    @Test
+    public void testNonConsecutiveModifiedCoordinates() throws FactoryException, TransformException {
+        random = TestUtilities.createRandomNumberGenerator();
+        /*
+         * First, create a pass-through transform from an inseparable `PseudoTransform`.
+         * Because `PseudoTransform` is inseparable, the modified coordinates must be consecutive.
+         * However the `PassThroughTransform` result is partially separable and used in next step.
+         */
+        final var bitset = new BitSet();
+        bitset.set(1, 3, true);                                 // Modified coordinates = {1, 2}.
+        MathTransform subTransform = new PseudoTransform(2, 2);
+        transform = PassThroughTransform.create(bitset, subTransform, 5, null);
+        assertEquals(5, transform.getSourceDimensions());
+        assertEquals(5, transform.getTargetDimensions());
+        assertEquals(1, ((PassThroughTransform) transform).firstAffectedCoordinate);
+        assertEquals(2, ((PassThroughTransform) transform).numTrailingCoordinates);
+        isInverseTransformSupported = false;
+        verifyTransform(subTransform, 1);
+        /*
+         * Now test with non-consecutive coordinates, except for the `PseudoTransform` part
+         * which must still be in consecutive coordinates. We add a linear transform before
+         * for making the work a little bit harder.
+         */
+        bitset.clear();
+        bitset.set(1, true);
+        bitset.set(3, 5, true);     // The inseparable `PseudoTransform` part.
+        bitset.set(6, true);
+        bitset.set(9, true);
+        subTransform = MathTransforms.concatenate(MathTransforms.scale(4, 3, 7, 5, -6), transform);
+        transform = PassThroughTransform.create(bitset, subTransform, 10, null);
+        verifyTransform(
+            // _____________[0]_________[1]-____[2]____[3]_______[4]     Dimension index in sub-transform.
+            new double[] {2, 1, -1,    0.2,    0.1, 9,  2, 8, 4, -1},
+            new double[] {2, 4, -1, 1600.6, 2700.7, 9, 10, 8, 4,  6});
     }
 }

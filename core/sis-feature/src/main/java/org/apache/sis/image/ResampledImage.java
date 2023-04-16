@@ -479,24 +479,25 @@ public class ResampledImage extends ComputedImage {
 
     /**
      * Gets a property from this image. Current default implementation supports the following keys
-     * (more properties may be added to this list in future Apache SIS versions):
+     * (more properties may be added to this list in any future Apache SIS versions):
      *
      * <ul>
      *   <li>{@value #POSITIONAL_ACCURACY_KEY}</li>
      *   <li>{@value #POSITIONAL_CONSISTENCY_KEY}</li>
+     *   <li>{@value #SAMPLE_DIMENSIONS_KEY}  (forwarded to the source image)</li>
      *   <li>{@value #SAMPLE_RESOLUTIONS_KEY} (forwarded to the source image)</li>
      *   <li>{@value #MASK_KEY} if the image uses floating point numbers.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * the sample resolutions are retained because they should have approximately the same values before and after
+     * <h4>Note on sample values</h4>
+     * The sample resolutions are retained because they should have approximately the same values before and after
      * resampling. {@linkplain #STATISTICS_KEY Statistics} are not in this list because, while minimum and maximum
      * values should stay approximately the same, the average value and standard deviation may be quite different.
-     * </div>
      */
     @Override
     public Object getProperty(final String key) {
         switch (key) {
+            case SAMPLE_DIMENSIONS_KEY:
             case SAMPLE_RESOLUTIONS_KEY: {
                 return getSource().getProperty(key);
             }
@@ -527,6 +528,7 @@ public class ResampledImage extends ComputedImage {
     public String[] getPropertyNames() {
         final String[] inherited = getSource().getPropertyNames();
         final String[] names = {
+            SAMPLE_DIMENSIONS_KEY,
             SAMPLE_RESOLUTIONS_KEY,
             POSITIONAL_ACCURACY_KEY,
             POSITIONAL_CONSISTENCY_KEY,

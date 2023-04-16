@@ -18,8 +18,8 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
-import java.util.Optional;
 import java.awt.Transparency;
 import java.awt.Color;
 import java.awt.color.ColorSpace;
@@ -30,6 +30,7 @@ import java.awt.image.DirectColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
 import org.apache.sis.image.DataType;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.internal.util.Numerics;
@@ -44,6 +45,7 @@ import org.apache.sis.util.Debug;
 
 /**
  * A factory for {@link ColorModel} objects built from a sequence of colors.
+ * Instances of {@code ColorModelFactory} are immutable and thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
@@ -52,6 +54,14 @@ import org.apache.sis.util.Debug;
  * @since   1.0
  */
 public final class ColorModelFactory {
+    /**
+     * Band to make visible if an image contains many bands but a color map is defined for only one band.
+     * Should always be zero, because this is the only value guaranteed to be always present.
+     * This constant is used mostly for making easier to identify locations in Java code
+     * where this default value is hard-coded.
+     */
+    public static final int DEFAULT_VISIBLE_BAND = 0;
+
     /**
      * The fully transparent color.
      */
@@ -69,9 +79,11 @@ public final class ColorModelFactory {
 
     /**
      * A pool of color models previously created by {@link #createColorModel()}.
+     * This is stored in a static map instead of in a {@link ColorModelFactory} field for allowing
+     * the {@code ColorModelFactory} reference to be cleared when the color model is no longer used.
      *
-     * <div class="note"><b>Note:</b>
-     * we use {@linkplain java.lang.ref.WeakReference weak references} instead of {@linkplain java.lang.ref.SoftReference
+     * <h4>Implementation note</h4>
+     * We use {@linkplain java.lang.ref.WeakReference weak references} instead of {@linkplain java.lang.ref.SoftReference
      * soft references} because the intent is not to cache the values. The intent is to share existing instances in order
      * to reduce memory usage. Rational:
      *
@@ -83,9 +95,8 @@ public final class ColorModelFactory {
      *       for saving the few milliseconds requiring for building a new color model. Client code should retains their own
      *       reference to a {@link ColorModel} if they plan to reuse it often in a short period of time.</li>
      * </ul>
-     * </div>
      */
-    private static final Map<ColorModelFactory,ColorModel> PIECEWISES = new WeakValueHashMap<>(ColorModelFactory.class);
+    private static final WeakValueHashMap<ColorModelFactory,ColorModel> PIECEWISES = new WeakValueHashMap<>(ColorModelFactory.class);
 
     /**
      * Comparator for sorting ranges by their minimal value.
@@ -130,9 +141,9 @@ public final class ColorModelFactory {
      * The number of pieces (segments) is {@code pieceStarts.length}. The last element of this array is the index after the
      * end of the last piece. The indices are integers. Never {@code null} but may be empty.
      *
-     * <div class="note"><b>Note:</b>
-     * indices as unsigned short are not sufficient because in the worst case the last next index will be 65536,
-     * which would be converted to 0 as a short, causing several exceptions afterward.</div>
+     * <h4>Implementation note</h4>
+     * Unsigned short type is not sufficient because in the worst case the last next index will be 65536,
+     * which would be converted to 0 as a short, causing several exceptions afterward.
      */
     private final int[] pieceStarts;
 
@@ -145,7 +156,12 @@ public final class ColorModelFactory {
     /**
      * Constructs a new {@code ColorModelFactory}. This object will be used as a key in a {@link Map},
      * so this is not really a {@code ColorModelFactory} but a kind of "{@code ColorModelKey}" instead.
-     * However, since this constructor is private, user does not need to know that.
+     * However, since this constructor is private, users do not need to know that implementation details.
+     *
+     * @param  dataType     one of the {@link DataBuffer} constants.
+     * @param  numBands     the number of bands (usually 1).
+     * @param  visibleBand  the visible band (usually 0).
+     * @param  colors       colors associated to their range of values.
      *
      * @see #createPiecewise(int, int, int, ColorsForRange[])
      */
@@ -194,7 +210,7 @@ public final class ColorModelFactory {
                             }
                         }
                     }
-                    codes [  count] = entry.toARGB();
+                    codes [  count] = entry.toARGB(upper - lower);
                     starts[  count] = lower;
                     starts[++count] = upper;
                 }
@@ -219,9 +235,117 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Constructs the color model from the {@code codes} and {@link #ARGB} data.
-     * This method is invoked the first time the color model is created, or when
-     * the value in the cache has been discarded.
+     * Creates a new instance with the same colors than the specified one but different type and number of bands.
+     * The color arrays are shared, not cloned.
+     *
+     * @param  dataType     one of the {@link DataBuffer} constants.
+     * @param  numBands     the number of bands (usually 1).
+     * @param  visibleBand  the visible band (usually 0).
+     * @param  colors       colors associated to their range of values.
+     */
+    private ColorModelFactory(final int dataType, final int numBands, final int visibleBand, final ColorModelFactory colors) {
+        this.dataType    = dataType;
+        this.numBands    = numBands;
+        this.visibleBand = visibleBand;
+        this.minimum     = colors.minimum;
+        this.maximum     = colors.maximum;
+        this.pieceStarts = colors.pieceStarts;
+        this.ARGB        = colors.ARGB;
+    }
+
+    /**
+     * Compares this object with the specified object for equality.
+     * Defined for using {@code ColorModelFactory} as key in a hash map.
+     * This method is public as an implementation side-effect.
+     *
+     * @param  other the other object to compare for equality.
+     * @return whether the two objects are equal.
+     * @hidden
+     */
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (other instanceof ColorModelFactory) {
+            final ColorModelFactory that = (ColorModelFactory) other;
+            return this.dataType    == that.dataType
+                && this.numBands    == that.numBands
+                && this.visibleBand == that.visibleBand
+                && this.minimum     == that.minimum         // Should never be NaN.
+                && this.maximum     == that.maximum
+                && Arrays.equals(pieceStarts, that.pieceStarts)
+                && Arrays.deepEquals(ARGB, that.ARGB);
+        }
+        return false;
+    }
+
+    /**
+     * Returns a hash-code value for use as key in a hash map.
+     * This method is public as an implementation side-effect.
+     *
+     * @return a hash code for using this factory as a key.
+     * @hidden
+     */
+    @Override
+    public int hashCode() {
+        final int categoryCount = pieceStarts.length - 1;
+        int code = 962745549 + (numBands*31 + visibleBand)*31 + categoryCount;
+        for (int i=0; i<categoryCount; i++) {
+            code += Arrays.hashCode(ARGB[i]);
+        }
+        return code;
+    }
+
+    /**
+     * Prepares a factory of color models interpolated for the ranges in the given map entries.
+     * The {@link ColorModel} instances will be shared among all callers in the running virtual machine.
+     * The {@code colors} list shall not be null or empty but may contain {@code null} values.
+     * Null values default to fully transparent color when the range contains a single value,
+     * and to grayscale otherwise. Empty arrays of colors are interpreted as explicitly transparent.
+     *
+     * @param  colors  the colors to use for each range of sample values.
+     * @return a factory of color model suitable for {@link RenderedImage} objects with values in the given ranges.
+     */
+    public static ColorModelFactory piecewise(final Collection<Map.Entry<NumberRange<?>, Color[]>> colors) {
+        final var ranges = ColorsForRange.list(colors, null);
+        return PIECEWISES.intern(new ColorModelFactory(DataBuffer.TYPE_BYTE, 0, DEFAULT_VISIBLE_BAND, ranges));
+    }
+
+    /**
+     * Gets or creates a color model for the specified type and number of bands.
+     * This method returns a shared color model if a previous instance exists.
+     *
+     * @param  dataType     the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
+     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
+     *                      or {@link DataBuffer#TYPE_DOUBLE}.
+     * @param  numBands     the number of bands for the color model (usually 1). The returned color model will render only
+     *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
+     *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
+     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
+     * @return the color model for the specified type and number of bands.
+     */
+    public ColorModel createColorModel(final int dataType, final int numBands, final int visibleBand) {
+        return new ColorModelFactory(dataType, numBands, visibleBand, this).getColorModel();
+    }
+
+    /**
+     * Returns the color model associated to this {@code ColorModelFactory} instance.
+     * This method always returns a unique color model instance,
+     * even if this {@code ColorModelFactory} instance is new.
+     *
+     * @return the color model associated to this instance.
+     */
+    private ColorModel getColorModel() {
+        synchronized (PIECEWISES) {
+            return PIECEWISES.computeIfAbsent(this, ColorModelFactory::createColorModel);
+        }
+    }
+
+    /**
+     * Constructs the color model from the {@link #ARGB} data.
+     * This method is invoked the first time the color model is created,
+     * or when the value in the cache has been discarded.
      */
     private ColorModel createColorModel() {
         /*
@@ -243,7 +367,7 @@ public final class ColorModelFactory {
             final int[] nBits = {
                 DataBuffer.getDataTypeSize(dataType)
             };
-            return CACHE.unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, dataType));
+            return unique(new ComponentColorModel(cs, nBits, false, true, Transparency.OPAQUE, dataType));
         }
         /*
          * Interpolates the colors in the color palette. Colors that do not fall
@@ -269,68 +393,6 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Public as an implementation side-effect.
-     *
-     * @return a hash code.
-     */
-    @Override
-    public int hashCode() {
-        final int categoryCount = pieceStarts.length - 1;
-        int code = 962745549 + (numBands*31 + visibleBand)*31 + categoryCount;
-        for (int i=0; i<categoryCount; i++) {
-            code += Arrays.hashCode(ARGB[i]);
-        }
-        return code;
-    }
-
-    /**
-     * Public as an implementation side-effect.
-     *
-     * @param  other the other object to compare for equality.
-     * @return whether the two objects are equal.
-     */
-    @Override
-    public boolean equals(final Object other) {
-        if (other == this) {
-            return true;
-        }
-        if (other instanceof ColorModelFactory) {
-            final ColorModelFactory that = (ColorModelFactory) other;
-            return this.dataType    == that.dataType
-                && this.numBands    == that.numBands
-                && this.visibleBand == that.visibleBand
-                && this.minimum     == that.minimum         // Should never be NaN.
-                && this.maximum     == that.maximum
-                && Arrays.equals(pieceStarts, that.pieceStarts)
-                && Arrays.deepEquals(ARGB, that.ARGB);
-        }
-        return false;
-    }
-
-    /**
-     * Returns a color model interpolated for the ranges in the given map entries.
-     * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
-     *
-     * @param  dataType     the color model type. One of {@link DataBuffer#TYPE_BYTE}, {@link DataBuffer#TYPE_USHORT},
-     *                      {@link DataBuffer#TYPE_SHORT}, {@link DataBuffer#TYPE_INT}, {@link DataBuffer#TYPE_FLOAT}
-     *                      or {@link DataBuffer#TYPE_DOUBLE}.
-     * @param  numBands     the number of bands for the color model (usually 1). The returned color model will render only
-     *                      the {@code visibleBand} and ignore the others, but the existence of all {@code numBands} will
-     *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
-     * @param  visibleBand  the band to be made visible (usually 0). All other bands (if any) will be ignored.
-     * @param  colors       the colors to use for each range of sample values.
-     *                      The map may contain {@code null} values, which means transparent.
-     * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
-     *
-     * @see Colorizer
-     */
-    public static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
-                                             final Map<NumberRange<?>, Color[]> colors)
-    {
-        return createPiecewise(dataType, numBands, visibleBand, ColorsForRange.list(colors.entrySet()));
-    }
-
-    /**
      * Returns a color model interpolated for the given ranges and colors.
      * This method builds up the color model from each set of colors associated to ranges in the given entries.
      * Returned instances of {@link ColorModel} are shared among all callers in the running virtual machine.
@@ -347,15 +409,12 @@ public final class ColorModelFactory {
      *                      be at least tolerated. Supplemental bands, even invisible, are useful for processing.
      * @param  visibleBand  the band to be made visible (usually 0). All other bands, if any, will be ignored.
      * @param  colors       the colors associated to ranges of sample values.
-     * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
+     * @return a color model suitable for {@link RenderedImage} objects with values in the given ranges.
      */
     static ColorModel createPiecewise(final int dataType, final int numBands, final int visibleBand,
                                       final ColorsForRange[] colors)
     {
-        final ColorModelFactory key = new ColorModelFactory(dataType, numBands, visibleBand, colors);
-        synchronized (PIECEWISES) {
-            return PIECEWISES.computeIfAbsent(key, ColorModelFactory::createColorModel);
-        }
+        return new ColorModelFactory(dataType, numBands, visibleBand, colors).getColorModel();
     }
 
     /**
@@ -370,7 +429,7 @@ public final class ColorModelFactory {
      * @param  ARGB         an array of ARGB values.
      * @param  hasAlpha     indicates whether alpha values are contained in the {@code ARGB} array.
      * @param  transparent  the transparent pixel, or -1 for auto-detection.
-     * @return An index color model for the specified array.
+     * @return an index color model for the specified array of ARGB values.
      */
     public static IndexColorModel createIndexColorModel(final int numBands, final int visibleBand, final int[] ARGB,
             final boolean hasAlpha, final int transparent)
@@ -393,8 +452,20 @@ public final class ColorModelFactory {
     }
 
     /**
-     * Returns a color model interpolated for the given range of values. This is a convenience method for
-     * {@link #createPiecewise(int, int, int, Map)} when the map contains only one element.
+     * Returns a unique instance of the given color model.
+     * This method is a shortcut used when the return type does not need to be a specialized type.
+     *
+     * @param  cm  the color model.
+     * @return a unique instance of the given color model.
+     */
+    private static ColorModel unique(final ColorModel cm) {
+        return CACHE.unique(cm);
+    }
+
+    /**
+     * Returns a color model interpolated for the given range of values.
+     * This is a convenience method for {@link #piecewise(Collection)}
+     * when the map contains only one element.
      *
      * @param  dataType     the color model type.
      * @param  numBands     the number of bands for the color model (usually 1).
@@ -402,13 +473,14 @@ public final class ColorModelFactory {
      * @param  lower        the minimum value, inclusive.
      * @param  upper        the maximum value, exclusive.
      * @param  colors       the colors to use for the range of sample values.
-     * @return a color model suitable for {@link java.awt.image.RenderedImage} objects with values in the given ranges.
+     * @return a color model suitable for {@link RenderedImage} objects with values in the given ranges.
      */
     public static ColorModel createColorScale(final int dataType, final int numBands, final int visibleBand,
                                               final double lower, final double upper, final Color... colors)
     {
+        ArgumentChecks.ensureNonEmpty("colors", colors);
         return createPiecewise(dataType, numBands, visibleBand, new ColorsForRange[] {
-            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true)
+            new ColorsForRange(null, new NumberRange<>(Double.class, lower, true, upper, false), colors, true, null)
         });
     }
 
@@ -416,7 +488,7 @@ public final class ColorModelFactory {
      * Creates a color model for opaque images storing pixels as real numbers.
      * The color model can have an arbitrary number of bands, but in current implementation only one band is used.
      *
-     * <p><b>Warning:</b> the use of this color model is very slow.
+     * <p><b>Warning:</b> the use of this color model may be very slow.
      * It should be used only when no standard color model can be used.</p>
      *
      * @param  dataType       the color model type as one of {@code DataBuffer.TYPE_*} constants.
@@ -440,7 +512,7 @@ public final class ColorModelFactory {
             final ScaledColorSpace cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
             cm = new ScaledColorModel(cs, dataType);
         }
-        return CACHE.unique(cm);
+        return unique(cm);
     }
 
     /**
@@ -525,19 +597,23 @@ public final class ColorModelFactory {
     /**
      * Creates a RGB color model for the given sample model.
      * The sample model shall use integer type and have 3 or 4 bands.
+     * This method may return {@code null} if the color model cannot be created.
      *
      * @param  model  the sample model for which to create a color model.
-     * @return the color model.
+     * @return the color model, or null if a precondition does not hold.
      */
     public static ColorModel createRGB(final SampleModel model) {
         final int numBands = model.getNumBands();
-        assert numBands >= 3 && numBands <= 4 : numBands;
-        assert ImageUtilities.isIntegerType(model) : model;
-        int bitsPerSample = 0;
-        for (int i=0; i<numBands; i++) {
-            bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+        if (numBands >= 3 && numBands <= 4 && ImageUtilities.isIntegerType(model)) {
+            int bitsPerSample = 0;
+            for (int i=0; i<numBands; i++) {
+                bitsPerSample = Math.max(bitsPerSample, model.getSampleSize(i));
+            }
+            if (bitsPerSample <= Byte.SIZE) {
+                return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
+            }
         }
-        return createRGB(bitsPerSample, model.getNumDataElements() == 1, numBands > 3);
+        return null;
     }
 
     /**
@@ -569,7 +645,7 @@ public final class ColorModelFactory {
             cm = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_sRGB), numBits, hasAlpha, false,
                             hasAlpha ? Transparency.TRANSLUCENT : Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
         }
-        return CACHE.unique(cm);
+        return unique(cm);
     }
 
     /**
@@ -582,7 +658,7 @@ public final class ColorModelFactory {
      *   <li>Input color model is null.</li>
      *   <li>Given color model is not assignable from the following types:
      *     <ul>
-     *       <li>{@link ComponentColorModel}</li>
+     *       <li>{@link ComponentColorModel} with only one band</li>
      *       <li>{@link MultiBandsIndexColorModel}</li>
      *       <li>{@link ScaledColorModel}</li>
      *     </ul>
@@ -590,35 +666,68 @@ public final class ColorModelFactory {
      *   <li>Input color model is recognized, but we cannot infer a proper color interpretation for given number of bands.</li>
      * </ul>
      *
-     * <em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>: they're not managed for now, because
-     * they're really designed for a "rigid" case where data buffer values are interpreted directly by the color model.
+     * This method may return {@code null} if the color model cannot be created.
+     *
+     * <p><em>Note about {@link PackedColorModel} and {@link DirectColorModel}</em>:
+     * those color models not managed for now, because they are really designed for
+     * a "rigid" case where data buffer values are interpreted directly by the color model.</p>
      *
      * @param  cm     the color model, or {@code null}.
      * @param  bands  the bands to select. Must neither be null nor empty.
-     * @return the subset color model, or empty if input was null or if a subset cannot be deduced.
+     * @return the subset color model, or null if input was null or if a subset cannot be deduced.
      */
-    public static Optional<ColorModel> createSubset(final ColorModel cm, final int[] bands) {
+    public static ColorModel createSubset(final ColorModel cm, final int[] bands) {
         assert (bands != null) && bands.length > 0 : bands;
+        int visibleBand = DEFAULT_VISIBLE_BAND;
+        if (cm instanceof MultiBandsIndexColorModel) {
+            visibleBand = ((MultiBandsIndexColorModel) cm).visibleBand;
+        } else if (cm != null) {
+            final ColorSpace cs = cm.getColorSpace();
+            if (cs instanceof ScaledColorSpace) {
+                visibleBand = ((ScaledColorSpace) cs).visibleBand;
+            }
+        }
+        for (int i=0; i<bands.length; i++) {
+            if (bands[i] == visibleBand) {
+                visibleBand = i;
+                break;
+            }
+        }
+        return derive(cm, bands.length, visibleBand);
+    }
+
+    /**
+     * Returns a color model with with the same colors but a different number of bands.
+     * Current implementation supports {@link ComponentColorModel} with only one band,
+     * {@link MultiBandsIndexColorModel} and {@link ScaledColorModel}.
+     * This method may return {@code null} if the color model cannot be created.
+     *
+     * @param  cm           the color model, or {@code null}.
+     * @param  numBands     new number of bands.
+     * @param  visibleBand  new visible band.
+     * @return the derived color model, or null if this method does not support the given color model.
+     */
+    public static ColorModel derive(final ColorModel cm, final int numBands, final int visibleBand) {
         if (cm == null) {
-            return Optional.empty();
+            return null;
         }
         final ColorModel subset;
         if (cm instanceof MultiBandsIndexColorModel) {
-            subset = ((MultiBandsIndexColorModel) cm).createSubsetColorModel(bands);
+            subset = ((MultiBandsIndexColorModel) cm).derive(numBands, visibleBand);
         } else if (cm instanceof ScaledColorModel) {
-            subset = ((ScaledColorModel) cm).createSubsetColorModel(bands);
-        } else if (bands.length == 1 && cm instanceof ComponentColorModel) {
+            subset = ((ScaledColorModel) cm).derive(numBands, visibleBand);
+        } else if (numBands == 1 && cm instanceof ComponentColorModel) {
             final int dataType = cm.getTransferType();
             if (dataType < DataBuffer.TYPE_BYTE || dataType > DataBuffer.TYPE_USHORT) {
-                return Optional.empty();
+                return null;
             }
             final ColorSpace cs = ColorSpace.getInstance(ColorSpace.CS_GRAY);
             subset = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
         } else {
             // TODO: handle other color models.
-            return Optional.empty();
+            return null;
         }
-        return Optional.of(CACHE.unique(subset));
+        return unique(subset);
     }
 
     /**
@@ -671,7 +780,7 @@ public final class ColorModelFactory {
     /**
      * Copies {@code colors} into {@code ARGB} array from index {@code lower} inclusive to index {@code upper} exclusive.
      * If {@code upper-lower} is not equal to the length of {@code colors} array, then colors will be interpolated.
-     * The given {@code colors} array must be initialized with zero values in the {@code lower} … {@code upper} range.
+     * The given {@code ARGB} array must be initialized with zero values in the {@code lower} … {@code upper} range.
      *
      * @param  colors  colors to copy into the {@code ARGB} array.
      * @param  ARGB    array of integer to write ARGB values into.
@@ -687,6 +796,10 @@ public final class ColorModelFactory {
         switch (upper - lower) {
             case 1: ARGB[lower] = colors[0];                            // fall through
             case 0: return;
+        }
+        if (upper - lower == colors.length) {
+            System.arraycopy(colors, 0, ARGB, 0, colors.length);
+            return;
         }
         /*
          * Prepares the coefficients for the iteration.
@@ -745,10 +858,7 @@ public final class ColorModelFactory {
             buffer.append(System.lineSeparator()).append(CharSequences.spaces(9 - start.length())).append(start);
             if (i < ARGB.length) {
                 buffer.append('…');
-                final int[] colors = ARGB[i];
-                if (colors != null) {
-                    ColorsForRange.appendColorRange(buffer, colors.length, (j) -> colors[j]);
-                }
+                ColorsForRange.appendColorRange(buffer, ARGB[i]);
             }
         }
         return buffer.toString();

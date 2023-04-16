@@ -23,7 +23,6 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.beans.value.ObservableValue;
-import org.apache.sis.internal.gui.ImmutableObjectProperty;
 
 
 /**
@@ -36,7 +35,7 @@ import org.apache.sis.internal.gui.ImmutableObjectProperty;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <S>  the type of row data as declared in the {@link TableView} generic type.
  *
@@ -62,39 +61,19 @@ public abstract class ColorColumnHandler<S> implements Callback<TableColumn.Cell
     protected abstract ColorRamp.Type applyColors(S row, ColorRamp colors);
 
     /**
-     * Gets the ARGB codes of colors to show in the cell for the given row data.
-     * This method is sufficient when the color(s) can be changed only by calls to
-     * {@link #applyColors(S, ColorRamp)}. If the color(s) may change externally,
-     * then {@link #getObservableValue(S)} should be overridden too.
-     *
-     * @param  row  the row item for which to get ARGB codes to show in color cell.
-     * @return the colors as ARGB codes, or {@code null} if none (transparent).
-     */
-    protected abstract int[] getARGB(S row);
-
-    /**
-     * Returns the color associated to given row as an observable value. The default implementation creates
-     * an unmodifiable value derived from {@link #getARGB(S)}. It is okay if the color(s) cannot be changed
-     * in other way than by calls to {@link #applyColors(Object, ColorRamp)}. If this assumption does not hold,
-     * then subclasses should override this method and return the observable which is mutated when the value change.
+     * Returns the color associated to given row as an observable value.
      *
      * @param  row  the row item for which to get color to show in color cell. Never {@code null}.
-     * @return the color(s) to use for the given row, or {@code null} if none (transparent).
+     * @return the color(s) to use for the given row, or {@code null} for default.
      */
-    protected ObservableValue<ColorRamp> getObservableValue(S row) {
-        final int[] ARGB = getARGB(row);
-        if (ARGB != null) {
-            return new ImmutableObjectProperty<>(new ColorRamp(ARGB));
-        }
-        return null;
-    }
+    protected abstract ObservableValue<ColorRamp> getObservableValue(S row);
 
     /**
      * Invoked by {@link TableColumn} for computing the value of a {@link ColorCell}.
      * This method is public as an implementation side-effect; do not rely on that.
      *
      * @param  cell  the row value together with references to column and table where the show the color cell.
-     * @return the color cell value, or {@code null} if none (transparent).
+     * @return the color cell value, or {@code null} for default (original color, grayscale or transparent).
      */
     @Override
     public final ObservableValue<ColorRamp> call(final TableColumn.CellDataFeatures<S,ColorRamp> cell) {

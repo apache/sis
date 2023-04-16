@@ -21,12 +21,14 @@ import java.util.Hashtable;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -37,7 +39,7 @@ import static org.apache.sis.test.FeatureAssert.*;
  * Tests {@link BandSelectImage}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class BandSelectImageTest extends TestCase {
@@ -45,6 +47,11 @@ public final class BandSelectImageTest extends TestCase {
      * Arbitrary size for the test image.
      */
     private static final int WIDTH = 3, HEIGHT = 4;
+
+    /**
+     * Random number generator used for the test.
+     */
+    private Random random;
 
     /**
      * The source image as an instance of custom implementation.
@@ -68,7 +75,7 @@ public final class BandSelectImageTest extends TestCase {
     private void createImage(final int numBands, final int checkedBand, final boolean icm) {
         image = new TiledImageMock(DataBuffer.TYPE_BYTE, numBands, 0, 0, WIDTH, HEIGHT, WIDTH, HEIGHT, 0, 0, false);
         image.initializeAllTiles(checkedBand);
-        final Random random = new Random();
+        random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<numBands; i++) {
             if (i != checkedBand) {
                 image.setRandomValues(i, random, 100);
@@ -92,6 +99,18 @@ public final class BandSelectImageTest extends TestCase {
     }
 
     /**
+     * The expected sample values in the determinist band initialized by {@link #createImage(int, int, boolean)}.
+     */
+    private static int[][] expectedSampleValues() {
+        return new int[][] {
+            {100, 101, 102},
+            {110, 111, 112},
+            {120, 121, 122},
+            {130, 131, 132}
+        };
+    }
+
+    /**
      * Computes a dummy resolution for the given band.
      */
     private static double resolution(final int band) {
@@ -110,12 +129,7 @@ public final class BandSelectImageTest extends TestCase {
         assertEquals("numBands", numBands, tile.getNumBands());
         assertEquals("numBands", numBands, ImageUtilities.getNumBands(image));
         assertEquals("sampleModel", image.getSampleModel(), tile.getSampleModel());
-        assertValuesEqual(tile, checkedBand, new int[][] {
-            {100, 101, 102},
-            {110, 111, 112},
-            {120, 121, 122},
-            {130, 131, 132}
-        });
+        assertValuesEqual(tile, checkedBand, expectedSampleValues());
     }
 
     /**
@@ -181,5 +195,54 @@ public final class BandSelectImageTest extends TestCase {
         assertNotNull("colorModel", test.getColorModel());
         verifySamples(test, 3, 2);
         verifyProperties(test, 3, 0, 2);
+    }
+
+    /**
+     * Tests write operation.
+     */
+    @Test
+    public void testWritable() {
+        createImage(2, 1, true);
+        final ImageProcessor processor = new ImageProcessor();
+        RenderedImage test = processor.selectBands(image, 1);
+        final int[][] expected = expectedSampleValues();
+        final Raster data = test.getData();
+        assertValuesEqual(data, 0, expected);
+        /*
+         * Above code where read operations for making sure that we initialized the test correctly.
+         * Code below is the actual test for write operations.
+         */
+        final WritableRenderedImage writable = (WritableRenderedImage) test;
+        final int tileX = writable.getMinTileX();
+        final int tileY = writable.getMinTileY();
+        final WritableRaster tile = writable.getWritableTile(tileX, tileY);
+        for (int i=0; i<3; i++) {
+            final int x = random.nextInt(tile.getWidth());
+            final int y = random.nextInt(tile.getHeight());
+            final int s = random.nextInt(10);
+            tile.setSample(x, y, 0, s);
+            expected[y][x] = s;
+        }
+        writable.releaseWritableTile(tileX, tileY);
+        assertValuesEqual(writable.getData(), 0, expected);
+        /*
+         * Try to restore orginal values.
+         */
+        writable.setData(data);
+        assertValuesEqual(writable.getData(), 0, expectedSampleValues());
+    }
+
+    /**
+     * Tests a band select on an image which is already a band select.
+     * The nested operations should be simplified to a single band select operation.
+     */
+    @Test
+    public void testNestedBandSelect() {
+        createImage(3, 2, true);
+        final ImageProcessor processor = new ImageProcessor();
+        RenderedImage test = processor.selectBands(image, 1, 2);
+        test = processor.selectBands(test, 1);
+        assertSame(image, ((BandSelectImage) test).getSource());
+        assertValuesEqual(test.getData(), 0, expectedSampleValues());
     }
 }

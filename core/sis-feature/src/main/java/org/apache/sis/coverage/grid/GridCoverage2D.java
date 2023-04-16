@@ -471,6 +471,8 @@ public class GridCoverage2D extends GridCoverage {
     /**
      * Creates a grid coverage that contains real values or sample values,
      * depending if {@code converted} is {@code true} or {@code false} respectively.
+     * This method is invoked by the default implementation of {@link #forConvertedValues(boolean)}
+     * when first needed.
      *
      * @param  converted  {@code true} for a coverage containing converted values,
      *                    or {@code false} for a coverage containing packed values.

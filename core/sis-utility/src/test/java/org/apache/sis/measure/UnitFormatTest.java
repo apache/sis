@@ -133,7 +133,7 @@ public final class UnitFormatTest extends TestCase {
     }
 
     /**
-     * Verifies one of the constants declared in the {@link Unit} class.
+     * Verifies one of the constants declared in the {@link Units} class.
      *
      * @param declared   a map from which to remove the {@code field} value, for verifying that we didn't forgot an element.
      * @param field      the name of the constant to be verified.

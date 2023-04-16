@@ -141,6 +141,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * The same array may be shared by many {@code GridExtent} instances.
      *
      * @see #getAxisType(int)
+     * @see #getAxisTypes()
      */
     private final DimensionNameType[] types;
 
@@ -148,6 +149,10 @@ public class GridExtent implements Serializable, LenientComparable {
      * Minimum and maximum grid coordinates. The first half contains minimum coordinates (inclusive),
      * while the last half contains maximum coordinates (<strong>inclusive</strong>). Note that the
      * later inclusiveness is the opposite of Java2D usage but conforms to ISO specification.
+     *
+     * @see #getLow(int)
+     * @see #getHigh(int)
+     * @see #getCoordinates()
      */
     private final long[] coordinates;
 
@@ -740,11 +745,38 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
+     * Returns a grid coordinate at the given relative position between <var>low</var> and <var>high</var>.
+     * The relative position is specified by a ratio between 0 and 1 where
+     * 0   maps to {@linkplain #getLow(int) low} grid coordinates,
+     * 1   maps to {@linkplain #getHigh(int) high grid coordinates} and
+     * 0.5 maps to {@linkplain #getMedian(int) median grid coordinates}.
+     * Ratio values outside the [0 … 1] range result in extrapolations.
+     *
+     * @param  index  the dimension for which to obtain the interpolated coordinate.
+     * @param  ratio  interpolation ratio (0 for low, 0.5 for median, 1 for high coordinate).
+     * @return the interpolated coordinate value in the given dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() grid dimension}.
+     * @throws ArithmeticException if the extrapolated coordinate cannot be represented as a 64 bits integer.
+     *
+     * @since 1.4
+     */
+    public long getRelative(final int index, final double ratio) {
+        if (ratio == 0.5) {
+            return getMedian(index);        // Special case for avoiding rounding errors.
+        } else if (ratio == 1) {
+            return getHigh(index);          // Special case for avoiding rounding errors.
+        } else {
+            return Math.addExact(getLow(index), Math.round(getSize(index, true) * ratio));
+        }
+    }
+
+    /**
      * Returns the number of integer grid coordinates along the specified dimension.
      * This is equal to {@code getHigh(dimension) - getLow(dimension) + 1}.
      *
      * @param  index  the dimension for which to obtain the size.
-     * @return the number of integer grid coordinates along the given dimension.
+     * @return the number of cells along the given dimension.
      * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() grid dimension}.
      * @throws ArithmeticException if the size is too large for the {@code long} primitive type.
@@ -767,7 +799,7 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * @param  index     the dimension for which to obtain the size.
      * @param  minusOne  {@code true} for returning <var>size</var>−1 instead of <var>size</var>.
-     * @return the number of integer grid coordinates along the given dimension.
+     * @return the number of cells along the given dimension, optionally minus one.
      */
     public double getSize(final int index, final boolean minusOne) {
         final int dimension = getDimension();
@@ -777,6 +809,17 @@ public class GridExtent implements Serializable, LenientComparable {
             return 0x1P64;                          // Unsigned integer overflow. Result is 2^64.
         }
         return Numerics.toUnsignedDouble(size);
+    }
+
+    /**
+     * Returns the low and high coordinates packaged in a single array.
+     * The length of this array is twice the number of dimensions.
+     * Changes in the returned array do not modify this extent.
+     *
+     * @return an array with low coordinates first, followed by high coordinates.
+     */
+    final long[] getCoordinates() {
+        return coordinates.clone();
     }
 
     /**
@@ -840,11 +883,12 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Returns indices of all dimensions where this grid extent has a size greater than 1.
-     * This method can be used for getting the grid extent of a <var>s</var>-dimensional slice
-     * in a <var>n</var>-dimensional cube where <var>s</var> ≤ <var>n</var>.
+     * This method can be used for getting the grid extent of a slice with {@code numDim}
+     * dimensions from a <var>n</var>-dimensional cube where {@code numDim} ≤ <var>n</var>.
      *
      * <h4>Example</h4>
-     * suppose that we want to get a two-dimensional slice <var>(y,z)</var> in a four-dimensional data cube <var>(x,y,z,t)</var>.
+     * suppose that we want to get a two-dimensional slice (<var>y</var>,<var>z</var>) in
+     * a four-dimensional data cube (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>).
      * The first step is to specify the <var>x</var> and <var>t</var> coordinates of the slice.
      * In this example we set <var>x</var> to 5 and <var>t</var> to 8.
      *
@@ -860,54 +904,54 @@ public class GridExtent implements Serializable, LenientComparable {
      *
      * {@snippet lang="java" :
      *     int[]  subDimensions = slice4D.getExtent().getSubspaceDimensions(2);
-     *     GridGeometry slice2D = slice4D.reduce(subDimensions);
+     *     GridGeometry slice2D = slice4D.selectDimensions(subDimensions);
      *     }
      *
-     * Note that in this particular example, it would have been more efficient to execute {@code grid.reduce(1,2)} directly.
+     * Note that in this example, it would have been more efficient to execute {@code grid.selectDimensions(1,2)} directly.
      * This {@code getSubspaceDimensions(int)} method is more useful for inferring a {@code slice2D} from a {@code slice4D}
      * which has been created elsewhere, or when we do not really want the {@code slice2D} but only its dimension indices.
      *
      * <h4>Number of dimensions</h4>
-     * This method returns exactly <var>s</var> indices. If there is more than <var>s</var> dimensions having a
-     * {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
-     * If there is less than <var>s</var> dimensions having a size greater than 1, then the returned list of
+     * This method returns exactly {@code numDim} indices. If there is more than {@code numDim} dimensions having
+     * a {@linkplain #getSize(int) size} greater than 1, then a {@link SubspaceNotSpecifiedException} is thrown.
+     * If there is less than {@code numDim} dimensions having a size greater than 1, then the returned list of
      * dimensions is completed with some dimensions of size 1, starting with the first dimensions in this grid
-     * extent, until there is exactly <var>s</var> dimensions. If this grid extent does not have at least
-     * <var>s</var> dimensions, then a {@code CannotEvaluateException} is thrown.
+     * extent, until there is exactly {@code numDim} dimensions. If this grid extent does not have at least
+     * {@code numDim} dimensions, then a {@link CannotEvaluateException} is thrown.
      *
-     * @param  s  number of dimensions of the sub-space.
-     * @return indices of sub-space dimensions, in increasing order in an array of length <var>s</var>.
-     * @throws SubspaceNotSpecifiedException if there is more than <var>s</var> dimensions having a size greater than 1.
-     * @throws CannotEvaluateException if this grid extent does not have at least <var>s</var> dimensions.
+     * @param  numDim  number of dimensions of the sub-space.
+     * @return indices of sub-space dimensions, in increasing order in an array of length {@code numDim}.
+     * @throws SubspaceNotSpecifiedException if there is more than {@code numDim} dimensions having a size greater than 1.
+     * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
      */
-    public int[] getSubspaceDimensions(final int s) {
-        ArgumentChecks.ensurePositive("s", s);
+    public int[] getSubspaceDimensions(final int numDim) {
+        ArgumentChecks.ensurePositive("numDim", numDim);
         final int m = getDimension();
-        if (s > m) {
-            throw new CannotEvaluateException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, s));
+        if (numDim > m) {
+            throw new CannotEvaluateException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, numDim));
         }
-        final int[] selected = new int[s];
+        final int[] selected = new int[numDim];
         int count = 0;
         for (int i=0; i<m; i++) {
             final long low  = coordinates[i];
             final long high = coordinates[i+m];
             if (low != high) {
-                if (count < s) {
+                if (count < numDim) {
                     selected[count++] = i;
                 } else {
                     long size = high - low;
                     if (size != -1) size++;     // When interpreted as unsigned long, -1 is the maximal value.
                     throw new SubspaceNotSpecifiedException(Resources.format(Resources.Keys.NoNDimensionalSlice_3,
-                                s, getAxisIdentification(i,i), Numerics.toUnsignedDouble(size)));
+                                numDim, getAxisIdentification(i,i), Numerics.toUnsignedDouble(size)));
                 }
             }
         }
-        if (s != count) {
+        if (numDim != count) {
             for (int i=0; ; i++) {
                 // An IndexOutOfBoundsException would be a bug in our algorithm.
                 if (coordinates[i] == coordinates[i+m]) {
                     selected[count++] = i;
-                    if (count == s) break;
+                    if (count == numDim) break;
                 }
             }
             Arrays.sort(selected);
@@ -1176,9 +1220,9 @@ public class GridExtent implements Serializable, LenientComparable {
 
     /**
      * Returns a new grid extent with the specified dimension inserted at the given index in this grid extent.
-     * To append a new dimension after all existing dimensions, set {@code offset} to {@link #getDimension()}.
+     * To append a new dimension after all existing dimensions, set {@code index} to {@link #getDimension()}.
      *
-     * @param  offset          where to insert the new dimension, from 0 to {@link #getDimension()} inclusive.
+     * @param  index           where to insert the new dimension, from 0 to {@link #getDimension()} inclusive.
      * @param  axisType        the type of the grid axis to add, or {@code null} if unspecified.
      * @param  low             the valid minimum grid coordinate (always inclusive).
      * @param  high            the valid maximum grid coordinate, inclusive or exclusive depending on the next argument.
@@ -1186,15 +1230,16 @@ public class GridExtent implements Serializable, LenientComparable {
      *                         or {@code false} if it is exclusive (as in Java2D usage).
      *                         This argument does not apply to {@code low} value, which is always inclusive.
      * @return a new grid extent with the specified dimension added.
+     * @throws IndexOutOfBoundsException if the given index is negative or greater than the {@linkplain #getDimension() grid dimension}.
      * @throws IllegalArgumentException if the low coordinate value is greater than the high coordinate value.
      *
      * @see #selectDimensions(int...)
      *
      * @since 1.1
      */
-    public GridExtent insertDimension(final int offset, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+    public GridExtent insertDimension(final int index, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureBetween("offset", 0, dimension, offset);
+        ArgumentChecks.ensureValidIndex(dimension+1, index);
         if (!isHighIncluded) {
             high = Math.decrementExact(high);
         }
@@ -1202,19 +1247,19 @@ public class GridExtent implements Serializable, LenientComparable {
         DimensionNameType[] axisTypes = null;
         if (types != null || axisType != null) {
             if (types != null) {
-                axisTypes = ArraysExt.insert(types, offset, 1);
+                axisTypes = ArraysExt.insert(types, index, 1);
             } else {
                 axisTypes = new DimensionNameType[newDim];
             }
-            axisTypes[offset] = axisType;
+            axisTypes[index] = axisType;
         }
         final GridExtent ex = new GridExtent(newDim, axisTypes);
-        System.arraycopy(coordinates, 0,                  ex.coordinates, 0,                   offset);
-        System.arraycopy(coordinates, offset,             ex.coordinates, offset + 1,          dimension - offset);
-        System.arraycopy(coordinates, dimension,          ex.coordinates, newDim,              offset);
-        System.arraycopy(coordinates, dimension + offset, ex.coordinates, newDim + offset + 1, dimension - offset);
-        ex.coordinates[offset]          = low;
-        ex.coordinates[offset + newDim] = high;
+        System.arraycopy(coordinates, 0,                 ex.coordinates, 0,                  index);
+        System.arraycopy(coordinates, index,             ex.coordinates, index + 1,          dimension - index);
+        System.arraycopy(coordinates, dimension,         ex.coordinates, newDim,             index);
+        System.arraycopy(coordinates, dimension + index, ex.coordinates, newDim + index + 1, dimension - index);
+        ex.coordinates[index]          = low;
+        ex.coordinates[index + newDim] = high;
         ex.validateCoordinates();
         return ex;
     }
@@ -1223,46 +1268,47 @@ public class GridExtent implements Serializable, LenientComparable {
      * Returns a grid extent that encompass only some dimensions of this grid extent.
      * This method copies the specified dimensions of this grid extent into a new grid extent.
      * The given dimensions must be in strictly ascending order without duplicated values.
-     * The number of dimensions of the sub grid extent will be {@code dimensions.length}.
+     * The number of dimensions of the sub grid extent will be {@code indices.length}.
      *
-     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the
-     * converse of {@link #insertDimension(int, DimensionNameType, long, long, boolean)}.
+     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the converse
+     * of {@link #insertDimension(int, DimensionNameType, long, long, boolean) insertDimension(…)}.
      * This method cannot be used for changing dimension order.</p>
      *
-     * @param  dimensions  the dimensions to select, in strictly increasing order.
+     * @param  indices  the dimensions to select, in strictly increasing order.
      * @return the sub-envelope, or {@code this} if the given array contains all dimensions of this grid extent.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
      * @see #getSubspaceDimensions(int)
      * @see GridGeometry#selectDimensions(int...)
+     * @see DimensionalityReduction#apply(GridExtent)
      *
      * @since 1.3
      */
-    public GridExtent selectDimensions(int... dimensions) {
-        dimensions = verifyDimensions(dimensions, getDimension());
-        return (dimensions != null) ? reorder(dimensions) : this;
+    public GridExtent selectDimensions(int... indices) {
+        indices = verifyDimensions(indices, getDimension());
+        return (indices != null) ? reorder(indices) : this;
     }
 
     /**
      * Verifies the validity of a given {@code dimensions} argument.
      *
-     * @param  dimensions  the user supplied argument to validate.
-     * @param  limit       maximal number of dimensions, exclusive.
+     * @param  indices  the user supplied argument to validate.
+     * @param  limit    maximal number of dimensions, exclusive.
      * @return a clone of the given array, or {@code null} if the caller can return {@code this}.
      */
-    static int[] verifyDimensions(int[] dimensions, final int limit) {
-        ArgumentChecks.ensureNonNull("dimensions", dimensions);
-        final int n = dimensions.length;
-        ArgumentChecks.ensureSizeBetween("dimensions", 1, limit, n);
-        dimensions = dimensions.clone();
-        if (!ArraysExt.isSorted(dimensions, true)) {
+    static int[] verifyDimensions(int[] indices, final int limit) {
+        ArgumentChecks.ensureNonNull("indices", indices);
+        final int n = indices.length;
+        ArgumentChecks.ensureCountBetween("indices", false, 1, limit, n);
+        indices = indices.clone();
+        if (!ArraysExt.isSorted(indices, true)) {
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotStrictlyOrderedDimensions));
         }
-        int d = dimensions[0];
+        int d = indices[0];
         if (d >= 0) {
-            d = dimensions[n - 1];
+            d = indices[n - 1];
             if (d < limit) {
-                return (n != limit) ? dimensions : null;
+                return (n != limit) ? indices : null;
             }
         }
         throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
@@ -1272,19 +1318,19 @@ public class GridExtent implements Serializable, LenientComparable {
      * Changes axis order or reduces the number of dimensions.
      * It is caller responsibility to ensure that the given dimensions are valid.
      */
-    final GridExtent reorder(final int[] dimensions) {
+    final GridExtent reorder(final int[] indices) {
         final int sd = getDimension();
-        final int td = dimensions.length;
+        final int td = indices.length;
         DimensionNameType[] tt = null;
         if (types != null) {
             tt = new DimensionNameType[td];
             for (int i=0; i<td; i++) {
-                tt[i] = types[dimensions[i]];
+                tt[i] = types[indices[i]];
             }
         }
         final GridExtent sub = new GridExtent(td, tt);
         for (int i=0; i<td; i++) {
-            final int j = dimensions[i];
+            final int j = indices[i];
             sub.coordinates[i]    = coordinates[j];
             sub.coordinates[i+td] = coordinates[j+sd];
         }
@@ -1510,10 +1556,12 @@ public class GridExtent implements Serializable, LenientComparable {
      * @param  slicePoint        a pre-allocated direct position to be overwritten by this method.
      * @param  sliceRatio        the ratio to apply on all grid dimensions except the ones to keep.
      * @param  dimensionsToKeep  the grid dimension to keep unchanged.
+     *
+     * @see #getRelative(int, double)
      */
     final GridExtent sliceByRatio(final DirectPosition slicePoint, final double sliceRatio, final int[] dimensionsToKeep) {
         for (int i=slicePoint.getDimension(); --i >= 0;) {
-            slicePoint.setOrdinate(i, sliceRatio * getSize(i, true) + getLow(i));       // TODO: use Math.fma
+            slicePoint.setOrdinate(i, Math.fma(sliceRatio, getSize(i, true), getLow(i)));
         }
         for (int i=0; i<dimensionsToKeep.length; i++) {
             slicePoint.setOrdinate(dimensionsToKeep[i], Double.NaN);
@@ -1631,41 +1679,41 @@ public class GridExtent implements Serializable, LenientComparable {
         ArgumentChecks.ensureNonNull("translation", translation);
         final int m = getDimension();
         final int length = Math.min(m, translation.length);
-        if (!isZero(translation, length)) {
-            final GridExtent translated = new GridExtent(this);
-            final long[] c = translated.coordinates;
-            for (int i=0; i < length; i++) {
-                final int  j = i + m;
-                final long t = translation[i];
-                c[i] = Math.addExact(c[i], t);
-                c[j] = Math.addExact(c[j], t);
-            }
-            return translated;
+        if (isZero(translation, length)) {
+            return this;
         }
-        return this;
+        final GridExtent translated = new GridExtent(this);
+        final long[] c = translated.coordinates;
+        for (int i=0; i < length; i++) {
+            final int  j = i + m;
+            final long t = translation[i];
+            c[i] = Math.addExact(c[i], t);
+            c[j] = Math.addExact(c[j], t);
+        }
+        return translated;
     }
 
     /**
-     * Returns {@code true} if this extent contains the given cell indices.
-     * An index is considered inside the grid extent if its value is between
+     * Returns {@code true} if this extent contains the given coordinates of a grid cell.
+     * A grid coordinate is considered inside the grid extent if its value is between
      * {@link #getLow(int) low} and {@link #getHigh(int) high} bounds, inclusive.
      *
      * <h4>Number of arguments</h4>
-     * The {@code indices} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
-     * If the array is shorter, missing index values are considered inside the extent.
-     * If the array is longer, extraneous values are ignored.
+     * The {@code cell} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
+     * If the array is shorter, missing coordinate values are considered inside the extent.
+     * If the array is longer, extraneous coordinate values are ignored.
      *
-     * @param  indices  indices of the grid cell to check.
-     * @return whether the given indices are inside this extent.
+     * @param  cell  grid coordinates of a cell to check for inclusion.
+     * @return whether the given grid coordinates are inside this extent.
      *
      * @since 1.2
      */
-    public boolean contains(final long... indices) {
-        ArgumentChecks.ensureNonNull("indices", indices);
+    public boolean contains(final long... cell) {
+        ArgumentChecks.ensureNonNull("cell", cell);
         final int m = getDimension();
-        final int length = Math.min(m, indices.length);
+        final int length = Math.min(m, cell.length);
         for (int i=0; i<length; i++) {
-            final long c = indices[i];
+            final long c = cell[i];
             if (c < coordinates[i] || c > coordinates[i + m]) {
                 return false;
             }
@@ -1717,24 +1765,9 @@ public class GridExtent implements Serializable, LenientComparable {
      * @throws IllegalArgumentException if axis types are specified but inconsistent in at least one dimension.
      */
     private GridExtent combine(final GridExtent other, final boolean union) {
+        ensureSameAxes(other, "other");
         final int n = coordinates.length;
         final int m = n >>> 1;
-        if (n != other.coordinates.length) {
-            throw new MismatchedDimensionException(Errors.format(
-                    Errors.Keys.MismatchedDimension_3, "other", m, other.getDimension()));
-        }
-        // First condition below is a fast check for a common case.
-        if (types != other.types && types != null && other.types != null) {
-            for (int i=0; i<m; i++) {
-                final DimensionNameType t1 = types[i];
-                if (t1 != null) {
-                    final DimensionNameType t2 = other.types[i];
-                    if (t2 != null && !t1.equals(t2)) {
-                        throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedAxes_3, i, t1, t2));
-                    }
-                }
-            }
-        }
         final long[] clipped = new long[n];
         int i = 0;
         while (i < m) {clipped[i] = extremum(coordinates[i], other.coordinates[i], !union); i++;}
@@ -1759,12 +1792,40 @@ public class GridExtent implements Serializable, LenientComparable {
     }
 
     /**
+     * Ensures that the given grid extent has the same number of dimensions and the same axes than this grid extent.
+     * Only axis names that are specified in both extents are compared. Unspecified names are interpreted as unknown,
+     * which are conservatively interpreted as a match.
+     *
+     * @param  other  grid extent for which to compare the number of dimensions and the axis names.
+     * @param  param  name of the {@code other} parameter, used for formatting the message if an exception is thrown.
+     * @throws IllegalArgumentException if the number of dimensions or at least one axis name does not match.
+     */
+    final void ensureSameAxes(final GridExtent other, final String param) {
+        final int n = coordinates.length;
+        final int m = n >>> 1;
+        if (n != other.coordinates.length) {
+            throw new MismatchedDimensionException(Errors.format(
+                    Errors.Keys.MismatchedDimension_3, param, m, other.getDimension()));
+        }
+        // First condition below is a fast check for a common case.
+        if (types != other.types && types != null && other.types != null) {
+            for (int i=0; i<m; i++) {
+                final DimensionNameType t1, t2;
+                if ((t1 = types[i]) != null && (t2 = other.types[i]) != null && !t1.equals(t2)) {
+                    throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedAxes_3, i, t1, t2));
+                }
+            }
+        }
+    }
+
+    /**
      * Returns whether this grid extent has the same size than the given extent.
      * If the given extent is {@code null} or has a different number of dimensions,
      * then this method returns {@code false}.
      *
-     * <p>This method is not public because we do not yet have a policy
-     * about whether we should verify if axis {@link #types} match.</p>
+     * <p>This method is not public because it does not verify if the axis {@link #types} match.
+     * Currently, the context in which this method is invoked is for checking if an optimization can be applied.
+     * Checking the axis types would disable the optimization for an end result which would be the same.</p>
      *
      * @param  other  the other extent to compare with this extent. Can be {@code null}.
      * @return whether the two extents has the same size.

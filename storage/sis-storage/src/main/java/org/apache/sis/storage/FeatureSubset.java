@@ -40,7 +40,7 @@ import org.apache.sis.internal.geoapi.filter.SortBy;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 final class FeatureSubset extends AbstractFeatureSet {
@@ -65,7 +65,7 @@ final class FeatureSubset extends AbstractFeatureSet {
      * This given query is stored as-is (it is not cloned neither optimized).
      */
     FeatureSubset(final FeatureSet source, final FeatureQuery query) {
-        super(source instanceof AbstractResource ? ((AbstractResource) source).listeners : null, false);
+        super(source);
         this.source = source;
         this.query = query;
     }

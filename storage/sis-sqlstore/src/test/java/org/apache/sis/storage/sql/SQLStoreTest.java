@@ -33,8 +33,6 @@ import org.apache.sis.internal.sql.feature.SchemaModifier;
 import org.apache.sis.internal.sql.feature.TableReference;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
-import org.junit.Test;
 
 import static org.apache.sis.test.Assert.*;
 
@@ -51,15 +49,10 @@ import org.apache.sis.feature.DefaultAssociationRole;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
-public final class SQLStoreTest extends TestCase {
-    /**
-     * The schema where will be stored the features to test.
-     */
-    public static final String SCHEMA = "features";
-
+public final class SQLStoreTest extends TestOnAllDatabases {
     /**
      * Data used in the {@code Features.sql} test file.
      */
@@ -112,86 +105,43 @@ public final class SQLStoreTest extends TestCase {
     }
 
     /**
-     * Tests on Derby.
-     *
-     * @throws Exception if an error occurred while testing the database.
-     */
-    @Test
-    public void testOnDerby() throws Exception {
-        test(TestDatabase.create("SQLStore"), true);
-    }
-
-    /**
-     * Tests on HSQLDB.
-     *
-     * @throws Exception if an error occurred while testing the database.
-     */
-    @Test
-    public void testOnHSQLDB() throws Exception {
-        test(TestDatabase.createOnHSQLDB("SQLStore", true), true);
-    }
-
-    /**
-     * Tests on H2.
-     *
-     * @throws Exception if an error occurred while testing the database.
-     */
-    @Test
-    public void testOnH2() throws Exception {
-        test(TestDatabase.createOnH2("SQLStore"), true);
-    }
-
-    /**
-     * Tests on PostgreSQL.
-     *
-     * @throws Exception if an error occurred while testing the database.
-     */
-    @Test
-    public void testOnPostgreSQL() throws Exception {
-        test(TestDatabase.createOnPostgreSQL(SCHEMA, true), false);
-    }
-
-    /**
      * Runs all tests on a single database software. A temporary schema is created at the beginning of this method
      * and deleted after all tests finished. The schema is created and populated by the {@code Features.sql} script.
      *
-     * @param  inMemory  whether the test database is in memory. If {@code true}, then the schema will be created
+     * @param  noschema  whether the test database is in memory. If {@code true}, then the schema will be created
      *                   and will be the only schema to exist (ignoring system schema); i.e. we assume that there
      *                   is no ambiguity if we do not specify the schema in {@link SQLStore} constructor.
      */
-    private void test(final TestDatabase database, final boolean inMemory)
-            throws Exception
-    {
+    @Override
+    protected void test(final TestDatabase database, final boolean noschema) throws Exception {
         final String[] scripts = {
             "CREATE SCHEMA " + SCHEMA + ';',
             "file:Features.sql"
         };
-        if (!inMemory) {
+        if (!noschema) {
             scripts[0] = null;      // Omit the "CREATE SCHEMA" statement if the schema already exists.
         }
-        try (TestDatabase tmp = database) {                 // TODO: omit `tmp` with JDK16.
-            database.executeSQL(SQLStoreTest.class, scripts);
-            final StorageConnector connector = new StorageConnector(database.source);
-            final ResourceDefinition table = ResourceDefinition.table(null, inMemory ? null : SCHEMA, "Cities");
-            testTableQuery(connector, table);
-            /*
-             * Verify using SQL statements instead of tables.
-             */
-            verifyFetchCityTableAsQuery(connector);
-            verifyNestedSQLQuery(connector);
-            verifyLimitOffsetAndColumnSelectionFromQuery(connector);
-            verifyDistinctQuery(connector);
-            /*
-             * Test on the table again, but with cyclic associations enabled.
-             */
-            connector.setOption(SchemaModifier.OPTION, new SchemaModifier() {
-                @Override public boolean isCyclicAssociationAllowed(TableReference dependency) {
-                    return true;
-                }
-            });
-            isCyclicAssociationAllowed = true;
-            testTableQuery(connector, table);
-        }
+        database.executeSQL(SQLStoreTest.class, scripts);
+        final StorageConnector connector = new StorageConnector(database.source);
+        final ResourceDefinition table = ResourceDefinition.table(null, noschema ? null : SCHEMA, "Cities");
+        testTableQuery(connector, table);
+        /*
+         * Verify using SQL statements instead of tables.
+         */
+        verifyFetchCityTableAsQuery(connector);
+        verifyNestedSQLQuery(connector);
+        verifyLimitOffsetAndColumnSelectionFromQuery(connector);
+        verifyDistinctQuery(connector);
+        /*
+         * Test on the table again, but with cyclic associations enabled.
+         */
+        connector.setOption(SchemaModifier.OPTION, new SchemaModifier() {
+            @Override public boolean isCyclicAssociationAllowed(TableReference dependency) {
+                return true;
+            }
+        });
+        isCyclicAssociationAllowed = true;
+        testTableQuery(connector, table);
     }
 
     /**

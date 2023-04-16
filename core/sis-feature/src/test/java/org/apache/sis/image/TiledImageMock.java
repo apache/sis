@@ -16,6 +16,10 @@
  */
 package org.apache.sis.image;
 
+import java.util.Arrays;
+import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.awt.Point;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
@@ -32,8 +36,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.util.Numerics;
@@ -49,7 +51,8 @@ import static org.junit.Assert.*;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.4
  * @since   0.8
  */
 public final class TiledImageMock extends PlanarImage implements WritableRenderedImage {
@@ -270,35 +273,74 @@ public final class TiledImageMock extends PlanarImage implements WritableRendere
 
     /**
      * Initializes the sample values of all tiles to testing values.
-     * The sample values will be 3 digits numbers of the form "TXY" where:
+     * The sample values will be 4 digits numbers of the form "BTYX" where:
      * <ul>
+     *   <li><var>B</var> is the band index starting with 1 for the first band.</li>
      *   <li><var>T</var> is the tile index starting with 1 for the first tile and increasing in a row-major fashion.</li>
-     *   <li><var>X</var> is the <var>x</var> coordinate (column index) of the sample value relative to current tile.</li>
-     *   <li><var>Y</var> is the <var>y</var> coordinate (row index) of the sample value relative to current tile.</li>
+     *   <li><var>Y</var> is the <var>y</var> coordinate (row 0-based index) of the sample value relative to current tile.</li>
+     *   <li><var>X</var> is the <var>x</var> coordinate (column 0-based index) of the sample value relative to current tile.</li>
      * </ul>
      *
-     * The "TXY" pattern holds if all values are less than 10. If some values are greater than 10,
-     * then the sample values are a mix of above values resulting from arithmetic sums.
+     * The "BTYX" pattern holds if all values are less than 10. If some values are greater than 10,
+     * then the sample values are a mix of above values resulting from the following arithmetic sum:
      *
-     * @param  band  band index where to set values. Other bands will be unmodified.
+     * <blockquote>
+     * <var>sample</var> = <var>B</var> * 1000 + <var>T</var> * 100 + <var>Y</var> * 10 + <var>X</var>
+     * </blockquote>
+     *
+     * This method creates a new raster for each tile.
+     * Any modification to previously existing rasters will be lost.
+     * Bands that are not specified in the {@code bands} array will have their values initialized to zero.
+     *
+     * @param bands   indices of the bands where to apply the "BTYX" pattern. Other bands will be initialized to zero.
+     * @param offset  an arbitrary offset to add to all values.
+     *
+     * @since 1.4
      */
-    public synchronized void initializeAllTiles(final int band) {
+    public synchronized void initializeAllTiles(final int[] bands, final int offset) {
+        if (bands.length > 1) {   // Skip the following check for the common case of a single band.
+            if (Arrays.stream(bands).boxed().collect(Collectors.toSet()).size() != bands.length) {
+                throw new IllegalArgumentException("Input band list contains duplicated values.");
+            }
+        }
         int ti = 0;
         for (int ty=0; ty<numYTiles; ty++) {
             for (int tx=0; tx<numXTiles; tx++) {
-                final int value = (ti + 1) * 100;
+                final int first = (ti + 1) * 100 + offset;
                 final int x = tx * tileWidth  + minX;
                 final int y = ty * tileHeight + minY;
                 final WritableRaster raster = Raster.createWritableRaster(sampleModel, new Point(x, y));
                 for (int j=0; j<tileHeight; j++) {
                     for (int i=0; i<tileWidth; i++) {
-                        raster.setSample(x+i, y+j, band, value + 10*j + i);
+                        final int sample = first + 10 * j + i;
+                        for (final int band : bands) {
+                            raster.setSample(x+i, y+j, band, (band + 1) * 1000 + sample);
+                        }
                     }
                 }
                 tiles[ti++] = raster;
             }
         }
         assertEquals(tiles.length, ti);
+    }
+
+    /**
+     * Initializes the sample values of all tiles to testing values in a single band.
+     * The sample values will be 3 digits numbers of the form "TYX" where:
+     * <ul>
+     *   <li><var>T</var> is the tile index starting with 1 for the first tile and increasing in a row-major fashion.</li>
+     *   <li><var>Y</var> is the <var>y</var> coordinate (row 0-based index) of the sample value relative to current tile.</li>
+     *   <li><var>X</var> is the <var>x</var> coordinate (column 0-based index) of the sample value relative to current tile.</li>
+     * </ul>
+     *
+     * The "TYX" pattern holds if all values are less than 10. If some values are greater than 10,
+     * then the sample values are a mix of above values resulting from the arithmetic sum defined
+     * in {@link #initializeAllTiles(int[], int)}.
+     *
+     * @param band  index of the band where to apply the "TYX" pattern. Other bands will be initialized to zero.
+     */
+    public void initializeAllTiles(final int band) {
+        initializeAllTiles(new int[] {band}, (band + 1) * -1000);       // Offset cancels the "B" in "BTYX" pattern.
     }
 
     /**

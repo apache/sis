@@ -67,7 +67,7 @@ import java.lang.reflect.Array;
  * objects.
  *
  * @author Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see Arrays
  *
@@ -644,7 +644,7 @@ public final class ArraysExt extends Static {
         if (length == 0) {
             return array;               // May be null
         }
-        ArgumentChecks.ensureNonNull ("array",  array);
+        ArgumentChecks.ensureNonNull("array",  array);
         final int arrayLength = Array.getLength(array);
         ArgumentChecks.ensureBetween("first", 0, arrayLength, first);
         ArgumentChecks.ensurePositive("length", length);
@@ -1181,6 +1181,91 @@ public final class ArraysExt extends Static {
         ArgumentChecks.ensureNonNull("array", array);
         final T[] copy = Arrays.copyOf(array, array.length + 1);
         copy[array.length] = element;
+        return copy;
+    }
+
+    /**
+     * Returns the concatenation of all given arrays. This method performs the following checks:
+     *
+     * <ul>
+     *   <li>If the {@code arrays} argument is {@code null} or contains only {@code null}
+     *       elements, then this method returns {@code null}.</li>
+     *   <li>Otherwise if the {@code arrays} argument contains exactly one non-null array with
+     *       a length greater than zero, then that array is returned. It is not copied.</li>
+     *   <li>Otherwise a new array with a length equals to the sum of the length of every
+     *       non-null arrays is created, and the content of non-null arrays are appended
+     *       in the new array in declaration order.</li>
+     * </ul>
+     *
+     * @param  <T>     the type of arrays.
+     * @param  arrays  the arrays to concatenate, or {@code null}.
+     * @return the concatenation of all non-null arrays (may be a direct reference to one
+     *         of the given array if it can be returned with no change), or {@code null}.
+     *
+     * @see #append(Object[], Object)
+     * @see #unionOfSorted(int[], int[])
+     */
+    @SafeVarargs
+    public static <T> T[] concatenate(final T[]... arrays) {
+        T[] result = null;
+        if (arrays != null) {
+            int length = 0;
+            for (T[] array : arrays) {
+                if (array != null) {
+                    length += array.length;
+                }
+            }
+            int offset = 0;
+            for (T[] array : arrays) {
+                if (array != null) {
+                    if (result == null) {
+                        if (array.length == length) {
+                            return array;
+                        }
+                        result = Arrays.copyOf(array, length);
+                    } else {
+                        System.arraycopy(array, 0, result, offset, array.length);
+                    }
+                    offset += array.length;
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the concatenation of the given arrays.
+     * If any of the supplied arrays is null or empty, then the other array is returned directly (not copied).
+     *
+     * @param  a1  the first array to concatenate, or {@code null}.
+     * @param  a2  the second array to concatenate, or {@code null}.
+     * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
+     *
+     * @since 1.4
+     */
+    public static long[] concatenate(final long[] a1, final long[] a2) {
+        if (a1 == null || a1.length == 0) return a2;
+        if (a2 == null || a2.length == 0) return a1;
+        final long[] copy = Arrays.copyOf(a1, a1.length + a2.length);
+        System.arraycopy(a2, 0, copy, a1.length, a2.length);
+        return copy;
+    }
+
+    /**
+     * Returns the concatenation of the given arrays.
+     * If any of the supplied arrays is null or empty, then the other array is returned directly (not copied).
+     *
+     * @param  a1  the first array to concatenate, or {@code null}.
+     * @param  a2  the second array to concatenate, or {@code null}.
+     * @return the concatenation of given arrays. May be one of the given arrays returned without copying.
+     *
+     * @since 1.4
+     */
+    public static int[] concatenate(final int[] a1, final int[] a2) {
+        if (a1 == null || a1.length == 0) return a2;
+        if (a2 == null || a2.length == 0) return a1;
+        final int[] copy = Arrays.copyOf(a1, a1.length + a2.length);
+        System.arraycopy(a2, 0, copy, a1.length, a2.length);
         return copy;
     }
 
@@ -2181,55 +2266,6 @@ public final class ArraysExt extends Static {
     }
 
     /**
-     * Returns the concatenation of all given arrays. This method performs the following checks:
-     *
-     * <ul>
-     *   <li>If the {@code arrays} argument is {@code null} or contains only {@code null}
-     *       elements, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the {@code arrays} argument contains exactly one non-null array with
-     *       a length greater than zero, then that array is returned. It is not copied.</li>
-     *   <li>Otherwise a new array with a length equals to the sum of the length of every
-     *       non-null arrays is created, and the content of non-null arrays are appended
-     *       in the new array in declaration order.</li>
-     * </ul>
-     *
-     * @param  <T>     the type of arrays.
-     * @param  arrays  the arrays to concatenate, or {@code null}.
-     * @return the concatenation of all non-null arrays (may be a direct reference to one
-     *         of the given array if it can be returned with no change), or {@code null}.
-     *
-     * @see #append(Object[], Object)
-     * @see #unionOfSorted(int[], int[])
-     */
-    @SafeVarargs
-    public static <T> T[] concatenate(final T[]... arrays) {
-        T[] result = null;
-        if (arrays != null) {
-            int length = 0;
-            for (T[] array : arrays) {
-                if (array != null) {
-                    length += array.length;
-                }
-            }
-            int offset = 0;
-            for (T[] array : arrays) {
-                if (array != null) {
-                    if (result == null) {
-                        if (array.length == length) {
-                            return array;
-                        }
-                        result = Arrays.copyOf(array, length);
-                    } else {
-                        System.arraycopy(array, 0, result, offset, array.length);
-                    }
-                    offset += array.length;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the union of two sorted arrays. The input arrays shall be sorted in strictly increasing order.
      * The output array is the union of the input arrays without duplicated values,
      * with elements sorted in strictly increasing order.
@@ -2253,7 +2289,7 @@ public final class ArraysExt extends Static {
     public static int[] unionOfSorted(final int[] array1, final int[] array2) {
         if (array1 == null) return array2;
         if (array2 == null) return array1;
-        int[] union = new int[array1.length + array2.length];
+        int[] union = new int[Math.addExact(array1.length, array2.length)];
         int nu=0;
         for (int ix=0, iy=0;;) {
             if (ix == array1.length) {

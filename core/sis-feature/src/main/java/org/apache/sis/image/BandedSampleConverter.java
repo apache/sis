@@ -27,20 +27,22 @@ import java.awt.image.BandedSampleModel;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
-import java.awt.image.TileObserver;
 import java.lang.reflect.Array;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
-import org.apache.sis.internal.coverage.j2d.WriteSupport;
+import org.apache.sis.internal.coverage.SampleDimensions;
+import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;
+import org.apache.sis.coverage.SampleDimension;
 
 import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
 
@@ -68,7 +70,7 @@ import static org.apache.sis.internal.coverage.j2d.ImageUtilities.LOGGER;
  * @version 1.4
  * @since   1.1
  */
-class BandedSampleConverter extends ComputedImage {
+class BandedSampleConverter extends WritableComputedImage {
     /*
      * Do not extend `SourceAlignedImage` because we want to inherit the `getNumTiles()`
      * and `getTileGridOffset()` methods defined by `PlanarImage`.
@@ -80,7 +82,7 @@ class BandedSampleConverter extends ComputedImage {
      *
      * @see #getPropertyNames()
      */
-    private static final String[] ADDED_PROPERTIES = {SAMPLE_RESOLUTIONS_KEY};
+    private static final String[] ADDED_PROPERTIES = {SAMPLE_DIMENSIONS_KEY, SAMPLE_RESOLUTIONS_KEY};
 
     /**
      * The transfer functions to apply on each band of the source image.
@@ -91,6 +93,16 @@ class BandedSampleConverter extends ComputedImage {
      * The color model for the expected range of values. May be {@code null}.
      */
     private final ColorModel colorModel;
+
+    /**
+     * Description of bands, or {@code null} if unknown.
+     * Not used by this class, but provided as a {@value #SAMPLE_DIMENSIONS_KEY} property.
+     * The value is fetched from {@link SampleDimensions#IMAGE_PROCESSOR_ARGUMENT} for avoiding
+     * to expose a {@code SampleDimension[]} argument in public {@link ImageProcessor} API.
+     *
+     * @see #getProperty(String)
+     */
+    private final SampleDimension[] sampleDimensions;
 
     /**
      * The sample resolutions, or {@code null} if unknown.
@@ -106,14 +118,18 @@ class BandedSampleConverter extends ComputedImage {
      * @param  ranges       the expected range of values for each band, or {@code null} if unknown.
      * @param  converters   the transfer functions to apply on each band of the source image.
      *                      If this array was a user-provided parameter, should be cloned by caller.
+     * @param  sampleDimensions  description of conversion result, or {@code null} if unknown.
      */
     private BandedSampleConverter(final RenderedImage source,  final BandedSampleModel sampleModel,
                                   final ColorModel colorModel, final NumberRange<?>[] ranges,
-                                  final MathTransform1D[] converters)
+                                  final MathTransform1D[] converters,
+                                  final SampleDimension[] sampleDimensions)
     {
         super(sampleModel, source);
         this.colorModel = colorModel;
         this.converters = converters;
+        this.sampleDimensions = sampleDimensions;
+        ensureCompatible(colorModel);
         /*
          * Get an estimation of the resolution, arbitrarily looking in the middle of the range of values.
          * If the converters are linear (which is the most common case), the middle value does not matter
@@ -185,26 +201,51 @@ class BandedSampleConverter extends ComputedImage {
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of this image resulting from conversion of given image.
      *                       Shall be one of {@link DataBuffer} constants.
-     * @param  colorModel    the color model for the expected range of values, or {@code null}.
+     * @param  colorizer     provider of color model for the expected range of values, or {@code null}.
      * @return the image which compute converted values from the given source.
      *
-     * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType, ColorModel)
+     * @see ImageProcessor#convert(RenderedImage, NumberRange[], MathTransform1D[], DataType)
      */
     static BandedSampleConverter create(RenderedImage source, final ImageLayout layout,
             final NumberRange<?>[] sourceRanges, final MathTransform1D[] converters,
-            final int targetType, final ColorModel colorModel)
+            final int targetType, final Colorizer colorizer)
     {
         /*
          * Since this operation applies its own ColorModel anyway, skip operation that was doing nothing else
-         * than changing the color model.
+         * than changing the color model. The new color model may be specified by the user if (s)he provided
+         * a `Colorizer` instance. Otherwise a default color model will be inferred.
          */
         if (source instanceof RecoloredImage) {
             source = ((RecoloredImage) source).source;
         }
         final int numBands = converters.length;
-        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null);
+        final BandedSampleModel sampleModel = layout.createBandedSampleModel(targetType, numBands, source, null, 0);
+        final SampleDimension[] sampleDimensions = SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.get();
+        final int visibleBand = ImageUtilities.getVisibleBand(source);
+        ColorModel colorModel = ColorModelBuilder.NULL_COLOR_MODEL;
+        if (colorizer != null) {
+            var target = new Colorizer.Target(sampleModel, UnmodifiableArrayList.wrap(sampleDimensions), visibleBand);
+            colorModel = colorizer.apply(target).orElse(null);
+        }
+        if (colorModel == null) {
+            /*
+             * If no color model was specified or inferred from a colorizer,
+             * default to grayscale for a range inferred from the sample dimension.
+             * If no sample dimension is specified, infer value range from data type.
+             */
+            SampleDimension sd = null;
+            if (sampleDimensions != null && visibleBand >= 0 && visibleBand < sampleDimensions.length) {
+                sd = sampleDimensions[visibleBand];
+            }
+            final var builder = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, false);
+            if (builder.initialize(source.getSampleModel(), sd) ||
+                builder.initialize(source.getColorModel()))
+            {
+                colorModel = builder.createColorModel(targetType, numBands, Math.max(visibleBand, 0));
+            }
+        }
         /*
-         * If the source image is writable, then changes in the converted image may be retro-propagated
+         * If the source image is writable, then change in the converted image may be retro-propagated
          * to that source image. If we fail to compute the required inverse transforms, log a notice at
          * a low level because this is not a serious problem; writable BandedSampleConverter is a plus
          * but not a requirement.
@@ -214,25 +255,42 @@ class BandedSampleConverter extends ComputedImage {
             for (int i=0; i<numBands; i++) {
                 inverses[i] = converters[i].inverse();
             }
-            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses);
+            return new Writable((WritableRenderedImage) source, sampleModel, colorModel, sourceRanges, converters, inverses, sampleDimensions);
         } catch (NoninvertibleTransformException e) {
             Logging.recoverableException(LOGGER, ImageProcessor.class, "convert", e);
         }
-        return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters);
+        return new BandedSampleConverter(source, sampleModel, colorModel, sourceRanges, converters, sampleDimensions);
     }
 
     /**
      * Gets a property from this image. Current implementation recognizes:
-     * {@value #SAMPLE_RESOLUTIONS_KEY}.
+     * <ul>
+     *   <li>{@value #SAMPLE_RESOLUTIONS_KEY}, computed by this class.</li>
+     *   <li>{@value #SAMPLE_DIMENSIONS_KEY}, provided to the constructor.</li>
+     *   <li>All positional properties, forwarded to source image.</li>
+     * </ul>
      */
     @Override
     public Object getProperty(final String key) {
-        if (SAMPLE_RESOLUTIONS_KEY.equals(key)) {
-            if (sampleResolutions != null) {
-                return sampleResolutions.clone();
+        switch (key) {
+            case SAMPLE_DIMENSIONS_KEY: {
+                if (sampleDimensions != null) {
+                    return sampleDimensions.clone();
+                }
+                break;
             }
-        } else if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
-            return getSource().getProperty(key);
+            case SAMPLE_RESOLUTIONS_KEY: {
+                if (sampleResolutions != null) {
+                    return sampleResolutions.clone();
+                }
+                break;
+            }
+            default: {
+                if (SourceAlignedImage.POSITIONAL_PROPERTIES.contains(key)) {
+                    return getSource().getProperty(key);
+                }
+                break;
+            }
         }
         return super.getProperty(key);
     }
@@ -370,93 +428,15 @@ class BandedSampleConverter extends ComputedImage {
         private final MathTransform1D[] inverses;
 
         /**
-         * The observers, or {@code null} if none. This is a copy-on-write array:
-         * values are never modified after construction (new arrays are created).
-         *
-         * This field is declared volatile because it is read without synchronization by
-         * {@link #markTileWritable(int, int, boolean)}. Since this is a copy-on-write array,
-         * it is okay to omit synchronization for that method but we still need the memory effect.
-         */
-        @SuppressWarnings("VolatileArrayField")
-        private volatile TileObserver[] observers;
-
-        /**
          * Creates a new writable image which will compute values using the given converters.
          */
         Writable(final WritableRenderedImage source,  final BandedSampleModel sampleModel,
                  final ColorModel colorModel, final NumberRange<?>[] ranges,
-                 final MathTransform1D[] converters, final MathTransform1D[] inverses)
+                 final MathTransform1D[] converters, final MathTransform1D[] inverses,
+                 final SampleDimension[] sampleDimensions)
         {
-            super(source, sampleModel, colorModel, ranges, converters);
+            super(source, sampleModel, colorModel, ranges, converters, sampleDimensions);
             this.inverses = inverses;
-        }
-
-        /**
-         * Adds an observer to be notified when a tile is checked out for writing.
-         * If the observer is already present, it will receive multiple notifications.
-         *
-         * @param  observer  the observer to notify.
-         */
-        @Override
-        public synchronized void addTileObserver(final TileObserver observer) {
-            observers = WriteSupport.addTileObserver(observers, observer);
-        }
-
-        /**
-         * Removes an observer from the list of observers notified when a tile is checked out for writing.
-         * If the observer was not registered, nothing happens. If the observer was registered for multiple
-         * notifications, it will now be registered for one fewer.
-         *
-         * @param  observer  the observer to stop notifying.
-         */
-        @Override
-        public synchronized void removeTileObserver(final TileObserver observer) {
-            observers = WriteSupport.removeTileObserver(observers, observer);
-        }
-
-        /**
-         * Sets or clears whether a tile is checked out for writing and notifies the listener if needed.
-         *
-         * @param  tileX    the <var>x</var> index of the tile to acquire or release.
-         * @param  tileY    the <var>y</var> index of the tile to acquire or release.
-         * @param  writing  {@code true} for acquiring the tile, or {@code false} for releasing it.
-         */
-        @Override
-        protected boolean markTileWritable(final int tileX, final int tileY, final boolean writing) {
-            final boolean notify = super.markTileWritable(tileX, tileY, writing);
-            if (notify) {
-                WriteSupport.fireTileUpdate(observers, this, tileX, tileY, writing);
-            }
-            return notify;
-        }
-
-        /**
-         * Checks out a tile for writing.
-         *
-         * @param  tileX  the <var>x</var> index of the tile.
-         * @param  tileY  the <var>y</var> index of the tile.
-         * @return the specified tile as a writable tile.
-         */
-        @Override
-        public WritableRaster getWritableTile(final int tileX, final int tileY) {
-            final WritableRaster tile = (WritableRaster) getTile(tileX, tileY);
-            markTileWritable(tileX, tileY, true);
-            return tile;
-        }
-
-        /**
-         * Relinquishes the right to write to a tile. If the tile goes from having one writer to
-         * having no writers, the values are inverse converted and written in the original image.
-         * If the caller continues to write to the tile, the results are undefined.
-         *
-         * @param  tileX  the <var>x</var> index of the tile.
-         * @param  tileY  the <var>y</var> index of the tile.
-         */
-        @Override
-        public void releaseWritableTile(final int tileX, final int tileY) {
-            if (markTileWritable(tileX, tileY, false)) {
-                setData(getTile(tileX, tileY));
-            }
         }
 
         /**

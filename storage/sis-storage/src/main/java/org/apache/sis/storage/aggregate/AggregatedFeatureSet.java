@@ -26,6 +26,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.Envelopes;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
@@ -45,7 +46,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * Subclasses need to implement {@link #dependencies()}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 abstract class AggregatedFeatureSet extends AbstractFeatureSet {
@@ -60,6 +61,16 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * Whether {@link #envelope} has been computed. The result may still be null.
      */
     private boolean isEnvelopeComputed;
+
+    /**
+     * Creates a new aggregated feature set.
+     *
+     * @param  parent  the parent resource, or {@code null} if none.
+     *         This is usually the {@link org.apache.sis.storage.DataStore} that created this resource.
+     */
+    protected AggregatedFeatureSet(final Resource parent) {
+        super(parent);
+    }
 
     /**
      * Creates a new aggregated feature set.

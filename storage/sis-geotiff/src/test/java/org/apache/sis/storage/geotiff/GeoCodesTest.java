@@ -53,7 +53,6 @@ public final class GeoCodesTest extends TestCase {
         ParameterDescriptorGroup alternative = parameters("Polar Stereographic (Variant A)");
         assertEquals(GeoKeys.StdParallel1, parseCode(parameters .descriptor("Latitude of standard parallel")));
         assertEquals(GeoKeys.NatOriginLat, parseCode(alternative.descriptor("Latitude of natural origin")));
-
     }
 
     /**

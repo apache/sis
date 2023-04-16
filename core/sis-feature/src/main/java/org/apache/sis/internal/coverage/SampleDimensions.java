@@ -19,6 +19,8 @@ package org.apache.sis.internal.coverage;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
+import java.awt.Shape;
+import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.ImageProcessor;
@@ -30,10 +32,39 @@ import org.apache.sis.util.Static;
  * Utility methods working on {@link SampleDimension} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public final class SampleDimensions extends Static {
+    /**
+     * A hidden argument passed to some {@link ImageProcessor} operations.
+     * Used for a parameter that we do not want to expose in the public API,
+     * because {@link ImageProcessor} is not supposed to know grid coverages.
+     * We may revisit in future Apache SIS version if we find a better way to
+     * pass this information.
+     *
+     * This is used in:
+     * <ul>
+     *   <li>The <em>target</em> sample dimensions of a {@link org.apache.sis.image.BandedSampleConverter} image.</li>
+     *   <li>The <em>source</em> sample dimensions of a {@link org.apache.sis.image.Visualization} image.</li>
+     * </ul>
+     *
+     * Usage pattern:
+     *
+     * {@snippet lang="java" :
+     *     try {
+     *         SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(dataRanges);
+     *         return imageProcessor.doSomeStuff(...);
+     *     } finally {
+     *         SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
+     *     }
+     *     }
+     *
+     * The content of the array in this thread-local variable shall not be modified,
+     * because it may be a direct reference to an internal array (not a clone).
+     */
+    public static final ThreadLocal<SampleDimension[]> IMAGE_PROCESSOR_ARGUMENT = new ThreadLocal<>();
+
     /**
      * Do not allow instantiation of this class.
      */
@@ -49,13 +80,13 @@ public final class SampleDimensions extends Static {
      * @return the background values, or {@code null} if the given argument was null.
      *         Otherwise the returned array is never null but may contain null elements.
      */
-    public static Number[] backgrounds(final List<SampleDimension> bands) {
+    public static Number[] backgrounds(final SampleDimension... bands) {
         if (bands == null) {
             return null;
         }
-        final Number[] fillValues = new Number[bands.size()];
+        final Number[] fillValues = new Number[bands.length];
         for (int i=fillValues.length; --i >= 0;) {
-            final SampleDimension band = bands.get(i);
+            final SampleDimension band = bands[i];
             final Optional<Number> bg = band.getBackground();
             if (bg.isPresent()) {
                 fillValues[i] = bg.get();
@@ -66,25 +97,26 @@ public final class SampleDimensions extends Static {
 
     /**
      * Returns the {@code sampleFilters} arguments to use in a call to
-     * {@link ImageProcessor#statistics ImageProcessor.statistics(…)} for excluding no-data values.
+     * {@code ImageProcessor.statistics(…)} for excluding no-data values.
      * If the given sample dimensions are {@linkplain SampleDimension#converted() converted to units of measurement},
      * then all "no data" values are already NaN values and this method returns an array of {@code null} operators.
-     * Otherwise this method returns an array of operators that covert "no data" values to {@link Double#NaN}.
+     * Otherwise this method returns an array of operators that convert "no data" values to {@link Double#NaN}.
      *
      * <p>This method is not in public API because it partially duplicates the work
      * of {@linkplain SampleDimension#getTransferFunction() transfer function}.</p>
      *
-     * @param  processor  the processor to use for creating {@link DoubleUnaryOperator}.
-     * @param  bands      the sample dimensions for which to create {@code sampleFilters}, or {@code null}.
+     * @param  bands  the sample dimensions for which to create {@code sampleFilters}, or {@code null}.
      * @return the filters, or {@code null} if {@code bands} was null. The array may contain null elements.
+     *
+     * @see ImageProcessor#statistics(RenderedImage, Shape, DoubleUnaryOperator...)
      */
-    public static DoubleUnaryOperator[] toSampleFilters(final ImageProcessor processor, final List<SampleDimension> bands) {
+    public static DoubleUnaryOperator[] toSampleFilters(final SampleDimension... bands) {
         if (bands == null) {
             return null;
         }
-        final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[bands.size()];
+        final DoubleUnaryOperator[] sampleFilters = new DoubleUnaryOperator[bands.length];
         for (int i = 0; i < sampleFilters.length; i++) {
-            final SampleDimension band = bands.get(i);
+            final SampleDimension band = bands[i];
             if (band != null) {
                 final List<Category> categories = band.getCategories();
                 final Number[] nodataValues = new Number[categories.size()];
@@ -103,7 +135,7 @@ public final class SampleDimensions extends Static {
                         nodataValues[j] = value;
                     }
                 }
-                sampleFilters[i] = processor.filterNodataValues(nodataValues);
+                sampleFilters[i] = ImageProcessor.filterNodataValues(nodataValues);
             }
         }
         return sampleFilters;

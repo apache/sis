@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
+import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.operation.TransformException;
@@ -38,7 +39,7 @@ import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.internal.storage.MetadataBuilder;
-import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArraysExt;
@@ -50,12 +51,19 @@ import org.apache.sis.util.ArraysExt;
  * Instances of {@code ConcatenatedGridResource} are created by {@link CoverageAggregator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 final class ConcatenatedGridResource extends AbstractGridCoverageResource implements AggregatedResource {
     /**
-     * Name of this resource.
+     * The identifier for this aggregate, or {@code null} if none.
+     * This is optionally supplied by users for their own purposes.
+     * There is no default value.
+     */
+    private GenericName identifier;
+
+    /**
+     * Name of this resource to use in metadata.
      */
     private String name;
 
@@ -198,6 +206,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
 
     /**
      * Returns a coverage with the same data than this coverage but a different merge strategy.
+     * This is the implementation of {@link MergeStrategy#apply(Resource)} public method.
      */
     @Override
     public final synchronized Resource apply(final MergeStrategy s) {
@@ -212,6 +221,24 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     @Override
     public void setName(final String name) {
         this.name = name;
+    }
+
+    /**
+     * Sets the identifier of this resource.
+     */
+    @Override
+    public void setIdentifier(final GenericName identifier) {
+        this.identifier = identifier;
+    }
+
+
+    /**
+     * Returns the resource persistent identifier as specified by the
+     * user in {@link CoverageAggregator}. There is no default value.
+     */
+    @Override
+    public Optional<GenericName> getIdentifier() {
+        return Optional.ofNullable(identifier);
     }
 
     /**
@@ -262,43 +289,53 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
     }
 
     /**
-     * Returns the preferred resolutions (in units of CRS axes) for read operations in this data store.
-     * This method returns only the resolution that are declared by all coverages.
+     * Returns the preferred resolutions (in units of CRS axes) for read operations in this resource.
+     * This method returns only the resolutions that are declared by all coverages.
      *
-     * @return preferred resolutions for read operations in this data store, or an empty array if none.
-     * @throws DataStoreException if an error occurred while reading definitions from the underlying data store.
+     * @return preferred resolutions for read operations in this resource, or an empty array if none.
+     * @throws DataStoreException if an error occurred while reading definitions from an underlying resource.
      */
     @Override
     public synchronized List<double[]> getResolutions() throws DataStoreException {
-        double[][] common = resolutions;
-        if (common == null) {
-            int count = 0;
-            for (final GridCoverageResource slice : slices) {
-                final double[][] sr = slice.getResolutions().toArray(double[][]::new);
-                if (sr != null) {                       // Should never be null, but we are paranoiac.
-                    if (common == null) {
-                        common = sr;
-                        count = sr.length;
-                    } else {
-                        int retained = 0;
-                        for (int i=0; i<count; i++) {
-                            final double[] r = common[i];
-                            for (int j=0; j<sr.length; j++) {
-                                if (Arrays.equals(r, sr[j])) {
-                                    common[retained++] = r;
-                                    sr[j] = null;
-                                    break;
-                                }
+        if (resolutions == null) {
+            resolutions = commonResolutions(slices);
+        }
+        return UnmodifiableArrayList.wrap(resolutions);
+    }
+
+    /**
+     * Computes resolutions common to all sources.
+     *
+     * @param  sources  the sources to use for computing the common resolution.
+     * @return the resolutions common to all given sources.
+     */
+    static double[][] commonResolutions(final GridCoverageResource[] sources) throws DataStoreException {
+        int count = 0;
+        double[][] resolutions = null;
+        for (final GridCoverageResource slice : sources) {
+            final double[][] sr = slice.getResolutions().toArray(double[][]::new);
+            if (sr != null) {                       // Should never be null, but we are paranoiac.
+                if (resolutions == null) {
+                    resolutions = sr;
+                    count = sr.length;
+                } else {
+                    int retained = 0;
+                    for (int i=0; i<count; i++) {
+                        final double[] r = resolutions[i];
+                        for (int j=0; j<sr.length; j++) {
+                            if (Arrays.equals(r, sr[j])) {
+                                resolutions[retained++] = r;
+                                sr[j] = null;
+                                break;
                             }
                         }
-                        count = retained;
-                        if (count == 0) break;
                     }
+                    count = retained;
+                    if (count == 0) break;
                 }
             }
-            resolutions = common = ArraysExt.resize(common, count);
         }
-        return UnmodifiableArrayList.wrap(common);
+        return ArraysExt.resize(resolutions, count);
     }
 
     /**
@@ -335,7 +372,7 @@ final class ConcatenatedGridResource extends AbstractGridCoverageResource implem
      * Slices are free to replace the given strategy by another one.
      *
      * @param  strategy  the desired strategy for loading raster data.
-     * @return {@code true} if the given strategy has been accepted by at least one slice.
+     * @return {@code true} if the given strategy has been accepted by all slices.
      * @throws DataStoreException if an error occurred while setting data store configuration.
      */
     @Override

@@ -140,7 +140,7 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Cannot select a slice.
          */
-        public static final short CanNotSelectSlice = 81;
+        public static final short CanNotSelectSlice = 53;
 
         /**
          * Cannot save resources of type ‘{1}’ in a “{0}” store.
@@ -216,11 +216,6 @@ public final class Resources extends IndexedResourceBundle {
          * Query property “{0}” is duplicated at indices {1} and {2}.
          */
         public static final short DuplicatedQueryProperty_3 = 54;
-
-        /**
-         * Sample dimension index {0} is duplicated.
-         */
-        public static final short DuplicatedSampleDimensionIndex_1 = 53;
 
         /**
          * Exception occurred in a listener for events of type ‘{0}’.
@@ -300,11 +295,6 @@ public final class Resources extends IndexedResourceBundle {
         public static final short InvalidExpression_2 = 60;
 
         /**
-         * Sample dimension index {1} is invalid. Expected an index from 0 to {0} inclusive.
-         */
-        public static final short InvalidSampleDimensionIndex_2 = 52;
-
-        /**
          * Loaded grid coverage between {1} – {2} and {3} – {4} from file “{0}” in {5} seconds.
          */
         public static final short LoadedGridCoverage_6 = 59;
@@ -338,7 +328,7 @@ public final class Resources extends IndexedResourceBundle {
         /**
          * Extent in dimension “{0}” should be a slice, but {1} cells were specified.
          */
-        public static final short NoSliceSpecified_2 = 80;
+        public static final short NoSliceSpecified_2 = 52;
 
         /**
          * No directory of resources found at “{0}”.

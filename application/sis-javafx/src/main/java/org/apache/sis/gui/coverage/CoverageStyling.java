@@ -17,10 +17,10 @@
 package org.apache.sis.gui.coverage;
 
 import java.awt.Color;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.Function;
 import javafx.geometry.Pos;
 import javafx.scene.control.TableCell;
@@ -30,14 +30,14 @@ import javafx.scene.control.MenuItem;
 import javafx.collections.ObservableList;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.control.ContextMenu;
+import org.opengis.util.InternationalString;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.internal.gui.Resources;
 import org.apache.sis.internal.gui.ImmutableObjectProperty;
 import org.apache.sis.internal.gui.control.ColorRamp;
 import org.apache.sis.internal.gui.control.ColorColumnHandler;
 import org.apache.sis.util.resources.Vocabulary;
-import org.opengis.util.InternationalString;
 
 
 /**
@@ -47,21 +47,16 @@ import org.opengis.util.InternationalString;
  * that may change in any future version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 final class CoverageStyling extends ColorColumnHandler<Category> implements Function<Category,Color[]> {
     /**
      * Customized colors selected by user. Keys are English names of categories.
      *
-     * @see #key(Category)
+     * @see #apply(Category)
      */
-    private final Map<String,int[]> customizedColors;
-
-    /**
-     * The fallback to use if no color is defined in this {@code CoverageStyling} for a category.
-     */
-    private final Function<Category,Color[]> fallback;
+    private final Map<String,ColorRamp> customizedColors;
 
     /**
      * The view to notify when a color changed, or {@code null} if none.
@@ -71,25 +66,24 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     /**
      * Creates a new styling instance.
      */
+    @SuppressWarnings("ThisEscapedInObjectConstruction")
     CoverageStyling(final CoverageCanvas canvas) {
         customizedColors = new HashMap<>();
         this.canvas = canvas;
         if (canvas != null) {
-            final Function<Category, Color[]> c = canvas.getCategoryColors();
-            if (c != null) {
-                fallback = c;
-                return;
-            }
+            canvas.setColorizer(Colorizer.forCategories(this));
         }
-        fallback = Colorizer.GRAYSCALE;
     }
 
     /**
-     * Copy styling information from the given source.
+     * Copies styling information from the given source.
      * This is used when the user clicks on "New window" button.
      */
     final void copyStyling(final CoverageStyling source) {
         customizedColors.putAll(source.customizedColors);
+        if (canvas != null) {
+            canvas.stylingChanged();
+        }
     }
 
     /**
@@ -103,7 +97,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
         customizedColors.clear();
         items.setAll(content);
         if (canvas != null) {
-            canvas.setCategoryColors(null);
+            canvas.stylingChanged();
         }
     }
 
@@ -111,79 +105,71 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      * Returns the key to use in {@link #customizedColors} for the given category.
      */
     private static String key(final Category category) {
-        return category.getName().toString(Locale.ENGLISH);
+        return category.getName().toString(Locale.ROOT);
     }
 
     /**
-     * Associates colors to the given category.
+     * Returns the colors to apply for the given category as an observable value.
      *
-     * @param  colors  the new color for the given category, or {@code null} for resetting default value.
-     */
-    final void setARGB(final Category category, final int[] colors) {
-        final String key = key(category);
-        final int[] old;
-        if (colors != null && colors.length != 0) {
-            old = customizedColors.put(key, colors);
-        } else {
-            old = customizedColors.remove(key);
-        }
-        if (canvas != null && !Arrays.equals(colors, old)) {
-            canvas.setCategoryColors(this);                     // Causes a repaint event.
-        }
-    }
-
-    /**
-     * Returns the colors to apply for the given category, or {@code null} for transparent.
-     * Does the same work as {@link #apply(Category)}, but returns colors as an array of ARGB codes.
-     * Contrarily to {@link #apply(Category)}, this method may return references to internal arrays;
-     * <strong>do not modify.</strong>
+     * @param  row  the row item for which to get color to show in color cell. Never {@code null}.
+     * @return the color(s) to use for the given row, or {@code null} if none (transparent).
      */
     @Override
-    protected int[] getARGB(final Category category) {
-        int[] ARGB = customizedColors.get(key(category));
-        if (ARGB == null) {
-            final Color[] colors = fallback.apply(category);
-            if (colors != null) {
-                ARGB = new int[colors.length];
-                for (int i=0; i<colors.length; i++) {
-                    ARGB[i] = colors[i].getRGB();
-                }
+    protected ObservableValue<ColorRamp> getObservableValue(final Category category) {
+        ColorRamp ramp = customizedColors.get(key(category));
+        if (ramp == null) {
+            if (!category.isQuantitative()) {
+                return null;
             }
+            ramp = ColorRamp.DEFAULT;
         }
-        return ARGB;
+        return new ImmutableObjectProperty<>(ramp);
     }
 
     /**
-     * Returns the colors to apply for the given category, or {@code null} for transparent.
-     * This method returns copies of internal arrays; changes to the returned array do not
-     * affect this {@code CoverageStyling} (assuming {@link #fallback} also does copies).
+     * Returns the colors to apply for the given category, or {@code null} for default.
+     * This method returns copies of internal arrays; changes to the returned array do
+     * not affect this {@code CoverageStyling}.
      *
      * @param  category  the category for which to get the colors.
-     * @return colors to apply for the given category, or {@code null}.
+     * @return colors to apply for the given category, or {@code null} if the category is unrecognized.
      */
     @Override
     public Color[] apply(final Category category) {
-        final int[] ARGB = customizedColors.get(key(category));
-        if (ARGB != null) {
-            final Color[] colors = new Color[ARGB.length];
-            for (int i=0; i<colors.length; i++) {
-                colors[i] = new Color(ARGB[i], true);
+        final ColorRamp ramp = customizedColors.get(key(category));
+        if (ramp != null) {
+            final int[] ARGB = ramp.colors;
+            if (ARGB != null) {
+                final Color[] colors = new Color[ARGB.length];
+                for (int i=0; i<colors.length; i++) {
+                    colors[i] = new Color(ARGB[i], true);
+                }
+                return colors;
             }
-            return colors;
         }
-        return fallback.apply(category);
+        return null;
     }
 
     /**
-     * Invoked when users confirmed that (s)he wants to use the selected colors.
+     * Associates colors to the given category. This method is invoked when new categories are shown
+     * in table column managed by this {@code CoverageStyling}, and when user selects new colors.
      *
      * @param  category  the category for which to assign new color(s).
      * @param  colors    the new color for the given category, or {@code null} for resetting default value.
      * @return the type of color (solid or gradient) shown for the given value.
      */
     @Override
-    protected ColorRamp.Type applyColors(final Category category, ColorRamp colors) {
-        setARGB(category, (colors != null) ? colors.colors : null);
+    protected ColorRamp.Type applyColors(final Category category, final ColorRamp colors) {
+        final String key = key(category);
+        final ColorRamp old;
+        if (colors != null) {
+            old = customizedColors.put(key, colors);
+        } else {
+            old = customizedColors.remove(key);
+        }
+        if (canvas != null && !Objects.equals(colors, old)) {
+            canvas.stylingChanged();
+        }
         return category.isQuantitative() ? ColorRamp.Type.GRADIENT : ColorRamp.Type.SOLID;
     }
 
@@ -195,7 +181,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      *                     (this argument would be removed if this method was public API).
      */
     final TableView<Category> createCategoryTable(final Resources resources, final Vocabulary vocabulary) {
-        final TableColumn<Category,String> name = new TableColumn<>(vocabulary.getString(Vocabulary.Keys.Name));
+        final var name = new TableColumn<Category,String>(vocabulary.getString(Vocabulary.Keys.Name));
         name.setCellValueFactory(CoverageStyling::getCategoryName);
         name.setCellFactory(CoverageStyling::createNameCell);
         name.setEditable(false);
@@ -224,7 +210,7 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
      */
     private static TableCell<Category,String> createNameCell(final TableColumn<Category,String> column) {
         @SuppressWarnings("unchecked")
-        final TableCell<Category,String> cell = (TableCell<Category,String>) TableColumn.DEFAULT_CELL_FACTORY.call(column);
+        final var cell = (TableCell<Category,String>) TableColumn.DEFAULT_CELL_FACTORY.call(column);
         cell.setAlignment(Pos.CENTER_LEFT);
         return cell;
     }

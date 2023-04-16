@@ -26,8 +26,8 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import org.opengis.referencing.operation.Projection;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.internal.util.AbstractMap;
 import org.apache.sis.util.collection.IntegerList;
+import org.apache.sis.internal.util.AbstractMap;
 
 
 /**

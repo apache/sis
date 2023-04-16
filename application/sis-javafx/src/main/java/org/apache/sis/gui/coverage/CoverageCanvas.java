@@ -21,7 +21,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 import java.util.logging.LogRecord;
 import java.io.IOException;
 import java.awt.Graphics2D;
@@ -54,7 +53,6 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -62,6 +60,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.Shapes2D;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.Interpolation;
 import org.apache.sis.storage.GridCoverageResource;
@@ -407,28 +406,44 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @see #interpolationProperty
      */
     public final void setInterpolation(final Interpolation interpolation) {
-        assert Platform.isFxApplicationThread();
         interpolationProperty.set(interpolation);
     }
 
     /**
-     * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
+     * Sets the colorization algorithm to apply on rendered images.
+     * Should be an algorithm based on coverage categories.
+     *
+     * <p>{@code CoverageCanvas} cannot detect when the given colorizer changes its internal state.
+     * The {@link #stylingChanged()} method should be invoked explicitly when such change occurs.</p>
+     *
+     * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
      */
-    final Function<Category, java.awt.Color[]> getCategoryColors() {
-        return data.processor.getCategoryColors();
+    final void setColorizer(final Colorizer colors) {
+        data.processor.setColorizer(colors);
+        stylingChanged();
     }
 
     /**
-     * Sets the colors to use for given categories in image. Invoking this method causes a repaint event,
-     * so it should be invoked only if at least one color is known to have changed.
-     *
-     * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
+     * Invoked by {@link CoverageControls} when the user selected a new color stretching mode.
+     * The sample values are assumed the same, only the image appearance is modified.
      */
-    final void setCategoryColors(final Function<Category, java.awt.Color[]> colors) {
+    final void setStretching(final Stretching selection) {
         if (TRACE) {
-            trace("setCategoryColors(Function): causes repaint.");
+            trace("setStretching(%s)", selection);
         }
-        data.processor.setCategoryColors(colors);
+        if (data.selectedDerivative != selection) {
+            data.selectedDerivative = selection;
+            stylingChanged();
+        }
+    }
+
+    /**
+     * Invoked when image colors changed. Derived features such are isolines are assumed unchanged.
+     * This method should be invoked explicitly when the {@link Colorizer} changes its internal state.
+     *
+     * @see #clearRenderedImage()
+     */
+    final void stylingChanged() {
         resampledImage = null;
         requestRepaint();
     }
@@ -708,8 +723,7 @@ public class CoverageCanvas extends MapCanvasAWT {
             trace("onInterpolationSpecified(%s)", newValue);
         }
         data.processor.setInterpolation(newValue);
-        resampledImage = null;
-        requestRepaint();
+        stylingChanged();
     }
 
     /**
@@ -1119,21 +1133,6 @@ public class CoverageCanvas extends MapCanvasAWT {
             return null;
         }
         return Shapes2D.transform(MathTransforms.bidimensional(getObjectiveToDisplay().inverse()), displayBounds, null);
-    }
-
-    /**
-     * Invoked by {@link CoverageControls} when the user selected a new color stretching mode.
-     * The sample values are assumed the same; only the image appearance is modified.
-     */
-    final void setStyling(final Stretching selection) {
-        if (TRACE) {
-            trace("setStyling(%s)", selection);
-        }
-        if (data.selectedDerivative != selection) {
-            data.selectedDerivative = selection;
-            resampledImage = null;
-            requestRepaint();
-        }
     }
 
     /**

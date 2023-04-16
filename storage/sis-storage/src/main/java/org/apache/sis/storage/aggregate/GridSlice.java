@@ -24,13 +24,15 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.internal.util.Numerics;
+import org.apache.sis.internal.coverage.CommonDomainFinder;
+import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.internal.util.Strings;
-import org.apache.sis.util.Numbers;
 
 
 /**
@@ -42,10 +44,15 @@ import org.apache.sis.util.Numbers;
  * are grouped by "grid to CRS" transform in the {@link GroupByTransform#members} list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 final class GridSlice {
+    /**
+     * The "pixel in cell" value used for all "grid to CRS" computations.
+     */
+    static final PixelInCell CELL_ANCHOR = PixelInCell.CELL_CORNER;
+
     /**
      * The resource associated to this slice.
      */
@@ -64,6 +71,18 @@ final class GridSlice {
     private final long[] offset;
 
     /**
+     * Creates a new slice for the specified coverage.
+     *
+     * @param  parent  listeners of the parent resource, or {@code null} if none.
+     * @param  slice   coverage associated to this slice.
+     */
+    GridSlice(final StoreListeners parent, final GridCoverage slice) {
+        resource = new MemoryGridResource(parent, slice);
+        geometry = slice.getGridGeometry();
+        offset   = new long[geometry.getDimension()];
+    }
+
+    /**
      * Creates a new slice for the specified resource.
      *
      * @param  slice  resource associated to this slice.
@@ -72,57 +91,6 @@ final class GridSlice {
         resource = slice;
         geometry = slice.getGridGeometry();
         offset   = new long[geometry.getDimension()];
-    }
-
-    /**
-     * Sets the {@link #offset} terms to the values of the translation columns of the given matrix.
-     * This method shall be invoked if and only if {@link #isIntegerTranslation(Matrix)} returned {@code true}.
-     *
-     * @param  groupToSlice  conversion from source coordinates of {@link GroupByTransform#gridToCRS}
-     *                       to grid coordinates of {@link #geometry}.
-     * @throws ArithmeticException if a translation term is NaN or overflows {@code long} integer capacity.
-     *
-     * @see #getOffset(Map)
-     */
-    private void setOffset(final MatrixSIS groupToSlice) {
-        final int i = groupToSlice.getNumCol() - 1;
-        for (int j=0; j<offset.length; j++) {
-            offset[j] = Numbers.round(groupToSlice.getNumber(j, i));
-        }
-    }
-
-    /**
-     * Returns {@code true} if the given matrix is the identity matrix except for translation terms.
-     * Translation terms must be integer values.
-     *
-     * @param  groupToSlice  conversion from {@link GroupByTransform#gridToCRS}
-     *         source coordinates to {@link #gridToCRS} source coordinates.
-     * @return whether the matrix is identity, ignoring integer translation.
-     *
-     * @see org.apache.sis.referencing.operation.matrix.Matrices#isTranslation(Matrix)
-     */
-    private static boolean isIntegerTranslation(final Matrix groupToSlice) {
-        final int numRows = groupToSlice.getNumRow();
-        final int numCols = groupToSlice.getNumCol();
-        for (int j=0; j<numRows; j++) {
-            for (int i=0; i<numCols; i++) {
-                double tolerance = Numerics.COMPARISON_THRESHOLD;
-                double e = groupToSlice.getElement(j, i);
-                if (i == j) {
-                    e--;
-                } else if (i == numCols - 1) {
-                    final double a = Math.abs(e);
-                    if (a > 1) {
-                        tolerance = Math.min(tolerance*a, 0.125);
-                    }
-                    e -= Math.rint(e);
-                }
-                if (!(Math.abs(e) <= tolerance)) {      // Use `!` for catching NaN.
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     /**
@@ -139,14 +107,13 @@ final class GridSlice {
     final GroupByTransform getList(final List<GroupByCRS<GroupByTransform>> groups, final MergeStrategy strategy)
             throws NoninvertibleTransformException
     {
-        final MathTransform gridToCRS = geometry.getGridToCRS(PixelInCell.CELL_CORNER);
+        final MathTransform gridToCRS = geometry.getGridToCRS(CELL_ANCHOR);
         final MathTransform crsToGrid = gridToCRS.inverse();
         final List<GroupByTransform> transforms = GroupByCRS.getOrAdd(groups, geometry).members;
         synchronized (transforms) {
             for (final GroupByTransform c : transforms) {
                 final Matrix groupToSlice = c.linearTransform(crsToGrid);
-                if (groupToSlice != null && isIntegerTranslation(groupToSlice)) {
-                    setOffset(MatrixSIS.castOrCopy(groupToSlice));
+                if (CommonDomainFinder.integerTranslation(groupToSlice, offset) != null) {
                     c.strategy = strategy;
                     return c;
                 }

@@ -33,9 +33,11 @@ import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
@@ -87,7 +89,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see GridCoverage2D
  * @see SampleDimension.Builder
@@ -169,12 +171,13 @@ public class GridCoverageBuilder {
      * @see #addImageProperty(String, Object)
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
-    private Hashtable<String,Object> properties;
+    private final Hashtable<String,Object> properties;
 
     /**
      * Creates an initially empty builder.
      */
     public GridCoverageBuilder() {
+        properties = new Hashtable<>();
     }
 
     /**
@@ -398,7 +401,7 @@ public class GridCoverageBuilder {
     public GridCoverageBuilder flipGridAxis(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
         if (dimension >= Long.SIZE) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
+            throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
         }
         flippedAxes ^= (1L << dimension);
         return this;
@@ -419,9 +422,6 @@ public class GridCoverageBuilder {
     public GridCoverageBuilder addImageProperty(final String key, final Object value) {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);
-        if (properties == null) {
-            properties = new Hashtable<>();
-        }
         if (properties.putIfAbsent(key, value) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
@@ -471,27 +471,33 @@ public class GridCoverageBuilder {
                  */
                 bands = GridCoverage2D.defaultIfAbsent(bands, null, raster.getNumBands());
                 final SampleModel sm = raster.getSampleModel();
-                final Colorizer colorizer = new Colorizer(Colorizer.GRAYSCALE);
+                final var colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, false);
                 final ColorModel colors;
                 if (colorizer.initialize(sm, bands.get(visibleBand)) || colorizer.initialize(sm, visibleBand)) {
                     colors = colorizer.createColorModel(ImageUtilities.getBandType(sm), bands.size(), visibleBand);
                 } else {
-                    colors = Colorizer.NULL_COLOR_MODEL;
+                    colors = ColorModelBuilder.NULL_COLOR_MODEL;
                 }
                 /*
                  * Create an image from the raster. We favor BufferedImage instance when possible,
                  * and fallback on TiledImage only if the BufferedImage cannot be created.
                  */
+                if (bands != null) {
+                    properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands.toArray(SampleDimension[]::new));
+                } else {
+                    properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
+                }
                 if (raster instanceof WritableRaster) {
                     final WritableRaster wr = (WritableRaster) raster;
                     if (colors != null && (wr.getMinX() | wr.getMinY()) == 0) {
-                        image = new BufferedImage(colors, wr, false, properties);
+                        image = new ObservableImage(colors, wr, false, properties);
                     } else {
                         image = new WritableTiledImage(properties, colors, wr.getWidth(), wr.getHeight(), 0, 0, wr);
                     }
                 } else {
                     image = new TiledImage(properties, colors, raster.getWidth(), raster.getHeight(), 0, 0, raster);
                 }
+                properties.remove(PlanarImage.SAMPLE_DIMENSIONS_KEY);
             }
             /*
              * At this point `image` shall be non-null but `bands` may still be null (it is okay).

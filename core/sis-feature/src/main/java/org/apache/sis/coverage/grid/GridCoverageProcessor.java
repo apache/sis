@@ -23,19 +23,24 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.awt.Shape;
 import java.awt.Rectangle;
-import java.awt.image.ColorModel;
 import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.RegionOfInterest;
 import org.apache.sis.coverage.SampleDimension;
+import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
+import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
+import org.apache.sis.internal.coverage.SampleDimensions;
+import org.apache.sis.internal.coverage.MultiSourceArgument;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -45,12 +50,31 @@ import org.apache.sis.measure.NumberRange;
 
 
 /**
- * A predefined set of operations on grid coverages as convenience methods.
+ * A predefined set of operations on grid coverages.
+ * After instantiation, {@code GridCoverageProcessor} can be configured for the following aspects:
+ *
+ * <ul class="verbose">
+ *   <li>
+ *     {@linkplain #setInterpolation(Interpolation) Interpolation method} to use during resampling operations.
+ *   </li><li>
+ *     {@linkplain #setFillValues(Number...) Fill values} to use for cells that cannot be computed.
+ *   </li><li>
+ *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
+ *   </li><li>
+ *     {@linkplain #setPositionalAccuracyHints(Quantity...) Positional accuracy hints}
+ *     for enabling the use of faster algorithm when a lower accuracy is acceptable.
+ *   </li><li>
+ *     {@linkplain #setOptimizations(Set) Optimizations} to enable.
+ *   </li>
+ * </ul>
+ *
+ * For each coverage operations, above properties are combined with parameters given to the operation method.
  *
  * <h2>Thread-safety</h2>
  * {@code GridCoverageProcessor} is safe for concurrent use in multi-threading environment.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @author  Alexis Manin (Geomatys)
  * @version 1.4
  *
  * @see org.apache.sis.image.ImageProcessor
@@ -66,11 +90,27 @@ public class GridCoverageProcessor implements Cloneable {
     private static final WeakHashSet<ImageProcessor> PROCESSORS = new WeakHashSet<>(ImageProcessor.class);
 
     /**
-     * Returns an unique instance of the given processor. Both the given and the returned processors
-     * shall be unmodified, because they may be shared by many {@link GridCoverage} instances.
+     * Returns a unique instance of the given processor. Both the given and the returned processors shall not
+     * be modified after this method call, because they may be shared by many {@link GridCoverage} instances.
+     * It implies that the given processor shall <em>not</em> be {@link #imageProcessor}. It must be a clone.
+     *
+     * @param  clone  a clone of {@link #imageProcessor} for which to return a unique instance.
+     * @return a unique instance of the given clone. Shall not be modified by the caller.
      */
-    static ImageProcessor unique(final ImageProcessor image) {
-        return PROCESSORS.unique(image);
+    static ImageProcessor unique(final ImageProcessor clone) {
+        return PROCESSORS.unique(clone);
+    }
+
+    /**
+     * Returns a unique instance of the current state of {@link #imageProcessor}.
+     * Callers shall not modify the returned object because it may be shared by many {@link GridCoverage} instances.
+     */
+    private ImageProcessor snapshot() {
+        ImageProcessor shared = PROCESSORS.get(imageProcessor);
+        if (shared == null) {
+            shared = unique(imageProcessor.clone());
+        }
+        return shared;
     }
 
     /**
@@ -131,6 +171,65 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
+     * Returns the values to use for pixels that cannot be computed.
+     * The default implementation delegates to the image processor.
+     *
+     * @return fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
+     *
+     * @see ImageProcessor#getFillValues()
+     *
+     * @since 1.2
+     */
+    public Number[] getFillValues() {
+        return imageProcessor.getFillValues();
+    }
+
+    /**
+     * Sets the values to use for pixels that cannot be computed.
+     * The default implementation delegates to the image processor.
+     *
+     * @param  values  fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
+     *
+     * @see ImageProcessor#setFillValues(Number...)
+     *
+     * @since 1.2
+     */
+    public void setFillValues(final Number... values) {
+        imageProcessor.setFillValues(values);
+    }
+
+    /**
+     * Returns the colorization algorithm to apply on computed images.
+     * The default implementation delegates to the image processor.
+     *
+     * @return colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @see ImageProcessor#getColorizer()
+     *
+     * @since 1.4
+     */
+    public Colorizer getColorizer() {
+        return imageProcessor.getColorizer();
+    }
+
+    /**
+     * Sets the colorization algorithm to apply on computed images.
+     * The colorizer is used by {@link #convert(GridCoverage, MathTransform1D[], Function) convert(…)}
+     * and {@link #aggregateRanges(GridCoverage...) aggregateRanges(…)} operations among others.
+     * The default implementation delegates to the image processor.
+     *
+     * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @see ImageProcessor#setColorizer(Colorizer)
+     * @see #visualize(GridCoverage, GridExtent)
+     *
+     * @since 1.4
+     */
+    public void setColorizer(final Colorizer colorizer) {
+        imageProcessor.setColorizer(colorizer);
+    }
+
+    /**
      * Returns hints about the desired positional accuracy, in "real world" units or in pixel units.
      * The default implementation delegates to the image processor.
      *
@@ -178,23 +277,24 @@ public class GridCoverageProcessor implements Cloneable {
          * Allows the replacement of an operation by a more efficient one.
          * This optimization is enabled by default.
          *
-         * <div class="note"><b>Example:</b>
-         * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
+         * <h4>Example</h4>
+         * If the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
          * that cause the resampling to be a translation of the grid by an integer amount of cells, then by default
          * {@link GridCoverageProcessor} will use the {@link #shiftGrid(GridCoverage, long[]) shiftGrid(…)}
-         * algorithm instead. This option can be cleared for forcing a full resampling operation in all cases.</div>
+         * algorithm instead. This option can be cleared for forcing a full resampling operation in all cases.
          */
         REPLACE_OPERATION,
 
         /**
          * Allows the replacement of source parameter by a more fundamental source.
+         * This replacement may change the results, but usually with better accuracy.
          * This optimization is enabled by default.
          *
-         * <div class="note"><b>Example:</b>
-         * if the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with a source
+         * <h4>Example</h4>
+         * If the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with a source
          * grid coverage which is itself the result of a previous resampling, then instead of resampling an
          * already resampled coverage, by default {@link GridCoverageProcessor} will resample the original
-         * coverage. This option can be cleared for disabling that replacement.</div>
+         * coverage. This option can be cleared for disabling that replacement.
          */
         REPLACE_SOURCE
     }
@@ -226,38 +326,16 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Returns the values to use for pixels that cannot be computed.
-     * The default implementation delegates to the image processor.
-     *
-     * @return fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
-     *
-     * @see ImageProcessor#getFillValues()
-     *
-     * @since 1.2
-     */
-    public Number[] getFillValues() {
-        return imageProcessor.getFillValues();
-    }
-
-    /**
-     * Sets the values to use for pixels that cannot be computed.
-     * The default implementation delegates to the image processor.
-     *
-     * @param  values  fill values to use for pixels that cannot be computed, or {@code null} for the defaults.
-     *
-     * @see ImageProcessor#setFillValues(Number...)
-     *
-     * @since 1.2
-     */
-    public void setFillValues(final Number... values) {
-        imageProcessor.setFillValues(values);
-    }
-
-    /**
      * Applies a mask defined by a region of interest (ROI). If {@code maskInside} is {@code true},
      * then all pixels inside the given ROI are set to the {@linkplain #getFillValues() fill values}.
      * If {@code maskInside} is {@code false}, then the mask is reversed:
      * the pixels set to fill values are the ones outside the ROI.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getFillValues() Fill values} values to assign to pixels inside/outside the region of interest.</li>
+     * </ul>
      *
      * @param  source      the coverage on which to apply a mask.
      * @param  mask        region (in arbitrary CRS) of the mask.
@@ -300,13 +378,19 @@ public class GridCoverageProcessor implements Cloneable {
      * If the source coverage is backed by a {@link java.awt.image.WritableRenderedImage},
      * then changes in the source coverage are reflected in the returned coverage and conversely.
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
+     * </ul>
+     *
      * @param  source      the coverage for which to convert sample values.
      * @param  converters  the transfer functions to apply on each sample dimension of the source coverage.
      * @param  sampleDimensionModifier  a callback for modifying the {@link SampleDimension.Builder} default
      *         configuration for each sample dimension of the target coverage, or {@code null} if none.
      * @return the coverage which computes converted values from the given source.
      *
-     * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType, ColorModel)
+     * @see ImageProcessor#convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType)
      *
      * @since 1.3
      */
@@ -316,7 +400,7 @@ public class GridCoverageProcessor implements Cloneable {
         ArgumentChecks.ensureNonNull("source",     source);
         ArgumentChecks.ensureNonNull("converters", converters);
         final List<SampleDimension> sourceBands = source.getSampleDimensions();
-        ArgumentChecks.ensureSizeBetween("converters", 1, sourceBands.size(), converters.length);
+        ArgumentChecks.ensureCountBetween("converters", true, 1, sourceBands.size(), converters.length);
         final SampleDimension[] targetBands = new SampleDimension[converters.length];
         final SampleDimension.Builder builder = new SampleDimension.Builder();
         if (sampleDimensionModifier == null) {
@@ -339,7 +423,7 @@ public class GridCoverageProcessor implements Cloneable {
             builder.clear();
         }
         return new ConvertedGridCoverage(source, UnmodifiableArrayList.wrap(targetBands),
-                                         converters, true, unique(imageProcessor), true);
+                                         converters, true, snapshot(), true);
     }
 
     /**
@@ -359,6 +443,12 @@ public class GridCoverageProcessor implements Cloneable {
      * <ul>
      *   <li>{@link Optimization#REPLACE_SOURCE} for merging many calls
      *       of this {@code translate(…)} method into a single translation.</li>
+     * </ul>
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>(none)</li>
      * </ul>
      *
      * @param  source       the grid coverage to translate.
@@ -419,6 +509,15 @@ public class GridCoverageProcessor implements Cloneable {
      *       by {@code translate(…)} when possible.</li>
      * </ul>
      *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getInterpolation() Interpolation method} (nearest neighbor, bilinear, <i>etc</i>).</li>
+     *   <li>{@linkplain #getFillValues() Fill values} for pixels outside source image.</li>
+     *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
+     *       for enabling faster resampling at the cost of lower precision.</li>
+     * </ul>
+     *
      * @param  source  the grid coverage to resample.
      * @param  target  the desired geometry of returned grid coverage. May be incomplete.
      * @return a grid coverage with the characteristics specified in the given grid geometry.
@@ -446,7 +545,7 @@ public class GridCoverageProcessor implements Cloneable {
                 return source;
             } else if (allowSourceReplacement && source instanceof DerivedGridCoverage) {
                 final DerivedGridCoverage derived = (DerivedGridCoverage) source;
-                if (derived.IsNotRepleacable()) break;
+                if (derived.isNotRepleacable()) break;
                 source = derived.source;
             } else {
                 break;
@@ -464,6 +563,7 @@ public class GridCoverageProcessor implements Cloneable {
         }
         final GridCoverage resampled;
         try {
+            // `ResampledGridCoverage` will create itself a clone of `imageProcessor`.
             resampled = ResampledGridCoverage.create(source, target, imageProcessor, allowOperationReplacement);
         } catch (IllegalGridGeometryException e) {
             final Throwable cause = e.getCause();
@@ -496,8 +596,257 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.3
      */
     public GridCoverage resample(final GridCoverage source, final CoordinateReferenceSystem target) throws TransformException {
+        ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
         return resample(source, new GridGeometry(null, PixelInCell.CELL_CENTER, null, target));
+    }
+
+    /**
+     * Automatically reduces a grid coverage dimensionality by removing all grid axes with an extent size of 1.
+     * Axes in the reduced grid coverage will be in the same order than in the source coverage.
+     *
+     * @param  source  the coverage to reduce to a lower number of dimensions.
+     * @return the reduced grid coverage, or {@code source} if no grid dimensions can be removed.
+     *
+     * @see DimensionalityReduction#reduce(GridGeometry)
+     *
+     * @since 1.4
+     */
+    public GridCoverage reduceDimensionality(final GridCoverage source) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return DimensionalityReduction.reduce(source.getGridGeometry()).apply(source);
+    }
+
+    /**
+     * Creates a coverage trimmed from the specified grid dimensions.
+     * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
+     * The dimensions to remove are specified as indices of <em>grid extent</em> axes.
+     * It may be the same indices than the indices of the CRS axes which will be removed,
+     * but not necessarily.
+     *
+     * <h4>Constraints</h4>
+     * If the source coverage contains dimensions that are not
+     * {@linkplain org.apache.sis.referencing.operation.transform.TransformSeparator separable}
+     * and if only a subset of those dimensions are specified for removal,
+     * then this method will throw an {@link IllegalGridGeometryException}.
+     *
+     * <p>For each dimension that is removed,
+     * the {@linkplain GridExtent#getSize(int) size} of the grid extent must be 1 cell.
+     * If this condition does not hold, then this method will throw a {@link SubspaceNotSpecifiedException}.
+     * If desired, this restriction can be relaxed by direct use of {@link DimensionalityReduction} as below,
+     * where (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) are grid coordinates of a point
+     * in the desired slice:</p>
+     *
+     * {@snippet lang="java" :
+     *     var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToPass);
+     *     reduction = reduction.withSlicePoint(x, y, z, t);
+     *     GridCoverage output = reduction.apply(source);
+     *     }
+     *
+     * Alternatively the {@code withSlicePoint(…)} call can be omitted if the caller knows that the source
+     * coverage can handle {@linkplain DimensionalityReduction#reverse(GridExtent) ambiguous grid extents}.
+     *
+     * @param  source            the coverage to reduce to a lower number of dimensions.
+     * @param  gridAxesToRemove  indices of each grid dimension to strip from result. Duplicated values are ignored.
+     * @return the reduced grid coverage, or {@code source} if no grid dimensions was specified.
+     * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
+     * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
+     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     *
+     * @see DimensionalityReduction#remove(GridGeometry, int...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage removeGridDimensions(final GridCoverage source, final int... gridAxesToRemove) {
+        ArgumentChecks.ensureNonNull("source", source);
+        var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToRemove);
+        reduction.ensureIsSlice();
+        return reduction.apply(source);
+    }
+
+    /**
+     * Creates a coverage containing only the specified grid dimensions.
+     * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
+     * The dimensions to keep are specified as indices of <em>grid extent</em> axes.
+     * It may be the same indices than the indices of the CRS axes which will pass through,
+     * but not necessarily.
+     *
+     * <p>The axis order in the returned coverage is always the same as in the given {@code source} coverage,
+     * whatever the order in which axes are specified as input in the {@code gridAxesToPass} array.
+     * Duplicated values in the array are also ignored.</p>
+     *
+     * <h4>Constraints</h4>
+     * If the source coverage contains dimensions that are not
+     * {@linkplain org.apache.sis.referencing.operation.transform.TransformSeparator separable}
+     * and if only a subset of those dimensions are selected in the {@code gridAxesToPass} array,
+     * then this method will throw an {@link IllegalGridGeometryException}.
+     *
+     * <p>For each dimension that is not passed to the output grid coverage,
+     * the {@linkplain GridExtent#getSize(int) size} of the grid extent must be 1 cell.
+     * If this condition does not hold, then this method will throw a {@link SubspaceNotSpecifiedException}.
+     * If desired, this restriction can be relaxed by direct use of {@link DimensionalityReduction} as below,
+     * where (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) are grid coordinates of a point
+     * in the desired slice:</p>
+     *
+     * {@snippet lang="java" :
+     *     var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
+     *     reduction = reduction.withSlicePoint(x, y, z, t);
+     *     GridCoverage output = reduction.apply(source);
+     *     }
+     *
+     * Alternatively the {@code withSlicePoint(…)} call can be omitted if the caller knows that the source
+     * coverage can handle {@linkplain DimensionalityReduction#reverse(GridExtent) ambiguous grid extents}.
+     *
+     * @param  source          the coverage to reduce to a lower number of dimensions.
+     * @param  gridAxesToPass  indices of each grid dimension to maintain in result. Order and duplicated values are ignored.
+     * @return the reduced grid coverage, or {@code source} if all grid dimensions where specified.
+     * @throws IndexOutOfBoundsException if a grid axis index is out of bounds.
+     * @throws SubspaceNotSpecifiedException if at least one removed dimension has a grid extent size larger than 1 cell.
+     * @throws IllegalGridGeometryException if the dimensions to kept cannot be separated from the dimensions to omit.
+     *
+     * @see DimensionalityReduction#select(GridGeometry, int...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage selectGridDimensions(final GridCoverage source, final int... gridAxesToPass) {
+        ArgumentChecks.ensureNonNull("source", source);
+        var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
+        reduction.ensureIsSlice();
+        return reduction.apply(source);
+    }
+
+    /**
+     * Selects a subset of sample dimensions (bands) in the given coverage.
+     * This method can also be used for changing sample dimension order or
+     * for repeating the same sample dimension from the source coverage.
+     * If the specified {@code bands} indices select all sample dimensions
+     * in the same order, then {@code source} is returned directly.
+     *
+     * @param  source  the coverage in which to select sample dimensions.
+     * @param  bands   indices of sample dimensions to retain.
+     * @return coverage width selected sample dimensions.
+     * @throws IllegalArgumentException if a sample dimension index is invalid.
+     *
+     * @see ImageProcessor#selectBands(RenderedImage, int...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage selectSampleDimensions(final GridCoverage source, final int... bands) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return aggregateRanges(new GridCoverage[] {source}, new int[][] {bands});
+    }
+
+    /**
+     * Aggregates in a single coverage the ranges of all specified coverages, in order.
+     * The {@linkplain GridCoverage#getSampleDimensions() list of sample dimensions} of
+     * the aggregated coverage will be the concatenation of the lists from all sources.
+     *
+     * <p>This convenience method delegates to {@link #aggregateRanges(GridCoverage[], int[][])}.
+     * See that method for more information on restrictions.</p>
+     *
+     * @param  sources  coverages whose ranges shall be aggregated, in order. At least one coverage must be provided.
+     * @return the aggregated coverage, or {@code sources[0]} returned directly if only one coverage was supplied.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     *
+     * @see #aggregateRanges(GridCoverage[], int[][])
+     * @see ImageProcessor#aggregateBands(RenderedImage...)
+     *
+     * @since 1.4
+     */
+    public GridCoverage aggregateRanges(final GridCoverage... sources) {
+        return aggregateRanges(sources, (int[][]) null);
+    }
+
+    /**
+     * Aggregates in a single coverage the specified bands of a sequence of source coverages, in order.
+     * This method performs the same work than {@link #aggregateRanges(GridCoverage...)},
+     * but with the possibility to specify the sample dimensions to retain in each source coverage.
+     * The {@code bandsPerSource} argument specifies the sample dimensions to keep, in order.
+     * That array can be {@code null} for selecting all sample dimensions in all source coverages,
+     * or may contain {@code null} elements for selecting all sample dimensions of the corresponding coverage.
+     * An empty array element (i.e. zero sample dimension to select) discards the corresponding source coverage.
+     *
+     * <h4>Restrictions</h4>
+     * <ul>
+     *   <li>All coverage shall use the same CRS.</li>
+     *   <li>All coverage shall use the same <cite>grid to CRS</cite> transform except for translation terms.</li>
+     *   <li>Translation terms in <cite>grid to CRS</cite> can differ only by an integer amount of grid cells.</li>
+     *   <li>The intersection of the domain of all coverages shall be non-empty.</li>
+     *   <li>All coverages shall use the same data type in their rendered image.</li>
+     * </ul>
+     *
+     * Some of those restrictions may be relaxed in future Apache SIS versions.
+     *
+     * @param  sources  coverages whose bands shall be aggregated, in order. At least one coverage must be provided.
+     * @param  bandsPerSource  bands to use for each source coverage, in order. May contain {@code null} elements.
+     * @return the aggregated coverage, or one of the sources if it can be used directly.
+     * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
+     * @throws IllegalArgumentException if some band indices are duplicated or outside their range of validity.
+     *
+     * @see ImageProcessor#aggregateBands(RenderedImage[], int[][])
+     *
+     * @since 1.4
+     */
+    public GridCoverage aggregateRanges(GridCoverage[] sources, int[][] bandsPerSource) {
+        final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
+        aggregate.unwrap(BandAggregateGridCoverage::unwrap);
+        aggregate.validate(GridCoverage::getSampleDimensions);
+        aggregate.mergeConsecutiveSources();
+        if (aggregate.isIdentity()) {
+            return aggregate.sources()[0];
+        }
+        return new BandAggregateGridCoverage(aggregate, snapshot());
+    }
+
+    /**
+     * Renders the given grid coverage as an image suitable for displaying purpose.
+     * The resulting image is for visualization only and should not be used for computational purposes.
+     * There is no guarantee about the number of bands in returned image or about which formula is used
+     * for converting floating point values to integer values.
+     *
+     * <h4>How to specify colors</h4>
+     * The image colors can be controlled by the {@link Colorizer} set on this coverage processor.
+     * The recommended way is to associate colors to {@linkplain Category#getName() category names},
+     * {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}
+     * or other category properties. Example:
+     *
+     * {@snippet lang="java" :
+     *     Map<String,Color[]> colors = Map.of(
+     *         "Temperature", new Color[] {Color.BLUE, Color.MAGENTA, Color.RED},
+     *         "Wind speed",  new Color[] {Color.GREEN, Color.CYAN, Color.BLUE});
+     *
+     *     processor.setColorizer(Colorizer.forCategories((category) ->
+     *         colors.get(category.getName().toString(Locale.ENGLISH))));
+     *
+     *     RenderedImage visualization = processor.visualize(source, slice);
+     *     }
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
+     * </ul>
+     *
+     * @param  source  the grid coverage to visualize.
+     * @param  slice   the slice and extent to render, or {@code null} for the whole coverage.
+     * @return rendered image for visualization purposes only.
+     * @throws IllegalArgumentException if the given extent does not have the same number of dimensions
+     *         than the specified coverage or does not intersect.
+     *
+     * @see ImageProcessor#visualize(RenderedImage)
+     *
+     * @since 1.4
+     */
+    public RenderedImage visualize(final GridCoverage source, final GridExtent slice) {
+        ArgumentChecks.ensureNonNull("source", source);
+        final SampleDimension[] bands = source.getSampleDimensions().toArray(SampleDimension[]::new);
+        final RenderedImage image = source.render(slice);
+        try {
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.set(bands);
+            return imageProcessor.visualize(image);
+        } finally {
+            SampleDimensions.IMAGE_PROCESSOR_ARGUMENT.remove();
+        }
     }
 
     /**
@@ -521,7 +870,15 @@ public class GridCoverageProcessor implements Cloneable {
     public boolean equals(final Object object) {
         if (object != null && object.getClass() == getClass()) {
             final GridCoverageProcessor other = (GridCoverageProcessor) object;
-            return imageProcessor.equals(other.imageProcessor);
+            if (imageProcessor.equals(other.imageProcessor)) {
+                final EnumSet<?> optimizations;
+                synchronized (this) {
+                    optimizations = (EnumSet<?>) this.optimizations.clone();
+                }
+                synchronized (other) {
+                    return optimizations.equals(other.optimizations);
+                }
+            }
         }
         return false;
     }
@@ -532,8 +889,8 @@ public class GridCoverageProcessor implements Cloneable {
      * @return a hash code value for this processor.
      */
     @Override
-    public int hashCode() {
-        return Objects.hash(getClass(), imageProcessor);
+    public synchronized int hashCode() {
+        return Objects.hash(getClass(), imageProcessor, optimizations);
     }
 
     /**

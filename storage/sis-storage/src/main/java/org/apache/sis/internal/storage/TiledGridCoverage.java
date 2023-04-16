@@ -376,7 +376,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      *
-     * @param  sliceExtent  a subspace of this grid coverage extent, or {@code null} for the whole image.
+     * @param  sliceExtent  a subspace of this grid coverage, or {@code null} for the whole image.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
      */
     @Override

@@ -179,8 +179,8 @@ public class Category implements Serializable {
      * Creates a copy of the given category except for the {@link #converse} and {@link #toConverse} fields.
      * This constructor serves two purposes:
      * <ul>
-     *   <li>If {@code caller} is null, then {@link #toConverse} is is set to identity.
-     *       This is used only if a user specify a {@code ConvertedCategory} to {@link SampleDimension} constructor.
+     *   <li>If {@code caller} is null, then {@link #toConverse} is set to identity.
+     *       This is used only if a user specifies a {@code ConvertedCategory} to {@link SampleDimension} constructor.
      *       Such converted category can only come from another {@code SampleDimension} and may have inconsistent
      *       information for the new sample dimension that the user is creating.</li>
      *   <li>If {@code caller} is non-null, then {@link #toConverse} is set to the same transform than {@code copy} and

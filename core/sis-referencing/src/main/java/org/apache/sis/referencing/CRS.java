@@ -913,7 +913,7 @@ public final class CRS extends Static {
      * @param  dimensions  the dimensions to retain. The dimensions will be taken in increasing order, ignoring duplicated values.
      * @return a coordinate reference system for the given dimensions. May be the given {@code crs}, which may be {@code null}.
      * @throws IllegalArgumentException if the given array is empty or if the array contains invalid indices.
-     * @throws FactoryException if the geodetic factory failed to create a compound CRS.
+     * @throws FactoryException if this method needed to create a new CRS and that operation failed.
      *
      * @see #getComponentAt(CoordinateReferenceSystem, int, int)
      * @see #compound(CoordinateReferenceSystem...)
@@ -923,9 +923,39 @@ public final class CRS extends Static {
     public static CoordinateReferenceSystem selectDimensions(final CoordinateReferenceSystem crs,
             final int... dimensions) throws FactoryException
     {
+        final var components = selectComponents(crs, dimensions);
+        if (components.isEmpty()) {
+            return null;
+        }
+        return compound(components.toArray(CoordinateReferenceSystem[]::new));
+    }
+
+    /**
+     * Gets or creates CRS components for a subset of the dimensions of the given CRS.
+     * The method performs the same work as {@link #selectDimensions(CoordinateReferenceSystem, int...)}
+     * except that it does not build new {@link CompoundCRS} instances when the specified dimensions span
+     * more than one {@linkplain DefaultCompoundCRS#getComponents() component}.
+     * Instead, the components are returned directly.
+     *
+     * <p>While this method does not create new {@code CompoundCRS} instances, it still may create other
+     * kinds of CRS for handling ellipsoidal height as documented in the {@code selectDimensions(…)} method.</p>
+     *
+     * @param  crs         the CRS from which to get a subset of the components, or {@code null} if none.
+     * @param  dimensions  the dimensions to retain. The dimensions will be taken in increasing order, ignoring duplicated values.
+     * @return components in the specified dimensions, or an empty list if the specified {@code crs} is {@code null}.
+     * @throws IllegalArgumentException if the given array is empty or if the array contains invalid indices.
+     * @throws FactoryException if this method needed to create a new CRS and that operation failed.
+     *
+     * @see #selectDimensions(CoordinateReferenceSystem, int...)
+     *
+     * @since 1.4
+     */
+    public static List<CoordinateReferenceSystem> selectComponents(final CoordinateReferenceSystem crs,
+            final int... dimensions) throws FactoryException
+    {
         ArgumentChecks.ensureNonNull("dimensions", dimensions);
         if (crs == null) {
-            return null;
+            return List.of();
         }
         final int dimension = ReferencingUtilities.getDimension(crs);
         long selected = 0;
@@ -934,7 +964,7 @@ public final class CRS extends Static {
                 throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, d));
             }
             if (d >= Long.SIZE) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d+1));
+                throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, d+1));
             }
             selected |= (1L << d);
         }
@@ -943,7 +973,7 @@ public final class CRS extends Static {
         }
         final List<CoordinateReferenceSystem> components = new ArrayList<>(Long.bitCount(selected));
         reduce(0, crs, dimension, selected, components);
-        return compound(components.toArray(CoordinateReferenceSystem[]::new));
+        return components;
     }
 
     /**
@@ -1322,7 +1352,7 @@ public final class CRS extends Static {
      *         or cannot be decomposed for dimensions in the [{@code lower} … {@code upper}] range.
      * @throws IndexOutOfBoundsException if the given index are out of bounds.
      *
-     * @see #selectDimensions(CoordinateReferenceSystem, int[])
+     * @see #selectDimensions(CoordinateReferenceSystem, int...)
      * @see org.apache.sis.geometry.GeneralEnvelope#subEnvelope(int, int)
      *
      * @since 0.5

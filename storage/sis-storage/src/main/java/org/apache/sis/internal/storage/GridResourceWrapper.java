@@ -37,6 +37,10 @@ import org.opengis.util.GenericName;
  * Wrappers can be used for delaying data loading, modifying the identifier, completing metadata, <i>etc</i>.
  * The wrapped resource is created only when first needed.
  *
+ * <p>The default implementation assumes that the wrapper only delays data loading,
+ * without making substantive changes to the data. If the wrapper changes the data,
+ * then {@link DerivedGridCoverageResource} subclass should be used instead.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  * @since   1.1

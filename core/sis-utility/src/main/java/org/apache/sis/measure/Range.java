@@ -80,7 +80,7 @@ import org.apache.sis.util.Numbers;
  * @author  Joe White
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Jody Garnett (for parameterized type inspiration)
- * @version 1.0
+ * @version 1.4
  *
  * @param <E>  the type of range elements, typically a {@link Number} subclass or {@link java.util.Date}.
  *
@@ -268,7 +268,7 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
      * Returns {@code true} if this range is empty. A range is empty if the
      * {@linkplain #getMinValue() minimum value} is greater than the
      * {@linkplain #getMaxValue() maximum value}, or if they are equal while
-     * at least one of them is exclusive.
+     * at least one of them is exclusive, or if both bounds are NaN.
      *
      * <h4>API note</h4>
      * This method is final because often used by the internal implementation.
@@ -285,8 +285,25 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
         if (c < 0) {
             return false;                               // Minimum is smaller than maximum.
         }
+        if (c != 0) {                                   // Minimum is NaN or greater than maximum.
+            return !isNaN(minValue);
+        }
         // If min and max are equal, then the range is empty if at least one of them is exclusive.
-        return (c != 0) || !isMinIncluded || !isMaxIncluded;
+        if (!isMinIncluded || !isMaxIncluded) {
+            return true;
+        }
+        return isNaN(minValue);                         // At this point if min is NaN, max is also NaN.
+    }
+
+    /**
+     * Returns {@code true} if the given value is NaN. This method tests only the primitive wrappers
+     * because the behavior of their {@code compareTo(…)} method is clearly documented. Calls to this
+     * method assume that NaNs are considered by {@code compareTo(…)} as greater than all other values.
+     */
+    private static boolean isNaN(final Object value) {
+        if (value instanceof Double) return ((Double) value).isNaN();
+        if (value instanceof Float)  return ((Float)  value).isNaN();
+        return false;
     }
 
     /**

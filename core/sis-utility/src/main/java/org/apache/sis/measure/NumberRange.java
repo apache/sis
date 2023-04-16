@@ -108,11 +108,10 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
     /**
      * Returns a unique instance of the given range, except if the range is empty.
      *
-     * <div class="note"><b>Rational:</b>
-     * we exclude empty ranges because the {@link Range#equals(Object)} consider them as equal.
+     * <h4>Rational</h4>
+     * We exclude empty ranges because the {@link Range#equals(Object)} consider them as equal.
      * Consequently, if empty ranges were included in the pool, this method would return in some
      * occasions an empty range with different values than the given {@code range} argument.
-     * </div>
      *
      * We use this method only for caching range of wrapper of primitive types ({@link Byte},
      * {@link Short}, <i>etc.</i>) because those types are known to be immutable.
@@ -645,7 +644,7 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
 
     /**
      * Computes the difference between minimum and maximum values. If numbers are integers, the difference is computed
-     * using inclusive values (e.g. equivalent to <code>{@linkplain #getMinDouble(boolean) getMinDouble}(true)</code>).
+     * using inclusive values (e.g. using <code>{@linkplain #getMinDouble(boolean) getMinDouble}(true)</code>).
      * Otherwise the minimum and maximum values are used as-is
      * (because making them inclusive is considered an infinitely small change).
      *
