@@ -117,9 +117,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
     }
 
     /**
-     * Creates a new test case which will use the given factories. Those factories will be given to
-     * {@link org.opengis.test.ImplementationDetails#configuration(Factory[])} in order to decide
-     * which tests should be enabled.
+     * Creates a new test case which will use the given factories.
      *
      * @param factories  the factories to be used by the test.
      */

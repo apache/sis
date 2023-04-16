@@ -33,10 +33,10 @@ import org.apache.sis.util.Workaround;
  * Tiles in this image have the same size than tiles in the source image.
  * See {@link ComputedImage} javadoc for more information about tile computation.
  *
- * <div class="note"><b>Relationship with other classes</b><br>
+ * <h2>Relationship with other classes</h2>
  * This class is similar to {@link ImageAdapter} except that it extends {@link ComputedImage}
  * and does not forward {@link #getTile(int, int)}, {@link #getData()} and other data methods
- * to the source image.</div>
+ * to the source image.
  *
  * <h2>Sub-classing</h2>
  * Subclasses need to implement at least the {@link #computeTile(int, int, WritableRaster)} method.
@@ -46,7 +46,7 @@ import org.apache.sis.util.Workaround;
  * The {@link #equals(Object)} and {@link #hashCode()} methods should also be overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 abstract class SourceAlignedImage extends ComputedImage {
@@ -182,8 +182,6 @@ abstract class SourceAlignedImage extends ComputedImage {
     @Override public final int getMinTileY()        {return getSource().getMinTileY();}
     @Override public final int getNumXTiles()       {return getSource().getNumXTiles();}
     @Override public final int getNumYTiles()       {return getSource().getNumYTiles();}
-    @Override public final int getTileWidth()       {return getSource().getTileWidth();}
-    @Override public final int getTileHeight()      {return getSource().getTileHeight();}
     @Override public final int getTileGridXOffset() {return getSource().getTileGridXOffset();}
     @Override public final int getTileGridYOffset() {return getSource().getTileGridYOffset();}
 

@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.function.Function;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -137,7 +136,7 @@ final class GridSliceLocator {
             return base;
         }
         extent = new GridExtent(axes, low, high, true);
-        return new GridGeometry(extent, PixelInCell.CELL_CORNER, base.getGridToCRS(PixelInCell.CELL_CORNER),
+        return new GridGeometry(extent, GridSlice.CELL_ANCHOR, base.getGridToCRS(GridSlice.CELL_ANCHOR),
                                 base.isDefined(GridGeometry.CRS) ? base.getCoordinateReferenceSystem() : null);
     }
 

@@ -33,6 +33,9 @@ import org.apache.sis.referencing.CRS;
  * This is used when the Area Of Interest has more dimensions than the grid geometry, in which case the
  * transform from grid to AOI will fail if we do not discard the extra dimensions.
  *
+ * <p>This class works on the CRS dimensions.
+ * This is different than {@link DimensionalityReduction}, which works on grid dimensions.</p>
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
  * @since   1.1
@@ -49,7 +52,7 @@ final class DimensionReducer {
     private CoordinateReferenceSystem reducedCRS;
 
     /**
-     * Creates an helper which will retain only the {@code targetCRS} dimensions that are found the the base grid.
+     * Creates an helper which will retain only the {@code targetCRS} dimensions that are found in the base grid.
      * This will be used by caller for creating a valid {@code sourceCRS} to {@code targetCRS} transform.
      *
      * @param  base       the grid geometry which will be derived. Cannot be null.

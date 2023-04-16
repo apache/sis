@@ -28,10 +28,10 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.internal.feature.AttributeConvention;
-import org.apache.sis.storage.FeatureQuery;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.Containers;
@@ -69,7 +69,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.0
  */
 public class JoinFeatureSet extends AggregatedFeatureSet {
@@ -195,7 +195,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      *   <li>{@code "identifierSuffix"} — string to insert at the end of join identifiers (optional).</li>
      * </ul>
      *
-     * @param  parent       listeners of the parent resource, or {@code null} if none.
+     * @param  parent       the parent resource, or {@code null} if none.
      * @param  left         the first source of features. This is often (but not necessarily) the largest set.
      * @param  leftAlias    name of the associations to the {@code left} features, or {@code null} for a default name.
      * @param  right        the second source of features. Should be the set in which iterations are cheapest.
@@ -205,7 +205,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * @param  featureInfo  information about the {@link FeatureType} of this feature set.
      * @throws DataStoreException if an error occurred while creating the feature set.
      */
-    public JoinFeatureSet(final StoreListeners parent,
+    public JoinFeatureSet(final Resource parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
                           final Type joinType, final BinaryComparisonOperator<? super Feature> condition,

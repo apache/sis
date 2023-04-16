@@ -32,7 +32,6 @@ import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.util.DoubleDouble;
-import org.apache.sis.internal.coverage.SampleDimensions;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -113,7 +112,7 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
          * NaN for floating point values.
          */
         processor = processor.clone();
-        processor.setFillValues(SampleDimensions.backgrounds(getSampleDimensions()));
+        processor.setFillValues(getBackground());
         changeOfCRS.setAccuracyOf(processor);
         imageProcessor = GridCoverageProcessor.unique(processor);
         final Dimension s = imageProcessor.getInterpolation().getSupportSize();

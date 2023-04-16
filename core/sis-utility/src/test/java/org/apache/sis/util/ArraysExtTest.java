@@ -27,10 +27,40 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class ArraysExtTest extends TestCase {
+    /**
+     * Tests {@link ArraysExt#concatenate(Object[]...)}.
+     */
+    @Test
+    public void testConcatenate() {
+        final Integer[] a1 = {2, 8, 4, 8};
+        final Integer[] a2 = {1, 2, 8};
+        assertArrayEquals(new Integer[] {2, 8, 4, 8, 1, 2, 8}, ArraysExt.concatenate(a1, a2));
+    }
+
+    /**
+     * Tests {@link ArraysExt#concatenate(long[], long[])}.
+     */
+    @Test
+    public void testConcatenateLong() {
+        final long[] a1 = {2, 8, 4, 8};
+        final long[] a2 = {1, 2, 8};
+        assertArrayEquals(new long[] {2, 8, 4, 8, 1, 2, 8}, ArraysExt.concatenate(a1, a2));
+    }
+
+    /**
+     * Tests {@link ArraysExt#concatenate(int[], int[])}.
+     */
+    @Test
+    public void testConcatenateInt() {
+        final int[] a1 = {2, 8, 4, 8};
+        final int[] a2 = {1, 2, 8};
+        assertArrayEquals(new int[] {2, 8, 4, 8, 1, 2, 8}, ArraysExt.concatenate(a1, a2));
+    }
+
     /**
      * Tests {@link ArraysExt#removeDuplicated(Object[])}.
      */

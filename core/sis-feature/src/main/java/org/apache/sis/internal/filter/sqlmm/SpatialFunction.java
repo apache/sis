@@ -29,6 +29,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Names;
 
 // Branch-dependent imports
@@ -42,7 +43,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -83,24 +84,8 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      */
     SpatialFunction(final SQLMM operation, final Expression<? super R, ?>[] parameters) {
         this.operation = operation;
-        final int n = parameters.length;
-        final int minParamCount = operation.minParamCount;
-        final String message;
-        if (n < minParamCount) {
-            if (n == 0) {
-                message = Errors.format(Errors.Keys.EmptyArgument_1, "parameters");
-            } else {
-                message = Errors.format(Errors.Keys.TooFewArguments_2, minParamCount, n);
-            }
-        } else {
-            final int maxParamCount = operation.maxParamCount;
-            if (n > maxParamCount) {
-                message = Errors.format(Errors.Keys.TooManyArguments_2, maxParamCount, n);
-            } else {
-                return;
-            }
-        }
-        throw new IllegalArgumentException(message);
+        ArgumentChecks.ensureCountBetween("parameters", true,
+                operation.minParamCount, operation.maxParamCount, parameters.length);
     }
 
     /**

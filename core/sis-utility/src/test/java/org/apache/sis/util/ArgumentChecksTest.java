@@ -52,13 +52,13 @@ public final class ArgumentChecksTest extends TestCase {
     }
 
     /**
-     * Tests {@link ArgumentChecks#ensureNonEmpty(String, int[], int, int, boolean)}.
+     * Tests {@link ArgumentChecks#ensureNonEmptyBounded(String, boolean, int, int, int[])}.
      */
     @Test
     public void testEnsureBetweenAndDistinct() {
-        ArgumentChecks.ensureNonEmpty("dimensions", new int[] {2, 3, 0, 1}, 0, 4, true);
+        ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 0, 1});
         try {
-            ArgumentChecks.ensureNonEmpty("dimensions", new int[] {2, 3, 3, 1}, 0, 4, true);
+            ArgumentChecks.ensureNonEmptyBounded("dimensions", true, 0, 4, new int[] {2, 3, 3, 1});
             fail("Expected an IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             assertNotNull(e.getMessage());

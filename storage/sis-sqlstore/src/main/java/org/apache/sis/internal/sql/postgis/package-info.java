@@ -24,7 +24,7 @@
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 package org.apache.sis.internal.sql.postgis;

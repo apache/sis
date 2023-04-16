@@ -34,7 +34,6 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
-import org.apache.sis.internal.gui.GUIUtilities;
 
 
 /**
@@ -48,7 +47,7 @@ import org.apache.sis.internal.gui.GUIUtilities;
  * {@link EventHandler} is for reacting to user color selection using the control shown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <S>  the type of row data as declared in the {@code TableView} generic type.
  *
@@ -73,8 +72,8 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
 
     /**
      * The type of color ramp as determined by {@link ColorColumnHandler#applyColors(Object, ColorRamp)}.
-     * This is updated by {@link #updateItem(ColorRamp, boolean)} when the value changes and stored for
-     * keeping that value stable (this class does not support mutable colors type).
+     * This is updated by {@link #updateItem(ColorRamp, boolean)} when the value changes, and is stored
+     * for keeping that value stable (this class does not support mutable colors type).
      * May be {@code null} if there are no values in the row of this cell.
      */
     private ColorRamp.Type type;
@@ -102,7 +101,6 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
      */
     ColorCell(final ColorColumnHandler<S> handler) {
         this.handler = handler;
-        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         setOnMouseClicked(ColorCell::mouseClicked);
     }
 
@@ -168,7 +166,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
                         colorRampChooser.setEditable(false);
                         colorRampChooser.setMaxWidth(Double.MAX_VALUE);
                         colorRampChooser.setCellFactory((column) -> new RampChoice());
-                        colorRampChooser.getItems().setAll(ColorRamp.GRAYSCALE, ColorRamp.BELL);
+                        colorRampChooser.getItems().setAll(ColorRamp.DEFAULTS);
                         updateColorRampChooser(getItem());
                     }
                     control = colorRampChooser;
@@ -184,6 +182,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
                 control.setOnAction(this);
             }
         }
+        setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         setGraphic(control);
         return control;
     }
@@ -195,16 +194,22 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     private final class RampChoice extends ListCell<ColorRamp> {
         /** Creates a new combo box choice. */
         RampChoice() {
-            setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
             setMaxWidth(Double.POSITIVE_INFINITY);
         }
 
         /** Sets the colors to show in the combo box item. */
         @Override protected void updateItem(final ColorRamp colors, final boolean empty) {
             super.updateItem(colors, empty);
-            if (colors == null) {
+            if (empty || colors == null) {
+                setText(null);
+                setGraphic(null);
+            } else if (colors.isTransparent()) {
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+                setText(colors.toString());
                 setGraphic(null);
             } else {
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+                setText(null);
                 Rectangle r = (Rectangle) getGraphic();
                 if (r == null) {
                     r = createRectangle(-40);
@@ -287,7 +292,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
             if (row != null) {
                 final S item = row.getItem();
                 if (item != null) {
-                    type = handler.applyColors(item, colors);
+                    type = handler.applyColors(item, (colors != ColorRamp.DEFAULT) ? colors : null);
                 }
             }
         }
@@ -328,21 +333,27 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
     private void setColorItem(final ColorRamp colors) {
         assert controlNotFocused();
         Rectangle view = null;
+        String label = null;
         if (colors != null) {
             final Paint paint = colors.paint();
             if (paint != null) {
+                setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
                 if (colorView == null) {
                     colorView = createRectangle(WIDTH_ADJUST);
                 }
                 view = colorView;
                 view.setFill(paint);
+            } else {
+                setContentDisplay(ContentDisplay.TEXT_ONLY);
+                label = colors.toString();
             }
         }
         setGraphic(view);
+        setText(label);
     }
 
     /**
-     * Removes the control in the cell and paint the color in a rectangle instead.
+     * Removes the control in the cell and paints the color in a rectangle instead.
      * This method does nothing if the control is already hidden.
      *
      * <p>This method sets the focus to the table before to remove the combo box.
@@ -444,7 +455,7 @@ final class ColorCell<S> extends TableCell<S,ColorRamp> implements EventHandler<
             final Object value = ((ComboBoxBase<?>) event.getSource()).getValue();
             final ColorRamp colors;
             if (value instanceof Color) {
-                colors = new ColorRamp(GUIUtilities.toARGB((Color) value));
+                colors = new ColorRamp((Color) value);
             } else {
                 // A ClassCastException here would be a bug in ColorCell editors management.
                 colors = (ColorRamp) value;

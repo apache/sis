@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.List;
 import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -32,6 +33,7 @@ import org.junit.Test;
 
 import static org.apache.sis.test.FeatureAssert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 
 
 /**
@@ -39,7 +41,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
 public final class ConvertedGridCoverageTest extends TestCase {
@@ -70,6 +72,20 @@ public final class ConvertedGridCoverageTest extends TestCase {
     }
 
     /**
+     * Creates a rendering of the given coverage and verifies that it contains
+     * a property for the sample dimensions.
+     */
+    private static RenderedImage render(final GridCoverage coverage) {
+        final RenderedImage image = coverage.render(null);
+        final Object bands = image.getProperty(SAMPLE_DIMENSIONS_KEY);
+        assertInstanceOf(SAMPLE_DIMENSIONS_KEY, SampleDimension[].class, bands);
+        assertArrayEquals(SAMPLE_DIMENSIONS_KEY,
+                coverage.getSampleDimensions().toArray(SampleDimension[]::new),
+                (SampleDimension[]) bands);
+        return image;
+    }
+
+    /**
      * Tests forward conversion from packed values to "geophysics" values.
      * Test includes a conversion of an integer value to {@link Float#NaN}.
      */
@@ -79,12 +95,12 @@ public final class ConvertedGridCoverageTest extends TestCase {
         /*
          * Verify values before and after conversion.
          */
-        assertValuesEqual(coverage.forConvertedValues(false).render(null), 0, new double[][] {
+        assertValuesEqual(render(coverage.forConvertedValues(false)), 0, new double[][] {
             {-1, 3}
         });
         final float nan = MathFunctions.toNanFloat(-1);
         assertTrue(Float.isNaN(nan));
-        assertValuesEqual(coverage.forConvertedValues(true).render(null), 0, new double[][] {
+        assertValuesEqual(render(coverage.forConvertedValues(true)), 0, new double[][] {
             {nan, 3}
         });
     }
@@ -101,7 +117,7 @@ public final class ConvertedGridCoverageTest extends TestCase {
         }, null);
         assertSame(target, target.forConvertedValues(true));
         assertSame(source, target.forConvertedValues(false));
-        assertValuesEqual(target.render(null), 0, new double[][] {
+        assertValuesEqual(render(target), 0, new double[][] {
             {90, 130}      // {-1, 3} × 10 + 100
         });
         final SampleDimension band = getSingleton(target.getSampleDimensions());

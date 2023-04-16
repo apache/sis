@@ -70,7 +70,7 @@ public @interface Configuration {
         /**
          * The configuration is modifiable through a public method
          * that must be invoked on a particular instance of a class.
-         * This configuration can not be easily moved to {@link #GLOBAL}
+         * This configuration cannot be easily moved to {@link #GLOBAL}
          * because it would require to decide on which instance to apply.
          */
         INSTANCE,

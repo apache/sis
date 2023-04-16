@@ -52,9 +52,9 @@ import org.apache.sis.internal.util.Strings;
  * <p>The computation results are cached by this class. The cache strategy assumes that the
  * property value depend only on sample values, not on properties of the source image.</p>
  *
- * <div class="note"><b>Design note:</b>
- * most non-abstract methods are final because {@link PixelIterator} (among others) relies
- * on the fact that it can unwrap this image and still get the same pixel values.</div>
+ * <h2>Design note</h2>
+ * Most non-abstract methods are final because {@link PixelIterator} (among others) relies
+ * on the fact that it can unwrap this image and still get the same pixel values.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2
@@ -258,9 +258,9 @@ abstract class AnnotatedImage extends ImageAdapter {
      * i.e. for distinguishing between two {@code AnnotatedImage} instances that are identical
      * except for subclass-defined parameters.
      *
-     * <div class="note"><b>API note:</b>
-     * the return value is an array because there is typically one parameter value per band.
-     * This method will not modify the returned array.</div>
+     * <h4>API note</h4>
+     * The return value is an array because there is typically one parameter value per band.
+     * This method will not modify the returned array.
      *
      * @return subclass specific extra parameter, or {@code null} if none.
      */

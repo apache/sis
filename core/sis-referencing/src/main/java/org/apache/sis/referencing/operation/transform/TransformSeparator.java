@@ -94,7 +94,7 @@ public class TransformSeparator {
     /**
      * The factory to use for creating new math transforms.
      */
-    private final MathTransformsOrFactory factory;
+    final MathTransformsOrFactory factory;
 
     /**
      * Whether {@link #separate()} is allowed to add new dimensions in {@link #sourceDimensions}
@@ -143,11 +143,11 @@ public class TransformSeparator {
      * Inserts the specified {@code dimension} in the specified sequence at a position that preserve increasing order.
      * This method does nothing if the given dimension already exists in the given array.
      *
-     * <div class="note"><b>Note:</b>
-     * we do not provide public API for this method because we rather encourage bulk operations (adding many values
+     * <h4>API note</h4>
+     * We do not provide public API for this method because we rather encourage bulk operations (adding many values
      * at once), and because the public API does not allow to specify values in random order (for avoiding risk of
      * confusion as some users could expect the separated transform to use the dimensions in the order he specified
-     * them).</div>
+     * them).
      *
      * @param sequence   the {@link #sourceDimensions} or {@link #targetDimensions} sequence to update.
      * @param dimension  the value to add to the given sequence.
@@ -191,14 +191,29 @@ public class TransformSeparator {
          * We verify after the copy as a paranoiac safety against concurrent changes.
          */
         for (int i=offset; i<sequence.length; i++) {
-            final int value = sequence[i];
-            if (value <= previous || value >= max) {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.ValueOutOfRange_4,
-                        Strings.toIndexed("dimensions", i - offset), previous + 1, max - 1, value));
-            }
-            previous = value;
+            String message = validate("dimensions", i - offset, previous, max, previous = sequence[i]);
+            if (message != null) throw new IllegalArgumentException(message);
         }
         return sequence;
+    }
+
+    /**
+     * If the given value is out of bounds, returns the error message for the exception to throw.
+     * This is used during validation of an array expected to be in strictly increasing order.
+     *
+     * @param  name      name of the argument.
+     * @param  i         index of the array element in the argument.
+     * @param  previous  the value during previous iteration.
+     * @param  max       the maximal value, exclusive.
+     * @param  value     the value to validate.
+     * @return {@code null} if the value is valid, otherwise the message to put in an exception.
+     */
+    static String validate(final String name, final int i, final int previous, final int max, final int value) {
+        if (value <= previous || value >= max) {
+            return Errors.format(Errors.Keys.ValueOutOfRange_4,
+                    Strings.toIndexed("dimensions", i), previous + 1, max - 1, value);
+        }
+        return null;
     }
 
     /**
@@ -530,7 +545,7 @@ public class TransformSeparator {
             final MathTransform step1 = filterSourceDimensions(ctr.transform1, dimensions);
             final MathTransform step2 = filterSourceDimensions(ctr.transform2, targetDimensions);
             return factory.concatenate(step1, step2);
-            // Keep the 'targetDimensions' computed by the last step.
+            // Keep the `targetDimensions` computed by the last step.
         }
         /*
          * Special case for the passthrough transform: if at least one input dimension belong to the pass-
@@ -582,9 +597,11 @@ public class TransformSeparator {
             targetDimensions = target;
             /*
              * If all source dimensions not in the sub-transform are consecutive numbers, we can use our passthrough
-             * transform implementation. The "consecutive numbers" requirement (expressed in the 'if' statement below)
+             * transform implementation. The "consecutive numbers" requirement (expressed in the `if` statement below)
              * is a consequence of a limitation in our current implementation: our current passthrough transform does
-             * not accept arbitrary indices for modified coordinates.
+             * not accept arbitrary indices for modified coordinates. We cannot delegate to the static factory method
+             * `MathTransforms.passThrough(int[] modifiedCoordinates, ...)` because that method itself relies on this
+             * `TransformSeparator` for separating the transform components at non-consecutive indices.
              */
             if (containsAll(dimensions, lower, subLower) && containsAll(dimensions, subUpper, upper)) {
                 final int offset = subDimensions[0];
@@ -600,8 +617,8 @@ public class TransformSeparator {
         final Matrix matrix = MathTransforms.getMatrix(step);
         if (matrix != null) {
             targetDimensions = null;
-            int startOfRow = 0;                         // Index of next row to be stored in the 'elements' array.
-            boolean isLastRowAccepted = false;          // To be set to 'true' if we complete successfully up to last row.
+            int startOfRow = 0;                         // Index of next row to be stored in the `elements` array.
+            boolean isLastRowAccepted = false;          // To be set to `true` if we complete successfully up to last row.
             final int numFilteredColumns = (dimensions.length + 1);
             double[] elements = new double[(numTgt + 1) * numFilteredColumns];
 reduce:     for (int j=0; j <= numTgt; j++) {
@@ -617,7 +634,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                         elements[startOfRow + filteredColumn++] = element;
                     } else if (element != 0) {
                         /*
-                         * Output dimension 'j' depends on one of discarded input dimension 'i'.
+                         * Output dimension `j` depends on one of discarded input dimension `i`.
                          * The whole row will be discarded.
                          */
                         continue reduce;
@@ -626,10 +643,10 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                 /*
                  * We reach this point only if we determined that for current matrix row, all dependencies are listed
                  * in the array of source dimensions to keep. The matrix coefficients for that row are copied in the
-                 * 'elements' array.
+                 * `elements` array.
                  */
                 elements[startOfRow + filteredColumn++] = matrix.getElement(j, numSrc);  // Copy the translation term.
-                assert filteredColumn == numFilteredColumns : filteredColumn;            // We should have used all values in the 'dimensions' array.
+                assert filteredColumn == numFilteredColumns : filteredColumn;            // We should have used all values in the `dimensions` array.
                 startOfRow += numFilteredColumns;
                 /*
                  * In an affine transform, the last row is usually [0 0 0 … 1].
@@ -768,7 +785,7 @@ reduce:     for (int j=0; j <= numTgt; j++) {
                 /*
                  * If we do not retain all dimensions, remove the matrix columns corresponding to the excluded
                  * source dimensions and create a new transform. We remove consecutive columns in single calls
-                 * to 'removeColumns', from 'lower' inclusive to 'upper' exclusive.
+                 * to `removeColumns`, from `lower` inclusive to `upper` exclusive.
                  */
                 int upper = dimension;
                 for (int i = retainedCount; --i >= -1;) {

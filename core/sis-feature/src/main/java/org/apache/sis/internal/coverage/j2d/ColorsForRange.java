@@ -18,9 +18,10 @@ package org.apache.sis.internal.coverage.j2d;
 
 import java.util.Map;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.IntUnaryOperator;
 import java.awt.Color;
+import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.measure.NumberRange;
@@ -29,35 +30,61 @@ import org.apache.sis.util.ArraysExt;
 
 
 /**
- * Colors to apply on a range of sample values. Instances of {@code ColorsForRange} are temporary, used only
- * the time needed for {@link ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])}.
+ * Colors to apply on a range of sample values. Instances of {@code ColorsForRange} are usually temporary,
+ * used only the time needed for {@link ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
- * @see ColorModelFactory#createColorModel(int, int, int, ColorsForRange[])
+ * @see ColorModelFactory#createPiecewise(int, int, int, ColorsForRange[])
  *
  * @since 1.1
  */
 final class ColorsForRange implements Comparable<ColorsForRange> {
     /**
-     * A name identifying the range of values. the category name is used if available,
-     * otherwise this is a string representation of the range.
+     * A name identifying the range of values, or {@code null} if not yet computed.
+     * The category name is used if available, otherwise this is a string representation of the range.
+     *
+     * @see #name()
      */
-    final CharSequence name;
+    private CharSequence name;
 
     /**
      * The range of sample values on which the colors will be applied. Shall never be null.
-     * May be updated after {@link Colorizer#compact()} mapped range of floating point values
-     * to range of {@link IndexColorModel} values.
+     * May be updated after {@link ColorModelBuilder#compact()} mapped range of floating
+     * point values to range of {@link IndexColorModel} values.
      */
     NumberRange<?> sampleRange;
 
     /**
+     * The range of sample values as originally specified.
+     * Contrarily to {@link #sampleRange}, this range will not be modified by {@code compact()}.
+     * This is used for fetching colors from {@link #inheritedColors} if {@link #colors} is null.
+     */
+    private final NumberRange<?> originalSampleRange;
+
+    /**
      * The colors to apply on the range of sample values.
-     * A null or empty array means transparent.
+     * An empty array means that the category is explicitly specified as transparent.
+     * A null value means that the category is unrecognized, in which case the default
+     * is grayscale for quantitative category and transparent for qualitative category.
+     *
+     * @see #isUndefined()
+     * @see #toARGB(int)
      */
     private final Color[] colors;
+
+    /**
+     * The original colors, or {@code null} if unspecified.
+     * This is used as a fallback if {@link #colors} is null.
+     * This field should be non-null only when this {@code ColorsForRange} is created for
+     * styling an image before visualization. It should be null when creating a new image,
+     * because the meaning of pixel values (i.e. the sample dimensions) may be different.
+     *
+     * @see #originalSampleRange
+     * @see ColorModelBuilder#inheritedColors
+     */
+    private final ColorModel inheritedColors;
 
     /**
      * {@code true} if this entry should be taken as data, or {@code false} if it should be ignored.
@@ -68,15 +95,18 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     /**
      * Creates a new instance for the given category.
      *
-     * @param  category  the category for which this {@code ColorsForRange} is created, or {@code null}.
-     * @param  colors    colors to apply on the category.
+     * @param  category   the category for which this {@code ColorsForRange} is created.
+     * @param  colors     colors to apply on the category.
+     * @param  inherited  the original colors to use as fallback, or {@code null} if none.
+     *                    Should be non-null only for styling an exiting image before visualization.
      */
-    ColorsForRange(final Category category, final Function<Category,Color[]> colors) {
-        final CharSequence name = category.getName();
-        this.name        = (name != null) ? name : sampleRange.toString();
+    ColorsForRange(final Category category, final Function<Category,Color[]> colors, final ColorModel inherited) {
+        this.name        = category.getName();
         this.sampleRange = category.getSampleRange();
-        this.colors      = colors.apply(category);
         this.isData      = category.isQuantitative();
+        this.colors      = colors.apply(category);
+        inheritedColors  = inherited;
+        originalSampleRange = sampleRange;
     }
 
     /**
@@ -84,33 +114,64 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      *
      * @param  name         a name identifying the range of values, or {@code null} for automatic.
      * @param  sampleRange  range of sample values on which the colors will be applied.
-     * @param  colors       colors to apply on the range of sample values, or {@code null} for transparent.
+     * @param  colors       colors to apply on the range of sample values, or {@code null} for default.
      * @param  isData       whether this entry should be taken as main data (not fill values).
+     * @param  inherited    the original colors to use as fallback, or {@code null} if none.
+     *                      Should be non-null only for styling an exiting image before visualization.
      */
-    ColorsForRange(final CharSequence name, final NumberRange<?> sampleRange, final Color[] colors, final boolean isData) {
+    ColorsForRange(final CharSequence name, final NumberRange<?> sampleRange, final Color[] colors,
+                   final boolean isData, final ColorModel inherited)
+    {
         ArgumentChecks.ensureNonNull("sampleRange", sampleRange);
-        this.name        = (name != null) ? name : sampleRange.toString();
-        this.sampleRange = sampleRange;
-        this.colors      = colors;
+        this.name        = name;
+        this.sampleRange = originalSampleRange = sampleRange;
         this.isData      = isData;
+        this.colors      = colors;
+        inheritedColors  = inherited;
+    }
+
+    /**
+     * Returns {@code true} if no color has been specified for this range.
+     * Note that "undefined" is not the same as fully transparent color.
+     *
+     * <p>If no colors were explicitly defined but a fallback exists, then this method considers
+     * this range as defined for allowing {@link ColorModelBuilder} to inherit those colors with
+     * the range of values specified by {@link #originalSampleRange}. We conceptually accept any
+     * {@link #inheritedColors} even if {@link #toARGB(int)} cannot handle all of them.</p>
+     */
+    final boolean isUndefined() {
+        return colors == null && inheritedColors == null;
     }
 
     /**
      * Converts {@linkplain Map#entrySet() map entries} to an array of {@code ColorsForRange} entries.
      * The {@link #category} of each entry is left to null.
      *
-     * @param  colors  the colors to use for each range of sample values.
-     *                 A {@code null} entry value means transparent.
+     * @param  colors     the colors to use for each range of sample values.
+     * @param  inherited  the original color model from which to inherit undefined colors, or {@code null} if none.
      * @return colors to use for each range of values in the source image.
      *         Never null and does not contain null elements.
      */
-    static ColorsForRange[] list(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors) {
+    static ColorsForRange[] list(final Collection<Map.Entry<NumberRange<?>,Color[]>> colors, final ColorModel inherited) {
+        ArgumentChecks.ensureNonEmpty("colors", colors);
         final ColorsForRange[] entries = new ColorsForRange[colors.size()];
         int n = 0;
         for (final Map.Entry<NumberRange<?>,Color[]> entry : colors) {
-            entries[n++] = new ColorsForRange(null, entry.getKey(), entry.getValue(), true);
+            final NumberRange<?> range = entry.getKey();
+            boolean singleton = Objects.equals(range.getMinValue(), range.getMaxValue());
+            entries[n++] = new ColorsForRange(null, range, entry.getValue(), !singleton, inherited);
         }
         return ArraysExt.resize(entries, n);            // `resize` should not be needed, but we are paranoiac.
+    }
+
+    /**
+     * Returns the name pf this range of colors.
+     */
+    final CharSequence name() {
+        if (name == null) {
+            name = sampleRange.toString();
+        }
+        return name;
     }
 
     /**
@@ -118,10 +179,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder(name).append(": ").append(sampleRange);
-        if (colors != null) {
-            appendColorRange(buffer, colors.length, (i) -> colors[i].getRGB());
-        }
+        final StringBuilder buffer = new StringBuilder(name()).append(": ").append(sampleRange);
+        appendColorRange(buffer, toARGB(2));
         return buffer.toString();
     }
 
@@ -135,14 +194,14 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * @param  count   number of ARGB codes.
      * @param  colors  providers of ARGB codes for given indices.
      */
-    static void appendColorRange(final StringBuilder buffer, final int count, final IntUnaryOperator colors) {
-        if (count != 0) {
+    static void appendColorRange(final StringBuilder buffer, final int[] colors) {
+        if (colors != null && colors.length != 0) {
             String s = " → ARGB[";
             int i = 0;
             do {
-                buffer.append(s).append(Integer.toHexString(colors.applyAsInt(i)).toUpperCase());
+                buffer.append(s).append(Integer.toHexString(colors[i]).toUpperCase());
                 s = " … ";
-            } while (i < (i = count-1));
+            } while (i < (i = colors.length - 1));
             buffer.append(']');
         }
     }
@@ -165,8 +224,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     private int getAlpha() {
         int max = 0;
         if (colors != null) {
-            for (int i=0; i<colors.length; i++) {
-                final int alpha = colors[i].getAlpha();
+            for (final Color color : colors) {
+                final int alpha = color.getAlpha();
                 if (alpha > max) {
                     if (alpha >= 0xFF) {
                         return 0xFF;
@@ -174,6 +233,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
                     max = alpha;
                 }
             }
+        } else if (isData) {
+            return 0xFF;
         }
         return max;
     }
@@ -182,9 +243,10 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
      * Returns the ARGB codes for the colors.
      * If all colors are transparent, returns an empty array.
      *
-     * @return ARGB codes for the given colors. Never {@code null} but may be empty.
+     * @param  length  desired array length. This is only a hint and may be ignored.
+     * @return ARGB codes for this color ramp. Never {@code null} but may be empty.
      */
-    final int[] toARGB() {
+    final int[] toARGB(final int length) {
         if (colors != null) {
             int combined = 0;
             final int[] ARGB = new int[colors.length];
@@ -199,6 +261,34 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
             if ((combined & 0xFF000000) != 0) {
                 return ARGB;
             }
+        } else if (!originalSampleRange.isEmpty() && inheritedColors instanceof IndexColorModel) {
+            /*
+             * If colors are undefined, try to inherit them from the original colors.
+             * If the number of available colors is larger than the desired number,
+             * this block returns a subset of the inherited colors.
+             */
+            final IndexColorModel icm = (IndexColorModel) inheritedColors;
+            int offset = Math.round((float) originalSampleRange.getMinDouble(true));
+            int numSrc = Math.round((float) originalSampleRange.getMaxDouble()) - offset;
+            if (originalSampleRange.isMinIncluded()) numSrc++;
+            final int[] ARGB;
+            if (numSrc <= length) {
+                ARGB = new int[numSrc];
+                if (offset == 0 && numSrc == icm.getMapSize()) {
+                    icm.getRGBs(ARGB);
+                } else for (int i=0; i<numSrc; i++) {
+                    ARGB[i] = icm.getRGB(i + offset);
+                }
+            } else {
+                ARGB = new int[length];
+                final float scale = ((float) (numSrc-1)) / (length-1);
+                for (int i=0; i<length; i++) {
+                    ARGB[i] = icm.getRGB(Math.round(i * scale) + offset);
+                }
+            }
+            return ARGB;
+        } else if (isData) {
+            return new int[] {0xFF000000, 0xFFFFFFFF};
         }
         return ArraysExt.EMPTY_INT;
     }

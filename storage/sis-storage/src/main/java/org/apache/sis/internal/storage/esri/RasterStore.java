@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.Metadata;
@@ -48,7 +47,8 @@ import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
-import org.apache.sis.internal.storage.RangeArgument;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
+import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.internal.util.Numerics;
@@ -77,7 +77,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * Band to make visible if an image contains many bands
      * but a color map is defined for only one band.
      */
-    private static final int VISIBLE_BAND = 0;
+    private static final int VISIBLE_BAND = ColorModelFactory.DEFAULT_VISIBLE_BAND;
 
     /**
      * Keyword for the number of rows in the image.
@@ -419,7 +419,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
              */
             if (band == VISIBLE_BAND) {
                 if (isRGB) {
-                    colorModel = ColorModelFactory.createRGB(sm);
+                    colorModel = ColorModelFactory.createRGB(sm);       // Should never be null.
                 } else {
                     try {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
@@ -473,24 +473,24 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     final GridCoverage2D createCoverage(final GridGeometry domain, final RangeArgument range,
                                         final WritableRaster data, final Statistics stats)
     {
+        final SampleDimension[] bands = range.select(sampleDimensions);
         Hashtable<String,Object> properties = null;
         if (stats != null) {
             final Statistics[] as = new Statistics[range.getNumBands()];
             Arrays.fill(as, stats);
             properties = new Hashtable<>();
             properties.put(PlanarImage.STATISTICS_KEY, as);
+            properties.put(PlanarImage.SAMPLE_DIMENSIONS_KEY, bands);
         }
-        List<SampleDimension> bands = sampleDimensions;
         ColorModel cm = colorModel;
         if (!range.isIdentity()) {
-            bands = Arrays.asList(range.select(sampleDimensions));
-            cm = range.select(cm).orElse(null);
+            cm = range.select(cm);
             if (cm == null) {
-                final SampleDimension band = bands.get(VISIBLE_BAND);
+                final SampleDimension band = bands[VISIBLE_BAND];
                 cm = ColorModelFactory.createGrayScale(data.getSampleModel(), VISIBLE_BAND, band.getSampleRange().orElse(null));
             }
         }
-        return new GridCoverage2D(domain, bands, new BufferedImage(cm, data, false, properties));
+        return new GridCoverage2D(domain, Arrays.asList(bands), new ObservableImage(cm, data, false, properties));
     }
 
     /**

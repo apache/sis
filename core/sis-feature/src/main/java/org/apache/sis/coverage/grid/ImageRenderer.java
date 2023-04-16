@@ -40,9 +40,10 @@ import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.coverage.MismatchedCoverageRangeException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
-import org.apache.sis.internal.coverage.j2d.Colorizer;
+import org.apache.sis.internal.coverage.j2d.ColorModelBuilder;
 import org.apache.sis.internal.coverage.j2d.DeferredProperty;
 import org.apache.sis.internal.coverage.j2d.RasterFactory;
+import org.apache.sis.internal.coverage.j2d.ObservableImage;
 import org.apache.sis.internal.coverage.j2d.TiledImage;
 import org.apache.sis.internal.coverage.j2d.WritableTiledImage;
 import org.apache.sis.internal.feature.Resources;
@@ -59,6 +60,7 @@ import static java.lang.Math.multiplyExact;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.toIntExact;
 import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
+import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 
 
 /**
@@ -98,7 +100,7 @@ import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
  * Support for tiled images will be added in a future version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see GridCoverage#render(GridExtent)
  *
@@ -146,9 +148,10 @@ public class ImageRenderer {
      * Location of the first image pixel relative to the grid coverage extent. The (0,0) offset means that the first pixel
      * in the {@code sliceExtent} (specified at construction time) is the first pixel in the whole {@link GridCoverage}.
      *
-     * <div class="note"><b>Note:</b> if those offsets exceed 32 bits integer capacity, then it may not be possible to build
-     * an image for given {@code sliceExtent} from a single {@link DataBuffer}, because accessing sample values would exceed
-     * the capacity of index in Java arrays. In those cases the image needs to be tiled.</div>
+     * <h4>Implementation note</h4>
+     * If those offsets exceed 32 bits integer capacity, then it may not be possible to build an image
+     * for given {@code sliceExtent} from a single {@link DataBuffer}, because accessing sample values
+     * would exceed the capacity of index in Java arrays. In those cases the image needs to be tiled.
      */
     private final long offsetX, offsetY;
 
@@ -266,7 +269,7 @@ public class ImageRenderer {
     /**
      * The colors to use for each category. Never {@code null}.
      * The function may return {@code null}, which means transparent.
-     * The default value is {@link Colorizer#GRAYSCALE}.
+     * The default value is {@link ColorModelBuilder#GRAYSCALE}.
      *
      * @see #setCategoryColors(Function)
      */
@@ -362,7 +365,7 @@ public class ImageRenderer {
         this.pixelStride    = toIntExact(pixelStride);
         this.scanlineStride = toIntExact(scanlineStride);
         this.offsetZ        = offsetZ;
-        this.colors         = Colorizer.GRAYSCALE;
+        this.colors         = ColorModelBuilder.GRAYSCALE;
     }
 
     /**
@@ -445,7 +448,7 @@ public class ImageRenderer {
     public GridGeometry getImageGeometry(final int dimCRS) {
         GridGeometry ig = imageGeometry;
         if (ig == null || dimCRS != GridCoverage2D.BIDIMENSIONAL) {
-            if (isSameGeometry(dimCRS)) {
+            if (imageUseSameGeometry(dimCRS)) {
                 ig = geometry;
             } else try {
                 ig = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory)
@@ -461,9 +464,14 @@ public class ImageRenderer {
     }
 
     /**
-     * Returns the value associated to the given property. By default the only property is
-     * {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}, but more properties can
-     * be added by calls to {@link #addProperty(String, Object)}.
+     * Returns the value associated to the given property.
+     * The properties recognized by current implementation are:
+     *
+     * <ul>
+     *   <li>{@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY}.</li>
+     *   <li>{@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY}.</li>
+     *   <li>Any property added by calls to {@link #addProperty(String, Object)}.</li>
+     * </ul>
      *
      * @param  key  the property for which to get a value.
      * @return value associated to the given property, or {@code null} if none.
@@ -471,8 +479,9 @@ public class ImageRenderer {
      * @since 1.1
      */
     public Object getProperty(final String key) {
-        if (GRID_GEOMETRY_KEY.equals(key)) {
-            return getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+        switch (key) {
+            case GRID_GEOMETRY_KEY:     return getImageGeometry(GridCoverage2D.BIDIMENSIONAL);
+            case SAMPLE_DIMENSIONS_KEY: return bands.clone();
         }
         return (properties != null) ? properties.get(key) : null;
     }
@@ -491,7 +500,7 @@ public class ImageRenderer {
     public void addProperty(final String key, final Object value) {
         ArgumentChecks.ensureNonNull("key",   key);
         ArgumentChecks.ensureNonNull("value", value);
-        if (!GRID_GEOMETRY_KEY.equals(key)) {
+        if (!(GRID_GEOMETRY_KEY.equals(key) || SAMPLE_DIMENSIONS_KEY.equals(key))) {
             if (properties == null) {
                 properties = new Hashtable<>();
             }
@@ -507,7 +516,7 @@ public class ImageRenderer {
      * can return {@link #geometry} directly. This common case avoids the need for more costly computation with
      * {@link SliceGeometry}.
      */
-    private boolean isSameGeometry(final int dimCRS) {
+    private boolean imageUseSameGeometry(final int dimCRS) {
         final int tgtDim = geometry.getTargetDimension();
         ArgumentChecks.ensureBetween("dimCRS", GridCoverage2D.BIDIMENSIONAL, tgtDim, dimCRS);
         if (tgtDim == dimCRS && geometry.getDimension() == gridDimensions.length) {
@@ -635,12 +644,14 @@ public class ImageRenderer {
      * All other bands, if any, will exist in the raster but be ignored at display time.
      * The default value is 0, the first (and often only) band.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * an {@link java.awt.image.IndexColorModel} will be used for displaying the image.</div>
+     * <h4>Implementation note</h4>
+     * An {@link java.awt.image.IndexColorModel} will be used for displaying the image.
      *
      * @param  band  the band to use for display purpose.
      * @throws IllegalArgumentException if the given band is not between 0 (inclusive)
      *         and {@link #getNumBands()} (exclusive).
+     *
+     * @see org.apache.sis.image.Colorizer.Target#getVisibleBand()
      *
      * @since 1.2
      */
@@ -651,13 +662,14 @@ public class ImageRenderer {
 
     /**
      * Specifies the colors to apply for each category in a sample dimension.
-     * The given function can return {@code null}, which means transparent.
-     * If this method is never invoked, then the default is a grayscale for
+     * The given function can return {@code null} for unrecognized categories.
+     * If this method is never invoked, or if a category is unrecognized,
+     * then the default is a grayscale for
      * {@linkplain Category#isQuantitative() quantitative categories} and
      * transparent for qualitative categories (typically "no data" values).
      *
      * <h4>Example</h4>
-     * the following code specifies a color palette from blue to red with white in the middle.
+     * The following code specifies a color palette from blue to red with white in the middle.
      * This is useful for data with a clear 0 (white) in the middle of the range,
      * with a minimal value equals to the negative of the maximal value.
      *
@@ -725,10 +737,12 @@ public class ImageRenderer {
      * The image upper-left corner is located at the position given by {@link #getBounds()}.
      * The two-dimensional {@linkplain #getImageGeometry(int) image geometry} is stored as
      * a property associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key.
+     * The sample dimensions are stored as a property associated to the
+     * {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
      *
      * <p>The default implementation returns an instance of {@link java.awt.image.WritableRenderedImage}
-     * if the {@link #createRaster()} return value is an instance of {@link WritableRaster}, or a read-only
-     * {@link RenderedImage} otherwise.</p>
+     * if the {@link #createRaster()} return value is an instance of {@link WritableRaster},
+     * or a read-only {@link RenderedImage} otherwise.</p>
      *
      * @return the image.
      * @throws IllegalStateException if no {@code setData(…)} method has been invoked before this method call.
@@ -740,17 +754,17 @@ public class ImageRenderer {
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public RenderedImage createImage() {
         final Raster raster = createRaster();
-        final Colorizer colorizer = new Colorizer(colors);
+        final var colorizer = new ColorModelBuilder(colors, null, false);
         final ColorModel colors;
         final SampleModel sm = raster.getSampleModel();
         if (colorizer.initialize(sm, bands[visibleBand]) || colorizer.initialize(sm, visibleBand)) {
             colors = colorizer.createColorModel(buffer.getDataType(), bands.length, visibleBand);
         } else {
-            colors = Colorizer.NULL_COLOR_MODEL;
+            colors = ColorModelBuilder.NULL_COLOR_MODEL;
         }
         SliceGeometry supplier = null;
         if (imageGeometry == null) {
-            if (isSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
+            if (imageUseSameGeometry(GridCoverage2D.BIDIMENSIONAL)) {
                 imageGeometry = geometry;
             } else {
                 supplier = new SliceGeometry(geometry, sliceExtent, gridDimensions, mtFactory);
@@ -758,12 +772,13 @@ public class ImageRenderer {
         }
         final WritableRaster wr = (raster instanceof WritableRaster) ? (WritableRaster) raster : null;
         if (wr != null && colors != null && (imageX | imageY) == 0) {
-            return new Untiled(colors, wr, properties, imageGeometry, supplier);
+            return new Untiled(colors, wr, properties, imageGeometry, supplier, bands);
         }
         if (properties == null) {
             properties = new Hashtable<>();
         }
         properties.putIfAbsent(GRID_GEOMETRY_KEY, (supplier != null) ? new DeferredProperty(supplier) : imageGeometry);
+        properties.putIfAbsent(SAMPLE_DIMENSIONS_KEY, bands);
         if (wr != null) {
             return new WritableTiledImage(properties, colors, width, height, 0, 0, wr);
         } else {
@@ -778,7 +793,7 @@ public class ImageRenderer {
      * The use of a {@link BufferedImage} subclass is desired because Java2D rendering pipeline has optimizations
      * in the form {@code if (image instanceof BufferedImage)}.
      */
-    private static final class Untiled extends BufferedImage {
+    private static final class Untiled extends ObservableImage {
         /**
          * The value associated to the {@value org.apache.sis.image.PlanarImage#GRID_GEOMETRY_KEY} key,
          * or {@code null} if not yet computed.
@@ -792,15 +807,21 @@ public class ImageRenderer {
         private SliceGeometry supplier;
 
         /**
+         * The value associated to the {@value org.apache.sis.image.PlanarImage#SAMPLE_DIMENSIONS_KEY} key.
+         */
+        private final SampleDimension[] bands;
+
+        /**
          * Creates a new buffered image wrapping the given raster.
          */
         @SuppressWarnings("UseOfObsoleteCollectionType")
         Untiled(final ColorModel colors, final WritableRaster raster, final Hashtable<?,?> properties,
-                final GridGeometry geometry, final SliceGeometry supplier)
+                final GridGeometry geometry, final SliceGeometry supplier, final SampleDimension[] bands)
         {
             super(colors, raster, false, properties);
             this.geometry = geometry;
             this.supplier = supplier;
+            this.bands    = bands;
         }
 
         /**
@@ -808,7 +829,8 @@ public class ImageRenderer {
          */
         @Override
         public String[] getPropertyNames() {
-            return ArraysExt.concatenate(super.getPropertyNames(), new String[] {GRID_GEOMETRY_KEY});
+            return ArraysExt.concatenate(super.getPropertyNames(),
+                    new String[] {GRID_GEOMETRY_KEY, SAMPLE_DIMENSIONS_KEY});
         }
 
         /**
@@ -820,19 +842,22 @@ public class ImageRenderer {
          */
         @Override
         public Object getProperty(final String key) {
-            if (!GRID_GEOMETRY_KEY.equals(key)) {
-                return super.getProperty(key);
-            }
-            synchronized (this) {
-                if (geometry == null) {
-                    final SliceGeometry s = supplier;
-                    if (s != null) {
-                        supplier = null;                // Let GC do its work.
-                        geometry = s.apply(this);
+            switch (key) {
+                default: return super.getProperty(key);
+                case SAMPLE_DIMENSIONS_KEY: return bands.clone();
+                case GRID_GEOMETRY_KEY: {
+                    synchronized (this) {
+                        if (geometry == null) {
+                            final SliceGeometry s = supplier;
+                            if (s != null) {
+                                supplier = null;                // Let GC do its work.
+                                geometry = s.apply(this);
+                            }
+                        }
+                        return geometry;
                     }
                 }
             }
-            return geometry;
         }
     }
 }

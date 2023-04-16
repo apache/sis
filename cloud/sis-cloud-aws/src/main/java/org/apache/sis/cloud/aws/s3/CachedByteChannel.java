@@ -44,7 +44,7 @@ final class CachedByteChannel extends FileCacheByteChannel {
      * The connection will be opened when first needed.
      *
      * @param  path  path to the S3 file to open.
-     * @throws IOException if the temporary file can not be created.
+     * @throws IOException if the temporary file cannot be created.
      */
     CachedByteChannel(final KeyPath path) throws IOException {
         super("S3-");

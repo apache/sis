@@ -173,7 +173,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @return the source of sample values for this evaluator.
      */
     @Override
-    public GridCoverage getCoverage() {
+    public final GridCoverage getCoverage() {
         return coverage;
     }
 
@@ -192,7 +192,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")     // Because the map is unmodifiable.
-    public Map<Integer,Long> getDefaultSlice() {
+    public final Map<Integer,Long> getDefaultSlice() {
         if (slice == null) {
             final GridExtent extent = coverage.getGridGeometry().getExtent();
             slice = CollectionsExt.unmodifiableOrCopy(extent.getSliceCoordinates());
@@ -366,10 +366,12 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
          * TODO: instead of restricting to a single point, keep the automatic size (1 or 2),
          * invoke render for each slice, then interpolate. We would keep a value of 1 in the
          * size array if we want to disable interpolation in some particular axis (e.g. time).
+         *
+         * See https://issues.apache.org/jira/browse/SIS-576
          */
         final GridGeometry gridGeometry = coverage.gridGeometry;
         final long[] size = new long[gridGeometry.getDimension()];
-        java.util.Arrays.fill(size, 1);
+        Arrays.fill(size, 1);
         try {
             final FractionalGridCoordinates gc = toGridPosition(point);
             try {
@@ -471,7 +473,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
             System.arraycopy(result.getCoordinate(), 0, coordinates, 0, coordinates.length);
         }
         /*
-         * If most cases, the work of this method ends here. The remaining code in this method
+         * In most cases, the work of this method ends here. The remaining code in this method
          * is for handling wraparound axes. If a coordinate is outside the coverage extent,
          * check if a wraparound on some axes would bring the coordinates inside the extent.
          */
@@ -637,7 +639,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
             }
         }
         // Modify fields only after everything else succeeded.
-        position     = new FractionalGridCoordinates.Position(crsToGrid.getTargetDimensions());
+        position    = new FractionalGridCoordinates.Position(crsToGrid.getTargetDimensions());
         inputCRS    = crs;
         inputToGrid = crsToGrid;
     }

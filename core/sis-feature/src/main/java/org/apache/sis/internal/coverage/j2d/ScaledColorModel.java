@@ -31,7 +31,7 @@ import org.apache.sis.internal.feature.Resources;
  * In addition, this class renders the {@link Float#NaN} values as transparent.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class ScaledColorModel extends ComponentColorModel {
@@ -66,10 +66,17 @@ final class ScaledColorModel extends ComponentColorModel {
     }
 
     /**
-     * Creates a new color model with only a subset of the bands in this color model.
+     * Returns a color model with a different number of bands and a different visible band.
+     *
+     * @param  numBands     new number of bands.
+     * @param  visibleBand  new visible band.
+     * @return a color model with the same colors but the specified number of bands.
      */
-    final ScaledColorModel createSubsetColorModel(final int[] bands) {
-        return new ScaledColorModel(new ScaledColorSpace(cs, bands), transferType);
+    final ScaledColorModel derive(final int numBands, final int visibleBand) {
+        if (numBands == cs.getNumComponents() && visibleBand == cs.visibleBand) {
+            return this;
+        }
+        return new ScaledColorModel(new ScaledColorSpace(cs, numBands, visibleBand), transferType);
     }
 
     /**

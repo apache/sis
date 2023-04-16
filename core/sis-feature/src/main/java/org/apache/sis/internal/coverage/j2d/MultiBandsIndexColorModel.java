@@ -88,26 +88,27 @@ final class MultiBandsIndexColorModel extends IndexColorModel {
     }
 
     /**
-     * Creates a new color model with only a subset of the bands in this color model.
+     * Returns a color model with a different number of bands and a different visible band.
      *
      * <p><b>Note:</b> the new color model will use a copy of the color map of this color model.
      * There is no way to share the {@code int[]} array of ARGB values between two {@link IndexColorModel}s.</p>
+     *
+     * @param  numBands     new number of bands.
+     * @param  visibleBand  new visible band.
+     * @return a color model with the same colors but the specified number of bands.
      */
-    final IndexColorModel createSubsetColorModel(final int[] bands) {
+    final IndexColorModel derive(final int numBands, final int visibleBand) {
+        if (numBands == this.numBands && visibleBand == this.visibleBand) {
+            return this;
+        }
         final int[]   cmap        = getARGB();
         final boolean hasAlpha    = hasAlpha();
         final int     transparent = getTransparentPixel();
-        if (bands.length == 1) {
+        if (numBands == 1) {
             return new IndexColorModel(pixel_bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType);
         }
-        int vb = 0;
-        for (int i=0; i<bands.length; i++) {
-            if (bands[i] == visibleBand) {
-                vb = i;
-                break;
-            }
-        }
-        return new MultiBandsIndexColorModel(pixel_bits, cmap.length, cmap, 0, hasAlpha, transparent, transferType, bands.length, vb);
+        return new MultiBandsIndexColorModel(pixel_bits, cmap.length, cmap, 0,
+                    hasAlpha, transparent, transferType, numBands, visibleBand);
     }
 
     /**

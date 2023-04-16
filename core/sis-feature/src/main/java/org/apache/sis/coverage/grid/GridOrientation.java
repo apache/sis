@@ -195,7 +195,7 @@ public final class GridOrientation implements Serializable {
     public GridOrientation flipGridAxis(final int dimension) {
         ArgumentChecks.ensurePositive("dimension", dimension);
         if (dimension >= Long.SIZE) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
+            throw new ArithmeticException(Errors.format(Errors.Keys.ExcessiveNumberOfDimensions_1, dimension + 1));
         }
         return new GridOrientation(flippedAxes ^ (1L << dimension), crsVariant, canReorderGridAxis);
     }

@@ -20,6 +20,9 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
 import java.util.function.UnaryOperator;
+import java.net.URI;
+import java.net.URL;
+import java.io.File;
 import java.io.Reader;
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -35,8 +38,9 @@ import java.nio.channels.Channel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.channels.SeekableByteChannel;
-import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
 import java.nio.file.OpenOption;
+import java.nio.file.NoSuchFileException;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import javax.imageio.IIOException;
@@ -77,10 +81,10 @@ import org.apache.sis.setup.OptionKey;
  * {@code StorageConnector} wraps an input {@link Object}, which can be any of the following types:
  *
  * <ul>
- *   <li>A {@link java.nio.file.Path} or a {@link java.io.File} for a file or a directory.</li>
- *   <li>A {@link java.net.URI} or a {@link java.net.URL} to a distant resource.</li>
+ *   <li>A {@link Path} or a {@link File} for a file or a directory.</li>
+ *   <li>A {@link URI} or a {@link URL} to a distant resource.</li>
  *   <li>A {@link CharSequence} interpreted as a filename or a URL.</li>
- *   <li>A {@link java.nio.channels.Channel}, {@link DataInput}, {@link InputStream} or {@link Reader}.</li>
+ *   <li>A {@link Channel}, {@link DataInput}, {@link InputStream} or {@link Reader}.</li>
  *   <li>A {@link DataSource} or a {@link Connection} to a JDBC database.</li>
  *   <li>Any other {@code DataStore}-specific object, for example {@link ucar.nc2.NetcdfFile}.</li>
  * </ul>
@@ -222,10 +226,10 @@ public class StorageConnector implements Serializable {
          * exception if the conversion fail. Instead, getStorageAs(Class) will return null.
          * Classes not listed here will let the UnconvertibleObjectException propagates.
          */
-        add(java.net.URI.class,       null);
-        add(java.net.URL.class,       null);
-        add(java.io.File.class,       null);
-        add(java.nio.file.Path.class, null);
+        add(URI.class,  null);
+        add(URL.class,  null);
+        add(File.class, null);
+        add(Path.class, null);
     }
 
     /**
@@ -294,7 +298,7 @@ public class StorageConnector implements Serializable {
      * used independently. They are views that may advance {@code storage} position, but not at the same time than the
      * {@link #view} position (typically because the view reads some bytes in advance and stores them in a buffer).
      * Such coupling may occur when the storage is an {@link InputStream}, an {@link java.io.OutputStream} or a
-     * {@link java.nio.channels.Channel}. The coupled {@link #view} can be:
+     * {@link Channel}. The coupled {@link #view} can be:
      *
      * <ul>
      *   <li>{@link Reader} that are wrappers around {@code InputStream}.</li>
@@ -641,8 +645,8 @@ public class StorageConnector implements Serializable {
      * {@linkplain #getStorage() storage} object:
      *
      * <ul>
-     *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI} or {@link java.net.URL}
-     *       instances, this method uses dedicated API like {@link java.nio.file.Path#getFileName()}.</li>
+     *   <li>For {@link Path}, {@link File}, {@link URI} or {@link URL}
+     *       instances, this method uses dedicated API like {@link Path#getFileName()}.</li>
      *   <li>For {@link CharSequence} instances, this method gets a string representation of the storage object
      *       and returns the part after the last {@code '/'} character or platform-dependent name separator.</li>
      *   <li>For instances of unknown type, this method builds a string representation using the class name.
@@ -669,7 +673,7 @@ public class StorageConnector implements Serializable {
      * the following choices based on the type of the {@linkplain #getStorage() storage} object:
      *
      * <ul>
-     *   <li>For {@link java.nio.file.Path}, {@link java.io.File}, {@link java.net.URI}, {@link java.net.URL} or
+     *   <li>For {@link Path}, {@link File}, {@link URI}, {@link URL} or
      *       {@link CharSequence} instances, this method returns the string after the last {@code '.'} character
      *       in the filename, provided that the {@code '.'} is not the first filename character. This may be an
      *       empty string if the filename has no extension, but never {@code null}.</li>
@@ -701,17 +705,17 @@ public class StorageConnector implements Serializable {
      * <ul>
      *   <li>{@link String}:
      *     <ul>
-     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link java.nio.file.Path},
-     *           {@link java.io.File}, {@link java.net.URL}, {@link java.net.URI} or {@link CharSequence} types,
+     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link Path},
+     *           {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types,
      *           returns the string representation of their path.</li>
      *
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
-     *   <li>{@link java.nio.file.Path}, {@link java.net.URI}, {@link java.net.URL}, {@link java.io.File}:
+     *   <li>{@link Path}, {@link URI}, {@link URL}, {@link File}:
      *     <ul>
-     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link java.nio.file.Path},
-     *           {@link java.io.File}, {@link java.net.URL}, {@link java.net.URI} or {@link CharSequence} types and
+     *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link Path},
+     *           {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types and
      *           that type can be converted to the requested type, returned the conversion result.</li>
      *
      *       <li>Otherwise this method returns {@code null}.</li>
@@ -735,8 +739,8 @@ public class StorageConnector implements Serializable {
      *           backed by a read-only view of that buffer is created when first needed and returned.
      *           The properties (position, mark, limit) of the original buffer are unmodified.</li>
      *
-     *       <li>Otherwise if the input is an instance of {@link java.nio.file.Path}, {@link java.io.File},
-     *           {@link java.net.URI}, {@link java.net.URL}, {@link CharSequence}, {@link InputStream} or
+     *       <li>Otherwise if the input is an instance of {@link Path}, {@link File},
+     *           {@link URI}, {@link URL}, {@link CharSequence}, {@link InputStream} or
      *           {@link java.nio.channels.ReadableByteChannel}, then an {@link ImageInputStream} backed by a
      *           {@link ByteBuffer} is created when first needed and returned.</li>
      *
@@ -830,7 +834,7 @@ public class StorageConnector implements Serializable {
          * Note that InputStream may need to be reset if it has been used indirectly by other kind
          * of stream (for example a java.io.Reader). Example:
          *
-         *    1) The storage specified at construction time is a java.nio.file.Path.
+         *    1) The storage specified at construction time is a `Path`.
          *    2) getStorageAs(InputStream.class) opens an InputStream. Caller rewinds it after use.
          *    3) getStorageAs(Reader.class) wraps the InputStream. Caller rewinds the Reader after use,
          *       but invoking BufferedReader.reset() has no effect on the underlying InputStream.

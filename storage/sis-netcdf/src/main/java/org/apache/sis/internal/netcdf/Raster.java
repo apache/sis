@@ -40,7 +40,7 @@ import org.apache.sis.coverage.grid.BufferedGridCoverage;
  * but it is {@link ImageRenderer} responsibility to perform this substitution as an optimization.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 final class Raster extends BufferedGridCoverage {
@@ -64,11 +64,6 @@ final class Raster extends BufferedGridCoverage {
     private final int visibleBand;
 
     /**
-     * Name to display in error messages. Not to be used for processing.
-     */
-    private final String label;
-
-    /**
      * The colors to use for each category, or {@code null} for default.
      * The function may return {@code null}, which means transparent.
      */
@@ -80,18 +75,16 @@ final class Raster extends BufferedGridCoverage {
      * @param domain       the grid extent, CRS and conversion from cell indices to CRS.
      * @param range        sample dimensions for each image band.
      * @param data         the sample values, potentially multi-banded.
-     * @param lebel        name to display in error messages. Not to be used for processing.
      * @param pixelStride  increment to apply on index for moving to the next pixel in the same band.
      * @param bandOffsets  offsets to add to sample index in each band, or {@code null} if none.
      * @param visibleBand  the band to use for defining pixel colors when the image is displayed on screen.
      * @param colors       the colors to use for each category, or {@code null} for default.
      */
     Raster(final GridGeometry domain, final List<SampleDimension> range, final DataBuffer data,
-           final String label, final int pixelStride, final int[] bandOffsets, final int visibleBand,
+           final int pixelStride, final int[] bandOffsets, final int visibleBand,
            final Function<Category,Color[]> colors)
     {
         super(domain, range, data);
-        this.label       = label;
         this.colors      = colors;
         this.pixelStride = pixelStride;
         this.bandOffsets = bandOffsets;

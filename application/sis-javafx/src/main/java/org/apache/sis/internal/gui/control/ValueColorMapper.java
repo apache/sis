@@ -231,18 +231,6 @@ public final class ValueColorMapper extends TabularWidget {
         }
 
         /**
-         * Returns the colors to apply for the given step, or {@code null} for transparent.
-         * This method is defined for safety but should not be invoked; use {@link #getObservableValue(S)} instead.
-         *
-         * @param  level  the value for which to get the color to show in color cell.
-         */
-        @Override
-        protected int[] getARGB(final Step level) {
-            final ColorRamp r = level.color.get();
-            return (r != null) ? r.colors : null;
-        }
-
-        /**
          * Returns the color associated to given row as an observable value.
          *
          * @param  level  the value for which to get the color to show in color cell.

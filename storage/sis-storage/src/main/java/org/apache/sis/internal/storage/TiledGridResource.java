@@ -34,6 +34,7 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.internal.coverage.RangeArgument;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
@@ -299,6 +300,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
 
         /**
          * The color model for the bands to read (not the full set of bands in the resource).
+         * May be {@code null} if the color model could not be created.
          */
         final ColorModel colorsForBandSubset;
 
@@ -409,7 +411,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
             this.ranges              = bands;
             this.includedBands       = includedBands;
             this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
-            this.colorsForBandSubset = rangeIndices.select(getColorModel()).orElse(null);
+            this.colorsForBandSubset = rangeIndices.select(getColorModel());
             this.fillValue           = getFillValue();
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.

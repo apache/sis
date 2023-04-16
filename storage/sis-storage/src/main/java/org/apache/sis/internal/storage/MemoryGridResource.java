@@ -23,11 +23,10 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
+import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
-import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.internal.util.UnmodifiableArrayList;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.ArgumentChecks;
@@ -40,10 +39,10 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.1
  */
-public class MemoryGridResource extends AbstractGridCoverageResource {
+public final class MemoryGridResource extends AbstractGridCoverageResource {
     /**
      * The grid coverage specified at construction time.
      */
@@ -93,8 +92,16 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
      */
     @Override
     public GridCoverage read(GridGeometry domain, final int... ranges) {
-        List<SampleDimension> bands = coverage.getSampleDimensions();
-        final RangeArgument rangeIndices = RangeArgument.validate(bands.size(), ranges, listeners);
+        /*
+         * If the user requested a subset of the bands, select the bands on the grid coverage.
+         * It is slightly more expensive than selecting the bands on the image produced at the
+         * end of this method, except if the coverage is a `BandAggregateGridCoverage` because
+         * the latter will do rendering only on the selected coverage components.
+         */
+        GridCoverage subset = coverage;
+        if (ranges != null && ranges.length != 0) {
+            subset = new GridCoverageProcessor().selectSampleDimensions(subset, ranges);
+        }
         /*
          * The given `domain` may use arbitrary `gridToCRS` and `CRS` properties.
          * For this simple implementation we need the same `gridToCRS` and `CRS`
@@ -106,7 +113,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
          *       by adjusting the pixel stride in SampleModel.
          */
         GridExtent intersection = null;
-        final GridGeometry source = coverage.getGridGeometry();
+        final GridGeometry source = subset.getGridGeometry();
         if (domain == null) {
             domain = source;
         } else {
@@ -121,9 +128,8 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
         /*
          * Quick check before to invoke the potentially costly `coverage.render(…)` method.
          */
-        final boolean sameBands = rangeIndices.isIdentity();
-        if (sameBands && intersection == null) {
-            return coverage;
+        if (intersection == null) {
+            return subset;
         }
         /*
          * After `render(…)` execution, the (minX, minY) image coordinates are the differences between
@@ -131,7 +137,7 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
          * we need to translate the `GridExtent` in order to make it matches what we got. But before to
          * apply that translation, we adjust the grid size (because it may add another translation).
          */
-        RenderedImage data = coverage.render(intersection);
+        RenderedImage data = subset.render(intersection);
         if (intersection != null) {
             final int[]  sd      = intersection.getSubspaceDimensions(2);
             final int    dimX    = sd[0];
@@ -156,26 +162,20 @@ public class MemoryGridResource extends AbstractGridCoverageResource {
             intersection  = intersection.translate(changes);
             /*
              * If the result is the same intersection than the source coverage,
-             * we may be able to return that coverage directly.
+             * we can return that coverage directly.
              */
             if (intersection.equals(source.getExtent())) {
-                if (sameBands) {
-                    return coverage;
-                }
-                domain = source;
+                return subset;
             } else {
                 domain = new GridGeometry(intersection, PixelInCell.CELL_CORNER,
                         source.getGridToCRS(PixelInCell.CELL_CORNER),
                         source.getCoordinateReferenceSystem());
             }
         }
-        if (!sameBands) {
-            data  = new ImageProcessor().selectBands(data, ranges);
-            bands = UnmodifiableArrayList.wrap(rangeIndices.select(bands));
-        }
         return new GridCoverageBuilder()
                 .setValues(data)
-                .setRanges(bands)
-                .setDomain(domain).build();
+                .setDomain(domain)
+                .setRanges(subset.getSampleDimensions())
+                .build();
     }
 }

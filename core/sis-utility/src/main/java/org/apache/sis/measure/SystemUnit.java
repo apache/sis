@@ -277,7 +277,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     }
 
     /**
-     * Casts this unit to a parameterized unit of specified nature or throw a {@code ClassCastException}
+     * Casts this unit to a parameterized unit of specified nature or throws a {@code ClassCastException}
      * if the dimension of the specified quantity and this unit's dimension do not match.
      *
      * @param  <T>   the type of the quantity measured by the unit.

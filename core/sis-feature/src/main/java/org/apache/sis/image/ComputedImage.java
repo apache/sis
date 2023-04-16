@@ -29,6 +29,7 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.ImagingOpException;
@@ -36,11 +37,13 @@ import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 
 
 /**
@@ -116,7 +119,7 @@ import org.apache.sis.internal.feature.Resources;
  * if the change to dirty state happened after the call to {@link #getTile(int, int) getTile(…)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public abstract class ComputedImage extends PlanarImage implements Disposable {
@@ -181,14 +184,14 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * If this field is set to a non-null value, then this assignment should be done
      * soon after construction time before any tile computation started.
      *
-     * <div class="note"><b>Note on interaction with tile cache</b><br>
+     * <h4>Note on interaction with tile cache</h4>
      * The use of a destination image may produce unexpected result if {@link #computeTile(int, int, WritableRaster)}
      * is invoked two times or more for the same destination tile. It may look like a problem because computed tiles
      * can be discarded and recomputed at any time. However, this problem should not happen because tiles computed by
      * this {@code ComputedImage} will not be discarded as long as {@code destination} has a reference to that tile.
      * If a {@code ComputedImage} tile has been discarded, then it implies that the corresponding {@code destination}
      * tile has been discarded as well, in which case the tile computation will restart from scratch; it will not be
-     * a recomputation of only this {@code ComputedImage} on top of an old {@code destination} tile.</div>
+     * a recomputation of only this {@code ComputedImage} on top of an old {@code destination} tile.
      *
      * @see #setDestination(WritableRenderedImage)
      */
@@ -201,10 +204,12 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * and the {@linkplain SampleModel#getHeight() sample model height}
      * determines this {@linkplain #getTileHeight() image tile height}.
      *
-     * <div class="note"><b>Design note:</b>
+     * <h4>Design note:</h4>
      * {@code ComputedImage} requires the sample model to have exactly the desired tile size
      * otherwise tiles created by {@link #createTile(int, int)} will consume more memory
-     * than needed.</div>
+     * than needed.
+     *
+     * @see #getSampleModel()
      */
     protected final SampleModel sampleModel;
 
@@ -255,6 +260,24 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
         }
         this.sources = sources;                     // Note: null value does not have same meaning than empty array.
         reference = new ComputedTiles(this, ws);    // Create cleaner last after all arguments have been validated.
+    }
+
+    /**
+     * Ensures that a user supplied color model is compatible with the sample model.
+     * This is a helper method for argument validation in sub-classes constructors.
+     *
+     * @param  colors  the color model to validate. Can be {@code null}.
+     * @throws IllegalArgumentException if the color model is incompatible.
+     */
+    final void ensureCompatible(final ColorModel colors) {
+        final String reason = verifyCompatibility(sampleModel, colors);
+        if (reason != null) {
+            String message = Resources.format(Resources.Keys.IncompatibleColorModel);
+            if (!reason.isEmpty()) {
+                message = message + ' ' + Errors.format(Errors.Keys.IllegalValueForProperty_2, Classes.getShortClassName(colors), reason);
+            }
+            throw new IllegalArgumentException(message);
+        }
     }
 
     /**
@@ -312,6 +335,24 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      */
     final RenderedImage getSource() {
         return sources[0];
+    }
+
+    /**
+     * Returns the sources as an array.
+     * A future version may remove this method if Java allows unmodifiable arrays.
+     */
+    final RenderedImage[] getSourceArray() {
+        return sources.clone();
+    }
+
+    /**
+     * Returns the number of sources, or 0 if none or unknown.
+     * This is the size of the vector returned by {@link #getSources()}.
+     *
+     * @return number of sources, or 0 if none or unknown.
+     */
+    final int getNumSources() {
+        return (sources != null) ? sources.length : 0;
     }
 
     /**
@@ -379,37 +420,41 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @return the sample model of this image.
      */
     @Override
-    public SampleModel getSampleModel() {
+    public final SampleModel getSampleModel() {
         return sampleModel;
     }
 
     /**
-     * Returns the width of tiles in this image. The default implementation returns {@link SampleModel#getWidth()}.
+     * Returns the width of tiles in this image.
+     * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getWidth()}.
      *
-     * <div class="note"><b>Note:</b>
-     * a raster can have a smaller width than its sample model, for example when a raster is a view over a subregion
-     * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
-     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.</div>
+     * <h4>Design note</h4>
+     * In theory it is legal to have a tile width smaller than the sample model width,
+     * for example when a raster is a view over a subregion of another raster.
+     * But this is not allowed in {@code ComputedImage} class, because it would
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.
      *
      * @return the width of this image in pixels.
      */
     @Override
-    public int getTileWidth() {
+    public final int getTileWidth() {
         return sampleModel.getWidth();
     }
 
     /**
-     * Returns the height of tiles in this image. The default implementation returns {@link SampleModel#getHeight()}.
+     * Returns the height of tiles in this image.
+     * In {@code ComputedImage} implementation, this is fixed to {@link SampleModel#getHeight()}.
      *
-     * <div class="note"><b>Note:</b>
-     * a raster can have a smaller height than its sample model, for example when a raster is a view over a subregion
-     * of another raster. But this is not recommended in the particular case of this {@code ComputedImage} class,
-     * because it would cause {@link #createTile(int, int)} to consume more memory than necessary.</div>
+     * <h4>Design note</h4>
+     * In theory it is legal to have a tile height smaller than the sample model height,
+     * for example when a raster is a view over a subregion of another raster.
+     * But this is not allowed in {@code ComputedImage} class, because it would
+     * cause {@link #createTile(int, int)} to consume more memory than necessary.
      *
      * @return the height of this image in pixels.
      */
     @Override
-    public int getTileHeight() {
+    public final int getTileHeight() {
         return sampleModel.getHeight();
     }
 
@@ -566,10 +611,9 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @return initially empty tile for the given indices (cannot be null).
      */
     protected WritableRaster createTile(final int tileX, final int tileY) {
-        // A temporary `int` overflow may occur before the final addition.
-        final int x = Math.toIntExact((((long) tileX) - getMinTileX()) * getTileWidth()  + getMinX());
-        final int y = Math.toIntExact((((long) tileY) - getMinTileY()) * getTileHeight() + getMinY());
-        return WritableRaster.createWritableRaster(getSampleModel(), new Point(x,y));
+        final int x = ImageUtilities.tileToPixelX(this, tileX);
+        final int y = ImageUtilities.tileToPixelY(this, tileY);
+        return WritableRaster.createWritableRaster(sampleModel, new Point(x,y));
     }
 
     /**

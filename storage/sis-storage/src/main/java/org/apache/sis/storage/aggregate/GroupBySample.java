@@ -31,7 +31,7 @@ import org.apache.sis.coverage.SampleDimension;
  * which in turn contain an arbitrary number of {@link GridSlice} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
@@ -50,7 +50,9 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     }
 
     /**
-     * Returns a name for this group.
+     * Creates a name for this group for use in metadata (not a persistent identifier).
+     * This is used as the resource name if an aggregated resource needs to be created.
+     * Current implementation tries to return a text describing sample dimensions.
      */
     @Override
     final String createName(final Locale locale) {
@@ -84,7 +86,7 @@ final class GroupBySample extends Group<GroupByCRS<GroupByTransform>> {
     }
 
     /**
-     * Creates sub-aggregates for each member of this group and add them to the given aggregate.
+     * Creates sub-aggregates for each member of this group and adds them to the given aggregate.
      *
      * @param  destination  where to add sub-aggregates.
      */

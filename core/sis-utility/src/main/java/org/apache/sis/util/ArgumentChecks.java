@@ -54,7 +54,8 @@ import org.opengis.coverage.grid.GridEnvelope;
  *     {@link #ensurePositive(String, int) ensurePositive},
  *     {@link #ensureStrictlyPositive(String, int) ensureStrictlyPositive},
  *     {@link #ensureBetween(String, int, int, int) ensureBetween},
- *     {@link #ensureSizeBetween(String, int, int, int) ensureBetween},
+ *     {@link #ensureCountBetween(String, boolean, int, int, int) ensureCountBetween},
+ *     {@link #ensureNonEmptyBounded(String, boolean, int, int, int[]) ensureNonEmptyBounded},
  *     {@link #ensureCanCast(String, Class, Object) ensureCanCast}.
  *   </td>
  * </tr><tr>
@@ -80,14 +81,14 @@ import org.opengis.coverage.grid.GridEnvelope;
  * </ul>
  *
  * <h2>Method Arguments</h2>
- * By convention, the value to check is always the last parameter given to every methods
- * in this class. The other parameters may include the programmatic name of the argument
- * being checked. This programmatic name is used for building an error message localized
- * in the {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
+ * By convention, the value to check is always the last parameter given to every methods in this class.
+ * The other parameters may include the programmatic name of the argument being checked.
+ * This programmatic name is used for building an error message localized in the
+ * {@linkplain java.util.Locale#getDefault() default locale} if the check failed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public final class ArgumentChecks extends Static {
@@ -232,8 +233,35 @@ public final class ArgumentChecks extends Static {
      *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
      *
      * @since 1.0
+     *
+     * @deprecated Replaced by {@link #ensureNonEmptyBounded(String, boolean, int, int, int[])}.
      */
+    @Deprecated(since = "1.3", forRemoval = true)
     public static void ensureNonEmpty(final String name, final int[] values, final int min, final int max, final boolean distinct)
+            throws IllegalArgumentException
+    {
+        ensureNonEmptyBounded(name, distinct, min, max, values);
+    }
+
+    /**
+     * Ensures that the given {@code values} array contains at least one element and that all elements are within bounds.
+     * The minimum and maximum values are inclusive. Optionaly, this method can also ensure that all values are distinct.
+     *
+     * <p>Note that a successful call to {@code ensureNonEmptyBounded(name, true, 0, max, values)}
+     * implies 1 ≤ {@code values.length} ≤ {@code max}.</p>
+     *
+     * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  distinct  {@code true} if each value must be unique.
+     * @param  min       the minimal allowed value (inclusive), or {@link Integer#MIN_VALUE} if none.
+     * @param  max       the maximal allowed value (inclusive), or {@link Integer#MAX_VALUE} if none.
+     * @param  values    integer values to validate.
+     * @throws NullArgumentException if {@code values} is null.
+     * @throws IllegalArgumentException if {@code values} is empty, contains a value lower than {@code min},
+     *         contains a value greater than {@code max}, or contains duplicated values while {@code distinct} is {@code true}.
+     *
+     * @since 1.4
+     */
+    public static void ensureNonEmptyBounded(final String name, final boolean distinct, final int min, final int max, final int[] values)
             throws IllegalArgumentException
     {
         if (values == null) {
@@ -274,26 +302,19 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that a method receiving a variable number of arguments got the expected count.
      * If {@code actual} = {@code expected}, then this method does nothing.
-     * Otherwise a message saying "Too few" or "Too many arguments" is thrown.
+     * Otherwise an exception saying "Too few" or "Too many arguments" is thrown.
      *
      * @param  name      the name of the argument to be checked. Used only if an exception is thrown.
      * @param  expected  expected number of arguments.
      * @param  actual    actual number of arguments.
      *
      * @since 1.0
+     *
+     * @deprecated Renamed {@link #ensureCountBetween(String, boolean, int, int, int)}.
      */
+    @Deprecated(since = "1.3", forRemoval = true)
     public static void ensureExpectedCount(final String name, final int expected, final int actual) {
-        if (actual != expected) {
-            final String message;
-            if (actual == 0) {
-                message = Errors.format(Errors.Keys.EmptyArgument_1, name);
-            } else if (actual < expected) {
-                message = Errors.format(Errors.Keys.TooFewArguments_2, expected, actual);
-            } else {
-                message = Errors.format(Errors.Keys.TooManyArguments_2, expected, actual);
-            }
-            throw new IllegalArgumentException(message);
-        }
+        ensureCountBetween(name, false, expected, expected, actual);
     }
 
     /**
@@ -362,7 +383,7 @@ public final class ArgumentChecks extends Static {
      * @throws IndexOutOfBoundsException if the given [{@code lower} … {@code upper}]
      *         range is out of the sequence index range.
      *
-     * @see #ensureSizeBetween(String, int, int, int)
+     * @see #ensureCountBetween(String, boolean, int, int, int)
      */
     public static void ensureValidIndexRange(final int length, final int lower, final int upper) throws IndexOutOfBoundsException {
         if (lower < 0 || upper < lower || upper > length) {
@@ -423,7 +444,7 @@ public final class ArgumentChecks extends Static {
     public static void ensurePositive(final String name, final float value)
             throws IllegalArgumentException
     {
-        if (!(value >= 0)) {                                                // Use '!' for catching NaN.
+        if (!(value >= 0)) {                                                // Use `!` for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.NegativeArgument_2, name, value));
@@ -444,7 +465,7 @@ public final class ArgumentChecks extends Static {
     public static void ensurePositive(final String name, final double value)
             throws IllegalArgumentException
     {
-        if (!(value >= 0)) {                                                // Use '!' for catching NaN.
+        if (!(value >= 0)) {                                                // Use `!` for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.NegativeArgument_2, name, value));
@@ -501,7 +522,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureStrictlyPositive(final String name, final float value)
             throws IllegalArgumentException
     {
-        if (!(value > 0)) {                                                 // Use '!' for catching NaN.
+        if (!(value > 0)) {                                                 // Use `!` for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, name, value));
@@ -522,7 +543,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureStrictlyPositive(final String name, final double value)
             throws IllegalArgumentException
     {
-        if (!(value > 0)) {                                                 // Use '!' for catching NaN.
+        if (!(value > 0)) {                                                 // Use `!` for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueNotGreaterThanZero_2, name, value));
@@ -568,7 +589,7 @@ public final class ArgumentChecks extends Static {
      * of integer range checks:
      *
      * <ul>
-     *   <li>{@link #ensureSizeBetween(String, int, int, int) ensureSizeBetween(…)}
+     *   <li>{@link #ensureCountBetween(String, boolean, int, int, int) ensureCountBetween(…)}
      *       if the {@code value} argument is a collection size or an array length.</li>
      *   <li>{@link #ensureValidIndex(int, int) ensureValidIndex(…)} if the {@code value}
      *       argument is an index in a list or an array.</li>
@@ -580,7 +601,7 @@ public final class ArgumentChecks extends Static {
      * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
-     * @see #ensureSizeBetween(String, int, int, int)
+     * @see #ensureCountBetween(String, boolean, int, int, int)
      * @see #ensureValidIndex(int, int)
      * @see #ensureValidIndexRange(int, int, int)
      */
@@ -623,7 +644,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureBetween(final String name, final float min, final float max, final float value)
             throws IllegalArgumentException
     {
-        if (!(value >= min && value <= max)) {                              // Use '!' for catching NaN.
+        if (!(value >= min && value <= max)) {                              // Use `!` for catching NaN.
             throw new IllegalArgumentException(Float.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name) :
                     Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
@@ -642,7 +663,7 @@ public final class ArgumentChecks extends Static {
     public static void ensureBetween(final String name, final double min, final double max, final double value)
             throws IllegalArgumentException
     {
-        if (!(value >= min && value <= max)) {                              // Use '!' for catching NaN.
+        if (!(value >= min && value <= max)) {                              // Use `!` for catching NaN.
             throw new IllegalArgumentException(Double.isNaN(value) ?
                     Errors.format(Errors.Keys.NotANumber_1, name)  :
                     Errors.format(Errors.Keys.ValueOutOfRange_4, name, min, max, value));
@@ -660,21 +681,46 @@ public final class ArgumentChecks extends Static {
      * @param  size  the user collection size or array length to be checked.
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
-     * @see #ensureBetween(String, int, int, int)
-     * @see #ensureValidIndexRange(int, int, int)
+     * @deprecated Renamed {@link #ensureCountBetween(String, boolean, int, int, int)}.
      */
+    @Deprecated(since = "1.3", forRemoval = true)
     public static void ensureSizeBetween(final String name, final int min, final int max, final int size)
             throws IllegalArgumentException
     {
+        ensureCountBetween(name, true, min, max, size);
+    }
+
+    /**
+     * Ensures that the given number of elements is between the given bounds, inclusive.
+     * This method performs the same check than {@link #ensureBetween(String, int, int, int)
+     * ensureBetween(…)}, but the error message is different in case of failure.
+     *
+     * @param  name   the name of the argument to be checked. Used only if an exception is thrown.
+     * @param  named  whether to use {@code name} as the name of a collection or array argument.
+     * @param  min    the minimal size (inclusive), or 0 if none.
+     * @param  max    the maximal size (inclusive), or {@link Integer#MAX_VALUE} if none.
+     * @param  count  the number of user-specified arguments, collection size or array length to be checked.
+     * @throws IllegalArgumentException if the given value is not in the given range.
+     *
+     * @see #ensureBetween(String, int, int, int)
+     * @see #ensureValidIndexRange(int, int, int)
+     *
+     * @since 1.4
+     */
+    public static void ensureCountBetween(final String name, final boolean named, final int min, final int max, final int count)
+            throws IllegalArgumentException
+    {
         final String message;
-        if (size < min) {
-            if (min == 1) {
+        if (count < min) {
+            if (count == 0) {
                 message = Errors.format(Errors.Keys.EmptyArgument_1, name);
             } else {
-                message = Errors.format(Errors.Keys.TooFewCollectionElements_3, name, min, size);
+                message = named ? Errors.format(Errors.Keys.TooFewCollectionElements_3, name, min, count)
+                                : Errors.format(Errors.Keys.TooFewArguments_2, min, count);
             }
-        } else if (size > max) {
-            message = Errors.format(Errors.Keys.TooManyCollectionElements_3, name, max, size);
+        } else if (count > max) {
+            message = named ? Errors.format(Errors.Keys.TooManyCollectionElements_3, name, max, count)
+                            : Errors.format(Errors.Keys.TooManyArguments_2, max, count);
         } else {
             return;
         }

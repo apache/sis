@@ -227,7 +227,7 @@ public class LinearTransformBuilder extends TransformBuilder {
      * @since 0.8
      */
     public LinearTransformBuilder(int... gridSize) {
-        ArgumentChecks.ensureNonEmpty("gridSize", gridSize, 1, Integer.MAX_VALUE, false);
+        ArgumentChecks.ensureNonEmptyBounded("gridSize", false, 1, Integer.MAX_VALUE, gridSize);
         if (gridSize.length == 0) {
             this.gridSize = null;
             this.gridLength = 0;

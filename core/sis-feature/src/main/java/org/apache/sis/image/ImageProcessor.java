@@ -64,7 +64,7 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
 
 
 /**
- * A predefined set of operations on images as convenience methods.
+ * A predefined set of operations on images.
  * After instantiation, {@code ImageProcessor} can be configured for the following aspects:
  *
  * <ul class="verbose">
@@ -73,8 +73,7 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  *   </li><li>
  *     {@linkplain #setFillValues(Number...) Fill values} to use for pixels that cannot be computed.
  *   </li><li>
- *     {@linkplain #setCategoryColors(Function) Category colors} for mapping sample values
- *     (identified by their range, name or unit of measurement) to colors.
+ *     {@linkplain #setColorizer(Colorizer) Colorization algorithm} to apply for colorizing a computed image.
  *   </li><li>
  *     {@linkplain #setImageResizingPolicy(Resizing) Image resizing policy} to apply
  *     if a requested image size prevent the image to be tiled.
@@ -139,7 +138,8 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  * consider {@linkplain #clone() cloning} if setter methods are invoked on a shared instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @author  Alexis Manin (Geomatys)
+ * @version 1.4
  *
  * @see org.apache.sis.coverage.grid.GridCoverageProcessor
  *
@@ -164,6 +164,7 @@ public class ImageProcessor implements Cloneable {
 
     /**
      * Properties (size, tile size, sample model, <i>etc.</i>) of destination images.
+     * Shall never be null. Default value is {@link ImageLayout#DEFAULT}.
      *
      * @see #getImageLayout()
      * @see #setImageLayout(ImageLayout)
@@ -216,12 +217,24 @@ public class ImageProcessor implements Cloneable {
     private Number[] fillValues;
 
     /**
+     * Colorization algorithm to apply on computed image.
+     * A null value means to use implementation-specific default.
+     *
+     * @see #getColorizer()
+     * @see #setColorizer(Colorizer)
+     */
+    private Colorizer colorizer;
+
+    /**
      * Colors to use for arbitrary categories of sample values. This function can return {@code null}
      * or empty arrays for some categories, which are interpreted as fully transparent pixels.
      *
      * @see #getCategoryColors()
      * @see #setCategoryColors(Function)
+     *
+     * @deprecated Replaced by {@link #colorizer}.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     private Function<Category,Color[]> colors;
 
     /**
@@ -360,11 +373,50 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Returns the colorization algorithm to apply on computed images, or {@code null} for default.
+     * This method returns the value set by the last call to {@link #setColorizer(Colorizer)}.
+     *
+     * @return colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @since 1.4
+     */
+    public synchronized Colorizer getColorizer() {
+        return colorizer;
+    }
+
+    /**
+     * Sets the colorization algorithm to apply on computed images.
+     * The colorizer is invoked when the rendered image produced by an {@code ImageProcessor} operation
+     * needs a {@link ColorModel} which is not straightforward.
+     *
+     * <h4>Examples</h4>
+     * <p>The color model of a {@link #resample(RenderedImage, Rectangle, MathTransform) resample(…)}
+     * operation is straightforward: it is the same {@link ColorModel} than the source image.
+     * Consequently the colorizer is not invoked for that operation.</p>
+     *
+     * <p>But by contrast, the color model of an {@link #aggregateBands(RenderedImage...) aggregateBands(…)}
+     * operation cannot be determined in such straightforward way.
+     * If three or four bands are aggregated, should they be interpreted as an (A)RGB image?
+     * The {@link Colorizer} allows to specify the desired behavior.</p>
+     *
+     * @param colorizer colorization algorithm to apply on computed image, or {@code null} for default.
+     *
+     * @since 1.4
+     */
+    public synchronized void setColorizer(final Colorizer colorizer) {
+        this.colorizer = colorizer;
+        colors = null;
+    }
+
+    /**
      * Returns the colors to use for given categories of sample values, or {@code null} is unspecified.
      * This method returns the function set by the last call to {@link #setCategoryColors(Function)}.
      *
      * @return colors to use for arbitrary categories of sample values, or {@code null} for default.
+     *
+     * @deprecated Replaced by {@link #getColorizer()}.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public synchronized Function<Category,Color[]> getCategoryColors() {
         return colors;
     }
@@ -372,8 +424,8 @@ public class ImageProcessor implements Cloneable {
     /**
      * Sets the colors to use for given categories in image, or {@code null} is unspecified.
      * This function provides a way to colorize images without knowing in advance the numerical values of pixels.
-     * For example, instead of specifying <cite>"pixel value 0 in blue, 1 in green, 2 in yellow"</cite>,
-     * this function allows to specify <cite>"Lakes in blue, Forests in green, Sand in yellow"</cite>.
+     * For example, instead of specifying <cite>"pixel value 0 is blue, 1 is green, 2 is yellow"</cite>,
+     * this function allows to specify <cite>"Lakes are blue, Forests are green, Sand is yellow"</cite>.
      * It is still possible however to use numerical values if the function desires to do so,
      * since this information is available with {@link Category#getSampleRange()}.
      *
@@ -382,9 +434,15 @@ public class ImageProcessor implements Cloneable {
      * empty arrays for some categories, which are interpreted as fully transparent pixels.</p>
      *
      * @param  colors  colors to use for arbitrary categories of sample values, or {@code null} for default.
+     *
+     * @deprecated Replaced by {@link #setColorizer(Colorizer)}.
      */
+    @Deprecated(since="1.4", forRemoval=true)
     public synchronized void setCategoryColors(final Function<Category,Color[]> colors) {
-        this.colors = colors;
+        if (colors != this.colors) {
+            setColorizer(colors != null ? Colorizer.forCategories(colors) : null);
+            this.colors = colors;
+        }
     }
 
     /**
@@ -563,7 +621,7 @@ public class ImageProcessor implements Cloneable {
      *
      * @since 1.2
      */
-    public DoubleUnaryOperator filterNodataValues(final Number... values) {
+    public static DoubleUnaryOperator filterNodataValues(final Number... values) {
         return (values != null) ? StatisticsCalculator.filterNodataValues(values) : null;
     }
 
@@ -765,9 +823,12 @@ public class ImageProcessor implements Cloneable {
      *   </tr><tr>
      *     <td>{@code "sampleDimensions"}</td>
      *     <td>Meaning of pixel values.</td>
-     *     <td>{@link SampleDimension}</td>
+     *     <td>{@link SampleDimension} or {@code SampleDimension[]}</td>
      *   </tr>
      * </table>
+     *
+     * <b>Note:</b> if no value is associated to the {@code "sampleDimensions"} key, then the default
+     * value will be the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} image property value if defined.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -792,6 +853,44 @@ public class ImageProcessor implements Cloneable {
     }
 
     /**
+     * Returns an image augmented with user-defined property values.
+     * The specified properties overwrite any property that may be defined by the source image.
+     * When an {@linkplain RenderedImage#getProperty(String) image property value is requested}, the steps are:
+     *
+     * <ol>
+     *   <li>If the {@code properties} map has an entry for the property name, returns the associated value.
+     *       It may be {@code null}.</li>
+     *   <li>Otherwise if the property is defined by the source image, returns its value.
+     *       It may be {@code null}.</li>
+     *   <li>Otherwise returns {@link java.awt.Image#UndefinedProperty}.</li>
+     * </ol>
+     *
+     * The given {@code properties} map is retained by reference in the returned image.
+     * The {@code Map} is <em>not</em> copied in order to allow
+     * the use of custom implementations doing deferred calculations.
+     * If the caller intends to modify the map content after this method call,
+     * (s)he should use a {@link java.util.concurrent.ConcurrentMap}.
+     *
+     * <p>The returned image is "live": changes in {@code source} image properties or in
+     * {@code properties} map entries are immediately reflected in the returned image.</p>
+     *
+     * <p>Null are valid image property values. An entry associated with the {@code null}
+     * value in the {@code properties} map is not the same as an absence of entry.</p>
+     *
+     * @param  source       the source image to augment with user-specified property values.
+     * @param  properties   properties overwriting or completing {@code source} properties.
+     * @return an image augmented with the specified properties.
+     *
+     * @see RenderedImage#getPropertyNames()
+     * @see RenderedImage#getProperty(String)
+     *
+     * @since 1.4
+     */
+    public RenderedImage addUserProperties(final RenderedImage source, final Map<String,Object> properties) {
+        return unique(new UserProperties(source, properties));
+    }
+
+    /**
      * Selects a subset of bands in the given image. This method can also be used for changing band order
      * or repeating the same band from the source image. If the specified {@code bands} are the same than
      * the source image bands in the same order, then {@code source} is returned directly.
@@ -799,6 +898,10 @@ public class ImageProcessor implements Cloneable {
      * <p>This method returns an image sharing the same data buffer than the source image;
      * pixel values are not copied. Consequently, changes in the source image are reflected
      * immediately in the returned image.</p>
+     *
+     * <p>If the given image is an instance of {@link WritableRenderedImage},
+     * then the returned image will also be a {@link WritableRenderedImage}.
+     * In such case values written in the returned image will be written directly in the source image.</p>
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
@@ -813,7 +916,88 @@ public class ImageProcessor implements Cloneable {
      */
     public RenderedImage selectBands(final RenderedImage source, final int... bands) {
         ArgumentChecks.ensureNonNull("source", source);
-        return BandSelectImage.create(source, bands);
+        return BandSelectImage.create(source, true, bands.clone());
+    }
+
+    /**
+     * Aggregates in a single image all the bands of all specified images, in order.
+     * All sources images should map pixel coordinates to the same geospatial locations.
+     * A pixel at coordinates (<var>x</var>, <var>y</var>) in the aggregated image will
+     * contain values from the pixels at the same coordinates in all source images.
+     * The result image will be bounded by the intersection of all source images.
+     *
+     * <p>This convenience method delegates to {@link #aggregateBands(RenderedImage[], int[][])}.
+     * See that method for more information on restrictions, writable images, memory saving and
+     * properties used.</p>
+     *
+     * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
+     * @return the aggregated image, or {@code sources[0]} returned directly if only one image was supplied.
+     * @throws IllegalArgumentException if there is an incompatibility between some source images.
+     *
+     * @see #aggregateBands(RenderedImage[], int[][])
+     *
+     * @since 1.4
+     */
+    public RenderedImage aggregateBands(final RenderedImage... sources) {
+        return aggregateBands(sources, (int[][]) null);
+    }
+
+    /**
+     * Aggregates in a single image the specified bands of a sequence of source images, in order.
+     * This method performs the same work than {@link #aggregateBands(RenderedImage...)},
+     * but with the possibility to specify the bands to retain in each source image.
+     * The {@code bandsPerSource} argument specifies the bands to select in each source image.
+     * That array can be {@code null} for selecting all bands in all source images,
+     * or may contain {@code null} elements for selecting all bands of the corresponding image.
+     * An empty array element (i.e. zero band to select) discards the corresponding source image.
+     * In the latter case, the discarded element in the {@code sources} array may be {@code null}.
+     *
+     * <h4>Restrictions</h4>
+     * All images shall use the same {@linkplain SampleModel#getDataType() data type},
+     * and all source images shall intersect each other with a non-empty intersection area.
+     * However it is not required that all images have the same bounds or the same tiling scheme.
+     *
+     * <h4>Writable image</h4>
+     * If all source images are {@link WritableRenderedImage} instances,
+     * then the returned image will also be a {@link WritableRenderedImage}.
+     * In such case values written in the returned image will be copied back
+     * to the source images.
+     *
+     * <h4>Memory saving</h4>
+     * The returned image may opportunistically share the underlying data arrays of
+     * some source images. Bands are really copied only when sharing is not possible.
+     * The actual strategy may be a mix of both arrays sharing and bands copies.
+     *
+     * <h4>Repeated bands</h4>
+     * For any value of <var>i</var>, the array at {@code bandsPerSource[i]} shall not contain duplicated values.
+     * This restriction is for capturing common errors, in order to reduce the risk of accidental band repetition.
+     * However the same band can be repeated indirectly if the same image is repeated at different values of <var>i</var>.
+     * But even when a source band is referenced many times, all occurrences still share pixel data copied at most once.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getColorizer() Colorizer}.</li>
+     *   <li>{@linkplain #getExecutionMode() Execution mode} (parallel or sequential).</li>
+     * </ul>
+     *
+     * @param  sources  images whose bands shall be aggregated, in order. At least one image must be provided.
+     * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.
+     * @return the aggregated image, or one of the sources if it can be used directly.
+     * @throws IllegalArgumentException if there is an incompatibility between some source images
+     *         or if some band indices are duplicated or outside their range of validity.
+     *
+     * @since 1.4
+     */
+    public RenderedImage aggregateBands(final RenderedImage[] sources, final int[][] bandsPerSource) {
+        ArgumentChecks.ensureNonEmpty("sources", sources);
+        final Colorizer colorizer;
+        final boolean parallel;
+        synchronized (this) {
+            colorizer = this.colorizer;
+            parallel = executionMode != Mode.SEQUENTIAL;
+        }
+        return BandAggregateImage.create(sources, bandsPerSource, colorizer, true, true, parallel);
     }
 
     /**
@@ -821,6 +1005,12 @@ public class ImageProcessor implements Cloneable {
      * then all pixels inside the given shape are set to the {@linkplain #getFillValues() fill values}.
      * If {@code maskInside} is {@code false}, then the mask is reversed:
      * the pixels set to fill values are the ones outside the shape.
+     *
+     * <h4>Properties used</h4>
+     * This operation uses the following properties in addition to method parameters:
+     * <ul>
+     *   <li>{@linkplain #getFillValues() Fill values} values to assign to pixels inside/outside the shape.</li>
+     * </ul>
      *
      * @param  source      the image on which to apply a mask.
      * @param  mask        geometric area (in pixel coordinates) of the mask.
@@ -866,7 +1056,7 @@ public class ImageProcessor implements Cloneable {
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>(none)</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * <h4>Result relationship with source</h4>
@@ -877,29 +1067,51 @@ public class ImageProcessor implements Cloneable {
      * @param  sourceRanges  approximate ranges of values for each band in source image, or {@code null} if unknown.
      * @param  converters    the transfer functions to apply on each band of the source image.
      * @param  targetType    the type of data in the image resulting from conversions.
-     * @param  colorModel    color model of resulting image, or {@code null}.
      * @return the image which computes converted values from the given source.
      *
      * @see GridCoverageProcessor#convert(GridCoverage, MathTransform1D[], Function)
+     *
+     * @since 1.4
      */
     public RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
-                MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
+                                 MathTransform1D[] converters, final DataType targetType)
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("converters", converters);
         ArgumentChecks.ensureNonNull("targetType", targetType);
-        ArgumentChecks.ensureSizeBetween("converters", 1, ImageUtilities.getNumBands(source), converters.length);
+        ArgumentChecks.ensureCountBetween("converters", true, 1, ImageUtilities.getNumBands(source), converters.length);
         converters = converters.clone();
         for (int i=0; i<converters.length; i++) {
             ArgumentChecks.ensureNonNullElement("converters", i, converters[i]);
         }
         final ImageLayout layout;
+        final Colorizer colorizer;
         synchronized (this) {
             layout = this.layout;
+            colorizer = this.colorizer;
         }
         // No need to clone `sourceRanges` because it is not stored by `BandedSampleConverter`.
-        return unique(BandedSampleConverter.create(source, layout,
-                sourceRanges, converters, targetType.toDataBufferType(), colorModel));
+        return unique(BandedSampleConverter.create(source, layout, sourceRanges, converters,
+                                                   targetType.toDataBufferType(), colorizer));
+    }
+
+    /**
+     * @deprecated Replaced by {@link #convert(RenderedImage, NumberRange<?>[], MathTransform1D[], DataType)}
+     *             with a color model inferred from the {@link Colorizer}.
+     *
+     * @param  colorModel  color model of resulting image, or {@code null}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
+    public synchronized RenderedImage convert(final RenderedImage source, final NumberRange<?>[] sourceRanges,
+                MathTransform1D[] converters, final DataType targetType, final ColorModel colorModel)
+    {
+        final Colorizer old = colorizer;
+        try {
+            colorizer = Colorizer.forInstance(colorModel);
+            return convert(source, sourceRanges, converters, targetType);
+        } finally {
+            colorizer = old;
+        }
     }
 
     /**
@@ -942,7 +1154,7 @@ public class ImageProcessor implements Cloneable {
      * @param  source    the image to be resampled.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
      *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
-     * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
+     * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled image (may be {@code source}).
      *
      * @see GridCoverageProcessor#resample(GridCoverage, GridGeometry)
@@ -1026,7 +1238,7 @@ public class ImageProcessor implements Cloneable {
         if (source == null || source instanceof BufferedImage || source instanceof TiledImage) {
             return source;
         }
-        while (source instanceof PrefetchedImage) {
+        if (source instanceof PrefetchedImage) {
             source = ((PrefetchedImage) source).source;
         }
         final boolean parallel;
@@ -1035,7 +1247,7 @@ public class ImageProcessor implements Cloneable {
             parallel = parallel(source);
             errorListener = errorHandler;
         }
-        final PrefetchedImage image = new PrefetchedImage(source, areaOfInterest, errorListener, parallel);
+        final var image = new PrefetchedImage(source, areaOfInterest, errorListener, parallel);
         return image.isEmpty() ? source : image;
     }
 
@@ -1062,12 +1274,36 @@ public class ImageProcessor implements Cloneable {
      *
      * @param  source  the image to recolor for visualization purposes.
      * @param  colors  colors to use for each range of values in the source image.
-     * @return recolored image for visualization purposes only.
+     * @deprecated Replaced by {@link #visualize(RenderedImage)} with colors map inferred from the {@link Colorizer}.
      */
-    public RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
+    @Deprecated(since="1.4", forRemoval=true)
+    public synchronized RenderedImage visualize(final RenderedImage source, final Map<NumberRange<?>,Color[]> colors) {
+        /*
+         * TODO: after removal of this method, search for usages of
+         * `visualize(RenderedImage, List)` and remove unecessary `(List) null` cast.
+         */
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("colors", colors);
-        return visualize(new Visualization.Builder(source, colors.entrySet()));
+        final Colorizer old = colorizer;
+        try {
+            colorizer = Colorizer.forRanges(colors);
+            return visualize(new Visualization.Builder(null, source, null, null));
+        } finally {
+            colorizer = old;
+        }
+    }
+
+    /**
+     * @deprecated Replaced by {@link #visualize(RenderedImage)} with sample dimensions
+     *             read from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property.
+     *
+     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
+     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
+    public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
+        ArgumentChecks.ensureNonNull("source", source);
+        return visualize(new Visualization.Builder(null, source, null, ranges));
     }
 
     /**
@@ -1076,35 +1312,90 @@ public class ImageProcessor implements Cloneable {
      * are used as-is (they are not copied or converted). Otherwise this operation will convert sample
      * values to unsigned bytes in order to enable the use of {@link IndexColorModel}.
      *
-     * <p>This method is similar to {@link #visualize(RenderedImage, Map)}
-     * except that the {@link Map} argument is splitted in two parts: the ranges (map keys) are
-     * {@linkplain Category#getSampleRange() encapsulated in <code>Category</code>} objects, themselves
-     * {@linkplain SampleDimension#getCategories() encapsulated in <code>SampleDimension</code>} objects.
-     * The colors (map values) are determined by a function receiving {@link Category} inputs.
-     * This separation makes easier to apply colors based on criterion other than numerical values.
-     * For example, colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
-     * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
-     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
-     * the ranges of values in the destination image.</p>
-     *
      * <p>The resulting image is suitable for visualization purposes, but should not be used for computation purposes.
      * There is no guarantee about the number of bands in returned image or about which formula is used for converting
      * floating point values to integer values.</p>
      *
+     * <h4>How to specify colors</h4>
+     * The image colors can be controlled by the {@link Colorizer} set on this image processor.
+     * It is possible to {@linkplain Colorizer#forInstance(ColorModel) specify explicitly} the
+     * {@link ColorModel} to use, but this approach is unsafe because it depends on the pixel values
+     * <em>after</em> their conversion to the visualization image, which is implementation dependent.
+     * A safer approach is to define colors relative to pixel values <em>before</em> their conversions.
+     * It can be done in two ways, depending on whether the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY}
+     * image property is defined or not.
+     * Those two ways are described in next sections and can be combined in a chain of fallbacks.
+     * For example the following colorizer will choose colors based on sample dimensions if available,
+     * or fallback on predefined ranges of pixel values otherwise:
+     *
+     * {@snippet lang="java" :
+     *     Function<Category,Color[]>  flexible   = ...;
+     *     Map<NumberRange<?>,Color[]> predefined = ...;
+     *     processor.setColorizer(Colorizer.forCategories(flexible)     // Preferred way.
+     *                    .orElse(Colorizer.forRanges(predefined)));    // Fallback.
+     *     }
+     *
+     * <h5>Specifying colors for ranges of pixel values</h5>
+     * When no {@link SampleDimension} information is available, the recommended way to specify colors is like below.
+     * In this example, <var>min</var> and <var>max</var> are minimum and maximum values
+     * (inclusive in this example, but they could be exclusive as well) in the <em>source</em> image.
+     * Those extrema can be floating point values. This example specifies only one range of values,
+     * but arbitrary numbers of non-overlapping ranges are allowed.
+     *
+     * {@snippet lang="java" :
+     *     NumberRange<?> range = NumberRange.create(min, true, max, true);
+     *     Color[] colors = {Color.BLUE, Color.MAGENTA, Color.RED};
+     *     processor.setColorizer(Colorizer.forRanges(Map.of(range, colors)));
+     *     RenderedImage visualization = processor.visualize(source, null);
+     *     }
+     *
+     * The map given to the colorizer specifies the colors to use for different ranges of values in the source image.
+     * The ranges of values in the returned image may not be the same; this method is free to rescale them.
+     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
+     * the ranges of values in the destination image.
+     *
+     * <h5>Specifying colors for sample dimension categories</h5>
+     * If {@link SampleDimension} information is available, a more flexible way to specify colors
+     * is to associate colors to category names instead of predetermined ranges of pixel values.
+     * The ranges will be inferred indirectly, {@linkplain Category#getSampleRange() from the categories}
+     * themselves {@linkplain SampleDimension#getCategories() encapsulated in sample dimensions}.
+     * The colors are determined by a function receiving {@link Category} inputs.
+     *
+     * {@snippet lang="java" :
+     *     Map<String,Color[]> colors = Map.of(
+     *         "Temperature", new Color[] {Color.BLUE, Color.MAGENTA, Color.RED},
+     *         "Wind speed",  new Color[] {Color.GREEN, Color.CYAN, Color.BLUE});
+     *
+     *     processor.setColorizer(Colorizer.forCategories((category) ->
+     *         colors.get(category.getName().toString(Locale.ENGLISH))));
+     *
+     *     RenderedImage visualization = processor.visualize(source, ranges);
+     *     }
+     *
+     * This separation makes easier to apply colors based on criterion other than numerical values.
+     * For example, colors could be determined from {@linkplain Category#getName() category name} such as "Temperature",
+     * or {@linkplain org.apache.sis.measure.MeasurementRange#unit() units of measurement}.
+     * The {@link Color} arrays may have any length; colors will be interpolated as needed for fitting
+     * the ranges of values in the destination image.
+     *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:
      * <ul>
-     *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  source  the image to recolor for visualization purposes.
-     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
-     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
      * @return recolored image for visualization purposes only.
+     *
+     * @see Colorizer#forRanges(Map)
+     * @see Colorizer#forCategories(Function)
+     * @see PlanarImage#SAMPLE_DIMENSIONS_KEY
+     *
+     * @since 1.4
      */
-    public RenderedImage visualize(final RenderedImage source, final List<SampleDimension> ranges) {
+    public RenderedImage visualize(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
-        return visualize(new Visualization.Builder(null, source, null, ranges));
+        return visualize(new Visualization.Builder(null, source, null));
     }
 
     /**
@@ -1114,7 +1405,7 @@ public class ImageProcessor implements Cloneable {
      *
      * <ol>
      *   <li><code>{@linkplain #resample(RenderedImage, Rectangle, MathTransform) resample}(source, bounds, toSource)</code></li>
-     *   <li><code>{@linkplain #visualize(RenderedImage, List) visualize}(resampled, ranges)</code></li>
+     *   <li><code>{@linkplain #visualize(RenderedImage) visualize}(resampled)</code></li>
      * </ol>
      *
      * Combining above steps may be advantageous when the {@code resample(…)} result is not needed for anything
@@ -1134,17 +1425,35 @@ public class ImageProcessor implements Cloneable {
      *       if {@code bounds} size is not divisible by a tile size.</li>
      *   <li>{@linkplain #getPositionalAccuracyHints() Positional accuracy hints}
      *       for enabling faster resampling at the cost of lower precision.</li>
-     *   <li>{@linkplain #getCategoryColors() Category colors}.</li>
+     *   <li>{@linkplain #getColorizer() Colorizer} for customizing the rendered image color model.</li>
      * </ul>
      *
      * @param  source    the image to be resampled and recolored.
      * @param  bounds    domain of pixel coordinates of resampled image to create.
      *                   Updated by this method if {@link Resizing#EXPAND} policy is applied.
-     * @param  toSource  conversion of pixel coordinates from resampled image to {@code source} image.
-     * @param  ranges    description of {@code source} bands, or {@code null} if none. This is typically
-     *                   obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     * @param  toSource  conversion of pixel center coordinates from resampled image to {@code source} image.
      * @return resampled and recolored image for visualization purposes only.
+     *
+     * @see #resample(RenderedImage, Rectangle, MathTransform)
+     *
+     * @since 1.4
      */
+    public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource) {
+        ArgumentChecks.ensureNonNull("source",   source);
+        ArgumentChecks.ensureNonNull("bounds",   bounds);
+        ArgumentChecks.ensureNonNull("toSource", toSource);
+        ensureNonEmpty(bounds);
+        return visualize(new Visualization.Builder(bounds, source, toSource));
+    }
+
+    /**
+     * @deprecated Replaced by {@link #visualize(RenderedImage, Rectangle, MathTransform)} with
+     *             sample dimensions read from the {@value PlanarImage#SAMPLE_DIMENSIONS_KEY} property.
+     *
+     * @param  ranges  description of {@code source} bands, or {@code null} if none. This is typically
+     *                 obtained by {@link org.apache.sis.coverage.grid.GridCoverage#getSampleDimensions()}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
     public RenderedImage visualize(final RenderedImage source, final Rectangle bounds, final MathTransform toSource,
                                    final List<SampleDimension> ranges)
     {
@@ -1162,7 +1471,7 @@ public class ImageProcessor implements Cloneable {
         synchronized (this) {
             builder.layout                  = layout;
             builder.interpolation           = interpolation;
-            builder.categoryColors          = colors;
+            builder.colorizer               = colorizer;
             builder.fillValues              = fillValues;
             builder.positionalAccuracyHints = positionalAccuracyHints;
         }
@@ -1199,6 +1508,7 @@ public class ImageProcessor implements Cloneable {
      * @throws ImagingOpException if an error occurred during calculation.
      */
     public List<NavigableMap<Double,Shape>> isolines(final RenderedImage data, final double[][] levels, final MathTransform gridToCRS) {
+        ArgumentChecks.ensureNonNull("data", data);
         final boolean parallel;
         synchronized (this) {
             parallel = parallel(data);
@@ -1227,6 +1537,8 @@ public class ImageProcessor implements Cloneable {
             final ErrorHandler  errorHandler;
             final Interpolation interpolation;
             final Number[]      fillValues;
+            final ImageLayout   layout;
+            final Colorizer     colorizer;
             final Function<Category,Color[]> colors;
             final Quantity<?>[] positionalAccuracyHints;
             synchronized (this) {
@@ -1234,13 +1546,17 @@ public class ImageProcessor implements Cloneable {
                 errorHandler            = this.errorHandler;
                 interpolation           = this.interpolation;
                 fillValues              = this.fillValues;
+                layout                  = this.layout;
+                colorizer               = this.colorizer;
                 colors                  = this.colors;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
             synchronized (other) {
-                return errorHandler.equals(other.errorHandler)    &&
+                return layout.equals(other.layout)                &&
+                      errorHandler.equals(other.errorHandler)     &&
                       executionMode.equals(other.executionMode)   &&
                       interpolation.equals(other.interpolation)   &&
+                      Objects.equals(colorizer, other.colorizer)  &&
                       Objects.equals(colors, other.colors)        &&
                       Arrays.equals(fillValues, other.fillValues) &&
                       Arrays.equals(positionalAccuracyHints, other.positionalAccuracyHints);
@@ -1256,8 +1572,8 @@ public class ImageProcessor implements Cloneable {
      */
     @Override
     public synchronized int hashCode() {
-        return Objects.hash(getClass(), errorHandler, executionMode, interpolation)
-                + 37 * Arrays.hashCode(fillValues) + 31 * Objects.hashCode(colors)
+        return Objects.hash(getClass(), errorHandler, executionMode, colorizer, interpolation, layout)
+                + 37 * Arrays.hashCode(fillValues)
                 + 39 * Arrays.hashCode(positionalAccuracyHints);
     }
 

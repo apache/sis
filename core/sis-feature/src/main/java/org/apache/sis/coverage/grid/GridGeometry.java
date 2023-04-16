@@ -1525,7 +1525,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <p>This method performs a <cite>dimensionality reduction</cite>.
      * This method cannot be used for changing dimension order.</p>
      *
-     * @param  dimensions  the grid (not CRS) dimensions to select, in strictly increasing order.
+     * @param  indices  the grid (not CRS) dimensions to select, in strictly increasing order.
      * @return the sub-grid geometry, or {@code this} if the given array contains all dimensions of this grid geometry.
      * @throws IndexOutOfBoundsException if an index is out of bounds.
      *
@@ -1535,10 +1535,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * @since 1.3
      */
-    public GridGeometry selectDimensions(int... dimensions) {
-        dimensions = GridExtent.verifyDimensions(dimensions, getDimension());
-        if (dimensions != null) try {
-            return new SliceGeometry(this, null, dimensions, null).reduce(null, -1);
+    public GridGeometry selectDimensions(int... indices) {
+        indices = GridExtent.verifyDimensions(indices, getDimension());
+        if (indices != null) try {
+            return new SliceGeometry(this, null, indices, null).reduce(null, -1);
         } catch (FactoryException e) {
             throw new BackingStoreException(e);
         }

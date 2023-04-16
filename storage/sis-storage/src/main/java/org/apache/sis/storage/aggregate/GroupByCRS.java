@@ -56,7 +56,9 @@ final class GroupByCRS<E> extends Group<E> {
     }
 
     /**
-     * Returns a name for this group.
+     * Creates a name for this group for use in metadata (not a persistent identifier).
+     * This is used as the resource name if an aggregated resource needs to be created.
+     * The name distinguishes the group by their CRS name.
      */
     @Override
     final String createName(final Locale locale) {

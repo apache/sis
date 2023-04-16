@@ -14,11 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.storage;
+package org.apache.sis.internal.coverage;
 
 import java.util.List;
 import java.util.Arrays;
-import java.util.Optional;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.RasterFormatException;
@@ -27,7 +26,8 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.internal.coverage.j2d.ColorModelFactory;
 import org.apache.sis.internal.coverage.j2d.SampleModelFactory;
-import org.apache.sis.storage.GridCoverageResource;
+import org.apache.sis.internal.feature.Resources;
+import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -38,7 +38,7 @@ import org.apache.sis.util.Localized;
  * The user-provided {@code ranges} argument together with a set of convenience tools.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  */
 public final class RangeArgument {
@@ -80,14 +80,15 @@ public final class RangeArgument {
     }
 
     /**
-     * Validate the {@code ranges} argument given to {@link GridCoverageResource#read(GridGeometry, int...)}.
-     * This method verifies that all indices are between 0 and {@code numSampleDimensions} and that there is
-     * no duplicated index.
+     * Validate the {@code ranges} argument given to
+     * {@link org.apache.sis.storage.GridCoverageResource#read(GridGeometry, int...)}.
+     * This method verifies that all indices are between 0 and {@code numSampleDimensions}
+     * and that there is no duplicated index.
      *
      * @param  numSampleDimensions  number of sample dimensions in the resource.
-     *         Equal to <code>{@linkplain GridCoverageResource#getSampleDimensions()}.size()</code>.
+     *         Equal to <code>{@linkplain org.apache.sis.storage.GridCoverageResource#getSampleDimensions()}.size()</code>.
      * @param  ranges  the {@code ranges} argument given by the user. May be null or empty.
-     * @param  listeners  source of locale to use if an exception must be thrown.
+     * @param  listeners  source of locale to use if an exception must be thrown, or {@code null} if none.
      * @return the {@code ranges} argument encapsulated with a set of convenience tools.
      * @throws IllegalArgumentException if a range index is invalid.
      */
@@ -97,7 +98,7 @@ public final class RangeArgument {
         if (ranges == null || ranges.length == 0) {
             packed = new long[numSampleDimensions];
             for (int i=1; i<numSampleDimensions; i++) {
-                packed[i] = (((long) i) << Integer.SIZE) | i;
+                packed[i] = Numerics.tuple(i, i);
             }
         } else {
             /*
@@ -107,10 +108,10 @@ public final class RangeArgument {
             for (int i=0; i<ranges.length; i++) {
                 final int r = ranges[i];
                 if (r < 0 || r >= numSampleDimensions) {
-                    throw new IllegalArgumentException(Resources.forLocale(listeners.getLocale()).getString(
+                    throw new IllegalArgumentException(resources(listeners).getString(
                             Resources.Keys.InvalidSampleDimensionIndex_2, numSampleDimensions - 1, r));
                 }
-                packed[i] = (((long) r) << Integer.SIZE) | i;
+                packed[i] = Numerics.tuple(r, i);
             }
             /*
              * Sort by increasing `range` value, but keep together with index in `ranges` where each
@@ -122,13 +123,23 @@ public final class RangeArgument {
                 // Never negative because of check in previous loop.
                 final int r = (int) (packed[i] >>> Integer.SIZE);
                 if (r == previous) {
-                    throw new IllegalArgumentException(Resources.forLocale(listeners.getLocale()).getString(
+                    throw new IllegalArgumentException(resources(listeners).getString(
                             Resources.Keys.DuplicatedSampleDimensionIndex_1, r));
                 }
                 previous = r;
             }
         }
         return new RangeArgument(packed, packed.length == numSampleDimensions);
+    }
+
+    /**
+     * Returns the resources for the locale specified by the given listeners.
+     *
+     * @param  listeners  source of locale to use for an exception to be thrown, or {@code null} if none.
+     * @return the resources for the given locale.
+     */
+    private static Resources resources(final Localized listeners) {
+        return Resources.forLocale((listeners != null) ? listeners.getLocale() : null);
     }
 
     /**
@@ -142,7 +153,7 @@ public final class RangeArgument {
             return false;
         }
         for (int i=0; i<packed.length; i++) {
-            if (packed[i] != ((((long) i) << Integer.SIZE) | i)) {
+            if (packed[i] != Numerics.tuple(i, i)) {
                 return false;
             }
         }
@@ -356,13 +367,14 @@ public final class RangeArgument {
 
     /**
      * Returns a color model for the bands specified by the user.
+     * This method may return {@code null} if the color model cannot be created.
      *
      * @param  colors  the original color model with all bands. Can be {@code null}.
-     * @return the color model for a subset of bands, or empty if the given color model was null.
+     * @return the color model for a subset of bands, or null if the given color model was null.
      */
-    public Optional<ColorModel> select(final ColorModel colors) {
+    public ColorModel select(final ColorModel colors) {
         if (colors == null || isIdentity()) {
-            return Optional.ofNullable(colors);
+            return colors;
         }
         return ColorModelFactory.createSubset(colors, getSelectedBands());
     }
