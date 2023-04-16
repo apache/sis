@@ -66,9 +66,15 @@ public final class BandAggregateGridResourceTest extends TestCase {
     private final GridCoverageProcessor processor;
 
     /**
+     * Whether to hide {@link MemoryGridResource} in order to disable optimizations.
+     */
+    private boolean opaque;
+
+    /**
      * Creates a new test case.
      */
     public BandAggregateGridResourceTest() {
+        opaque = true;
         processor = new GridCoverageProcessor();
         domain = new GridGeometry(new GridExtent(WIDTH, HEIGHT), PixelInCell.CELL_CENTER,
                                   MathTransforms.identity(2), HardCodedCRS.WGS84);
@@ -82,8 +88,8 @@ public final class BandAggregateGridResourceTest extends TestCase {
      * @throws DataStoreException if an error occurred while fetching the grid geometry or sample dimensions from a resource.
      * @throws IllegalGridGeometryException if a grid geometry is not compatible with the others.
      */
-    private BandAggregateGridResource create(final GridCoverageResource... sources) throws DataStoreException {
-        return new BandAggregateGridResource(null, sources, null, processor);
+    private GridCoverageResource create(final GridCoverageResource... sources) throws DataStoreException {
+        return BandAggregateGridResource.create(null, sources, null, processor);
     }
 
     /**
@@ -125,12 +131,13 @@ public final class BandAggregateGridResourceTest extends TestCase {
          * In addition, band order in one of the 3 coverages is modified.
          */
         final LocalName testName = Names.createLocalName(null, null, "test-name");
-        aggregation = new BandAggregateGridResource(null,
+        aggregation = BandAggregateGridResource.create(null,
                 new GridCoverageResource[] {firstAndSecondBands, thirdAndFourthBands, fifthAndSixthBands},
                 new int[][] {null, new int[] {1, 0}, new int[] {1}}, processor);
-
-        aggregation.setIdentifier(testName);
-        assertEquals(testName, aggregation.getIdentifier().orElse(null));
+        if (opaque) {
+            ((BandAggregateGridResource) aggregation).setIdentifier(testName);
+            assertEquals(testName, aggregation.getIdentifier().orElse(null));
+        }
         assertAllPixelsEqual(aggregation.read(null), 101, 102, 104, 103, 106);
         assertAllPixelsEqual(aggregation.read(null, 2, 4), 104, 106);
     }
@@ -150,10 +157,28 @@ public final class BandAggregateGridResourceTest extends TestCase {
          * If the result is not an instance of `MemoryGridResource`,
          * this is a bug in `BandAggregateGridResource.create(…)`.
          */
-        final var aggregation = (MemoryGridResource) aggregator.build(null);
+        final LocalName testName = Names.createLocalName(null, null, "test-name");
+        final var aggregation = (GridCoverageResource) aggregator.build(testName);
+        if (opaque) {
+            assertEquals(testName, aggregation.getIdentifier().orElse(null));
+        }
         assertAllPixelsEqual(aggregation.read(null), 17, 23);
         assertAllPixelsEqual(aggregation.read(null, 0), 17);
         assertAllPixelsEqual(aggregation.read(null, 1), 23);
+    }
+
+    /**
+     * Tests the shortcut for {@link MemoryGridResource} instances.
+     * {@link BandAggregateGridResource} should apply aggregations directly on the underlying grid coverages.
+     *
+     * @throws DataStoreException if an error occurred while reading a resource.
+     */
+    @Test
+    public void testMemoryGridResourceShortcut() throws DataStoreException {
+        opaque = false;
+        aggregateBandsFromSingleBandSources();
+        aggregateBandsFromMultiBandSources();
+        usingCoverageAggregator();
     }
 
     /**
@@ -176,7 +201,8 @@ public final class BandAggregateGridResourceTest extends TestCase {
             System.arraycopy(bandValues, 0, data, i, numBands);
         }
         final var values = new DataBufferInt(data, data.length);
-        return new MemoryGridResource(null, new BufferedGridCoverage(domain, samples, values));
+        final var r = new MemoryGridResource(null, new BufferedGridCoverage(domain, samples, values));
+        return opaque ? new OpaqueGridResource(r) : r;
     }
 
     /**

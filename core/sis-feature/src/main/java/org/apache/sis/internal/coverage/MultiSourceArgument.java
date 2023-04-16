@@ -407,11 +407,36 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
     }
 
     /**
-     * If the same sources are repeated many times, merges them in a single reference.
+     * For each source which is repeated in consecutive positions, merges the repetition in a single reference.
+     * This method does the same work than {@link #mergeDuplicatedSources()}, except that it is restricted to
+     * repetitions in consecutive positions. Because of this restriction, the band order is never modified by
+     * this method call.
+     */
+    public void mergeConsecutiveSources() {
+        checkValidationState(true);
+        for (int i=1; i < validatedSourceCount;) {
+            if (sources[i] == sources[i-1]) {
+                bandsPerSource[i-1] = ArraysExt.concatenate(bandsPerSource[i-1], bandsPerSource[i]);
+                final int remaining = --validatedSourceCount - i;
+                System.arraycopy(sources,           i+1, sources,           i, remaining);
+                System.arraycopy(bandsPerSource,    i+1, bandsPerSource,    i, remaining);
+                System.arraycopy(numBandsPerSource, i+1, numBandsPerSource, i, remaining);
+            } else {
+                i++;
+            }
+        }
+    }
+
+    /**
+     * If the same sources are repeated many times, merges each repetition in a single reference.
      * The {@link #sources()} and {@link #bandsPerSource(boolean)} values are modified in-place.
      * The bands associated to each source reference are merged together, but not necessarily in the same order.
      * Caller must perform a "band select" operation using the array returned by this method
      * in order to reconstitute the band order specified by the user.
+     *
+     * <p>This method does the same work than {@link #mergeConsecutiveSources()} except that this method can merge
+     * sources that are not necessarily at consecutive positions. The sources can be repeated at random positions.
+     * But the cost of this flexibility is the possible modification of band order.</p>
      *
      * <h4>Use cases</h4>
      * {@code BandAggregateImage.subset(…)} and
@@ -468,9 +493,8 @@ next:   for (int i=0; i<sources.length; i++) {          // `sources.length` may 
                  */
                 for (int j=0; j < tuples.length; j++) {
                     final long t = tuples[j];
-                    final int sourceBand = (int) (t >>> Integer.SIZE);
-                    reordered[(int) t] = sourceBand + targetBand;
-                    selected[j] = sourceBand;
+                    reordered[(int) t] = targetBand + j;
+                    selected[j] = (int) (t >>> Integer.SIZE);
                 }
                 targetBand += tuples.length;
                 numBandsPerSource[validatedSourceCount] = numBandsPerSource[i];

@@ -790,6 +790,7 @@ public class GridCoverageProcessor implements Cloneable {
         final var aggregate = new MultiSourceArgument<>(sources, bandsPerSource);
         aggregate.unwrap(BandAggregateGridCoverage::unwrap);
         aggregate.validate(GridCoverage::getSampleDimensions);
+        aggregate.mergeConsecutiveSources();
         if (aggregate.isIdentity()) {
             return aggregate.sources()[0];
         }
