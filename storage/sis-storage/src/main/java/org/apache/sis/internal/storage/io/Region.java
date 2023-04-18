@@ -137,15 +137,15 @@ public final class Region {
      * The strides are computed automatically at construction time, but this method can be invoked in some rare cases
      * where those values need to be modified (example: for adapting to the layout of netCDF "unlimited" variable).
      *
-     * <div class="note"><b>Example:</b>
-     * in a cube of dimension 10×10×10, the number of values between indices (0,0,1) and (0,0,2) is 100.
+     * <p>This method is the only one in this {@link Region} class to use a count of bytes
+     * instead of a count of sample values.</p>
+     *
+     * <h4>Example</h4>
+     * In a cube of dimension 10×10×10, the number of values between indices (0,0,1) and (0,0,2) is 100.
      * If the values type is {@code float}, invoking {@code setAdditionalByteOffset(1, 12)} will increase
      * this value to 103 (computed as 100 + 12/{@value Float#BYTES}).
      * {@link HyperRectangleReader} will still read only the requested 100 values,
-     * but will skip 3 more values when moving from plane 1 to plane 2.</div>
-     *
-     * This method is the only one in this {@link Region} class to use a count of bytes instead of a count
-     * of sample values.
+     * but will skip 3 more values when moving from plane 1 to plane 2.
      *
      * @param  dimension  dimension for which to increase the stride.
      * @param  skip       additional number of <strong>bytes</strong> to skip after we finished reading

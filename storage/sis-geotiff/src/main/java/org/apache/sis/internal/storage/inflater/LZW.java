@@ -85,10 +85,10 @@ final class LZW extends CompressionChannel {
      * The position is chosen for leaving {@value #MAX_CODE_SIZE} bits for storing the length before
      * the offset value.
      *
-     * <div class="note"><b>Rational:</b>
-     * even in the worst case scenario where the same byte is always appended to the sequence,
+     * <h4>Rational</h4>
+     * Even in the worst case scenario where the same byte is always appended to the sequence,
      * the maximal length cannot exceeded the dictionary size because a {@link #CLEAR_CODE}
-     * will be emitted when the dictionary is full.</div>
+     * will be emitted when the dictionary is full.
      */
     private static final int LOWEST_OFFSET_BIT = MAX_CODE_SIZE;
 
@@ -104,10 +104,10 @@ final class LZW extends CompressionChannel {
      * It makes possible to use the extra size for growing a string up to that amount of bytes
      * without copying it.
      *
-     * <div class="note"><b>Note:</b>
-     * doing allocations only by blocks of 2² = 4 bytes may seem a waste of memory, but actually
+     * <h4>Performance note</h4>
+     * Doing allocations only by blocks of 2² = 4 bytes may seem a waste of memory, but actually
      * it reduces memory usage a lot (almost a factor 4) because of the copies avoided.
-     * We tried with alignment values 1, 2, 3 and found that 2 seems optimal.</div>
+     * We tried with alignment values 1, 2, 3 and found that 2 seems optimal.
      */
     private static final int STRING_ALIGNMENT = 2;
 

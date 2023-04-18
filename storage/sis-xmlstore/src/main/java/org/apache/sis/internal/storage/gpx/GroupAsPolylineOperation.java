@@ -41,7 +41,7 @@ import org.opengis.feature.AttributeType;
  * This base class expects a sequence of {@code Point} or {@code Polyline} instances as input.
  * The single (Multi){@code Polyline} instance is re-computed every time this property is requested.
  *
- * <div class="note"><b>Examples:</b>
+ * <h2>Examples</h2>
  * <p><i>Polylines created from points:</i>
  * a boat that record it's position every hour.
  * The list of all positions is stored in an attribute with [0 … ∞] multiplicity.
@@ -53,7 +53,6 @@ import org.opengis.feature.AttributeType;
  * The list of all tracks is stored in an attribute with [0 … ∞] multiplicity.
  * This class will extract each track and create a polyline as a new attribute.
  * Any change applied to the tracks will be visible on the polyline.</p>
- * </div>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

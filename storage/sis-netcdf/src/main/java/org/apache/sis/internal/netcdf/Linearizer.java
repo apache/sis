@@ -98,10 +98,10 @@ public final class Linearizer {
          *   <li>Otherwise the point is in the middle of the image.</li>
          * </ul>
          *
-         * <div class="note"><b>Rational:</b>
-         * the intent is to increase the chances to get the Polar Stereographic projection for images close to pole.
+         * <h4>Rational</h4>
+         * The intent is to increase the chances to get the Polar Stereographic projection for images close to pole.
          * This is necessary because longitude values may become far from central meridian at latitudes such as 88°,
-         * causing the Transverse Mercator projection to produce NaN numbers.</div>
+         * causing the Transverse Mercator projection to produce NaN numbers.
          */
         UNIVERSAL;
 

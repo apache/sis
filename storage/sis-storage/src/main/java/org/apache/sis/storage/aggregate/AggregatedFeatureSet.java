@@ -122,15 +122,16 @@ abstract class AggregatedFeatureSet extends AbstractFeatureSet {
      * This method tries to find a CRS common to all feature sets.
      * If no common CRS can be found, then the envelope is absent.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * this method is final because overriding it would invalidate the unwrapping of other {@code AggregatedFeatureSet} instances.
-     * If we wish to allow overrides in a future version, we would need to revisit {@link #getEnvelopes(List)} first.</div>
-     *
      * @return union of envelopes from all dependencies.
      * @throws DataStoreException if an error occurred while computing the envelope.
      */
     @Override
     public final Optional<Envelope> getEnvelope() throws DataStoreException {
+        /*
+         * This method is final because overriding it would invalidate the unwrapping
+         * of other `AggregatedFeatureSet` instances. If we wish to allow overrides
+         * in a future version, we would need to revisit `getEnvelopes(List)` first.
+         */
         synchronized (getSynchronizationLock()) {
             if (!isEnvelopeComputed) {
                 final List<Envelope> envelopes = new ArrayList<>();

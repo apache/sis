@@ -416,10 +416,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      *       smallest values (closest to negative infinity).</li>
      * </ul>
      *
-     * <div class="note"><b>API note:</b>
-     * there is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
+     * <h4>API note</h4>
+     * There is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
-     * to always think about wether their <cite>grid to CRS</cite> transform is mapping pixel corner or center.</div>
+     * to always think about wether their <cite>grid to CRS</cite> transform is mapping pixel corner or center.
      *
      * <div class="warning"><b>Upcoming API generalization:</b>
      * the {@code extent} type of this method may be changed to {@code GridEnvelope} interface in a future Apache SIS version.
@@ -849,10 +849,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      *       with inclusive lower coordinates and <strong>exclusive</strong> upper coordinates.</li>
      * </ul>
      *
-     * <div class="note"><b>API note:</b>
-     * there is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
+     * <h4>API note</h4>
+     * There is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
-     * to always think about wether the desired <cite>grid to CRS</cite> transform shall map pixel corner or center.</div>
+     * to always think about wether the desired <cite>grid to CRS</cite> transform shall map pixel corner or center.
      *
      * @param  anchor  the cell part to map (center or corner).
      * @return the conversion from grid coordinates to "real world" coordinates (never {@code null}).
@@ -1013,10 +1013,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      * This is computed from the {@linkplain #getEnvelope() envelope} if the coordinate reference system
      * contains an horizontal component such as a geographic or projected CRS.
      *
-     * <div class="note"><b>API note:</b>
-     * this method does not throw {@link IncompleteGridGeometryException} because the geographic extent
+     * <h4>API note</h4>
+     * This method does not throw {@link IncompleteGridGeometryException} because the geographic extent
      * may be absent even with a complete grid geometry. Grid geometries are not required to have a
-     * spatial component on Earth surface; a raster could be a vertical profile for example.</div>
+     * spatial component on Earth surface; a raster could be a vertical profile for example.
      *
      * @return the geographic bounding box in "real world" coordinates.
      */

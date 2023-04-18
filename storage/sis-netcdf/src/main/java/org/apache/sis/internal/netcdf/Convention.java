@@ -293,8 +293,10 @@ public class Convention {
      * not the same than the dimensions of the localization grid. In such case, the names returned by this method
      * are used for mapping the raster dimensions to the localization grid dimensions.
      *
-     * <div class="note"><b>Example:</b>
-     * consider the following netCDF file (simplified):
+     * <p>This feature is an extension to CF-conventions.</p>
+     *
+     * <h4>Example</h4>
+     * Consider the following netCDF file (simplified):
      *
      * <pre class="text">
      *   dimensions:
@@ -324,9 +326,7 @@ public class Convention {
      * <cite>"Name of dimension 1"</cite> respectively, then we can associate the same dimension <strong>names</strong>
      * to all those variables: namely {@code "Line grids"} and {@code "Pixel grids"}. Using those names, we deduce that
      * the {@code (data_y, data_x)} dimensions in the {@code SST} variable are mapped to the {@code (grid_y, grid_x)}
-     * dimensions in the localization grid.</div>
-     *
-     * This feature is an extension to CF-conventions.
+     * dimensions in the localization grid.
      *
      * @param  dataOrAxis  the variable for which to get the attribute-specified name of the dimension.
      * @param  index       zero-based index of the dimension for which to get the name.
@@ -381,12 +381,12 @@ public class Convention {
      * For each string in the set, {@link Decoder#findNode(String)} is invoked and the return value
      * (if non-null) is given to {@link #projection(Node)} until a non-null map is obtained.
      *
-     * <div class="note"><b>API note:</b>
-     * this method name is singular because even if a set is returned, in the end only one value is used.</div>
-     *
-     * The default implementation returns the value of {@link CF#GRID_MAPPING} attribute, or an empty set
+     * <p>The default implementation returns the value of {@link CF#GRID_MAPPING} attribute, or an empty set
      * if the given variable does not contain that attribute. Subclasses may override for example if grid
-     * mapping information are hard-coded in a particular node for a specific product.
+     * mapping information are hard-coded in a particular node for a specific product.</p>
+     *
+     * <h4>API note</h4>
+     * This method name is singular because even if a set is returned, in the end only one value is used.
      *
      * @param  data  the variable for which to get the grid mapping node.
      * @return name of nodes that may contain the grid mapping, or an empty set if none.
@@ -545,13 +545,13 @@ public class Convention {
      * pseudo-projection, the "projected" CRS is actually a {@link GeographicCRS} instance.
      * The returned transform, if non-null, shall map cell corners.
      *
-     * <div class="note"><b>API notes:</b>
+     * <p>The default implementation returns {@code null}.</p>
+     *
+     * <h4>API notes</h4>
      * <ul>
      *   <li>We do not provide a {@link ProjectedCRS} argument because of the {@code "latitude_longitude"} special case.</li>
      *   <li>Base CRS axis order is (latitude, longitude) for increasing the chances to have a CRS identified by EPSG.</li>
-     * </ul></div>
-     *
-     * The default implementation returns {@code null}.
+     * </ul>
      *
      * @param  node       the same node than the one given to {@link #projection(Node)}.
      * @param  baseToCRS  conversion from (latitude, longitude) in degrees to the projected CRS.
@@ -567,8 +567,8 @@ public class Convention {
      * netCDF file. The default implementation returns <cite>"Unknown datum based upon the GRS 1980 ellipsoid"</cite>.
      * Note that the GRS 1980 ellipsoid is close to WGS 84 ellipsoid.
      *
-     * <div class="note"><b>Maintenance note:</b>
-     * if this default is changed, search also for "GRS 1980" strings in {@link CRSBuilder} class.</div>
+     * <h4>Maintenance note</h4>
+     * If this default is changed, search also for "GRS 1980" strings in {@link CRSBuilder} class.
      *
      * @param  spherical  whether to restrict the ellipsoid to a sphere.
      * @return information about geodetic objects to use if no explicit information is found in the file.

@@ -23,16 +23,14 @@ import java.io.IOException;
  * Stream reader or writer capable to mark its current position and reset to that position later.
  * The stream shall support nested marks.
  *
- * <div class="note"><b>Use case:</b>
- * this interface can be used when we need to move to a previously marked position, but we do not know how many nested
+ * <h2>Use case</h2>
+ * This interface can be used when we need to move to a previously marked position, but we do not know how many nested
  * {@code mark()} method calls may have been performed (typically because the stream has been used by arbitrary code).
  * We can compare {@link #getStreamPosition()} value after {@link #reset()} method calls with the expected position.
- * </div>
  *
- * <div class="note"><b>Design note:</b>
- * an alternative could be to support the {@code seek(long)} method. But using marks instead allows the stream
+ * <h2>Design note</h2>
+ * An alternative could be to support the {@code seek(long)} method. But using marks instead allows the stream
  * to invalidate the marks if needed (for example when {@link ChannelData#setStreamPosition(long)} is invoked).
- * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

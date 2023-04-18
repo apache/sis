@@ -124,11 +124,12 @@ final class ExpandableList extends TransformationList<Feature,Feature>
      * Removes the expanded rows. This method does not fire change event;
      * it is caller's responsibility to perform those tasks.
      *
-     * <div class="note"><b>Note:</b> we return {@code null} instead of an empty list if
+     * <h4>Design note</h4>
+     * We return {@code null} instead of an empty list if
      * there are no removed elements because we want to force callers to perform a null check.
      * The reason is that if there was no expansion rows, then {@link #indexOfExpanded} has an
      * invalid value and using that value in {@link #nextRemove(int, List)} may be dangerous.
-     * A {@link NullPointerException} would intercept that error sooner.</div>
+     * A {@link NullPointerException} would intercept that error sooner.
      *
      * @return the removed rows, or {@code null} if none.
      */

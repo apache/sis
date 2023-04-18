@@ -47,8 +47,13 @@ public interface ResourceOnFileSystem extends Resource {
      * There is no guarantee that all files are in the same directory or that each file is used exclusively
      * by this data source (e.g. no guarantee that modifying or deleting a file will not impact other resources).
      *
-     * <div class="note"><b>Example:</b>
-     * a resources created for a GRIB file may use the following component files:
+     * <p>This method should return paths to files only.
+     * It should not return paths to directories.
+     * The caller should verify that all paths are regular files;
+     * non-existent paths should be omitted.</p>
+     *
+     * <h4>Example</h4>
+     * A resources created for a GRIB file may use the following component files:
      * <ul>
      *   <li>The main GRIB file.</li>
      *   <li>If managed by the UCAR library, two auxiliary files next to the main GRIB file:
@@ -57,11 +62,6 @@ public interface ResourceOnFileSystem extends Resource {
      *   <li>Eventually a GRIB table file. This table may be located in a path unrelated to
      *       to the path of the main file and may be shared by many resources.</li>
      * </ul>
-     * </div>
-     *
-     * This method should return paths to files only. It should not return paths to directories.
-     * The caller should verify that all paths are regular files;
-     * non-existent paths should be omitted.
      *
      * @return files used by this resource. Should never be {@code null}.
      * @throws DataStoreException if an error on the file system prevent the creation of the list.

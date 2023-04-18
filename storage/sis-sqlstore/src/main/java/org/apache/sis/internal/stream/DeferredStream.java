@@ -29,14 +29,14 @@ import org.apache.sis.util.collection.BackingStoreException;
  * The source stream is implemented by a {@link Spliterator} created by {@link #createSourceIterator()}.
  * The call to that method is deferred until a terminal operation is invoked.
  *
- * <div class="note"><b>Example:</b>
- * if a stream can count its elements efficiently (e.g. using a {@code COUNT} query on SQL databases),
+ * <h2>Example</h2>
+ * If a stream can count its elements efficiently (e.g. using a {@code COUNT} query on SQL databases),
  * a {@code DeferredStream} subclass can override the {@link #count()} method for running the count query
  * instead of counting elements of the stream manually.
  *
  * <p>Deferred streams are also useful with intermediate operations. For example, a subclass can override
  * the {@link #skip(long)} and {@link #limit(long)} methods for modifying the SQL query with addition of
- * {@code OFFSET} and {@code FETCH NEXT} clauses before the worker stream is created.</p></div>
+ * {@code OFFSET} and {@code FETCH NEXT} clauses before the worker stream is created.</p>
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

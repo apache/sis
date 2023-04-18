@@ -220,17 +220,17 @@ public final class PixelTranslation extends Static implements Serializable {
      * This method concatenates −½, 0 or +½ translations on <em>all</em> dimensions before the given transform.
      * If the two given conventions are the same, then this method returns the given transform unchanged.
      *
-     * <div class="note"><b>Example:</b>
-     * if a given {@code gridToCRS} transform was mapping the <em>cell corner</em> to "real world" coordinates, then a call to
+     * <p>If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
+     * Otherwise {@code current} and {@code desired} arguments must be non-null.</p>
+     *
+     * <h4>Example</h4>
+     * If a given {@code gridToCRS} transform was mapping the <em>cell corner</em> to "real world" coordinates, then a call to
      * <code>translate(gridToCRS, {@link PixelInCell#CELL_CORNER CELL_CORNER}, {@link PixelInCell#CELL_CENTER CELL_CENTER})</code>
      * will return a new transform performing the following steps: first convert grid coordinates from <var>cell center</var>
      * convention ({@code desired}) to <var>cell corner</var> convention ({@code current}), then concatenate the given
      * {@code gridToCRS} transform which was designed for the <em>cell corner</em> convention.
      * The above-cited <var>cell center</var> → <var>cell corner</var> conversion is done by translating the grid coordinates
-     * by +½, because the grid coordinates (0,0) relative to cell center is (½,½) relative to cell corner.</div>
-     *
-     * If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
-     * Otherwise {@code current} and {@code desired} arguments must be non-null.
+     * by +½, because the grid coordinates (0,0) relative to cell center is (½,½) relative to cell corner.
      *
      * @param  gridToCRS  a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
      * @param  current    the pixel orientation of the given {@code gridToCRS} transform.
@@ -270,14 +270,14 @@ public final class PixelTranslation extends Static implements Serializable {
      * This method concatenates −½, 0 or +½ translations on <em>two</em> dimensions before the given transform.
      * The given transform can have any number of input and output dimensions, but only two of them will be converted.
      *
-     * <div class="note"><b>Example:</b>
-     * if a given {@code gridToCRS} transform was mapping the upper-left corner to "real world" coordinates, then a call to
+     * <p>If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
+     * Otherwise {@code current} and {@code desired} arguments must be non-null.</p>
+     *
+     * <h4>Example</h4>
+     * If a given {@code gridToCRS} transform was mapping the upper-left corner to "real world" coordinates, then a call to
      * <code>translate(gridToCRS, {@link PixelOrientation#UPPER_LEFT UPPER_LEFT}, {@link PixelOrientation#CENTER CENTER}, 0, 1)</code>
      * will return a new transform translating grid coordinates by +0.5 before to apply the given {@code gridToCRS} transform.
-     * See example in above {@link #translate(MathTransform, PixelInCell, PixelInCell) translate} method for more details.</div>
-     *
-     * If the given {@code gridToCRS} is null, then this method ignores all other arguments and returns {@code null}.
-     * Otherwise {@code current} and {@code desired} arguments must be non-null.
+     * See example in above {@link #translate(MathTransform, PixelInCell, PixelInCell) translate} method for more details.
      *
      * @param  gridToCRS   a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
      * @param  current     the pixel orientation of the given {@code gridToCRS} transform.

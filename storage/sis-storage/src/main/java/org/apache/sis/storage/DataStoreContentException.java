@@ -24,11 +24,11 @@ import java.util.Locale;
  * It may be for example a logical inconsistency, or a reference not found,
  * or an unsupported file format version, <i>etc.</i>
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Usage note</h2>
  * exceptions that are caused by {@link java.io.IOException} or {@link java.sql.SQLException}
  * should generally be wrapped by another type of {@link DataStoreException}, unless the data
  * store can determine that the error was caused by a problem with the stream content rather
- * than some I/O problems.</div>
+ * than some I/O problems.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.8

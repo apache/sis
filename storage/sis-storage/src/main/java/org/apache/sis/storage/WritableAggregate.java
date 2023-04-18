@@ -38,12 +38,11 @@ public interface WritableAggregate extends Aggregate {
      *  <li>{@link org.opengis.metadata.Metadata}</li>
      * </ul>
      *
-     * <div class="note"><b>Warning:</b>
-     * copying information between stores may produce differences in many aspects.
+     * <h4>Data transformation</h4>
+     * Copying information between stores may produce differences in many aspects.
      * The range of changes depends both on the original {@link Resource} structure
      * and the target {@code Resource} structure. If the differences are too large,
      * then this {@code Aggregate} may throw an exception.
-     * </div>
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. May be {@code resource} itself if it has been added verbatim.

@@ -2498,15 +2498,13 @@ parse:      for (int i = 0; i < length;) {
 
     /**
      * Adds a description of a particular sample value.
+     * ISO 19115 range elements are approximately equivalent to
+     * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.
      * Storage location is:
      *
      * <ul>
      *   <li>{@code metadata/contentInfo/rangeElementDescription}</li>
      * </ul>
-     *
-     * <div class="note"><b>Note:</b>
-     * ISO 19115 range elements are approximately equivalent to
-     * {@code org.apache.sis.coverage.Category} in the {@code sis-coverage} module.</div>
      *
      * @param  name        designation associated with a set of range elements, or {@code null} if none.
      * @param  definition  description of a set of specific range elements, or {@code null} if none.
@@ -2928,9 +2926,9 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/resourceLineage/source/scope/levelDescription/features}</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * if a Landsat image uses the "GTOPO30" digital elevation model, then it can declare the source
-     * with "GTOPO30" description, {@link ScopeCode#MODEL} and feature "Digital Elevation Model".</div>
+     * <h4>Example</h4>
+     * If a Landsat image uses the "GTOPO30" digital elevation model, then it can declare the source
+     * with "GTOPO30" description, {@link ScopeCode#MODEL} and feature "Digital Elevation Model".
      *
      * @param  description  a detailed description of the level of the source data, or {@code null} if none.
      * @param  level        hierarchical level of the source (e.g. model), or {@code null} if unspecified.
@@ -2969,10 +2967,10 @@ parse:      for (int i = 0; i < length;) {
      *   <li>{@code metadata/resourceLineage/source/sourceSpatialResolution}</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * if a {@code FeatureSet} is the aggregation of two other {@code FeatureSet} resources,
+     * <h4>Example</h4>
+     * If a {@code FeatureSet} is the aggregation of two other {@code FeatureSet} resources,
      * then this method can be invoked twice with the metadata of each source {@code FeatureSet}.
-     * If the aggregated data are features, then {@code level} should be {@link ScopeCode#FEATURE}.</div>
+     * If the aggregated data are features, then {@code level} should be {@link ScopeCode#FEATURE}.
      *
      * @param  metadata  the metadata of the source, or {@code null} if none.
      * @param  level     hierarchical level of the source (e.g. feature). Should not be null.

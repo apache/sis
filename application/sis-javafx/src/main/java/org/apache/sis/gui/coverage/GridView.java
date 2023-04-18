@@ -141,9 +141,9 @@ public class GridView extends Control {
      * This size includes the {@linkplain #cellSpacing cell spacing}.
      * It shall be a number strictly greater than zero.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty headerWidth;
 
@@ -152,9 +152,9 @@ public class GridView extends Control {
      * This size includes the {@linkplain #cellSpacing cell spacing}.
      * It shall be a number strictly greater than zero.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty cellWidth;
 
@@ -162,9 +162,9 @@ public class GridView extends Control {
      * Height of all rows in the grid.
      * It shall be a number strictly greater than zero.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty cellHeight;
 
@@ -173,18 +173,18 @@ public class GridView extends Control {
      * There is no property for vertical cell spacing because increasing the
      * {@linkplain #cellHeight cell height} should be sufficient.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link DoubleProperty#set(double)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final DoubleProperty cellSpacing;
 
     /**
      * The background color of row and column headers.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<Paint> headerBackground;
 
@@ -550,8 +550,9 @@ public class GridView extends Control {
      * if an error occurred during {@link RenderedImage#getTile(int, int)} invocation.
      * The returned bounds are zero-based (may not be the bounds in image coordinates).
      *
-     * <div class="note"><b>Note:</b> we use AWT rectangle instead of JavaFX rectangle
-     * because generally we use AWT for everything related to {@link RenderedImage}.</div>
+     * <h4>Design note</h4>
+     * We use AWT rectangle instead of JavaFX rectangle
+     * because generally we use AWT for everything related to {@link RenderedImage}.
      *
      * @param  tileX  <var>x</var> coordinates of the tile for which to get the bounds.
      * @param  tileY  <var>y</var> coordinates of the tile for which to get the bounds.

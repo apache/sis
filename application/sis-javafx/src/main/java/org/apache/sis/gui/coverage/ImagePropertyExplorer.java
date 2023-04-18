@@ -81,9 +81,9 @@ public class ImagePropertyExplorer extends Widget {
      * The root image to describe. This image will be the root of a tree;
      * children will be image {@linkplain RenderedImage#getSources() sources}.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<RenderedImage> image;
 
@@ -138,9 +138,9 @@ public class ImagePropertyExplorer extends Widget {
      * when the {@link #image} change. This is done for allowing the garbage collector to reclaim memory.
      * The content is reset to {@link #image} properties when {@code updateOnChange} become {@code true} again.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link BooleanProperty#set(boolean)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final BooleanProperty updateOnChange;
 
