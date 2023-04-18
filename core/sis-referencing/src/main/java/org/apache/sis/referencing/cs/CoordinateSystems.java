@@ -366,7 +366,7 @@ next:   for (final CoordinateSystem cs : targets) {
         ArgumentChecks.ensureNonNull("sourceCS", sourceCS);
         ArgumentChecks.ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
-            // Above line was a relatively cheap test. Try the more expansive test below only if necessary.
+            // Above line was a relatively cheap test. Try the more expensive test below only if necessary.
             if (!hasAllTargetTypes(sourceCS, targetCS)) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.IncompatibleCoordinateSystemTypes));
             }

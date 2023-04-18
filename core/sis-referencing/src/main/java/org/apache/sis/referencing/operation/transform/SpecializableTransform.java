@@ -336,7 +336,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
                 do {                                        // Count how many points will use that transform.
                     src.offset += srcInc;
                     if (--numPts <= 0) break;
-                    domain = locate(src);                   // More expansive check than the case where domain is non-null.
+                    domain = locate(src);                   // More expensive check than the case where domain is non-null.
                 } while (domain == null);
             } else {
                 RTreeNode next = domain;

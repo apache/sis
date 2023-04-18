@@ -208,7 +208,7 @@ public final class Extents extends Static {
     /**
      * Returns a single geographic bounding box from the specified extent.
      * This method tries to find the bounding box in the cheapest way
-     * before to fallback on more expansive computations:
+     * before to fallback on more expensive computations:
      *
      * <ol>
      *   <li>First, this method searches geographic elements that are instance of {@link GeographicBoundingBox}.<ul>
