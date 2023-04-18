@@ -873,8 +873,8 @@ public final class GridDerivationTest extends TestCase {
         Envelope2D   domain   = new Envelope2D(HardCodedCRS.WGS84, 10, 20, 110, 70);
         Envelope2D   request  = new Envelope2D(HardCodedCRS.WGS84, -5, 25, 100, 90);
         Envelope2D   expected = new Envelope2D(HardCodedCRS.WGS84, 10, 25,  85, 65);
-        GridGeometry grid1    = new GridGeometry(null, domain,  GridOrientation.HOMOTHETY);
-        GridGeometry grid2    = new GridGeometry(null, request, GridOrientation.HOMOTHETY);
+        GridGeometry grid1    = new GridGeometry(domain);
+        GridGeometry grid2    = new GridGeometry(request);
         GridGeometry subgrid  = grid1.derive().subgrid(grid2).build();
         assertTrue(subgrid.isEnvelopeOnly());
         assertEnvelopeEquals(expected, subgrid.getEnvelope(), STRICT);
@@ -884,7 +884,7 @@ public final class GridDerivationTest extends TestCase {
          */
         request.setCoordinateReferenceSystem(HardCodedCRS.WGS84_LATITUDE_FIRST);
         request.setRect(25, -5, 90, 100);
-        grid2   = new GridGeometry(null, request, GridOrientation.HOMOTHETY);
+        grid2   = new GridGeometry(request);
         subgrid = grid1.derive().subgrid(grid2).build();
         assertSame(HardCodedCRS.WGS84, subgrid.getCoordinateReferenceSystem());
         assertTrue(subgrid.isEnvelopeOnly());

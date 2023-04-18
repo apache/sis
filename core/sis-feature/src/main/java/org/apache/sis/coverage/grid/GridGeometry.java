@@ -709,6 +709,27 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
+     * Creates a grid geometry with only an envelope.
+     *
+     * @param  envelope  the envelope together with CRS of the "real world" coordinates.
+     * @throws IllegalArgumentException if the envelope has no CRS and only NaN coordinate values.
+     *
+     * @since 1.4
+     */
+    public GridGeometry(final Envelope envelope) {
+        ArgumentChecks.ensureNonNull("envelope", envelope);
+        this.envelope = ImmutableEnvelope.castOrCopy(envelope);
+        if (this.envelope.isAllNaN() && this.envelope.getCoordinateReferenceSystem() == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "envelope"));
+        }
+        extent      = null;
+        gridToCRS   = null;
+        cornerToCRS = null;
+        resolution  = null;
+        nonLinears  = 0;
+    }
+
+    /**
      * Creates a new grid geometry from the given components.
      * This constructor performs no verification (unless assertions are enabled).
      */

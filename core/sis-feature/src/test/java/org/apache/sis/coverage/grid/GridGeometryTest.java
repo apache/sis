@@ -381,6 +381,11 @@ public final class GridGeometryTest extends TestCase {
          * The use of `DISPLAY` mode in this particular case should be equivalent ro `REFLECTION_Y`.
          */
         assertEquals(grid, new GridGeometry(extent, aoi, GridOrientation.DISPLAY));
+        /*
+         * Test when only an envelope is specified.
+         * The grid orientation should have no effect.
+         */
+        assertEnvelopeEquals(aoi, new GridGeometry(null, aoi, GridOrientation.DISPLAY).getEnvelope());
     }
 
     /**

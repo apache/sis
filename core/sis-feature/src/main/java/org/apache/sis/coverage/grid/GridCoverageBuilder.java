@@ -238,7 +238,7 @@ public class GridCoverageBuilder {
      * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
      */
     public GridCoverageBuilder setDomain(final Envelope domain) {
-        return setDomain(domain == null ? null : new GridGeometry(null, domain, GridOrientation.HOMOTHETY));
+        return setDomain(domain == null ? null : new GridGeometry(domain));
     }
 
     /**
