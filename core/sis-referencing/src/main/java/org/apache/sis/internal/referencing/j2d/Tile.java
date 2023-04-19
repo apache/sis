@@ -63,7 +63,7 @@ import org.apache.sis.io.TableAppender;
  *   If the upper-left corner has been given as a rectangle instead, then this performance cost is avoided
  *   but the user is responsible for the accuracy of the information provided.
  *
- *     <div class="note"><b>NOTE:</b>
+ *     <div class="note"><b>Note:</b>
  *     the upper-left corner is the {@linkplain #getLocation() location} of this tile in the
  *     {@linkplain javax.imageio.ImageReadParam#setDestination destination image} when no
  *     {@linkplain javax.imageio.ImageReadParam#setDestinationOffset destination offset} are specified.
@@ -78,12 +78,12 @@ import org.apache.sis.io.TableAppender;
  *   half the width and third of the height for the same geographic extent, <i>etc.</i>
  *   (note that overviews are not required to have the same geographic extent - the above is just an example).
  *
- *     <div class="note"><b>NOTE 1:</b>
+ *     <div class="note"><b>Note 1:</b>
  *     the semantic assumes that overviews are produced by subsampling, not by interpolation or pixel averaging.
  *     The latter are not prohibited, but doing so introduce some subsampling-dependent variations in images read,
  *     which would not be what we would expect from a strictly compliant {@link ImageReader}.</div>
  *
- *     <div class="note"><b>NOTE 2:</b>
+ *     <div class="note"><b>Note 2:</b>
  *     tile {@linkplain #getLocation() location} and {@linkplain #getRegion() region} coordinates should be
  *     specified in the overview pixel units - they should <em>not</em> be pre-multiplied by subsampling.
  *     This multiplication should be performed automatically by a {@code TileManager} when comparing regions
@@ -430,7 +430,7 @@ public class Tile implements Serializable {
      * in order to get a uniform grid geometry for every tiles.
      *
      * <h4>Tip</h4>
-     * the <a href="https://en.wikipedia.org/wiki/World_file">World File</a> coefficients of this tile
+     * The <a href="https://en.wikipedia.org/wiki/World_file">World File</a> coefficients of this tile
      * (i.e. the <cite>grid to CRS</cite> transform that we would have if the pixel in the upper-left
      * corner always had indices (0,0)) can be computed as below:
      *

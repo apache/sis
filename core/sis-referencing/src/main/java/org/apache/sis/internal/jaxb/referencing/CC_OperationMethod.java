@@ -160,10 +160,10 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * {@link org.opengis.parameter.ParameterDescriptor#getValueClass()} property, which are not available
      * in the GML document.</p>
      *
-     * <div class="note"><b>Note:</b>
-     * this code is defined in this {@code CC_OperationMethod} class instead of in the
+     * <h4>Implementation note</h4>
+     * This code is defined in this {@code CC_OperationMethod} class instead of in the
      * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
-     * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
+     * by the JVM in the common case where JAXB (un)marshalling is not needed.
      *
      * @param  name         the operation method name, to be also given to the descriptor group.
      * @param  descriptors  the parameter descriptors to wrap in a group. This array will be modified in-place.
@@ -198,10 +198,10 @@ public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, O
      * This method copies only the <em>references</em> if possible. However, in some
      * cases the values may need to be copied in new parameter instances.
      *
-     * <div class="note"><b>Note:</b>
-     * this code is defined in this {@code CC_OperationMethod} class instead of in the
+     * <h4>Implementation note</h4>
+     * This code is defined in this {@code CC_OperationMethod} class instead of in the
      * {@link DefaultOperationMethod} class in the hope to reduce the amount of code processed
-     * by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
+     * by the JVM in the common case where JAXB (un)marshalling is not needed.
      *
      * @param  parameters    the parameters to add to the {@code addTo} collection.
      * @param  addTo         where to store the {@code parameters}.

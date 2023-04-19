@@ -30,7 +30,8 @@ import org.apache.sis.internal.util.MetadataServices;
  * {@code InstallationResources} can be used for downloading large files that may not be of interest
  * to every users, or data that are subject to more restricting terms of use than the Apache license.
  *
- * <div class="note"><b>Examples:</b><ul class="verbose">
+ * <h2>Examples</h2>
+ * <ul>
  * <li>The NADCON grid files provide <cite>datum shifts</cite> data for North America.
  *     Since those files are in the public domain, they could be bundled in Apache SIS.
  *     But the weight of those files (about 2.4 Mb) is unnecessary for users who do not live in North America.</li>
@@ -38,8 +39,9 @@ import org.apache.sis.internal.util.MetadataServices;
  *     Codes like {@code "EPSG:4326"} became a <i>de-facto</i> standard in various places like <cite>Web Map Services</cite>,
  *     images encoded in GeoTIFF format, <i>etc</i>. But the <a href="https://epsg.org/terms-of-use.html">EPSG terms of use</a>
  *     are more restrictive than the Apache license and require that we inform the users about those conditions.</li>
- * </ul></div>
+ * </ul>
  *
+ * <h2>Recognized authorities</h2>
  * Some authorities implemented in Apache SIS modules are listed below.
  * In this list, {@code "Embedded"} is a pseudo-authority for an embedded database containing EPSG and other data.
  * The embedded database is provided as a convenience for avoiding the need to define a {@code SIS_DATA} directory

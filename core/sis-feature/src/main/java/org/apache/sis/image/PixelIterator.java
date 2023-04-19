@@ -1067,14 +1067,14 @@ public class PixelIterator {
      * {@code byte[]}, <i>etc.</i>): it is used for transferring values in a packed format between compatible
      * Java2D sample or color models. That {@code Object} should generally not be used directly by the caller.
      *
-     * <div class="note"><b>Example:</b>
-     * if an image has Red, Green, Blue and Alpha bands, then the {@link #getPixel(int[])} methods will return
+     * <p>Data elements are useful for copying values in another image using the same sample model,
+     * or for getting colors with a call to {@link java.awt.image.ColorModel#getRGB(Object)}.</p>
+     *
+     * <h4>Example</h4>
+     * If an image has Red, Green, Blue and Alpha bands, then the {@link #getPixel(int[])} methods will return
      * arrays of length 4 containing the individual values for each band, no matter how those bands are stored
      * in the image. By contrast this {@code getDataElements​(…)} method may return an array of length 1 with
-     * all sample values packed as a single ARGB value.</div>
-     *
-     * Data elements are useful for copying values in another image using the same sample model,
-     * or for getting colors with a call to {@link java.awt.image.ColorModel#getRGB(Object)}.
+     * all sample values packed as a single ARGB value.
      *
      * @param  dest  a pre-allocated array where to store the data elements, or {@code null} if none.
      * @return the data elements for current pixel.
@@ -1365,14 +1365,13 @@ public class PixelIterator {
      * {@link Window} implementation backed by an array of {@code double[]}.
      * This is the implementation used by Apache SIS for most computations.
      *
-     * <div class="note"><b>Performance note</b>
+     * <h2>Performance note</h2>
      * Java2D has numerous optimizations for the integer cases, with no equivalent for the floating point cases.
      * Consequently, if the data buffer is known to use some integer type, it is faster to get integer values and
      * convert them to {@code double} values instead of to request directly floating-point values. However, the
      * improvement is not as much as using {@link BandedIterator} as least for small windows. For that reason,
      * we do not provide the "integers converted to doubles" performance workaround for now. Even if we provided
      * it, this {@code DoubleWindow} would still be necessary for the general case (non-integer data buffers).
-     * </div>
      */
     private final class DoubleWindow extends Window<DoubleBuffer> {
         /**
@@ -1420,11 +1419,11 @@ public class PixelIterator {
     /**
      * Updates the content of given window with the sample values in the region starting at current iterator position.
      *
-     * <div class="note"><b>Performance note</b>
-     * we could store the position of last update in the {@code Window} object and invoke {@code getPixels(…)}
+     * <h4>Performance note</h4>
+     * We could store the position of last update in the {@code Window} object and invoke {@code getPixels(…)}
      * only for window area that changed. Sample values that are still inside the window could be moved with
      * {@code System.arraycopy(…)}. We tried that approach, but performance at least on small windows was worst
-     * than current naive implementation.</div>
+     * than current naive implementation.
      *
      * @param  window  the window to update.
      * @param  data    the array of primitive type where sample values are stored.

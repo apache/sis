@@ -161,13 +161,13 @@ class CoordinateOperationRegistry {
      * The object to use for finding authority codes, or {@code null} if none.
      * An instance is fetched at construction time from the {@link #registry} if possible.
      *
-     * <div class="note"><b>Design note:</b>
-     * using a finder defined by the {@link #registry} instead of {@code MultiAuthoritiesFactory} may cause
+     * <h4>Design note</h4>
+     * Using a finder defined by the {@link #registry} instead of {@code MultiAuthoritiesFactory} may cause
      * the finder to perform extensive searches because it does not recognize the authority code of a given CRS.
      * For example if {@link #registry} is for EPSG and a given CRS is "CRS:84", then {@code codeFinder} would
      * not recognize the given CRS and would search for a match in the EPSG database. This is desired because
      * we need to have the two CRSs defined by the same authority (if possible) in order to find a predefined
-     * operation, even if an equivalent definition was provided by another authority.</div>
+     * operation, even if an equivalent definition was provided by another authority.
      *
      * @see #authorityCodes
      * @see #findCode(CoordinateReferenceSystem)
@@ -230,11 +230,11 @@ class CoordinateOperationRegistry {
      * Authority codes found for CRS. This is a cache for {@link #findCode(CoordinateReferenceSystem)}.
      * This map may be non-empty only if {@link #codeFinder} is non-null.
      *
-     * <div class="note"><b>Design note:</b>
-     * a cache is used because codes for the same CRS can be requested many times while iterating over the
+     * <h4>Design note</h4>
+     * A cache is used because codes for the same CRS can be requested many times while iterating over the
      * strategies enumerated by {@link Decomposition}. This cache partially duplicates the cache provided by
      * {@link IdentifiedObjectFinder} implementations, but we have no guarantees that those implementations
-     * provide such cache, and the values cached here are the result of a little bit more work.</div>
+     * provide such cache, and the values cached here are the result of a little bit more work.
      *
      * @see #codeFinder
      * @see #findCode(CoordinateReferenceSystem)
@@ -707,12 +707,12 @@ class CoordinateOperationRegistry {
      *   <li>Its domain of validity and accuracy is the same.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * in many cases, the inverse operation is numerically less accurate than the direct operation because it
+     * <h4>Accuracy note</h4>
+     * In many cases, the inverse operation is numerically less accurate than the direct operation because it
      * uses approximations like series expansions or iterative methods. However, the numerical errors caused by
      * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
      * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
-     * see ISO 19111 for more information).</div>
+     * see ISO 19111 for more information).
      */
     final CoordinateOperation inverse(final SingleOperation op) throws NoninvertibleTransformException, FactoryException {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
@@ -1188,11 +1188,11 @@ class CoordinateOperationRegistry {
      * In the special case where the {@code name} identifier is {@link #DATUM_SHIFT} or {@link #ELLIPSOID_CHANGE},
      * the map will contain extra information like positional accuracy.
      *
-     * <div class="note"><b>Note:</b>
-     * in the datum shift case, an operation version is mandatory but unknown at this time.
+     * <h4>Note</h4>
+     * In the datum shift case, an operation version is mandatory but unknown at this time.
      * However, we noticed that the EPSG database do not always defines a version neither.
      * Consequently, the Apache SIS implementation relaxes the rule requiring an operation
-     * version and we do not try to provide this information here for now.</div>
+     * version and we do not try to provide this information here for now.
      *
      * @param  name  the name to put in a map.
      * @return a modifiable map containing the given name. Callers can put other entries in this map.

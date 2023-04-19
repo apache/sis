@@ -148,15 +148,16 @@ public final class XML extends Static {
      *       (for example {@code <gco:Distance>}).</li>
      * </ul>
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * URLs in code lists and is units of measurement may appear as below.
      * The underlined fragment is the part that can be replaced by {@code SCHEMAS} values:
      * <ul>
      *   <li><code><u>http://standards.iso.org/iso/19115/</u>resources/Codelist/cat/codelists.xml#LanguageCode</code></li>
      *   <li><code><u>http://www.isotc211.org/2005/</u>resources/Codelist/gmxCodelists.xml#LanguageCode</code></li>
      *   <li><code><u>http://www.isotc211.org/2005/</u>resources/uom/gmxUom.xml#xpointer(//*[@gml:id='m'])</code></li>
-     * </ul></div>
+     * </ul>
      *
+     * <h4>Implementation note</h4>
      * The currently recognized keys are listed below.
      * The entries to be used depend on the {@linkplain #METADATA_VERSION metadata version} to be marshalled.
      * For example, the {@code "cat"} entry is used when marshalling ISO 19115-3:2016 document, while the
@@ -190,10 +191,6 @@ public final class XML extends Static {
      * The GML version may affect the set of XML elements to be marshalled and their namespaces.
      * Note that GML 3.2 is identical to ISO 19136:2007.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * Newer versions typically have more elements, but not always. For example, in {@code <gml:VerticalDatum>},
-     * the {@code <gml:verticalDatumType>} property presents in GML 3.0 and 3.1 has been removed in GML 3.2.</div>
-     *
      * The value can be {@link String} or {@link Version} object.
      * If no version is specified, then the most recent supported GML version is assumed.
      *
@@ -203,6 +200,10 @@ public final class XML extends Static {
      * but the marshalled XML is not GML 3.1.1 conformant because of the differences between the two schemas.
      * See <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
      * for information about the status of GML 3.1.1 support.
+     *
+     * <h4>Compatibility note</h4>
+     * Newer GML versions typically have more elements, but not always. For example, in {@code <gml:VerticalDatum>},
+     * the {@code <gml:verticalDatumType>} property presents in GML 3.0 and 3.1 has been removed in GML 3.2.
      */
     public static final String GML_VERSION = "org.apache.sis.gml.version";
 
@@ -335,7 +336,7 @@ public final class XML extends Static {
      *   <li>"{@code mimetype}" for substituting {@code <gcx:MimeFileType>} elements</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * INSPIRE compliant language code shall be formatted like below (details may vary):
      *
      * {@snippet lang="xml" :
@@ -354,7 +355,6 @@ public final class XML extends Static {
      *     <gco:CharacterString>fra</gco:CharacterString>
      *   </lan:language>
      * }
-     * </div>
      */
     public static final String STRING_SUBSTITUTES = "org.apache.sis.xml.stringSubstitutes";
 

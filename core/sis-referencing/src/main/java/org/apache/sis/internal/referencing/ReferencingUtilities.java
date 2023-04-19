@@ -423,12 +423,13 @@ public final class ReferencingUtilities extends Static {
      *       name in names like <cite>"NTF (Paris)"</cite>.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b><ul>
+     * <p>Examples:</p>
+     * <ul>
      *   <li><cite>"NTF (Paris)"</cite> is left unchanged.</li>
      *   <li><cite>"WGS 84 (3D)"</cite> is truncated as <cite>"WGS 84"</cite>.</li>
      *   <li><cite>"Ellipsoidal 2D CS. Axes: latitude, longitude. Orientations: north, east. UoM: degree"</cite>
      *       is truncated as <cite>"Ellipsoidal 2D CS"</cite>.</li>
-     * </ul></div>
+     * </ul>
      *
      * @param  object    the identified object to view as a properties map.
      * @return a view of the identified object properties.

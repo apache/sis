@@ -754,10 +754,10 @@ public final class Resources extends IndexedResourceBundle {
      * validity. If the key is invalid, then a {@link MissingResourceException} may be thrown
      * when a {@link InternationalString#toString(Locale)} method is invoked.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * This method is redundant with the one expecting {@code Object...}, but avoid the creation
      * of a temporary array. There is no risk of confusion since the two methods delegate their
-     * work to the same {@code format} method anyway.</div>
+     * work to the same {@code format} method anyway.
      *
      * @param  key  the key for the desired string.
      * @param  arg  values to substitute to "{0}".

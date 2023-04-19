@@ -281,10 +281,10 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * Returns the symbol (if any) of this unit. A unit may have no symbol, in which case
      * the {@link #toString()} method is responsible for creating a string representation.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@link Units#METRE} has the {@code "m"} symbol and the same string representation.
      * But {@link Units#METRES_PER_SECOND} has no symbol; it has only the {@code "m/s"}
-     * string representation.</div>
+     * string representation.
      *
      * @return the unit symbol, or {@code null} if this unit has no specific symbol.
      *

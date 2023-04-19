@@ -126,9 +126,9 @@ public final class DefinitionURI {
     /**
      * The separator between {@linkplain #components} in a URN.
      *
-     * <div class="note"><b>Example:</b>
-     * in {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, the components are
-     * {@code "crs:EPSG:9.1:27700"} and {@code "crs:EPSG:9.1:5701"}.</div>
+     * <h4>Example</h4>
+     * In {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, the components are
+     * {@code "crs:EPSG:9.1:27700"} and {@code "crs:EPSG:9.1:5701"}.
      */
     public static final char COMPONENT_SEPARATOR = ',';
 
@@ -136,27 +136,24 @@ public final class DefinitionURI {
      * The separator between a URL and its first {@linkplain #components}.
      * In URL syntax, this is the separator between URL path and the query.
      *
-     * <div class="note"><b>Example:</b><code>
-     * http://www.opengis.net/def/crs-compound<u>?</u>1=…&amp;2=…
-     * </code></div>
+     * <h4>Example</h4>
+     * <code>http://www.opengis.net/def/crs-compound<u>?</u>1=…&amp;2=…</code>
      */
     private static final char COMPONENT_SEPARATOR_1 = '?';
 
     /**
      * The separator between {@linkplain #components} in a URL after the first component.
      *
-     * <div class="note"><b>Example:</b><code>
-     * http://www.opengis.net/def/crs-compound?1=…<u>&amp;</u>2=…
-     * </code></div>
+     * <h4>Example</h4>
+     * <code>http://www.opengis.net/def/crs-compound?1=…<u>&amp;</u>2=…</code>
      */
     private static final char COMPONENT_SEPARATOR_2 = '&';
 
     /**
      * Separator between keys and values in the query part of a URL.
      *
-     * <div class="note"><b>Example:</b><code>
-     * http://www.opengis.net/def/crs-compound?1<u>=</u>…&amp;2<u>=</u>…
-     * </code></div>
+     * <h4>Example</h4>
+     * <code>http://www.opengis.net/def/crs-compound?1<u>=</u>…&amp;2<u>=</u>…</code>
      */
     private static final char KEY_VALUE_SEPARATOR = '=';
 
@@ -198,8 +195,8 @@ public final class DefinitionURI {
      * Note that the set of valid types in OGC namespace is restricted.
      * See class javadoc for more information.
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "crs"}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "crs"}.
      *
      * @see org.apache.sis.internal.metadata.NameMeaning#toObjectType(Class)
      */
@@ -210,8 +207,8 @@ public final class DefinitionURI {
      * Note that the set of valid authorities in OGC namespace is restricted.
      * See class javadoc for more information.
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.
      */
     public String authority;
 
@@ -219,48 +216,48 @@ public final class DefinitionURI {
      * The version part of a URI, or {@code null} if none (empty).
      * This field is null if the version in the parsed string was {@value #NO_VERSION}.
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "8.2"}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "8.2"}.
      */
     public String version;
 
     /**
      * The code part of a URI, or {@code null} if none (empty).
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "4326"}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "4326"}.
      */
     public String code;
 
     /**
      * The parameters, or {@code null} if none.
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"} URN, this is <code>{"1", "-100", "45"}</code>}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45"} URN, this is <code>{"1", "-100", "45"}</code>}.
      */
     public String[] parameters;
 
     /**
      * If the URI contains sub-components, those sub-components. Otherwise {@code null}.
+     * Note that this array may contain {@code null} elements if we failed to parse the corresponding component.
      *
-     * <div class="note"><b>URN example:</b>
-     * if the URI is {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, then this
+     * <h4>URN example</h4>
+     * If the URI is {@code "urn:ogc:def:crs,crs:EPSG:9.1:27700,crs:EPSG:9.1:5701"}, then this
      * {@code DefinitionURI} will contain the {@code "urn:ogc:def:crs"} header with two components:
      * <ol>
      *   <li>{@code "urn:ogc:def:crs:EPSG:9.1:27700"}</li>
      *   <li>{@code "urn:ogc:def:crs:EPSG:9.1:5701"}</li>
-     * </ol></div>
+     * </ol>
      *
-     * <div class="note"><b>HTTP example:</b> if the URI is
+     * <h4>HTTP example</h4>
+     * If the URI is
      * {@code "http://www.opengis.net/def/crs-compound?1=(…)/crs/EPSG/9.1/27700&2=(…)/crs/EPSG/9.1/5701"},
      * then this {@code DefinitionURI} will contain the {@code "http://www.opengis.net/def/crs-compound"}
      * header with two components:
      * <ol>
      *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG/9.1/27700"}</li>
      *   <li>{@code "http://http://www.opengis.net/def/crs/EPSG/9.1/5701"}</li>
-     * </ol></div>
-     *
-     * Note that this array may contain {@code null} elements if we failed to parse the corresponding component.
+     * </ol>
      */
     public DefinitionURI[] components;
 

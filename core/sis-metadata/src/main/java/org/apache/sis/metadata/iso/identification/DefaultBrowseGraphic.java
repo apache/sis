@@ -204,9 +204,8 @@ public class DefaultBrowseGraphic extends ISOMetadata implements BrowseGraphic {
     /**
      * Format in which the illustration is encoded.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Examples</h4>
      * CGM, EPS, GIF, JPEG, PBM, PS, TIFF, XWD.
-     * </div>
      *
      * @return format in which the illustration is encoded, or {@code null}.
      */

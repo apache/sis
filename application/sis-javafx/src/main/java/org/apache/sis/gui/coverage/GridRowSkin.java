@@ -56,15 +56,16 @@ final class GridRowSkin extends CellSkinBase<GridRow> {
      * Invoked during the layout pass to position the cells to be rendered by this row.
      * This method also sets the content of the cell.
      *
-     * <div class="note"><b>Note:</b> I'm not sure it is a good practice to add/remove children
-     * and to modify text values here, but I have not identified another place yet. However, the
-     * JavaFX implementation of table skin seems to do the same, so I presume it is okay.</div>
-     *
      * The {@code width} argument can be a large number (for example 24000) because it includes
      * the area outside the view. In order to avoid creating a large amount of {@link GridCell}
      * instances, this method have to find the current view port area and render only the cells
      * in that area. We do not have to do that vertically because the vertical virtualization
      * is done by {@link GridViewSkin} parent class.
+     *
+     * <h4>Implementation note</h4>
+     * I'm not sure it is a good practice to add/remove children and to modify text values here,
+     * but I have not identified another place yet. However, the JavaFX implementation of table
+     * skin seems to do the same, so I presume it is okay.
      *
      * @param  x       the <var>x</var> position of this row, usually 0.
      * @param  y       the <var>y</var> position of this row, usually 0 (this is a relative position).

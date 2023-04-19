@@ -40,13 +40,10 @@ import org.apache.sis.util.resources.Errors;
  *
  * <h2>Instances sharing</h2>
  * If the {@link #create(ParameterValue)} method is invoked more than once with equal descriptor, value and unit,
- * then the method will return the same {@code UnmodifiableParameterValue} instance on a <cite>best effort</cite>
- * basis.
- *
- * <div class="note"><b>Rational:</b>
- * the same parameter value is often used in many different coordinate operations. For example, all <cite>Universal
- * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
- * </div>
+ * then the method will return the same {@code UnmodifiableParameterValue} instance on a <em>best effort</em> basis.
+ * The rational for sharing is because the same parameter value is often used in many different coordinate operations.
+ * For example, all <cite>Universal Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996)
+ * and the same false easting (500000 metres).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.3

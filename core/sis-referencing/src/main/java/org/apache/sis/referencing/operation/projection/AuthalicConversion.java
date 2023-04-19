@@ -72,12 +72,12 @@ abstract class AuthalicConversion extends NormalizedProjection {
      *
      *     <blockquote>sin(2β)⋅(c₂ + cos(2β)⋅(c₄ + cos(2β)⋅c₆))</blockquote>
      *
-     * <div class="note"><b>Serialization note:</b>
-     * we do not strictly need to serialize those fields since they could be computed after deserialization.
+     * <h4>Serialization note</h4>
+     * We do not strictly need to serialize those fields since they could be computed after deserialization.
      * But we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
      * fields final) and because values computed after deserialization could be slightly different than the
      * ones computed after construction if a future version of the constructor uses the double-double values
-     * provided by {@link Initializer}.</div>
+     * provided by {@link Initializer}.
      */
     private final double c2β, c4β, c6β;
 

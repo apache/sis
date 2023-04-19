@@ -305,8 +305,8 @@ public final class LocalDataSource implements DataSource, Comparable<LocalDataSo
      * Returns {@code true} if the given exception is the one that we expect in successful shutdown of a Derby database.
      * While this method is primarily used for Derby shutdown, the error code tested may be applicable to other systems.
      *
-     * <div class="note"><b>Note:</b>
-     * this method is public for the needs of {@code non-free:sis-embedded-data} module.</div>
+     * <h4>Dependency note</h4>
+     * This method is public for the needs of {@code non-free:sis-embedded-data} module.
      *
      * @param  e  the exception thrown by Derby.
      * @return {@code true} if the exception indicates a successful shutdown.

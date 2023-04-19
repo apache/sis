@@ -488,14 +488,13 @@ public class Formatter implements Localized {
 
     /**
      * Returns the preferred authority for choosing the projection and parameter names.
+     * The preferred authority can be set by the {@link WKTFormat#setNameAuthority(Citation)} method.
+     * This is not necessarily the authority who created the object to format.
      *
-     * <p>The preferred authority can be set by the {@link WKTFormat#setNameAuthority(Citation)} method.
-     * This is not necessarily the authority who created the object to format.</p>
-     *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The EPSG name of the {@code EPSG:6326} datum is <cite>"World Geodetic System 1984"</cite>.
      * However if the preferred authority is OGC, then the formatted datum name will rather look like
-     * <cite>"WGS84"</cite> (the exact string depends on the object aliases).</div>
+     * <cite>"WGS84"</cite> (the exact string depends on the object aliases).
      *
      * @return the authority for projection and parameter names.
      *
@@ -1024,13 +1023,11 @@ public class Formatter implements Localized {
     /**
      * Appends an international text in an element having the given keyword. Since this method
      * is typically invoked for long descriptions, the element will be written on its own line.
-     *
-     * <div class="note"><b>Example:</b>
-     *   <ul>
-     *     <li>{@code Scope["Large scale topographic mapping and cadastre."]}</li>
-     *     <li>{@code Area["Netherlands offshore."]}</li>
-     *   </ul>
-     * </div>
+     * Examples:
+     * <ul>
+     *   <li>{@code Scope["Large scale topographic mapping and cadastre."]}</li>
+     *   <li>{@code Area["Netherlands offshore."]}</li>
+     * </ul>
      *
      * @param  keyword  the {@linkplain KeywordCase#CAMEL_CASE camel-case} keyword.
      *                  Example: {@code "Scope"}, {@code "Area"} or {@code "Remarks"}.
@@ -1415,8 +1412,8 @@ public class Formatter implements Localized {
      * By {@linkplain KeywordStyle#DEFAULT default}, specialized unit keywords are used with the
      * {@linkplain Convention#WKT2 WKT 2 convention}.
      *
-     * <div class="note"><b>Example:</b>
-     * {@code append(Units.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.</div>
+     * <h4>Example</h4>
+     * {@code append(Units.KILOMETRE)} will append "{@code LengthUnit["km", 1000]}" to the WKT.
      *
      * @param  unit  the unit to append to the WKT, or {@code null} if none.
      *
@@ -1639,9 +1636,9 @@ public class Formatter implements Localized {
      * This method returns {@code true} if the formattable object given by {@code getEnclosingElement(depth)}
      * has invoked {@link #addContextualUnit(Unit)} with a non-null unit at least once.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Usage note</h4>
      * The main purpose of this method is to allow {@code AXIS[…]} elements to determine if they should
-     * inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.</div>
+     * inherit the unit specified by the enclosing CRS, or if they should specify their unit explicitly.
      *
      * @param  depth  1 for the immediate parent, 2 for the parent of the parent, <i>etc.</i>
      * @return whether the parent element at the given depth has invoked {@code addContextualUnit(…)} at least once.
@@ -1800,9 +1797,8 @@ public class Formatter implements Localized {
 
     /**
      * Implementation of public {@code setInvalidWKT(…)} methods.
-     *
-     * <div class="note"><b>Note:</b> the message is stored as an {@link InternationalString}
-     * in order to defer the actual message formatting until needed.</div>
+     * The message is stored as an {@link InternationalString}
+     * in order to defer the actual message formatting until needed.
      */
     private void setInvalidWKT(final String invalidElement, final Exception cause) {
         warnings().add(Errors.formatInternational(Errors.Keys.CanNotRepresentInFormat_2, "WKT", invalidElement), cause, null);

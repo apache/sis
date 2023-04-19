@@ -560,10 +560,10 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns the CRS which is neither the {@linkplain #getSourceCRS() source CRS} or
      * {@linkplain #getTargetCRS() target CRS} but still required for performing the operation.
      *
-     * <div class="note"><b>Example:</b>
-     * some transformations of vertical coordinates (<var>h</var>) require the horizontal coordinates (φ,λ)
+     * <h4>Example</h4>
+     * Some transformations of vertical coordinates (<var>h</var>) require the horizontal coordinates (φ,λ)
      * in order to interpolate in a grid. This method returns the CRS of the grid where such interpolations
-     * are performed.</div>
+     * are performed.
      *
      * @return the CRS (neither source or target CRS) required for interpolating the values, or {@code null} if none.
      */
@@ -776,7 +776,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * If such change exists, then this is usually the longitude axis when the source CRS uses the [-180 … +180]° range
      * and the target CRS uses the [0 … 360]° range, or the converse. If there is no change, then this is an empty set.
      *
-     * <div class="note"><b>Inverse relationship:</b>
+     * <h4>Inverse relationship</h4>
      * sometimes the target dimensions returned by this method can be mapped directly to wraparound axes in source CRS,
      * but this is not always the case. For example, consider the following operation chain:
      *
@@ -788,13 +788,14 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * have a wraparound range meaning. We could argue that
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis directions} match,
      * but such matching is not guaranteed to exist since {@code ProjectedCRS} is a special case of
-     * {@code GeneralDerivedCRS} and derived CRS can have rotations.</div>
+     * {@code GeneralDerivedCRS} and derived CRS can have rotations.
      *
-     * <p>The default implementation infers this set by inspecting the source and target coordinate system axes.
+     * <h4>Default implementation</h4>
+     * The default implementation infers this set by inspecting the source and target coordinate system axes.
      * It returns the indices of all target axes having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}
      * and for which the following condition holds: a colinear source axis exists with compatible unit of measurement,
      * and the range (taking unit conversions in account) or range meaning of those source and target axes are not
-     * the same.</p>
+     * the same.
      *
      * @return indices of target dimensions where "wrap around" may happen as a result of this coordinate operation.
      *

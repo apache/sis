@@ -65,11 +65,9 @@ public abstract class AbstractMathTransform2D extends AbstractMathTransform impl
     /**
      * Number of input and output dimensions of all {@code AbstractMathTransform2D}, which is {@value}.
      * We define this constant for clarity only; its value shall not be modified.
-     *
-     * <div class="note"><b>Purpose:</b>
-     * this is used for making clearer in the code when the literal 2 stands for the number of dimensions.
+     * This is used for making clearer in the code when the literal 2 stands for the number of dimensions.
      * It reduces confusion in contexts where the literal 2 also appear for other meanings than the number
-     * of dimensions.</div>
+     * of dimensions.
      *
      * @see #getSourceDimensions()
      * @see #getTargetDimensions()

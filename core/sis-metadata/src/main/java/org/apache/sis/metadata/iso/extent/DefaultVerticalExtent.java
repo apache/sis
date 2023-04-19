@@ -342,13 +342,13 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * This happen for example with conversions from "Elevation" axis to "Depth" axis.
      * In case of doubt, this method returns {@code false}.
      *
-     * <div class="note"><b>Note about alternatives:</b>
-     * we could compare axis directions instead, but it would not work with user-defined directions
+     * <h4>Alternatives</h4>
+     * We could compare axis directions instead, but it would not work with user-defined directions
      * or user-defined unit conversions with negative scale factor (should never happen, but we are
      * paranoiac). We could compare the minimum and maximum values after conversions, but it would
      * not work if one or both values are {@code null} or {@code NaN}. Since we want to preserve
      * {@link NilReason}, we still need to know if axes are reversed in order to put the nil reason
-     * in the right location.</div>
+     * in the right location.
      *
      * @param  cv      the conversion computed by {@link #getConversionFrom(VerticalCRS)} (may be {@code null}).
      * @param  sample  the minimum or the maximum value.

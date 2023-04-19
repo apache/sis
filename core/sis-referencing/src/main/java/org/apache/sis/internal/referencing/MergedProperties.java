@@ -99,11 +99,11 @@ public class MergedProperties extends AbstractMap<String,Object> {
      * Returns the value for an "invisible" entry if no user supplied values were found for that key.
      * This is used only for "secret" keys used for SIS internal purpose (not for public API).
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@link org.apache.sis.referencing.factory.GeodeticObjectFactory} handles the {@code "mtFactory"} key in a special
      * way since this is normally not needed for CRS, CS and datum objects, except when creating the SIS implementation
      * of derived or projected CRS (because of the way we implemented derived CRS). But this is somewhat specific to
-     * SIS, so we do no want to expose this implementation details.</div>
+     * SIS, so we do no want to expose this implementation details.
      *
      * @param  key  the key for which to get the value.
      * @return the value associated to the given key, or {@code null} if none.

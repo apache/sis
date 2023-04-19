@@ -37,9 +37,9 @@ import org.opengis.filter.DistanceOperatorName;
  * Spatial operations between two geometries and using a distance.
  * The nature of the operation depends on the subclass.
  *
- * <div class="note"><b>Note:</b>
- * this class has 3 parameters, but the third one is not an expression.
- * It still a "binary" operator if we count only the expressions.</div>
+ * <h2>API design note</h2>
+ * This class has 3 parameters, but the third one is not an expression.
+ * It still a "binary" operator if we count only the expressions.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

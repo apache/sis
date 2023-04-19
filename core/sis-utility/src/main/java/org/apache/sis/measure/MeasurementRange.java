@@ -258,12 +258,12 @@ public class MeasurementRange<E extends Number & Comparable<? super E>> extends 
      * instead of {@code MeasurementRange}. Nevertheless this method may return {@code null} if a unit
      * <em>should</em> exist but for some reason is unavailable.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * ISO 19115-1 {@code SampleDimension} specifies that its
      * {@linkplain org.opengis.metadata.content.SampleDimension#getUnits() unit} property is mandatory if the
      * {@linkplain org.opengis.metadata.content.SampleDimension#getMinValue() minimum value} or
      * {@linkplain org.opengis.metadata.content.SampleDimension#getMaxValue() maximum value} are provided.
-     * Nevertheless it happens sometimes that this information is missing in metadata.</div>
+     * Nevertheless it happens sometimes that this information is missing in metadata.
      *
      * @return the unit of measurement, or {@code null}.
      */

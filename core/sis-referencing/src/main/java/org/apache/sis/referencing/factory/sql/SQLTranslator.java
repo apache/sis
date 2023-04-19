@@ -40,7 +40,7 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
  * If the actual EPSG dataset to query is hosted on another database product, then the SQL query needs to be
  * adapted to the target database dialect before to be executed.
  *
- * <div class="note"><b>Example</b>
+ * <h2>Example</h2>
  * SQL statements for an EPSG dataset hosted on the <cite>PostgreSQL</cite> database need to have their brackets
  * ({@code '['} and {@code ']'}) replaced by the quote character ({@code '"'}) before to be sent to the database
  * driver. Furthermore, table names may be different. So the following MS-Access query:
@@ -57,8 +57,9 @@ import org.apache.sis.internal.metadata.sql.SQLUtilities;
  *   <li>{@code SELECT * FROM epsg_coordinatereferencesystem} (in the default schema)</li>
  *   <li>{@code SELECT * FROM epsg.coordinatereferencesystem} (in the {@code "epsg"} schema)</li>
  *   <li>{@code SELECT * FROM epsg."Coordinate Reference System"}</li>
- * </ul></div>
+ * </ul>
  *
+ * <h2>ANSI SQL</h2>
  * In addition to the file in MS-Access format, EPSG also provides the dataset as SQL files for PostgreSQL,
  * MySQL and Oracle databases. Those SQL files are used as both <cite>Data Description Language</cite> (DDL)
  * and <cite>Data Manipulation Language</cite> (DML).

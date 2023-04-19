@@ -48,11 +48,11 @@ import static java.lang.Math.*;
  * However, the formulas provided in this {@code ConformalProjection} class can be seen as a special case of
  * Transverse Mercator formulas for <var>x</var> = 0.</p>
  *
- * <div class="note"><b>Reference:</b>
+ * <h2>Reference</h2>
  * “Lambert developed the regular Conformal Conic as the oblique aspect of a family containing the previously
  * known polar Stereographic and regular Mercator projections. (…) If the standard parallels are symmetrical
  * about the Equator, the regular Mercator results (although formulas must be revised). If the only standard
- * parallel is a pole, the polar Stereographic results.” (Snyder, page 105)</div>
+ * parallel is a pole, the polar Stereographic results.” (Snyder, page 105).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

@@ -89,7 +89,7 @@ import org.apache.sis.util.resources.Errors;
  * The actual implementation may be slightly more complicated than the above if there is
  * various subclasses to check.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Implementation note</h2>
  * A previous version provided an abstract {@code getElement()} method in this class
  * for enforcing its definition in subclasses. But this has been removed for two reasons:
  * <ul>
@@ -102,7 +102,7 @@ import org.apache.sis.util.resources.Errors;
  *       this increases the size of {@code .class} files by approximately 4.5%.
  *       While quite small, this is a useless overhead since we never need to invoke the
  *       abstract {@code getElement()} from this class.</li>
- * </ul></div>
+ * </ul>
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

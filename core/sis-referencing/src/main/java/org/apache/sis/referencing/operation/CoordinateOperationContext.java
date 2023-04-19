@@ -45,17 +45,17 @@ import org.apache.sis.util.collection.BackingStoreException;
  * While optional, those information can help {@link DefaultCoordinateOperationFactory}
  * to choose the most suitable coordinate transformation between two CRS.
  *
- * <div class="note"><b>Example:</b>
- * if a transformation from NAD27 to WGS84 is requested without providing context, then Apache SIS will return the
+ * <p>{@code CoordinateOperationContext} is part of the API
+ * used by SIS for implementing the <cite>late binding</cite> model.
+ * See {@linkplain org.apache.sis.referencing.operation package javadoc}
+ * for a note on early binding versus late binding implementations.</p>
+ *
+ * <h2>Example</h2>
+ * If a transformation from NAD27 to WGS84 is requested without providing context, then Apache SIS will return the
  * transformation applicable to the widest North American surface. But if the user provides a context saying that
  * he wants to transform coordinates in Texas, then Apache SIS may return another coordinate transformation with
  * different {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters} more suitable
  * to Texas, but not suitable to the rest of North-America.
- * </div>
- *
- * {@code CoordinateOperationContext} is part of the API used by SIS for implementing the <cite>late binding</cite>
- * model. See {@linkplain org.apache.sis.referencing.operation package javadoc} for a note on early binding versus
- * late binding implementations.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

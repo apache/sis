@@ -20,11 +20,10 @@ package org.apache.sis.io.wkt;
 /**
  * Whether to use short or long WKT keywords.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Usage note</h2>
  * ISO 19162 recommends {@linkplain KeywordCase#UPPER_CASE upper case} {@linkplain #SHORT short} keywords,
  * but {@linkplain KeywordCase#CAMEL_CASE camel case} {@linkplain #LONG long} keywords match more closely
  * the programmatic interface names (e.g. {@link org.opengis.referencing.crs.GeodeticCRS}, <i>etc</i>).
- * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
@@ -33,32 +32,25 @@ package org.apache.sis.io.wkt;
 public enum KeywordStyle {
     /**
      * Short keywords.
-     *
-     * <div class="note"><b>Examples:</b>
-     * {@code "GeodCRS"}, {@code "VertCRS"}, {@code "Unit"}.
-     * </div>
+     * Examples: {@code "GeodCRS"}, {@code "VertCRS"}, {@code "Unit"}.
      */
     SHORT,
 
     /**
      * Long keywords.
-     *
-     * <div class="note"><b>Examples:</b>
-     * {@code "GeodeticCRS"}, {@code "VerticalCRS"}, {@code "AngleUnit"}.
-     * </div>
+     * Examples: {@code "GeodeticCRS"}, {@code "VerticalCRS"}, {@code "AngleUnit"}.
      */
     LONG,
 
     /**
      * Keywords style is determined by the WKT {@linkplain Convention convention}.
-     *
-     * <div class="note"><b>Examples:</b>
+     * Examples:
      * <ul>
      *   <li>For {@link Convention#WKT2}: {@code "GeodCRS"}, {@code "VertCRS"}, {@code "AngleUnit"}
      *       (keywords matching the ISO 19162 recommendations).</li>
      *   <li>For {@link Convention#WKT2_SIMPLIFIED}: {@code "GeodeticCRS"}, {@code "VerticalCRS"}, {@code "Unit"}
      *       (keywords matching the class or interface names).</li>
-     * </ul></div>
+     * </ul>
      */
     DEFAULT
 }

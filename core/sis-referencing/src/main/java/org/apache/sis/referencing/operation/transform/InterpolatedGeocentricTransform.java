@@ -60,7 +60,8 @@ import org.apache.sis.util.ArgumentChecks;
  *   <li>Convert the shifted geocentric coordinate (X+ΔX, Y+ΔY, Z+ΔZ) back to a geographic coordinate.</li>
  * </ol>
  *
- * <div class="note"><b>Source:</b> IGN document {@code NTG_88.pdf},
+ * <h3>Reference</h3>
+ * IGN document {@code NTG_88.pdf},
  * <cite>"Grille de paramètres de transformation de coordonnées"</cite>
  * at <a href="http://www.ign.fr">http://www.ign.fr</a>.
  * Note however that the signs of (ΔX, ΔY, ΔZ) values expected by this class are the opposite of the
@@ -70,7 +71,7 @@ import org.apache.sis.util.ArgumentChecks;
  * <p><b>Note:</b> this algorithm is not the same as a (theoretical) {@link EllipsoidToCentricTransform} →
  * {@link InterpolatedTransform} → (inverse of {@code EllipsoidToCentricTransform}) concatenation
  * because the {@code DatumShiftGrid} inputs are geographic coordinates even if the interpolated
- * grid values are in geocentric space.</p></div>
+ * grid values are in geocentric space.</p>
  *
  * <h2>Performance consideration</h2>
  * {@link InterpolatedMolodenskyTransform} performs the same calculation more efficiently at the cost of

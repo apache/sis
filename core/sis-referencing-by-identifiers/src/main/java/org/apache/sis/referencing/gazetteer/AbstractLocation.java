@@ -110,15 +110,14 @@ public abstract class AbstractLocation implements Location {
      * Returns a unique identifier for the location instance. The methods of identifying locations is specified
      * by the {@linkplain ModifiableLocationType#getIdentifications() location type identifications}.
      *
-     * <div class="note"><b>Examples:</b>
-     * if {@link LocationType#getIdentifications()} contain “name”, then geographic identifiers may be country
-     * names like “Japan” or “France”, or places like “Eiffel Tower”. If location type identifications contain
-     * “code”, then geographic identifiers may be “SW1P 3AD” postcode.
-     * </div>
-     *
      * In order to ensure that a geographic identifier is unique within a wider geographic domain,
      * the geographic identifier may need to include an identifier of an instance of a parent location type,
      * for example “Paris, Texas”.
+     *
+     * <h4>Examples</h4>
+     * If {@link LocationType#getIdentifications()} contain “name”, then geographic identifiers may be country
+     * names like “Japan” or “France”, or places like “Eiffel Tower”. If location type identifications contain
+     * “code”, then geographic identifiers may be “SW1P 3AD” postcode.
      *
      * @return unique identifier for the location instance.
      *

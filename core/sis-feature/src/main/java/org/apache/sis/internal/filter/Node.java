@@ -117,9 +117,9 @@ public abstract class Node implements Serializable {
      *   <li>{@link CodeList} if this node implements {@link Filter}.</li>
      * </ul>
      *
-     * <div class="note"><b>Note for implementers:</b>
-     * implementations typically return a hard-coded value. If the returned value may vary for the same class,
-     * then implementers should override also the {@link #equals(Object)} and {@link #hashCode()} methods.</div>
+     * <h4>Note for implementers</h4>
+     * Implementations typically return a hard-coded value. If the returned value may vary for the same class,
+     * then implementers should override also the {@link #equals(Object)} and {@link #hashCode()} methods.
      *
      * @return the name of this function.
      */

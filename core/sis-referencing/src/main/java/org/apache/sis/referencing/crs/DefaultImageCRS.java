@@ -177,10 +177,10 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ImageCRS.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ImageCRS}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.</div>
+     * their own set of interfaces.
      *
      * @return {@code ImageCRS.class} or a user-defined sub-interface.
      */
@@ -231,9 +231,10 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code ImageCRS[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code ImageCRS} are defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code ImageCRS} are defined in the WKT 2 specification only.
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ImageCRS"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#79">WKT 2 specification §12</a>

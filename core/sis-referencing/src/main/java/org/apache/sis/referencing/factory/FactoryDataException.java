@@ -22,8 +22,8 @@ import org.opengis.util.FactoryException;
 /**
  * Thrown when a factory contains invalid data.
  *
- * <div class="note"><b>Example:</b>
- * an EPSG database record containing a null value in a column where nulls should not have been allowed.</div>
+ * <h2>Example</h2>
+ * An EPSG database record containing a null value in a column where nulls should not have been allowed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.2

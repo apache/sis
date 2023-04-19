@@ -180,11 +180,11 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     /**
      * Formats this formula as a pseudo-<cite>Well Known Text</cite> element.
      *
-     * <div class="note"><b>Compatibility note:</b>
+     * <h4>Compatibility note</h4>
      * ISO 19162 does not define a WKT representation for {@code Formula} objects.
      * The text formatted by this method is SIS-specific and causes the text to be
      * flagged as {@linkplain Formatter#setInvalidWKT(Class, Exception) invalid WKT}.
-     * The WKT content of this element may change in any future SIS version.</div>
+     * The WKT content of this element may change in any future SIS version.
      *
      * @return {@code "Formula"}.
      */

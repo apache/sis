@@ -127,10 +127,6 @@ public final class CoordinateSystems extends Static {
      * Returns an axis direction from a pole along a meridian.
      * The given meridian is usually, but not necessarily, relative to the Greenwich meridian.
      *
-     * <div class="note"><b>Example:</b>
-     * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for
-     * <cite>“South along 90°W”</cite>.</div>
-     *
      * <h4>Reference meridian</h4>
      * The reference meridian depends on the context. It is usually the prime meridian of the
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} of the
@@ -138,6 +134,10 @@ public final class CoordinateSystems extends Static {
      * that contains (through its coordinate system) the axes having those directions.
      * This policy is consistent with
      * <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#40">WKT 2 specification §7.5.4(iv)</a>.
+     *
+     * <h4>Example</h4>
+     * {@code directionAlongMeridian(AxisDirection.SOUTH, -90)} returns an axis direction for
+     * <cite>“South along 90°W”</cite>.
      *
      * @param  baseDirection  the base direction, which must be {@link AxisDirection#NORTH} or {@link AxisDirection#SOUTH}.
      * @param  meridian       the meridian in degrees, relative to a unspecified (usually Greenwich) prime meridian.
@@ -188,10 +188,9 @@ public final class CoordinateSystems extends Static {
      *   <li>The angle from <cite>"North along 90° East"</cite> to <cite>"North along 0°"</cite> is 90°.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * in the case of directions like <cite>“South along 90°W”</cite>, the caller is responsible to make sure
+     * In the case of directions like <cite>“South along 90°W”</cite>, the caller is responsible to make sure
      * that the meridians are relative to the same prime meridian. This is the case if the axes are part of
-     * the same {@code CoordinateSystem} instance.</div>
+     * the same {@code CoordinateSystem} instance.
      *
      * <h4>Horizontal and vertical directions</h4>
      * By convention this method defines the angle from any compass direction to the {@link AxisDirection#UP UP}
@@ -302,11 +301,11 @@ public final class CoordinateSystems extends Static {
      * except that it decomposes {@link DefaultCompoundCS} in its components before to check the two collections
      * of interfaces.
      *
-     * <div class="note"><b>Example:</b>
-     * if {@code sourceCS} is a {@link DefaultCompoundCS} containing {@link EllipsoidalCS} and a vertical or temporal
+     * <h4>Example</h4>
+     * If {@code sourceCS} is a {@link DefaultCompoundCS} containing {@link EllipsoidalCS} and a vertical or temporal
      * coordinate system and {@code targetCS} is an {@link EllipsoidalCS} only, then this method returns {@code true}.
      * But if {@code targetCS} is a {@link CartesianCS} or contains any other CS which is not a component of source CS,
-     * then this method returns {@code false}.</div>
+     * then this method returns {@code false}.
      */
     static boolean hasAllTargetTypes(final CoordinateSystem sourceCS, final CoordinateSystem targetCS) {
         final List<CoordinateSystem> sources = new ArrayList<>(sourceCS.getDimension());

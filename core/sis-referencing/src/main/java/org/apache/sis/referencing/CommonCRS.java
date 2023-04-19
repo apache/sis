@@ -1079,10 +1079,9 @@ public enum CommonCRS {
      *
      * The coordinate system axes are (Easting, Northing) in metres.
      *
-     * <div class="note"><b>Warning:</b>
-     * be aware of parameter order! For this method, latitude is first.
+     * <p>Be aware of parameter order! For this method, latitude is first.
      * This order is for consistency with the non-normalized {@linkplain #geographic() geographic} CRS
-     * of all items in this {@code CommonCRS} enumeration.</div>
+     * of all items in this {@code CommonCRS} enumeration.</p>
      *
      * @param  latitude  a latitude in the desired UTM or UPS projection zone.
      * @param  longitude a longitude in the desired UTM or UPS projection zone.
@@ -1322,10 +1321,10 @@ public enum CommonCRS {
         /**
          * Creates a new enumeration value of the given name.
          *
-         * <div class="note"><b>Note:</b>
+         * <h4>API design note</h4>
          * This constructor does not expect {@link VerticalDatumType} constant in order to avoid too
          * early class initialization. In particular, we do not want early dependency to the SIS-specific
-         * {@code VerticalDatumTypes.ELLIPSOIDAL} constant.</div>
+         * {@code VerticalDatumTypes.ELLIPSOIDAL} constant.
          */
         private Vertical(final boolean isEPSG, final short crs, final short datum) {
             this.isEPSG = isEPSG;

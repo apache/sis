@@ -127,9 +127,9 @@ final class Element {
      * The locale to be used for formatting an error message if the parsing fails, or {@code null} for
      * the system default. This is <strong>not</strong> the locale for parting number or date values.
      *
-     * <div class="note"><b>Design note:</b>
-     * the same reference is duplicated in every {@code Element} instances. We nevertheless copy it
-     * as a convenience for avoiding to make this argument appears in the {@code pullFoo(…)} methods.</div>
+     * <h4>Design note</h4>
+     * The same reference is duplicated in every {@code Element} instances. We nevertheless copy it
+     * as a convenience for avoiding to make this argument appears in the {@code pullFoo(…)} methods.
      */
     private final Locale errorLocale;
 

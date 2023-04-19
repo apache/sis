@@ -594,12 +594,12 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
      * <p>This method can handle the case where the envelope contains the North or South pole,
      * or when it cross the ±180° longitude.</p>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Usage note</h4>
      * If the envelope CRS is non-null, then the caller should ensure that the operation source CRS
      * is the same than the envelope CRS. In case of mismatch, this method transforms the envelope
      * to the operation source CRS before to apply the operation. This extra step may cause a lost
      * of accuracy. In order to prevent this method from performing such pre-transformation (if not desired),
-     * callers can ensure that the envelope CRS is {@code null} before to call this method.</div>
+     * callers can ensure that the envelope CRS is {@code null} before to call this method.
      *
      * @param  operation  the operation to use.
      * @param  envelope   envelope to transform, or {@code null}. This envelope will not be modified.
@@ -1015,17 +1015,15 @@ poles:  for (int i=0; i<dimension; i++) {
      * This method does not check the consistency of the provided WKT. For example, it does not check
      * that every points in a {@code LINESTRING} have the same dimension. However, this method
      * ensures that the parenthesis are balanced, in order to catch some malformed WKT.
+     * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the parsing rules.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>{@code BOX(-180 -90, 180 90)} (not really a geometry, but understood by many software products)</li>
      *   <li>{@code POINT(6 10)}</li>
      *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
      * </ul>
-     * </div>
-     *
-     * See {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} for more information about the parsing rules.
      *
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @return the envelope of the given geometry.
@@ -1053,12 +1051,12 @@ poles:  for (int i=0; i<dimension; i++) {
      * <blockquote>{@code BOX}<var>n</var>{@code D(}{@linkplain Envelope#getLowerCorner() lower
      * corner}{@code ,} {@linkplain Envelope#getUpperCorner() upper corner}{@code )}</blockquote>
      *
-     * <div class="note"><b>Note:</b>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However, it is understood by many software libraries, for example GDAL and PostGIS.</div>
-     *
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence)
      * parsed} by the {@code GeneralEnvelope} constructor.
+     *
+     * <h4>Note on standards</h4>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @param  envelope  the envelope to format.
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.

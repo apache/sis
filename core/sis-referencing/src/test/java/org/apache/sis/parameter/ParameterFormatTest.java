@@ -54,10 +54,8 @@ public final class ParameterFormatTest extends TestCase {
     /**
      * Creates the parameter descriptors to be used by all tests in this class. This method creates
      * a variant of the example documented in the {@link DefaultParameterDescriptorGroup} javadoc
-     * with arbitrary non-zero default values.
-     *
-     * <div class="note"><b>Note:</b>
-     * the default values are not part of EPSG definitions. They are added here only for testing purpose.</div>
+     * with arbitrary non-zero default values. Those default values are not part of EPSG definitions.
+     * They are added here only for testing purpose.
      */
     @BeforeClass
     public static void createParameterDescriptor() {
@@ -66,9 +64,7 @@ public final class ParameterFormatTest extends TestCase {
 
     /**
      * Creates the test parameters for the Mercator projection, to be shared by {@link ParameterMarshallingTest}.
-     *
-     * <div class="note"><b>Note:</b>
-     * the default values are not part of EPSG definitions. They are added here only for testing purpose.</div>
+     * The default values are not part of EPSG definitions. They are added here only for testing purpose.
      */
     static ParameterDescriptorGroup createMercatorParameters() {
         ParameterBuilder builder = new ParameterBuilder();
@@ -190,10 +186,8 @@ public final class ParameterFormatTest extends TestCase {
 
     /**
      * Tests {@link ParameterFormat#format(Object, Appendable)} for descriptors with {@code ContentLevel.DETAILED}.
-     *
-     * <div class="note"><b>Note:</b>
-     * the default values expected by this method are not part of EPSG definitions.
-     * They are added here only for testing purpose.</div>
+     * The default values expected by this method are not part of EPSG definitions.
+     * They are added here only for testing purpose.
      */
     @Test
     public void testFormatDetailedDescriptors() {

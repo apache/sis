@@ -55,10 +55,9 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * as two {@linkplain AbstractDirectPosition direct positions} (coordinate tuples).
  * To encode an {@code Envelope}, it is sufficient to encode these two points.
  *
- * <div class="note"><b>Note:</b>
- * {@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.
+ * <p>{@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.
  * This is different than the {@code GeographicBoundingBox} class provided in the metadata package, which can be used
- * as a kind of envelope restricted to a Geographic CRS having Greenwich prime meridian.</div>
+ * as a kind of envelope restricted to a Geographic CRS having Greenwich prime meridian.</p>
  *
  * This particular implementation of {@code Envelope} is said "General" because it uses
  * coordinates of an arbitrary number of dimensions. This is in contrast with
@@ -247,7 +246,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * check that every points in a {@code LINESTRING} have the same dimension. However, this
      * constructor ensures that the parenthesis are balanced, in order to catch some malformed WKT.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The following texts can be parsed by this constructor in addition of the usual {@code BOX} element.
      * This constructor creates the bounding box of those geometries:
      *
@@ -255,7 +254,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *   <li>{@code POINT(6 10)}</li>
      *   <li>{@code MULTIPOLYGON(((1 1, 5 1, 1 5, 1 1),(2 2, 3 2, 3 3, 2 2)))}</li>
      *   <li>{@code GEOMETRYCOLLECTION(POINT(4 6),LINESTRING(3 8,7 10))}</li>
-     * </ul></div>
+     * </ul>
      *
      * @param  wkt  the {@code BOX}, {@code POLYGON} or other kind of element to parse.
      * @throws IllegalArgumentException if the given string cannot be parsed.

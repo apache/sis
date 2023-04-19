@@ -79,10 +79,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      *
      * This arbitrary threshold value may change in any future SIS version according experience gained.
      *
-     * <div class="note"><b>Note:</b>
-     * A similar constant exists in {@code org.apache.sis.referencing.operation.matrix.GeneralMatrix}.
-     * </div>
-     *
+     * @see org.apache.sis.referencing.operation.matrix.GeneralMatrix#ZERO_THRESHOLD
      * @see Numerics#COMPARISON_THRESHOLD
      */
     private static final double ZERO_THRESHOLD = 1E-14;

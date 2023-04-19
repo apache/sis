@@ -74,10 +74,8 @@ public final class MimeFileType {
 
     /**
      * Returns the MIME type, or {@code null} if none.
-     *
-     * <div class="note"><b>Note:</b>
      * Returning {@code null} is usually not recommended for a {@code toString()} method,
-     * but this class is for internal usage only.</div>
+     * but this class is for internal usage only.
      *
      * @return the MIME type, or {@code null} if none.
      */

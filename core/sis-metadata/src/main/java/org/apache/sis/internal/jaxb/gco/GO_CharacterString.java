@@ -245,10 +245,10 @@ public class GO_CharacterString {
      * Returns the code list wrapped in a JAXB element, or {@code null} if the {@link #text} is not a wrapper for
      * a code list. Only one of {@link #getValue()} and {@code getCodeList()} should return a non-null value.
      *
-     * <div class="note"><b>Note:</b>
-     * we have to rely on a somewhat complicated mechanism because the code lists implementations in GeoAPI
+     * <h4>Implementation note</h4>
+     * We have to rely on a somewhat complicated mechanism because the code lists implementations in GeoAPI
      * do not have JAXB annotations. If those annotations are added in a future GeoAPI implementation, then
-     * we could replace this mechanism by a simple property annotated with {@code XmlElementRef}.</div>
+     * we could replace this mechanism by a simple property annotated with {@code XmlElementRef}.
      *
      * @since 0.7
      */
@@ -329,10 +329,10 @@ public class GO_CharacterString {
      * Returns the text as a string, or {@code null} if none.
      * The null value is expected by various {@code PT_FreeText}.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>API note</h4>
      * Returning {@code null} is unusual and not a recommended practice.
      * But precedents exist (for example {@link javax.swing.tree.DefaultMutableTreeNode})
-     * and this class is not for public usage.</div>
+     * and this class is not for public usage.
      *
      * @return the text as a string (may be null).
      */

@@ -148,7 +148,7 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      * return an existing instance when possible. The namespace is characterized by the given name,
      * and optionally by the following properties:
      *
-     * <blockquote><table class="sis">
+     * <table class="sis">
      *   <caption>Recognized properties</caption>
      *   <tr>
      *     <th>Property name</th>
@@ -164,13 +164,13 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      *     <td>The separator to insert between the namespace and the {@linkplain AbstractName#head() head}.<br>
      *         If omitted, then the default is the same value than {@code "separator"}.</td>
      *   </tr>
-     * </table></blockquote>
+     * </table>
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>For URN namespace, {@code separator} = {@code ":"} is typically sufficient.</li>
      *   <li>For HTTP namespace, {@code separator.head} = {@code "://"} and {@code separator} = {@code "."}.</li>
-     * </ul></div>
+     * </ul>
      *
      * @param  name  the name of the namespace to be returned. This argument can be created using
      *         <code>{@linkplain #createGenericName(NameSpace, CharSequence[]) createGenericName}(null, namespace)</code>.

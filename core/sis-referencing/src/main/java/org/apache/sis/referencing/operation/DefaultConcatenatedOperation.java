@@ -170,12 +170,12 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * but only one transformation. So considering only transformations usually means to pickup only one operation
      * in the given {@code operations} list, which make things clearer.
      *
-     * <div class="note"><b>Note:</b>
-     * according ISO 19111, the accuracy attribute is allowed only for transformations. However, this restriction
+     * <h5>Note</h5>
+     * According ISO 19111, the accuracy attribute is allowed only for transformations. However, this restriction
      * is not enforced everywhere. For example, the EPSG database declares an accuracy of 0 meter for conversions,
      * which is conceptually exact. In this class we are departing from strict interpretation of the specification
      * since we are adding accuracy information to a concatenated operation. This departure should be considered
-     * as a convenience feature only; accuracies are really relevant in transformations only.</div>
+     * as a convenience feature only; accuracies are really relevant in transformations only.
      *
      * @param  properties   the properties specified at construction time, or {@code null} if unknown.
      * @param  operations   the operations to concatenate.
@@ -316,10 +316,10 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ConcatenatedOperation.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ConcatenatedOperation}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code ConcatenatedOperation.class} or a user-defined sub-interface.
      */

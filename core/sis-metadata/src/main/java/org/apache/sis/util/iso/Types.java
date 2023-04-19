@@ -130,15 +130,15 @@ public final class Types extends Static {
      * Returns the ISO name for the given class, or {@code null} if none.
      * This method can be used for GeoAPI interfaces or {@link CodeList}.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>
      *       (an interface) returns {@code "CI_Citation"}.</li>
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code>
      *       (a code list) returns {@code "CS_AxisDirection"}.</li>
      * </ul>
-     * </div>
      *
+     * <h4>Implementation note</h4>
      * This method looks for the {@link UML} annotation on the given type. It does not search for
      * parent classes or interfaces if the given type is not directly annotated (i.e. {@code @UML}
      * annotations are not inherited). If no annotation is found, then this method does not fallback
@@ -174,14 +174,13 @@ public final class Types extends Static {
      * enumeration or code list value. This method uses the {@link UML} annotation if it exists, or
      * fallback on the {@linkplain Class#getSimpleName() simple class name} otherwise.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>{@code getListName(ParameterDirection.IN_OUT)}      returns {@code "SV_ParameterDirection"}.</li>
      *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "CS_AxisDirection"}.</li>
      *   <li>{@code getListName(TopicCategory.INLAND_WATERS)}    returns {@code "MD_TopicCategoryCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
-     * </div>
      *
      * @param  code  the code for which to get the class name, or {@code null}.
      * @return the ISO (preferred) or Java (fallback) class name, or {@code null} if the given code is null.
@@ -199,14 +198,13 @@ public final class Types extends Static {
      * Returns the ISO name (if available) or the Java name (as a fallback) of the given enumeration or code list
      * value. If the value has no {@link UML} identifier, then the programmatic name is used as a fallback.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>{@code getCodeName(ParameterDirection.IN_OUT)}      returns {@code "in/out"}.</li>
      *   <li>{@code getCodeName(AxisDirection.NORTH)}            returns {@code "north"}.</li>
      *   <li>{@code getCodeName(TopicCategory.INLAND_WATERS)}    returns {@code "inlandWaters"}.</li>
      *   <li>{@code getCodeName(ImagingCondition.BLURRED_IMAGE)} returns {@code "blurredImage"}.</li>
      * </ul>
-     * </div>
      *
      * @param  code  the code for which to get the name, or {@code null}.
      * @return the UML identifiers or programmatic name for the given code, or {@code null} if the given code is null.
@@ -234,13 +232,12 @@ public final class Types extends Static {
      * selects the longest one excluding the {@linkplain CodeList#name() field name} if possible, then
      * {@linkplain CharSequences#camelCaseToSentence(CharSequence) makes a sentence} from that name.</p>
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>{@code getCodeLabel(AxisDirection.NORTH)} returns {@code "North"}.</li>
      *   <li>{@code getCodeLabel(TopicCategory.INLAND_WATERS)} returns {@code "Inland waters"}.</li>
      *   <li>{@code getCodeLabel(ImagingCondition.BLURRED_IMAGE)} returns {@code "Blurred image"}.</li>
      * </ul>
-     * </div>
      *
      * @param  code  the code from which to get a title, or {@code null}.
      * @return a unlocalized title for the given code, or {@code null} if the given code is null.
@@ -483,9 +480,9 @@ public final class Types extends Static {
      * Note that the size of the returned array may growth between different invocations of this method,
      * since users can add their own codes to an existing list.
      *
-     * <div class="note"><b>Note:</b>
-     * This method works with both {@link Enum} and {@link CodeList}. However if the type is known to be an
-     * {@code Enum}, then the standard {@link Class#getEnumConstants()} method is more efficient.</div>
+     * <h4>Performance note</h4>
+     * This method works with both {@link Enum} and {@link CodeList}. However if the type is known to be
+     * an {@code Enum}, then the standard {@link Class#getEnumConstants()} method is more efficient.
      *
      * @param  <T>       the compile-time type given as the {@code codeType} parameter.
      * @param  codeType  the type of code list or enumeration.
@@ -502,13 +499,13 @@ public final class Types extends Static {
      * The identifier argument shall be the value documented in the {@link UML#identifier()} annotation on
      * the Java type.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>{@code forStandardName("CI_Citation")}      returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
      *   <li>{@code forStandardName("CS_AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
      * </ul>
-     * </div>
      *
+     * <h4>Implementation note</h4>
      * The package prefix (e.g. {@code "CI_"} in {@code "CI_Citation"}) can be omitted.
      * The flexibility is provided for allowing transition to newer ISO standards,
      * which are dropping the package prefixes.
@@ -518,13 +515,13 @@ public final class Types extends Static {
      * <p>Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
      * This method does not handle the identifiers for interfaces in the {@code geoapi-pending} module.</p>
      *
-     * <div class="note"><b>Future evolution:</b>
-     * when a new ISO type does not yet have a corresponding GeoAPI interface,
+     * <h4>Future evolution</h4>
+     * When a new ISO type does not yet have a corresponding GeoAPI interface,
      * this method may temporarily return an Apache SIS class instead, until a future version can use the interface.
      * For example, {@code forStandardName("CI_Individual")} returns
      * <code>{@linkplain org.apache.sis.metadata.iso.citation.DefaultIndividual}.class</code> in Apache SIS versions
      * that depend on GeoAPI 3.0, but the return type may be changed to {@code Individual.class} when Apache SIS will
-     * be upgraded to GeoAPI 3.1.</div>
+     * be upgraded to GeoAPI 3.1.
      *
      * @param  identifier  the ISO {@linkplain UML} identifier, or {@code null}.
      * @return the GeoAPI interface, or {@code null} if the given identifier is {@code null} or unknown.

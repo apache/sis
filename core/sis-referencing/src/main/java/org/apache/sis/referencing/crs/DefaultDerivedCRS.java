@@ -402,10 +402,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code DerivedCRS.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code DerivedCRS}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.</div>
+     * their own set of interfaces.
      *
      * @return {@code DerivedCRS.class} or a user-defined sub-interface.
      */
@@ -911,10 +911,10 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      * Returns the {@code <gml:derivedCRSType>} element to marshal. The default implementation tries to infer this
      * information from the {@code DefaultDerivedCRS} properties, but subclasses will override for more determinism.
      *
-     * <div class="note"><b>Note:</b>
-     * there is no setter at this time because SIS does not store this information in a {@code DefaultDerivedCRS}
+     * <h4>API note</h4>
+     * There is no setter at this time because SIS does not store this information in a {@code DefaultDerivedCRS}
      * field. Instead, we rely on the interface that we implement. For example, a {@code DefaultDerivedCRS} of type
-     * {@code SC_DerivedCRSType.vertical} will implement the {@link VerticalCRS} interface.</div>
+     * {@code SC_DerivedCRSType.vertical} will implement the {@link VerticalCRS} interface.
      */
     @XmlElement(name = "derivedCRSType", required = true)
     SC_DerivedCRSType getType() {

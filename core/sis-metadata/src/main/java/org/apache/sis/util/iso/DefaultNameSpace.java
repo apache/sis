@@ -501,8 +501,9 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * Following the <cite>Java Content Repository</cite> (JCR) convention,
      * this method returns the string representation of {@linkplain #name()} between curly brackets.
      *
-     * <div class="note"><b>Example:</b> if the name of this namespace is “<code>org.apache.sis</code>”,
-     * then this method returns “<code>{org.apache.sis}</code>”.</div>
+     * <h4>Example</h4>
+     * If the name of this namespace is “<code>org.apache.sis</code>”,
+     * then this method returns “<code>{org.apache.sis}</code>”.
      *
      * <h4>Usage</h4>
      * With this convention, it would be possible to create an <cite>expanded form</cite> of a generic name

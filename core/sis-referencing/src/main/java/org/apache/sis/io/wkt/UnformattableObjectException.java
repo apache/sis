@@ -24,12 +24,12 @@ import org.opengis.referencing.IdentifiedObject;
  * A formatting may fail because an object contains properties which cannot be represented
  * by the standard WKT elements.
  *
- * <div class="note"><b>Example:</b>
- * An engineering CRS cannot be represented in the WKT 1 format if all axes do not use the same
- * unit of measurement. However, such CRS can be represented in the WKT 2 format.</div>
+ * This exception may also be thrown by {@link Formatter} if the object given
+ * to an {@code append(…)} method is an instance of an unsupported class.
  *
- * This exception may also be thrown by {@link Formatter} if the object given to an
- * {@code append(…)} method is an instance of an unsupported class.
+ * <h2>Examples</h2>
+ * An engineering CRS cannot be represented in the WKT 1 format if all axes do not use the same
+ * unit of measurement. However, such CRS can be represented in the WKT 2 format.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 0.4

@@ -203,9 +203,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the first element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * For any {@code LocalName}, this is always {@code this}.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If {@code this} name is {@code "org.opengis.util.Record"}
-     * (no matter its scope, then this method returns {@code "org"}.</div>
+     * (no matter its scope, then this method returns {@code "org"}.
      *
      * @return the first element in the list of {@linkplain #getParsedNames() parsed names}.
      */
@@ -218,9 +218,9 @@ public abstract class AbstractName implements GenericName, Serializable {
      * Returns the last element in the sequence of {@linkplain #getParsedNames() parsed names}.
      * For any {@code LocalName}, this is always {@code this}.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If {@code this} name is {@code "org.opengis.util.Record"}
-     * (no matter its scope, then this method returns {@code "Record"}.</div>
+     * (no matter its scope, then this method returns {@code "Record"}.
      *
      * @return the last element in the list of {@linkplain #getParsedNames() parsed names}.
      */

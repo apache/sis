@@ -48,14 +48,14 @@ import static java.lang.Math.multiplyFull;
  * of two-dimensional data and should not contain an image with three-dimensional effects.
  * Planar images can be used as data storage for {@link org.apache.sis.coverage.grid.GridCoverage2D}.
  *
- * <div class="note"><b>Note: inspirational source</b>
- * <p>This class takes some inspiration from the {@code javax.media.jai.PlanarImage}
+ * <div class="note"><b>Inspirational source:</b>
+ * this class takes some inspiration from the {@code javax.media.jai.PlanarImage}
  * class defined in the <cite>Java Advanced Imaging</cite> (<abbr>JAI</abbr>) library.
  * That excellent library was 20 years in advance on thematic like defining a chain of image operations,
  * multi-threaded execution, distribution over a computer network, <i>etc.</i>
  * But unfortunately the <abbr>JAI</abbr> library does not seems to be maintained anymore.
  * We do not try to reproduce the full set of JAI functionalities here, but we progressively
- * reproduce some little bits of functionalities as they are needed by Apache SIS.</p></div>
+ * reproduce some little bits of functionalities as they are needed by Apache SIS.</div>
  *
  * <p>This base class does not store any state,
  * but assumes that numbering of pixel coordinates and tile indices start at zero.

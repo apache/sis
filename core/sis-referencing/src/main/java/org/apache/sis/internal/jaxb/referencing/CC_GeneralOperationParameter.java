@@ -195,8 +195,8 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      * Returns {@code true} if the given descriptor is restricted to a constant value.
      * This constraint exists in some predefined map projections.
      *
-     * <div class="note"><b>Example:</b>
-     * the <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
+     * <h4>Example</h4>
+     * The <cite>"Latitude of natural origin"</cite> parameter of <cite>"Mercator (1SP)"</cite> projection
      * is provided for completeness, but should never be different than zero in this particular projection
      * (otherwise it would be a <cite>"Mercator (variant C)"</cite> projection).  But if this parameter is
      * nevertheless provided, the SIS implementation will use it. From this point of view, SIS is tolerant
@@ -204,7 +204,6 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
      *
      * <p>If the GML document declares explicitly a restricted parameter, maybe it intends to use it with
      * a non-zero value. Consequently, the {@code merge(…)} method will not propagate this restriction.</p>
-     * </div>
      */
     private static boolean isRestricted(final ParameterDescriptor<?> descriptor) {
         final Comparable<?> min = descriptor.getMinimumValue();

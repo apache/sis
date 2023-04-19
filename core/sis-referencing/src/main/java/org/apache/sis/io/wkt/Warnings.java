@@ -48,7 +48,8 @@ import org.apache.sis.util.resources.Vocabulary;
  *   <li>At parsing time, unknown keywords.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b> after parsing the following WKT:
+ * <h2>Example</h2>
+ * After parsing the following WKT:
  *
  * {@snippet lang="wkt" :
  *   GeographicCRS[“WGS 84”,
@@ -66,7 +67,6 @@ import org.apache.sis.util.resources.Vocabulary;
  *   <li><code>{@linkplain #getUnknownElementLocations(String) getUnknownElementLocations}("Intruder")</code>
  *       returns <code>{"Ellipsoid", "PrimeMeridian"}</code>.</li>
  * </ul>
- * </div>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -282,11 +282,8 @@ public final class Warnings implements Localized, Serializable {
      * Returns the keywords of the WKT element where the given exception occurred, or {@code null} if unknown.
      * If this method returns a non-null array, then {@code source[0]} is the keyword of the WKT element where
      * the exception occurred and {@code source[1]} is the keyword of the parent of {@code source[0]}.
-     *
-     * <div class="note"><b>Note:</b>
-     * in other words, this method returns the tail of the path to the WKT element where the exception occurred,
+     * In other words, this method returns the tail of the path to the WKT element where the exception occurred,
      * but with path elements stored in reverse order.
-     * </div>
      *
      * @param  ex  the exception for which to get the source.
      * @return the keywords of the WKT element where the given exception occurred, or {@code null} if unknown.

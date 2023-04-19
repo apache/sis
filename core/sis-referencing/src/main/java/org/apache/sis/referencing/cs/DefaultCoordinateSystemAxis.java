@@ -389,10 +389,10 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CoordinateSystemAxis.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code CoordinateSystemAxis}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
-     * set of interfaces.</div>
+     * set of interfaces.
      *
      * @return {@code CoordinateSystemAxis.class} or a user-defined sub-interface.
      */

@@ -269,11 +269,11 @@ public final class CollectionsExt extends Static {
      *   <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Design note</h4>
      * It would be very easy to add support for {@code value} argument of type {@code Object[]} or collections.
      * But we do not provide such support for now because this method is used mostly as a helper method for
      * constructors of {@code AbstractIdentifiedObject} subclasses receiving a map of properties,
-     * and the contract of our constructors do not allow those other types for now.</div>
+     * and the contract of our constructors do not allow those other types for now.
      *
      * @param  <E>         the type of elements in the array to be returned.
      * @param  name        the parameter name, used only for formatting an error message in case of failure.

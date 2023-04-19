@@ -186,12 +186,11 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
-     * <div class="note"><b>Note on properties validation:</b>
+     * <h4>Note on properties validation</h4>
      * This constructor does not verify the property values of the given metadata (e.g. whether it contains
      * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
      * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
-     * </div>
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      *
@@ -433,11 +432,11 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
     /**
      * Returns type of transfer function to be used when scaling a physical value for a given element.
      *
-     * <div class="note"><b>Note on XML marshalling:</b>
+     * <h4>Note on XML marshalling</h4>
      * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
      * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
      * not only the measurements in the electromagnetic spectrum. However, this property will not appear in XML
-     * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
+     * documents unless this {@code SampleDimension} is actually a {@code Band}.
      *
      * @return type of transfer function, or {@code null}.
      */
@@ -514,11 +513,11 @@ public class DefaultSampleDimension extends DefaultRangeDimension implements Sam
      * Returns the smallest distance between which separate points can be distinguished,
      * as specified in instrument design.
      *
-     * <div class="note"><b>Note on XML marshalling:</b>
+     * <h4>Note on XML marshalling</h4>
      * ISO 19115-2 defines this property in {@linkplain DefaultBand a subtype} for historical reasons.
      * Apache SIS moves this property up in the hierarchy since this property can apply to any sample dimension,
      * not only the measurements in the electromagnetic spectrum. However, this property will not appear in XML
-     * documents unless this {@code SampleDimension} is actually a {@code Band}.</div>
+     * documents unless this {@code SampleDimension} is actually a {@code Band}.
      *
      * @return smallest distance between which separate points can be distinguished, or {@code null}.
      */

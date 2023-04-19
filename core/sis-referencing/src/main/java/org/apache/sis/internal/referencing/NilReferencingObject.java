@@ -41,10 +41,10 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
      * We use this value because {@link ReferenceSystem#getName()}
      * is a mandatory property and not all code is tolerant to null name.
      *
-     * <div class="note"><b>Note:</b>
-     * in theory we do not need a default name because it will be replaced by
+     * <h4>Usage note</h4>
+     * In theory we do not need a default name because it will be replaced by
      * the value of the {@code <gml:name>} element anyway at XML unmarshalling time.
-     * But not all XML documents are valid, so the {@code <gml:name>} may be missing.</div>
+     * But not all XML documents are valid, so the {@code <gml:name>} may be missing.
      *
      * @since 0.6
      */

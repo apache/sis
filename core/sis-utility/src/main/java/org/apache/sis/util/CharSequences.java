@@ -49,13 +49,13 @@ import static java.lang.Character.*;
  *       feeds or tabulations are entity boundaries.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
- * Numbers formatted in the French locale use no-break spaces as group separators. When parsing a list of numbers,
- * ordinary spaces around the numbers may need to be ignored, but no-break spaces shall be considered as part of the
- * numbers. Consequently, {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
+ * For example numbers formatted in the French locale use no-break spaces as group separators.
+ * When parsing a list of numbers, ordinary spaces around the numbers may need to be ignored,
+ * but no-break spaces shall be considered as part of the numbers.
+ * Consequently, {@code isWhitespace(…)} is appropriate for skipping spaces <em>between</em> the numbers.
  * But if there is spaces to skip <em>inside</em> a single number, then {@code isSpaceChar(…)} is a good choice
  * for accepting no-break spaces and for stopping the parse operation at tabulations or line feed character.
- * A tabulation or line feed between two characters is very likely to separate two distinct values.</div>
+ * A tabulation or line feed between two characters is very likely to separate two distinct values.
  *
  * In practice, the {@link java.text.Format} implementations in the SIS library typically use
  * {@code isSpaceChar(…)} while most of the rest of the SIS library, including this
@@ -689,13 +689,13 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      *       {@linkplain Characters#PARAGRAPH_SEPARATOR paragraph separator}.</li>
      * </ul>
      *
-     * <div class="note"><b>Performance note:</b>
+     * <h4>Performance note</h4>
      * Prior Java 8 this method was usually cheap because all string instances created by
      * {@link String#substring(int,int)} shared the same {@code char[]} internal array.
      * However, since Java 8, the new {@code String} implementation copies the data in new arrays.
      * Consequently, it is better to use index rather than this method for splitting large {@code String}s.
      * However, this method still useful for other {@link CharSequence} implementations providing an efficient
-     * {@code subSequence(int,int)} method.</div>
+     * {@code subSequence(int,int)} method.
      *
      * @param  text  the multi-line text from which to get the individual lines, or {@code null}.
      * @return the lines in the text, or an empty array if the given text was null.
@@ -1393,12 +1393,11 @@ searchWordBreak:    while (true) {
      * built from at least one character of each word in the {@code words} string. More than
      * one character from the same word may appear in the acronym, but they must always
      * be the first consecutive characters. The comparison is case-insensitive.
-     *
-     * <div class="note"><b>Example:</b>
-     * Given the {@code "Open Geospatial Consortium"} words, the following strings are recognized as acronyms:
-     * {@code "OGC"}, {@code "ogc"}, {@code "O.G.C."}, {@code "OpGeoCon"}.</div>
-     *
      * If any of the given arguments is {@code null}, this method returns {@code false}.
+     *
+     * <h4>Example</h4>
+     * Given the {@code "Open Geospatial Consortium"} words, the following strings are recognized as acronyms:
+     * {@code "OGC"}, {@code "ogc"}, {@code "O.G.C."}, {@code "OpGeoCon"}.
      *
      * @param  acronym  a possible acronym of the sequence of words, or {@code null}.
      * @param  words    the sequence of words, or {@code null}.
@@ -1969,17 +1968,17 @@ cmp:    while (ia < lga) {
      * The latter are often eastward and northward components of a vector, in which case this method provides
      * an identifier for the vector as a whole.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * given the following inputs:
+     * <p>If one of the given texts is {@code null}, then the other text is returned.
+     * If there are no common words, then this method returns an empty string.</p>
+     *
+     * <h4>Example</h4>
+     * Given the following inputs:
      * <ul>
      *   <li>{@code "baroclinic_eastward_velocity"}</li>
      *   <li>{@code "baroclinic_northward_velocity"}</li>
      * </ul>
      * This method returns {@code "baroclinic_velocity"}. Note that the {@code "ward"} characters
-     * are a common suffix of both texts but nevertheless omitted because they cut a word.</div>
-     *
-     * <p>If one of those texts is {@code null}, then the other text is returned.
-     * If there are no common words, then this method returns an empty string.</p>
+     * are a common suffix of both texts but nevertheless omitted because they cut a word.
      *
      * <h4>Possible future evolution</h4>
      * Current implementation searches only for a common prefix and a common suffix, ignoring any common words

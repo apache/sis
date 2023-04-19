@@ -389,11 +389,11 @@ public class MolodenskyTransform extends MolodenskyFormula {
      * Returns a description of the internal parameters of this {@code MolodenskyTransform} transform.
      * The returned group contains parameter descriptors for the number of dimensions and the eccentricity.
      *
-     * <div class="note"><b>Note:</b>
-     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * <h4>Usage note</h4>
+     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
      * since the isolation of non-linear parameters in this class is highly implementation dependent.
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
+     * contextual parameters}.
      *
      * @return a description of the internal parameters.
      */

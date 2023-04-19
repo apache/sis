@@ -162,7 +162,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * for specifying the object is deprecated. If deprecated, then the replacement should be specified
      * in the {@linkplain #getRemarks() remarks}.
      *
-     * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
+     * <h4>Example</h4>
+     * "superseded by code XYZ".
      *
      * @since 0.6
      */

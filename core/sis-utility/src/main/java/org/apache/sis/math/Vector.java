@@ -76,8 +76,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * the {@code float} type are represented by positive of negative infinity), but conversions from {@code long} to
  * {@code short} are allowed only if the value is between {@link Short#MIN_VALUE} and {@link Short#MAX_VALUE} inclusive.
  *
- * <div class="note"><b>Comparison with other API:</b>
- * the above functionalities look like similar functionalities provided by {@link java.nio.ByteBuffer}
+ * <h2>Comparison with other API</h2>
+ * The above functionalities look like similar functionalities provided by {@link java.nio.ByteBuffer}
  * in standard Java, but they actually serve different purposes. The {@code ByteBuffer} getter methods
  * (for example {@code getShort(int)}, {@code getLong(int)}, <i>etc.</i>) allow to decode a sequence of
  * bytes in a way determined by the type of the value to decode (2 bytes for a {@code short}, 8 bytes
@@ -88,7 +88,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
  * For example, a method performing a numerical calculation may want to see the data as {@code double} values
  * without concern about whether the data were really stored as {@code double} or as {@code float} values.
  * For the situations where a {@link Buffer} is needed, inter-operability is provided by the {@link #buffer()}
- * method and by accepting buffer in the {@link #create(Object, boolean)} method.</div>
+ * method and by accepting buffer in the {@link #create(Object, boolean)} method.
  *
  * @author  Martin Desruisseaux (MPO, Geomatys)
  * @version 1.4
@@ -513,18 +513,16 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
     /**
      * Returns the number at the given index, or {@code null} if none.
      * The object returned by this method is usually an instance of the class returned by {@link #getElementType()},
-     * but may also be an instance of a wider type if this is necessary for representing the values.
-     *
-     * <div class="note"><b>Example:</b>
+     * but may also be an instance of a wider type if this is necessary for representing the values. For example
      * if {@link #getElementType()} returns {@code Byte.class} but {@link #isUnsigned()} returns {@code true},
      * then this method will rather return instances of {@link Short} because that type is the smallest Java
      * primitive type capable to hold byte values in the [0 … 255] range. But the elements are still stored
      * internally as {@code byte}, and the vector cannot accept values outside the [0 … 255] range even if
-     * they are valid {@link Short} values.</div>
+     * they are valid {@link Short} values.
      *
-     * The class of returned objects should be stable. For example, this method should not use different types
+     * <p>The class of returned objects should be stable. For example, this method should not use different types
      * for different range of values. This stability is recommended but not guaranteed because {@code Vector}
-     * can also wrap arbitrary {@code Number[]} arrays.
+     * can also wrap arbitrary {@code Number[]} arrays.</p>
      *
      * @param  index  the index in the [0 … {@linkplain #size() size}-1] range.
      * @return the value at the given index (may be {@code null}).
@@ -1310,16 +1308,16 @@ search:     for (;;) {
      *   <li>If {@code eachValue} is {@code false}, then whole vector is repeated {@code count} times.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * This method returns an empty vector if {@code count} is zero and returns {@code this} if {@code count} is one.
+     * For other positive {@code count} values, this method returns an unmodifiable view of this vector:
+     * changes in this vector are reflected in the repeated vector.
+     *
+     * <h4>Examples</h4>
      * if {@code vec} contains {@code {1, 2, 3}}, then:
      * <ul>
      *   <li>{@code vec.repeat(true,  4)} returns {@code {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3}}.</li>
      *   <li>{@code vec.repeat(false, 4)} returns {@code {1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3}}.</li>
-     * </ul></div>
-     *
-     * This method returns an empty vector if {@code count} is zero and returns {@code this} if {@code count} is one.
-     * For other positive {@code count} values, this method returns an unmodifiable view of this vector:
-     * changes in this vector are reflected in the repeated vector.
+     * </ul>
      *
      * @param  eachValue  whether to apply the repetition on each value ({@code true}) or on the whole vector ({@code false}).
      * @param  count      number of repetitions as a positive number (including zero).

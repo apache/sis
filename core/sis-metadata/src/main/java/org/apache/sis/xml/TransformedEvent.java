@@ -271,12 +271,10 @@ abstract class TransformedEvent<E extends XMLEvent> implements XMLEvent {
         /**
          * Gets the URI used by JAXB annotations for the given prefix used in the XML document.
          * Returns {@code null} if no unique URI can be provided for the given prefix.
-         *
-         * <div class="note"><b>Example:</b>
-         * the {@code "gmd"} prefix from legacy ISO 19139:2007 standard can map to the
-         * {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"}, {@code "…/cit/1.0"}
+         * In particular, the {@code "gmd"} prefix from legacy ISO 19139:2007 standard can map
+         * to the {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"}, {@code "…/cit/1.0"}
          * and other namespaces in ISO 19115-3:2016. Because of this ambiguity,
-         * this method returns {@code null}.</div>
+         * this method returns {@code null} for the {@code "gmd"} prefix.
          *
          * <p>At unmarshalling time, events are created by an arbitrary {@link javax.xml.stream.XMLEventReader}
          * with namespaces used in the XML document. {@link TransformingReader} wraps those events using this

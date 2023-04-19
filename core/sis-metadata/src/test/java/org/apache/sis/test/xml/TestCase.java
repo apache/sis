@@ -126,9 +126,8 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * The (un)marshallers locale is set to {@link Locale#UK} (the language of ISO standards)
      * and their timezone is arbitrarily set to CET (<cite>Central European Time</cite>).
      *
-     * <div class="note"><b>Note:</b>
      * We intentionally use a timezone different than UTC in order to have an error of one or two hours
-     * if a code fails to take timezone offset in account.</div>
+     * if a code fails to take timezone offset in account.
      *
      * @return the shared (un)marshaller pool.
      * @throws JAXBException if an error occurred while creating the JAXB marshaller.

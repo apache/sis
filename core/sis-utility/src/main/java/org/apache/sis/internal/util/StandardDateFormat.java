@@ -109,9 +109,9 @@ public final class StandardDateFormat extends DateFormat {
      * The kinds of objects to get from calls to {@link #parseBest(CharSequence)}, in preference order.
      * The time is converted to UTC timezone if possible.
      *
-     * <div class="note"><b>Tip:</b>
-     * if we want to preserve the timezone instead of converting to UTC, we could try replacing
-     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.</div>
+     * <h4>Alternative</h4>
+     * If we want to preserve the timezone instead of converting to UTC, we could try replacing
+     * {@code Instant::from} by {@code ZonedDateTime::from, OffsetDateTime::from}.
      *
      * @see #parseInstantUTC(CharSequence, int, int)
      */

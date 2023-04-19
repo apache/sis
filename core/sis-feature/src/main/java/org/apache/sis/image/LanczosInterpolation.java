@@ -163,8 +163,9 @@ final class LanczosInterpolation extends Interpolation {
      * This is a component of Lanczos filter's kernel in two dimensions, which is L(x,y) = L(x)L(y).
      * In this implementation, the given <var>x</var> value must be pre-multiplied by {@link Math#PI}.
      *
-     * <div class="note"><b>Note:</b> the multiplication by π is a normalization that causes
-     * the definite integral of the function over the real numbers to equal 1.</div>
+     * <h4>Implementation note</h4>
+     * The multiplication by π is a normalization that causes the definite integral
+     * of the function over the real numbers to equal 1.
      *
      * @param  x     must be between −{@link #a}⋅π and +{@link #a}⋅π inclusive.
      * @param  sinx  value of {@code Math.sin(x)}.

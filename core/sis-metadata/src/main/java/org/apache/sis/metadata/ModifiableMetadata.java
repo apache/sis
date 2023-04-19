@@ -144,9 +144,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * New {@link ModifiableMetadata} instances are initially {@link #EDITABLE}
      * and can be made {@link #FINAL} after construction by a call to {@link ModifiableMetadata#transitionTo(State)}.
      *
-     * <div class="note"><b>Note:</b>
-     * more states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
-     * See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.</div>
+     * <h2>Future evolution</h2>
+     * More states may be added in future Apache SIS versions. On possible candidate is {@code STAGED}.
+     * See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.0

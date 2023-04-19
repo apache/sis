@@ -212,9 +212,7 @@ public final class DefaultConversionTest extends TestCase {
     /**
      * Creates a defining conversion and tests {@link DefaultConversion#specialize DefaultConversion.specialize(…)}.
      * This test includes a swapping of axis order in the <em>source</em> CRS.
-     *
-     * <div class="note"><b>Note:</b>
-     * By contrast, {@link #testSpecialize()} will test swapping axis order in the <em>target</em> CRS.</div>
+     * By contrast, {@link #testSpecialize()} will test swapping axis order in the <em>target</em> CRS.
      *
      * @throws FactoryException if an error occurred while creating the conversion.
      */
@@ -251,9 +249,7 @@ public final class DefaultConversionTest extends TestCase {
     /**
      * Tests {@link DefaultConversion#specialize DefaultConversion.specialize(…)} with new source and target CRS.
      * This test attempts to swap axis order and change the number of dimensions of the <em>target</em> CRS.
-     *
-     * <div class="note"><b>Note:</b>
-     * By contrast, {@link #testDefiningConversion()} tested swapping axis order in the <em>source</em> CRS.</div>
+     * By contrast, {@link #testDefiningConversion()} tested swapping axis order in the <em>source</em> CRS.
      *
      * @throws FactoryException if an error occurred while creating the conversion.
      */
@@ -291,12 +287,12 @@ public final class DefaultConversionTest extends TestCase {
      * In this test, we invent an imaginary scenario where the longitude rotation to apply varies with time
      * (a "moving prime meridian").
      *
-     * <div class="note"><b>Note:</b>
-     * from some point of view, this scenario is not as weird as it may look like. The Greenwich prime meridian
+     * <h4>Note</h4>
+     * From some point of view, this scenario is not as weird as it may look like. The Greenwich prime meridian
      * was initially the meridian passing through the telescope of the Greenwich observatory. But when a new
      * more powerful telescopes was built, is was installed a few metres far from the old one. So if we were
      * staying to a strict interpretation like "the meridian passing through the main telescope",
-     * that meridian would indeed more with time.</div>
+     * that meridian would indeed more with time.
      *
      * @throws FactoryException if an error occurred while creating the conversion.
      */

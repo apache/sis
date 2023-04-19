@@ -141,13 +141,12 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * names have been resolved. However, a value of {@code false} only means that we are not sure,
      * and that {@link #resolve(FeatureType, Map)} should check again.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Implementation note</h4>
      * Strictly speaking, this field should be declared {@code volatile} since the names could
      * be resolved late after construction, after the {@code DefaultFeatureType} instance became
      * used by different threads. However, this is not the intended usage of deferred associations.
      * Furthermore, a wrong value ({@code false} when it should be {@code true}) should only cause
      * more computation than needed, without changing the result.
-     * </div>
      */
     private transient boolean isResolved;
 
@@ -828,11 +827,10 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      * if we compare {@code FeatureType} to {@link Class} in the Java language, then this method is equivalent
      * to {@link Class#getSuperclass()} except that feature types allow multi-inheritance.</div>
      *
-     * <div class="note"><b>Note for subclasses:</b>
-     * this method is final because it is invoked (indirectly) by constructors, and invoking a user-overrideable
+     * <h4>API note</h4>
+     * This method is final because it is invoked (indirectly) by constructors, and invoking a user-overrideable
      * method at construction time is not recommended. Furthermore, many Apache SIS methods need guarantees about
      * the stability of this collection.
-     * </div>
      *
      * @return  the parents of this feature type, or an empty set if none.
      */

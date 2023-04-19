@@ -359,7 +359,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Alphanumeric value identifying an instance in the namespace.
      *
-     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
+     * <h4>Example</h4>
+     * {@code "4326"}.
      *
      * @return value identifying an instance in the namespace (never {@code null}).
      *
@@ -374,7 +375,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * Identifier or namespace in which the code is valid.
      * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
      *
-     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
+     * <h4>Example</h4>
+     * {@code "EPSG"}.
      *
      * @return identifier or namespace in which the code is valid, or {@code null} if not available.
      *
@@ -391,7 +393,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * This version is included only when the {@linkplain #getCode() code} uses versions.
      * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
-     * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
+     * <h4>Example</h4>
+     * The version of the underlying EPSG database.
      *
      * @return the version identifier for the namespace, or {@code null} if none.
      */
@@ -403,7 +406,8 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
     /**
      * Natural language description of the meaning of the code value.
      *
-     * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
+     * <h4>Example</h4>
+     * "World Geodetic System 1984".
      *
      * @return the natural language description, or {@code null} if none.
      *

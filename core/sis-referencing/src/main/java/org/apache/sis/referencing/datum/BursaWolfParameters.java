@@ -116,9 +116,8 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  *       can be found in the EPSG database for a given pair of source and target CRS.</li>
  * </ol>
  *
- * <div class="note"><b>Note:</b>
  * In EPSG terminology, Apache SIS gives precedence to the <cite>late-binding</cite> approach
- * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).</div>
+ * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
@@ -179,9 +178,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * The scale difference in parts per million (EPSG:8611).
      * The legacy OGC parameter name is {@code "ppm"}.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If a distance of 100 km in the source coordinate reference system translates into a distance of 100.001 km
-     * in the target coordinate reference system, the scale difference is 1 ppm (the ratio being 1.000001).</div>
+     * in the target coordinate reference system, the scale difference is 1 ppm (the ratio being 1.000001).
      */
     public double dS;
 
@@ -288,9 +287,9 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *       this method returns only the first 3 of the above-cited values.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * the rules about the arrays of length 3, 6 or 7 are derived from the <cite>Well Known Text</cite> (WKT)
-     * version 1 specification. The rule about the array of length 14 is an extension.</div>
+     * <h4>Compatibility note</h4>
+     * The rules about the arrays of length 3, 6 or 7 are derived from the <cite>Well Known Text</cite> (WKT)
+     * version 1 specification. The rule about the array of length 14 is an extension.
      *
      * @return the parameter values as an array of length 3, 6, 7 or 14.
      *
@@ -668,11 +667,11 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <blockquote><code>TOWGS84[{@linkplain #tX}, {@linkplain #tY}, {@linkplain #tZ}, {@linkplain #rX},
      * {@linkplain #rY}, {@linkplain #rZ}, {@linkplain #dS}]</code></blockquote>
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code TOWGS84} is defined in the WKT 1 specification only.</div>
-     *
      * The element name is {@code "ToWGS84"} in the common case where the {@linkplain #getTargetDatum() target datum}
      * is WGS 84. For other targets, the element name will be derived from the datum name.
+     *
+     * <h4>Compatibility note</h4>
+     * {@code TOWGS84} is defined in the WKT 1 specification only.
      *
      * @param  formatter The formatter where to format the inner content of this WKT element.
      * @return Usually {@code "ToWGS84"}.

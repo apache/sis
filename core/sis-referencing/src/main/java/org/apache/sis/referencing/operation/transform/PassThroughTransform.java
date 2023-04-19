@@ -923,11 +923,11 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     /**
      * Formats this transform as a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      *
-     * <div class="note"><b>Compatibility note:</b>
+     * <h4>Compatibility note</h4>
      * {@code PassThrough_MT} is defined in the WKT 1 specification only.
      * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
      * then this method silently uses the WKT 1 convention without raising an error
-     * (unless this {@code PassThroughTransform} cannot be formatted as valid WKT 1 neither).</div>
+     * (unless this {@code PassThroughTransform} cannot be formatted as valid WKT 1 neither).
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "PassThrough_MT"}.

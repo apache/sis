@@ -213,9 +213,10 @@ public class MetadataStandard implements Serializable {
      * return {@code true} for two or more dependencies, then the dependency which should have precedence
      * should be declared first.
      *
-     * <div class="note"><b>Example:</b>: For the ISO 19157 standard reflected by GeoAPI interfaces,
+     * <h4>Example</h4>
+     * For the ISO 19157 standard reflected by GeoAPI interfaces,
      * {@code interfacePackage} shall be the {@link org.opengis.metadata.quality} package.
-     * Its dependency is {@link #ISO_19115} in the {@link org.opengis.metadata} package.</div>
+     * Its dependency is {@link #ISO_19115} in the {@link org.opengis.metadata} package.
      *
      * @param  citation          bibliographical reference to the international standard.
      * @param  interfacePackage  the root package for metadata interfaces.

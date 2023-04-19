@@ -204,7 +204,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * and the {@linkplain SampleModel#getHeight() sample model height}
      * determines this {@linkplain #getTileHeight() image tile height}.
      *
-     * <h4>Design note:</h4>
+     * <h4>Design note</h4>
      * {@code ComputedImage} requires the sample model to have exactly the desired tile size
      * otherwise tiles created by {@link #createTile(int, int)} will consume more memory
      * than needed.

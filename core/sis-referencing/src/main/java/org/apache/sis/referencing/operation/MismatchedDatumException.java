@@ -22,7 +22,7 @@ package org.apache.sis.referencing.operation;
  * By definition, conversions do not perform any change of datum
  * while {@linkplain DefaultTransformation transformations} can do.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Usage note</h2>
  * SIS is tolerant about different datum at {@code DefaultConversion} construction time,
  * for the reasons explained in {@linkplain DefaultConversion#DefaultConversion(java.util.Map,
  * org.opengis.referencing.crs.CoordinateReferenceSystem,
@@ -31,7 +31,7 @@ package org.apache.sis.referencing.operation;
  * org.opengis.referencing.operation.OperationMethod,
  * org.opengis.referencing.operation.MathTransform) its constructor}.
  * However, SIS is stricter at {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS}
- * construction time.</div>
+ * construction time.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6

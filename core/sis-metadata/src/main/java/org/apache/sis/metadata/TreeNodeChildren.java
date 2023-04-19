@@ -379,10 +379,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * ahead of time by {@link #hasNext()} since we need that information in order to determine
          * if the value needs to be skipped or not.
          *
-         * <div class="note"><b>Note:</b>
+         * <h4>Implementation note</h4>
          * Actually we don't really need to keep this value, since it is not used outside the {@link #hasNext()}
          * method. But we keep it for allowing the {@link #next()} method to opportunistically update the
-         * {@link TreeNode#cachedValue} field.</div>
+         * {@link TreeNode#cachedValue} field.
          */
         private Object nextValue;
 
@@ -403,10 +403,10 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
          * The value of {@link TreeNodeChildren#modCount} at construction time or after
          * the last change done by this iterator. Used for concurrent modification checks.
          *
-         * <div class="note"><b>Note:</b>
+         * <h4>Implementation note</h4>
          * Actually this iterator should be robust to most concurrent modifications.
          * But we check anyway in order to prevent concurrent modifications in user
-         * code, in case a future SIS version become more sensitive to such changes.</div>
+         * code, in case a future SIS version become more sensitive to such changes.
          */
         private int modCountCheck;
 
