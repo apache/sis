@@ -88,12 +88,12 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  *   <li>{@link #parse(CharSequence, ParsePosition)}</li>
  * </ul>
  *
- * <div class="note"><b>API note:</b>
- * in the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
+ * <h2>Comparison with other API</h2>
+ * In the standard {@link Format} class, the {@code parse} methods either accept a {@link ParsePosition} argument
  * and returns {@code null} on error, or does not take position argument and throws a {@link ParseException} on error.
  * In this {@code CompoundFormat} class, the {@code parse} method both takes a {@code ParsePosition} argument and
  * throws a {@code ParseException} on error. This allows both substring parsing and more accurate exception message
- * in case of error.</div>
+ * in case of error.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -169,13 +169,13 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *       and {@link org.opengis.util.InternationalString} contents.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
+     *
+     * <h4>Example</h4>
      * The ISO 19162 (<cite>Well Known Text</cite>) standard requires a number format similar to the one defined by
      * {@code Locale.ROOT} while it allows informative texts (remarks, <i>etc.</i>) to be formatted according the
      * user's locale. Consequently, {@code WKTFormat} fixes (usually) the locale for {@code Category.FORMAT} to
-     * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.</div>
-     *
-     * For subclasses that do not override this method, the default implementation returns {@link #getLocale()}.
+     * {@code Locale.ROOT} and let {@code Category.DISPLAY} be any locale.
      *
      * @param  category  the category for which a locale is desired.
      * @return the locale for the given category (never {@code null}).
@@ -201,12 +201,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * The returned type may be a subclass of {@code <T>} if the format is configured in a way
      * that restrict the kind value to be parsed.
      *
-     * <div class="note"><b>Example:</b>
-     *   <ul>
-     *     <li>{@code StatisticsFormat} unconditionally returns {@code Statistics.class}.</li>
-     *     <li>{@code TreeTableFormat} unconditionally returns {@code TreeTable.class}.</li>
-     *   </ul>
-     * </div>
+     * <h4>Examples</h4>
+     * <ul>
+     *   <li>{@code StatisticsFormat} unconditionally returns {@code Statistics.class}.</li>
+     *   <li>{@code TreeTableFormat} unconditionally returns {@code TreeTable.class}.</li>
+     * </ul>
      *
      * @return the base type of values parsed and formatted by this {@code Format} instance.
      */
@@ -302,11 +301,11 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * {@linkplain Character#isSpaceChar(int) spaces} and
      * {@linkplain Character#isISOControl(int) ISO control characters}.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Whitespaces</h4>
      * The usual SIS policy, as documented in the {@link org.apache.sis.util.CharSequences} class, is to test for
      * whitespaces using the {@code Character.isWhitespace(…)} method. The combination of {@code isSpaceChar(…)}
      * and {@code isISOControl(…)} done in this {@code parseObject(…)} method is more permissive since it encompasses
-     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.</div>
+     * all whitespace characters, plus non-breaking spaces and non-white ISO controls.
      *
      * @param  text  the string representation of the object to parse.
      * @return the parsed object.

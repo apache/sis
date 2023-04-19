@@ -86,19 +86,19 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
 
     /**
      * Elements that appear in different order in ISO 19139:2007 (or other legacy standards) compared
-     * to ISO 19115-3:2016 (or other newer standards). Key are names of elements to reorder. Values
-     * are the elements to skip before to write the element to reorder.
+     * to ISO 19115-3:2016 (or other newer standards). Key are names of elements to reorder.
+     * Values are the elements to skip before to write the element to reorder.
      *
-     * <div class="note"><b>Example:</b>
+     * <p>While this map is used for reordering elements according legacy standards, the {@link QName} keys and values
+     * use the namespaces of newer standards. This is because newer standards like ISO 19115-3 uses many namespaces
+     * where legacy ISO 19139:2007 used only one namespace, so using the newer names reduce the risk of confusion.</p>
+     *
+     * <h4>Example</h4>
      * In {@code SV_ServiceIdentification}, {@code <srv:couplingType>} appears before {@code <srv:coupledResource>}
      * according ISO 19115-3:2016. But in ISO 19139:2007, it was the reverse order. Since Apache SIS writes elements
      * in the order defined by the newer standard, {@code <couplingType>} is encountered first. The set associated
      * to that key tells us that, when writing legacy ISO 19139 document, we should skip {@code <coupledResource>}
-     * before to write {@code <srv:couplingType>}.</div>
-     *
-     * While this map is used for reordering elements according legacy standards, the {@link QName} keys and values
-     * use the namespaces of newer standards. This is because newer standards like ISO 19115-3 uses many namespaces
-     * where legacy ISO 19139:2007 used only one namespace, so using the newer names reduce the risk of confusion.
+     * before to write {@code <srv:couplingType>}.
      *
      * @see #toSkip
      * @see #deferred
@@ -581,10 +581,11 @@ final class TransformingWriter extends Transformer implements XMLEventWriter {
          * {@link TransformingWriter} wraps those events for converting those namespaces to the ones used
          * in the XML document.
          *
-         * <div class="note"><b>Example:</b> the {@code "cit"} prefix from ISO 19115-3:2016 standard
+         * <h4>Example</h4>
+         * The {@code "cit"} prefix from ISO 19115-3:2016 standard
          * represents the {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"} namespace, which is
          * mapped to {@code "http://www.isotc211.org/2005/gmd"} in the legacy ISO 19139:2007 standard.
-         * That later URI is returned.</div>
+         * That later URI is returned.
          */
         @Override
         public String getNamespaceURI(final String prefix) {

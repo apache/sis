@@ -77,7 +77,7 @@ final class Tags {
      * The sets that are most likely to be used (for the kind of data handled by SIS) should be first.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static Supplier<TIFFTagSet>[] TAG_SETS = new Supplier[] {
+    private static final Supplier<TIFFTagSet>[] TAG_SETS = new Supplier[] {
         javax.imageio.plugins.tiff.BaselineTIFFTagSet::getInstance,
         javax.imageio.plugins.tiff.GeoTIFFTagSet::getInstance,
         javax.imageio.plugins.tiff.ExifGPSTagSet::getInstance,

@@ -215,11 +215,10 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * The methods by type. All uses of this map shall be synchronized on {@code methodsByType}.
      *
-     * <div class="note"><b>Note:</b>
-     * we do not use a concurrent map here because the number of entries is expected to be very small
+     * <h4>Implementation note</h4>
+     * We do not use a concurrent map here because the number of entries is expected to be very small
      * (about 2 entries), which make concurrent algorithms hardly efficient. Furthermore, this map is
      * not used often.
-     * </div>
      */
     private final Map<Class<?>, OperationMethodSet> methodsByType;
 
@@ -1287,12 +1286,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * produce normalized output coordinates. See {@link org.apache.sis.referencing.cs.AxesConvention} for more
      * information about what Apache SIS means by "normalized".</p>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The most typical examples of transforms with normalized inputs/outputs are normalized
      * map projections expecting (<cite>longitude</cite>, <cite>latitude</cite>) inputs in degrees
      * and calculating (<cite>x</cite>, <cite>y</cite>) coordinates in metres,
      * both of them with ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
-     * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.</div>
+     * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.
      *
      * <h4>Controlling the normalization process</h4>
      * Users who need a different normalized space than the default one way find more convenient to
@@ -1413,11 +1412,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * not {@link DefaultMathTransformFactory} job to handle changes between arbitrary CRS (those changes are
      * handled by {@link org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory} instead).
      *
-     * <div class="note"><b>Note:</b> the {@code parameterized} transform is a black box receiving inputs in
+     * <h4>Implementation note</h4>
+     * The {@code parameterized} transform is a black box receiving inputs in
      * any CS and producing outputs in any CS, not necessarily of the same kind. For that reason, we cannot use
      * {@link CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)} between the normalized CS.
      * We have to trust that the caller know that the coordinate systems (s)he provided are correct for the work
-     * done by the transform.</div>
+     * done by the transform.
      *
      * @param  parameterized  the parameterized transform, for producing an error message if needed.
      * @param  context        the source and target coordinate system.
@@ -1492,13 +1492,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * then the {@code ellipsoid} argument is mandatory. In all other cases (including the case where both
      * coordinate systems are ellipsoidal), the ellipsoid argument is ignored and can be {@code null}.
      *
-     * <div class="note"><b>Design note:</b>
-     * this method does not accept separated ellipsoid arguments for {@code source} and {@code target} because
+     * <h4>Design note</h4>
+     * This method does not accept separated ellipsoid arguments for {@code source} and {@code target} because
      * this method should not be used for datum shifts. If the two given coordinate systems are ellipsoidal,
      * then they are assumed to use the same ellipsoid. If different ellipsoids are desired, then a
      * {@linkplain #createParameterizedTransform parameterized transform} like <cite>"Molodensky"</cite>,
      * <cite>"Geocentric translations"</cite>, <cite>"Coordinate Frame Rotation"</cite> or
-     * <cite>"Position Vector transformation"</cite> should be used instead.</div>
+     * <cite>"Position Vector transformation"</cite> should be used instead.
      *
      * @param  source     the source coordinate system.
      * @param  target     the target coordinate system.
@@ -1608,18 +1608,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * Creates a transform which passes through a subset of coordinates to another transform.
      * This allows transforms to operate on a subset of coordinates.
-     *
-     * <div class="note"><b>Example:</b>
-     * Giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
-     * a pass through transform can convert the height values from meters to feet without
-     * affecting the (<var>latitude</var>, <var>longitude</var>) values.</div>
-     *
      * The resulting transform will have the following dimensions:
      *
      * {@snippet lang="java" :
      *     int sourceDim = firstAffectedCoordinate + subTransform.getSourceDimensions() + numTrailingCoordinates;
      *     int targetDim = firstAffectedCoordinate + subTransform.getTargetDimensions() + numTrailingCoordinates;
      *     }
+     *
+     * <h4>Example</h4>
+     * Giving (<var>latitude</var>, <var>longitude</var>, <var>height</var>) coordinates,
+     * a pass through transform can convert the height values from meters to feet without
+     * affecting the (<var>latitude</var>, <var>longitude</var>) values.
      *
      * @param  firstAffectedCoordinate  the lowest index of the affected coordinates.
      * @param  subTransform             transform to use for affected coordinates.

@@ -142,9 +142,10 @@ public abstract class FeatureTestCase extends TestCase {
      * Tests the {@link AbstractFeature#getProperty(String)} method. This test uses a very simple and
      * straightforward {@code FeatureType} similar to the ones obtained when reading a ShapeFile.
      *
-     * <div class="note">In a previous SIS version, the first property value was always {@code null}
-     * if the implementation was {@link DenseFeature} (see SIS-178). This test reproduced the bug,
-     * and now aim to avoid regression.</div>
+     * <h4>Historical note</h4>
+     * In a previous SIS version, the first property value was always {@code null}
+     * if the implementation was {@link DenseFeature} (see SIS-178).
+     * This test reproduced the bug, and now aim to avoid regression.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-178">SIS-178</a>
      */

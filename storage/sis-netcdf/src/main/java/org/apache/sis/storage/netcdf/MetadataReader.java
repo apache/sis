@@ -137,9 +137,8 @@ final class MetadataReader extends MetadataBuilder {
     /**
      * The character to use for quoting strings in a comma-separated list. Quoted strings may contain comma.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * John Doe, Jane Lee, "L J Smith, Jr."
-     * </div>
      */
     private static final char QUOTE = '"';
 

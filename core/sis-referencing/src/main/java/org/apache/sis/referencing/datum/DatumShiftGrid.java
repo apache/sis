@@ -68,7 +68,7 @@ import org.apache.sis.measure.Units;
  * For performance reasons SIS {@code MathTransform} implementations perform all the above-cited steps themselves,
  * and apply the interpolated translations on coordinate values in their own step between above steps 3 and 4.
  *
- * <div class="note"><b>Use cases:</b>
+ * <h2>Use cases</h2>
  * <ul class="verbose">
  *   <li><b>Datum shift by geographic translations</b><br>
  *   NADCON and NTv2 grids are defined with longitude (<var>λ</var>) and latitude (<var>φ</var>) inputs in angular
@@ -95,9 +95,7 @@ import org.apache.sis.measure.Units;
  *   followed by small corrections for the residual part.
  *   {@code DatumShiftGrid} can describe the small corrections part.
  *   </li>
- * </ul></div>
- *
- * Implementations of this class shall be immutable and thread-safe.
+ * </ul>
  *
  * <h2>Number of dimensions</h2>
  * Input coordinates and translation vectors can have any number of dimensions. However, in the current implementation,
@@ -141,6 +139,9 @@ import org.apache.sis.measure.Units;
  * same version of Apache SIS. But for long term storage, an established datum shift grid format like
  * NTv2 should be preferred.
  *
+ * <h2>Multi-threading</h2>
+ * Implementations of this class shall be immutable and thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
  *
@@ -167,10 +168,10 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * <code>{@linkplain #interpolateInCell(double, double, double[]) interpolateInCell}(x, y, …)</code>,
      * <code>{@linkplain #derivativeInCell(double, double) derivativeInCell}(x, y)</code>.
      *
-     * <div class="note"><b>Future evolution:</b>
-     * if this class is generalized to more source dimensions in a future Apache SIS version, then this field
+     * <h4>Future evolution</h4>
+     * If this class is generalized to more source dimensions in a future Apache SIS version, then this field
      * may be deprecated or its value changed. That change would be accompanied by new methods with different
-     * signature. This field can be used as a way to detect that such change occurred.</div>
+     * signature. This field can be used as a way to detect that such change occurred.
      *
      * @since 1.0
      */
@@ -277,9 +278,8 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * Returns the number of cells along each axis in the grid.
      * The length of this array is the number of grid dimensions, which is typically {@value #INTERPOLATED_DIMENSIONS}.
      * The grid dimensions shall be equal to {@link #getCoordinateToGrid() coordinateToGrid} target dimensions.
-     *
-     * <div class="note"><b>Note:</b> the number of grid dimensions is not necessarily equal to the
-     * {@linkplain #getTranslationDimensions() number of dimension of the translation vectors}.</div>
+     * That number of grid dimensions is not necessarily equal to the
+     * {@linkplain #getTranslationDimensions() number of dimension of the translation vectors}.
      *
      * @return the number of cells along each axis in the grid.
      */
@@ -692,10 +692,10 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * The default implementation computes the average of all values returned by
      * {@link #getCellValue getCellValue(dim, …)}, but subclasses may override with more specific values.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * In the <cite>"France geocentric interpolation"</cite> (ESPG:9655) operation method, those "average" values
      * are fixed by definition to -168, -60 and +320 metres for dimensions 0, 1 and 2 respectively
-     * (geocentric <var>X</var>, <var>Y</var> and <var>Z</var>).</div>
+     * (geocentric <var>X</var>, <var>Y</var> and <var>Z</var>).
      *
      * @param  dim  the dimension for which to get an average translation value,
      *              from 0 inclusive to {@link #getTranslationDimensions()} exclusive.
@@ -829,15 +829,15 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *       determines how many matrix or tensor parameters appear.</li>
      * </ul>
      *
-     * <div class="note"><b>Example 1:</b>
+     * <h4>Example 1</h4>
      * if this {@code DatumShiftGrid} instance has been created for performing NADCON datum shifts,
      * then this method returns a group named "NADCON" with two parameters:
      * <ul>
      *   <li>A parameter of type {@link java.nio.file.Path} named “Latitude difference file”.</li>
      *   <li>A parameter of type {@link java.nio.file.Path} named “Longitude difference file”.</li>
-     * </ul></div>
+     * </ul>
      *
-     * <div class="note"><b>Example 2:</b>
+     * <h4>Example 2</h4>
      * if this {@code DatumShiftGrid} instance has been created by
      * {@link org.apache.sis.referencing.operation.builder.LocalizationGridBuilder},
      * then this method returns a group named "Localization grid" with four parameters:
@@ -846,7 +846,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      *   <li>A parameter of type {@link Integer} named “num_col” for the number of columns in each matrix.</li>
      *   <li>A parameter of type {@link Matrix} named “grid_x”.</li>
      *   <li>A parameter of type {@link Matrix} named “grid_y”.</li>
-     * </ul></div>
+     * </ul>
      *
      * @return a description of the values in this grid.
      *

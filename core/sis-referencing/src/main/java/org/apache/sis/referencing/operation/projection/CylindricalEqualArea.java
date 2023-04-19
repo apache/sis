@@ -334,11 +334,9 @@ public class CylindricalEqualArea extends AuthalicConversion {
         }
 
         /**
-         * {@inheritDoc}
-         *
-         * <div class="note"><b>Note:</b>
+         * Converts a list of coordinate tuples.
          * This method must be overridden because the {@link CylindricalEqualArea} class
-         * overrides the {@link NormalizedProjection} default implementation.</div>
+         * overrides the {@link NormalizedProjection} default implementation.
          */
         @Override
         public void transform(final double[] srcPts, int srcOff,

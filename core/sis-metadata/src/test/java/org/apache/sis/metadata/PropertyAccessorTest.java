@@ -193,9 +193,9 @@ public final class PropertyAccessorTest extends TestCase {
      * The purpose of this test is to ensure that the properties defined in the parent
      * class are sorted first.
      *
-     * <div class="note"><b>Note:</b> if there is any element not declared as JAXB elements,
-     * those ones will be last in alphabetical order. Such situation is usually temporary
-     * until the JAXB annotations are completed.</div>
+     * Note that if there is any element not declared as JAXB elements,
+     * those ones will be last in alphabetical order.
+     * Such situation is usually temporary until the JAXB annotations are completed.
      */
     @Test
     @DependsOnMethod("testConstructor")

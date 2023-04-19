@@ -82,13 +82,13 @@ public class UnavailableFactoryException extends MissingFactoryResourceException
      * at some later stage <em>after</em> the factory construction (never inside the factory constructor),
      * for example the first time that the factory tried to create an object.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@link org.apache.sis.referencing.factory.sql.EPSGFactory} may have been successfully created with
      * a valid {@link javax.sql.DataSource}. But the call to {@link javax.sql.DataSource#getConnection()}
      * happens only later (the first time that user invokes a method requiring a search in the database).
      * In case of failure to connect to the database, user may discover late that the factory is actually
      * unavailable. User may want to be informed about which factory is unavailable, for example in order
-     * to remove it from the list of factory managed by {@link MultiAuthoritiesFactory}.</div>
+     * to remove it from the list of factory managed by {@link MultiAuthoritiesFactory}.
      *
      * @param  factory  the factory which is unavailable.
      */

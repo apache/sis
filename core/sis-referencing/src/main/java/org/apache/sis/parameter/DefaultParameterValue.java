@@ -923,11 +923,9 @@ convert:            if (componentType != null) {
      * If this method is invoked more than once with equal {@linkplain #getDescriptor() descriptor},
      * {@linkplain #getValue() value} and {@linkplain #getUnit() unit}, then this method will return
      * the same {@code DefaultParameterValue} instance on a <cite>best effort</cite> basis.
-     *
-     * <div class="note"><b>Rational:</b>
-     * the same parameter value is often used in many different coordinate operations. For example, all <cite>Universal
-     * Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996) and false easting (500000 metres).
-     * </div>
+     * The rational for sharing is because the same parameter value is often used in many different coordinate operations.
+     * For example, all <cite>Universal Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996)
+     * and the same false easting (500000 metres).
      *
      * @param  <T>        the type of the value stored in the given parameter.
      * @param  parameter  the parameter to make unmodifiable, or {@code null}.
@@ -955,7 +953,7 @@ convert:            if (componentType != null) {
      * Typically, parameter values that are lengths are given in the unit for the projected CRS axes
      * while parameter values that are angles are given in the unit for the base geographic CRS.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The snippet below show WKT representations of the map projection parameters of a projected CRS
      * (most other elements are omitted). The map projection uses a <cite>"Latitude of natural origin"</cite>
      * parameters which is set to 52 <strong>grads</strong>, as defined in the {@code UNIT[…]} element of the
@@ -989,7 +987,6 @@ convert:            if (componentType != null) {
      *     CS[“Cartesian”, 2],
      *       LengthUnit[“kilometre”, 1000]]
      *   }
-     * </div>
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "Parameter"} or {@code "ParameterFile"}.

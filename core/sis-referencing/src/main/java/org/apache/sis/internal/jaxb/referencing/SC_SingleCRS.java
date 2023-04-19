@@ -85,9 +85,9 @@ public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * <div class="note"><b>Note:</b>
-     * the unmarshalled CRS may be of {@code GeodeticCRS} type, which is not the most specific GeoAPI type.
-     * See {@link SC_CRS#setElement(AbstractCRS)} for more discussion.</div>
+     * <h4>Design note</h4>
+     * The unmarshalled CRS may be of {@code GeodeticCRS} type, which is not the most specific GeoAPI type.
+     * See {@link SC_CRS#setElement(AbstractCRS)} for more discussion.
      *
      * @param  crs  the unmarshalled element.
      * @throws IllegalArgumentException if the unmarshalled CRS is not a single CRS.

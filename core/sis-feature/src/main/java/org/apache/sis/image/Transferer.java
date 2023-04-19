@@ -260,10 +260,10 @@ abstract class Transferer {
      * is needed when the target raster does not use the {@code double} type, or does not use a layout that allows
      * us to write directly in the raster array.
      *
-     * <div class="note"><b>Note:</b>
-     * having a source raster with {@code double} data type does not remove the need to use a temporary buffer,
+     * <h2>Implementation note</h2>
+     * Having a source raster with {@code double} data type does not remove the need to use a temporary buffer,
      * because we cannot modify the source data. We still need to allocate a temporary array for collecting the
-     * operation results before final writing in the target array.</div>
+     * operation results before final writing in the target array.
      */
     private static final class DoubleToDouble extends Transferer {
         /** Temporary buffer where to copy data and apply operation. */

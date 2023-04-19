@@ -153,12 +153,11 @@ public class DefaultResolution extends ISOMetadata implements Resolution {
      * {@linkplain #getAngularDistance() angular distance} and {@linkplain #getLevelOfDetail() level of detail}
      * are specified, then the first of those values is taken and the other values are silently discarded.</p>
      *
-     * <div class="note"><b>Note on properties validation:</b>
+     * <h4>Note on properties validation</h4>
      * This constructor does not verify the property values of the given metadata (e.g. whether it contains
      * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
      * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
-     * </div>
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      *

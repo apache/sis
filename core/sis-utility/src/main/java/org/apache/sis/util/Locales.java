@@ -248,10 +248,10 @@ filter: for (final Locale locale : locales) {
      * string are parsed as documented in the {@link #parse(String)} method. In particular, this method tries to
      * convert 3-letters codes to 2-letters code on a <cite>best effort</cite> basis.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * This method is useful when language codes are appended to a base property or resource name.
      * For example, a dictionary may define the {@code "remarks"} property by values associated to the
-     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.</div>
+     * {@code "remarks_en"} and {@code "remarks_fr"} keys, for English and French locales respectively.
      *
      * @param  code  the language code, which may be followed by country code.
      * @param  fromIndex  index of the first character to parse.

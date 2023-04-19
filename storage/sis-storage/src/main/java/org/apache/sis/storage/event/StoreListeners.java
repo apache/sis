@@ -858,7 +858,11 @@ public class StoreListeners implements Localized {
      * are not listening to events of those types or to events of a parent type.
      * This restriction allows the garbage collector to dispose unnecessary listeners.
      *
-     * <div class="note"><b>Example:</b>
+     * <p>The argument shall enumerate all permitted types, including sub-types (they are not automatically accepted).
+     * All types given in argument must be types that were accepted before the invocation of this method.
+     * In other words, this method can be invoked for reducing the set of permitted types but not for expanding it.</p>
+     *
+     * <h4>Example</h4>
      * an application may unconditionally register listeners for being notified about additions of new data.
      * If a {@link DataStore} implementation is read-only, then such listeners would never receive any notification.
      * As a slight optimization, the {@code DataStore} constructor can invoke this method for example as below:
@@ -869,11 +873,6 @@ public class StoreListeners implements Localized {
      *
      * With this configuration, calls to {@code addListener(DataAddedEvent.class, foo)} will be ignored,
      * thus avoiding this instance to retain a never-used reference to the {@code foo} listener.
-     * </div>
-     *
-     * The argument shall enumerate all permitted types, including sub-types (they are not automatically accepted).
-     * All types given in argument must be types that were accepted before the invocation of this method.
-     * In other words, this method can be invoked for reducing the set of permitted types but not for expanding it.
      *
      * @param  permitted  type of events that are permitted. Permitted sub-types shall be explicitly enumerated as well.
      * @throws IllegalArgumentException if one of the given types was not permitted before invocation of this method.

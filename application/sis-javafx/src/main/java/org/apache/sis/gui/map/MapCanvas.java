@@ -1407,7 +1407,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * This is especially useful when the first gesture event is a tiny change because the user just started
      * panning or zooming.
      *
-     * <h4>Design note:</h4>
+     * <h4>Design note</h4>
      * using a thread for waiting seems a waste of resources, but a thread (likely this one) is going to be used
      * for real after the waiting time is elapsed. That thread usually exists anyway in {@link BackgroundThreads}
      * as an idle thread, and it is unlikely that other parts of this JavaFX application need that thread in same

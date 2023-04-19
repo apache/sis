@@ -472,8 +472,9 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * because ISO 19162 excludes the coordinate system definition in base CRS. Note however that WKT 1 includes the
      * coordinate systems. The SIS-specific {@link Convention#INTERNAL} formats also those coordinate systems.</p>
      *
-     * <div class="note"><b>Note:</b> the {@code unit} and {@code isWKT1} arguments could be computed by this method,
-     * but are requested in order to avoid computing them twice, because the caller usually have them anyway.</div>
+     * <h4>API note</h4>
+     * The {@code unit} and {@code isWKT1} arguments could be computed by this method,
+     * but are requested in order to avoid computing them twice, because the caller usually have them anyway.
      *
      * @param  formatter  the formatter where to append the coordinate system.
      * @param  cs         the coordinate system to append.

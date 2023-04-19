@@ -52,8 +52,9 @@ public final class RewindableLineReader extends LineNumberReader {
     /**
      * The input stream, or {@code null} if this reader cannot rewind anymore.
      *
-     * <div class="note"><b>Note:</b> we do not use the more generic {@link java.io.InputStream} class
-     * because this whole {@code RewindableLineReader} class is useless if we cannot seek in this stream.</div>
+     * <h4>Design note</h4>
+     * We do not use the more generic {@link java.io.InputStream} class
+     * because this whole {@code RewindableLineReader} class is useless if we cannot seek in this stream.
      */
     private InputStreamAdapter input;
 

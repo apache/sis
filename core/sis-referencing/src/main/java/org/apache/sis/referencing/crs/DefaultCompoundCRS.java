@@ -305,10 +305,10 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code CompoundCRS.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code CompoundCRS}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code CompoundCRS.class} or a user-defined sub-interface.
      */

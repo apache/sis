@@ -26,13 +26,13 @@ import org.apache.sis.util.collection.TreeTableFormat;
  * are invoked by {@link TreeTableFormat#format(TreeTable, Appendable)} before to format the tree.
  * Non-null return values are merged with the {@code TreeTableFormat} configuration.
  *
- * <div class="note"><b>Design note:</b>
+ * <h2>Design note</h2>
  * methods in this class are invoked for configuring the formatter before to write the tree.
  * We do not use this interface as callbacks invoked for individual rows during formatting.
  * The reason is that functions provided by this interface may need to manage a state
  * (for example {@linkplain #filter() filtering} may depend on previous rows) but we do not want
  * to force implementations to store such state in {@code TreeFormatCustomization} instances
- * since objects implementing this interface may be immutable.</div>
+ * since objects implementing this interface may be immutable.
  *
  * <p>This class is not yet in public API. We are waiting for more experience before to decide if it should be
  * committed API.</p>

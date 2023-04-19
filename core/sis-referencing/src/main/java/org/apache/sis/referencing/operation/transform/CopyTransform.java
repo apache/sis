@@ -135,10 +135,11 @@ final class CopyTransform extends AbstractLinearTransform {
     /**
      * Tests whether this transform does not move any points.
      *
-     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * <h4>Implementation note</h4>
+     * This method should always returns {@code false}, since
      * {@code MathTransforms.linear(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this class directly
-     * instead of using a factory method.</div>
+     * instead of using a factory method.
      */
     @Override
     public boolean isIdentity() {

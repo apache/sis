@@ -943,11 +943,12 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Tests whether this transform does not move any points.
      * Implementation checks if the two transforms are identity.
      *
-     * <div class="note"><b>Note:</b> this method should always returns {@code false}, since
+     * <h4>Implementation note</h4>
+     * This method should always returns {@code false}, because
      * {@code create(…)} should have created specialized implementations for identity cases.
      * Nevertheless we perform the full check as a safety, in case someone instantiated this
      * class directly instead of using a factory method, or in case the given math transforms
-     * are mutable (they should not, be we cannot control what the user gave to us).</div>
+     * are mutable (they should not, be we cannot control what the user gave to us).
      */
     @Override
     public boolean isIdentity() {
@@ -985,8 +986,8 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code Concat_MT} is defined in the WKT 1 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code Concat_MT} is defined in the WKT 1 specification only.
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "Concat_MT"}.

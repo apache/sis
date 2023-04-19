@@ -46,10 +46,11 @@ final class SubOperationInfo {
      * is the target CRS and the whole array (including the first element) gives the valid source CRS type,
      * if preference order.
      *
-     * <div class="note"><b>Example:</b>
-     * if a target CRS is of type {@link VerticalCRS}, then the source CRS may be another {@code VerticalCRS}
-     * or a {@link GeodeticCRS}. The geodetic CRS is possible because it may be three-dimensional.</div>
+     * <h4>Example</h4>
+     * If a target CRS is of type {@link VerticalCRS}, then the source CRS may be another {@code VerticalCRS}
+     * or a {@link GeodeticCRS}. The geodetic CRS is possible because it may be three-dimensional.
      *
+     * <h4>Exclusions</h4>
      * {@link ProjectedCRS} and {@link DerivedCRS} are not in this list because we rather use their base CRS
      * as the criterion for determining their type.
      */

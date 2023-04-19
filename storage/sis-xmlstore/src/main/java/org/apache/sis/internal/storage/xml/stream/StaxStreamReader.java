@@ -415,9 +415,9 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      *   <li>{@code Infinity} — a {@link Double#valueOf(String)} specific value.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * this method duplicates {@link javax.xml.bind.DatatypeConverter#parseDouble(String)} work,
-     * but avoid synchronization or volatile field cost of {@code DatatypeConverter}.</div>
+     * <h4>Implementation note</h4>
+     * This method duplicates {@link javax.xml.bind.DatatypeConverter#parseDouble(String)} work,
+     * but avoid synchronization or volatile field cost of {@code DatatypeConverter}.
      *
      * @param  value  the text to parse.
      * @return the floating point value for the given text.
@@ -447,10 +447,10 @@ parse:  switch (value.length()) {
      * {@link Boolean#parseBoolean(String)} with one extension: the "0" value is considered
      * as {@code false} and the "1" value as {@code true}.
      *
-     * <div class="note"><b>Note:</b>
-     * this method duplicates {@link javax.xml.bind.DatatypeConverter#parseBoolean(String)} work
+     * <h4>Implementation note</h4>
+     * This method duplicates {@link javax.xml.bind.DatatypeConverter#parseBoolean(String)} work
      * (except for its behavior in case of invalid value), but avoid synchronization or volatile
-     * field cost of {@code DatatypeConverter}.</div>
+     * field cost of {@code DatatypeConverter}.
      *
      * @param value  the string value to parse as a boolean.
      * @return true if the boolean is equal to "true" or "1".

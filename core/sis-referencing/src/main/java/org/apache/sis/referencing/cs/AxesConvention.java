@@ -132,13 +132,12 @@ public enum AxesConvention implements AxisFilter {
      * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#getPrimeMeridian() prime meridian} to Greenwich.
      * Those changes are not applied for avoiding discontinuity in conversions from the non-normalized CRS to the normalized CRS.
      *
-     * <div class="note"><b>Rational:</b>
+     * <h4>Rational</h4>
      * The reason why we do not normalize the range and the prime meridian is because doing so
      * would cause the conversion between old and new coordinate systems to be non-affine for axes
      * having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND}. Furthermore, changing the
      * prime meridian would be a datum change rather than a coordinate system change, and datum
      * changes are more difficult to handle by coordinate operation factories.
-     * </div>
      *
      * @see org.apache.sis.referencing.CommonCRS#normalizedGeographic()
      * @see CoordinateSystems#replaceAxes(CoordinateSystem, AxisFilter)
@@ -182,12 +181,12 @@ public enum AxesConvention implements AxisFilter {
      * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order.
      * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
      *
-     * <div class="note"><b>6.7.2 Map CS</b> —
+     * <blockquote><b>6.7.2 Map CS</b> —
      * The usual orientation of the Map CS shall be such that the <var>i</var> axis is parallel to the East-to-West axis
      * of the Layer CRS and increases Eastward, and the <var>j</var> axis is parallel to the North-to-South axis of the
      * Layer CRS and increases Southward. This orientation will not be possible in some cases, as (for example) in an
      * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
-     * be to the right edge and North shall be toward the upper edge of the Map CS.</div>
+     * be to the right edge and North shall be toward the upper edge of the Map CS.</blockquote>
      *
      * The above-cited <i>(<var>i</var>,<var>j</var>)</i> axes are mapped to <cite>display right</cite> and
      * <cite>display down</cite> directions respectively.
@@ -215,13 +214,13 @@ public enum AxesConvention implements AxisFilter {
      *   </tr>
      * </table>
      *
-     * <div class="note"><b>Notes:</b>
+     * <h4>API notes</h4>
      * we do not provide a <cite>"longitude or <var>x</var> axis first"</cite> enumeration value because such criterion
      * is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole.
      * The <cite>display oriented</cite> enumeration name applies to a wider range of cases,
      * but still have a loosely definition which may be adjusted in future Apache SIS versions.
      * If a more stable definition is needed, consider using {@link #RIGHT_HANDED} instead since
-     * <cite>right-handed</cite> coordinate systems have a more precise meaning in Apache SIS.</div>
+     * <cite>right-handed</cite> coordinate systems have a more precise meaning in Apache SIS.
      *
      * @since 1.0
      */
@@ -242,7 +241,6 @@ public enum AxesConvention implements AxisFilter {
      * The axes orientations implied by this {@code RIGHT_HANDED} enum is shown,
      * together with {@link #DISPLAY_ORIENTED} axes for reference:</p>
      *
-     * <div class="note">
      * <table class="sis">
      *   <caption>Examples of left-handed and right-handed coordinate systems</caption>
      *   <tr><th>Left-handed</th> <th>Right-handed</th> <th>Display oriented</th> <th>Remarks</th></tr>
@@ -253,7 +251,7 @@ public enum AxesConvention implements AxisFilter {
      *       <td>South along 90° West,<br>South along 0°</td>
      *       <td>(Same as right-handed)</td>
      *       <td>Can be used for the mapping of North pole.</td></tr>
-     * </table></div>
+     * </table>
      *
      * @see org.apache.sis.referencing.cs.CoordinateSystems#angle(AxisDirection, AxisDirection)
      * @see <a href="https://en.wikipedia.org/wiki/Right_hand_rule">Right-hand rule on Wikipedia</a>

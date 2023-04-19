@@ -107,8 +107,9 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Defined as a namespace for use as the scope of children resources (the images).
      * This is created when first needed.
      *
-     * <div class="note"><b>Design note:</b> we do not create this field in the constructor because
-     * its creation invokes the user-overrideable {@link #customize(int, GenericName)} method.</div>
+     * <h4>Design note</h4>
+     * We do not create this field in the constructor because its creation invokes
+     * the user-overrideable {@link #customize(int, GenericName)} method.
      *
      * @see #namespace()
      */
@@ -169,16 +170,15 @@ public class GeoTiffStore extends DataStore implements Aggregate {
 
     /**
      * Creates a new GeoTIFF store as a component of a larger data store.
+     * If the {@code hidden} parameter is {@code true}, some metadata that would normally be
+     * provided in this {@code GeoTiffStore} will be provided by individual components instead.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * A Landsat data set is a collection of files in a directory or ZIP file,
      * which includes more than 10 GeoTIFF files (one image per band or product for a scene).
      * {@link org.apache.sis.storage.landsat.LandsatStore} is a data store opening the Landsat
      * metadata file as the main file, then opening each band/product using a GeoTIFF data store.
-     * Those bands/products are components of the Landsat data store.</div>
-     *
-     * If the {@code hidden} parameter is {@code true}, some metadata that would normally be provided
-     * in this {@code GeoTiffStore} will be provided by individual components instead.
+     * Those bands/products are components of the Landsat data store.
      *
      * @param  parent     the parent that contains this new GeoTIFF store component, or {@code null} if none.
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.

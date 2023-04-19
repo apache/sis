@@ -1353,18 +1353,18 @@ public final class ArraysExt extends Static {
      * returning values in an array instead of in a stream. This method is okay for small sequences;
      * for large sequences the stream approach should be preferred.
      *
-     * <div class="note"><b>Purpose:</b>
-     * this method is convenient for enumerating dimensions in a coordinate reference system or bands in an image.
+     * <p>For any array returned by this method, <code>{@link #isRange(int, int[]) isRange}(start, array)</code>
+     * is guaranteed to return {@code true}.</p>
+     *
+     * <h4>Use case</h4>
+     * This method is convenient for enumerating dimensions in a coordinate reference system or bands in an image.
      * Some methods in the Java library or in Apache SIS want dimensions or bands to be specified by their indices.
      * An example from the Java library is the {@code bankIndices} argument in
      * <code>{@linkplain java.awt.image.Raster#createBandedRaster(int, int, int, int, int[], int[], java.awt.Point)
      * Raster.createBandedRaster}(…, bankIndices, …)</code>.
      * An example from Apache SIS is the {@code range} argument in
      * <code>{@linkplain org.apache.sis.storage.GridCoverageResource#read GridCoverageResource.read}(…, range)</code>.
-     * This {@code range(start, end)} method can be used in the common case where all bands are wanted in order.</div>
-     *
-     * For any array returned by this method, <code>{@link #isRange(int, int[]) isRange}(start, array)</code>
-     * is guaranteed to return {@code true}.
+     * This {@code range(start, end)} method can be used in the common case where all bands are wanted in order.
      *
      * @param  start  first value (inclusive) in the array to return.
      * @param  end    upper bound (exclusive) of values in the array to return.
@@ -1401,12 +1401,12 @@ public final class ArraysExt extends Static {
      *   <li>Otherwise return {@code false}.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * {@code isRange(1, array)} returns {@code true} if the given array is {@code {1, 2, 3, 4}}
-     * but {@code false} if the array is {@code {1, 2, 4}} (missing 3).</div>
-     *
      * This method is useful when {@code array} is an argument specified to another method, and determining that the
      * argument values are {@code start}, {@code start}+1, {@code start}+2, <i>etc.</i> allows some optimizations.
+     *
+     * <h4>Example</h4>
+     * {@code isRange(1, array)} returns {@code true} if the given array is {@code {1, 2, 3, 4}}
+     * but {@code false} if the array is {@code {1, 2, 4}} (missing 3).
      *
      * @param  start  first value expected in the given {@code array}.
      * @param  array  the array to test, or {@code null}.

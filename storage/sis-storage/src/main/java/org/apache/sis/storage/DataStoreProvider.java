@@ -99,15 +99,15 @@ public abstract class DataStoreProvider {
      * set to {@code true}, then the {@code open(…)} method may create files, a directory or a database at the given
      * location.</p>
      *
-     * <div class="note"><b>Relationship with standard file open options</b>
-     * <p>For data stores on file systems, a <code>{@value} = true</code> parameter value is equivalent to opening a file
+     * <h4>Relationship with standard file open options</h4>
+     * For data stores on file systems, a <code>{@value} = true</code> parameter value is equivalent to opening a file
      * with {@link java.nio.file.StandardOpenOption#CREATE} and {@link java.nio.file.StandardOpenOption#APPEND APPEND}.
      * The other file standard options like {@link java.nio.file.StandardOpenOption#CREATE_NEW CREATE_NEW} and
      * {@link java.nio.file.StandardOpenOption#TRUNCATE_EXISTING TRUNCATE_EXISTING} should not be accessible through
      * this {@value} parameter. The reason is that {@link ParameterValueGroup} may be used for storing parameters
      * permanently (for example in a configuration file or in a database) for reopening the same {@link DataStore}
      * many times. File options designed for being used only once like {@code CREATE_NEW} and {@code TRUNCATE_EXISTING}
-     * are incompatible with this usage.</p></div>
+     * are incompatible with this usage.
      *
      * @see #LOCATION
      * @see #getOpenParameters()
@@ -125,13 +125,11 @@ public abstract class DataStoreProvider {
      * This name is used in some warnings or exception messages.
      * It may contain any characters, including white spaces
      * (i.e. this short name is <strong>not</strong> a format identifier).
+     * For a more comprehensive format name, see {@link #getFormat()}.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * {@code "CSV"}, {@code "GeoTIFF"}, {@code "GML"}, {@code "GPX"}, {@code "JPEG"}, {@code "JPEG 2000"},
      * {@code "NetCDF"}, {@code "PNG"}, {@code "Shapefile"}.
-     * </div>
-     *
-     * For a more comprehensive format name, see {@link #getFormat()}.
      *
      * @return a short name or abbreviation for the data format.
      *
@@ -197,8 +195,8 @@ public abstract class DataStoreProvider {
      * Those parameters will be recognized by the default {@code DataStoreProvider} methods and used whenever a
      * {@link StorageConnector} is required.</p>
      *
-     * <div class="note"><b>Alternative:</b>
-     * the main differences between the use of {@code StorageConnector} and parameters are:
+     * <h4>Alternative</h4>
+     * The main differences between the use of {@code StorageConnector} and parameters are:
      * <ul class="verbose">
      *   <li>{@code StorageConnector} is designed for use with file or stream of unknown format;
      *       the format is automatically detected. By contrast, the use of parameters require to
@@ -207,7 +205,7 @@ public abstract class DataStoreProvider {
      *       and provide fine grain control over the store general behavior such as caching,
      *       time-outs, encoding, <i>etc</i>.</li>
      *   <li>Parameters can more easily be serialized in XML or configuration files.</li>
-     * </ul></div>
+     * </ul>
      *
      * @return description of the parameters required or accepted for opening a {@link DataStore}.
      *
@@ -236,14 +234,13 @@ public abstract class DataStoreProvider {
      * only that there appears to be a reasonable chance of success based on a brief inspection of the
      * {@linkplain StorageConnector#getStorage() storage object} or contents.
      *
-     * <div class="note"><b>Note for implementers</b>:
+     * <h4>Note for implementers</h4>
      * Implementations are responsible for restoring the storage object to its original position
      * on return of this method. Implementers can use the mark/reset mechanism for this purpose.
      * Marks are available as {@link java.nio.ByteBuffer#mark()}, {@link java.io.InputStream#mark(int)}
      * and {@link javax.imageio.stream.ImageInputStream#mark()}.
      * Alternatively, the {@link #probeContent(StorageConnector, Class, Prober)}
      * helper method manages automatically the marks for a set of known types.
-     * </div>
      *
      * @param  connector  information about the storage (URL, stream, JDBC connection, <i>etc</i>).
      * @return a {@linkplain ProbeResult#isSupported() supported} status if the given storage

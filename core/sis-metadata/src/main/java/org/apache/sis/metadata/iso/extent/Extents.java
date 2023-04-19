@@ -173,12 +173,12 @@ public final class Extents extends Static {
      * contains many {@link Identification} or many {@link Extent} instances, then this method returns
      * the {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union} of all of them.
      *
-     * <div class="note"><b>Use case:</b>
-     * this convenience method is useful when the metadata is expected to contain only one bounding box,
+     * <h4>Use case</h4>
+     * This convenience method is useful when the metadata is expected to contain only one bounding box,
      * typically because the metadata were obtained from a {@linkplain org.apache.sis.storage.Resource
      * resource} which is known to support only singletons (one raster or one set of features).
      * For more general cases, it is often more appropriate to handle each bounding box separately
-     * using {@link #getGeographicBoundingBox(Extent)}.</div>
+     * using {@link #getGeographicBoundingBox(Extent)}.
      *
      * @param  metadata  the metadata from which to get a global bounding box, or {@code null} if none.
      * @return a global bounding box for all extents found in the given metadata, or {@code null} if none.
@@ -208,7 +208,7 @@ public final class Extents extends Static {
     /**
      * Returns a single geographic bounding box from the specified extent.
      * This method tries to find the bounding box in the cheapest way
-     * before to fallback on more expansive computations:
+     * before to fallback on more expensive computations:
      *
      * <ol>
      *   <li>First, this method searches geographic elements that are instance of {@link GeographicBoundingBox}.<ul>
@@ -749,10 +749,10 @@ public final class Extents extends Static {
     /**
      * Implementation of {@code intersection(…)} and {@code union(…)} methods.
      *
-     * <div class="note"><b>Note:</b>
-     * the <var>C</var> parameter type should be {@code <C extends ISOMetadata & I>}.
+     * <h4>API note</h4>
+     * The <var>C</var> parameter type should be {@code <C extends ISOMetadata & I>}.
      * But this is not allowed by current Java compiler, because of complexity. See
-     * <a href="https://bugs.openjdk.java.net/browse/JDK-4899305">JDK-4899305</a>.</div>
+     * <a href="https://bugs.openjdk.java.net/browse/JDK-4899305">JDK-4899305</a>.
      *
      * @param  <I>          the metadata interface.
      * @param  <C>          the metadata implementation class. Shall implement {@code <I>}.

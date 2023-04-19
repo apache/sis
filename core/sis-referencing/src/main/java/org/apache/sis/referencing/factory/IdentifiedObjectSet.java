@@ -210,11 +210,11 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * instance if it was already created. Otherwise objects will be {@linkplain #createObject(String) created}
      * only when first needed.
      *
-     * <div class="note"><b>Purpose:</b>
-     * this method is typically used together with {@link #getAuthorityCodes()} for altering the iteration order
+     * <h4>Use case</h4>
+     * This method is typically used together with {@link #getAuthorityCodes()} for altering the iteration order
      * on the basis of authority codes. If the specified {@code codes} sequence contains the same elements than
      * the ones in the array returned by {@link #getAuthorityCodes()} but in a different order, then this method
-     * just sets the new ordering.</div>
+     * just sets the new ordering.
      *
      * @param  codes the authority codes of identified objects to store in this set.
      *

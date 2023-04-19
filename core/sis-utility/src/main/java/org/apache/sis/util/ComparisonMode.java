@@ -112,9 +112,9 @@ public enum ComparisonMode {
      * those objects as equivalent despite difference in the set of parameters, as long as coordinate
      * transformations still produce the same results.
      *
-     * <div class="note"><b>Example:</b> A <cite>"Mercator (2SP)"</cite> projection with a <cite>standard parallel</cite>
-     * value of 60° produces the same results than a <cite>"Mercator (1SP)"</cite> projection with a <cite>scale factor</cite>
-     * value of 0.5.</div>
+     * <h4>Example</h4>
+     * A <cite>"Mercator (2SP)"</cite> projection with a <cite>standard parallel</cite> value of 60° produces the
+     * same results than a <cite>"Mercator (1SP)"</cite> projection with a <cite>scale factor</cite> value of 0.5.
      *
      * @see org.apache.sis.util.Utilities#equalsIgnoreMetadata(Object, Object)
      */
@@ -144,13 +144,12 @@ public enum ComparisonMode {
      * <p>The main purpose of this method is to verify if two Coordinate Reference Systems (CRS)
      * are approximately equal ignoring axis order.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * consider two geographic coordinate reference systems with the same attributes except axis order,
+     * <h4>Example</h4>
+     * Consider two geographic coordinate reference systems with the same attributes except axis order,
      * where one CRS uses (<var>latitude</var>, <var>longitude</var>) axes
      * and the other CRS uses (<var>longitude</var>, <var>latitude</var>) axes.
      * All comparison modes (even {@code APPROXIMATE}) will consider those two CRS as different,
      * except this {@code ALLOW_VARIANT} mode which will consider one CRS to be a variant of the other.
-     * </div>
      *
      * @since 0.7
      */

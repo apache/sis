@@ -28,8 +28,9 @@ import org.apache.sis.util.ArgumentChecks;
 /**
  * An affine transform that translate the coordinate values by constant values.
  *
- * <div class="note"><b>Note:</b> we do not provide two-dimensional specialization because
- * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
+ * <h2>Design note</h2>
+ * We do not provide two-dimensional specialization because
+ * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

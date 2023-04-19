@@ -72,7 +72,7 @@ final class FilteringContext {
         /*
          * Unconditionally dispose all writers after 2 minutes, no matter if some threads
          * still need writers or not. The intent is to avoid retention of large buffers.
-         * WKB writer are not so expansive to creates, so recreating them every 2 minutes
+         * WKB writer are not so expensive to creates, so recreating them every 2 minutes
          * should not have a visible impact on performance.
          */
         if (WRITERS.add(writer) && CLEANER_REGISTERED.compareAndSet(false, true)) {

@@ -35,10 +35,10 @@ import org.opengis.util.InternationalString;
  *       This method is specific to Apache SIS.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
- * if an error occurred while a Japanese client connected to an European server, the localized message may be sent
+ * <h2>Example</h2>
+ * If an error occurred while a Japanese client connected to an European server, the localized message may be sent
  * to the client in Japanese language while the same error may be logged on the server side in the French language.
- * This allows system administrator to analyze the issue without the need to understand client's language.</div>
+ * This allows system administrator to analyze the issue without the need to understand client's language.
  *
  * The above policy is applied on a <em>best-effort</em> basis only. For example, exceptions that
  * do not implement {@code LocalizedException} may use any locale (not necessarily the default one),

@@ -42,9 +42,9 @@ import org.apache.sis.util.CharSequences;
 /**
  * A data store which creates data objects from a WKT definition.
  *
- * <div class="note"><b>Note:</b>
+ * <h4>Design note</h4>
  * this class differs from {@link org.apache.sis.internal.storage.PRJDataStore} in that
- * the file containing WKT definition is the main file, not an auxiliary file.</div>
+ * the file containing WKT definition is the main file, not an auxiliary file.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

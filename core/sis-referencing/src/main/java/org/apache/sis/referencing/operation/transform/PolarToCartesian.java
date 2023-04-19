@@ -47,11 +47,11 @@ import static java.lang.Math.*;
  *
  * Axis order shall match the order defined by {@code Normalizer} in {@link org.apache.sis.referencing.cs} package.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Design note</h2>
  * We do not provide explicit {@code CylindricalToCartesian} implementation.  Instead, the cylindrical case is
  * implemented by the polar case with a {@link PassThroughTransform} for the height. This allows Apache SIS to
  * use the optimization implemented by {@code PassThroughTransform} when for example a concatenated transform
- * is dropping the <var>z</var> axis.</div>
+ * is dropping the <var>z</var> axis.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

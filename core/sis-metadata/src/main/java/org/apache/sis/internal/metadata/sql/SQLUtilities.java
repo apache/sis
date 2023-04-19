@@ -100,9 +100,10 @@ public final class SQLUtilities extends Static {
      * method arguments with a name ending by {@code "Pattern"}. Note that not all arguments are pattern; please
      * checks carefully {@link DatabaseMetaData} javadoc for each method.
      *
-     * <div class="note"><b>Example:</b> if a method expects an argument named {@code tableNamePattern},
+     * <h4>Example</h4>
+     * If a method expects an argument named {@code tableNamePattern},
      * then that argument value should be escaped. But if the argument name is only {@code tableName},
-     * then the value should not be escaped.</div>
+     * then the value should not be escaped.
      *
      * @param  pattern  the pattern to escape, or {@code null} if none.
      * @param  escape   value of {@link DatabaseMetaData#getSearchStringEscape()}.

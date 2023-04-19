@@ -197,10 +197,10 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code TemporalDatum.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code TemporalDatum}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code TemporalDatum.class} or a user-defined sub-interface.
      */
@@ -264,8 +264,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code TimeDatum[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code TimeDatum} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code TimeDatum} is defined in the WKT 2 specification only.
      *
      * @return {@code "TimeDatum"}.
      *

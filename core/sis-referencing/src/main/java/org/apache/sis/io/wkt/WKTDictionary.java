@@ -82,8 +82,8 @@ import org.apache.sis.util.SimpleInternationalString;
  * {@link org.opengis.referencing.datum.DatumAuthorityFactory}.
  * The choice of interfaces to implement is left to subclasses.
  *
- * <div class="note"><b>Example:</b>
- * extend the set of Coordinate Reference Systems recognized
+ * <h3>Example</h3>
+ * Extend the set of Coordinate Reference Systems recognized
  * by {@link org.apache.sis.referencing.CRS#forCode(String)}.
  * The additional CRS are defined by Well-Known Text strings in a {@code "MyCRS.txt"} file.
  * First step is to create a CRS factory with those definitions:
@@ -101,7 +101,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *
  * The second step is to register this factory as a service with a
  * {@code META-INF/services/org.opengis.referencing.crs.CRSAuthorityFactory} file on the classpath.
- * That file shall contain the fully qualified class name of above {@code MyCRS} class.</div>
+ * That file shall contain the fully qualified class name of above {@code MyCRS} class.
  *
  * <h2>Errors management</h2>
  * Well-Known Text parsing is performed in two steps, each of them executed at a different time:

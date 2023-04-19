@@ -526,7 +526,7 @@ final class Visualization extends ResampledImage {
     @Override
     protected Raster computeTile(final int tileX, final int tileY, WritableRaster tile) throws TransformException {
         if (converters == null) try {
-            // Most expansive operation (resampling + conversion).
+            // Most expensive operation (resampling + conversion).
             return super.computeTile(tileX, tileY, tile);
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(TransformException.class);

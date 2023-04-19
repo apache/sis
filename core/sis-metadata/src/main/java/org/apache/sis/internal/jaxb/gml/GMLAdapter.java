@@ -30,9 +30,9 @@ import org.apache.sis.xml.IdentifiedObject;
  * Every GML object to be marshalled have an ID attribute, which is mandatory.
  * If no ID is explicitly set, a default one will be created from the wrapped object.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Future evolution</h2>
  * This class is somewhat temporary. It assigns the ID to the <em>wrapped</em> object.
- * In a future SIS version, we should assign the ID to the object itself.</div>
+ * In a future SIS version, we should assign the ID to the object itself.
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

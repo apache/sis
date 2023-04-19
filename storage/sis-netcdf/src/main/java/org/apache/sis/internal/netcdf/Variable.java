@@ -478,10 +478,10 @@ public abstract class Variable extends Node {
     /**
      * Returns {@code true} if this variable should be considered as a list of strings.
      *
-     * <div class="note"><b>Maintenance note:</b>
-     * the implementation of this method is inlined in some places, when the code already
+     * <h4>Maintenance note</h4>
+     * The implementation of this method is inlined in some places, when the code already
      * has the {@link DataType} value at hand. If this implementation is modified, search
-     * for {@link #STRING_DIMENSION} usages.</div>
+     * for {@link #STRING_DIMENSION} usages.
      *
      * @see #STRING_DIMENSION
      */
@@ -819,19 +819,19 @@ public abstract class Variable extends Node {
      * In ISO 19123 terminology, {@link Dimension#length()} on each dimension give the upper corner
      * of the grid envelope plus one. The lower corner is always (0, 0, …, 0).
      *
-     * <div class="note"><b>Usage:</b>
-     * this information is used for completing ISO 19115 metadata, providing a default implementation of
-     * {@link Convention#roleOf(Variable)} method or for building string representation of this variable
-     * among others. Those tasks are mostly for information purpose, except if {@code Variable} subclass
-     * failed to create a grid and we must rely on {@link #findGrid(GridAdjustment)} default implementation.
-     * For actual georeferencing, use {@link #getGridGeometry()} instead.</div>
-     *
-     * If {@link #findGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
+     * <p>If {@link #findGrid(GridAdjustment)} returns a non-null value, then the list returned by this method should
      * contain all dimensions returned by {@link Grid#getDimensions()}. It may contain more dimension however.
      * Those additional dimensions can be considered as bands. Furthermore, the dimensions of the {@code Grid}
      * may have a different {@linkplain Dimension#length() length} than the dimensions returned by this method.
      * If such length mismatch exists, then {@link #getGridGeometry()} will concatenate a scale factor to
-     * the "grid to CRS" transform.
+     * the "grid to CRS" transform.</p>
+     *
+     * <h4>Usage</h4>
+     * This information is used for completing ISO 19115 metadata, providing a default implementation of
+     * {@link Convention#roleOf(Variable)} method or for building string representation of this variable
+     * among others. Those tasks are mostly for information purpose, except if {@code Variable} subclass
+     * failed to create a grid and we must rely on {@link #findGrid(GridAdjustment)} default implementation.
+     * For actual georeferencing, use {@link #getGridGeometry()} instead.
      *
      * @return all dimensions of this variable, in netCDF order (reverse of "natural" order).
      *

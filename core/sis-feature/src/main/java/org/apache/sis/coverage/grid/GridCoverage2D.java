@@ -69,8 +69,8 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * The only restriction is that the {@linkplain GridGeometry#getExtent() grid extent} has a
  * {@linkplain GridExtent#getSize(int) size} equals to 1 in all dimensions except two of them.
  *
- * <div class="note"><b>Example:</b>
- * a remote sensing image may be valid only over some time range
+ * <h2>Example</h2>
+ * A remote sensing image may be valid only over some time range
  * (the temporal period of the satellite passing over observed area).
  * Envelopes for such grid coverage can have three dimensions:
  * the two usual ones (horizontal extent along <var>x</var> and <var>y</var>),
@@ -78,7 +78,6 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * This "two-dimensional" grid coverage can have any number of columns along <var>x</var> axis
  * and any number of rows along <var>y</var> axis, but only one plan along <var>t</var> axis.
  * This single plan can have a lower bound (the start time) and an upper bound (the end time).
- * </div>
  *
  * <h2>Image size and location</h2>
  * The {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height}

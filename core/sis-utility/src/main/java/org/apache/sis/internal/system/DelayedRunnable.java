@@ -24,10 +24,10 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A task to be submitted to {@link DelayedExecutor} for later execution.
  *
- * <div class="note"><b>Design note:</b>
- * we considered removing this interface in favor a library-wide executor instead of {@code DelayedExecutor}.
+ * <h2>Design note</h2>
+ * We considered removing this interface in favor a library-wide executor instead of {@code DelayedExecutor}.
  * But benchmarks suggested that this lightweight approach for the specific needs of SIS is preferable.
- * See <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a> for more information.</div>
+ * See <a href="https://issues.apache.org/jira/browse/SIS-76">SIS-76</a> for more information.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -39,11 +39,10 @@ public abstract class DelayedRunnable implements Delayed, Runnable {
      * In the particular case of the {@link Immediate} subclass, the meaning of this field is
      * modified: it is rather an ordinal value used for preserving task order.
      *
-     * <div class="note"><b>Note:</b>
-     * we use {@link System#nanoTime()} instead of {@link System#currentTimeMillis()} because
+     * <h4>Implementation note</h4>
+     * We use {@link System#nanoTime()} instead of {@link System#currentTimeMillis()} because
      * the latter is not guaranteed to be monotonic: {@code currentTimeMillis} may change abruptly
      * for example if the user adjusts the clock of his operating system.
-     * </div>
      */
     final long timestamp;
 

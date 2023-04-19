@@ -218,11 +218,10 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      *       with the {@link Pattern} syntax.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * The {@code "?……[…] "} pattern means <cite>"If the next value is non-null, then insert the
      * {@code "……"} string, repeat the {@code '…'} character as many time as needed (may be zero),
      * then insert a space"</cite>.
-     * </div>
      *
      * @param  pattern  the pattern of the new column separator.
      * @throws IllegalArgumentException if the given pattern is illegal.

@@ -93,17 +93,17 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * such as {@link #doubleValue()} is equal to the given value in the sense of {@link Double#equals(Object)}:
      * infinities, positive and negative zeros are preserved, but various NaN values are collapsed to a single NaN value.
      *
-     * <div class="note"><b>Design note:</b>
-     * this method does not return approximated values because it is difficult to choose which fraction is best.
+     * <p>This method accepts only values between {@value Integer#MIN_VALUE} and {@value Integer#MAX_VALUE} inclusive,
+     * i.e. values in the range of 32-bits integers. If the given value has fraction digits, then the validity range
+     * will be smaller depending on the {@linkplain #denominator} required for representing that value.</p>
+     *
+     * <h4>Design note</h4>
+     * This method does not return approximated values because it is difficult to choose which fraction is best.
      * For example, choosing an approximated fraction for π value is quite arbitrary, and searching the fraction
-     * closer than any other fraction representable by this class is computationally expansive.
+     * closer than any other fraction representable by this class is computationally expensive.
      * Even with common fractions, the algorithm currently implemented in this class can detect that 1.6666666666666667
      * {@linkplain Double#equals(Object) is equal to} 5⁄3 but cannot detect easily that 1.66666666666666 (same number
-     * with two decimal digits dropped) is close to 5⁄3.</div>
-     *
-     * This method accepts only values between {@value Integer#MIN_VALUE} and {@value Integer#MAX_VALUE} inclusive,
-     * i.e. values in the range of 32-bits integers. If the given value has fraction digits, then the validity range
-     * will be smaller depending on the {@linkplain #denominator} required for representing that value.
+     * with two decimal digits dropped) is close to 5⁄3.
      *
      * @param  value  the double-precision value to convert to a fraction.
      * @return a fraction such as {@link #doubleValue()} is equal to the given value.

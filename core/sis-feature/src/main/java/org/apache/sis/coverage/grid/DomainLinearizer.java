@@ -206,10 +206,10 @@ public class DomainLinearizer {
      * after a linear "grid to CRS" approximation has been computed by the <cite>Least Mean Squares</cite> method.
      * Subclasses can override this method for example in order to scale the conversion by some arbitrary factor.
      *
-     * <div class="note"><b>Tip:</b>
-     * scales (if desired) should be applied <em>before</em> {@code gridToCRS}, i.e. on grid coordinates.
+     * <h4>Tip</h4>
+     * Scales (if desired) should be applied <em>before</em> {@code gridToCRS}, i.e. on grid coordinates.
      * Scales applied after the transform (i.e. on "real world" coordinates) may give unexpected results
-     * if the conversion contains a rotation.</div>
+     * if the conversion contains a rotation.
      *
      * @param  gridToCRS  an approximation of the "grid to CRS" conversion computed by {@code DomainLinearizer}.
      * @return the approximation to use for creating a new {@link GridGeometry}. Should be linear.

@@ -177,10 +177,10 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ParametricCRS.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParametricCRS}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code ParametricCRS.class} or a user-defined sub-interface.
      */
@@ -232,9 +232,10 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code ParametricCRS[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code ParametricCRS} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code ParametricCRS} is defined in the WKT 2 specification only.
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParametricCRS"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#83">WKT 2 specification</a>

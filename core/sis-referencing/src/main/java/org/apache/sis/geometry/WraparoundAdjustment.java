@@ -142,10 +142,10 @@ public class WraparoundAdjustment {
      * With this constructor, {@code WraparoundAdjustment} does <strong>not</strong> verify if a coordinate operation
      * is needed for a pair of CRS; it is caller's responsibility to ensure that input objects use the expected CRS.
      *
-     * <div class="note"><b>Example:</b>
-     * in the context of {@link org.apache.sis.coverage.grid.GridGeometry}, the {@code domain} argument may be the
+     * <h4>Example</h4>
+     * In the context of {@link org.apache.sis.coverage.grid.GridGeometry}, the {@code domain} argument may be the
      * geospatial envelope of the grid and the {@code inputToResult} argument may be the "CRS to grid" transform.
-     * This configuration allows to compute grid coordinates having more chances to be inside the grid.</div>
+     * This configuration allows to compute grid coordinates having more chances to be inside the grid.
      *
      * @param  domain          the region where a given area (AOI) or point of interest (POI) should be located.
      * @param  domainToInput   if the AOI or POI will use a different CRS than {@code domain}, the transform from

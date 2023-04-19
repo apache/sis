@@ -37,9 +37,9 @@ import org.apache.sis.util.resources.Errors;
  * <p>{@link Raster} and {@link PixelIterator} transfer data in {@code int[]}, {@code float[]} and {@code double[]} arrays.
  * Additionally, {@code PixelIterator} uses also {@link IntBuffer}, {@link FloatBuffer} and {@link DoubleBuffer}.</p>
  *
- * <div class="note"><b>Future evolution:</b>
- * this class may be refactored as an enumeration in a future Java version if
- * <a href="http://openjdk.java.net/jeps/301">JEP 301</a> is implemented.</div>
+ * <h2>Future evolution</h2>
+ * This class may be refactored as an enumeration in a future Java version if
+ * <a href="http://openjdk.java.net/jeps/301">JEP 301</a> is implemented.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

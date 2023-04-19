@@ -328,11 +328,11 @@ class TreeNode implements Node {
          * This is used if we want to render a metadata property in a different way than the way implied by JavaBeans.
          * The wrapping operation should be cheap because it will be applied every time the user request the node.
          *
-         * <div class="note"><b>Example:</b>
-         * the {@code "defaultLocale+otherLocale"} property is represented by {@code Map.Entry<Locale,Charset>} values.
+         * <h4>Example</h4>
+         * The {@code "defaultLocale+otherLocale"} property is represented by {@code Map.Entry<Locale,Charset>} values.
          * The nodes created by this class contain those {@code Map.Entry} values, but we want to show them to users as
          * as a {@link java.util.Locale} node with a {@link java.nio.charset.Charset} child. This separation is done by
-         * {@link LocaleAndCharset}.</div>
+         * {@link LocaleAndCharset}.
          */
         final Function<TreeNode,Node> decorator;
 

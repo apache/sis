@@ -78,7 +78,7 @@ public abstract class GeometryWithCRS<G> extends GeometryWrapper<G> {
     public final boolean isSameCRS(final GeometryWrapper<G> other) {
         /*
          * Identity comparison is often sufficient since all geometries typically share the same CRS.
-         * If they are not the same instance, a more expansive `equalsIgnoreMetadata(…)` method here
+         * If they are not the same instance, a more expensive `equalsIgnoreMetadata(…)` method here
          * would probably duplicate the work done later by the `transform(Geometry, …)` method.
          */
         return crs == ((GeometryWithCRS<G>) other).crs;

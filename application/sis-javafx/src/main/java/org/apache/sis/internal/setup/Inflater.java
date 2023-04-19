@@ -31,9 +31,9 @@ import javax.swing.JProgressBar;
 /**
  * Decompress the ZIP file for JavaFX in a background thread.
  *
- * <p><b>Design note:</b> we do not use {@link javax.swing.SwingWorker} because that classes
- * is more expansive than what we need. For example, it creates a pool of 10 threads while we
- * need only one.</p>
+ * <h2>Design note</h2>
+ * We do not use {@link javax.swing.SwingWorker} because that classes is more expensive
+ * than what we need. For example, it creates a pool of 10 threads while we need only one.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1

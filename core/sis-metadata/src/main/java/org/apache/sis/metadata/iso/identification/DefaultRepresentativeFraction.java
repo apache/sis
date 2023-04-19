@@ -124,12 +124,11 @@ public class DefaultRepresentativeFraction extends Number implements Representat
     /**
      * Constructs a new representative fraction initialized to the value of the given object.
      *
-     * <div class="note"><b>Note on properties validation:</b>
+     * <h4>Note on properties validation</h4>
      * This constructor does not verify the property values of the given metadata (e.g. whether it contains
      * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
      * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
-     * </div>
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      */
@@ -233,10 +232,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equal to 1, or 0 otherwise.
-     *
-     * <div class="note"><b>Rational:</b>
-     * This method is defined that way because scales smaller than 1 can
-     * only be casted to 0, and NaN values are also represented by 0.</div>
+     * This method is implemented that way because scales smaller than 1 can only be casted to 0,
+     * and NaN values are also represented by 0.
      *
      * @return 1 if the denominator is 1, or 0 otherwise.
      */
@@ -247,10 +244,8 @@ public class DefaultRepresentativeFraction extends Number implements Representat
 
     /**
      * Returns 1 if the {@linkplain #getDenominator() denominator} is equal to 1, or 0 otherwise.
-     *
-     * <div class="note"><b>Rational:</b>
-     * This method is defined that way because scales smaller than 1 can
-     * only be casted to 0, and NaN values are also represented by 0.</div>
+     * This method is implemented that way because scales smaller than 1 can only be casted to 0,
+     * and NaN values are also represented by 0.
      *
      * @return 1 if the denominator is 1, or 0 otherwise.
      */

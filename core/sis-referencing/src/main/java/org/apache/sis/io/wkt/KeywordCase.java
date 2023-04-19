@@ -33,9 +33,8 @@ package org.apache.sis.io.wkt;
  *   <tr><td>{@code ENGINEERINGDATUM}</td>   <td>{@code EngineeringDatum}</td></tr>
  * </table>
  *
- * <div class="note"><b>Note:</b>
- * Well-Known Text keywords are case insensitive at parsing time. {@code KEYWORD} is equivalent to
- * {@code keyword} is equivalent to {@code KeyWord} and to {@code kEYwORd}.</div>
+ * Well-Known Text keywords are case insensitive at parsing time.
+ * {@code KEYWORD} is equivalent to {@code keyword} is equivalent to {@code KeyWord} and to {@code kEYwORd}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6

@@ -208,11 +208,11 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
     /**
      * The inverse of this transform.
      *
-     * <div class="note"><b>Note:</b>
-     * creation of this object is not deferred to the first call to the {@link #inverse()} method because this
+     * <h4>Implementation note</h4>
+     * Creation of this object is not deferred to the first call to the {@link #inverse()} method because this
      * object is lightweight and typically needed soon anyway (may be as soon as {@code ConcatenatedTransform}
      * construction time). In addition this field is part of serialization form in order to preserve the
-     * references graph.</div>
+     * references graph.
      */
     @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private final AbstractMathTransform inverse;
@@ -408,11 +408,11 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * Returns a copy of internal parameter values of this {@code EllipsoidToCentricTransform} transform.
      * The returned group contains parameter values for the number of dimensions and the eccentricity.
      *
-     * <div class="note"><b>Note:</b>
-     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * <h4>Usage note</h4>
+     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
      * since the isolation of non-linear parameters in this class is highly implementation dependent.
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
+     * contextual parameters}.
      *
      * @return a copy of the internal parameter values for this transform.
      */
@@ -481,10 +481,10 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * This method relaxes a little bit the {@code MathTransform} contract by accepting two- or three-dimensional
      * points even if the number of dimensions does not match the {@link #getSourceDimensions()} value.
      *
-     * <div class="note"><b>Rational:</b>
-     * that flexibility on the number of dimensions is required for calculation of {@linkplain #inverse() inverse}
+     * <h4>Rational</h4>
+     * That flexibility on the number of dimensions is required for calculation of {@linkplain #inverse() inverse}
      * transform derivative, because that calculation needs to inverse a square matrix with all terms in it before
-     * to drop the last row in the two-dimensional case.</div>
+     * to drop the last row in the two-dimensional case.
      *
      * @param  point  the position where to evaluate the derivative.
      * @return the derivative at the specified point (never {@code null}).

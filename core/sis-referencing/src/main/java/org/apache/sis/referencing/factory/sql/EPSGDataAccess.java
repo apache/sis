@@ -317,10 +317,10 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Recursivity may happen while creating Bursa-Wolf parameters, projected CRS if the database has erroneous data,
      * compound CRS if there is cycles, or coordinate operations.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@link #createDatum(String)} invokes {@link #createBursaWolfParameters(PrimeMeridian, Integer)}, which creates
      * a target datum. The target datum could have its own Bursa-Wolf parameters, with one of them pointing again to
-     * the source datum.</div>
+     * the source datum.
      *
      * Keys are EPSG codes and values are the type of object being constructed (but those values are not yet used).
      */
@@ -367,11 +367,11 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * Creates a factory using the given connection. The connection will be {@linkplain Connection#close() closed}
      * when this factory will be {@linkplain #close() closed}.
      *
-     * <div class="note"><b>API design note:</b>
-     * this constructor is protected because {@code EPSGDataAccess} instances should not be created as standalone factories.
+     * <h4>API design note</h4>
+     * This constructor is protected because {@code EPSGDataAccess} instances should not be created as standalone factories.
      * This constructor is for allowing definition of custom {@code EPSGDataAccess} subclasses, which are then instantiated
      * by the {@link EPSGFactory#newDataAccess(Connection, SQLTranslator)} method of a corresponding custom
-     * {@code EPSGFactory} subclass.</div>
+     * {@code EPSGFactory} subclass.
      *
      * @param owner       the {@code EPSGFactory} which is creating this Data Access Object (DAO).
      * @param connection  the connection to the underlying EPSG database.
@@ -695,9 +695,7 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Converts EPSG codes or EPSG names to the numerical identifiers (the primary keys).
-     *
-     * <div class="note"><b>Note:</b>
-     * this method could be seen as the converse of above {@link #getDescriptionText(String)} method.</div>
+     * This method could be seen as the converse of above {@link #getDescriptionText(String)} method.
      *
      * @param  table       the table where the code should appears, or {@code null} if {@code codeColumn} is null.
      * @param  codeColumn  the column name for the codes, or {@code null} if none.
@@ -1336,8 +1334,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * The returned object will typically be an instance of {@link GeographicCRS}, {@link ProjectedCRS},
      * {@link VerticalCRS} or {@link CompoundCRS}.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for coordinate reference systems are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for coordinate reference systems are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -1349,7 +1347,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>5714</td> <td>Vertical</td>      <td>Mean Sea Level height</td></tr>
      *   <tr><td>6349</td> <td>Compound</td>      <td>NAD83(2011) + NAVD88 height</td></tr>
      *   <tr><td>5800</td> <td>Engineering</td>   <td>Astra Minas Grid</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the coordinate reference system for the given code.
@@ -1622,8 +1620,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Creates an arbitrary datum from a code. The returned object will typically be an
      * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for datums are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for datums are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -1633,7 +1631,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>1027</td> <td>Vertical</td>    <td>EGM2008 geoid</td></tr>
      *   <tr><td>5100</td> <td>Vertical</td>    <td>Mean Sea Level</td></tr>
      *   <tr><td>9315</td> <td>Engineering</td> <td>Seismic bin grid datum</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the datum for the given code.
@@ -1903,8 +1901,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Creates a geometric figure that can be used to describe the approximate shape of the earth.
      * In mathematical terms, it is a surface formed by the rotation of an ellipse about its minor axis.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for ellipsoids are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for ellipsoids are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -1912,7 +1910,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>7030</td> <td>WGS 84</td></tr>
      *   <tr><td>7034</td> <td>Clarke 1880</td></tr>
      *   <tr><td>7048</td> <td>GRS 1980 Authalic Sphere</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the ellipsoid for the given code.
@@ -1991,8 +1989,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Creates a prime meridian defining the origin from which longitude values are determined.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for prime meridians are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for prime meridians are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2002,7 +2000,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>8904</td> <td>Bogota</td></tr>
      *   <tr><td>8905</td> <td>Madrid</td></tr>
      *   <tr><td>8906</td> <td>Rome</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the prime meridian for the given code.
@@ -2052,15 +2050,15 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Creates information about spatial, vertical, and temporal extent (usually a domain of validity) from a code.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for extents are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for extents are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
      *   <tr><th>Code</th> <th>Description</th></tr>
      *   <tr><td>1262</td> <td>World</td></tr>
      *   <tr><td>3391</td> <td>World - between 80°S and 84°N</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the extent for the given code.
@@ -2127,8 +2125,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Creates an arbitrary coordinate system from a code. The returned object will typically be an
      * instance of {@link EllipsoidalCS}, {@link CartesianCS} or {@link VerticalCS}.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for coordinate systems are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for coordinate systems are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2144,7 +2142,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>6404</td> <td>Spherical 3D CS</td>   <td>latitude, longitude, radius</td>             <td>north, east, up</td> <td>degree, degree, metre</td></tr>
      *   <tr><td>6498</td> <td>Vertical CS</td>       <td>depth (D)</td>                               <td>down</td>            <td>metre</td></tr>
      *   <tr><td>6499</td> <td>Vertical CS</td>       <td>height (H)</td>                              <td>up</td>              <td>metre</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the coordinate system for the given code.
@@ -2333,8 +2331,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Creates a coordinate system axis with name, direction, unit and range of values.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for axes are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for axes are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2343,7 +2341,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>107</td>  <td>Longitude (λ)</td> <td>degree</td></tr>
      *   <tr><td>1</td>    <td>Easting (E)</td>   <td>metre</td></tr>
      *   <tr><td>2</td>    <td>Northing (N)</td>  <td>metre</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the axis for the given code.
@@ -2436,8 +2434,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * way for better support of non-straightforward units like <cite>sexagesimal degrees</cite>
      * (EPSG:9110 and 9111).
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for units are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for units are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2447,7 +2445,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>9030</td> <td>kilometre</td></tr>
      *   <tr><td>1040</td> <td>second</td></tr>
      *   <tr><td>1029</td> <td>year</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the unit of measurement for the given code.
@@ -2508,8 +2506,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     /**
      * Creates a definition of a single parameter used by an operation method.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for parameters are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for parameters are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2519,7 +2517,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      *   <tr><td>8805</td> <td>Scale factor at natural origin</td></tr>
      *   <tr><td>8806</td> <td>False easting</td></tr>
      *   <tr><td>8807</td> <td>False northing</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the parameter descriptor for the given code.
@@ -2767,8 +2765,8 @@ next:                   while (r.next()) {
      * An {@code OperationMethod} is a kind of metadata: it does not perform any coordinate operation
      * (e.g. map projection) by itself, but tells us what is needed in order to perform such operation.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for operation methods are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for operation methods are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2777,7 +2775,7 @@ next:                   while (r.next()) {
      *   <tr><td>9802</td> <td>Lambert Conic Conformal (2SP)</td></tr>
      *   <tr><td>9810</td> <td>Polar Stereographic (variant A)</td></tr>
      *   <tr><td>9624</td> <td>Affine parametric transformation</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the operation method for the given code.
@@ -2824,8 +2822,8 @@ next:                   while (r.next()) {
      * Creates an operation for transforming coordinates in the source CRS to coordinates in the target CRS.
      * The returned object will either be a {@link Conversion} or a {@link Transformation}, depending on the code.
      *
-     * <div class="note"><b>Example:</b>
-     * some EPSG codes for coordinate transformations are:
+     * <h4>Examples</h4>
+     * Some EPSG codes for coordinate transformations are:
      *
      * <table class="sis">
      * <caption>EPSG codes examples</caption>
@@ -2834,7 +2832,7 @@ next:                   while (r.next()) {
      *   <tr><td>1241</td> <td>NAD27 to NAD83 (1)</td></tr>
      *   <tr><td>1173</td> <td>NAD27 to WGS 84 (4)</td></tr>
      *   <tr><td>6326</td> <td>NAD83(2011) to NAVD88 height (1)</td></tr>
-     * </table></div>
+     * </table>
      *
      * @param  code  value allocated by EPSG.
      * @return the operation for the given code.

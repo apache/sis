@@ -281,7 +281,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns short name or other language name by which the cited information is known.
      *
-     * <div class="note"><b>Example:</b> "DCW" as an alternative title for "Digital Chart of the World".</div>
+     * <h4>Example</h4>
+     * "DCW" as an alternative title for "Digital Chart of the World".
      *
      * @return other names for the resource, or an empty collection if none.
      */
@@ -365,7 +366,11 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns the unique identifier for the resource.
      *
-     * <div class="note"><b>Example:</b> Universal Product Code (UPC), National Stock Number (NSN).</div>
+     * <h4>Examples</h4>
+     * <ul>
+     *   <li>Universal Product Code (UPC)</li>
+     *   <li>National Stock Number (NSN)</li>
+     * </ul>
      *
      * <h4>Unified identifiers view</h4>
      * In this SIS implementation, the collection returned by this method includes the XML identifiers
@@ -373,9 +378,9 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * as well as the {@linkplain #getISBN() ISBN} and {@linkplain #getISSN() ISSN} codes, thus
      * providing a unified view of every kind of identifiers associated to this citation.
      *
-     * <div class="note"><b>XML note:</b>
+     * <h4>XML marshalling note</h4>
      * The {@code <cit:identifier>} element marshalled to XML will exclude all the above cited identifiers,
-     * for ISO 19115-3 compliance. Those identifiers will appear in other XML elements or attributes.</div>
+     * for ISO 19115-3 compliance. Those identifiers will appear in other XML elements or attributes.
      *
      * @return the identifiers, or an empty collection if none.
      *

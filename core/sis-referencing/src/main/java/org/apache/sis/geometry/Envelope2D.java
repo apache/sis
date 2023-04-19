@@ -324,13 +324,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * <p>The object returned by this method is a copy. Change in the returned position
      * will not affect this envelope, and conversely.</p>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Note on wraparound</h4>
      * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
      * bounding box definition. In a WCS 1.1 data structure, the lower corner defines the edges region in the
      * directions of <em>decreasing</em> coordinate values in the envelope CRS. This is usually the algebraic
      * minimum coordinates, but not always. For example, an envelope crossing the anti-meridian could have a
      * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
-     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
+     * mostly to axes having {@code WRAPAROUND} range meaning.
      *
      * @return a copy of the lower corner, typically (but not necessarily) containing minimal coordinate values.
      *
@@ -351,13 +351,13 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      * <p>The object returned by this method is a copy. Change in the returned position
      * will not affect this envelope, and conversely.</p>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Note on wraparound</h4>
      * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
      * bounding box definition. In a WCS 1.1 data structure, the upper corner defines the edges region in the
      * directions of <em>increasing</em> coordinate values in the envelope CRS. This is usually the algebraic
      * maximum coordinates, but not always. For example, an envelope crossing the anti-meridian could have an
      * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
-     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
+     * mostly to axes having {@code WRAPAROUND} range meaning.
      *
      * @return a copy of the upper corner, typically (but not necessarily) containing maximal coordinate values.
      *

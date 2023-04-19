@@ -402,8 +402,8 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Any characters sequences of length greater than {@link #MAX_STRING_LENGTH} will be shortened using
      * the {@link CharSequences#shortSentence(CharSequence, int)} method.</p>
      *
-     * <div class="note"><b>Note:</b>
-     * If more cases are added, remember to update class and package javadoc.</div>
+     * <h4>Note for maintainers</h4>
+     * If more cases are added, remember to update class and package javadoc.
      *
      * @param  arguments  the object to check.
      * @return {@code arguments} as an array, eventually with some elements replaced.
@@ -482,10 +482,10 @@ public class IndexedResourceBundle extends ResourceBundle implements Localized {
      * Writes the localized string identified by the given key followed by a colon.
      * The way to write the colon depends on the language.
      *
-     * <div class="note"><b>API note:</b>
-     * we do not provide a method with {@link StringBuilder} argument and without {@link IOException} clause
+     * <h4>API note</h4>
+     * We do not provide a method with {@link StringBuilder} argument and without {@link IOException} clause
      * because it is not needed by Apache SIS in practice. We found that codes invoking this method with a
-     * {@link StringBuilder} happen in contexts where an {@link IOException} is thrown elsewhere anyway.</div>
+     * {@link StringBuilder} happen in contexts where an {@link IOException} is thrown elsewhere anyway.
      *
      * @param  key         the key for the desired string.
      * @param  toAppendTo  where to write the localized string followed by a colon.

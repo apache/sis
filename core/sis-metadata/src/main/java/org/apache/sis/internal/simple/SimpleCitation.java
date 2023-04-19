@@ -27,11 +27,11 @@ import org.apache.sis.internal.util.Strings;
 /**
  * A trivial implementation of {@link Citation} containing only a title.
  *
- * <div class="note"><b>Design note:</b>
- * we do not put more field than {@link #title} in this {@code SimpleCitation} in order to keep it simple,
+ * <h2>Design note</h2>
+ * We do not put more field than {@link #title} in this {@code SimpleCitation} in order to keep it simple,
  * because the title is the only "universal" property (the need for all other fields will be determined in
  * subclasses on a case-by-case basis) and because {@code SimpleCitation} are sometimes only proxy identified
- * by the {@link #title}.</div>
+ * by the {@link #title}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.3

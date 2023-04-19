@@ -148,10 +148,10 @@ final class ScaledColorModel extends ComponentColorModel {
      * Returns {@code true} if the given object is also an instance of {@link ScaledColorModel}
      * with equals color space and same transfer type.
      *
-     * <div class="note"><b>Note:</b>
-     * we have to override this method because the {@link ComponentColorModel#equals(Object)} implementation
+     * <h4>Implementation note</h4>
+     * We have to override this method because the {@link ComponentColorModel#equals(Object)} implementation
      * is confused by our overriding of {@link #getTransparency()} method. However, we do not need to override
-     * {@link #hashCode()}.</div>
+     * {@link #hashCode()}.
      */
     @Override
     public boolean equals(final Object obj) {

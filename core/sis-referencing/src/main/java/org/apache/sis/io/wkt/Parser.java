@@ -56,9 +56,9 @@ public interface Parser {
      * If the given text contains non-fatal anomalies, warnings may be reported in a
      * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.
      *
-     * <div class="note"><b>Tip:</b>
-     * for processing warnings in a different way than logging them, one can use
-     * {@link WKTFormat#parseObject(String)} followed by a call to {@link WKTFormat#getWarnings()}.</div>
+     * <h4>Handling of warnings</h4>
+     * For processing warnings in a different way than logging them, one can use
+     * {@link WKTFormat#parseObject(String)} followed by a call to {@link WKTFormat#getWarnings()}.
      *
      * @param  text  object encoded in Well-Known Text format (version 1 or 2).
      * @return the result of parsing the given text.

@@ -154,10 +154,10 @@ public final class MathFunctions extends Static {
      * In the current implementation, this value is {@value}. However, this limit may
      * change in any future Apache SIS version.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Implementation note</h4>
      * The current value is the highest prime number representable as an unsigned 16 bits integer.
      * This is enough for current needs because 16 bits prime numbers are sufficient for finding
-     * the divisors of any 32 bits integers.</div>
+     * the divisors of any 32 bits integers.
      *
      * @see #nextPrimeNumber(int)
      */
@@ -195,9 +195,10 @@ public final class MathFunctions extends Static {
      * <var>y</var> are very large, because it will avoid the lost of last digits before averaging.
      * If exactly one of <var>x</var> and <var>y</var> is odd, the result will contain the 0.5 fraction digit.
      *
-     * <div class="note"><b>Source:</b> this function is adapted from
+     * <h4>Reference</h4>
+     * This function is adapted from
      * <a href="http://aggregate.org/MAGIC/#Average%20of%20Integers">The Aggregate Magic Algorithms</a>
-     * from University of Kentucky.</div>
+     * from University of Kentucky.
      *
      * @param  x  the first value to average.
      * @param  y  the second value to average.
@@ -340,13 +341,14 @@ public final class MathFunctions extends Static {
      * which may be approximate for magnitudes greater than 2<sup>52</sup>.
      * This method may also be faster.
      *
-     * <div class="note"><b>Implementation note:</b> this method uses
-     * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">exponentiation by squaring</a> technic.</div>
-     *
-     * The type of the {@code base} argument is {@code long} for convenience, since this method is used in contexts
+     * <p>The type of the {@code base} argument is {@code long} for convenience, since this method is used in contexts
      * where relatively large integers are handled. However, any value greater than the capacity of {@code int} type
      * is guaranteed to fail with {@link ArithmeticException} unless {@code exponent} is 0 or 1.
-     * Likewise any {@code exponent} value greater than 62 is guaranteed to fail unless {@code base} is 0 or 1.
+     * Likewise any {@code exponent} value greater than 62 is guaranteed to fail unless {@code base} is 0 or 1.</p>
+     *
+     * <h4>Reference</h4>
+     * This method uses
+     * <a href="https://en.wikipedia.org/wiki/Exponentiation_by_squaring">exponentiation by squaring</a> technic.
      *
      * @param  base      the value to raise to an exponent.
      * @param  exponent  the exponent, as zero or positive number.
@@ -378,13 +380,6 @@ public final class MathFunctions extends Static {
     /**
      * Computes 10 raised to the power of <var>x</var>. This method is faster and slightly more accurate
      * than invoking <code>{@linkplain Math#pow(double, double) Math.pow}(10, x)</code>.
-     *
-     * <div class="note"><b>Note:</b>
-     * This method has been defined because the standard {@code Math.pow(10, x)} method does not always return
-     * the closest IEEE floating point representation. Slight departures (1 or 2 ULP) are often allowed in math
-     * functions for performance reasons. The most accurate calculations are usually not necessary, but the base
-     * 10 is a special case since it is used for scaling axes or formatting human-readable output.</div>
-     *
      * Special cases:
      * <ul>
      *   <li>If <var>x</var> is equal or lower than -324, then the result is 0.</li>
@@ -392,6 +387,12 @@ public final class MathFunctions extends Static {
      *   <li>If <var>x</var> is in the [0 … 18] range inclusive, then the result is exact.</li>
      *   <li>For all other <var>x</var> values, the result is the closest IEEE 754 approximation.</li>
      * </ul>
+     *
+     * <h4>Purpose</h4>
+     * This method has been defined because the standard {@code Math.pow(10, x)} method does not always return
+     * the closest IEEE floating point representation. Slight departures (1 or 2 ULP) are often allowed in math
+     * functions for performance reasons. The most accurate calculations are usually not necessary, but the base
+     * 10 is a special case since it is used for scaling axes or formatting human-readable output.
      *
      * @param  x  the exponent.
      * @return 10 raised to the given exponent.
@@ -1173,10 +1174,8 @@ next:   while (i < roots.length) {
     /**
      * Tries to improves accuracy of polynomial roots by applying small displacements
      * to the <var>x</var> values using ∂y/∂x derivative around those values.
-     *
-     * <div class="note"><b>Purpose:</b>
-     * this refinement is significant in a {@link org.apache.sis.referencing.GeodesicsOnEllipsoid}
-     * test checking the value of an μ(x²,y²) function.</div>
+     * This refinement is significant in a {@link org.apache.sis.referencing.GeodesicsOnEllipsoid}
+     * test checking the value of an μ(x²,y²) function.
      *
      * @param  coefficients  the user-specified coefficients.
      * @param  roots         the roots. This array will be modified in place.

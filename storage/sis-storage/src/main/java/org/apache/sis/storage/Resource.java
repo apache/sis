@@ -36,13 +36,12 @@ import org.apache.sis.storage.event.StoreListener;
  * instance of {@link Aggregate}. The {@linkplain Aggregate#components() components} of an aggregate can be
  * themselves other aggregates, thus forming a tree.</p>
  *
- * <div class="note"><b>Relationship with ISO 19115:</b>
- * this type is closely related to the {@code DS_Resource} type defined by ISO 19115.
+ * <h2>Relationship with ISO 19115</h2>
+ * This type is closely related to the {@code DS_Resource} type defined by ISO 19115.
  * The Apache SIS type differs from the ISO type by being more closely related to data extraction,
  * as can be seen from the checked {@link DataStoreException} thrown by most methods.
  * Convenience methods for frequently requested information – for example {@link DataSet#getEnvelope()} – were added.
  * The sub-types performing the actual data extraction – for example {@link FeatureSet} – are specific to Apache SIS.
- * </div>
  *
  * @author  Johann Sorel (Geomatys)
  * @version 1.0

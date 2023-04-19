@@ -121,10 +121,10 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
      *   <li>{@code descriptors}, which contain the descriptor listed in {@code <gml:OperationParameterGroup>} or {@code <gml:OperationMethod>}.</li>
      * </ol>
      *
-     * <div class="note"><b>Note:</b>
-     * this code is defined in this {@code CC_OperationParameterGroup} class instead of in the
+     * <h4>Implementation note</h4>
+     * This code is defined in this {@code CC_OperationParameterGroup} class instead of in the
      * {@link DefaultParameterDescriptorGroup} class in the hope to reduce the amount of code
-     * processed by the JVM in the common case where JAXB (un)marshalling is not needed.</div>
+     * processed by the JVM in the common case where JAXB (un)marshalling is not needed.
      *
      * @param  descriptors   the descriptors declared in the {@code ParameterDescriptorGroup}.
      * @param  fromValues    the descriptors declared in the {@code ParameterValue} instances.

@@ -253,10 +253,9 @@ public class DocumentComparator {
      * If the given attribute name begins with one of the well known prefixes,
      * substitutes the prefix by the full URL. Otherwise returns the name unchanged.
      *
-     * <div class="note"><b>Example:</b>
-     * if the given attribute is {@code xmlns:gml}, then this method returns
+     * <h4>Example</h4>
+     * If the given attribute is {@code xmlns:gml}, then this method returns
      * {@code "http://www.w3.org/2000/xmlns:gml"}.
-     * </div>
      *
      * @param  attribute  the attribute.
      * @return the given attribute, possibly with prefix replaced by URL.

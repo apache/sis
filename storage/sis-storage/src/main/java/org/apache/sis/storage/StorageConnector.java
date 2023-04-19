@@ -920,12 +920,12 @@ public class StorageConnector implements Serializable {
      * {@link #getStorageAs(Class)} return value in the same state as they found it. This method is
      * only for handling the cases where using a view has an indirect impact on another view.</p>
      *
-     * <div class="note"><b>Rational:</b>
+     * <h4>Rational</h4>
      * {@link DataStoreProvider#probeContent(StorageConnector)} contract requires that implementers reset the
      * input stream themselves. However if {@link ChannelDataInput} or {@link InputStreamReader} has been used,
      * then the user performed a call to {@link ChannelDataInput#reset()} (for instance), which did not reset
      * the underlying input stream. So we need to perform the missing {@link InputStream#reset()} here, then
-     * synchronize the {@code ChannelDataInput} position accordingly.</div>
+     * synchronize the {@code ChannelDataInput} position accordingly.
      *
      * @param  c  container of the view to reset, or {@code null} if none.
      * @return {@code true} if the given view, after reset, is valid.

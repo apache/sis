@@ -171,10 +171,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Constructs a group with the same parameters than another group. This is a convenience constructor for
      * operations that expect the same parameters than another operation, but perform a different process.
      *
-     * <div class="note"><b>Example:</b>
-     * the various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
+     * <h4>Example</h4>
+     * The various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
      * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
-     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
+     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.
      *
      * @param properties  the properties to be given to the new parameter group.
      * @param parameters  the existing group from which to copy the {@linkplain #descriptors() parameter descriptors}.
@@ -310,10 +310,10 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ParameterDescriptorGroup.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParameterDescriptorGroup}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
-     * set of interfaces.</div>
+     * set of interfaces.
      *
      * @return {@code ParameterDescriptorGroup.class} or a user-defined sub-interface.
      */

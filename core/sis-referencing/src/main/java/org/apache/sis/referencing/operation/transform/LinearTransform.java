@@ -102,10 +102,10 @@ public interface LinearTransform extends MathTransform {
      * Distance vectors are transformed without applying the translation components.
      * The supplied array of distance values will contain packed values.
      *
-     * <div class="note"><b>Example:</b> if the source dimension is 3, then the values will be packed in this order:
+     * <h4>Example</h4>
+     * If the source dimension is 3, then the values will be packed in this order:
      * (<var>Δx₀</var>,<var>Δy₀</var>,<var>Δz₀</var>,
      *  <var>Δx₁</var>,<var>Δy₁</var>,<var>Δz₁</var> …).
-     * </div>
      *
      * @param  srcPts  the array containing the source vectors.
      * @param  srcOff  the offset to the first vector to be transformed in the source array.

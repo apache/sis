@@ -207,11 +207,10 @@ final class ResidualGrid extends DatumShiftGrid<Dimensionless,Dimensionless> {
      * Current implementation provides values in the form of {@link Matrix} objects on the assumption
      * that the number of {@linkplain #getGridSize() grid} dimensions is {@value #SOURCE_DIMENSION}.
      *
-     * <div class="note"><b>Note:</b>
-     * the number of {@linkplain #getGridSize() grid} dimensions determines the parameter type: if that number
+     * <p>The number of {@linkplain #getGridSize() grid} dimensions determines the parameter type: if that number
      * is greater than {@value #SOURCE_DIMENSION}, then parameters would need to be represented by tensors instead
      * than matrices. By contrast, the {@linkplain #getTranslationDimensions() number of dimensions of translation
-     * vectors} only determines how many matrix or tensor parameters appear.</div>
+     * vectors} only determines how many matrix or tensor parameters appear.</p>
      *
      * @return a description of the values in this grid.
      */

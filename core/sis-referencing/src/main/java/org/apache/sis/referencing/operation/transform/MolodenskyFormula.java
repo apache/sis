@@ -214,11 +214,11 @@ abstract class MolodenskyFormula extends DatumShiftTransform {
      * The returned group contains parameters for the source ellipsoid semi-axis lengths
      * and the differences between source and target ellipsoid parameters.
      *
-     * <div class="note"><b>Note:</b>
-     * this method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
+     * <h4>Usage note</h4>
+     * This method is mostly for {@linkplain org.apache.sis.io.wkt.Convention#INTERNAL debugging purposes}
      * since the isolation of non-linear parameters in this class is highly implementation dependent.
      * Most GIS applications will instead be interested in the {@linkplain #getContextualParameters()
-     * contextual parameters}.</div>
+     * contextual parameters}.
      *
      * @return a copy of the internal parameter values for this transform.
      */

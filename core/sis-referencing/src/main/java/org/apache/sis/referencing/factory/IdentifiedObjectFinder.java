@@ -80,15 +80,14 @@ public class IdentifiedObjectFinder {
          * Fast lookup based only on embedded identifiers and names. If those identification information
          * does not allow to locate an object in the factory, then the search will return an empty set.
          *
-         * <div class="note"><b>Example:</b>
-         * if {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object having the {@code "4326"}
+         * <h4>Example</h4>
+         * If {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object having the {@code "4326"}
          * {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier}, then the {@code find(…)} method will invoke
          * <code>factory.{@linkplain GeodeticAuthorityFactory#createGeographicCRS(String) createGeographicCRS}("4326")</code>
          * and compare the object from the factory with the object to search.
          * If the objects do not match, then another attempt will be done using the
          * {@linkplain AbstractIdentifiedObject#getName() object name}. If using name does not work neither,
          * then {@code find(…)} method makes no other attempt and returns an empty set.
-         * </div>
          */
         DECLARATION,
 
@@ -98,13 +97,12 @@ public class IdentifiedObjectFinder {
          * If the fast lookup gave no result, then a more extensive search is performed by scanning the content
          * of the dataset.
          *
-         * <div class="note"><b>Example:</b>
-         * if {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object equivalent to the
+         * <h4>Example</h4>
+         * If {@link IdentifiedObjectFinder#find(IdentifiedObject)} is invoked with an object equivalent to the
          * {@linkplain org.apache.sis.referencing.CommonCRS#WGS84 WGS84} geographic CRS but does not declare the
          * {@code "4326"} identifier and does not have the <cite>"WGS 84"</cite> name, then the search based on
          * {@link #DECLARATION} will give no result. The {@code find(…)} method will then scan the dataset for
          * geographic CRS using equivalent datum and coordinate system. This may be a costly operation.
-         * </div>
          *
          * This is the default domain of {@link IdentifiedObjectFinder}.
          */
@@ -120,13 +118,13 @@ public class IdentifiedObjectFinder {
          * If axis order is <em>not</em> ignored, then this domain usually has no advantage over {@link #VALID_DATASET}
          * (unless the geodetic dataset contains duplicated entries) to justify the performance cost.</p>
          *
-         * <div class="note"><b>Use case:</b>
-         * the EPSG database sometimes contains two definitions for almost identical geographic CRS,
+         * <h4>Use case</h4>
+         * The EPSG database sometimes contains two definitions for almost identical geographic CRS,
          * one with (<var>latitude</var>, <var>longitude</var>) axis order and one with reverse order
          * (e.g. EPSG::4171 versus EPSG::7084). It is sometimes useful to know all variants of a given CRS.
          * The {@link #VALID_DATASET} domain may not give a complete set because the "fast lookup by identifier"
          * optimization may prevent {@link IdentifiedObjectFinder} to scan the rest of the database.
-         * This {@code EXHAUSTIVE_VALID_DATASET} domain forces such scan.</div>
+         * This {@code EXHAUSTIVE_VALID_DATASET} domain forces such scan.
          *
          * @since 1.2
          */
@@ -181,9 +179,9 @@ public class IdentifiedObjectFinder {
     /**
      * Creates a finder using the specified factory.
      *
-     * <div class="note"><b>API note:</b>
-     * this constructor is protected because instances of this class should not be created directly.
-     * Use {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()} instead.</div>
+     * <h4>API note</h4>
+     * This constructor is protected because instances of this class should not be created directly.
+     * Use {@link GeodeticAuthorityFactory#newIdentifiedObjectFinder()} instead.
      *
      * @param  factory  the factory to scan for the identified objects.
      *

@@ -114,12 +114,12 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * <p>This field is used for inverse transforms only; it has no effect on the forward transforms.
      * If not NaN, this value is used for building the transform returned by {@link #inverse()}.</p>
      *
-     * <div class="note"><b>Note:</b>
-     * there is no {@code targetMedian} field because the target median is fixed to 0 in {@code WraparoundTransform}.
+     * <h4>Design note</h4>
+     * There is no {@code targetMedian} field because the target median is fixed to 0 in {@code WraparoundTransform}.
      * Non-zero target medians are implemented by {@linkplain MathTransforms#translation(double...) translations}
      * applied before and after {@code WraparoundTransform}. Because of this translation, the value of this field
      * is related to the arguments given to the {@link #create create(…)} method by
-     * {@code this.sourceMeridian = sourceMeridian - targetMeridian}.</div>
+     * {@code this.sourceMeridian = sourceMeridian - targetMeridian}.
      */
     public final double sourceMedian;
 
@@ -192,14 +192,13 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * <p>The {@code sourceMedian} argument is optional (can be {@link Double#NaN} if unknown) and has no effect on
      * the forward transform. This argument is used only for creating the {@linkplain #inverse() inverse} transform.</p>
      *
-     * <div class="note"><b>Examples:</b>
-     *   <ul>
-     *     <li>Wraparound longitudes in (φ,λ) coordinates from [-180 … +180]° range to [0 … 360]° range:
-     *         {@code create(2, 0, 360, 0, 180)}.</li>
-     *     <li>Wraparound longitudes in (φ,λ,h) coordinates from unknown range to [-180 … +180]° range:
-     *         {@code create(3, 0, 360, Double.NaN, 0)} (non-invertible).</li>
-     *   </ul>
-     * </div>
+     * <h4>Examples</h4>
+     * <ul>
+     *   <li>Wraparound longitudes in (φ,λ) coordinates from [-180 … +180]° range to [0 … 360]° range:
+     *       {@code create(2, 0, 360, 0, 180)}.</li>
+     *   <li>Wraparound longitudes in (φ,λ,h) coordinates from unknown range to [-180 … +180]° range:
+     *       {@code create(3, 0, 360, Double.NaN, 0)} (non-invertible).</li>
+     * </ul>
      *
      * @param  dimension            number of dimensions of the transform to create.
      * @param  wraparoundDimension  dimension where wraparound happens.
@@ -363,13 +362,13 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
     /**
      * Gets the derivative of this transform at a point.
      *
-     * <div class="note"><b>Mathematical note:</b>
-     * strictly speaking the derivative at (<var>n</var> + 0.5) × {@link #period} where <var>n</var> is an integer
+     * <h4>Mathematical note</h4>
+     * Strictly speaking the derivative at (<var>n</var> + 0.5) × {@link #period} where <var>n</var> is an integer
      * should be infinite because the coordinate value jumps "instantaneously" from any value to ±{@link #period}/2.
      * However, in practice we use derivatives as linear approximations around small regions, not for calculations
      * requiring strict mathematical values. An infinite value goes against the approximation goal.
      * Furthermore, whether a source coordinate is an integer value or not is subject to rounding errors,
-     * which may cause unpredictable behavior if infinite values were returned.</div>
+     * which may cause unpredictable behavior if infinite values were returned.
      *
      * @param  point  the position where to evaluate the derivative
      *                (ignored in default implementation, may be {@code null}).

@@ -791,10 +791,10 @@ public class ContextualParameters extends Parameters implements Serializable {
         /**
          * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
          *
-         * <div class="note"><b>Compatibility note:</b>
+         * <h4>Compatibility note</h4>
          * {@code Param_MT} is defined in the WKT 1 specification only.
          * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
-         * then this method silently uses the WKT 1 convention without raising an error.</div>
+         * then this method silently uses the WKT 1 convention without raising an error.
          *
          * @return {@code "Param_MT"}.
          */

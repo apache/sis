@@ -134,11 +134,10 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * Tests the WKT 1 formatting.
      * Note that in the particular case of {@code DerivedCRS}, WKT 1 and WKT 2 formats are very different.
      *
-     * <div class="note"><b>Note:</b>
      * The CRS formatted by this test is a dummy CRS which should not exist in the reality.
      * In particular, we use <cite>"Longitude rotation"</cite> (EPSG:9601) as if it was a conversion,
      * while in reality it is a transformation. We do that only because this operation is so simple,
-     * it is easy to create and test.</div>
+     * it is easy to create and test.
      */
     @Test
     @DependsOnMethod("testConstruction")
@@ -165,11 +164,10 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * Tests the WKT 2 formatting.
      * Note that in the particular case of {@code DerivedCRS}, WKT 1 and WKT 2 formats are very different.
      *
-     * <div class="note"><b>Note:</b>
      * The CRS formatted by this test is a dummy CRS which should not exist in the reality.
      * In particular, we use <cite>"Longitude rotation"</cite> (EPSG:9601) as if it was a conversion,
      * while in reality it is a transformation. We do that only because this operation is so simple,
-     * it is easy to create and test.</div>
+     * it is easy to create and test.
      */
     @Test
     @DependsOnMethod("testWKT1")

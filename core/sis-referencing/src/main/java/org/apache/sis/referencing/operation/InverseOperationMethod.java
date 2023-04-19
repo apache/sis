@@ -121,18 +121,17 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      *   <li>Parameter values, if possible</li>
      * </ul>
      *
+     * If the inverse of the given operation can be represented by inverting the sign of all numerical
+     * parameter values, then this method copies also those parameters in a {@code "parameters"} entry.
+     *
+     * <h4>Accuracy metadata</h4>
      * This method copies accuracy and domain of validity metadata from the given operation.
      * We presume that the inverse operation has the same accuracy than the direct operation.
-     *
-     * <div class="note"><b>Note:</b>
-     * in many cases, the inverse operation is numerically less accurate than the direct operation because it
+     * In many cases, the inverse operation is numerically less accurate than the direct operation because it
      * uses approximations like series expansions or iterative methods. However, the numerical errors caused by
      * those approximations are not of interest here, because they are usually much smaller than the inaccuracy
      * due to the stochastic nature of coordinate transformations (not to be confused with coordinate conversions;
-     * see ISO 19111 for more information).</div>
-     *
-     * If the inverse of the given operation can be represented by inverting the sign of all numerical
-     * parameter values, then this method copies also those parameters in a {@code "parameters"} entry.
+     * see ISO 19111 for more information).
      *
      * @param source  the operation for which to get the inverse parameters.
      * @param target  where to store the inverse parameters.

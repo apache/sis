@@ -39,14 +39,14 @@ public enum GridRoundingMode {
      *       farthest from an integer value in order to keep unchanged the two values that are closer to integers.</li>
      * </ol>
      *
-     * <div class="note"><b>Example:</b>
-     * the [<var>low</var> … <var>high</var>] range may be slightly larger than desired in some rounding error situations.
+     * <h4>Example</h4>
+     * The [<var>low</var> … <var>high</var>] range may be slightly larger than desired in some rounding error situations.
      * For example if <var>low</var> before rounding was 1.49999 and <var>high</var> before rounding was 2.50001, then the
      * range after rounding will be [1…3] while the expected size is actually only 2 pixels. This {@code NEAREST} rounding
      * mode detects those rounding issues by comparing the <var>size</var> before and after rounding. In this example, the
      * size is 2.00002 pixels, which is closer to an integer value than the <var>low</var> and <var>high</var> values.
-     * Consequently, this {@code NEAREST} mode will rather adjust <var>low</var> or <var>high</var> (depending which one is
-     * farthest from integer values) in order to keep <var>size</var> at its closest integer value, which is 2.</div>
+     * Consequently, this {@code NEAREST} mode will rather adjust <var>low</var> or <var>high</var> (depending which
+     * one is farthest from integer values) in order to keep <var>size</var> at its closest integer value, which is 2.
      */
     NEAREST,
 

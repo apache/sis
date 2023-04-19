@@ -56,10 +56,10 @@ import static java.lang.Math.*;
  * the ellipsoidal case of this projection, which uses a more complicated formula than the affine transform
  * used here.</p>
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Note</h2>
  * EPSG:1028 and 1029 are the current codes, while EPSG:9842 and 9823 are deprecated codes.
  * The new and deprecated definitions differ only by their parameters. In the Apache SIS implementation,
- * both current and legacy definitions are known, but the legacy names are marked as deprecated.</div>
+ * both current and legacy definitions are known, but the legacy names are marked as deprecated.
  *
  * @author  John Grange
  * @author  Martin Desruisseaux (Geomatys)

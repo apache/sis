@@ -62,11 +62,11 @@ abstract class CopyFromBytes extends Inflater {
      * Number of pixels per primitive element.
      * Always 1 except for multi-pixels packed images.
      *
-     * <div class="note"><b>Note:</b>
-     * this is "pixels per element", not "samples per element", because the value of this field shall be 1
+     * <h4>Design note</h4>
+     * This is "pixels per element", not "samples per element", because the value of this field shall be 1
      * in the {@link java.awt.image.SinglePixelPackedSampleModel} case (by contrast a "samples per element"
      * would have a value greater than 1). But this field can nevertheless be understood as a "samples per
-     * element" value where only one band is considered at a time.</div>
+     * element" value where only one band is considered at a time.
      */
     private final int pixelsPerElement;
 
@@ -186,12 +186,12 @@ abstract class CopyFromBytes extends Inflater {
      * Skips the number of chunks specified by the {@link #skipAfterChunks} array at the given index.
      * This method tries to move by incrementing the buffer position.
      *
-     * <div class="note"><b>Design note:</b>
-     * we do not use {@link ChannelDataInput#seek(long)} because the displacement is usually small.
+     * <h4>Design note</h4>
+     * We do not use {@link ChannelDataInput#seek(long)} because the displacement is usually small.
      * Changing the buffer position is sufficient in the majority of cases. If not, then it should
      * be okay to fill the buffer with next data (instead of doing a seek operation) because there
      * is usually few remaining values to skip. Performance of this method is important, so we try
-     * to avoid overhead.</div>
+     * to avoid overhead.
      *
      * @param  skipIndex  index in {@code skipAfterChunks} array.
      * @return new {@code skipIndex} value.

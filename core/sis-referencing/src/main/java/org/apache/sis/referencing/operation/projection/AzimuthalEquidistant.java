@@ -41,8 +41,8 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  * For ellipsoidal formulas, the {@link ModifiedAzimuthalEquidistant} class provides an approximation
  * valid under 800 kilometres of the projection centre.
  *
- * <div class="note"><b>Note of projection variants:</b>
- * formulas for this map projection have been published by Snyder (1987) in the following forms:
+ * <h2>Note of projection variants</h2>
+ * Formulas for this map projection have been published by Snyder (1987) in the following forms:
  * <ul>
  *   <li><cite>Azimuthal Equidistant projection for the sphere.</cite>
  *     This form has no EPSG code. It is implemented in Apache SIS as "Azimuthal Equidistant (Spherical)".</li>
@@ -62,7 +62,7 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  *
  * This base class is aimed to provide the general case valid for all distances;
  * the fact that current version uses spherical formulas should be considered as an implementation limitation
- * that may change in future version. Subclasses are specialization for more restricted areas.</div>
+ * that may change in future version. Subclasses are specialization for more restricted areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Maxime Gavens (Geomatys)

@@ -219,9 +219,9 @@ public abstract class TypeBuilder implements Localized {
      * Sets the {@code IdentifiedType} name as a generic name.
      * If another name was defined before this method call, that previous value will be discarded.
      *
-     * <div class="note"><b>Note for subclasses:</b>
-     * all {@code setName(…)} convenience methods in this builder delegate to this method.
-     * Consequently, this method can be used as a central place where to control the creation of all names.</div>
+     * <h4>Note for subclasses</h4>
+     * All {@code setName(…)} convenience methods in this builder delegate to this method.
+     * Consequently, this method can be used as a central place where to control the creation of all names.
      *
      * @param  name  the generic name (cannot be {@code null}).
      * @return {@code this} for allowing method calls chaining.

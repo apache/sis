@@ -104,7 +104,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
          * A relative interim change has been applied but is not yet reflected in the "objective to display" transform.
          * This kind of change is not fired by {@link PlanarCanvas} but may be fired by subclasses such as
          * {@link org.apache.sis.gui.map.MapCanvas}. That class provides immediate feedback to users
-         * with a temporary visual change before to perform more expansive rendering in background.
+         * with a temporary visual change before to perform more expensive rendering in background.
          */
         INTERIM;
 

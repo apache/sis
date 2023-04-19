@@ -71,7 +71,7 @@ public final class JTS extends Static {
     /**
      * Returns {@code true} if the two geometries use the same CRS, based on very cheap comparison.
      * A value of {@code false} does not necessarily means that the CRS are different, but it means
-     * that a more expansive comparison is required. If CRS are specified by SRID codes, then this
+     * that a more expensive comparison is required. If CRS are specified by SRID codes, then this
      * method assumes that the two SRID codes are defined by the same authority (e.g. EPSG).
      *
      * <p>If both CRS are undefined (null), then they are considered the same.</p>
@@ -88,7 +88,7 @@ public final class JTS extends Static {
         }
         /*
          * Identity comparison is often sufficient since all geometries typically share the same CRS.
-         * If they are not the same instance, a more expansive `equalsIgnoreMetadata(…)` method here
+         * If they are not the same instance, a more expensive `equalsIgnoreMetadata(…)` method here
          * would probably duplicate the work done later by the `transform(Geometry, …)` method.
          */
         Object c1 = first.getUserData();

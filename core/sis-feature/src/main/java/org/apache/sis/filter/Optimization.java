@@ -93,11 +93,12 @@ public class Optimization {
      * Filters and expressions already optimized. Also used for avoiding never-ending loops.
      * The map is created when first needed.
      *
-     * <div class="note"><b>Note:</b> the same map is used for filters and expressions.
+     * <h4>Implementation note</h4>
+     * The same map is used for filters and expressions.
      * It is not a problem if keys do not implement the two interfaces at the same time.
      * If it happens anyway, it should still be okay because the method signatures are
      * the same in both interfaces (only the return type changes), so the same methods
-     * would be invoked no matter if we consider the keys as a filter or an expression.</div>
+     * would be invoked no matter if we consider the keys as a filter or an expression.
      */
     private Map<Object,Object> done;
 

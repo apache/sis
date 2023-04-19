@@ -67,7 +67,11 @@ import org.apache.sis.util.Characters;
  *       {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical coordinate systems}.</li>
  * </ul>
  *
- * <div class="note"><b>Note:</b> at least two conventions exist about the meaning of (<var>r</var>, θ, φ) in a
+ * The {@link #toLatinAbbreviation toLatinAbbreviation(…)} and {@link #toUnicodeAbbreviation toUnicodeAbbreviation(…)}
+ * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
+ *
+ * <h3>Note on conventions</h3>
+ * At least two conventions exist about the meaning of (<var>r</var>, θ, φ) in a
  * spherical coordinate system (see <a href="https://en.wikipedia.org/wiki/Spherical_coordinate_system">Wikipedia</a>
  * or <a href="https://mathworld.wolfram.com/SphericalCoordinates.html">MathWorld</a> for more information).
  * When using the <em>mathematics</em> convention, θ is the azimuthal angle in the
@@ -75,10 +79,7 @@ import org.apache.sis.util.Characters;
  * colatitude). But when using the <em>physics</em> convention, the meaning of θ and φ are interchanged.
  * Furthermore, some other conventions may measure the φ angle from the equatorial plane – like latitude – instead
  * than from the pole. This class does not need to care about the meaning of those angles. The only recommendation
- * is that φ is mapped to <var>U</var> and θ is mapped to <var>V</var>, regardless of their meaning.</div>
- *
- * The {@link #toLatinAbbreviation toLatinAbbreviation(…)} and {@link #toUnicodeAbbreviation toUnicodeAbbreviation(…)}
- * methods are responsible for doing the transliteration at formatting and parsing time, respectively.
+ * is that φ is mapped to <var>U</var> and θ is mapped to <var>V</var>, regardless of their meaning.
  *
  * <h2>Replacement of names</h2>
  * The longitude and latitude axis names are explicitly fixed by ISO 19111:2007 to <cite>"Geodetic longitude"</cite>
@@ -254,10 +255,10 @@ public abstract class Transliterator implements Serializable {
      *       replaces <cite>“<b>e</b>llipsoidal height”</cite> by <cite>“<b>E</b>llipsoidal height”</cite>.</li>
      * </ul>
      *
-     * <div class="note"><b>Rational:</b>
+     * <h4>Usage note</h4>
      * Axis names are not really free text. They are specified by ISO 19111 and ISO 19162.
      * SIS does not put restriction on axis names, but we nevertheless try to use a unique
-     * name when we recognize it.</div>
+     * name when we recognize it.
      *
      * @param  csType     the type of the coordinate system, or {@code null} if unknown.
      * @param  direction  the parsed axis direction.

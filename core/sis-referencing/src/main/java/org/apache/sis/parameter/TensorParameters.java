@@ -214,8 +214,9 @@ public class TensorParameters<E> implements Serializable {
      *       the row (first row is {@code "A"}) and the digit is the column index (first column is {@code "0"}).</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b> {@code "elt_1_2"} is the element name for the value at row 1 and column 2.
-     * Its alias is {@code "B2"}, which is the EPSG name for the same parameter.</div>
+     * <h4>Example</h4>
+     * {@code "elt_1_2"} is the element name for the value at row 1 and column 2.
+     * Its alias is {@code "B2"}, which is the EPSG name for the same parameter.
      */
     public static final TensorParameters<Double> WKT1;
     static {

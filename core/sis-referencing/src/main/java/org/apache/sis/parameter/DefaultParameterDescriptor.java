@@ -304,10 +304,10 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ParameterDescriptor.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code ParameterDescriptor}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their own
-     * set of interfaces.</div>
+     * set of interfaces.
      *
      * @return {@code ParameterDescriptor.class} or a user-defined sub-interface.
      */
@@ -371,9 +371,11 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * and whether these values are inclusive or inclusive. If the range is an instance of
      * {@link MeasurementRange}, then it also contains the {@linkplain #getUnit() unit of measurement}.
      *
-     * <div class="note"><b>API note:</b> If this method returns a non-null value, then its type is either exactly
-     * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the {@linkplain Class#getComponentType() component
-     * type} of {@code <T>} (using wrapper classes for primitive types).</div>
+     * <h4>API note</h4>
+     * If this method returns a non-null value, then its type is either exactly
+     * {@code Range<T>}, or {@code Range<E>} where {@code <E>} is the
+     * {@linkplain Class#getComponentType() component type} of {@code <T>}
+     * (using wrapper classes for primitive types).
      *
      * @return the domain of values, or {@code null}.
      *

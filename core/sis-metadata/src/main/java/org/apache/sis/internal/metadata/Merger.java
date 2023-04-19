@@ -248,8 +248,10 @@ distribute:                 while (it.hasNext()) {
                         if (old instanceof Collection<?>) {
                             final Collection<?> oldList = (Collection<?>) old;
                             if (oldList.size() <= targetList.size()) {
-                                // Above was only a cheap check based on collection size only.
-                                // Below is a more expansive check if assertions are enabled.
+                                /*
+                                 * Above was only a cheap check based on collection size only.
+                                 * Below is a more expensive check if assertions are enabled.
+                                 */
                                 assert targetList.containsAll(oldList) : propertyName;
                                 continue;
                             }

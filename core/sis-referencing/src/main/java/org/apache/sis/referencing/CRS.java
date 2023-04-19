@@ -231,11 +231,10 @@ public final class CRS extends Static {
      * {@linkplain org.apache.sis.referencing.cs.DefaultCartesianCS Cartesian coordinate system} for creating a new
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected coordinate reference system}.</p>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Reverse operation</h4>
      * The {@link IdentifiedObjects#lookupURN(IdentifiedObject, Citation)} method can be seen
      * as a converse of this method: from a CRS object, it tries to find a URN that describes it.
      * More codes may also be supported depending on which extension modules are available.
-     * </div>
      *
      * @param  code  the authority code.
      * @return the Coordinate Reference System for the given authority code.
@@ -457,13 +456,13 @@ public final class CRS extends Static {
      * base CRS} (usually a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance)
      * would be suitable. If no suitable CRS is found, then this method returns {@code null}.
      *
-     * <div class="note"><b>Use case:</b>
-     * before to test if two arbitrary envelopes {@linkplain GeneralEnvelope#intersects(Envelope) intersect} each other,
+     * <h4>Use case</h4>
+     * Before to test if two arbitrary envelopes {@linkplain GeneralEnvelope#intersects(Envelope) intersect} each other,
      * they need to be {@linkplain Envelopes#transform(Envelope, CoordinateReferenceSystem) transformed} in the same CRS.
      * However if one CRS is a Transverse Mercator projection while the other CRS is a world-wide geographic CRS, then
      * attempts to use the Transverse Mercator projection as the common CRS is likely to fail since the geographic envelope
      * may span an area far outside the projection domain of validity. This {@code suggestCommonTarget(…)} method can used
-     * for choosing a common CRS which is less likely to fail.</div>
+     * for choosing a common CRS which is less likely to fail.
      *
      * @param  regionOfInterest  the geographic area for which the coordinate operations will be applied,
      *                           or {@code null} if unknown. Will be intersected with CRS domains of validity.
@@ -1317,7 +1316,7 @@ public final class CRS extends Static {
      *   <li>Otherwise throws a {@code ClassCastException}.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * Apache SIS allows 4-dimensional (<var>x</var>,<var>y</var>,<var>z</var>,<var>t</var>)
      * coordinate reference system to be built in two different ways as shown below:
      *
@@ -1341,7 +1340,7 @@ public final class CRS extends Static {
      *
      * This method guaranteed that the returned list is a flat one as shown on the right side.
      * Note that such flat lists are the only one allowed by ISO/OGC standards for compound CRS.
-     * The hierarchical structure is an Apache SIS flexibility.</div>
+     * The hierarchical structure is an Apache SIS flexibility.
      *
      * @param  crs  the coordinate reference system, or {@code null}.
      * @return the single coordinate reference systems, or an empty list if the given CRS is {@code null}.

@@ -53,12 +53,12 @@ abstract class GeodeticOperation extends AbstractProvider {
      * <strong>Do not modify this array after construction</strong>, since the same array is shared by many
      * objects and there is no synchronization.
      *
-     * <div class="note"><b>Historical note:</b>
-     * in ISO 19111:2007, the {@code OperationMethod} type had two attributes for the number of source
+     * <h4>Historical note</h4>
+     * In ISO 19111:2007, the {@code OperationMethod} type had two attributes for the number of source
      * and target dimensions. Those attributes have been removed in ISO 19111:2019 revision because not
      * really needed in practice. However, the EPSG database still distinguishes between 2D and 3D variants
      * for some of those operations, so we still need the capability to switch operation methods according
-     * to the number of dimensions.</div>
+     * to the number of dimensions.
      */
     final GeodeticOperation[] redimensioned;
 

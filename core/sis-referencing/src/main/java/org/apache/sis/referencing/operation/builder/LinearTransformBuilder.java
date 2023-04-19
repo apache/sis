@@ -200,10 +200,9 @@ public class LinearTransformBuilder extends TransformBuilder {
     /**
      * Creates a new linear transform builder for randomly distributed positions.
      *
-     * <div class="note"><b>Tip:</b>
-     * if the source coordinates are grid indices, then
+     * <h4>Performance note</h4>
+     * If the source coordinates are grid indices, then
      * the {@link #LinearTransformBuilder(int...)} constructor will create a more efficient builder.
-     * </div>
      */
     public LinearTransformBuilder() {
         gridSize = null;
@@ -956,10 +955,10 @@ search:         for (int j=domain(); --j >= 0;) {
      * Sets a single matching control point pair. Source position is assumed precise and target position is assumed uncertain.
      * If the given source position was already associated with another target position, then the old target position is discarded.
      *
-     * <div class="note"><b>Performance note:</b>
-     * current implementation is efficient for builders {@linkplain #LinearTransformBuilder(int...) created for a grid}
+     * <h4>Performance note</h4>
+     * Current implementation is efficient for builders {@linkplain #LinearTransformBuilder(int...) created for a grid}
      * but inefficient for builders {@linkplain #LinearTransformBuilder() created for randomly distributed points}.
-     * In the latter case, the {@link #setControlPoints(Map)} method is a more efficient alternative.</div>
+     * In the latter case, the {@link #setControlPoints(Map)} method is a more efficient alternative.
      *
      * @param  source  the source coordinates. If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
      *                 then for every index <var>i</var> the {@code source[i]} value shall be in the [0 … {@code gridSize[i]}-1] range inclusive.
@@ -1036,9 +1035,9 @@ search:         for (int j=domain(); --j >= 0;) {
      * <p>If {@link #linearizer()} returns a non-empty value, then the returned values are projected using that linearizer.
      * This may happen only if this method is invoked after {@link #create(MathTransformFactory) create(…)}.</p>
      *
-     * <div class="note"><b>Performance note:</b>
-     * current implementation is efficient for builders {@linkplain #LinearTransformBuilder(int...) created for a grid}
-     * but inefficient for builders {@linkplain #LinearTransformBuilder() created for randomly distributed points}.</div>
+     * <h4>Performance note</h4>
+     * Current implementation is efficient for builders {@linkplain #LinearTransformBuilder(int...) created for a grid}
+     * but inefficient for builders {@linkplain #LinearTransformBuilder() created for randomly distributed points}.
      *
      * @param  source  the source coordinates. If this builder has been created with the {@link #LinearTransformBuilder(int...)} constructor,
      *                 then for every index <var>i</var> the {@code source[i]} value shall be in the [0 … {@code gridSize[i]}-1] range inclusive.
@@ -1135,11 +1134,9 @@ search:         for (int j=domain(); --j >= 0;) {
     /**
      * Returns the coordinates of a single row or column in the given dimension. This method can be invoked
      * only when this {@code LinearTransformBuilder} is known to have been built for grid source coordinates.
+     * While this method is primarily for row and columns, it can be generalized to more dimensions.
      *
-     * <div class="note"><b>Note:</b>
-     * while this method is primarily for row and columns, it can be generalized to more dimensions.</div>
-     *
-     * The returned vector is a view; changes in the returned vector will be reflected in this builder.
+     * <p>The returned vector is a view; changes in the returned vector will be reflected in this builder.</p>
      *
      * @param  dimension  the dimension of source point for which to get coordinate values.
      * @param  start      index of the first coordinate value to get.
