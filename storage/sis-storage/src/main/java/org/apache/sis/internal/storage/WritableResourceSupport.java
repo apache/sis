@@ -34,7 +34,7 @@ import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelDataOutput;
-import org.apache.sis.internal.coverage.CoverageCombiner;
+import org.apache.sis.coverage.CoverageCombiner;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.util.resources.Errors;

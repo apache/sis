@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.coverage;
+package org.apache.sis.coverage;
 
 import java.util.Arrays;
 import java.awt.Dimension;
@@ -56,22 +56,26 @@ import static org.apache.sis.internal.util.Numerics.saturatingSubtract;
  * Coverages are combined in the order they are specified.
  *
  * <h2>Limitations</h2>
- * Current implementation does not apply interpolations except in the two dimensions
- * specified at construction time. For all other dimensions, data are taken from the
- * nearest neighbor two-dimensional slice.
+ * The current implementation has the following limitations.
+ * Those restrictions may be resolved progressively in future Apache SIS versions.
  *
- * <p>In addition, current implementation does not verify if sample dimensions are in the same order,
- * and does not expand the destination coverage for accommodating data in given coverages that would
- * be outside the bounds of destination coverage.</p>
+ * <ul>
+ *   <li>Supports only {@link GridCoverage} instances, not yet more generic coverages.</li>
+ *   <li>No interpolation except in the two dimensions specified at construction time.
+ *       For all other dimensions, data are taken from the nearest neighbor two-dimensional slice.</li>
+ *   <li>No expansion of the destination coverage for accommodating data of source coverages
+ *       that are outside the destination coverage bounds.</li>
+ *   <li>No verification of whether sample dimensions are in the same order.</li>
+ * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see ImageCombiner
  *
- * @since 1.2
+ * @since 1.4
  */
-public final class CoverageCombiner {
+public class CoverageCombiner {
     /**
      * The {@value} value for identifying code expecting exactly 2 dimensions.
      */
@@ -302,5 +306,21 @@ next:   for (;;) {
             break;
         }
         return success;
+    }
+
+    /**
+     * Returns the combination of destination coverage with all coverages specified to {@code CoverageCombiner} methods.
+     * This may be the destination coverage specified at construction time, but may also be a larger coverage if the
+     * destination has been dynamically expanded for accommodating larger sources.
+     *
+     * <p><b>Note:</b> dynamic expansion is not yet implemented in current version.
+     * If a future version implements it, we shall guarantee that the coordinate of each cell is unchanged
+     * (i.e. the grid extent {@code minX} and {@code minY} may become negative, but the cell identified by
+     * coordinates (0,0) for instance will stay the same cell.)</p>
+     *
+     * @return the combination of destination coverage with all source coverages.
+     */
+    public GridCoverage result() {
+        return destination;
     }
 }

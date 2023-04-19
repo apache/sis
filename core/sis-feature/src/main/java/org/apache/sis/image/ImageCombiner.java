@@ -78,7 +78,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
     /**
      * The value to use in calls to {@link ImageProcessor#setImageLayout(ImageLayout)}.
      * We set this property before use of {@link #processor} because the value may change
-     * for each slice processed by {@link org.apache.sis.internal.coverage.CoverageCombiner}.
+     * for each slice processed by {@link org.apache.sis.coverage.CoverageCombiner}.
      */
     private final Layout layout;
 
