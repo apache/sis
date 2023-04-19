@@ -65,11 +65,11 @@ public interface WritableFeatureSet extends FeatureSet {
      * After successful insertion, the new features may appear after the features already present
      * but not necessarily; ordering is {@link DataStore} specific.
      *
-     * <div class="note"><b>API note:</b>
-     * this method expects an {@link Iterator} rather than a {@link Stream} for easing
+     * <h4>API note</h4>
+     * This method expects an {@link Iterator} rather than a {@link Stream} for easing
      * inter-operability with various API. Implementing a custom {@link Iterator} requires less effort
      * than implementing a {@link Stream}. On the other side if the user has a {@link Stream},
-     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.</div>
+     * obtaining an {@link Iterator} can be done by a call to {@link Stream#iterator()}.
      *
      * @param  features feature instances to insert or copy in this {@code FeatureSet}.
      * @throws IllegalFeatureTypeException if a feature given by the iterator is not of the type expected by this {@code FeatureSet}.

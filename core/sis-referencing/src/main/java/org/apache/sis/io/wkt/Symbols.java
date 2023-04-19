@@ -611,9 +611,9 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * The purpose of this method is to guess some characteristics about the encoded object without
      * the cost of a full WKT parsing.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@code containsElement(wkt, "AXIS")} returns {@code true} if the given WKT contains at least
-     * one instance of the {@code AXIS[…]} element, ignoring case.</div>
+     * one instance of the {@code AXIS[…]} element, ignoring case.
      *
      * @param  wkt      the WKT to inspect.
      * @param  element  the element to search for.

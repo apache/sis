@@ -59,10 +59,7 @@ class GeneralMatrix extends MatrixSIS implements ExtendedPrecisionMatrix {
      * SIS version according experience gained. As long as the value is smaller than 1, it still more accurate than
      * {@code double} arithmetic anyway.</p>
      *
-     * <div class="note"><b>Note:</b>
-     * A similar constant exists in {@code org.apache.sis.math.Plane}.
-     * </div>
-     *
+     * @see org.apache.sis.math.Plane#ZERO_THRESHOLD
      * @see Numerics#COMPARISON_THRESHOLD
      */
     @Configuration

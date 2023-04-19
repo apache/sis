@@ -140,10 +140,10 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * grids only between variables using the exact same list of dimensions.
      * This {@code localizationGrids} cache allows to cover other cases.
      *
-     * <div class="note"><b>Example:</b>
-     * a netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions and another
+     * <h4>Example</h4>
+     * A netCDF file may have a variable with (<var>longitude</var>, <var>latitude</var>) dimensions and another
      * variable with (<var>longitude</var>, <var>latitude</var>, <var>depth</var>) dimensions, with both variables
-     * using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.</div>
+     * using the same localization grid for the (<var>longitude</var>, <var>latitude</var>) part.
      *
      * @see GridCacheKey#cached(Decoder)
      */

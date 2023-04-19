@@ -328,10 +328,10 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code GeodeticDatum.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeodeticDatum}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code GeodeticDatum.class} or a user-defined sub-interface.
      */
@@ -533,10 +533,9 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * The meridian can be safely ignored in the datum name because the {@link PrimeMeridian} object is already
      * compared by the {@link #equals(Object)} method.
      *
-     * <div class="note"><b>Example:</b>
-     * if the datum name is <cite>"Nouvelle Triangulation Française (Paris)"</cite> and the prime meridian name is
+     * <h4>Example</h4>
+     * If the datum name is <cite>"Nouvelle Triangulation Française (Paris)"</cite> and the prime meridian name is
      * <cite>"Paris"</cite>, then this method compares only the <cite>"Nouvelle Triangulation Française"</cite> part.
-     * </div>
      *
      * <h4>Future evolutions</h4>
      * This method implements heuristic rules learned from experience while trying to provide inter-operability

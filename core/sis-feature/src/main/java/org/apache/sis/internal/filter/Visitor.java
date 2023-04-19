@@ -40,10 +40,10 @@ import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
  * and the second parameter is an arbitrary object used as accumulator. For example, the accumulator
  * may be a {@link StringBuilder} where the filter is written as a SQL or CQL statement.
  *
- * <div class="note"><b>Relationship with the visitor pattern</b><br>
+ * <h2>Relationship with the visitor pattern</h2>
  * This class provides similar functionalities than the "visitor pattern".
  * The actions are defined by lambda functions in a {@link HashMap} instead of by overriding methods,
- * but the results are similar.</div>
+ * but the results are similar.
  *
  * <h2>Thread-safety</h2>
  * {@code Visitor} instances are thread-safe if protected methods are invoked at construction time only.

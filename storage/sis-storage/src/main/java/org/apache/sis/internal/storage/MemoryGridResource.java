@@ -49,15 +49,23 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     public final GridCoverage coverage;
 
     /**
+     * The grid coverage processor to use for selecting bands.
+     * It may be configured with a colorizer for determining the color models.
+     */
+    private final GridCoverageProcessor processor;
+
+    /**
      * Creates a new coverage stored in memory.
      *
-     * @param  parent    listeners of the parent resource, or {@code null} if none.
-     * @param  coverage  stored coverage retained as-is (not copied). Cannot be null.
+     * @param  parent     listeners of the parent resource, or {@code null} if none.
+     * @param  coverage   stored coverage retained as-is (not copied). Cannot be null.
+     * @param  processor  the grid coverage processor for selecting bands, or {@code null} for default.
      */
-    public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage) {
+    public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
         super(parent, false);
         ArgumentChecks.ensureNonNull("coverage", coverage);
         this.coverage = coverage;
+        this.processor = (processor != null) ? processor : new GridCoverageProcessor();
     }
 
     /**
@@ -100,7 +108,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
          */
         GridCoverage subset = coverage;
         if (ranges != null && ranges.length != 0) {
-            subset = new GridCoverageProcessor().selectSampleDimensions(subset, ranges);
+            subset = processor.selectSampleDimensions(subset, ranges);
         }
         /*
          * The given `domain` may use arbitrary `gridToCRS` and `CRS` properties.

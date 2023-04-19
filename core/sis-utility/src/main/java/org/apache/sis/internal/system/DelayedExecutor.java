@@ -98,10 +98,10 @@ public final class DelayedExecutor extends DaemonThread {
      * Constructs a new thread as a daemon thread. This thread will be sleeping most of the time.
      * It will run only only a few nanoseconds every time a new {@link DelayedRunnable} is taken.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Design note</h4>
      * We give to this thread a priority higher than the normal one since this thread shall
      * execute only tasks to be completed very shortly. Quick execution of those tasks is at
-     * the benefit of the rest of the system, since they make more resources available sooner.</div>
+     * the benefit of the rest of the system, since they make more resources available sooner.
      */
     private DelayedExecutor(final DaemonThread lastCreatedDaemon) {
         super("DelayedExecutor", lastCreatedDaemon);

@@ -131,8 +131,8 @@ public abstract class AbstractFeature implements Serializable {
      * desired, then {@link #getPropertyValue(String)} is preferred since it gives to SIS a chance to
      * avoid the creation of {@link AbstractAttribute} or {@link AbstractAssociation} instances.</p>
      *
-     * <div class="note"><b>Note for subclass implementers:</b>
-     * the default implementation returns an instance that redirect all read and write operations to
+     * <h4>Note for subclass implementers</h4>
+     * The default implementation returns an instance that redirect all read and write operations to
      * {@link #getPropertyValue(String)} and {@link #setPropertyValue(String, Object)} respectively.
      * That default implementation is intended to make easier for developers to create their own
      * customized <code>AbstractFacture</code> implementations, but has drawbacks:
@@ -140,7 +140,7 @@ public abstract class AbstractFeature implements Serializable {
      * and the returned {@code Property} implementation is not very efficient
      * since it has to perform multiple lookups and type checks.
      * Implementers are encouraged to override this method if they can provide a more efficient implementation.
-     * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
+     * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>
@@ -176,8 +176,8 @@ public abstract class AbstractFeature implements Serializable {
      * in this feature. When default implementations are sufficient, the {@link #setPropertyValue(String, Object)}
      * method is preferred.
      *
-     * <div class="note"><b>Note for subclass implementers:</b>
-     * the default implementation verifies that the given property has the expected type and a null or empty
+     * <h4>Note for subclass implementers</h4>
+     * The default implementation verifies that the given property has the expected type and a null or empty
      * {@linkplain AbstractAttribute#characteristics() map of characteristics}, then delegates to
      * {@link #setPropertyValue(String, Object)}.
      * That default implementation is intended to make easier for developers to create their own
@@ -185,7 +185,7 @@ public abstract class AbstractFeature implements Serializable {
      * the given {@code Property} instance is not stored (only its {@linkplain AbstractAttribute#getValue() value}
      * is stored), and it cannot have custom {@linkplain AbstractAttribute#characteristics() characteristics}.
      * Implementers are encouraged to override this method if they can provide a better implementation.
-     * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.</div>
+     * Note that this is already the case when using implementations created by {@link DefaultFeatureType#newInstance()}.
      *
      * <div class="warning"><b>Warning:</b> In a future SIS version, the argument may be changed
      * to {@code org.opengis.feature.Property}. This change is pending GeoAPI revision.</div>

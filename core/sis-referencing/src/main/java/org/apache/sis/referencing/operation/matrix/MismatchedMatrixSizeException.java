@@ -22,10 +22,10 @@ import org.opengis.geometry.MismatchedDimensionException;
 /**
  * Thrown when two matrices cannot be added or multiplied because the sizes do not match.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Usage note</h2>
  * This exception extends {@code MismatchedDimensionException} because the matrices in this package
  * are used in <cite>Coordinate Operation Steps</cite>, in which case a mismatched matrix size means
- * that the operation involves two Coordinate Reference Systems of incompatible dimensions.</div>
+ * that the operation involves two Coordinate Reference Systems of incompatible dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.4

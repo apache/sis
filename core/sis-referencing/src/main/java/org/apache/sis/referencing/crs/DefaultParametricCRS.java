@@ -202,9 +202,10 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code ParametricCRS[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code ParametricCRS} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code ParametricCRS} is defined in the WKT 2 specification only.
      *
+     * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParametricCRS"}.
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#83">WKT 2 specification</a>

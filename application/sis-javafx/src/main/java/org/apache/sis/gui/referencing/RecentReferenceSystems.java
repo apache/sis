@@ -114,8 +114,9 @@ public class RecentReferenceSystems {
      * A pseudo-reference system for the "Other…" choice. We use a null value because {@link ChoiceBox}
      * seems to insist for inserting a null value in the items list when we remove the selected item.
      *
-     * <div class="note"><b>Maintenance note:</b> if this field is changed to a non-null value,
-     * search also for usages of {@code Object::nonNull} predicate.</div>
+     * <h4>Maintenance note</h4>
+     * If this field is changed to a non-null value,
+     * search also for usages of {@code Object::nonNull} predicate.
      */
     static final ReferenceSystem OTHER = null;
 
@@ -129,9 +130,9 @@ public class RecentReferenceSystems {
      * The area of interest, or {@code null} if none. This is used for filtering the reference systems added by
      * {@code addAlternatives(…)} and for providing some guidance to user when {@link CRSChooser} is shown.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<Envelope> areaOfInterest;
 
@@ -144,9 +145,9 @@ public class RecentReferenceSystems {
      * The comparison criterion for considering two reference systems as a duplication.
      * The default value is {@link ComparisonMode#ALLOW_VARIANT}, i.e. axis orders are ignored.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<ComparisonMode> duplicationCriterion;
 
@@ -237,11 +238,11 @@ public class RecentReferenceSystems {
      * A filtered view of {@link #referenceSystems} without the {@link #OTHER} item.
      * This is the list returned to users by public API, but otherwise it is not used by this class.
      *
-     * <div class="note"><b>Design note:</b>
-     * the {@link #OTHER} item needs to exist in the list used internally by this class because those lists
+     * <h4>Design notes</h4>
+     * The {@link #OTHER} item needs to exist in the list used internally by this class because those lists
      * are used directly by controls like {@code ChoiceBox<ReferenceSystem>}, with the {@link #OTHER} value
      * handled in a special way by {@link ObjectStringConverter} for making the "Other…" item present in the
-     * list of choices. But since {@link #OTHER} is not a real CRS, we want to hide that trick to users.</div>
+     * list of choices. But since {@link #OTHER} is not a real CRS, we want to hide that trick to users.
      *
      * <p>This list is lazily created when first needed,
      * because it depends on {@link #referenceSystems} which is itself lazily created.</p>

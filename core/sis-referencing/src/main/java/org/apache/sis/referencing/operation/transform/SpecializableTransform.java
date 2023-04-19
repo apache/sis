@@ -336,7 +336,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
                 do {                                        // Count how many points will use that transform.
                     src.offset += srcInc;
                     if (--numPts <= 0) break;
-                    domain = locate(src);                   // More expansive check than the case where domain is non-null.
+                    domain = locate(src);                   // More expensive check than the case where domain is non-null.
                 } while (domain == null);
             } else {
                 RTreeNode next = domain;
@@ -482,8 +482,8 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     /**
      * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * The {@code SPECIALIZABLE_MT} element formatted here is an Apache SIS-specific extension.</div>
+     * <h4>Compatibility note</h4>
+     * The {@code SPECIALIZABLE_MT} element formatted here is an Apache SIS-specific extension.
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "Specializable_MT"}.

@@ -35,13 +35,12 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  *   <li>Sample dimensions (bands) are accessed by band index with the first band at index 0.</li>
  * </ul>
  *
- * <div class="note"><b>Comparison with ISO 19123:</b>
- * by contrast an ISO {@code Coverage} does not restrict sample values to primitive types,
+ * <h2>Comparison with ISO 19123</h2>
+ * By contrast an ISO {@code Coverage} does not restrict sample values to primitive types,
  * does not require all sample dimensions to use the same type,
  * and sample values are accessed by field names instead of band indices.
  * Said otherwise, an ISO {@code Coverage} can provide a complex structure (a {@link org.opengis.util.Record})
  * at every location while this {@code BandedCoverage} class provides only primitive arrays such as {@code float[]}.
- * </div>
  *
  * The effect of above restrictions appears in {@link #getSampleDimensions()} and
  * {@link Evaluator#apply(DirectPosition)} method signatures.

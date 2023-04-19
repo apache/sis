@@ -711,12 +711,12 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any iteration order.
          *
-         * <div class="note"><b>Possible evolution:</b>
-         * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
+         * <h4>Possible future evolution</h4>
+         * Current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
          * with {@code areaOfInterest}. Consequently, the iterator may return slightly more cells than expected.
          * A future version may filter the cells more accurately. If an application needs the same set of cells
          * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
-         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
+         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.
          *
          * @param  areaOfInterest  envelope of desired MGRS references.
          * @return an iterator over MGRS references intersecting the given area of interest.
@@ -737,12 +737,12 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * If the CRS is geographic, the envelope is allowed to span the anti-meridian.
          * The MGRS references may be returned in any order.
          *
-         * <div class="note"><b>Possible evolution:</b>
-         * current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
+         * <h4>Possible future evolution</h4>
+         * Current implementation does not clip the cells to UPS/UTM valid areas before to test for intersection
          * with {@code areaOfInterest}. Consequently, the iterator may return slightly more cells than expected.
          * A future version may filter the cells more accurately. If an application needs the same set of cells
          * than what current the implementation returns, it can invoke <code>{@linkplain #setClipToValidArea
-         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.</div>
+         * setClipToValidArea}(false)</code> for preserving current behavior in future Apache SIS versions.
          *
          * @param  areaOfInterest  envelope of desired MGRS references.
          * @param  parallel        {@code true} for a parallel stream, or {@code false} for a sequential stream.

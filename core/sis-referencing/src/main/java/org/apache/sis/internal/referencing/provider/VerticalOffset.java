@@ -36,7 +36,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * The Apache SIS implementation of this operation method always perform the vertical offset in metres.
  * The vertical axis of source and target CRS shall be converted to metres before this operation is applied.
  *
- * <div class="note">Axis direction</div>
+ * <h2>Axis direction</h2>
  * The EPSG guidance note defines this operation as (ignoring unit conversions):
  *
  * <blockquote>X₂ = m⋅X₁ + offset</blockquote>

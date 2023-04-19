@@ -563,11 +563,9 @@ subst:  if (variant.spherical || (eccentricity == 0 && getClass() == Mercator.cl
         }
 
         /**
-         * {@inheritDoc}
-         *
-         * <div class="note"><b>Note:</b>
-         * This method must be overridden because the {@link Mercator} class overrides the {@link NormalizedProjection}
-         * default implementation.</div>
+         * Converts a list of coordinate tuples.
+         * This method must be overridden because the {@link Mercator} class
+         * overrides the {@link NormalizedProjection} default implementation.
          */
         @Override
         public void transform(final double[] srcPts, int srcOff,

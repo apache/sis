@@ -102,7 +102,6 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  * or latitude values without the degrees field are unusual, omitting that field is likely to increase the
  * risk of confusion in those cases.
  *
- * <div class="note"><b>Examples:</b>
  * <table class="sis">
  *   <caption>Pattern examples</caption>
  *   <tr><th>Pattern               </th>  <th>48.5      </th> <th>-12.53125    </th></tr>
@@ -114,7 +113,6 @@ import static org.apache.sis.math.DecimalFunctions.fractionDigitsForDelta;
  *   <tr><td>{@code DDMMSSs}       </td>  <td>4830000   </td> <td>-1231525     </td></tr>
  *   <tr><td>{@code DD°MM′?SS.s″?} </td>  <td>48°30′    </td> <td>-12°31′52.5″ </td></tr>
  * </table>
- * </div>
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @version 1.1
@@ -326,9 +324,9 @@ public class AngleFormat extends Format implements Localized {
      * If the minutes field is declared optional but the degrees and seconds are formatted,
      * then minutes will be formatted too un order to reduce the risk of confusion
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * Value 12.01 is formatted as {@code 12°00′36″} if this field is {@code true},
-     * and as {@code 12°36″} if this field is {@code false}.</div>
+     * and as {@code 12°36″} if this field is {@code false}.
      */
     private transient boolean showLeadingFields;
 

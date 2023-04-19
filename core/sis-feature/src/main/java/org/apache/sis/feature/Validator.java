@@ -63,13 +63,13 @@ final class Validator {
      * Adds a report for a constraint violation. If the given {@code report} is {@code null}, then this method creates
      * a new {@link DefaultDomainConsistency} instance with the measure identification set to the property name.
      *
-     * <div class="note"><b>Note:</b>
-     * setting {@code measureIdentification} to the property name may look like a departure from ISO intent,
+     * <h4>Implementation note</h4>
+     * Setting {@code measureIdentification} to the property name may look like a departure from ISO intent,
      * since the former should be an identification of the <em>quality measurement</em> rather than the measure itself.
      * (setting {@code measureDescription} to {@code type.getDescription()} would probably be wrong for that reason).
      * However, {@code measureIdentification} is only an identifier, not a full description of the quality measurement
      * We are not strictly forbidden to use the same identifier for both the quality measurement than the measurement
-     * itself. However, strictly speaking, maybe we should use a different scope.</div>
+     * itself. However, strictly speaking, maybe we should use a different scope.
      *
      * @param  report       where to add the result, or {@code null} if not yet created.
      * @param  type         description of the property for which a constraint violation has been found.

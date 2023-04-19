@@ -41,6 +41,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
+import org.apache.sis.internal.storage.MemoryGridResource;
 import org.apache.sis.util.collection.BackingStoreException;
 
 
@@ -184,16 +185,20 @@ public final class CoverageAggregator extends Group<GroupBySample> {
      * @since 1.4
      */
     public void add(final GridCoverage coverage) {
-        final GroupBySample bySample = GroupBySample.getOrAdd(members, coverage.getSampleDimensions());
-        final GridSlice slice = new GridSlice(listeners, coverage);
-        final List<GridSlice> slices;
         try {
-            slices = slice.getList(bySample.members, strategy).members;
-        } catch (NoninvertibleTransformException e) {
-            throw new IllegalGridGeometryException(e);
-        }
-        synchronized (slices) {
-            slices.add(slice);
+            add(new MemoryGridResource(listeners, coverage, processor()));
+        } catch (DataStoreException e) {
+            /*
+             * `DataStoreException` are never thrown by `MemoryGridResource`.
+             * The only case where we could get that exception with default
+             * `add(GridCoverageResource)` is with non-invertible transform.
+             */
+            final Throwable cause = e.getCause();
+            if (cause instanceof NoninvertibleTransformException) {
+                throw new IllegalGridGeometryException(cause);
+            } else {
+                throw new BackingStoreException(e);
+            }
         }
     }
 

@@ -78,9 +78,8 @@ public final class MatricesTest extends TestCase {
      * Tests {@link Matrices#createTransform(AxisDirection[], AxisDirection[])} with the same sequence of axes.
      * The result shall be an identity matrix.
      *
-     * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,
-     * because this method will be the most frequently invoked one when building CRS.</div>
+     * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
     public void testCreateTransformWithSameAxes() {
@@ -100,9 +99,8 @@ public final class MatricesTest extends TestCase {
      * Axes are moved in different positions, and some axes will have opposite directions.
      * However, the number of axes stay the same.
      *
-     * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,
-     * because this method will be the most frequently invoked one when building CRS.</div>
+     * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
     @DependsOnMethod("testCreateTransformWithSameAxes")
@@ -128,9 +126,8 @@ public final class MatricesTest extends TestCase {
      * Tests {@link Matrices#createTransform(AxisDirection[], AxisDirection[])} with less axes
      * in the destination than in the source.
      *
-     * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,
-     * because this method will be the most frequently invoked one when building CRS.</div>
+     * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
     @DependsOnMethod("testCreateTransformWithDifferentAxes")
@@ -154,9 +151,8 @@ public final class MatricesTest extends TestCase {
      * Tests {@link Matrices#createTransform(AxisDirection[], AxisDirection[])} with the axis repeated twice.
      * This unusual, but shall nevertheless be supported.
      *
-     * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,
-     * because this method will be the most frequently invoked one when building CRS.</div>
+     * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
     @DependsOnMethod("testCreateTransformWithLessAxes")
@@ -180,9 +176,8 @@ public final class MatricesTest extends TestCase {
      * Tests that {@link Matrices#createTransform(AxisDirection[], AxisDirection[])}
      * throw an exception if a destination axis is not in the source.
      *
-     * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,
-     * because this method will be the most frequently invoked one when building CRS.</div>
+     * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
     public void testCreateTransformWithAxisNotInSource() {
@@ -200,9 +195,8 @@ public final class MatricesTest extends TestCase {
      * Tests that {@link Matrices#createTransform(AxisDirection[], AxisDirection[])}
      * throw an exception if the arguments contain colinear axis directions.
      *
-     * <div class="note"><b>Note:</b>
      * {@code Matrices.createTransform(AxisDirection[], AxisDirection[])} needs to be tested with special care,
-     * because this method will be the most frequently invoked one when building CRS.</div>
+     * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
     public void testCreateTransformWithColinearAxes() {

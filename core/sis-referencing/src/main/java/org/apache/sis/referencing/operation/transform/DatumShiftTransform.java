@@ -251,19 +251,18 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
      * because {@code DatumShiftTransform} instances are often preceeded and followed by linear conversions.
      * It may be conversions between degrees and radians units, or conversions from geodetic coordinates to grid indices.
      *
-     * <div class="note"><b>Example:</b>
-     *   The chain of transforms of an {@link InterpolatedGeocentricTransform} is:
-     *   <div class="horizontal-flow" style="align-items:center">
-     *     <div>{@include formulas.html#NormalizeGeographic}</div>
-     *     <div>→</div>
-     *     <div><ol style="padding-left: 15px">
-     *       <li>Geographic to geocentric conversion</li>
-     *       <li>Geocentric interpolation</li>
-     *       <li>Geocentric to geographic conversion</li>
-     *     </ol></div>
-     *     <div>→</div>
-     *     <div>{@include formulas.html#DenormalizeGeographic}</div>
-     *   </div>
+     * <h4>Example</h4>
+     * The chain of transforms of an {@link InterpolatedGeocentricTransform} is:
+     * <div class="horizontal-flow" style="align-items:center">
+     *   <div>{@include formulas.html#NormalizeGeographic}</div>
+     *   <div>→</div>
+     *   <div><ol style="padding-left: 15px">
+     *     <li>Geographic to geocentric conversion</li>
+     *     <li>Geocentric interpolation</li>
+     *     <li>Geocentric to geographic conversion</li>
+     *   </ol></div>
+     *   <div>→</div>
+     *   <div>{@include formulas.html#DenormalizeGeographic}</div>
      * </div>
      *
      * This method returns the parameters for the part in the middle of above example.

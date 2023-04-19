@@ -213,8 +213,8 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     /**
      * Returns the name of the location type.
      *
-     * <div class="note"><b>Examples:</b>
-     * “administrative area”, “town”, “locality”, “street”, “property”.</div>
+     * <h4>Examples</h4>
+     * “administrative area”, “town”, “locality”, “street”, “property”.
      *
      * @return name of the location type.
      */
@@ -226,12 +226,12 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     /**
      * Returns the property used as the defining characteristic of the location type.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <cite>“local administration”</cite> for administrative areas,
      * <cite>“built environment”</cite> for towns or properties,
      * <cite>“access”</cite> for streets,
      * <cite>“electoral”</cite>,
-     * <cite>“postal”</cite>.</div>
+     * <cite>“postal”</cite>.
      *
      * @return property used as the defining characteristic of the location type.
      *
@@ -245,8 +245,8 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     /**
      * Returns the method(s) of uniquely identifying location instances.
      *
-     * <div class="note"><b>Examples:</b>
-     * “name”, “code”, “unique street reference number”, “geographic address”.</div>
+     * <h4>Examples</h4>
+     * “name”, “code”, “unique street reference number”, “geographic address”.
      *
      * @return method(s) of uniquely identifying location instances.
      */
@@ -269,8 +269,8 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     /**
      * Returns the geographic area within which the location type occurs.
      *
-     * <div class="note"><b>Examples:</b>
-     * the geographic domain for a location type “rivers” might be “North America”.</div>
+     * <h4>Examples</h4>
+     * the geographic domain for a location type “rivers” might be “North America”.
      *
      * @return geographic area within which the location type occurs.
      */

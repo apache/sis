@@ -386,11 +386,11 @@ public class ScriptRunner implements AutoCloseable {
      * Declares that a word in the SQL script needs to be replaced by the given word.
      * The replacement is performed only for occurrences outside identifiers or texts.
      *
-     * <div class="note"><b>Example</b>
-     * this is used for mapping the table names in the EPSG scripts to table names as they were in the MS-Access
+     * <h4>Example</h4>
+     * This is used for mapping the table names in the EPSG scripts to table names as they were in the MS-Access
      * flavor of EPSG database. It may also contains the mapping between SQL keywords used in the SQL scripts to
      * SQL keywords understood by the database. For example if a database does not support the {@code "TEXT"}
-     * data type, it may be replaced by {@code "LONG VARCHAR"}.</div>
+     * data type, it may be replaced by {@code "LONG VARCHAR"}.
      *
      * <b>Limitation:</b> the {@code inScript} word to replace must be a single word with no space.
      * If the text to replace contains two words (for example {@code "CREATE TABLE"}), then revert

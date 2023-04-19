@@ -98,14 +98,14 @@ import org.apache.sis.coverage.grid.GridCoverageProcessor;
  * For each image operations, above properties are combined with parameters given to the operation method.
  * Each method in this {@code ImageProcessor} class documents the properties used in addition of method parameters.
  *
- * <div class="note"><b>API design:</b>
- * properties (setter methods) are used for values that can be applied unchanged on many different images.
+ * <h2>API design</h2>
+ * Properties (setter methods) are used for values that can be applied unchanged on many different images.
  * For example, the {@linkplain #getInterpolation() interpolation method} can be specified once and used
  * unchanged for many {@link #resample resample(…)} operations.
  * On the other hand, method arguments are used for values that are usually specific to the image to process.
  * For example, the {@link MathTransform} argument given to the {@link #resample resample(…)} operation depends
  * tightly on the source image and destination bounds (also given in arguments); those information usually need
- * to be recomputed for each image.</div>
+ * to be recomputed for each image.
  *
  * <h2>Deferred calculations</h2>
  * Methods in this class may compute the result at some later time after the method returned, instead of computing
@@ -719,15 +719,14 @@ public class ImageProcessor implements Cloneable {
      * {@link Statistics#accept(double)} to ignore them. The {@link #filterNodataValues(Number...)}
      * convenience method can be used for building an operator filtering "no data" sample values.
      *
-     * <div class="note"><b>API design note:</b>
-     * the {@code areaOfInterest} and {@code sampleFilters} arguments are complementary.
+     * <h5>API design note</h5>
+     * The {@code areaOfInterest} and {@code sampleFilters} arguments are complementary.
      * Both of them filter the data accepted for statistics. In ISO 19123 terminology,
      * the {@code areaOfInterest} argument filters the <cite>coverage domain</cite> while
      * the {@code sampleFilters} argument filters the <cite>coverage range</cite>.
      * Another connection with OGC/ISO standards is that {@link DoubleUnaryOperator} in this context
      * does the same work than {@linkplain SampleDimension#getTransferFunction() transfer function}.
      * It can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
-     * </div>
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:

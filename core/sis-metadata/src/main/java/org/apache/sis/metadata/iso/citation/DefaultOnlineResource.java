@@ -298,9 +298,8 @@ public class DefaultOnlineResource extends ISOMetadata implements OnlineResource
     /**
      * Returns the connection protocol to be used.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Examples</h4>
      * ftp, http get KVP, http POST, <i>etc</i>.
-     * </div>
      *
      * @return connection protocol to be used, or {@code null}.
      */

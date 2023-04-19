@@ -41,10 +41,9 @@ import org.apache.sis.util.iso.Types;
  * In addition, the geographic identifier can optionally have a
  * {@linkplain DefaultIdentifier#getDescription() natural language description}.
  *
- * <div class="note"><b>Example:</b>
- * a geographic area may be identified by the {@code 1731} code in the {@code EPSG} codespace.
+ * <h2>Examples</h2>
+ * A geographic area may be identified by the {@code 1731} code in the {@code EPSG} codespace.
  * The natural language description for {@code EPSG:1731} can be <cite>“France – mainland north of 48.15°N”</cite>.
- * </div>
  *
  * <h2>Limitations</h2>
  * <ul>
@@ -90,9 +89,9 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
      * Callers may consider using the {@linkplain DefaultIdentifier#getDescription() identifier description}
      * as an alternative and keep the code for a more compact string (often a primary key).
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * <code>new DefaultGeographicDescription({@link org.apache.sis.metadata.iso.citation.Citations#EPSG}, "1731")</code>
-     * can stand for <cite>“France – mainland north of 48.15°N”</cite>.</div>
+     * can stand for <cite>“France – mainland north of 48.15°N”</cite>.
      *
      * @param authority  the authority of the identifier code, or {@code null} if none.
      * @param code       the identifier code used to represent a geographic area, or {@code null} if none.
@@ -181,13 +180,13 @@ public class DefaultGeographicDescription extends AbstractGeographicExtent imple
     /**
      * Returns the identifier used to represent a geographic area.
      *
-     * <div class="note"><b>Example:</b>
-     * an identifier with the following properties:
+     * <h4>Example</h4>
+     * An identifier with the following properties:
      * <ul>
      *   <li>the {@code "EPSG"} code space,</li>
      *   <li>the {@code "1731"} code, and</li>
      *   <li>the <cite>“France – mainland north of 48.15°N”</cite> description.</li>
-     * </ul></div>
+     * </ul>
      *
      * @return the identifier used to represent a geographic area, or {@code null}.
      */

@@ -52,13 +52,14 @@ import org.apache.sis.math.FunctionProperty;
  *       a sequence of decreasing <var>T</var> values.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
+ * <h2>Example</h2>
  * The function properties regarding order is important when converting {@link org.apache.sis.measure.Range} objects.
  * For example if the converter reverses the value ordering (e.g. reverses the sign of numerical values), then the
  * minimum and maximum values in each {@code Range} instance need to be interchanged. If the ordering is not preserved
  * at all (neither directly or reversed), as for example in the conversion from {@link Number} to {@link String}, then
- * we cannot convert ranges at all.</div>
+ * we cannot convert ranges at all.
  *
+ * <h2>Usage</h2>
  * Below are some guidelines about the function properties that a converter can declare:
  *
  * <ul>
@@ -129,8 +130,8 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      * at implementation choice (except for {@linkplain FunctionProperty#INJECTIVE injective} functions, which must throw
      * an exception - see the class Javadoc for more discussion about function {@linkplain #properties() properties}).
      *
-     * <div class="note"><b>Example:</b>
-     * in Apache SIS implementation, converters from {@link String} to {@link Number} distinguish two kinds of
+     * <h4>Example</h4>
+     * In Apache SIS implementation, converters from {@link String} to {@link Number} distinguish two kinds of
      * unconvertible objects:
      *
      * <ul>
@@ -140,7 +141,7 @@ public interface ObjectConverter<S,T> extends Function<S,T> {
      *
      * In other words, the {@code ""} value is unconvertible but nevertheless considered as part of the converter
      * domain, and is mapped to <cite>"no number"</cite>. All other unparsable strings are considered outside the
-     * converter domain.</div>
+     * converter domain.
      *
      * @param  object  the object to convert, or {@code null}.
      * @return the converted object, or {@code null}.

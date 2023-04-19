@@ -294,10 +294,11 @@ public class GridDerivation {
      * For example if subsampling is 2, then a margin of 6 cells specified with this method will result
      * in a margin of 3 cells in the grid extent computed by the {@link #build()} method.
      *
-     * <div class="note"><b>Use case:</b>
-     * if the caller wants to apply bilinear interpolations in an image, (s)he will need 1 more pixel on each image border.
-     * If the caller wants to apply bi-cubic interpolations, (s)he will need 2 more pixels on each image border.</div>
+     * <h4>Use case</h4>
+     * If the caller wants to apply bilinear interpolations in an image, (s)he will need 1 more pixel on each image border.
+     * If the caller wants to apply bi-cubic interpolations, (s)he will need 2 more pixels on each image border.
      *
+     * <h4>Default values</h4>
      * If this method is never invoked, the default value is zero for all dimensions.
      * If this method is invoked too late, an {@link IllegalStateException} is thrown.
      * If the {@code cellCounts} array length is shorter than the grid dimension,
@@ -954,8 +955,8 @@ public class GridDerivation {
      * to a single point. Dimensions can be left unspecified either by assigning to {@code slicePoint} a CRS
      * without those dimensions, or by assigning the NaN value to some coordinates.
      *
-     * <div class="note"><b>Example:</b>
-     * if the {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system} of base grid geometry has
+     * <h4>Example</h4>
+     * If the {@linkplain GridGeometry#getCoordinateReferenceSystem() coordinate reference system} of base grid geometry has
      * (<var>longitude</var>, <var>latitude</var>, <var>time</var>) axes, then a (<var>longitude</var>, <var>latitude</var>)
      * slice at time <var>t</var> can be created with one of the following two positions:
      * <ul>
@@ -963,9 +964,9 @@ public class GridDerivation {
      *   <li>A one-dimensional position with (<var>t</var>) coordinate and the coordinate reference system set to
      *       {@linkplain org.apache.sis.referencing.CRS#getTemporalComponent(CoordinateReferenceSystem) the temporal component}
      *       of the grid geometry CRS.</li>
-     * </ul></div>
+     * </ul>
      *
-     * <p>Notes:</p>
+     * <h4>Usage notes</h4>
      * <ul>
      *   <li>This method can be invoked after {@link #subgrid(Envelope, double...)}, but not before.</li>
      *   <li>If a non-default rounding mode is desired, it should be {@linkplain #rounding(GridRoundingMode) specified}
@@ -1214,14 +1215,14 @@ public class GridDerivation {
      * This method returns the {s₀, s₁, s₂} values while {@link #getSubsamplingOffsets()}
      * returns the {t₀, t₁, t₂} values. All subsampling values are strictly positive integers.
      *
-     * <div class="note"><b>Application to iterations</b><br>
+     * <p>This method can be invoked after {@link #build()} for getting additional information.
+     * If {@link #subgrid(GridExtent, int...)} has been invoked, then this method returns the
+     * values that were given in the {@code subsampling} argument.</p>
+     *
+     * <h4>Application to iterations</h4>
      * Iteration over {@code areaOfInterest} grid coordinates with a stride Δ<var>x</var>=1
      * corresponds to an iteration in {@link #base} grid coordinates with a stride of Δ<var>x′</var>=s₀,
-     * a stride Δ<var>y</var>=1 corresponds to a stride Δ<var>y′</var>=s₁, <i>etc.</i></div>
-     *
-     * This method can be invoked after {@link #build()} for getting additional information.
-     * If {@link #subgrid(GridExtent, int...)} has been invoked, then this method returns the
-     * values that were given in the {@code subsampling} argument.
+     * a stride Δ<var>y</var>=1 corresponds to a stride Δ<var>y′</var>=s₁, <i>etc.</i>
      *
      * @return an <em>estimation</em> of the strides for accessing cells along each axis of {@link #base} grid.
      * @throws IllegalStateException if the subsampling factors are not integers. It may happen if the derived
@@ -1257,8 +1258,8 @@ public class GridDerivation {
      * If a {@link #chunkSize} has been specified, then the subsampling will be a divisor of that size.
      * This is necessary for avoiding a drift of subsampled pixel coordinates computed from tile coordinates.
      *
-     * <div class="note"><b>Drift example:</b>
-     * if the tile size is 16 pixels and the subsampling is 3, then the subsampled tile size is ⌊16/3⌋ = 5 pixels.
+     * <h4>Drift example</h4>
+     * If the tile size is 16 pixels and the subsampling is 3, then the subsampled tile size is ⌊16/3⌋ = 5 pixels.
      * Pixel coordinates for each tile is as below:
      *
      * <table class="sis">
@@ -1274,7 +1275,7 @@ public class GridDerivation {
      * for a regular progression of those pixel coordinates. For {@code GridCoverageResource} implementations,
      * it would require to read the last row of tile #2 and insert those data as the first row of tile #3.
      * It does not only make implementations much more difficult, but also hurts performance because fetching
-     * a single tile would actually require the "physical" reading of 2 or more tiles.</div>
+     * a single tile would actually require the "physical" reading of 2 or more tiles.
      *
      * @param  scale      the scale factor to round.
      * @param  dimension  the dimension of the scale factor to round.

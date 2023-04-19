@@ -198,10 +198,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code VerticalDatum.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code VerticalDatum}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code VerticalDatum.class} or a user-defined sub-interface.
      */
@@ -236,11 +236,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Returns the type of this vertical datum.
      *
-     * <div class="note"><b>Historical note:</b>
-     * this property was defined in the ISO 19111 specification published in 2003,
+     * <h4>Historical note:</h4>
+     * This property was defined in the ISO 19111 specification published in 2003,
      * but removed from the revision published 2007.
      * This property provides an information similar to the {@linkplain #getAnchorPoint() anchor definition},
-     * but in a programmatic way more suitable to coordinate transformation engines.</div>
+     * but in a programmatic way more suitable to coordinate transformation engines.
      *
      * @return the type of this vertical datum.
      */
@@ -300,11 +300,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
+     * <h4>Compatibility note</h4>
      * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
      * and 2002 for ellipsoidal height. Such codes were formatted for all {@code Datum} subtypes in WKT 1.
      * Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
-     * completely in ISO 19111:2007.</div>
+     * completely in ISO 19111:2007.
      *
      * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      *

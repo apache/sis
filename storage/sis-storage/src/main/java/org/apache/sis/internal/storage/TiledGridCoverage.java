@@ -334,12 +334,12 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * {@link MultiPixelPackedSampleModel} which packs many pixels in a single bank element.
      * This value is a power of 2 according {@code MultiPixelPackedSampleModel} specification.
      *
-     * <div class="note"><b>Note:</b>
-     * this is "pixels per element", not "samples per element". It makes a difference in the
+     * <h4>Design note</h4>
+     * This is "pixels per element", not "samples per element". It makes a difference in the
      * {@link java.awt.image.SinglePixelPackedSampleModel} case, for which this method returns 1
      * (by contrast a "samples per element" would give a value greater than 1).
      * But this value can nevertheless be understood as a "samples per element" value
-     * where only one band is considered at a time.</div>
+     * where only one band is considered at a time.
      *
      * @return number of pixels in a single bank element. Usually 1.
      *

@@ -188,12 +188,12 @@ public class AttributeNames {
      * <tr><td>{@link AttributeNames#INSTRUMENT    INSTRUMENT}</td>    <td>{@code "instrument"}</td>    <td>{@code "instrument_vocabulary"}</td></tr>
      * </table>
      *
-     * <div class="note"><b>Note:</b>
+     * <h2>Departure from conventions</h2>
      * The member names in this class are upper-cases because they should be considered as constants.
      * For example, {@code AttributeNames.KEYWORD.TEXT} maps exactly to the {@code "keywords"} string
      * and nothing else. A lower-case {@code text} member name could be misleading since it would
      * suggest that the field contains the actual text value rather than the key by which the value
-     * is identified in a netCDF file.</div>
+     * is identified in a netCDF file.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
@@ -352,11 +352,11 @@ public class AttributeNames {
      * {@link org.apache.sis.metadata.iso.DefaultMetadata#getResourceLineages() resourceLineage} /
      * {@link Lineage#getStatement() statement}</li></ul>
      *
-     * <div class="note"><b>Note:</b>
-     * located in "{@link Metadata#getDataQualityInfo() dataQualityInfo} /
+     * <h4>Departure from convention</h4>
+     * Located in "{@link Metadata#getDataQualityInfo() dataQualityInfo} /
      * {@link org.opengis.metadata.quality.DataQuality#getLineage() lineage}" instead of "{@code resourceLineage}"
      * in {@code UnidataDD2MI.xsl} file (retrieved in 2017).
-     * See <a href="https://issues.apache.org/jira/browse/SIS-361">SIS-361</a>.</div>
+     * See <a href="https://issues.apache.org/jira/browse/SIS-361">SIS-361</a>.
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#history">ESIP reference</a>
      */
@@ -370,11 +370,11 @@ public class AttributeNames {
      * {@link Lineage#getSources() source} /
      * {@link Source#getDescription() description}</li></ul>
      *
-     * <div class="note"><b>Note:</b>
-     * located in "{@link Metadata#getDataQualityInfo() dataQualityInfo} /
+     * <h4>Departure from convention</h4>
+     * Located in "{@link Metadata#getDataQualityInfo() dataQualityInfo} /
      * {@link org.opengis.metadata.quality.DataQuality#getLineage() lineage}" instead of "{@code resourceLineage}"
      * in {@code UnidataDD2MI.xsl} file (retrieved in 2017).
-     * See <a href="https://issues.apache.org/jira/browse/SIS-361">SIS-361</a>.</div>
+     * See <a href="https://issues.apache.org/jira/browse/SIS-361">SIS-361</a>.
      *
      * @see <a href="http://wiki.esipfed.org/index.php/Attribute_Convention_for_Data_Discovery#source">ESIP reference</a>
      *
@@ -582,12 +582,12 @@ public class AttributeNames {
      *   <td>           {@link Role#PUBLISHER}</td>
      * </tr></table>
      *
-     * <div class="note"><b>Note:</b>
+     * <h2>Departure from conventions</h2>
      * The member names in this class are upper-cases because they should be considered as constants.
      * For example, {@code AttributeNames.CREATOR.EMAIL} maps exactly to the {@code "creator_email"} string
      * and nothing else. A lower-case {@code email} member name could be misleading since it would suggest
      * that the field contains the actual name value rather than the key by which the value is identified
-     * in a netCDF file.</div>
+     * in a netCDF file.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.8
@@ -912,12 +912,12 @@ public class AttributeNames {
      *   <td            >{@link DimensionNameType#TIME}</td>
      * </tr></table>
      *
-     * <div class="note"><b>Note:</b>
+     * <h2>Departure from conventions</h2>
      * The member names in this class are upper-cases because they should be considered as constants.
      * For example, {@code AttributeNames.LATITUDE.MINIMUM} maps exactly to the {@code "geospatial_lat_min"}
      * string and nothing else. A lower-case {@code minimum} member name could be misleading since it would
      * suggest that the field contains the actual latitude value rather than the key by which the value is
-     * identified in a netCDF file.</div>
+     * identified in a netCDF file.
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 0.3

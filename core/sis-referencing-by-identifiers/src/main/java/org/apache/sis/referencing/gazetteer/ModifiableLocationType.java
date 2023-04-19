@@ -86,8 +86,8 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  * But in the hope to improve ISO compliance, values of undefined properties are inherited
  * from the parents (if any) provided that all parents define the same values.
  *
- * <div class="note"><b>Example:</b>
- * if an <var>administrative area</var> is in some {@linkplain #getTerritoryOfUse() territory of use},
+ * <h2>Example</h2>
+ * If an <var>administrative area</var> is in some {@linkplain #getTerritoryOfUse() territory of use},
  * then all children of the administrative area (namely <var>towns</var> and <var>streets</var>) can
  * reasonably presumed to be in the same territory of use. That territory can be specified only once
  * as below:
@@ -97,7 +97,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
  *     }
  *
  * Then, the towns and streets automatically inherit the same value for that property,
- * unless they are explicitly given another value.</div>
+ * unless they are explicitly given another value.
  *
  * <h2>Limitation</h2>
  * This class is not serializable and is not thread-safe. For thread safety or for serialization,
@@ -169,8 +169,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * Returns the name of the location type.
      * This name is specified at construction time and cannot be changed.
      *
-     * <div class="note"><b>Examples:</b>
-     * “administrative area”, “town”, “locality”, “street”, “property”.</div>
+     * <h4>Examples</h4>
+     * “administrative area”, “town”, “locality”, “street”, “property”.
      *
      * @return name of the location type.
      */
@@ -216,12 +216,12 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     /**
      * Sets the property used as the defining characteristic of the location type.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <cite>“local administration”</cite> for administrative areas,
      * <cite>“built environment”</cite> for towns or properties,
      * <cite>“access”</cite> for streets,
      * <cite>“electoral”</cite>,
-     * <cite>“postal”</cite>.</div>
+     * <cite>“postal”</cite>.
      *
      * @param  value  the new theme, or {@code null} for inheriting a value from the parents.
      */
@@ -234,14 +234,13 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * If no methods have been explicitly set, then this method inherits the values from
      * the parents providing that all parents specify the same methods.
      *
-     * <div class="note"><b>Examples:</b>
-     * some identification methods are “name”, “code”, “unique street reference number” and “geographic address”.
+     * <p>The collection returned by this method is unmodifiable. For adding or removing an identification,
+     * use {@link #addIdentification(CharSequence)} or {@link #removeIdentification(CharSequence)}.</p>
+     *
+     * <h4>Examples</h4>
+     * Some identification methods are “name”, “code”, “unique street reference number” and “geographic address”.
      * A location using “name” identifications may have the “Spain” {@linkplain AbstractLocation#getGeographicIdentifier()
      * geographic identifier}, and a location using “postcode” identifications may have the “SW1P 3AD” geographic identifier.
-     * </div>
-     *
-     * The collection returned by this method is unmodifiable. For adding or removing an identification,
-     * use {@link #addIdentification(CharSequence)} or {@link #removeIdentification(CharSequence)}.
      *
      * @return method(s) of uniquely identifying location instances,
      *         or an empty list if no value has been defined or can be inherited.
@@ -257,8 +256,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     /**
      * Adds a method of uniquely identifying location instances.
      *
-     * <div class="note"><b>Examples:</b>
-     * “name”, “code”, “unique street reference number”, “geographic address”.</div>
+     * <h4>Examples</h4>
+     * “name”, “code”, “unique street reference number”, “geographic address”.
      *
      * @param  value  the method to add.
      * @throws IllegalArgumentException if the given value is already defined.
@@ -336,8 +335,8 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
     /**
      * Sets the name of the geographic area within which the location type occurs.
      *
-     * <div class="note"><b>Examples:</b>
-     * the geographic domain for a location type “rivers” might be “North America”.</div>
+     * <h4>Examples</h4>
+     * The geographic domain for a location type “rivers” might be “North America”.
      *
      * @param  identifier  the identifier of the geographic extent.
      */

@@ -25,9 +25,8 @@ import org.opengis.util.FactoryException;
  * like semi-major or semi-minor axis length, latitude of natural origin, <i>etc</i>.
  * The cause may be a parameter having an illegal value, or a mandatory parameter which has not been specified.
  *
- * <div class="note"><b>Note:</b>
- * this exception is not for invalid authority codes. For such cases, see
- * {@link org.opengis.referencing.NoSuchAuthorityCodeException} instead.</div>
+ * <p>This exception is not for invalid authority codes. For such cases, see
+ * {@link org.opengis.referencing.NoSuchAuthorityCodeException} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.7

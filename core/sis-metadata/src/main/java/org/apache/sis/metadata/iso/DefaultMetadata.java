@@ -493,10 +493,10 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     /**
      * Returns a unique identifier for this metadata record.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Standard usage</h4>
      * OGC 07-045 (Catalog Service Specification — ISO metadata application profile) recommends usage
      * of a UUID (Universal Unique Identifier) as specified by <a href="http://www.ietf.org">IETF</a>
-     * to ensure identifier’s uniqueness.</div>
+     * to ensure identifier’s uniqueness.
      *
      * @return unique identifier for this metadata record, or {@code null}.
      *

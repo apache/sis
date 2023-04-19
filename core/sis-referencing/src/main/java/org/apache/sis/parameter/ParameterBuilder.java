@@ -151,13 +151,14 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * <p><b>Lifetime:</b>
      * this property is kept unchanged until this {@code setRequired(…)} method is invoked again.</p>
      *
-     * <div class="note"><b>API note:</b> the {@link DefaultParameterDescriptor#getMaximumOccurs()
+     * <h4>API note</h4>
+     * The {@link DefaultParameterDescriptor#getMaximumOccurs()
      * maximum number of occurrences} is fixed to 1 and cannot be changed with this builder
      * (except for {@linkplain #createGroup(int, int, GeneralParameterDescriptor...) parameters group})
      * because {@link DefaultParameterValueGroup#parameter(String)} can return only one value.
      * Allowing to return more than one value would complicate the API for an uncommon case.
      * If nevertheless a maximum number of occurrences greater than 1 is really desired, Apache SIS supports
-     * this feature but users have to create the {@link DefaultParameterDescriptor} instance themselves.</div>
+     * this feature but users have to create the {@link DefaultParameterDescriptor} instance themselves.
      *
      * @param  required {@code true} for a mandatory parameter, or {@code false} for an optional one.
      * @return {@code this}, for method call chaining.
@@ -380,10 +381,10 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * Creates a descriptor group with the same parameters than another group. This is a convenience constructor
      * for operations that expect the same parameters than another operation, but perform a different process.
      *
-     * <div class="note"><b>Example:</b>
-     * the various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
+     * <h4>Example</h4>
+     * The various <cite>"Coordinate Frame Rotation"</cite> variants (EPSG codes 1032, 1038 and 9607)
      * expect the same parameters than their <cite>"Position Vector transformation"</cite> counterpart
-     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.</div>
+     * (EPSG codes 1033, 1037 and 9606) but perform the rotation in the opposite direction.
      *
      * @param  parameters  the existing group from which to copy the parameters.
      * @return the parameter descriptor group.

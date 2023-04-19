@@ -402,10 +402,10 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * The argument shall be the name of a {@linkplain DefaultParameterDescriptorGroup descriptor group}
      * which is a child of this group.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>Group removal</h4>
      * There is no {@code removeGroup(String)} method. To remove a group, users can inspect the
      * {@link #groups(String)} or {@link #values()} list, decide which occurrences to remove if
-     * there is many of them for the same name, and whether to iterate recursively into sub-groups or not.</div>
+     * there is many of them for the same name, and whether to iterate recursively into sub-groups or not.
      *
      * @param  name  the name of the parameter group to create.
      * @return a newly created parameter group for the given name.

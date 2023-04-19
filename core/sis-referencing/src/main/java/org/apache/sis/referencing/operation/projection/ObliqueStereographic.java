@@ -54,11 +54,11 @@ import static org.apache.sis.internal.referencing.provider.ObliqueStereographic.
  * coordinates (i.e. latitudes and longitudes on a conformal sphere), then a spherical stereographic projection.
  * For this reason this projection method is sometimes known as <cite>"Double Stereographic"</cite>.</p>
  *
- * <div class="note"><b>Note:</b>
- * there is another method known as <cite>"Oblique Stereographic Alternative"</cite> or sometimes just
+ * <h2>Related methods</h2>
+ * There is another method known as <cite>"Oblique Stereographic Alternative"</cite> or sometimes just
  * <cite>"Stereographic"</cite>. That alternative uses a simplified conversion computing the conformal latitude
  * of each point on the ellipsoid. Both methods are considered valid but produce slightly different results.
- * For this reason EPSG considers them as different projection methods.</div>
+ * For this reason EPSG considers them as different projection methods.
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

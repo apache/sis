@@ -239,7 +239,8 @@ public class DefaultServiceIdentification extends AbstractIdentification impleme
     /**
      * Returns a service type name.
      *
-     * <div class="note"><b>Examples:</b> "discovery", "view", "download", "transformation", or "invoke"</div>
+     * <h4>Examples</h4>
+     * "discovery", "view", "download", "transformation", or "invoke".
      *
      * @return a service type name.
      */

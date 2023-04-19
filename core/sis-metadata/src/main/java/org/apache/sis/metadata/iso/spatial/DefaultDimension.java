@@ -131,12 +131,11 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
      * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
      *
-     * <div class="note"><b>Note on properties validation:</b>
+     * <h4>Note on properties validation</h4>
      * This constructor does not verify the property values of the given metadata (e.g. whether it contains
      * unexpected negative values). This is because invalid metadata exist in practice, and verifying their
      * validity in this copy constructor is often too late. Note that this is not the only hole, as invalid
      * metadata instances can also be obtained by unmarshalling an invalid XML document.
-     * </div>
      *
      * @param  object  the metadata to copy values from, or {@code null} if none.
      *
@@ -255,8 +254,8 @@ public class DefaultDimension extends ISOMetadata implements Dimension {
     /**
      * Returns the enhancement / modifier of the dimension name.
      *
-     * <div class="note"><b>Example:</b>
-     * dimensionName = "column", dimensionTitle = "longitude"</div>
+     * <h4>Example</h4>
+     * dimensionName = "column", dimensionTitle = "longitude"
      *
      * @return the enhancement / modifier of the dimension name.
      *

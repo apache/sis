@@ -199,12 +199,11 @@ public abstract class AbstractMathTransform extends FormattableObject
     /**
      * Returns the parameter descriptors for this math transform, or {@code null} if unknown.
      *
-     * <div class="note"><b>Relationship with ISO 19111:</b>
+     * <h4>Relationship with ISO 19111</h4>
      * This method is similar to {@link OperationMethod#getParameters()}, except that typical
      * {@link MathTransform} implementations return parameters in standard units (usually
      * {@linkplain org.apache.sis.measure.Units#METRE metres} or
      * {@linkplain org.apache.sis.measure.Units#DEGREE decimal degrees}).
-     * </div>
      *
      * @return the parameter descriptors for this math transform, or {@code null} if unspecified.
      *
@@ -405,16 +404,16 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Transforms a list of coordinate tuples. This method is provided for efficiently transforming many points.
      * The supplied array of coordinate values will contain packed coordinate values.
      *
-     * <div class="note"><b>Example:</b> if the source dimension is 3, then the coordinates will be packed in this order:
+     * <h4>Example</h4>
+     * If the source dimension is 3, then the coordinates will be packed in this order:
      * (<var>x₀</var>,<var>y₀</var>,<var>z₀</var>,
      *  <var>x₁</var>,<var>y₁</var>,<var>z₁</var> …).
-     * </div>
      *
+     * <h4>Implementation note</h4>
      * The default implementation invokes {@link #transform(double[], int, double[], int, boolean)} in a loop,
      * using an {@linkplain IterationStrategy iteration strategy} determined from the arguments for iterating
-     * over the points.
-     *
-     * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
+     * over the points. For creating a more efficient implementation,
+     * see {@link IterationStrategy} javadoc for a method skeleton.
      *
      * @param  srcPts  the array containing the source point coordinates.
      * @param  srcOff  the offset to the first point to be transformed in the source array.
@@ -525,7 +524,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * Transforms a list of coordinate tuples. The default implementation delegates
      * to {@link #transform(double[], int, double[], int, int)} using a temporary array of doubles.
      *
-     * <div class="note"><b>Implementation note:</b> see {@link IterationStrategy} javadoc for a method skeleton.</div>
+     * <h4>Implementation note</h4>
+     * See {@link IterationStrategy} javadoc for a method skeleton.
      *
      * @param  srcPts  the array containing the source point coordinates.
      * @param  srcOff  the offset to the first point to be transformed in the source array.
@@ -825,8 +825,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * {@code this} if this transform is an {@linkplain #isIdentity() identity} transform,
      * or throws an exception otherwise. Subclasses should override this method.
      *
-     * <div class="note"><b>Implementation note:</b> the {@link Inverse} inner class can be used as
-     * a base for inverse transform implementations.</div>
+     * <h4>Implementation note</h4>
+     * The {@link Inverse} inner class can be used as a base for inverse transform implementations.
      */
     @Override
     public MathTransform inverse() throws NoninvertibleTransformException {
@@ -1048,11 +1048,11 @@ public abstract class AbstractMathTransform extends FormattableObject
      * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
      * The parameter group name is used as the math transform name.
      *
-     * <div class="note"><b>Compatibility note:</b>
+     * <h4>Compatibility note</h4>
      * {@code Param_MT} is defined in the WKT 1 specification only.
      * If the {@linkplain Formatter#getConvention() formatter convention} is set to WKT 2,
      * then this method silently uses the WKT 1 convention without raising an error
-     * (unless this {@code MathTransform} cannot be formatted as valid WKT 1 neither).</div>
+     * (unless this {@code MathTransform} cannot be formatted as valid WKT 1 neither).
      *
      * @param  formatter  the formatter to use.
      * @return the WKT element name, which is {@code "Param_MT"} in the default implementation.
@@ -1237,8 +1237,8 @@ public abstract class AbstractMathTransform extends FormattableObject
          * the WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
          * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.
          *
-         * <div class="note"><b>Compatibility note:</b>
-         * {@code Param_MT} and {@code Inverse_MT} are defined in the WKT 1 specification only.</div>
+         * <h4>Compatibility note</h4>
+         * {@code Param_MT} and {@code Inverse_MT} are defined in the WKT 1 specification only.
          *
          * @param  formatter  the formatter to use.
          * @return the WKT element name, which is {@code "Param_MT"} or

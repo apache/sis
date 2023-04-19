@@ -102,8 +102,8 @@ final class AuthorityFactoryIdentifier {
      * The authority of the factory, in upper case. The upper case policy should be kept
      * consistent with {@link org.apache.sis.internal.metadata.NameMeaning#AUTHORITIES}.
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.
      *
      * @see org.apache.sis.internal.util.DefinitionURI
      * @see org.apache.sis.internal.metadata.NameMeaning
@@ -114,8 +114,8 @@ final class AuthorityFactoryIdentifier {
      * The version part of a URI, or {@code null} if none.
      * If the version contains alphabetic characters, they should be in lower case.
      *
-     * <div class="note"><b>Example:</b>
-     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "8.2"}.</div>
+     * <h4>Example</h4>
+     * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "8.2"}.
      *
      * @see #hasVersion()
      * @see #unversioned(String)

@@ -39,9 +39,9 @@ import static java.lang.Double.*;
  * value using the {@link #y(double)} method. Method {@link #x(double)} computes the converse and should
  * work even if the line is vertical.</p>
  *
- * <div class="note"><b>Comparison with Java2D geometries:</b>
+ * <h2>Comparison with Java2D geometries</h2>
  * At the difference of {@link java.awt.geom.Line2D} which is bounded by (<var>x₁</var>,<var>y₁</var>)
- * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.</div>
+ * and (<var>x₂</var>,<var>y₂</var>) points, {@code Line} objects extend toward infinity.
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  * @version 1.4

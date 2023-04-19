@@ -290,7 +290,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * Returns the alphanumeric value identifying an instance in the namespace.
      * The code is optionally from a controlled list or pattern.
      *
-     * <div class="note"><b>Example:</b> {@code "4326"}.</div>
+     * <h4>Example</h4>
+     * {@code "4326"}
      *
      * The code is mandatory according ISO specification, but this {@code DefaultIdentifier}
      * implementation does not enforce this restriction.
@@ -318,7 +319,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * Returns the identifier or namespace in which the code is valid.
      * This is often the {@linkplain #getAuthority() authority}'s abbreviation, but not necessarily.
      *
-     * <div class="note"><b>Example:</b> {@code "EPSG"}.</div>
+     * <h4>Example</h4>
+     * {@code "EPSG"}
      *
      * @return the identifier or namespace in which the code is valid, or {@code null} if none.
      *
@@ -347,7 +349,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
      * This version is included only when the {@linkplain #getCode() code} uses versions.
      * When appropriate, the edition is identified by the effective date, coded using ISO 8601 date format.
      *
-     * <div class="note"><b>Example:</b> the version of the underlying EPSG database.</div>
+     * <h4>Example</h4>
+     * The version of the underlying EPSG database.
      *
      * @return the version identifier for the namespace, or {@code null} if none.
      */
@@ -370,7 +373,8 @@ public class DefaultIdentifier extends ISOMetadata implements Identifier {
     /**
      * Returns the natural language description of the meaning of the code value.
      *
-     * <div class="note"><b>Example:</b> "World Geodetic System 1984".</div>
+     * <h4>Example</h4>
+     * "World Geodetic System 1984".
      *
      * @return the natural language description, or {@code null} if none.
      *

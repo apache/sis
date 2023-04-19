@@ -34,9 +34,9 @@ import org.apache.sis.util.ArraysExt;
  * Storage objects are typically {@link java.io.File} or {@link javax.sql.DataSource} instances, but can also
  * be any other objects documented in the {@link StorageConnector} class.
  *
- * <div class="note"><b>API note:</b>
- * this class is package-private for now in order to get more experience about what could be a good API.
- * This class may become public in a future SIS version.</div>
+ * <h2>API note</h2>
+ * This class is package-private for now in order to get more experience about what could be a good API.
+ * This class may become public in a future SIS version.
  *
  * <h2>Thread safety</h2>
  * The same {@code DataStoreRegistry} instance can be safely used by many threads without synchronization

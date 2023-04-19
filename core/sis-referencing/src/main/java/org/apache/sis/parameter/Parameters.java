@@ -82,16 +82,16 @@ import org.apache.sis.util.Debug;
  * (by searching for a common {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority() authority})
  * when it delegates its work to the {@code parameter(String)} method.
  *
- * <div class="note"><b>Example:</b>
+ * <h3>Example</h3>
  * The same parameter may be known under different names. For example, the
  * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getSemiMajorAxis()
  * length of the semi-major axis of the ellipsoid} is commonly known as {@code "semi_major"}.
  * But that parameter can also be named {@code "semi_major_axis"}, {@code "earth_radius"} or simply {@code "a"}
  * in other libraries. When fetching parameter values, we do not always know in advance which of the above-cited
- * names is recognized by an arbitrary {@code ParameterValueGroup} instance.</div>
+ * names is recognized by an arbitrary {@code ParameterValueGroup} instance.
  *
- * {@code Parameters} uses also the descriptor information for applying type and unit conversions
- * (i.e. returned values are converted to the units of measurement specified by the given parameter descriptor).
+ * <p>{@code Parameters} uses also the descriptor information for applying type and unit conversions
+ * (i.e. returned values are converted to the units of measurement specified by the given parameter descriptor).</p>
  *
  *
  * <h2>Note for subclass implementers</h2>
@@ -151,14 +151,14 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * by {@link Parameters#values()}, but are otherwise still accessible when the hidden
      * parameters is explicitly named in a call to {@link #parameter(String)}.
      *
-     * <div class="note"><b>Use case:</b>
-     * this method is used for hiding parameters that should be inferred from the context.
+     * <h4>Use case</h4>
+     * This method is used for hiding parameters that should be inferred from the context.
      * For example, the {@code "semi_major"} and {@code "semi_minor"} parameters are included
      * in the list of {@link org.opengis.referencing.operation.MathTransform} parameters
      * because that class has no way to know the values if they are not explicitly provided.
      * But those semi-axis length parameters should not be included in the list of
      * {@link org.opengis.referencing.operation.CoordinateOperation} parameters
-     * because they are inferred from the context (the source and target CRS).</div>
+     * because they are inferred from the context (the source and target CRS).
      *
      * @param  parameters  the parameters to make unmodifiable, or {@code null}.
      * @param  filter      specifies which source parameters to keep visible, or {@code null} if no filtering.
@@ -468,10 +468,10 @@ public abstract class Parameters implements ParameterValueGroup, Cloneable {
      * This method tries to do the same work than {@link #parameter(String)} but without
      * instantiating optional parameters if that parameter was not already instantiated.
      *
-     * <div class="note"><b>Performance note:</b>
-     * profiling shows that this method is costly. To mitigate the problem, {@link DefaultParameterValueGroup}
+     * <h4>Performance note</h4>
+     * Profiling shows that this method is costly. To mitigate the problem, {@link DefaultParameterValueGroup}
      * overrides this method with a quick comparisons of descriptor references before to fallback on this more
-     * generic implementation.</div>
+     * generic implementation.
      *
      * @param  parameter  the parameter to search.
      * @return the requested parameter value, or {@code null} if none.

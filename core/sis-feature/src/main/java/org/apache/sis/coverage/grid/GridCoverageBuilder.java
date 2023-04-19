@@ -214,16 +214,16 @@ public class GridCoverageBuilder {
      * use row indices increasing in the opposite direction (toward down).
      * This effect can be compensated by invoking <code>{@linkplain #flipGridAxis(int) flipGridAxis}(1)</code>.
      *
-     * <div class="note"><b>Design note:</b>
+     * <p>{@code GridCoverageBuilder} provides method only for flipping axes.
+     * If more sophisticated operations is desired (for example a rotation),
+     * then {@link #setDomain(GridGeometry)} should be used instead of this method.</p>
+     *
+     * <h5>Design note</h5>
      * {@code GridCoverageBuilder} does not flip the <var>y</var> axis by default because not all
      * file formats have row indices increasing toward down. A counter-example is the netCDF format.
      * Even if we consider that the majority of images have <var>y</var> axis flipped, things become
      * less obvious when considering data in more than two dimensions. Having the same default policy
-     * (no flipping) for all dimensions make problem analysis easier.</div>
-     *
-     * {@code GridCoverageBuilder} provides method only for flipping axes.
-     * If more sophisticated operations is desired (for example a rotation),
-     * then {@link #setDomain(GridGeometry)} should be used instead of this method.
+     * (no flipping) for all dimensions make problem analysis easier.
      *
      * <h4>Default implementation</h4>
      * The default implementation creates a new {@link GridGeometry} from the given envelope
@@ -238,7 +238,7 @@ public class GridCoverageBuilder {
      * @see GridGeometry#GridGeometry(GridExtent, Envelope, GridOrientation)
      */
     public GridCoverageBuilder setDomain(final Envelope domain) {
-        return setDomain(domain == null ? null : new GridGeometry(null, domain, GridOrientation.HOMOTHETY));
+        return setDomain(domain == null ? null : new GridGeometry(domain));
     }
 
     /**

@@ -436,9 +436,8 @@ loop:   for (int i=0; ; i++) {
      * Sets the format for elapsed time, or hides the time field. The pattern must matches the
      * format specified in {@link SimpleDateFormat}, but for the time part only (no date).
      *
-     * <div class="note"><b>Example:</b>
-     * The {@code "HH:mm:ss.SSS"} pattern will display the elapsed time in hours, minutes, seconds
-     * and milliseconds.</div>
+     * <h4>Example</h4>
+     * The {@code "HH:mm:ss.SSS"} pattern will display the elapsed time in hours, minutes, seconds and milliseconds.
      *
      * @param  pattern  the time pattern, or {@code null} to disable time formatting.
      * @throws IllegalArgumentException if the given pattern is invalid.

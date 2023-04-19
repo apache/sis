@@ -451,15 +451,16 @@ public class Canvas extends Observable implements Localized {
      * spherical coordinate systems. The coordinate system may have a wraparound axis for
      * some "exotic" display devices (e.g. planetarium dome).
      *
-     * <div class="note"><b>Usage note:</b> invoking this method is rarely needed. It is sufficient
-     * to said that a display CRS exists at least conceptually, and that we define a conversion from
-     * the objective CRS to that display CRS. This method may be useful when the subclasses may be
-     * something else than {@link PlanarCanvas}, in which case the caller may want more information
-     * about the geometry of the display device.</div>
-     *
      * <p>Note that the {@link CRS#findOperation CRS.findOperation(…)} static method can generally
      * not handle this display CRS. To apply coordinate operations on display coordinates,
      * {@link #getObjectiveToDisplay()} transform must be inverted and used.</p>
+     *
+     * <h4>Usage note</h4>
+     * Invoking this method is rarely needed.
+     * It is sufficient to said that a display CRS exists at least conceptually,
+     * and that we define a conversion from the objective CRS to that display CRS.
+     * This method may be useful when the subclasses may be something else than {@link PlanarCanvas},
+     * in which case the caller may want more information about the geometry of the display device.
      *
      * @return the Coordinate Reference System of the display device.
      *

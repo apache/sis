@@ -63,10 +63,10 @@ import static org.apache.sis.util.Numbers.*;
  * this {@code RangeSet} class and override the {@link #add(Range)}, {@link #remove(Object)} and
  * {@link #newRange(Comparable, Comparable)} methods.
  *
- * <div class="note"><b>Note:</b>
+ * <h2>Limitation</h2>
  * Current implementation does not yet support open intervals. The ranges shall be either closed intervals,
  * or half-open. This limitation exists because supporting open intervals implies that the internal array
- * shall support duplicated values.</div>
+ * shall support duplicated values.
  *
  * <h2>Extensions to <code>SortedSet</code> API</h2>
  * This class contains some methods not found in standard {@link SortedSet} API.
@@ -226,10 +226,10 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * are minimal values, and all elements at odd indices are maximal values. Elements in this
      * array must be strictly increasing without duplicated values.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Future evolution</h4>
      * The restriction against duplicated values will need to be removed in a future version
      * if we want to support open intervals. All binary searches in this class will need to
-     * take in account the possibility for duplicated values.</div>
+     * take in account the possibility for duplicated values.
      */
     @SuppressWarnings("serial")         // Not statically typed as Serializable.
     private Object array;

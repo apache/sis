@@ -32,8 +32,9 @@ import org.apache.sis.util.ArgumentChecks;
  * An affine transform that multiply the coordinate values by constant values, and optionally drop the last coordinates.
  * This is an optimization of {@link ProjectiveTransform} for a common case.
  *
- * <div class="note"><b>Note:</b> we do not provide two-dimensional specialization because
- * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.</div>
+ * <h4>Design note</h4>
+ * We do not provide two-dimensional specialization because
+ * {@link org.apache.sis.internal.referencing.j2d.AffineTransform2D} should be used in such case.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

@@ -73,8 +73,8 @@ public abstract class Initializer {
      * Name of the database to open in the {@code $SIS_DATA/Databases} directory or the directory given by
      * the {@code derby.system.home} property.
      *
-     * <div class="note"><b>Note:</b>
-     * this field is public for the needs of {@code non-free:sis-embedded-data} module.</div>
+     * <h4>Dependency note</h4>
+     * This field is public for the needs of {@code non-free:sis-embedded-data} module.
      */
     public static final String DATABASE = "SpatialMetadata";
 

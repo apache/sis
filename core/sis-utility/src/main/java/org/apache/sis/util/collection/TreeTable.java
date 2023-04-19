@@ -223,10 +223,10 @@ public interface TreeTable {
          * The user object is for information purpose only and does not appear in the rendered tree.
          * It is typically a Java object whose content is splitted into the various table columns.
          *
-         * <div class="note"><b>Example:</b>
+         * <h4>Example</h4>
          * If a {@code CityLocation} class is defined as a (<var>city name</var>, <var>latitude</var>,
          * <var>longitude</var>) tuple, then a {@code TreeTable.Node} could be defined to have 3 columns for the
-         * above 3 tuple components, and the user object could be the original {@code CityLocation} instance.</div>
+         * above 3 tuple components, and the user object could be the original {@code CityLocation} instance.
          *
          * @return any object stored at this node by the user, or {@code null} if none.
          * @category tree
@@ -249,8 +249,8 @@ public interface TreeTable {
          * and for avoiding infinite recursivity when comparing the children.
          * A third reason is given in the <cite>purpose</cite> example below.
          *
-         * <div class="note"><b>Purpose of this method: example with ISO metadata</b>:
-         * consider the following tree made of ISO 19115 metadata objects: a platform containing a list of instruments,
+         * <h4>Purpose of this method: example with ISO metadata</h4>
+         * Consider the following tree made of ISO 19115 metadata objects: a platform containing a list of instruments,
          * and an instrument containing a reference to the platform on which the instrument is installed. In this example,
          * nodes 2 and 4 contain a reference to the same {@code Platform} instance, so we have a cyclic graph:
          *
@@ -274,7 +274,7 @@ public interface TreeTable {
          * <p>In this use case, the {@code Node.equals(Object)} implementation needs only to compare the wrapped
          * metadata (usually given by the {@linkplain #getUserObject() user object}) since the node content,
          * including the list of children, is fully determined by those metadata. An identity comparison
-         * (with {@code ==}) is sufficient for the purpose of avoiding infinite recursivity.</p></div>
+         * (with {@code ==}) is sufficient for the purpose of avoiding infinite recursivity.</p>
          *
          * <h4>Flexibility in implementations</h4>
          * The above list specifies minimal conditions that must be true when two nodes are considered equal.

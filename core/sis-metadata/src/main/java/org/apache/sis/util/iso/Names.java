@@ -193,8 +193,8 @@ public final class Names extends Static {
      *   <tr><td>{@code localPart}</td> <td><code>name.{@linkplain DefaultLocalName#toString() toString()}</code></td></tr>
      * </table></blockquote>
      *
-     * <div class="note"><b>Example:</b>
-     * for a name created by {@code createLocalName("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
+     * <h4>Example</h4>
+     * For a name created by {@code createLocalName("http://www.opengis.net/gml/srs/epsg.xml", "#", "4326")}:
      * <ul>
      *   <li><code>name.{@linkplain DefaultLocalName#toString() toString()}</code>
      *       returns the {@code "4326"} string.</li>
@@ -204,11 +204,13 @@ public final class Names extends Static {
      *       returns the {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"} name.</li>
      *   <li><code>{@linkplain #toExpandedString(GenericName) toExpandedString}(name)</code>
      *       returns the {@code "{http://www.opengis.net/gml/srs/epsg.xml}4326"} string.</li>
-     * </ul></div>
+     * </ul>
      *
-     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
-     * to be created in the same namespace, then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
-     * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
+     * <h4>Performance note</h4>
+     * This method is okay for <em>casual</em> use.
+     * If many names need to be created in the same namespace,
+     * then {@link DefaultNameFactory#createLocalName(NameSpace, CharSequence)}
+     * is more efficient since it allows to create the {@code NameSpace} object only once.
      *
      * @param  namespace  the namespace, or {@code null} for the global namespace.
      * @param  separator  the separator between the namespace and the local part, or {@code null}
@@ -229,12 +231,15 @@ public final class Names extends Static {
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
      * Those character sequences are taken verbatim; they are <em>not</em> parsed into their components.
      *
-     * <div class="note"><b>Example:</b> {@code createTypeName("gco", ":", "Integer")} returns a name
-     * which can be used for representing the type of {@code <gco:Integer>} elements in XML files.</div>
+     * <h4>Example</h4>
+     * {@code createTypeName("gco", ":", "Integer")} returns a name
+     * which can be used for representing the type of {@code <gco:Integer>} elements in XML files.
      *
-     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names need
-     * to be created in the same namespace, then {@link DefaultNameFactory#createTypeName(NameSpace, CharSequence)}
-     * is more efficient since it allows to create the {@code NameSpace} object only once.</div>
+     * <h4>Performance note</h4>
+     * This method is okay for <em>casual</em> use.
+     * If many names need to be created in the same namespace,
+     * then {@link DefaultNameFactory#createTypeName(NameSpace, CharSequence)}
+     * is more efficient since it allows to create the {@code NameSpace} object only once.
      *
      * @param  namespace  the namespace, or {@code null} for the global namespace.
      * @param  separator  the separator between the namespace and the local part, or {@code null}
@@ -287,9 +292,10 @@ public final class Names extends Static {
      * Creates a member name for values of the given class. A {@link TypeName} will be inferred
      * from the given {@code valueClass} as documented in the {@link DefaultTypeName} javadoc.
      *
-     * <div class="note"><b>Performance note:</b> this method is okay for <em>casual</em> use. If many names
-     * need to be created, then {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}
-     * is more efficient since it allows to create the {@code NameSpace} and {@code TypeName} objects only once.</div>
+     * <h4>Performance note</h4>
+     * This method is okay for <em>casual</em> use. If many names need to be created,
+     * then {@link DefaultNameFactory#createMemberName(NameSpace, CharSequence, TypeName)}
+     * is more efficient since it allows to create the {@code NameSpace} and {@code TypeName} objects only once.
      *
      * @param  namespace  the namespace, or {@code null} for the global namespace.
      * @param  separator  the separator between the namespace and the local part, or {@code null}

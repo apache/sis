@@ -105,8 +105,8 @@ final class GridGeometryBuilder extends GeoKeysLoader {
      *
      * <ul>
      *   <li>By a combination of a single {@link #modelTiePoints} with the 3 values given in
-     *       {@link Tags#ModelPixelScaleTag} as documented in the Javadoc of that tag.</li>
-     *   <li>By a {@link Tags#ModelTransformation} giving all coefficients of the 4×4 matrix}.
+     *       {@code ModelPixelScaleTag} as documented in the Javadoc of that tag.</li>
+     *   <li>By a {@code ModelTransformationTag} giving all coefficients of the 4×4 matrix}.
      *       Note that the third row and the third column have all their value set to 0 if the
      *       space model (or the coordinate reference system) should be two-dimensional.</li>
      *   <li>By building a non-linear transformation from all {@link #modelTiePoints}.
@@ -118,8 +118,8 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     private MatrixSIS affine;
 
     /**
-     * {@code true} if {@link #affine} has been specified by a complete matrix ({@link Tags#ModelTransformation}),
-     * or {@code false} if it has been specified by the scale factors only ({@link Tags#ModelPixelScaleTag}).
+     * {@code true} if {@link #affine} has been specified by a complete matrix ({@code ModelTransformationTag}),
+     * or {@code false} if it has been specified by the scale factors only ({@code ModelPixelScaleTag}).
      */
     private boolean completeMatrixSpecified;
 
@@ -186,11 +186,11 @@ final class GridGeometryBuilder extends GeoKeysLoader {
     /**
      * If {@link #affine} has been specified with only the scale factor, computes the translation terms now.
      * If needed, this method computes the translation terms from the (usually singleton) tie point.
-     * This happen when the GeoTIFF file has a {@link Tags#ModelPixelScaleTag} and {@link Tags#ModelTiePoints}.
+     * This happen when the GeoTIFF file has a {@code ModelPixelScaleTag} and {@code ModelTiePointTag}.
      * The latter should have a single record.
      *
-     * @return {@code true} on success (including nothing to compute), or {@code false} if the computation attempt
-     *         failed because of missing {@link Tags#ModelTiePoints}.
+     * @return {@code true} on success (including nothing to compute), or
+     *         {@code false} if the computation attempt failed because of missing {@code ModelTiePointTag}.
      *
      * @see ImageFileDirectory#validateMandatoryTags()
      */

@@ -20,9 +20,11 @@ package org.apache.sis.feature;
 /**
  * Specifies whether trajectories are represented in a single <cite>moving feature</cite> instance
  * or fragmented in distinct static feature instances.
+ * This enumeration can be used with {@link org.apache.sis.storage.DataStore}
+ * as a hint about desired representation of moving features.
  *
- * <div class="note"><b>Example:</b>
- * consider the following trajectories:
+ * <h2>Example</h2>
+ * Consider the following trajectories:
  *
  * <table class="sis">
  *   <caption>Moving features example</caption>
@@ -37,10 +39,6 @@ package org.apache.sis.feature;
  * with some time representation (for example by adding a temporal dimension in each coordinate) and dynamic "Status"
  * property. Or alternatively, we can keep John Smith's trajectory fragmented in two {@code Feature} instance where
  * each instance can be handled as a static feature.
- * </div>
- *
- * This enumeration can be used with {@link org.apache.sis.storage.DataStore} as a hint about desired representation
- * of moving features.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0

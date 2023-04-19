@@ -490,9 +490,9 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Sets the {@code FeatureType} name as a generic name.
      * If another name was defined before this method call, that previous value will be discarded.
      *
-     * <div class="note"><b>Note for subclasses:</b>
-     * all {@code setName(…)} convenience methods in this builder delegate to this method.
-     * Consequently, this method can be used as a central place where to control the creation of all names.</div>
+     * <h4>Note for subclasses</h4>
+     * All {@code setName(…)} convenience methods in this builder delegate to this method.
+     * Consequently, this method can be used as a central place where to control the creation of all names.
      *
      * @return {@code this} for allowing method calls chaining.
      */
@@ -731,8 +731,8 @@ public class FeatureTypeBuilder extends TypeBuilder {
      * Geometric objects outside the above list can still be used by declaring their type explicitly.
      * However, in this case there is no isolation level between the geometry types and the library that implement them.
      *
-     * <div class="note"><b>Example:</b>
-     * the following code creates an attribute named "MyPoint" with values of class
+     * <h4>Example</h4>
+     * The following code creates an attribute named "MyPoint" with values of class
      * {@link java.awt.geom.Point2D} if the library in use is {@linkplain GeometryLibrary#JAVA2D Java2D}.
      * The Coordinate Reference System (CRS) uses (<var>longitude</var>, <var>latitude</var>) axes on the WGS 84 datum.
      * Finally that new attribute is declared the feature <em>default</em> geometry:
@@ -745,7 +745,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * If the library in use is JTS or ESRI instead of Java2D,
      * then the {@code Point} class of those libraries will be used instead of {@code Point2D}.
-     * The fully-qualified class names are given in the {@link GeometryLibrary} javadoc.</div>
+     * The fully-qualified class names are given in the {@link GeometryLibrary} javadoc.
      *
      * @param  type  kind of geometric object (point, polyline or polygon).
      * @return a builder for an {@code AttributeType}.

@@ -143,8 +143,8 @@ public class DefaultParametricDatum extends AbstractDatum {
     /**
      * Formats this datum as a <cite>Well Known Text</cite> {@code ParametricDatum[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code ParametricDatum} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code ParametricDatum} is defined in the WKT 2 specification only.
      *
      * @return {@code "ParametricDatum"}.
      *

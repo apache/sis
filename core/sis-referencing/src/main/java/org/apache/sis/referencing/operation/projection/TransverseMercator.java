@@ -169,12 +169,12 @@ public class TransverseMercator extends NormalizedProjection {
      * Those coefficients are named h₁, h₂, h₃ and h₄ in §1.3.5.1 of
      * IOGP Publication 373-7-2 – Geomatics Guidance Note number 7, part 2 – April 2015.
      *
-     * <div class="note"><b>Serialization note:</b>
-     * we do not strictly need to serialize those fields since they could be computed after deserialization.
+     * <h4>Serialization note</h4>
+     * We do not strictly need to serialize those fields since they could be computed after deserialization.
      * Bu we serialize them anyway in order to simplify a little bit this class (it allows us to keep those
      * fields final) and because values computed after deserialization could be slightly different than the
      * ones computed after construction since the constructor uses the double-double values provided by
-     * {@link Initializer}.</div>
+     * {@link Initializer}.
      */
     private final double cf2, cf4, cf6, cf8;
 
@@ -427,11 +427,11 @@ public class TransverseMercator extends NormalizedProjection {
      * consistent with the {@linkplain #inverseTransform(double[], int, double[], int) reverse projection}
      * (i.e. applying a projection followed by a reverse projection gives approximately the original values).
      *
-     * <div class="note"><b>Rational:</b>
-     * those coordinates are accepted despite the low accuracy of projection results because they are sometimes
+     * <h6>Rational</h6>
+     * Those coordinates are accepted despite the low accuracy of projection results because they are sometimes
      * needed for expressing bounding boxes. A bounding box may have corners located in invalid projection area
      * even if all features inside the box have valid coordinates. For "contains" and "intersects" tests between
-     * envelopes, we do not need accurate coordinates; a monotonic behavior of x = f(λ) can be sufficient.</div>
+     * envelopes, we do not need accurate coordinates; a monotonic behavior of x = f(λ) can be sufficient.
      *
      * <h5>Case of ∆λ &gt; 90°</h5>
      * Longitude values at a distance greater than 90° from the central meridian are rejected.

@@ -85,13 +85,13 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Serializa
     /**
      * Other attributes that describes this attribute, or {@code null} if not yet created.
      *
-     * <div class="note"><b>Design note:</b>
+     * <h4>Design note</h4>
      * We could question if it is a good idea to put this field here, given that this field add a slight cost
      * to all attribute implementations while only a small fraction of them will want attribute characteristics.
      * Since attributes may exist in a very large amount, that question may be significant.
      * However, {@link AbstractFeature} tries hard to not create {@code Attribute} instances at all (it tries to
      * store only their value instead), so we presume that peoples who ask for {@code Attribute} instances are
-     * willing to accept their cost.</div>
+     * willing to accept their cost.
      *
      * @see #characteristics()
      */

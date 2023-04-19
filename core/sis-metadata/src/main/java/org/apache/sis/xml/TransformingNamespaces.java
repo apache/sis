@@ -41,12 +41,12 @@ class TransformingNamespaces implements NamespaceContext {
      * used in XML document. The returned context converts namespace arguments from XML to JAXB namespaces, and
      * converts returned namespaces from JAXB to XML.
      *
-     * <div class="note"><b>Example:</b>
-     * for a {@code "http://www.isotc211.org/2005/gmd"} namespace (legacy ISO 19139:2007) given in argument to
+     * <h4>Example</h4>
+     * For a {@code "http://www.isotc211.org/2005/gmd"} namespace (legacy ISO 19139:2007) given in argument to
      * {@link #getPrefixes(String)}, the context converts that namespace to all possible ISO 19115-3 namespaces
      * (there is many) and returns the associated prefixes: {@code "mdb"}, {@code "cit"}, <i>etc.</i>
      * Conversely given a {@code "mdb"}, {@code "cit"}, <i>etc.</i>, prefix, {@link #getNamespaceURI(String)}
-     * method returns the above-cited legacy GMD namespace.</div>
+     * method returns the above-cited legacy GMD namespace.
      */
     static NamespaceContext asXML(NamespaceContext context, final TransformVersion version) {
         if (context != null) {

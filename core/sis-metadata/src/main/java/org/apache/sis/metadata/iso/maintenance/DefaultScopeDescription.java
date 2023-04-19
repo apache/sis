@@ -317,12 +317,11 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the dataset to which the information applies.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If a geographic data provider is generating vector mapping for the administrative areas
      * and if the data were processed in the same way, then the provider could record the bulk
      * of initial data at {@link ScopeCode#DATASET} level with a
      * “<cite>Administrative area A, B &amp; C</cite>” description.
-     * </div>
      *
      * @return dataset to which the information applies, or {@code null}.
      */
@@ -353,11 +352,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the feature types to which the information applies.
      *
-     * <div class="note"><b>Example:</b>
-     * if an administrative area performs a complete re-survey of the road network,
+     * <h4>Example</h4>
+     * If an administrative area performs a complete re-survey of the road network,
      * the change can be recorded at {@link ScopeCode#FEATURE_TYPE} level with a
      * “<cite>Administrative area A — Road network</cite>” description.
-     * </div>
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -395,11 +393,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the attribute types to which the information applies.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * if an administrative area detects an anomaly in all overhead clearance of the road survey,
      * the correction can be recorded at {@link ScopeCode#ATTRIBUTE_TYPE} level with a
      * “<cite>Administrative area A — Overhead clearance</cite>” description.
-     * </div>
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -437,11 +434,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the feature instances to which the information applies.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If a new bridge is constructed in a road network,
      * the change can be recorded at {@link ScopeCode#FEATURE} level with a
      * “<cite>Administrative area A — New bridge</cite>” description.
-     * </div>
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -479,11 +475,10 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
     /**
      * Returns the attribute instances to which the information applies.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If the overhead clearance of a new bridge was wrongly recorded,
      * the correction can be recorded at {@link ScopeCode#ATTRIBUTE} level with a
      * “<cite>Administrative area A — New bridge — Overhead clearance</cite>” description.
-     * </div>
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.

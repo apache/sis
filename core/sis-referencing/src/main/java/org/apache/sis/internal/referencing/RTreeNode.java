@@ -41,11 +41,11 @@ import org.apache.sis.geometry.MismatchedReferenceSystemException;
  * <p>A {@code RTreeNode} instance is used as the root of the tree. Children nodes are stored as a linked list
  * (the list is implemented by the {@link #sibling} field, which reference the next element in the list).</p>
  *
- * <div class="note"><b>Possible evolution:</b>
- * a future version could avoid extending {@link GeneralEnvelope}. Instead, we could provide abstract
+ * <h2>Possible evolution</h2>
+ * A future version could avoid extending {@link GeneralEnvelope}. Instead, we could provide abstract
  * {@code contains(…)} methods and let subclasses define them, with possibly more efficient implementations.
  * We would still need an implementation that delegate to {@link GeneralEnvelope} since that class has the
- * advantage of handling envelopes crossing the anti-meridian.</div>
+ * advantage of handling envelopes crossing the anti-meridian.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.1
@@ -78,11 +78,11 @@ public class RTreeNode extends GeneralEnvelope {
      * The next node having the same parent than this node. This is used for creating a linked list of nodes
      * that are the children of the {@linkplain #parent}.
      *
-     * <div class="note"><b>Design note:</b>
-     * an {@code RTreeNode children} array instead of {@link #firstChild} + {@link #sibling} would be more intuitive.
+     * <h4>Design note</h4>
+     * An {@code RTreeNode children} array instead of {@link #firstChild} + {@link #sibling} would be more intuitive.
      * But the use of linked list avoid one level of indirection and is one less object to create for each node.
      * The gain may be negligible with a few hundreds nodes, but a future version of this class may target much
-     * more numerous nodes.</div>
+     * more numerous nodes.
      */
     private RTreeNode sibling;
 

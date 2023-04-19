@@ -285,13 +285,13 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Note on wraparound</h4>
      * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
      * bounding box definition. In a WCS 1.1 data structure, the lower corner defines the edges region in the
      * directions of <em>decreasing</em> coordinate values in the envelope CRS. This is usually the algebraic
      * minimum coordinates, but not always. For example, an envelope crossing the anti-meridian could have a
      * lower corner longitude greater than the upper corner longitude. Such extended interpretation applies
-     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
+     * mostly to axes having {@code WRAPAROUND} range meaning.
      *
      * @return a view over the lower corner, typically (but not necessarily) containing minimal coordinate values.
      *
@@ -313,13 +313,13 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Note on wraparound</h4>
      * The <cite>Web Coverage Service</cite> (WCS) 1.1 specification uses an extended interpretation of the
      * bounding box definition. In a WCS 1.1 data structure, the upper corner defines the edges region in the
      * directions of <em>increasing</em> coordinate values in the envelope CRS. This is usually the algebraic
      * maximum coordinates, but not always. For example, an envelope crossing the anti-meridian could have an
      * upper corner longitude less than the lower corner longitude. Such extended interpretation applies
-     * mostly to axes having {@code WRAPAROUND} range meaning.</div>
+     * mostly to axes having {@code WRAPAROUND} range meaning.
      *
      * @return a view over the upper corner, typically (but not necessarily) containing maximal coordinate values.
      *
@@ -1180,21 +1180,19 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * lower corner}{@code ,}{@linkplain #getUpperCorner() upper corner}{@code )}"
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
      * The number of dimension is written only if different than 2.
-     *
-     * <div class="note"><b>Example:</b>
-     *   <ul>
-     *     <li>{@code BOX(-90 -180, 90 180)}</li>
-     *     <li>{@code BOX3D(-90 -180 0, 90 180 1)}</li>
-     *   </ul>
-     * </div>
-     *
-     * <div class="note"><b>Note:</b>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However, it is understood by many software libraries, for example GDAL and PostGIS.</div>
+     * Examples:
+     * <ul>
+     *   <li>{@code BOX(-90 -180, 90 180)}</li>
+     *   <li>{@code BOX3D(-90 -180 0, 90 180 1)}</li>
+     * </ul>
      *
      * This method formats the numbers as with {@link Double#toString(double)} (i.e. without fixed number of fraction digits).
      * The string returned by this method can be {@linkplain GeneralEnvelope#GeneralEnvelope(CharSequence) parsed}
      * by the {@code GeneralEnvelope} constructor.
+     *
+     * <h4>Note on standards</h4>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
      */
@@ -1251,13 +1249,13 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * where <var>n</var> is the {@linkplain #getDimension() number of dimensions}.
      * The number of dimension is written only if different than 2.
      *
-     * <div class="note"><b>Note:</b>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
-     * However, it is understood by many software libraries, for example GDAL and PostGIS.</div>
-     *
-     * If the coordinate reference system is geodetic or projected, then coordinate values are formatted
+     * <p>If the coordinate reference system is geodetic or projected, then coordinate values are formatted
      * with a precision equivalent to one centimetre on Earth (the actual number of fraction digits is
-     * adjusted for the axis unit of measurement and the planet size if different than Earth).
+     * adjusted for the axis unit of measurement and the planet size if different than Earth).</p>
+     *
+     * <h4>Note on standards</h4>
+     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @param  formatter  the formatter where to format the inner content of this envelope.
      * @return the pseudo-WKT keyword, which is {@code "Box"} for this element.

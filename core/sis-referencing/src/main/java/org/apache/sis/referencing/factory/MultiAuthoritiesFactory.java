@@ -91,13 +91,14 @@ import org.apache.sis.util.collection.BackingStoreException;
  * delegating to a more specific method, never for delegating to a less specific method.
  * An exception will be thrown if the type in the URN is incompatible with the invoked method.
  *
- * <div class="note"><b>Example:</b>
- * if <code>{@linkplain #createObject(String) createObject}("urn:ogc:def:<b>crs</b>:EPSG::4326")</code> is invoked,
+ * <h3>Example</h3>
+ * If <code>{@linkplain #createObject(String) createObject}("urn:ogc:def:<b>crs</b>:EPSG::4326")</code> is invoked,
  * then {@code MultiAuthoritiesFactory} will delegate (indirectly, ignoring caching for this example) the object
  * creation to {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createCoordinateReferenceSystem(String)}
  * instead of {@link org.apache.sis.referencing.factory.sql.EPSGDataAccess#createObject(String)} because of the
- * {@code "crs"} part in the URN. The more specific method gives better performances and avoid ambiguities.</div>
+ * {@code "crs"} part in the URN. The more specific method gives better performances and avoid ambiguities.
  *
+ * <h3>Compound URIs</h3>
  * This class accepts also combined URIs of the following forms
  * (only two components shown, but arbitrary number of components is allowed):
  *
@@ -130,14 +131,13 @@ import org.apache.sis.util.collection.BackingStoreException;
  * If a {@code createFoo(String)} method is invoked with the version number omitted, then {@code MultiAuthoritiesFactory}
  * will use the first factory in iteration order for the requested authority regardless of its version number.
  *
- * <div class="note"><b>Example:</b>
- * a {@code MultiAuthoritiesFactory} instance could contain two {@code EPSGFactory} instances:
+ * <h3>Example</h3>
+ * A {@code MultiAuthoritiesFactory} instance could contain two {@code EPSGFactory} instances:
  * one for version 8.2 and another one for version 7.9 of the EPSG dataset.
  * A specific version can be requested in the URN given to {@code createFoo(String)} methods,
  * for example <code>"urn:ogc:def:crs:EPSG:<b>8.2</b>:4326"</code>.
  * If no version is given of if the given version is zero,
  * then the first EPSG factory in iteration order is used regardless of its version number.
- * </div>
  *
  * <h2>Multi-threading</h2>
  * This class is thread-safe if all delegate factories are themselves thread-safe.

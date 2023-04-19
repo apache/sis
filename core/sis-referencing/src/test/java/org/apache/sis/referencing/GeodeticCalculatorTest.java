@@ -390,7 +390,7 @@ public class GeodeticCalculatorTest extends TestCase {
      * fraction of the expected resolution <var>r</var>. Consequently, the values in ∆x/r and ∆y/r columns should be less
      * than 1.
      *
-     * <div class="note"><b>Note:</b> the state of the given calculator is modified by this method.</div>
+     * <p>The state of the given calculator is modified by this method.</p>
      *
      * @param  resolution  tolerance threshold for the curve approximation, in metres.
      * @return statistics about errors relative to the resolution.

@@ -210,10 +210,10 @@ public final class AxisNames {
      * Returns the given name in camel case if it is one of the know names.
      * This method canonicalizes also the use of {@code '_'}, {@code '-'} and {@code ' '}.
      *
-     * <div class="note"><b>Rational:</b>
+     * <h4>Rational</h4>
      * Axis names are not really free text. They are specified by ISO 19111 and ISO 19162.
      * SIS does not put restriction on axis names, but we nevertheless try to use a unique
-     * name when we recognize it.</div>
+     * name when we recognize it.
      *
      * @param  name  the name in any case.
      * @return the given name in camel case.

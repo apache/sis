@@ -119,21 +119,21 @@ public final class DecimalFunctions extends Static {
      * fraction digits to zero.
      * For example, {@code (double) 0.1f} gives 0.10000000149011612 while {@code floatToDouble(0.1f)} returns 0.1.
      *
-     * <div class="note"><b>Note:</b>
+     * <p>This method is equivalent to the following code, except that it is potentially faster
+     * because the actual implementation avoid to format and parse the value:</p>
+     *
+     * {@snippet lang="java" :
+     *   return Double.parseDouble(Float.toString(value));
+     *   }
+     *
+     * <h4>Note on accuracy</h4>
      * This method is <strong>not</strong> more accurate than the standard Java cast – it should be used only when
      * the base 10 representation of the given value may be of special interest. If the value come from a call to
      * {@link Float#parseFloat(String)} (directly or indirectly), and if that call cannot be replaced by a call to
      * {@link Double#parseDouble(String)} (for example because the original {@code String} is not available anymore),
      * then this method may be useful if one consider the {@code String} representation in base 10 as definitive.
      * But if the value come from an instrument measurement or a calculation, then there is probably no reason to use
-     * this method because base 10 is not more "real" than base 2 or any other base for natural phenomenon.</div>
-     *
-     * This method is equivalent to the following code, except that it is potentially faster since the
-     * actual implementation avoid to format and parse the value:
-     *
-     * {@snippet lang="java" :
-     *   return Double.parseDouble(Float.toString(value));
-     *   }
+     * this method because base 10 is not more "real" than base 2 or any other base for natural phenomenon.
      *
      * @param  value  the {@code float} value to convert as a {@code double}.
      * @return the given value as a {@code double} with the extra decimal fraction digits set to zero.
@@ -404,9 +404,9 @@ public final class DecimalFunctions extends Static {
      *       {@code Math.ulp(0)} = {@value java.lang.Double#MIN_VALUE}.</li>
      * </ul>
      *
-     * <div class="note"><b>Example:</b>
-     * This method is useful with {@link java.text.NumberFormat} for formatting all significant digits of a
-     * {@code double} value, padding with trailing zeros if necessary, but no more than necessary.</div>
+     * <h4>Example</h4>
+     * This method is useful with {@link java.text.NumberFormat} for formatting all significant digits
+     * of a {@code double} value, padding with trailing zeros if necessary, but no more than necessary.
      *
      * @param  value  the value for which to get the number of significant fraction digits.
      * @return the number of significant fraction digits (may be negative), or 0 if {@code value} is NaN or infinity.
@@ -440,10 +440,9 @@ public final class DecimalFunctions extends Static {
      *   <li>Otherwise this method returns {@code fractionDigits}.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.</div>
+     * The threshold of 4 trailing fraction digits is arbitrary and may change in any future SIS version.
      *
-     * <div class="note"><b>Examples:</b>
+     * <h4>Examples</h4>
      * <ul>
      *   <li>{@code fractionDigitsForValue(179.12499999999824)} returns 14,
      *       the amount of digits after the decimal separator.</li>
@@ -456,7 +455,6 @@ public final class DecimalFunctions extends Static {
      *   <li>{@code fractionDigitsForValue(179.12499997999999, 3)} returns 14 because rounding the 3 last digits
      *       results in 179.12499997000. The condition for 4 trailing zero fraction digits is not met.</li>
      * </ul>
-     * </div>
      *
      * @param  value  the value for which to get the number of significant fraction fraction digits minus rounding error.
      * @param  uncertainDigits  number of trailing fraction digits which may be rounding error artefacts.

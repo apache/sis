@@ -103,14 +103,14 @@ public final class IdentifiedObjects extends Static {
      *       <td>{@link AbstractIdentifiedObject#isDeprecated()}</td></tr>
      * </table>
      *
-     * <div class="note"><b>Note:</b>
-     * the current implementation does not provide
+     * <h4>Implementation note</h4>
+     * The current implementation does not provide
      * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#MINIMUM_VALUE_KEY},
      * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#MAXIMUM_VALUE_KEY} or
      * {@value org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#RANGE_MEANING_KEY} entry for
      * {@link org.opengis.referencing.cs.CoordinateSystemAxis} instances because the minimum and maximum
      * values depend on the {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getUnit()
-     * units of measurement}.</div>
+     * units of measurement}.
      *
      * @param  object    the identified object to view as a properties map.
      * @param  excludes  the keys of properties to exclude from the map.
@@ -371,11 +371,10 @@ public final class IdentifiedObjects extends Static {
      * then the alias is returned. For example if the name is <cite>"WGS 84"</cite> and an alias is
      * <cite>"World Geodetic System 1984"</cite>, then that later alias is returned.
      *
-     * <div class="note"><b>Note:</b>
-     * the name should never be missing, but this method nevertheless
+     * <p>The name should never be missing, but this method nevertheless
      * fallbacks on identifiers as a safety against incomplete implementations.
      * If an identifier implements {@link GenericName} (as with {@link NamedIdentifier}),
-     * its {@link GenericName#toInternationalString() toInternationalString()} method will be used.</div>
+     * its {@link GenericName#toInternationalString() toInternationalString()} method will be used.</p>
      *
      * @param  object  the identified object, or {@code null}.
      * @param  locale  the locale for the name to return, or {@code null} for the default.

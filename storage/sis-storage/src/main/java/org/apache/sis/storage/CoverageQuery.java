@@ -33,7 +33,6 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.DimensionalityReduction;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
@@ -124,7 +123,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
     public void setSelection(final Envelope domain) {
         GridGeometry g = null;
         if (domain != null) {
-            g = new GridGeometry(null, null, domain, GridRoundingMode.NEAREST);
+            g = new GridGeometry(domain);
         }
         setSelection(g);
     }

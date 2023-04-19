@@ -63,19 +63,19 @@ public @interface StoreMetadata {
      * The "main" file is the file that users specify when opening the dataset.
      * The returned array should <em>not</em> include the suffixes of auxiliary files.
      *
-     * <div class="note"><b>Example:</b>
-     * GeoTIFF data are contained in files with the {@code ".tif"} or {@code ".tiff"} suffix,
-     * sometimes accompanied by auxiliary files with {@code ".prj"} and {@code ".tfw"} suffixes.
-     * This method should return an array containing only {@code "tif"} or {@code "tiff"} strings,
-     * without the leading dot.</div>
-     *
-     * The suffixes are case-insensitive (no need to declare both lower-case and upper-case variants)
-     * and shall not contain the leading dot. The first element in the list is the preferred suffix
-     * to use for new files.
+     * <p>The suffixes are case-insensitive (no need to declare both lower-case and upper-case variants)
+     * and shall not contain the leading dot.
+     * The first element in the list is the preferred suffix to use for new files.</p>
      *
      * <p>The same suffixes may be used by many different formats. For example, the {@code ".xml"} suffix
      * is used for files in many mutually incompatible formats. Consequently, the file suffixes shall not
      * be used as format identifiers.</p>
+     *
+     * <h4>Example</h4>
+     * GeoTIFF data are contained in files with the {@code ".tif"} or {@code ".tiff"} suffix,
+     * sometimes accompanied by auxiliary files with {@code ".prj"} and {@code ".tfw"} suffixes.
+     * This method should return an array containing only {@code "tif"} or {@code "tiff"} strings,
+     * without the leading dot.
      *
      * @return the filename suffixes, case insensitive. Never null but can be empty.
      */

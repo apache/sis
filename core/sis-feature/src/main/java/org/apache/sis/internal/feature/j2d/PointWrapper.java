@@ -223,7 +223,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     /**
      * Estimates whether the wrapped geometry is contained by the geometry of the given wrapper.
      * This method may conservatively returns {@code false} if an accurate computation would be
-     * too expansive.
+     * too expensive.
      *
      * @param  wrapper  instance of {@link Wrapper}.
      */
@@ -234,7 +234,7 @@ final class PointWrapper extends GeometryWithCRS<Shape> {
     /**
      * Estimates whether the wrapped geometry intersects the geometry of the given wrapper.
      * This method may conservatively returns {@code true} if an accurate computation would
-     * be too expansive.
+     * be too expensive.
      *
      * @param  wrapper  instance of {@link Wrapper} or {@link PointWrapper}.
      * @throws ClassCastException if the given object is not a recognized wrapper.

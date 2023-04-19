@@ -69,11 +69,11 @@ import org.apache.sis.util.ArgumentChecks;
  *     often contain abbreviation (for example "DCW" as an alternative title for <cite>"Digital Chart of the World"</cite>).</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b>
+ * <h3>Example</h3>
  * If the identifier attributes are {@code authority} = {@code new DefaultCitation("IOGP")},
  * {@code codeSpace} = {@code "EPSG"} and {@code code} = {@code "4326"}, then the name attributes will be
  * {@code head} = {@code "EPSG"}, {@code tip} = {@code "4326"} and {@link #toString()} = {@code "EPSG:4326"}.
- * Note that the scope does not appear in the string representation of names.</div>
+ * Note that the scope does not appear in the string representation of names.
  *
  *
  * <h2>Immutability and thread safety</h2>

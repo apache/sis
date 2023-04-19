@@ -46,8 +46,7 @@ import org.apache.sis.internal.referencing.DirectPositionView;
  * two-dimensional {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.
  * The actual number of dimensions is determined by {@link DatumShiftGrid#getTranslationDimensions()}.
  *
- * <div class="note"><b>Example:</b>
- * this transform is used for example with NADCON and NTv2 datum shift grids.</div>
+ * <p>This transform is used for example with NADCON and NTv2 datum shift grids.</p>
  *
  * <h2>Input and output coordinates</h2>
  * First, <cite>"real world"</cite> input coordinates (<var>x</var>,<var>y</var>) are converted to

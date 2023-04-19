@@ -257,12 +257,11 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      * <p>For {@linkplain DefaultFeatureType feature types}, the name is mandatory and shall be unique
      * in the unit processing the data (e.g. a {@link org.apache.sis.storage.DataStore} reading a file).</p>
      *
-     * <div class="note"><b>Note for subclasses:</b>
-     * this method is final because it is invoked (indirectly) by subclass constructors,
+     * <h4>API design note</h4>
+     * This method is final because it is invoked (indirectly) by subclass constructors,
      * and invoking a user-overrideable method at construction time is not recommended.
      * Furthermore, this attribute is often used as the primary key for {@code IdentifiedType} instances
      * and need some guarantees about its stability.
-     * </div>
      *
      * @return the type name.
      */

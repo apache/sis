@@ -232,11 +232,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * The inverse of this map projection.
      *
-     * <div class="note"><b>Note:</b>
-     * creation of this object is not deferred to the first call to the {@link #inverse()} method because this
+     * <h4>Implementation note</h4>
+     * Creation of this object is not deferred to the first call to the {@link #inverse()} method because this
      * object is lightweight and typically needed soon anyway (may be as soon as {@code ConcatenatedTransform}
      * construction time). In addition this field is part of serialization form in order to preserve the
-     * references graph.</div>
+     * references graph.
      */
     private final Inverse inverse;
 
@@ -1033,12 +1033,11 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Those projection parameters will be compared only if the comparison mode is {@link ComparisonMode#STRICT}
      * or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}.</p>
      *
-     * <div class="note"><b>Example:</b>
-     * a {@linkplain Mercator Mercator} projection can be created in the 2SP case with a <cite>standard parallel</cite>
+     * <h4>Example</h4>
+     * A {@linkplain Mercator Mercator} projection can be created in the 2SP case with a <cite>standard parallel</cite>
      * value of 60°. The same projection can also be created in the 1SP case with a <cite>scale factor</cite> of 0.5.
      * Nevertheless those two map projections applied on a sphere gives identical results. Considering them as
      * equivalent allows the referencing module to transform coordinates between those two projections more efficiently.
-     * </div>
      *
      * @param  object  the object to compare with this map projection for equivalence.
      * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT}.

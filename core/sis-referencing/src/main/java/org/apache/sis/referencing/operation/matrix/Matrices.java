@@ -1210,11 +1210,11 @@ public final class Matrices extends Static {
      *   │ 0                     0                     0       1 │
      *   └                                                       ┘</pre>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Usage note</h4>
      * Formatting on a per-column basis is convenient for the kind of matrices used in referencing by coordinates,
      * because each column is typically a displacement vector in a different dimension of the source coordinate
      * reference system. In addition, the last column is often a translation vector having a magnitude very
-     * different than the other columns.</div>
+     * different than the other columns.
      *
      * @param  matrix  the matrix for which to get a string representation.
      * @return a string representation of the given matrix.

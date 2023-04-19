@@ -66,7 +66,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
     /**
      * Returns a rectangle that completely encloses this {@code Shape}.
      * This is not necessarily the smallest bounding box if an accurate
-     * computation would be too expansive.
+     * computation would be too expensive.
      *
      * @return a rectangle that completely encloses this {@code Shape}.
      */
@@ -78,7 +78,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
     /**
      * Returns a rectangle that completely encloses this {@code Shape}.
      * This is not necessarily the smallest bounding box if an accurate
-     * computation would be too expansive.
+     * computation would be too expensive.
      *
      * @return a rectangle that completely encloses this {@code Shape}.
      */
@@ -112,7 +112,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
 
     /**
      * Tests if the interior of this {@code Shape} intersects the interior of a specified rectangular area.
-     * This method may conservatively return {@code true} if an accurate computation would be too expansive.
+     * This method may conservatively return {@code true} if an accurate computation would be too expensive.
      *
      * @param  x  minimal <var>x</var> coordinate of the rectangle.
      * @param  y  minimal <var>y</var> coordinate of the rectangle.
@@ -127,7 +127,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
 
     /**
      * Tests if the interior of this {@code Shape} intersects the interior of a specified rectangular area.
-     * This method may conservatively return {@code true} if an accurate computation would be too expansive.
+     * This method may conservatively return {@code true} if an accurate computation would be too expensive.
      *
      * @param  r  the rectangular area to test.
      * @return whether the specified rectangle intersects the interior of this shape.
@@ -139,7 +139,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
 
     /**
      * Tests if the interior of this {@code Shape} entirely contains the interior of a specified rectangular area.
-     * This method may conservatively return {@code false} if an accurate computation would be too expansive.
+     * This method may conservatively return {@code false} if an accurate computation would be too expensive.
      *
      * @param  x  minimal <var>x</var> coordinate of the rectangle.
      * @param  y  minimal <var>y</var> coordinate of the rectangle.
@@ -154,7 +154,7 @@ abstract class ShapeWrapper extends AbstractShape implements Serializable {
 
     /**
      * Tests if the interior of this {@code Shape} entirely contains the interior of a specified rectangular area.
-     * This method may conservatively return {@code false} if an accurate computation would be too expansive.
+     * This method may conservatively return {@code false} if an accurate computation would be too expensive.
      *
      * @param  r  the rectangular area to test.
      * @return whether the specified rectangle entirely contains the interior of this shape.

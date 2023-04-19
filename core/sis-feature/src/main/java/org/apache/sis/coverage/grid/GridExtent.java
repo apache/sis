@@ -1461,17 +1461,17 @@ public class GridExtent implements Serializable, LenientComparable {
      * accordingly (this is often equivalent to dividing high coordinates by the periods too, but a difference
      * of one cell may exist).
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Usage note</h4>
      * If the "real world" envelope computed from grid extent needs to stay approximately the same, then the
      * {@linkplain GridGeometry#getGridToCRS grid to CRS} transform needs to compensate the subsampling with
      * a pre-multiplication of each grid coordinates by {@code periods}.
      * However, the envelope computed that way may become <em>larger</em> after subsampling, not smaller.
      * This effect can be understood intuitively if we consider that cells become larger after subsampling,
      * which implies that accurate representation of the same envelope may require fractional cells on some
-     * grid borders.</div>
+     * grid borders.
      *
-     * This method does not reduce the number of dimensions of the grid extent.
-     * For dimensionality reduction, see {@link #selectDimensions(int[])}.
+     * <p>This method does not reduce the number of dimensions of the grid extent.
+     * For dimensionality reduction, see {@link #selectDimensions(int[])}.</p>
      *
      * <h4>Number of arguments</h4>
      * The {@code periods} array length should be equal to the {@linkplain #getDimension() number of dimensions}.
@@ -1656,9 +1656,9 @@ public class GridExtent implements Serializable, LenientComparable {
      * The returned extent has the same {@linkplain #getSize(int) size} than this extent,
      * i.e. both low and high grid coordinates are displaced by the same amount of cells.
      *
-     * <div class="note"><b>Example:</b>
-     * for an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
-     * the resulting extent would be (x: [-2…8], y: [4…6], z: [0…1]).</div>
+     * <h4>Example</h4>
+     * For an extent (x: [0…10], y: [2…4], z: [0…1]) and a translation {-2, 2},
+     * the resulting extent would be (x: [-2…8], y: [4…6], z: [0…1]).
      *
      * <h4>Number of arguments</h4>
      * The {@code translation} array length should be equal to the {@linkplain #getDimension() number of dimensions}.

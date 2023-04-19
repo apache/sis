@@ -53,11 +53,11 @@ import org.apache.sis.internal.util.Strings;
  * the straightforward way expected by {@link Envelope2D#intersects(Rectangle2D)} and similar methods for computing
  * correct result if the given {@code Rectangle2D} crosses the anti-meridian.
  *
- * <div class="note"><b>Internal usage of inheritance:</b>
- * this class may also be opportunistically extended by some Apache SIS internal classes that need a rectangle in
+ * <h2>Internal usage of inheritance</h2>
+ * This class may also be opportunistically extended by some Apache SIS internal classes that need a rectangle in
  * addition of their own information. All {@code Rectangle2D} methods are declared final for reducing the risk of
  * confusion with other aspects managed by subclasses. We don't do that in public API because this is not a
- * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.</div>
+ * recommended approach, but for Apache SIS private classes this is a way to reduce pressure on garbage collector.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

@@ -98,8 +98,9 @@ final class GridMapping {
      * This CRS may have been constructed from Well Known Text or EPSG codes declared in {@code "spatial_ref"},
      * {@code "ESRI_pe_string"} or {@code "EPSG_code"} attributes.
      *
-     * <div class="note"><b>Note:</b> this come from different information than the one used by {@link CRSBuilder},
-     * which creates CRS by inspection of coordinate system axes.</div>
+     * <h4>Usage note</h4>
+     * This come from different information than the one used by {@link CRSBuilder},
+     * which creates CRS by inspection of coordinate system axes.
      */
     final CoordinateReferenceSystem crs;
 

@@ -35,10 +35,10 @@ import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
  * Fields in the class are used only for information purposes; they do not
  * have incidence on the way Apache SIS will handle the GeoTIFF image.
  *
- * <div class="note"><b>Note:</b>
- * if those fields become useful to {@link ImageFileDirectory} in a future version,
+ * <h4>API note</h4>
+ * If those fields become useful to {@link ImageFileDirectory} in a future version,
  * we can move them into that class. Otherwise keeping those fields here allow to
- * discard them (which save a little bit of space) when no longer needed.</div>
+ * discard them (which save a little bit of space) when no longer needed.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

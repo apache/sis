@@ -484,13 +484,13 @@ final class ResampledGridCoverage extends DerivedGridCoverage {
     /**
      * Computes a target grid extent by transforming the source grid extent.
      *
-     * <div class="note"><b>Note on rounding mode:</b>
-     * calculation of source envelope should use {@link GridRoundingMode#ENCLOSING} for making sure that we include
+     * <h4>Note on rounding mode</h4>
+     * Calculation of source envelope should use {@link GridRoundingMode#ENCLOSING} for making sure that we include
      * all needed data. On the opposite, calculation of target envelope should use {@link GridRoundingMode#CONTAINED}
      * for making sure that we interpolate only values where data are available. However, such "fully contained" mode
      * is often overly strict because a very small rounding error can cause the lost of an image row or column,
      * while using extrapolations for those values produce no perceptible errors. Consequently, this method uses
-     * {@link GridRoundingMode#NEAREST} as a compromise.</div>
+     * {@link GridRoundingMode#NEAREST} as a compromise.
      *
      * @param  source       the source grid extent to transform.
      * @param  cornerToCRS  transform from source grid corners to target CRS.

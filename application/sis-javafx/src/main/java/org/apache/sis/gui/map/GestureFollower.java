@@ -251,12 +251,12 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      * Invoked after the source "objective to display" transform has been updated.
      * This implementation adjusts the cursor position for compensating the relative change in mouse position.
      *
-     * <div class="note"><b>Details:</b>
+     * <h4>Details</h4>
      * If the map moved in the {@linkplain #source source} canvas without a change of mouse cursor position
      * (for example if the user navigates using the keyboard), then the mouse position changed relatively to
      * the map, so the cursor position on the {@linkplain #target target} canvas needs to be updated accordingly.
      * This is a temporary change applied until the next {@link MouseEvent} gives us new mouse coordinates relative
-     * to the map.</div>
+     * to the map.
      */
     @Override
     protected void transformedSource(final TransformChangeEvent event) {

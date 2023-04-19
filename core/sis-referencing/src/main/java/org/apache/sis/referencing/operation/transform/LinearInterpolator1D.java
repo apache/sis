@@ -47,9 +47,9 @@ import org.apache.sis.util.resources.Errors;
  * surprising behavior when computing a data cube envelope, which may need extrapolation by 0.5
  * pixel before the first value or after the last value.
  *
- * <div class="note"><b>Example:</b>
- * if a vertical dimension is made of slices at y₀=5, y₁=10, y₂=100 and y₃=250 meters, then linear
- * interpolation at 0.5 is 7.5 meters and extrapolation at -0.5 is expected to give 2.5 meters.</div>
+ * <h3>Example</h3>
+ * If a vertical dimension is made of slices at y₀=5, y₁=10, y₂=100 and y₃=250 meters, then linear
+ * interpolation at 0.5 is 7.5 meters and extrapolation at -0.5 is expected to give 2.5 meters.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Rémi Maréchal (Geomatys)

@@ -872,7 +872,7 @@ final class ImageFileDirectory extends DataCube {
              * The last matrix row (i.e. the last 4 values) should be [0 0 0 1].
              * The row before should be [0 0 0 0] if the conversion is two-dimensional.
              * This block does not reduce the number of dimensions from 3 to 2.
-             * Only one of `ModelPixelScaleTag` and `ModelTransformation` should be used.
+             * Only one of `ModelPixelScaleTag` and `ModelTransformationTag` should be used.
              */
             case (short) TAG_MODEL_TRANSFORMATION: {
                 final Vector m = type.readVector(input(), count);
@@ -899,7 +899,7 @@ final class ImageFileDirectory extends DataCube {
              * └                       ┘
              *
              * This block sets the translation column to NaN, meaning that it will need to be computed from
-             * the tie point. Only one of `ModelPixelScaleTag` and `ModelTransformation` should be used.
+             * the tie point. Only one of `ModelPixelScaleTag` and `ModelTransformationTag` should be used.
              */
             case (short) TAG_MODEL_PIXEL_SCALE: {
                 final Vector m = type.readVector(input(), count);

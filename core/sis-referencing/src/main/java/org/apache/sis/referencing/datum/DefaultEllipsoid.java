@@ -323,10 +323,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code Ellipsoid.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code Ellipsoid}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.</div>
+     * their own set of interfaces.
      *
      * @return {@code Ellipsoid.class} or a user-defined sub-interface.
      */
@@ -412,11 +412,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
 
     /**
      * Returns the square of the {@link #getEccentricity() eccentricity} value.
-     *
-     * <div class="note"><b>Purpose:</b>
-     * this convenience method is provided because ℯ² is frequently used in coordinate operations,
+     * This convenience method is provided because ℯ² is frequently used in coordinate operations,
      * actually more often than ℯ. This convenience method avoids the cost of computing the square
-     * root when not needed.</div>
+     * root when not needed.
      *
      * @return ℯ², the square of the eccentricity value.
      *
@@ -445,11 +443,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * or the semi-minor axis length. The defining parameters are presumed fully accurate in base 10 (even if this
      * is of course not possible in the reality), because those parameters are definitions given by authorities.
      *
-     * <div class="note"><b>Analogy:</b>
-     * the conversion factor from inches to centimetres is 2.54 <em>by definition</em>. Even if we could find a more
+     * <h4>Analogy</h4>
+     * The conversion factor from inches to centimetres is 2.54 <em>by definition</em>. Even if we could find a more
      * accurate value matching historical measurements, the 2.54 value is the internationally agreed value for all
      * conversions. This value is (by convention) defined in base 10 and has no exact {@code double} representation.
-     * </div>
      */
     private static DoubleDouble flattening(final Ellipsoid e) {
         final boolean decimal = true;       // Parameters are presumed accurate in base 10 (not 2) by definition.
@@ -511,9 +508,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * If the two ellipsoid does not use the same unit of measurement, than the axis
      * length of the other ellipsoid is converted into the units of this ellipsoid axis.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@code WGS84.semiMajorAxisDifference(ED50)} returns 251 metres. This information is a parameter of
-     * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
+     * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.
      *
      * @param  other  the other ellipsoid from which to get semi-major axis length difference.
      * @return (<var>other</var> ellipsoid semi-major axis) - (<var>this</var> ellipsoid semi-major axis).
@@ -532,9 +529,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * Returns the difference between the flattening factor of two ellipsoids.
      * This method returns 0 if the two ellipsoids are equal.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * {@code WGS84.flatteningDifference(ED50)} returns approximately 1.41927E-05. This information is a parameter of
-     * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.</div>
+     * {@linkplain org.apache.sis.referencing.operation.transform.MolodenskyTransform Molodensky transformations}.
      *
      * @param  other  the other ellipsoid from which to get flattening difference.
      * @return (<var>other</var> ellipsoid flattening) - (<var>this</var> ellipsoid flattening).

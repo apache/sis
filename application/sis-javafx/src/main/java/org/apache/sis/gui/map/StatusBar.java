@@ -245,9 +245,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * when this {@code StatusBar} is <em>not</em> associated to a {@link MapCanvas}
      * (for example it may be used with a {@link org.apache.sis.gui.coverage.GridView} instead).</p>
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      *
      * @see MapCanvas#getObjectiveCRS()
      * @see MapCanvas#getObjectiveToDisplay()
@@ -259,9 +259,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * This is initially the <cite>objective CRS</cite>, but may become different
      * if the user selects another reference system through contextual menu.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter method for this property; use {@link ReadOnlyObjectProperty#get()}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      *
      * @see #position
      */
@@ -430,9 +430,9 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * The property value may be {@code null} if there are no sample values to format.
      * If non-null, the text provided by this object will appear at the right of the coordinates.
      *
-     * <div class="note"><b>API note:</b>
+     * <h4>API note</h4>
      * We do not provide getter/setter for this property; use {@link ObjectProperty#set(Object)}
-     * directly instead. We omit the "Property" suffix for making this operation more natural.</div>
+     * directly instead. We omit the "Property" suffix for making this operation more natural.
      */
     public final ObjectProperty<ValuesUnderCursor> sampleValuesProvider;
 

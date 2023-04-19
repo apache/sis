@@ -52,16 +52,15 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;           // For javadoc
  *       together with information about who maintains those identifiers.</li>
  * </ul>
  *
- * <div class="note"><b>Example:</b> {@code "EPSG:4326"} is a widely-used identifier
+ * For example {@code "EPSG:4326"} is a widely-used identifier
  * for the <cite>“World Geodetic System (WGS) 1984”</cite> Coordinate Reference System (CRS).
  * The {@code "4326"} part is the identifier {@linkplain DefaultIdentifier#getCode() code} and
  * the {@code "EPSG"} part is the identifier {@linkplain DefaultIdentifier#getCodeSpace() code space}.
  * The meaning of codes in that code space is controlled by an {@linkplain DefaultIdentifier#getAuthority() authority},
  * the <cite>“EPSG Geodetic Parameter Dataset”</cite>. The {@linkplain DefaultCitation#getCitedResponsibleParties() cited
  * responsible party} for the EPSG dataset is the <cite>“International Association of Oil &amp; Gas producers”</cite> (IOGP).
- * </div>
  *
- * The constants defined in this class are typically values returned by:
+ * <p>The constants defined in this class are typically values returned by:</p>
  * <ul>
  *   <li>{@link DefaultCitation#getIdentifiers()} for the {@link #ISBN} and {@link #ISSN} constants.</li>
  *   <li>{@link org.apache.sis.referencing.ImmutableIdentifier#getAuthority()} for other {@code IdentifierSpace} constants.</li>
@@ -218,8 +217,8 @@ public final class Citations extends Static {
      * Apache SIS uses this authority mostly for map projection methods and parameters as they were defined in older
      * OGC specifications (in more recent specifications, {@linkplain #EPSG} identifiers tend to be more widely used).
      *
-     * <div class="note"><b>Example</b>
-     * the Mercator projection can be defined by an operation method having the {@code "OGC:Mercator_1SP"} identifier
+     * <h4>Example</h4>
+     * The Mercator projection can be defined by an operation method having the {@code "OGC:Mercator_1SP"} identifier
      * and the following parameters:
      *
      * <table class="sis">
@@ -232,7 +231,7 @@ public final class Citations extends Static {
      * <tr><td>{@code "OGC:scale_factor"}</td>      <td>Scale factor at natural origin</td></tr>
      * <tr><td>{@code "OGC:false_easting"}</td>     <td>False easting</td></tr>
      * <tr><td>{@code "OGC:false_northing"}</td>    <td>False northing</td></tr>
-     * </table></div>
+     * </table>
      *
      * <h4>Specifications referenced</h4>
      * The specification actually referenced by this citation is implementation dependent
@@ -264,8 +263,8 @@ public final class Citations extends Static {
      * This citation is used as the authority for many map projection method and parameter names
      * other than the {@linkplain #EPSG} ones.
      *
-     * <div class="note"><b>Note</b>
-     * many parameter names defined by {@linkplain #OGC} are very similar to the ESRI ones,
+     * <h4>Compatibility note</h4>
+     * Many parameter names defined by {@linkplain #OGC} are very similar to the ESRI ones,
      * except for the case. Examples:
      *
      * <table class="sis">
@@ -278,7 +277,7 @@ public final class Citations extends Static {
      * <tr><td>{@code "ESRI:Scale_Factor"}</td>      <td>{@code "OGC:scale_factor"}</td></tr>
      * <tr><td>{@code "ESRI:False_Easting"}</td>     <td>{@code "OGC:false_easting"}</td></tr>
      * <tr><td>{@code "ESRI:False_Northing"}</td>    <td>{@code "OGC:false_northing"}</td></tr>
-     * </table></div>
+     * </table>
      *
      * <h4>Main usage</h4>
      * This value can be returned by:
@@ -310,8 +309,8 @@ public final class Citations extends Static {
      * This citation is used as the authority for some map projection method and parameter names
      * as used in netCDF files.
      *
-     * <div class="note"><b>Example</b>
-     * the Mercator projection can be defined in a netCDF file with the following parameters:
+     * <h4>Example</h4>
+     * The Mercator projection can be defined in a netCDF file with the following parameters:
      *
      * <table class="sis">
      * <caption>Example of identifiers in netCDF name space</caption>
@@ -323,7 +322,7 @@ public final class Citations extends Static {
      * <tr><td>{@code "NetCDF:scale_factor_at_projection_origin"}</td> <td>Scale factor at natural origin</td></tr>
      * <tr><td>{@code "NetCDF:false_easting"}</td>                     <td>False easting</td></tr>
      * <tr><td>{@code "NetCDF:false_northing"}</td>                    <td>False northing</td></tr>
-     * </table></div>
+     * </table>
      *
      * <h4>Main usage</h4>
      * This value can be returned by:
@@ -849,14 +848,13 @@ public final class Citations extends Static {
      *       if any, and returns the result.</li>
      * </ul>
      *
-     * <div class="note"><b>Note:</b>
-     * examples of ignorable identifier characters are <cite>zero width space</cite> or <cite>word joiner</cite>.
-     * Those characters are illegal in XML identifiers, and should therfore be removed if the Unicode identifier
-     * may also be used as XML identifier.</div>
+     * Examples of ignorable identifier characters are <cite>zero width space</cite> or <cite>word joiner</cite>.
+     * Those characters are illegal in XML identifiers, and should therefore be removed if the Unicode identifier
+     * may also be used as XML identifier.
      *
-     * If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters.
+     * <p>If non-null, the result is suitable for use as a XML identifier except for a few uncommon characters.</p>
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Compatibility note</h4>
      * the following characters are invalid in XML identifiers. However, since they are valid in Unicode identifiers,
      * they could be included in the string returned by this method:
      * <ul>
@@ -864,7 +862,7 @@ public final class Citations extends Static {
      *   <li>{@code ª} (feminine ordinal indicator)</li>
      *   <li>{@code º} (masculine ordinal indicator)</li>
      *   <li>{@code ⁔}</li>
-     * </ul></div>
+     * </ul>
      *
      * @param  citation  the citation for which to infer the code space, or {@code null}.
      * @return a non-empty code space for the given citation without leading or trailing whitespaces,

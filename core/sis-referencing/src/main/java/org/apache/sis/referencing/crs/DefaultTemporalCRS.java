@@ -240,10 +240,10 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code TemporalCRS.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this method since GeoAPI does not define {@code TemporalCRS}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code TemporalCRS.class} or a user-defined sub-interface.
      */
@@ -281,11 +281,11 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * is the unit of the value expected in argument by {@link #toInstant(double)} and {@link #toDate(double)},
      * and the unit of the value returned by {@code toValue(…)} methods.
      *
-     * <div class="note"><b>Implementation note:</b>
-     * this method is declared final and does not invoke overridden {@link #getCoordinateSystem()} method
+     * <h4>Implementation note</h4>
+     * This method is declared final and does not invoke overridden {@link #getCoordinateSystem()} method
      * because this {@code getUnit()} method is invoked indirectly by constructors. Another reason is that
      * the overriding point is the {@code CoordinateSystemAxis.getUnit()} method and we want to avoid
-     * introducing another overriding point that could be inconsistent with above method.</div>
+     * introducing another overriding point that could be inconsistent with above method.
      *
      * @return the temporal unit of measurement of coordinates in this CRS.
      *
@@ -450,8 +450,8 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     /**
      * Formats this CRS as a <cite>Well Known Text</cite> {@code TimeCRS[…]} element.
      *
-     * <div class="note"><b>Compatibility note:</b>
-     * {@code TimeCRS} is defined in the WKT 2 specification only.</div>
+     * <h4>Compatibility note</h4>
+     * {@code TimeCRS} is defined in the WKT 2 specification only.
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "TimeCRS"}.

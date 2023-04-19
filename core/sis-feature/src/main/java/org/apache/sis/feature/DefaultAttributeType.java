@@ -37,7 +37,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * is typically the name of the {@linkplain DefaultFeatureType feature type} containing this attribute, but this is
  * not mandatory. The scope could also be defined by the ontology for example.
  *
- * <div class="note"><b>Note:</b>
+ * <div class="note"><b>Analogy:</b>
  * Compared to the Java language, {@code AttributeType} is equivalent to {@link java.lang.reflect.Field}
  * while {@code FeatureType} is equivalent to {@link Class}.
  * Attribute characterization (discussed below) is similar to {@link java.lang.annotation.Annotation}.
@@ -66,7 +66,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The accuracy value is often constant for all instances of that attribute
  * (e.g. for all temperature measurements in the same dataset), but this is not mandatory.
  *
- * <div class="note"><b>Design note:</b>
+ * <h3>Design notes</h3>
  * Such accuracy could be stored as an ordinary, independent, attribute (like another column in a table),
  * but storing accuracy as a {@linkplain #characteristics() characteristic} of the measurement attribute instead
  * provides the following advantages:
@@ -79,7 +79,6 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <li>In the common case of a {@linkplain DefaultFeatureType#isSimple() simple feature} with characteristics
  *       that are constants, declaring them as attribute characteristics allows to specify the constants only once.</li>
  * </ul>
- * </div>
  *
  * Constant values of characteristics are given by their {@linkplain #getDefaultValue() default value}.
  * It is still possible for any specific {@code Attribute} instance to specify their own value,
@@ -295,18 +294,16 @@ public class DefaultAttributeType<V> extends FieldType {
 
     /**
      * Other attribute types that describes this attribute type.
+     * The characteristics are enumerated in the {@linkplain Map#values() map values}.
+     * The {@linkplain Map#keySet() map keys} are the {@code String} representations
+     * of characteristics {@linkplain #getName() name}, for more convenient lookups.
      * See <cite>"Attribute characterization"</cite> in class Javadoc for more information.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * An attribute that carries a measurement (e.g. air temperature) may have another attribute that holds the
      * measurement accuracy. The accuracy is often constant for all measurements in a dataset, but not necessarily.
      * If the accuracy is a constant, then the characteristics {@linkplain #getDefaultValue() default value}
      * shall hold that constant.
-     * </div>
-     *
-     * The characteristics are enumerated in the {@linkplain Map#values() map values}.
-     * The {@linkplain Map#keySet() map keys} are the {@code String} representations
-     * of characteristics {@linkplain #getName() name}, for more convenient lookups.
      *
      * @return other attribute types that describes this attribute type, or an empty map if none.
      *

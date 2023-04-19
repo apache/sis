@@ -131,18 +131,18 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * The reason why SIS is tolerant is because some gray areas may exist about whether an operation
      * should be considered as a conversion or a transformation.
      *
-     * <div class="note"><b>Example:</b>
-     * converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS} using
+     * <p>Note that while Apache SIS accepts to construct {@code DefaultConversion} instances
+     * with different source and target datum, it does not accept to use such instances for
+     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.</p>
+     *
+     * <h4>Example</h4>
+     * Converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS} using
      * the <cite>January 1st, 1950</cite> epoch to another temporal CRS using the <cite>January 1st, 1970</cite> epoch
      * is a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
      * temporal datum} definition. However, such operation does not have all the accuracy issues of transformations
      * between geodetic datum (empirically determined, over-determined systems, stochastic nature of the parameters).
      * Consequently, some users may consider sufficient to represent temporal epoch changes as conversions instead
-     * than transformations.</div>
-     *
-     * Note that while Apache SIS accepts to construct {@code DefaultConversion} instances
-     * with different source and target datum, it does not accept to use such instances for
-     * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.
+     * than transformations.
      *
      * @param properties        the properties to be given to the identified object.
      * @param sourceCRS         the source CRS.

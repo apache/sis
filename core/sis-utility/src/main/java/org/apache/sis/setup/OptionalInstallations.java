@@ -109,9 +109,9 @@ public abstract class OptionalInstallations extends InstallationResources implem
      *   <li>With a non-null {@code license} argument for asking if the user agrees with the license terms.</li>
      * </ol>
      *
-     * <div class="note"><b>Design note:</b>
-     * the download action needs to be initiated before to ask for license agreement
-     * because the license text is bundled in the resource to download.</div>
+     * <h4>Design note</h4>
+     * The download action needs to be initiated before to ask for license agreement
+     * because the license text is bundled in the resource to download.
      *
      * @param  authority  one of the authorities returned by {@link #getAuthorities()}.
      * @param  license    the license, or {@code null} for asking if the user wants to download the data.

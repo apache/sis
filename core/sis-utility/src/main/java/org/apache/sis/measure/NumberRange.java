@@ -410,10 +410,11 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * Constructs a range of {@code int} values without upper bound.
      * This method may return a shared instance, at implementation choice.
      *
-     * <div class="note"><b>Note:</b> for creating left-bounded ranges of floating point values,
+     * <h4>API note</h4>
+     * For creating left-bounded ranges of floating point values,
      * use one of the {@code create(…)} methods with a {@code POSITIVE_INFINITY} constant.
      * We do not provide variants for other integer types because this method is typically invoked for
-     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType multiplicity of an attribute}.</div>
+     * defining the {@linkplain org.apache.sis.feature.DefaultFeatureType multiplicity of an attribute}.
      *
      * @param  minValue       the minimal value.
      * @param  isMinIncluded  {@code true} if the minimal value is inclusive, or {@code false} if exclusive.

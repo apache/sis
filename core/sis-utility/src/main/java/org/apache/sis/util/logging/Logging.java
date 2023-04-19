@@ -227,9 +227,12 @@ public final class Logging extends Static {
      * Invoked when an unexpected error occurred. This method logs a message at {@link Level#WARNING}
      * to the specified logger. The originating class name and method name can optionally be specified.
      * If any of them is {@code null}, then it will be inferred from the error stack trace as described below.
+     * If the {@code classe} or {@code method} arguments are null, then the originating class name and method name
+     * are inferred from the given {@code error} using the first {@linkplain StackTraceElement stack trace element}
+     * for which the class name is inside a package or sub-package of the same name than the logger name.
      *
-     * <div class="note"><b>Recommended usage:</b>
-     * explicit value for class and method names are preferred to automatic inference for the following reasons:
+     * <h4>Recommended usage</h4>
+     * Explicit value for class and method names are preferred to automatic inference for the following reasons:
      * <ul>
      *   <li>Automatic inference is not 100% reliable, since the Java Virtual Machine
      *       is free to omit stack frame in optimized code.</li>
@@ -238,16 +241,12 @@ public final class Logging extends Static {
      *       since the user is not expected to know anything about the existence of the
      *       private method. If a developer really want to know about the private method,
      *       the stack trace is still available anyway.</li>
-     * </ul></div>
+     * </ul>
      *
-     * If the {@code classe} or {@code method} arguments are null, then the originating class name and method name
-     * are inferred from the given {@code error} using the first {@linkplain StackTraceElement stack trace element}
-     * for which the class name is inside a package or sub-package of the same name than the logger name.
-     *
-     * <div class="note"><b>Example:</b>
-     * if the logger name is {@code "org.apache.sis.image"}, then this method will uses the first stack
+     * <h4>Example</h4>
+     * If the logger name is {@code "org.apache.sis.image"}, then this method will uses the first stack
      * trace element where the fully qualified class name starts with {@code "org.apache.sis.image"} or
-     * {@code "org.apache.sis.image.io"}, but not {@code "org.apache.sis.imageio"}.</div>
+     * {@code "org.apache.sis.image.io"}, but not {@code "org.apache.sis.imageio"}.
      *
      * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
      * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.
@@ -325,10 +324,10 @@ public final class Logging extends Static {
      * Invoked when an unexpected error occurred while configuring the system. The error shall not
      * prevent the application from working, but may change the behavior in some minor aspects.
      *
-     * <div class="note"><b>Example:</b>
+     * <h4>Example</h4>
      * If the {@code org.apache.sis.util.logging.MonolineFormatter.time} pattern declared in the
      * {@code jre/lib/logging.properties} file is illegal, then {@link MonolineFormatter} will log
-     * this problem and use a default time pattern.</div>
+     * this problem and use a default time pattern.
      *
      * @param  logger  where to log the error, or {@code null} for inferring a default value from other arguments.
      * @param  classe  the class where the error occurred, or {@code null} for inferring a default value from other arguments.

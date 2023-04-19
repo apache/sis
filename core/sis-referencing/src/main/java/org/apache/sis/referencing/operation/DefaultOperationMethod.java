@@ -72,7 +72,12 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * {@linkplain #getParameters() group of parameter descriptors}. The parameter descriptors do not contain
  * any value, but tell us what are the expected parameters, together with their units of measurement.</p>
  *
- * <div class="note"><b>Example:</b>
+ * <p>In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property.
+ * However, it is recommended to provide also {@linkplain #getIdentifiers() identifiers}
+ * (e.g. “EPSG:9804” in the following example)
+ * because names can sometimes be ambiguous or be spelled in different ways.</p>
+ *
+ * <h2>Example</h2>
  * An operation method named “<cite>Mercator (variant A)</cite>” (EPSG:9804) expects the following parameters:
  * <ul>
  *   <li>“<cite>Latitude of natural origin</cite>” in degrees. Default value is 0°.</li>
@@ -80,11 +85,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *   <li>“<cite>Scale factor at natural origin</cite>” as a dimensionless number. Default value is 1.</li>
  *   <li>“<cite>False easting</cite>” in metres. Default value is 0 m.</li>
  *   <li>“<cite>False northing</cite>” in metres. Default value is 0 m.</li>
- * </ul></div>
- *
- * In Apache SIS implementation, the {@linkplain #getName() name} is the only mandatory property. However, it is
- * recommended to provide also {@linkplain #getIdentifiers() identifiers} (e.g. “EPSG:9804” in the above example)
- * since names can sometimes be ambiguous or be spelled in different ways.
+ * </ul>
  *
  * <h2>Departure from the ISO 19111 standard</h2>
  * The following properties are mandatory according ISO 19111,
@@ -527,10 +528,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code OperationMethod.class}.
      *
-     * <div class="note"><b>Note for implementers:</b>
+     * <h4>Note for implementers</h4>
      * Subclasses usually do not need to override this information since GeoAPI does not define {@code OperationMethod}
      * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.</div>
+     * own set of interfaces.
      *
      * @return {@code OperationMethod.class} or a user-defined sub-interface.
      */
@@ -576,8 +577,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * publication. Note that the operation method may not be analytic, in which case this
      * attribute references or contains the procedure, not an analytic formula.
      *
-     * <div class="note"><b>Departure from the ISO 19111 standard:</b>
-     * this property is mandatory according ISO 19111, but optional in Apache SIS.</div>
+     * <h4>Departure from the ISO 19111 standard</h4>
+     * This property is mandatory according ISO 19111, but optional in Apache SIS.
      *
      * @return the formula used by this method, or {@code null} if unknown.
      *
@@ -628,9 +629,9 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     /**
      * Returns the set of parameters.
      *
-     * <div class="note"><b>Departure from the ISO 19111 standard:</b>
-     * this property is mandatory according ISO 19111, but may be {@code null} in Apache SIS if the
-     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.</div>
+     * <h4>Departure from the ISO 19111 standard</h4>
+     * This property is mandatory according ISO 19111, but may be {@code null} in Apache SIS if the
+     * {@link #DefaultOperationMethod(MathTransform)} constructor has been unable to infer it.
      *
      * @return the parameters, or {@code null} if unknown.
      *
