@@ -352,7 +352,7 @@ public final class RangeTest extends TestCase {
          * The result depends on time zone and we have no API for forcing the time zone to some specific
          * value in a call to 'Range.formatTo(Formatter, …)`. So we verify only the year and the month.
          */
-        final String result = String.format(Locale.CANADA, "%s", range);
+        final String result = String.format(Locale.CANADA_FRENCH, "%s", range);
         assertTrue(result, result.matches("\\[2019-12-.+ … 2020-05-.+\\]"));
     }
 
