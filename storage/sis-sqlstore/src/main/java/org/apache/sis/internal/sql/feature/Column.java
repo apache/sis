@@ -189,7 +189,7 @@ public final class Column {
      * For example, we sometimes get {@code "public"."geometry"} (including the quotes)
      * instead of a plain {@code geometry}. If this is the case, keep only the local part.
      *
-     * @param  type   value found in the {@value Reflection.TYPE_NAME} column.
+     * @param  type   value found in the {@value Reflection#TYPE_NAME} column.
      * @param  quote  value of {@code DatabaseMetaData.getIdentifierQuoteString()}.
      * @return local part of the type name.
      */
