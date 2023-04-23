@@ -16,10 +16,8 @@
  */
 package org.apache.sis.image;
 
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
-import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import java.util.function.Consumer;
@@ -61,7 +59,7 @@ import org.apache.sis.measure.Units;
  * Only the intersection of both images is used.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public class ImageCombiner implements Consumer<RenderedImage> {
@@ -74,13 +72,6 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * The destination image where to write the images given to this {@code ImageCombiner}.
      */
     private final WritableRenderedImage destination;
-
-    /**
-     * The value to use in calls to {@link ImageProcessor#setImageLayout(ImageLayout)}.
-     * We set this property before use of {@link #processor} because the value may change
-     * for each slice processed by {@link org.apache.sis.coverage.CoverageCombiner}.
-     */
-    private final Layout layout;
 
     /**
      * Creates an image combiner which will write in the given image. That image is not cleared;
@@ -108,37 +99,6 @@ public class ImageCombiner implements Consumer<RenderedImage> {
         ArgumentChecks.ensureNonNull("processor", processor);
         this.destination = destination;
         this.processor = processor;
-        layout = new Layout(destination.getSampleModel());
-    }
-
-    /**
-     * Provides sample model of images created by resample operations.
-     * It must be the sample model of destination image, with the same tile size.
-     */
-    private static final class Layout extends ImageLayout {
-        /** Sample model of destination image. */
-        private final SampleModel sampleModel;
-
-        /** Indices of the first tile ({@code minTileX}, {@code minTileY}). */
-        final Point minTile;
-
-        /** Creates a new layout which will request the specified sample model. */
-        Layout(final SampleModel sampleModel) {
-            super(null, false);
-            ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
-            this.sampleModel = sampleModel;
-            minTile = new Point();
-        }
-
-        /** Returns the target sample model for {@link ResampledImage} or other operations. */
-        @Override public SampleModel createCompatibleSampleModel(RenderedImage image, Rectangle bounds) {
-            return sampleModel;
-        }
-
-        /** Returns indices of the first tile, which must have been set in the {@link #minTile} field in advance. */
-        @Override public Point getMinTile() {
-            return minTile;
-        }
     }
 
     /**
@@ -190,6 +150,17 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      */
     public void setPositionalAccuracyHints(final Quantity<?>... hints) {
         processor.setPositionalAccuracyHints(hints);
+    }
+
+    /**
+     * Returns the type of number used for representing the values of each band.
+     *
+     * @return the type of number capable to hold sample values of each band.
+     *
+     * @since 1.4
+     */
+    public DataType getBandType() {
+        return DataType.forBands(destination);
     }
 
     /**
@@ -279,14 +250,19 @@ public class ImageCombiner implements Consumer<RenderedImage> {
          */
         final RenderedImage result;
         synchronized (processor) {
-            final Point minTile = layout.minTile;
-            minTile.x = minTileX;
-            minTile.y = minTileY;
-            processor.setImageLayout(layout);
-            result = processor.resample(source, bounds, toSource);
+            final ImageLayout layout = ImageLayout.forDestination(destination, minTileX, minTileY);
+            final ImageLayout previous = processor.getImageLayout();
+            try {
+                processor.setImageLayout(layout);
+                result = processor.resample(source, bounds, toSource);
+            } finally {
+                processor.setImageLayout(previous);
+            }
         }
-        if (result instanceof ComputedImage) {
-            ((ComputedImage) result).setDestination(destination);
+        /*
+         * Check if the result is writing directly in the destination image.
+         */
+        if (result instanceof ComputedImage && ((ComputedImage) result).getDestination() == destination) {
             processor.prefetch(result, ImageUtilities.getBounds(destination));
         } else {
             accept(result);

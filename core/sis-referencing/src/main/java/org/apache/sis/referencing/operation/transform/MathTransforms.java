@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.BitSet;
 import java.util.Optional;
 import java.awt.geom.AffineTransform;
+import javax.measure.UnitConverter;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -249,6 +250,21 @@ public final class MathTransforms extends Static {
         } else {
             return linear(getMatrix(transform, position));
         }
+    }
+
+    /**
+     * Converts the given unit converter to a math transform.
+     * This is a bridge between Unit API and referencing API.
+     *
+     * @param  converter  the unit converter.
+     * @return a transform doing the same computation than the given unit converter.
+     *
+     * @since 1.4
+     */
+    @SuppressWarnings("fallthrough")
+    public static MathTransform1D convert(final UnitConverter converter) {
+        ArgumentChecks.ensureNonNull("converter", converter);
+        return UnitConversion.create(converter);
     }
 
     /**

@@ -306,20 +306,24 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      *
      * If this method is invoked, then is should be done soon after construction time
      * before any tile computation starts.
+     *
+     * @param  target  the destination image, or {@code null} if none.
      */
     final void setDestination(final WritableRenderedImage target) {
         if (destination != null) {
             throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, "destination"));
         }
-        if (!sampleModel.equals(target.getSampleModel())) {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
+        if (target != null) {
+            if (!sampleModel.equals(target.getSampleModel())) {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedSampleModel));
+            }
+            if (target.getTileGridXOffset() != getTileGridXOffset() ||
+                target.getTileGridYOffset() != getTileGridYOffset())
+            {
+                throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTileGrid));
+            }
+            destination = target;
         }
-        if (target.getTileGridXOffset() != getTileGridXOffset() ||
-            target.getTileGridYOffset() != getTileGridYOffset())
-        {
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.MismatchedTileGrid));
-        }
-        destination = target;
     }
 
     /**
