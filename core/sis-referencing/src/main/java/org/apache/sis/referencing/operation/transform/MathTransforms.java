@@ -222,15 +222,6 @@ public final class MathTransforms extends Static {
 
     /**
      * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
-     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
-     * Otherwise an approximation for the given position is created using the
-     * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that position.
-     *
-     * <h4>Invariant</h4>
-     * Transforming the given {@code position} using the given {@code transform} produces the same result
-     * (ignoring rounding error) than transforming the same {@code position} using the returned transform.
-     * This invariant holds only for that particular position; the transformation of any other positions
-     * may produce different results.
      *
      * @param  transform  the transform to approximate by an affine transform.
      * @param  position   position in source CRS around which to get the an affine transform approximation.
@@ -240,15 +231,47 @@ public final class MathTransforms extends Static {
      *
      * @since 1.0
      *
+     * @deprecated This method duplicates {@link #tangent(MathTransform, DirectPosition)}.
+     */
+    @Deprecated(since="1.4", forRemoval=true)
+    public static LinearTransform linear(MathTransform transform, DirectPosition position) throws TransformException {
+        return tangent(transform, position);
+    }
+
+    /**
+     * Returns a linear (usually affine) transform which approximates the given transform in the vicinity of the given position.
+     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
+     * Otherwise an approximation for the given position is created using the
+     * {@linkplain MathTransform#derivative(DirectPosition) transform derivative} at that given position.
+     * The returned transform has the same number of source and target dimensions than the given transform.
+     *
+     * <p>If the given transform is a one-dimensional curve, then this method computes the tangent line at the given position.
+     * The same computation is generalized to any number of dimensions (tangent plane if the given transform is two-dimensional,
+     * <i>etc.</i>).</p>
+     *
+     * <h4>Invariant</h4>
+     * Transforming the given {@code position} using the given {@code transform} produces the same result
+     * (ignoring rounding error) than transforming the same {@code position} using the returned transform.
+     * This invariant holds only for that particular position; the transformation of any other positions
+     * may produce different results.
+     *
+     * @param  toApproximate  the potentially non-linear transform to approximate by a linear transform.
+     * @param  tangentPoint   position in source CRS around which to get the an line approximation.
+     * @return a transform approximating the given transform around the given position.
+     * @throws TransformException if an error occurred while transforming the given position
+     *         or computing the derivative at that position.
+     *
+     * @since 1.1
+     *
      * @see #getMatrix(MathTransform, DirectPosition)
      */
-    public static LinearTransform linear(final MathTransform transform, final DirectPosition position) throws TransformException {
-        if (transform instanceof LinearTransform) {
+    public static LinearTransform tangent(final MathTransform toApproximate, final DirectPosition tangentPoint) throws TransformException {
+        if (toApproximate instanceof LinearTransform) {
             // We accept null position here for consistency with MathTransform.derivative(DirectPosition).
-            ArgumentChecks.ensureDimensionMatches("position", transform.getSourceDimensions(), position);
-            return (LinearTransform) transform;
+            ArgumentChecks.ensureDimensionMatches("tangentPoint", toApproximate.getSourceDimensions(), tangentPoint);
+            return (LinearTransform) toApproximate;
         } else {
-            return linear(getMatrix(transform, position));
+            return linear(getMatrix(toApproximate, tangentPoint));
         }
     }
 
@@ -679,51 +702,71 @@ public final class MathTransforms extends Static {
      * Otherwise the returned matrix can be used for {@linkplain #linear(Matrix) building a linear transform} which can be
      * used as an approximation of the given transform for short distances around the given position.
      *
-     * @param  transform  the transform to approximate by an affine transform.
-     * @param  position   position in source CRS around which to get the coefficients of an affine transform approximation.
-     * @return the matrix of the given transform around the given position.
-     * @throws TransformException if an error occurred while transforming the given position or computing the derivative at
-     *         that position.
+     * @param  toApproximate  the potentially non-linear transform to approximate by an affine transform.
+     * @param  tangentPoint   position in source CRS around which to get the coefficients of an affine transform approximation.
+     * @return the matrix representation of the affine approximation of the given transform around the given position.
+     * @throws TransformException if an error occurred while transforming the given position
+     *         or computing the derivative at that position.
      *
      * @since 1.0
      *
-     * @see #linear(MathTransform, DirectPosition)
+     * @see #tangent(MathTransform, DirectPosition)
      */
-    public static Matrix getMatrix(final MathTransform transform, final DirectPosition position) throws TransformException {
-        ArgumentChecks.ensureNonNull("transform", transform);
-        final int srcDim = transform.getSourceDimensions();
-        ArgumentChecks.ensureDimensionMatches("position", srcDim, position);            // Null position is okay for now.
-        final Matrix affine = getMatrix(transform);
+    public static Matrix getMatrix(final MathTransform toApproximate, final DirectPosition tangentPoint) throws TransformException {
+        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
+        final int srcDim = toApproximate.getSourceDimensions();
+        ArgumentChecks.ensureDimensionMatches("tangentPoint", srcDim, tangentPoint);    // Null position is okay for now.
+        final Matrix affine = getMatrix(toApproximate);
         if (affine != null) {
             return affine;
             // We accept null position here for consistency with MathTransform.derivative(DirectPosition).
         }
-        ArgumentChecks.ensureNonNull("position", position);
-        final int tgtDim = transform.getTargetDimensions();
-        double[] pts = new double[Math.max(srcDim + 1, tgtDim)];
+        ArgumentChecks.ensureNonNull("tangentPoint", tangentPoint);
+        final int tgtDim = toApproximate.getTargetDimensions();
+        double[] coordinates = new double[Math.max(tgtDim, srcDim + 1)];
         for (int i=0; i<srcDim; i++) {
-            pts[i] = position.getOrdinate(i);
+            coordinates[i] = tangentPoint.getOrdinate(i);
         }
-        final Matrix d = derivativeAndTransform(transform, pts, 0, pts, 0);
-        final MatrixSIS a = Matrices.createZero(tgtDim + 1, srcDim + 1);
-        for (int j=0; j<tgtDim; j++) {
-            for (int i=0; i<srcDim; i++) {
-                a.setElement(j, i, d.getElement(j, i));
-            }
-            a.setElement(j, srcDim, pts[j]);
-            pts[j] = -position.getOrdinate(j);                  // To be used by a.translate(pts) later.
-        }
-        a.setElement(tgtDim, srcDim, 1);
+        final Matrix derivative = derivativeAndTransform(toApproximate, coordinates, 0, coordinates, 0);
+        final MatrixSIS m = Matrices.createAffine(derivative, new DirectPositionView.Double(coordinates, 0, tgtDim));
         /*
          * At this point, the translation column in the matrix is set as if the coordinate system origin
          * was at the given position. We want to keep the original coordinate system origin. We do that
-         * be applying a translation in the opposite direction before the affine transform. Translation
-         * terms were opportunistically set in the previous loop.
+         * be applying a translation in the opposite direction before the affine transform.
          */
-        pts = ArraysExt.resize(pts, srcDim + 1);
-        pts[srcDim] = 1;
-        a.translate(pts);
-        return a;
+        coordinates = ArraysExt.resize(coordinates, srcDim + 1);
+        for (int i=0; i<srcDim; i++) {
+            coordinates[i] = -tangentPoint.getOrdinate(i);
+        }
+        coordinates[srcDim] = 1;
+        m.translate(coordinates);
+        return m;
+    }
+
+    /**
+     * Returns source coordinate values where the transform is mathematically and numerically applicable.
+     * This is <em>not</em> the domain of validity for which a coordinate reference system has been defined,
+     * because this method ignores "real world" considerations such as datum and country boundaries.
+     * This method is for allowing callers to crop their data for removing areas that may cause numerical problems,
+     * for example latitudes too close to a pole before Mercator projection.
+     *
+     * <p>See {@link AbstractMathTransform#getDomain(DomainDefinition)} for more information.
+     * This static method delegates to above-cited method if possible, or returns an empty value otherwise.</p>
+     *
+     * @param  evaluated  transform for which to evaluate a domain, or {@code null}.
+     * @return estimation of a domain where this transform is considered numerically applicable.
+     * @throws TransformException if the domain cannot be estimated.
+     *
+     * @see AbstractMathTransform#getDomain(DomainDefinition)
+     * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
+     *
+     * @since 1.3
+     */
+    public static Optional<Envelope> getDomain(final MathTransform evaluated) throws TransformException {
+        if (evaluated instanceof AbstractMathTransform) {
+            return ((AbstractMathTransform) evaluated).getDomain(new DomainDefinition());
+        }
+        return Optional.empty();
     }
 
     /**
@@ -767,75 +810,5 @@ public final class MathTransforms extends Static {
             transform.transform(srcPts, srcOff, dstPts, dstOff, 1);
         }
         return derivative;
-    }
-
-    /**
-     * Computes a linear approximation of the given math transform at the given position.
-     * If the given transform is already an instance of {@link LinearTransform}, then it is returned as-is.
-     * Otherwise an affine transform is created from the {@linkplain MathTransform#derivative(DirectPosition)
-     * transform derivative} and the tangent point coordinates. The returned transform has the same number of
-     * source and target dimensions than the given transform.
-     *
-     * <p>If the given transform is a one dimensional curve, then this method computes the tangent at the given
-     * position. The same computation is generalized to any number of dimensions (computes a tangent plane if the
-     * given transform is two-dimensional, <i>etc.</i>).</p>
-     *
-     * @param  toApproximate  the non-linear transform to approximate by a linear transform.
-     * @param  tangentPoint   the point where to compute a linear approximation.
-     * @return linear approximation of the given math transform at the given position.
-     * @throws TransformException if the point cannot be transformed
-     *         or if a problem occurred while calculating the derivative.
-     *
-     * @since 1.1
-     */
-    public static LinearTransform tangent(final MathTransform toApproximate, final DirectPosition tangentPoint)
-            throws TransformException
-    {
-        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
-        if (toApproximate instanceof LinearTransform) {
-            return (LinearTransform) toApproximate;
-        }
-        final int srcDim = toApproximate.getSourceDimensions();
-        ArgumentChecks.ensureDimensionMatches("tangentPoint", srcDim, tangentPoint);
-        final int tgtDim = toApproximate.getTargetDimensions();
-        final double[] coordinates = new double[Math.max(srcDim, tgtDim)];
-        for (int i=0; i<srcDim; i++) {
-            coordinates[i] = tangentPoint.getOrdinate(i);
-        }
-        final Matrix derivative = derivativeAndTransform(toApproximate, coordinates, 0, coordinates, 0);
-        final MatrixSIS m = Matrices.createAffine(derivative, new DirectPositionView.Double(coordinates, 0, tgtDim));
-        for (int i=0; i<srcDim; i++) {
-            m.convertBefore(i, null, -tangentPoint.getOrdinate(i));
-        }
-        final LinearTransform tangent = linear(m);
-        assert tangent.getSourceDimensions() == srcDim;
-        assert tangent.getTargetDimensions() == tgtDim;
-        return tangent;
-    }
-
-    /**
-     * Returns source coordinate values where the transform is mathematically and numerically applicable.
-     * This is <em>not</em> the domain of validity for which a coordinate reference system has been defined,
-     * because this method ignores "real world" considerations such as datum and country boundaries.
-     * This method is for allowing callers to crop their data for removing areas that may cause numerical problems,
-     * for example latitudes too close to a pole before Mercator projection.
-     *
-     * <p>See {@link AbstractMathTransform#getDomain(DomainDefinition)} for more information.
-     * This static method delegates to above-cited method if possible, or returns an empty value otherwise.</p>
-     *
-     * @param  evaluated  transform for which to evaluate a domain, or {@code null}.
-     * @return estimation of a domain where this transform is considered numerically applicable.
-     * @throws TransformException if the domain cannot be estimated.
-     *
-     * @see AbstractMathTransform#getDomain(DomainDefinition)
-     * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
-     *
-     * @since 1.3
-     */
-    public static Optional<Envelope> getDomain(final MathTransform evaluated) throws TransformException {
-        if (evaluated instanceof AbstractMathTransform) {
-            return ((AbstractMathTransform) evaluated).getDomain(new DomainDefinition());
-        }
-        return Optional.empty();
     }
 }
