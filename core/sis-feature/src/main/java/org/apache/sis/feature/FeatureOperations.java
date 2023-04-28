@@ -17,6 +17,7 @@
 package org.apache.sis.feature;
 
 import java.util.Map;
+import java.util.function.Function;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -28,9 +29,12 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
+import org.opengis.feature.Feature;
 import org.opengis.feature.Operation;
 import org.opengis.feature.PropertyType;
+import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureAssociationRole;
+import org.opengis.filter.Expression;
 
 
 /**
@@ -107,7 +111,7 @@ import org.opengis.feature.FeatureAssociationRole;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.7
  */
 public final class FeatureOperations extends Static {
@@ -259,5 +263,50 @@ public final class FeatureOperations extends Static {
     {
         ArgumentChecks.ensureNonNull("geometryAttributes", geometryAttributes);
         return POOL.unique(new EnvelopeOperation(identification, crs, geometryAttributes));
+    }
+
+    /**
+     * Creates an operation which delegates the computation to a given expression.
+     * The {@code expression} argument should generally be an instance of
+     * {@link org.opengis.filter.Expression},
+     * but more generic functions are accepted as well.
+     *
+     * @param  <V>             the type of values computed by the expression and assigned to the feature property.
+     * @param  identification  the name of the operation, together with optional information.
+     * @param  expression      the expression to evaluate on feature instances.
+     * @param  result          type of values computed by the expression and assigned to the feature property.
+     * @return a feature operation which computes its values using the given expression.
+     *
+     * @since 1.4
+     */
+    public static <V> Operation expression(final Map<String,?> identification,
+                                           final Function<? super Feature, ? extends V> expression,
+                                           final AttributeType<? super V> result)
+    {
+        ArgumentChecks.ensureNonNull("expression", expression);
+        return POOL.unique(new ExpressionOperation<>(identification, expression, result));
+    }
+
+    /**
+     * Creates an operation which delegates the computation to a given expression producing values of unknown type.
+     * This method can be used as an alternative to {@link #expression expression(…)} when the constraint on the
+     * parameterized type {@code <V>} between {@code expression} and {@code result} can not be enforced at compile time.
+     * This method casts or converts the expression to the expected type by a call to
+     * {@link Expression#toValueType(Class)}.
+     *
+     * @param  <V>             the type of values computed by the expression and assigned to the feature property.
+     * @param  identification  the name of the operation, together with optional information.
+     * @param  expression      the expression to evaluate on feature instances.
+     * @param  result          type of values computed by the expression and assigned to the feature property.
+     * @return a feature operation which computes its values using the given expression.
+     * @throws ClassCastException if the result type is not a target type supported by the expression.
+     *
+     * @since 1.4
+     */
+    public static <V> Operation expressionToResult(final Map<String,?> identification,
+                                                   final Expression<? super Feature, ?> expression,
+                                                   final AttributeType<V> result)
+    {
+        return expression(identification, expression.toValueType(result.getValueClass()), result);
     }
 }
