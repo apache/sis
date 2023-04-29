@@ -25,6 +25,7 @@ import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -32,8 +33,10 @@ import static org.junit.Assert.*;
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.feature.DefaultFeatureType;
-import org.apache.sis.feature.AbstractIdentifiedType;
 import org.apache.sis.feature.DefaultAttributeType;
+import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.filter.Expression;
 
 
 /**
@@ -42,7 +45,7 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public final class FeatureQueryTest extends TestCase {
@@ -300,5 +303,63 @@ public final class FeatureQueryTest extends TestCase {
         final AbstractFeature instance = executeAndGetFirst();
         assertEquals("value1",  2, instance.getPropertyValue("value1"));
         assertEquals("value3", 25, instance.getPropertyValue("value3"));
+    }
+
+    /**
+     * Shortcut for creating expression for a projection computed on-the-fly.
+     */
+    private static FeatureQuery.NamedExpression virtualProjection(final Expression<? super AbstractFeature, ?> expression, final String alias) {
+        return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.VIRTUAL);
+    }
+
+    /**
+     * Verifies the effect of virtual projections.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testVirtualProjection() throws DataStoreException {
+        final DefaultFilterFactory<AbstractFeature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(
+                new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
+                virtualProjection(ff.property("value1", Integer.class), "renamed1"),
+                virtualProjection(ff.literal("a literal"), "computed"));
+
+        // Check result type.
+        final AbstractFeature instance = executeAndGetFirst();
+        final DefaultFeatureType resultType = instance.getType();
+        assertEquals("Test", resultType.getName().toString());
+        assertEquals(3, resultType.getProperties(true).size());
+        final AbstractIdentifiedType pt1 = resultType.getProperty("value1");
+        final AbstractIdentifiedType pt2 = resultType.getProperty("renamed1");
+        final AbstractIdentifiedType pt3 = resultType.getProperty("computed");
+        assertTrue(pt1 instanceof DefaultAttributeType);
+        assertTrue(pt2 instanceof AbstractOperation);
+        assertTrue(pt3 instanceof AbstractOperation);
+        assertEquals(Integer.class, ((DefaultAttributeType) pt1).getValueClass());
+        assertTrue(((AbstractOperation) pt2).getResult() instanceof DefaultAttributeType);
+        assertTrue(((AbstractOperation) pt3).getResult() instanceof DefaultAttributeType);
+        assertEquals(Integer.class, ((DefaultAttributeType)((AbstractOperation) pt2).getResult()).getValueClass());
+        assertEquals(String.class,  ((DefaultAttributeType)((AbstractOperation) pt3).getResult()).getValueClass());
+
+        // Check feature instance.
+        assertEquals(3, instance.getPropertyValue("value1"));
+        assertEquals(3, instance.getPropertyValue("renamed1"));
+        assertEquals("a literal", instance.getPropertyValue("computed"));
+    }
+
+    /**
+     * Verifies that a virtual projection on a missing field causes an exception.
+     *
+     * @throws DataStoreException if an error occurred while executing the query.
+     */
+    @Test
+    public void testIncorrectVirtualProjection() throws DataStoreException {
+        final DefaultFilterFactory<AbstractFeature,?,?> ff = DefaultFilterFactory.forFeatures();
+        query.setProjection(new FeatureQuery.NamedExpression(ff.property("value1", Integer.class), (String) null),
+                            virtualProjection(ff.property("valueMissing", Integer.class), "renamed1"));
+
+        DataStoreContentException ex = assertThrows(DataStoreContentException.class, this::executeAndGetFirst);
+        assertNotNull(ex.getMessage());
     }
 }

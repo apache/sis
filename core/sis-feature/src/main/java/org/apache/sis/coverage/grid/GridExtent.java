@@ -925,11 +925,7 @@ public class GridExtent implements Serializable, LenientComparable {
      * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
      */
     public int[] getSubspaceDimensions(final int numDim) {
-        ArgumentChecks.ensurePositive("numDim", numDim);
-        final int m = getDimension();
-        if (numDim > m) {
-            throw new CannotEvaluateException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, numDim));
-        }
+        final int m = ensureValidDimension(numDim);
         final int[] selected = new int[numDim];
         int count = 0;
         for (int i=0; i<m; i++) {
@@ -957,6 +953,82 @@ public class GridExtent implements Serializable, LenientComparable {
             Arrays.sort(selected);
         }
         return selected;
+    }
+
+    /**
+     * Ensures that 0 ≤ {@code numDim} ≤ <var>n</var>
+     * where <var>n</var> is the number of dimensions of this grid extent.
+     *
+     * @param  numDim  the user-supplied number of dimensions to validate.
+     * @return the number of dimensions in this grid extent.
+     * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
+     */
+    private int ensureValidDimension(final int numDim) {
+        ArgumentChecks.ensurePositive("numDim", numDim);
+        final int m = getDimension();
+        if (numDim > m) {
+            throw new CannotEvaluateException(Resources.format(Resources.Keys.GridEnvelopeMustBeNDimensional_1, numDim));
+        }
+        return m;
+    }
+
+    /**
+     * Returns the indices of the {@code numDim} dimensions having the largest sizes.
+     * This method can be used as an alternative to {@link #getSubspaceDimensions(int)}
+     * when it is acceptable that the omitted dimensions have sizes larger than 1 cell.
+     *
+     * @param  numDim  number of dimensions of the sub-space.
+     * @return indices of the {@code numDim} dimensions having the largest sizes, in increasing order.
+     * @throws CannotEvaluateException if this grid extent does not have at least {@code numDim} dimensions.
+     *
+     * @since 1.4
+     */
+    public int[] getLargestDimensions(final int numDim) {
+        return DimSize.sort(coordinates, ensureValidDimension(numDim), numDim);
+    }
+
+    /**
+     * A (dimension, size) tuple. Used for sorting dimensions by their size.
+     * This is used for {@link GridExtent#getLargestDimensions()} implementation.
+     */
+    private static final class DimSize extends org.apache.sis.internal.jdk17.Record implements Comparable<DimSize> {
+        /** Index of the dimension.      */ private final int  dim;
+        /** Size as an unsigned integer. */ private final long size;
+
+        /** Creates a new (dimension, size) tuple. */
+        private DimSize(final int dim, final long size) {
+            this.dim  = dim;
+            this.size = size;
+        }
+
+        /** Compares two tuples for order based on their size. */
+        @Override public int compareTo(final DimSize other) {
+            int c = Long.compareUnsigned(other.size, size);     // Reverse order.
+            if (c == 0) c = Integer.compare(dim, other.dim);
+            return c;
+        }
+
+        /** Implementation of {@link GridExtent#getLargestDimensions()}. */
+        static int[] sort(final long[] coordinates, final int m, final int numDim) {
+            if (numDim == m) {
+                return ArraysExt.range(0, numDim);      // Small optimization for a common case.
+            }
+            final var sizes = new DimSize[m];
+            for (int i=0; i<m; i++) {
+                /*
+                 * Do not use `getSize(int)` because the results may overflow.
+                 * It is okay because we will treat them as unsigned integers.
+                 */
+                sizes[i] = new DimSize(i, coordinates[m + i] - coordinates[i]);
+            }
+            Arrays.sort(sizes);
+            final int[] result = new int[numDim];
+            for (int i=0; i<numDim; i++) {
+                result[i] = sizes[i].dim;
+            }
+            Arrays.sort(result);
+            return result;
+        }
     }
 
     /**

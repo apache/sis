@@ -21,6 +21,8 @@ import java.util.Optional;
 import java.util.function.DoubleUnaryOperator;
 import java.awt.Shape;
 import java.awt.image.RenderedImage;
+import javax.measure.Unit;
+import org.apache.sis.coverage.BandedCoverage;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.image.ImageProcessor;
@@ -69,6 +71,40 @@ public final class SampleDimensions extends Static {
      * Do not allow instantiation of this class.
      */
     private SampleDimensions() {
+    }
+
+    /**
+     * Returns the units of measurement for all bands of the given coverage.
+     * The length of the returned array is the number of sample dimensions.
+     * The array may contain {@code null} elements.
+     *
+     * @param  source  the coverage for which to get units of measurement.
+     * @return the unit of measurement of all bands in the given coverage.
+     */
+    public static Unit<?>[] units(final BandedCoverage source) {
+        final List<SampleDimension> bands = source.getSampleDimensions();
+        final var units = new Unit<?>[bands.size()];
+        for (int i=0; i<units.length; i++) {
+            units[i] = bands.get(i).getUnits().orElse(null);
+        }
+        return units;
+    }
+
+    /**
+     * Returns the range of sample values for all bands of the given coverage.
+     * The length of the returned array is the number of sample dimensions.
+     * The array may contain {@code null} elements.
+     *
+     * @param  source  the coverage for which to get sample value ranges.
+     * @return the sample value ranges of all bands in the given coverage.
+     */
+    public static NumberRange<?>[] ranges(final BandedCoverage source) {
+        final List<SampleDimension> bands = source.getSampleDimensions();
+        final var ranges = new NumberRange<?>[bands.size()];
+        for (int i=0; i<ranges.length; i++) {
+            ranges[i] = bands.get(i).getSampleRange().orElse(null);
+        }
+        return ranges;
     }
 
     /**

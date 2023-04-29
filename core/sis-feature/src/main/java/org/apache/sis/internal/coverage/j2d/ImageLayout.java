@@ -25,6 +25,7 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.WritableRenderedImage;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.image.ComputedImage;
 import org.apache.sis.util.ArraysExt;
@@ -108,22 +109,34 @@ public class ImageLayout {
      * @param  source  image from which to take tile size and indices.
      * @return layout giving exactly the tile size and indices of given image.
      */
-    public static ImageLayout fixedSize(final RenderedImage source) {
-        return new FixedSize(source);
+    public static ImageLayout forTileSize(final RenderedImage source) {
+        return new FixedSize(source, source.getMinTileX(), source.getMinTileY());
+    }
+
+    /**
+     * Creates a new layout for writing in the given destination.
+     *
+     * @param  source    image from which to take tile size and indices.
+     * @param  minTileX  column index of the first tile.
+     * @param  minTileY  row index of the first tile.
+     * @return layout giving exactly the tile size and indices of given image.
+     */
+    public static ImageLayout forDestination(final WritableRenderedImage source, final int minTileX, final int minTileY) {
+        return new FixedDestination(source, minTileX, minTileY);
     }
 
     /**
      * Override preferred tile size with a fixed size.
      */
-    private static final class FixedSize extends ImageLayout {
+    private static class FixedSize extends ImageLayout {
         /** Indices of the first tile. */
-        private final int xmin, ymin;
+        private final int minTileX, minTileY;
 
         /** Creates a new layout with exactly the tile size of given image. */
-        FixedSize(final RenderedImage source) {
+        FixedSize(final RenderedImage source, final int minTileX, final int minTileY) {
             super(new Dimension(source.getTileWidth(), source.getTileHeight()), false);
-            xmin = source.getMinTileX();
-            ymin = source.getMinTileY();
+            this.minTileX = minTileX;
+            this.minTileY = minTileY;
         }
 
         /** Returns the fixed tile size. All parameters are ignored. */
@@ -138,7 +151,31 @@ public class ImageLayout {
 
         /** Returns indices of the first tile. */
         @Override public Point getMinTile() {
-            return new Point(xmin, ymin);
+            return new Point(minTileX, minTileY);
+        }
+    }
+
+    /**
+     * Override sample model with the one of the destination.
+     */
+    private static final class FixedDestination extends FixedSize {
+        /** The destination image. */
+        private final WritableRenderedImage destination;
+
+        /** Creates a new layout with exactly the tile size of given image. */
+        FixedDestination(final WritableRenderedImage destination, final int minTileX, final int minTileY) {
+            super(destination, minTileX, minTileY);
+            this.destination = destination;
+        }
+
+        /** Returns an existing image where to write the computation result. */
+        @Override public WritableRenderedImage getDestination() {
+            return destination;
+        }
+
+        /** Returns the target sample model, which is fixed to the same than the destination image. */
+        @Override public SampleModel createCompatibleSampleModel(RenderedImage image, Rectangle bounds) {
+            return destination.getSampleModel();
         }
     }
 
@@ -377,6 +414,15 @@ public class ImageLayout {
      * @return indices of the first tile ({@code minTileX}, {@code minTileY}), or {@code null} for (0,0).
      */
     public Point getMinTile() {
+        return null;
+    }
+
+    /**
+     * Returns an existing image where to write the computation result, or {@code null} if none.
+     *
+     * @return preexisting destination of computation result, or {@code null} if none.
+     */
+    public WritableRenderedImage getDestination() {
         return null;
     }
 

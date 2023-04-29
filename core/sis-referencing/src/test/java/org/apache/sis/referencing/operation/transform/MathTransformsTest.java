@@ -171,13 +171,44 @@ public final class MathTransformsTest extends TestCase {
     }
 
     /**
-     * Tests {@link MathTransforms#linear(MathTransform, DirectPosition)}.
+     * Tests {@link MathTransforms#tangent(MathTransform, DirectPosition)} of a linear transform.
+     *
+     * @throws TransformException should never happen since this test uses a linear transform.
+     */
+    @Test
+    @DependsOnMethod("testGetMatrix")
+    public void testTangentOfLinear() throws TransformException {
+        /*
+         * The random values in Matrix and DirectPosition below does not matter; we will just verify
+         * that we get the same values in final result. In particular the `tangentPoint` coordinates
+         * are ignored since we use a linear transform for this test.
+         */
+        final Matrix expected = Matrices.create(3, 4, new double[] {
+            -4, 5, 7, 2,
+             3, 4, 2, 9,
+             0, 0, 0, 1,
+        });
+        final DirectPosition tangentPoint = new GeneralDirectPosition(3, 8, 7);
+        MathTransform transform = MathTransforms.linear(expected);
+        assertSame(transform, MathTransforms.tangent(transform, tangentPoint));
+        /*
+         * Above test returned the transform directly because it found that it was already an instance
+         * of `LinearTransform`. For a real test, we need to hide that fact to the `tangent` method.
+         */
+        transform = new MathTransformWrapper(transform);
+        final LinearTransform result = MathTransforms.tangent(transform, tangentPoint);
+        assertNotSame(transform, result);
+        assertMatrixEquals("tangent", expected, result.getMatrix(), STRICT);
+    }
+
+    /**
+     * Tests {@link MathTransforms#tangent(MathTransform, DirectPosition)} of a non-linear transform.
      *
      * @throws TransformException if an error occurred while computing the derivative.
      */
     @Test
-    @DependsOnMethod("testGetMatrix")
-    public void testLinearUsingPosition() throws TransformException {
+    @DependsOnMethod("testTangentOfLinear")
+    public void testTangent() throws TransformException {
         final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
         MathTransform tr = MathTransforms.linear(new Matrix4(
             0,  5,  0,  9,
@@ -185,11 +216,11 @@ public final class MathTransformsTest extends TestCase {
             0,  0, 12, -3,
             0,  0,  0,  1));
 
-        LinearTransform linear = MathTransforms.linear(tr, pos);
+        LinearTransform linear = MathTransforms.tangent(tr, pos);
         assertSame("Linear transform shall be returned unchanged.", tr, linear);
 
         tr = MathTransforms.concatenate(nonLinear3D(), tr);
-        linear = MathTransforms.linear(tr, pos);
+        linear = MathTransforms.tangent(tr, pos);
         assertNotSame(tr, linear);
         /*
          * Transformation using above approximation shall produce the same result than the original
@@ -212,35 +243,5 @@ public final class MathTransformsTest extends TestCase {
         tr = MathTransforms.translation(4, 7);
         assertInstanceOf("2D", MathTransform2D.class, tr);
         assertFalse("isIdentity", tr.isIdentity());
-    }
-
-    /**
-     * Tests {@link MathTransforms#tangent(MathTransform, DirectPosition)}.
-     *
-     * @throws TransformException should never happen since this test uses a linear transform.
-     */
-    @Test
-    public void testTangent() throws TransformException {
-        /*
-         * The random values in Matrix and DirectPosition below does not matter; we will just verify
-         * that we get the same values in final result. In particular the `tangentPoint` coordinates
-         * are ignored since we use a linear transform for this test.
-         */
-        final Matrix expected = Matrices.create(3, 4, new double[] {
-            -4, 5, 7, 2,
-             3, 4, 2, 9,
-             0, 0, 0, 1,
-        });
-        final DirectPosition tangentPoint = new GeneralDirectPosition(3, 8, 7);
-        MathTransform transform = MathTransforms.linear(expected);
-        assertSame(transform, MathTransforms.tangent(transform, tangentPoint));
-        /*
-         * Above test returned the transform directly because it found that it was already an instance
-         * of `LinearTransform`. For a real test, we need to hide that fact to the `tangent` method.
-         */
-        transform = new MathTransformWrapper(transform);
-        final LinearTransform result = MathTransforms.tangent(transform, tangentPoint);
-        assertNotSame(transform, result);
-        assertMatrixEquals("tangent", expected, result.getMatrix(), STRICT);
     }
 }

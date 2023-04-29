@@ -124,7 +124,7 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public boolean equals(final Object obj) {
-        // 'this.result' is compared (indirectly) by the super class.
+        // `this.result` is compared (indirectly) by the super class.
         return super.equals(obj) && referentName.equals(((LinkOperation) obj).referentName);
     }
 

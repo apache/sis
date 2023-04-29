@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.awt.geom.AffineTransform;
+import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -34,7 +35,7 @@ import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.storage.WritableGridCoverageResource;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.storage.io.ChannelDataOutput;
-import org.apache.sis.internal.coverage.CoverageCombiner;
+import org.apache.sis.coverage.CoverageCombiner;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.util.resources.Errors;
@@ -50,7 +51,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * Helper classes for the management of {@link WritableGridCoverageResource.CommonOption}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public final class WritableResourceSupport implements Localized {
@@ -177,12 +178,12 @@ public final class WritableResourceSupport implements Localized {
      */
     public final GridCoverage update(final GridCoverage coverage) throws DataStoreException {
         final GridCoverage existing = resource.read(null, null);
-        final CoverageCombiner combiner = new CoverageCombiner(existing, 0, 1);
+        final CoverageCombiner combiner = new CoverageCombiner(existing);
         try {
-            if (!combiner.apply(coverage)) {
+            if (!combiner.acceptAll(coverage)) {
                 throw new ReadOnlyStorageException(canNotWrite());
             }
-        } catch (TransformException e) {
+        } catch (TransformException | IncommensurableException e) {
             throw new DataStoreReferencingException(canNotWrite(), e);
         }
         return existing;

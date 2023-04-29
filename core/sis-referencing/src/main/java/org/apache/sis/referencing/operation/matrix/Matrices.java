@@ -714,10 +714,10 @@ public final class Matrices extends Static {
      * is non-null, all its coordinate values are copied in the last column of the returned matrix.
      *
      * <h4>Relationship with {@code MathTransform}</h4>
-     * When used together with {@link MathTransforms#derivativeAndTransform MathTransforms.derivativeAndTransform(…)},
-     * the {@code derivative} argument is the derivative computed by {@code derivativeAndTransform(…)} and the
-     * {@code translation} vector is the position computed by that method. The result is an approximation of the
-     * transform in the vicinity of the position given to {@code derivativeAndTransform(…)}.
+     * When used together with {@link MathTransforms#derivativeAndTransform MathTransforms.derivativeAndTransform(…)}
+     * with source coordinates all set to zero, the {@code derivative} and {@code translation} arguments can be
+     * respectively the return value and destination coordinates computed by {@code derivativeAndTransform(…)}.
+     * The {@code createAffine(…)} result is then an approximation of the transform in the vicinity of the origin.
      *
      * @param  derivative   the scale, shear and rotation of the affine transform.
      * @param  translation  the translation vector (the last column) of the affine transform.

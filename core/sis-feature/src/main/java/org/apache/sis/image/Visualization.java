@@ -275,7 +275,7 @@ final class Visualization extends ResampledImage {
              */
             final boolean shortcut = toSource.isIdentity() && (bounds == null || ImageUtilities.getBounds(source).contains(bounds));
             if (shortcut) {
-                layout = ImageLayout.fixedSize(source);
+                layout = ImageLayout.forTileSize(source);
             }
             /*
              * Sample values will be unconditionally converted to integers in the [0 … 255] range.
