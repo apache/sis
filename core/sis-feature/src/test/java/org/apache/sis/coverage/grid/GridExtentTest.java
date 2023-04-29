@@ -48,7 +48,7 @@ import static org.apache.sis.test.ReferencingAssert.*;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public final class GridExtentTest extends TestCase {
@@ -350,22 +350,34 @@ public final class GridExtentTest extends TestCase {
     }
 
     /**
-     * Tests {@link GridExtent#getSubspaceDimensions(int)}.
+     * Tests {@link GridExtent#getSubspaceDimensions(int)} and {@link GridExtent#getLargestDimensions(int)}.
      * Opportunistically tests {@link GridExtent#getSliceCoordinates()} since the two methods closely related.
      */
     @Test
     public void testGetSubspaceDimensions() {
         final GridExtent extent = new GridExtent(null, new long[] {100, 5, 200, 40}, new long[] {500, 5, 800, 40}, true);
         assertMapEquals(Map.of(1, 5L, 3, 40L), extent.getSliceCoordinates());
-        assertArrayEquals(new int[] {0,  2  }, extent.getSubspaceDimensions(2));
-        assertArrayEquals(new int[] {0,1,2  }, extent.getSubspaceDimensions(3));
-        assertArrayEquals(new int[] {0,1,2,3}, extent.getSubspaceDimensions(4));
+        assertSubspaceEquals(extent, 0,  2  );
+        assertSubspaceEquals(extent, 0,1,2  );
+        assertSubspaceEquals(extent, 0,1,2,3);
         try {
             extent.getSubspaceDimensions(1);
             fail("Should not reduce to 1 dimension.");
         } catch (SubspaceNotSpecifiedException e) {
             assertNotNull(e.getMessage());
         }
+    }
+
+    /**
+     * Verifies the result of {@code getSubspaceDimensions(…)} and {@code getLargestDimensions(…)}.
+     * In this test, the two methods should produce the same results.
+     *
+     * @param extent    the grid extent to test.
+     * @param expected  the expected result.
+     */
+    private static void assertSubspaceEquals(final GridExtent extent, final int... expected) {
+        assertArrayEquals(expected, extent.getSubspaceDimensions(expected.length));
+        assertArrayEquals(expected, extent.getLargestDimensions (expected.length));
     }
 
     /**

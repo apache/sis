@@ -25,6 +25,7 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 
 
 /**
@@ -47,6 +48,12 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
     /**
      * Returns the type of values computed by this expression, or {@code Object.class} if unknown.
      *
+     * <h4>Note on type safety</h4>
+     * The parameterized type should be {@code <? extends V>} because some implementations get this
+     * information by a call to {@code value.getClass()}. But it should also be {@code <? super V>}
+     * for supporting the {@code Object.class} return value. Those contradictory requirements force
+     * us to use {@code <?>}.
+     *
      * @return the type of values computed by this expression.
      */
     default Class<?> getValueClass() {
@@ -58,6 +65,9 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      * type is evaluated. The resulting type shall describe a "static" property, i.e. it can be an
      * {@link AttributeType} or a {@link org.opengis.feature.FeatureAssociationRole}
      * but not an {@link org.opengis.feature.Operation}.
+     *
+     * <p>If this method returns an instance of {@link AttributeTypeBuilder}, then its parameterized
+     * type should be the same {@code <V>} than this {@code FeatureExpression}.</p>
      *
      * @param  valueType  the type of features to be evaluated by the given expression.
      * @param  addTo      where to add the type of properties evaluated by this expression.
@@ -80,6 +90,10 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      * Otherwise this method returns {@code null}.
      * It is caller's responsibility to verify if this method returns {@code null} and to throw an exception in such case.
      * We leave that responsibility to the caller because (s)he may be able to provide better error messages.
+     *
+     * <h4>Note on type safety</h4>
+     * This method does not use parameterized types because of the assumption on {@link ValueReference}.
+     * As of Apache SIS 1.3, we have no way to check if {@code <R>} is for feature instances.
      *
      * @param  candidate  the expression to cast or copy. Can be null.
      * @return the given expression as a feature expression, or {@code null} if it cannot be casted or converted.

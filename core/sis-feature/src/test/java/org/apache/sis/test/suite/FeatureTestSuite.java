@@ -110,6 +110,7 @@ import org.junit.runners.Suite;
     org.apache.sis.coverage.CategoryListTest.class,
     org.apache.sis.coverage.SampleDimensionTest.class,
     org.apache.sis.coverage.SampleRangeFormatTest.class,
+    org.apache.sis.coverage.CoverageCombinerTest.class,
     org.apache.sis.coverage.grid.PixelTranslationTest.class,
     org.apache.sis.coverage.grid.GridOrientationTest.class,
     org.apache.sis.coverage.grid.GridExtentTest.class,

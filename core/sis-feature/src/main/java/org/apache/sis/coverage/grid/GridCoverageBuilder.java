@@ -372,6 +372,11 @@ public class GridCoverageBuilder {
             size = new Dimension(size);
             ArgumentChecks.ensureStrictlyPositive("width",  size.width);
             ArgumentChecks.ensureStrictlyPositive("height", size.height);
+            final int length = Math.multiplyExact(size.width, size.height);
+            final int capacity = data.getSize();
+            if (length > capacity) {
+                throw new IllegalArgumentException(Errors.format(Errors.Keys.UnexpectedArrayLength_2, length, capacity));
+            }
         }
         this.size = size;
         buffer = data;

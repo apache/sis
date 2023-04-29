@@ -23,13 +23,17 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.OptionalLong;
+import java.util.function.Function;
 import java.io.Serializable;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.feature.AbstractOperation;
+import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.SortByComparator;
@@ -45,6 +49,9 @@ import org.apache.sis.util.resources.Vocabulary;
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.Attribute;
+import org.opengis.feature.AttributeType;
+import org.opengis.feature.Operation;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
@@ -65,7 +72,7 @@ import org.opengis.filter.InvalidFilterValueException;
  * <ul>
  *   <li>A <cite>selection</cite> is a filter choosing the features instances to include in the subset.
  *       In relational databases, a feature instances are mapped to table rows.</li>
- *   <li>A <cite>projection</cite> (not to be confused with map projection) is the set of feature property to keep.
+ *   <li>A <cite>projection</cite> (not to be confused with map projection) is the set of feature properties to keep.
  *       In relational databases, feature properties are mapped to table columns.</li>
  * </ul>
  *
@@ -75,7 +82,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public class FeatureQuery extends Query implements Cloneable, Serializable {
@@ -401,18 +408,75 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
+     * Whether a property evaluated by a query is computed on the fly or stored.
+     * By default, an expression is evaluated only once for each feature instance,
+     * then the result is stored as a feature {@link Attribute} value.
+     * But the same expression can also be wrapped in a feature {@link Operation}
+     * and evaluated every times that the value is requested.
+     *
+     * <h2>Analogy with relational databases</h2>
+     * The terminology used in this enumeration is close to the one used in relational database.
+     * A <cite>projection</cite> is the set of feature properties to keep in the query results.
+     * The projection may contain <cite>generated columns</cite>, which are specified in SQL by
+     * {@code SQL GENERATED ALWAYS} statement, optionally with {@code STORED} or {@code VIRTUAL}
+     * modifier.
+     *
+     * @version 1.4
+     * @since   1.4
+     */
+    public enum ProjectionType {
+        /**
+         * The expression is evaluated exactly once when a feature instance is created,
+         * and the result is stored as a feature attribute.
+         * The feature property type will be {@link Attribute} and its value will be modifiable.
+         * This is the default projection type.
+         */
+        STORED,
+
+        /**
+         * The expression is evaluated every times that the property value is requested.
+         * The feature property type will be {@link Operation}.
+         * This projection type may be preferable to {@link #STORED} in the following circumstances:
+         *
+         * <ul>
+         *   <li>The expression may produce different results every times that it is evaluated.</li>
+         *   <li>The feature property should be a {@linkplain FeatureOperations#link link} to another attribute.</li>
+         *   <li>Potentially expensive computation should be deferred until first needed.</li>
+         *   <li>Computation result should not be stored in order to reduce memory usage.</li>
+         * </ul>
+         *
+         * @see FeatureOperations#expression(Map, Function, AttributeType)
+         */
+        VIRTUAL
+
+        /*
+         * Examples of other enumeration values that we may add in the future:
+         * GENERATED for meaning "STORED but read-only", CACHED for lazy computation.
+         */
+    }
+
+    /**
      * An expression to be retrieved by a {@code Query}, together with the name to assign to it.
+     * {@code NamedExpression} specifies also if the expression should be evaluated exactly once
+     * and its value stored, or evaluated every times that the value is requested.
+     *
+     * <h2>Analogy with relational databases</h2>
+     * A {@code NamedExpression} instance can be understood as the definition of a column in a SQL database table.
      * In relational database terminology, subset of columns is called <cite>projection</cite>.
+     * A projection is specified by a SQL {@code SELECT} statement, which maps to {@code NamedExpression} as below:
+     *
+     * <p>{@code SELECT} {@link #expression} {@code AS} {@link #alias}</p>
+     *
      * Columns can be given to the {@link FeatureQuery#setProjection(NamedExpression[])} method.
      *
-     * @version 1.2
+     * @version 1.4
      * @since   1.1
      */
     public static class NamedExpression implements Serializable {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -6919525113513842514L;
+        private static final long serialVersionUID = 4547204390645035145L;
 
         /**
          * The literal, value reference or more complex expression to be retrieved by a {@code Query}.
@@ -428,30 +492,36 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         public final GenericName alias;
 
         /**
-         * Creates a new column with the given expression and no name.
+         * Whether the expression result should be stored or evaluated every times that it is requested.
+         * A stored value will exist as a feature {@link Attribute}, while a virtual value will exist as
+         * a feature {@link Operation}. The latter are commonly called "computed fields" and are equivalent
+         * to SQL {@code GENERATED ALWAYS} keyword for columns.
+         *
+         * @since 1.4
+         */
+        public final ProjectionType type;
+
+        /**
+         * Creates a new stored column with the given expression and no name.
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          */
         public NamedExpression(final Expression<? super Feature, ?> expression) {
-            ArgumentChecks.ensureNonNull("expression", expression);
-            this.expression = expression;
-            this.alias = null;
+            this(expression, (GenericName) null);
         }
 
         /**
-         * Creates a new column with the given expression and the given name.
+         * Creates a new stored column with the given expression and the given name.
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
         public NamedExpression(final Expression<? super Feature, ?> expression, final GenericName alias) {
-            ArgumentChecks.ensureNonNull("expression", expression);
-            this.expression = expression;
-            this.alias = alias;
+            this(expression, alias, ProjectionType.STORED);
         }
 
         /**
-         * Creates a new column with the given expression and the given name.
+         * Creates a new stored column with the given expression and the given name.
          * This constructor creates a {@link org.opengis.util.LocalName} from the given string.
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
@@ -461,6 +531,24 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
+            this.type = ProjectionType.STORED;
+        }
+
+        /**
+         * Creates a new column with the given expression, the given name and the given projection type.
+         *
+         * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
+         * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
+         * @param type        whether to create a feature {@link Attribute} or a feature {@link Operation}.
+         *
+         * @since 1.4
+         */
+        public NamedExpression(final Expression<? super Feature, ?> expression, final GenericName alias, ProjectionType type) {
+            ArgumentChecks.ensureNonNull("expression", expression);
+            ArgumentChecks.ensureNonNull("type", type);
+            this.expression = expression;
+            this.alias = alias;
+            this.type  = type;
         }
 
         /**
@@ -470,7 +558,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          */
         @Override
         public int hashCode() {
-            return 37 * expression.hashCode() + Objects.hashCode(alias);
+            return 37 * expression.hashCode() + Objects.hashCode(alias) + type.hashCode();
         }
 
         /**
@@ -486,7 +574,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
             }
             if (obj != null && getClass() == obj.getClass()) {
                 final NamedExpression other = (NamedExpression) obj;
-                return expression.equals(other.expression) && Objects.equals(alias, other.alias);
+                return expression.equals(other.expression) && Objects.equals(alias, other.alias) && type == other.type;
             }
             return false;
         }
@@ -594,18 +682,19 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         Set<String> names = null;       // Names already used, for avoiding collisions.
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName(valueType.getName());
         for (int column = 0; column < projection.length; column++) {
+            final NamedExpression item = projection[column];
             /*
              * For each property, get the expected type (mandatory) and its name (optional).
              * A default name will be computed if no alias were explicitly given by user.
              */
-            GenericName name = projection[column].alias;
-            final Expression<?,?> expression = projection[column].expression;
+            final Expression<? super Feature,?> expression = item.expression;
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
             final PropertyTypeBuilder resultType;
             if (fex == null || (resultType = fex.expectedType(valueType, ftb)) == null) {
                 throw new InvalidFilterValueException(Resources.format(Resources.Keys.InvalidExpression_2,
                             expression.getFunctionName().toInternationalString(), column));
             }
+            GenericName name = item.alias;
             if (name == null) {
                 /*
                  * Build a list of aliases declared by the user, for making sure that we do not collide with them.
@@ -649,6 +738,18 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                 name = Names.createLocalName(null, null, text);
             }
             resultType.setName(name);
+            /*
+             * If the attribute that we just added should be virtual,
+             * replace the attribute by an operation.
+             */
+            if (item.type == ProjectionType.VIRTUAL && resultType instanceof AttributeTypeBuilder<?>) {
+                final var ab = (AttributeTypeBuilder<?>) resultType;
+                final AttributeType<?> storedType = ab.build();
+                if (ftb.properties().remove(resultType)) {
+                    final var properties = Map.of(AbstractOperation.NAME_KEY, name);
+                    ftb.addProperty(FeatureOperations.expressionToResult(properties, expression, storedType));
+                }
+            }
         }
         return ftb.build();
     }

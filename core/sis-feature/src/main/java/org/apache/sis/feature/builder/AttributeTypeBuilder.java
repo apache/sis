@@ -177,6 +177,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
      * Sets the {@code AttributeType} name as a generic name.
      * If another name was defined before this method call, that previous value will be discarded.
      *
+     * @param  name  the attribute name (cannot be {@code null}).
      * @return {@code this} for allowing method calls chaining.
      */
     @Override

@@ -365,7 +365,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
                              */
                             if (objectiveTransform != null) {
                                 DirectPosition poi = getSourceObjectivePOI();
-                                AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.linear(objectiveTransform, poi));
+                                AffineTransform t = AffineTransforms2D.castOrCopy(MathTransforms.tangent(objectiveTransform, poi));
                                 AffineTransform c = t.createInverse();
                                 c.preConcatenate(before);
                                 c.preConcatenate(t);
