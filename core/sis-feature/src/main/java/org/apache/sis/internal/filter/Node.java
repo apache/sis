@@ -178,7 +178,7 @@ public abstract class Node implements Serializable {
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
-    protected static <R,G> Expression<? super R, ?> unwrap(final Expression<R, GeometryWrapper<G>> expression) {
+    protected static <R,G> Expression<R,?> unwrap(final Expression<R, GeometryWrapper<G>> expression) {
         if (expression instanceof GeometryConverter<?,?>) {
             return ((GeometryConverter<R,?>) expression).expression;
         } else {

@@ -36,7 +36,7 @@ import org.opengis.filter.NullOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V>  the type of value computed by the expression.
@@ -55,12 +55,12 @@ class UnaryFunction<R,V> extends Node {
      * @see #getExpression()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<? super R, ? extends V> expression;
+    protected final Expression<R, ? extends V> expression;
 
     /**
      * Creates a new unary operator.
      */
-    UnaryFunction(final Expression<? super R, ? extends V> expression) {
+    UnaryFunction(final Expression<R, ? extends V> expression) {
         ArgumentChecks.ensureNonNull("expression", expression);
         this.expression = expression;
     }
@@ -69,7 +69,7 @@ class UnaryFunction<R,V> extends Node {
      * Returns the expression used as parameter by this function.
      * Defined for {@link Expression#getParameters()} implementations.
      */
-    public final List<Expression<? super R, ?>> getParameters() {
+    public final List<Expression<R,?>> getParameters() {
         return getExpressions();
     }
 
@@ -79,7 +79,7 @@ class UnaryFunction<R,V> extends Node {
      *
      * @return a list of size 1 containing the singleton expression.
      */
-    public final List<Expression<? super R, ?>> getExpressions() {
+    public final List<Expression<R,?>> getExpressions() {
         return List.of(expression);
     }
 
@@ -107,12 +107,12 @@ class UnaryFunction<R,V> extends Node {
         private static final long serialVersionUID = 2960285515924533419L;
 
         /** Creates a new operator. */
-        IsNull(final Expression<? super R,?> expression) {
+        IsNull(final Expression<R,?> expression) {
             super(expression);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new IsNull<>(effective[0]);
         }
 
@@ -145,13 +145,13 @@ class UnaryFunction<R,V> extends Node {
         private final String nilReason;
 
         /** Creates a new operator. */
-        IsNil(final Expression<? super R,?> expression, final String nilReason) {
+        IsNil(final Expression<R,?> expression, final String nilReason) {
             super(expression);
             this.nilReason = nilReason;
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new IsNil<>(effective[0], nilReason);
         }
 

@@ -58,7 +58,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class ST_Transform<R,G> extends FunctionWithSRID<R> {
@@ -71,7 +71,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      * The expression giving the geometry.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private final Expression<? super R, GeometryWrapper<G>> geometry;
+    private final Expression<R, GeometryWrapper<G>> geometry;
 
     /**
      * Creates a new function with the given parameters. It is caller's responsibility to ensure
@@ -79,7 +79,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      *
      * @throws InvalidFilterValueException if CRS cannot be constructed from the second expression.
      */
-    ST_Transform(final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    ST_Transform(final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(SQLMM.ST_Transform, parameters, PRESENT);
         geometry = toGeometryWrapper(library, parameters[0]);
     }
@@ -89,7 +89,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new ST_Transform<>(effective, getGeometryLibrary());
     }
 
@@ -105,7 +105,7 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override
-    public List<Expression<? super R, ?>> getParameters() {
+    public List<Expression<R,?>> getParameters() {
         return List.of(unwrap(geometry), srid);
     }
 

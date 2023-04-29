@@ -280,7 +280,7 @@ public final class FeatureOperations extends Static {
      * @since 1.4
      */
     public static <V> Operation expression(final Map<String,?> identification,
-                                           final Function<? super Feature, ? extends V> expression,
+                                           final Function<Feature, ? extends V> expression,
                                            final AttributeType<? super V> result)
     {
         ArgumentChecks.ensureNonNull("expression", expression);
@@ -304,7 +304,7 @@ public final class FeatureOperations extends Static {
      * @since 1.4
      */
     public static <V> Operation expressionToResult(final Map<String,?> identification,
-                                                   final Expression<? super Feature, ?> expression,
+                                                   final Expression<Feature, ?> expression,
                                                    final AttributeType<V> result)
     {
         return expression(identification, expression.toValueType(result.getValueClass()), result);

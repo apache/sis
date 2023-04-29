@@ -44,7 +44,7 @@ import org.opengis.filter.SpatialOperator;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
@@ -142,7 +142,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      * Formats the given filter as a SQL {@code WHERE} statement body
      * and verifies that the result is equal to the expected string.
      */
-    private void verifySQL(final Filter<? super Feature> filter, final String expected) {
+    private void verifySQL(final Filter<Feature> filter, final String expected) {
         final SelectionClause sql = new SelectionClause(table);
         assertTrue(sql.tryAppend(SelectionClauseWriter.DEFAULT, filter));
         assertEquals(expected, sql.toString());

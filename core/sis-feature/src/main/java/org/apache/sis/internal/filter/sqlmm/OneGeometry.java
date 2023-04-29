@@ -31,7 +31,7 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -48,12 +48,12 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
      * The expression giving the geometry.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<? super R, GeometryWrapper<G>> geometry;
+    final Expression<R, GeometryWrapper<G>> geometry;
 
     /**
      * Creates a new function for a geometry represented by the given parameter.
      */
-    OneGeometry(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    OneGeometry(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(operation, parameters);
         geometry = toGeometryWrapper(library, parameters[0]);
     }
@@ -63,7 +63,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new OneGeometry<>(operation, effective, getGeometryLibrary());
     }
 
@@ -79,7 +79,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override
-    public List<Expression<? super R, ?>> getParameters() {
+    public List<Expression<R,?>> getParameters() {
         return List.of(unwrap(geometry));
     }
 
@@ -108,12 +108,12 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
          * The first argument after the geometry.
          */
         @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-        final Expression<? super R, ?> argument;
+        final Expression<R,?> argument;
 
         /**
          * Creates a new function for a geometry represented by the given parameter.
          */
-        WithArgument(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+        WithArgument(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
             super(operation, parameters, library);
             argument = parameters[1];
         }
@@ -123,7 +123,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
          * The optimization may be a geometry computed immediately if all operator parameters are literals.
          */
         @Override
-        public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+        public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
             return new WithArgument<>(operation, effective, getGeometryLibrary());
         }
 
@@ -131,7 +131,7 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
          * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
          */
         @Override
-        public List<Expression<? super R, ?>> getParameters() {
+        public List<Expression<R,?>> getParameters() {
             return List.of(unwrap(geometry), argument);
         }
 

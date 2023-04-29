@@ -40,7 +40,7 @@ import org.opengis.filter.TemporalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <T>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -60,8 +60,8 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
      */
-    TemporalFilter(final Expression<? super T, ?> expression1,
-                   final Expression<? super T, ?> expression2)
+    TemporalFilter(final Expression<T,?> expression1,
+                   final Expression<T,?> expression2)
     {
         super(expression1, expression2);
     }
@@ -218,14 +218,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -6060822291802339424L;
 
         /** Creates a new filter. */
-        Equals(Expression<? super T, ?> expression1,
-               Expression<? super T, ?> expression2)
+        Equals(Expression<T,?> expression1,
+               Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Equals<>(effective[0], effective[1]);
         }
 
@@ -273,14 +273,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -3422629447456003982L;
 
         /** Creates a new filter. */
-        Before(Expression<? super T, ?> expression1,
-               Expression<? super T, ?> expression2)
+        Before(Expression<T,?> expression1,
+               Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Before<>(effective[0], effective[1]);
         }
 
@@ -326,14 +326,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 5410476260417497682L;
 
         /** Creates a new filter. */
-        After(Expression<? super T, ?> expression1,
-              Expression<? super T, ?> expression2)
+        After(Expression<T,?> expression1,
+              Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new After<>(effective[0], effective[1]);
         }
 
@@ -377,14 +377,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -7880699329127762233L;
 
         /** Creates a new filter. */
-        Begins(Expression<? super T, ?> expression1,
-               Expression<? super T, ?> expression2)
+        Begins(Expression<T,?> expression1,
+               Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Begins<>(effective[0], effective[1]);
         }
 
@@ -414,14 +414,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -5508229966320563437L;
 
         /** Creates a new filter. */
-        Ends(Expression<? super T, ?> expression1,
-             Expression<? super T, ?> expression2)
+        Ends(Expression<T,?> expression1,
+             Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Ends<>(effective[0], effective[1]);
         }
 
@@ -452,14 +452,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -7212413827394364384L;
 
         /** Creates a new filter. */
-        BegunBy(Expression<? super T, ?> expression1,
-                Expression<? super T, ?> expression2)
+        BegunBy(Expression<T,?> expression1,
+                Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new BegunBy<>(effective[0], effective[1]);
         }
 
@@ -495,14 +495,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 8586566103462153666L;
 
         /** Creates a new filter. */
-        EndedBy(Expression<? super T, ?> expression1,
-                Expression<? super T, ?> expression2)
+        EndedBy(Expression<T,?> expression1,
+                Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new EndedBy<>(effective[0], effective[1]);
         }
 
@@ -537,14 +537,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -3534843269384858443L;
 
         /** Creates a new filter. */
-        Meets(Expression<? super T, ?> expression1,
-              Expression<? super T, ?> expression2)
+        Meets(Expression<T,?> expression1,
+              Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Meets<>(effective[0], effective[1]);
         }
 
@@ -583,14 +583,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 5358059498707330482L;
 
         /** Creates a new filter. */
-        MetBy(Expression<? super T, ?> expression1,
-              Expression<? super T, ?> expression2)
+        MetBy(Expression<T,?> expression1,
+              Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new MetBy<>(effective[0], effective[1]);
         }
 
@@ -629,14 +629,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = -4674319635076886196L;
 
         /** Creates a new filter. */
-        During(Expression<? super T, ?> expression1,
-               Expression<? super T, ?> expression2)
+        During(Expression<T,?> expression1,
+               Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new During<>(effective[0], effective[1]);
         }
 
@@ -672,14 +672,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 9107531246948034411L;
 
         /** Creates a new filter. */
-        Contains(Expression<? super T, ?> expression1,
-                 Expression<? super T, ?> expression2)
+        Contains(Expression<T,?> expression1,
+                 Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Contains<>(effective[0], effective[1]);
         }
 
@@ -720,14 +720,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 1517443045593389773L;
 
         /** Creates a new filter. */
-        Overlaps(Expression<? super T, ?> expression1,
-                 Expression<? super T, ?> expression2)
+        Overlaps(Expression<T,?> expression1,
+                 Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new Overlaps<>(effective[0], effective[1]);
         }
 
@@ -760,14 +760,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 2228673820507226463L;
 
         /** Creates a new filter. */
-        OverlappedBy(Expression<? super T, ?> expression1,
-                     Expression<? super T, ?> expression2)
+        OverlappedBy(Expression<T,?> expression1,
+                     Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new OverlappedBy<>(effective[0], effective[1]);
         }
 
@@ -798,14 +798,14 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         private static final long serialVersionUID = 5972351564286442392L;
 
         /** Creates a new filter. */
-        AnyInteracts(Expression<? super T, ?> expression1,
-                     Expression<? super T, ?> expression2)
+        AnyInteracts(Expression<T,?> expression1,
+                     Expression<T,?> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<? super T, ?>[] effective) {
+        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
             return new AnyInteracts<>(effective[0], effective[1]);
         }
 

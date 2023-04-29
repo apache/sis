@@ -39,7 +39,7 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>   the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V1>  the type of value computed by the first expression.
@@ -59,7 +59,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * @see #getExpression1()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<? super R, ? extends V1> expression1;
+    protected final Expression<R, ? extends V1> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
@@ -67,7 +67,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * @see #getExpression2()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<? super R, ? extends V2> expression2;
+    protected final Expression<R, ? extends V2> expression2;
 
     /**
      * Creates a new binary function.
@@ -75,8 +75,8 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
      */
-    protected BinaryFunction(final Expression<? super R, ? extends V1> expression1,
-                             final Expression<? super R, ? extends V2> expression2)
+    protected BinaryFunction(final Expression<R, ? extends V1> expression1,
+                             final Expression<R, ? extends V2> expression2)
     {
         ArgumentChecks.ensureNonNull("expression1", expression1);
         ArgumentChecks.ensureNonNull("expression2", expression2);
@@ -88,7 +88,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      * Returns the expressions used as parameters by this function.
      * Defined for {@link Expression#getParameters()} implementations.
      */
-    public final List<Expression<? super R, ?>> getParameters() {
+    public final List<Expression<R,?>> getParameters() {
         return getExpressions();
     }
 
@@ -98,7 +98,7 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
      *
      * @return a list of size 2 containing the two expressions.
      */
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<R,?>> getExpressions() {
         return List.of(expression1, expression2);
     }
 

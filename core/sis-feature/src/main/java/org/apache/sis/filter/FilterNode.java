@@ -33,7 +33,7 @@ import org.opengis.filter.Filter;
  * implementations implement the {@link Optimization.OnFilter} interface.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -52,14 +52,29 @@ abstract class FilterNode<R> extends Node implements Filter<R> {
     }
 
     /**
+     * If the given predicate can be casted to a filter of the same parameterized type as the template,
+     * returns {@code other} casted to that type. Otherwise returns {@code null}.
+     *
+     * @param  <R>       desired parameterized type.
+     * @param  template  the filter from which to get the runtime value of {@code <R>}.
+     * @param  other     the predicate to cast to a filter compatible with the target.
+     * @return the casted predicate, or {@code null} if it can not be casted.
+     */
+    static <R> Filter<R> castOrNull(final Filter<R> template, final Predicate<? super R> other) {
+        // TODO
+        return null;
+    }
+
+    /**
      * Returns the {@code AND} logical operation between this filter and the given predicate.
      * This method duplicates the {@link Optimization.OnFilter#and(Predicate)} method, but is
      * defined because not all subclasses implement the {@code Optimization} inner interface.
      */
     @Override
     public final Predicate<R> and(final Predicate<? super R> other) {
-        if (other instanceof Filter<?>) {
-            return new LogicalFilter.And<>(this, (Filter<? super R>) other);
+        final Filter<R> filter = castOrNull(this, other);
+        if (filter != null) {
+            return new LogicalFilter.And<>(this, filter);
         } else {
             return Filter.super.and(other);
         }
@@ -72,8 +87,9 @@ abstract class FilterNode<R> extends Node implements Filter<R> {
      */
     @Override
     public final Predicate<R> or(final Predicate<? super R> other) {
-        if (other instanceof Filter<?>) {
-            return new LogicalFilter.Or<>(this, (Filter<? super R>) other);
+        final Filter<R> filter = castOrNull(this, other);
+        if (filter != null) {
+            return new LogicalFilter.Or<>(this, filter);
         } else {
             return Filter.super.and(other);
         }

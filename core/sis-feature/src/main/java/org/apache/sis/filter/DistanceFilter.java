@@ -43,7 +43,7 @@ import org.opengis.filter.DistanceOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -78,8 +78,8 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
      */
     DistanceFilter(final DistanceOperatorName operatorType,
                    final Geometries<G> library,
-                   final Expression<? super R, ?> geometry1,
-                   final Expression<? super R, ?> geometry2,
+                   final Expression<R,?> geometry1,
+                   final Expression<R,?> geometry2,
                    final Quantity<Length> distance)
     {
         super(library, geometry1, geometry2, distance.getUnit().getSystemUnit());
@@ -94,8 +94,8 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
      * were given in the original call to the constructor.
      */
     @Override
-    protected BinaryGeometryFilter<R,G> recreate(final Expression<? super R, ?> geometry1,
-                                                 final Expression<? super R, ?> geometry2)
+    protected BinaryGeometryFilter<R,G> recreate(final Expression<R,?> geometry1,
+                                                 final Expression<R,?> geometry2)
     {
         return new DistanceFilter<>(operatorType, getGeometryLibrary(expression1), geometry1, geometry2, distance);
     }
@@ -112,7 +112,7 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
      * Returns the two expressions used as parameters by this filter.
      */
     @Override
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<R,?>> getExpressions() {
         return List.of(original(expression1), original(expression2),
                        new LeafExpression.Literal<>(distance));
     }
@@ -141,11 +141,11 @@ final class DistanceFilter<R,G> extends BinaryGeometryFilter<R,G> implements Dis
      */
     @Override
     public Geometry getGeometry() {
-        final Literal<? super R, ? extends GeometryWrapper<G>> literal;
+        final Literal<R, ? extends GeometryWrapper<G>> literal;
         if (expression2 instanceof Literal<?,?>) {
-            literal = (Literal<? super R, ? extends GeometryWrapper<G>>) expression2;
+            literal = (Literal<R, ? extends GeometryWrapper<G>>) expression2;
         } else if (expression1 instanceof Literal<?,?>) {
-            literal = (Literal<? super R, ? extends GeometryWrapper<G>>) expression1;
+            literal = (Literal<R, ? extends GeometryWrapper<G>>) expression1;
         } else {
             throw new IllegalStateException();
         }

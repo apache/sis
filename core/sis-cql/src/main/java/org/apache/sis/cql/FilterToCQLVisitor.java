@@ -106,7 +106,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
         operatorBetweenValues(ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO,    "<=");
         setFilterHandler(ComparisonOperatorName.valueOf(FunctionNames.PROPERTY_IS_LIKE), (f,sb) -> {
             final LikeOperator<Feature> filter = (LikeOperator<Feature>) f;
-            List<Expression<? super Feature, ?>> operands = f.getExpressions();
+            List<Expression<Feature,?>> operands = f.getExpressions();
             format(sb, operands.get(0));
             // TODO: ILIKE is not standard SQL.
             sb.append(filter.isMatchingCase() ? " LIKE " : " ILIKE ");
@@ -120,14 +120,14 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
          */
         setFilterHandler(SpatialOperatorName.BBOX, (f,sb) -> {
             final BinarySpatialOperator<Feature> filter = (BinarySpatialOperator<Feature>) f;
-            final Expression<? super Feature, ?> left  = filter.getOperand1();
-            final Expression<? super Feature, ?> right = filter.getOperand2();
-            final ValueReference<? super Feature, ?> pName =
-                    (left  instanceof ValueReference) ? (ValueReference<? super Feature, ?>) left :
-                    (right instanceof ValueReference) ? (ValueReference<? super Feature, ?>) right : null;
+            final Expression<Feature,?> left  = filter.getOperand1();
+            final Expression<Feature,?> right = filter.getOperand2();
+            final ValueReference<Feature,?> pName =
+                    (left  instanceof ValueReference) ? (ValueReference<Feature,?>) left :
+                    (right instanceof ValueReference) ? (ValueReference<Feature,?>) right : null;
             final Object lit = ((left instanceof Literal)
-                    ? (Literal<? super Feature, ?>) left
-                    : (Literal<? super Feature, ?>) right).getValue();      // TODO: potential classCastException.
+                    ? (Literal<Feature,?>) left
+                    : (Literal<Feature,?>) right).getValue();      // TODO: potential classCastException.
 
             final GeneralEnvelope e = Geometries.wrap(lit).map(GeometryWrapper::getEnvelope).orElse(null);
             if (e != null) {
@@ -221,7 +221,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
 
     private void operatorBetweenValues(final ComparisonOperatorName type, final String operator) {
         setFilterHandler(type, (f,sb) -> {
-            final List<Expression<? super Feature, ?>> operands = f.getExpressions();
+            final List<Expression<Feature,?>> operands = f.getExpressions();
             format(sb, operands.get(0));
             final int n = operands.size();
             for (int i=1; i<n; i++) {
@@ -234,7 +234,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
     private void operatorBetweenValues(final LogicalOperatorName type, final String operator) {
         setFilterHandler(type, (f,sb) -> {
             final LogicalOperator<Feature> filter = (LogicalOperator<Feature>) f;
-            final List<Filter<? super Feature>> operands = filter.getOperands();
+            final List<Filter<Feature>> operands = filter.getOperands();
             format(sb.append('('), operands.get(0));
             final int n = operands.size();
             for (int i=1; i<n; i++) {
@@ -246,7 +246,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
 
     private void function(final CodeList<?> type, final String operator) {
         setFilterHandler(type, (f,sb) -> {
-            final List<Expression<? super Feature, ?>> operands = f.getExpressions();
+            final List<Expression<Feature,?>> operands = f.getExpressions();
             sb.append(operator).append('(');
             final int n = operands.size();
             for (int i=0; i<n; i++) {
@@ -259,7 +259,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
 
     private void arithmetic(final String type, final char operator) {
         setExpressionHandler(type, (e,sb) -> {
-            final List<Expression<? super Feature, ?>> parameters = e.getParameters();
+            final List<Expression<Feature,?>> parameters = e.getParameters();
             format(sb, parameters.get(0));
             final int n = parameters.size();
             for (int i=1; i<n; i++) {
@@ -285,7 +285,7 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
      * @throws UnsupportedOperationException if there is no action registered for the given filter.
      */
     @SuppressWarnings("unchecked")
-    private void format(final StringBuilder sb, final Filter<? super Feature> filter) {
+    private void format(final StringBuilder sb, final Filter<Feature> filter) {
         visit((Filter<Feature>) filter, sb);
     }
 
@@ -307,13 +307,13 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
      * @throws UnsupportedOperationException if there is no action registered for the given expression.
      */
     @SuppressWarnings("unchecked")
-    private void format(final StringBuilder sb, final Expression<? super Feature, ?> expression) {
+    private void format(final StringBuilder sb, final Expression<Feature,?> expression) {
         visit((Expression<Feature,?>) expression, sb);
     }
 
     @Override
     protected void typeNotFound(final String type, final Expression<Feature,?> e, final StringBuilder sb) {
-        final List<Expression<? super Feature,?>> exps = e.getParameters();
+        final List<Expression<Feature,?>> exps = e.getParameters();
         sb.append(type).append('(');
         final int n = exps.size();
         for (int i=0; i<n; i++) {

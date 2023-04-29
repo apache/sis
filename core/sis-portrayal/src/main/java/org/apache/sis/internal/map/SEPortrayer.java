@@ -426,7 +426,7 @@ public final class SEPortrayer {
             return query;
         }
         final Envelope bbox = optimizeBBox(canvas, symbolsMargin);
-        Filter<? super Feature> filter;
+        Filter<Feature> filter;
         // Make a bbox filter.
         if (geomProperties.size() == 1) {
             final Expression<Feature,?> geomExp = geomProperties.iterator().next();
@@ -472,10 +472,10 @@ public final class SEPortrayer {
 //                rules.set(0, rule);
                 combined = rulefilters.get(0);
             } else {
-                combined = filterFactory.or((List) rulefilters);        // TODO
+                combined = filterFactory.or(rulefilters);
             }
-            if (filter != Filter.include()) {
-                filter = filterFactory.and((Filter) filter, combined);  // TODO
+            if (filter != Filter.<Feature>include()) {
+                filter = filterFactory.and(filter, combined);
             } else {
                 filter = combined;
             }

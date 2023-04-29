@@ -42,7 +42,7 @@ import org.opengis.filter.LogicalOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public final class LogicalFilterTest extends TestCase {
@@ -107,8 +107,8 @@ public final class LogicalFilterTest extends TestCase {
      * @param  anyArity  the function creating a logical operator from an arbitrary number of operands.
      * @param  expected  expected evaluation result.
      */
-    private void create(final BiFunction<Filter<? super Feature>, Filter<? super Feature>, LogicalOperator<Feature>> binary,
-                        final Function<Collection<Filter<? super Feature>>, LogicalOperator<Feature>> anyArity,
+    private void create(final BiFunction<Filter<Feature>, Filter<Feature>, LogicalOperator<Feature>> binary,
+                        final Function<Collection<Filter<Feature>>, LogicalOperator<Feature>> anyArity,
                         final boolean expected)
     {
         final Filter<Feature> f1 = factory.isNull(factory.literal("text"));

@@ -106,8 +106,8 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         BinaryComparisonOperator<R> create(
                 FilterFactory<R,?,?> factory,
-                Expression<? super R, ?> expression1,
-                Expression<? super R, ?> expression2,
+                Expression<R,?> expression1,
+                Expression<R,?> expression2,
                 boolean isMatchingCase, MatchAction matchAction);
     }
 
@@ -137,8 +137,8 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         TemporalOperator<R> create(
                 FilterFactory<R,?,T> factory,
-                Expression<? super R, ? extends T> time1,
-                Expression<? super R, ? extends T> time2);
+                Expression<R, ? extends T> time1,
+                Expression<R, ? extends T> time2);
     }
 
     /**
@@ -167,8 +167,8 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         BinarySpatialOperator<R> create(
                 FilterFactory<R,G,?> factory,
-                Expression<? super R, ? extends G> geometry1,
-                Expression<? super R, ? extends G> geometry2);
+                Expression<R, ? extends G> geometry1,
+                Expression<R, ? extends G> geometry2);
 
         /**
          * Bridge for the "bbox" operation, because it uses a different method signature.
@@ -189,8 +189,8 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         static <R,G> BinarySpatialOperator<R> bbox(
                 final FilterFactory<R,G,?> factory,
-                final Expression<? super R, ? extends G> geometry1,
-                final Expression<? super R, ? extends G> geometry2)
+                final Expression<R, ? extends G> geometry1,
+                final Expression<R, ? extends G> geometry2)
         {
             if (geometry2 instanceof Literal<?,?>) {
                 final Object bounds = ((Literal<?,?>) geometry2).getValue();
@@ -229,8 +229,8 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         DistanceOperator<R> create(
                 FilterFactory<R,G,?> factory,
-                Expression<? super R, ? extends G> geometry1,
-                Expression<? super R, ? extends G> geometry2,
+                Expression<R, ? extends G> geometry1,
+                Expression<R, ? extends G> geometry2,
                 Quantity<Length> distance);
     }
 
@@ -258,7 +258,7 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         LogicalOperator<R> create(
                 FilterFactory<R,?,?> factory,
-                Collection<? extends Filter<? super R>> operands);
+                Collection<? extends Filter<R>> operands);
 
         /**
          * Bridge for the "not" operation, because it uses a different method signature.
@@ -276,9 +276,9 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         static <R> LogicalOperator<R> not(
                 final FilterFactory<R,?,?> factory,
-                final Collection<? extends Filter<? super R>> operands)
+                final Collection<? extends Filter<R>> operands)
         {
-            Filter<? super R> op = CollectionsExt.singletonOrNull(operands);
+            Filter<R> op = CollectionsExt.singletonOrNull(operands);
             return (op != null) ? factory.not(op) : null;
         }
     }
@@ -308,8 +308,8 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
          */
         Expression<R,Number> create(
                 FilterFactory<R,?,?> factory,
-                Expression<? super R, ? extends Number> operand1,
-                Expression<? super R, ? extends Number> operand2);
+                Expression<R, ? extends Number> operand1,
+                Expression<R, ? extends Number> operand2);
     }
 
     /**
@@ -609,10 +609,10 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
      * @return the copies expressions, or {@code null} if no copy is needed.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    private <V> List<Expression<TR,V>> copyExpressions(final List<Expression<? super SR, ?>> source) {
+    private <V> List<Expression<TR,V>> copyExpressions(final List<Expression<SR,?>> source) {
         final List<Object> results = new ArrayList<>(source.size());
-        for (final Expression<? super SR, ?> e : source) {
-            visit((Expression<SR,?>) e, results);
+        for (final Expression<SR,?> e : source) {
+            visit(e, results);
         }
         // Cast to <TR> is safe because of factory method signatures.
         return !forceNew && results.equals(source) ? null : (List) results;
@@ -628,10 +628,10 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
      * @return the copies filters, or {@code null} if no copy is needed.
      */
     @SuppressWarnings({"unchecked","rawtypes"})
-    private List<Filter<TR>> copyFilters(final List<Filter<? super SR>> source) {
+    private List<Filter<TR>> copyFilters(final List<Filter<SR>> source) {
         final var results = new ArrayList<Object>(source.size());
-        for (final Filter<? super SR> e : source) {
-            visit((Filter<SR>) e, results);
+        for (final Filter<SR> e : source) {
+            visit(e, results);
         }
         // Cast to <TR> is safe because of factory method signatures.
         return !forceNew && results.equals(source) ? null : (List) results;
@@ -702,7 +702,7 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
      */
     @Override
     @SuppressWarnings("unchecked")
-    protected void typeNotFound(final String name, Expression<SR, ?> expression, final List<Object> accumulator) {
+    protected void typeNotFound(final String name, Expression<SR,?> expression, final List<Object> accumulator) {
         var exps = copyExpressions(expression.getParameters());
         if (exps != null) {
             expression = factory.function(name, exps.toArray(Expression[]::new));

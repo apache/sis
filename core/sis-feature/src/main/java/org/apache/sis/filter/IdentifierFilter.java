@@ -33,7 +33,7 @@ import org.opengis.filter.ResourceId;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources used as inputs.
  *
@@ -70,7 +70,7 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
      * Returns the parameters of this filter.
      */
     @Override
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<R,?>> getExpressions() {
         return List.of(new LeafExpression.Literal<>(identifier));
     }
 

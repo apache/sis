@@ -66,7 +66,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Creates a dummy function with an arbitrary number of parameters.
      */
     @Override
-    public Expression<Map<String,?>, ?> function(String name, Expression<? super Map<String,?>, ?>[] parameters) {
+    public Expression<Map<String,?>, ?> function(String name, Expression<Map<String,?>, ?>[] parameters) {
         return new FunctionMock(name, Arrays.asList(parameters));
     }
 
@@ -101,8 +101,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinaryComparisonOperator<Map<String,?>> equal(
-            Expression<? super Map<String,?>, ?> expression1,
-            Expression<? super Map<String,?>, ?> expression2,
+            Expression<Map<String,?>, ?> expression1,
+            Expression<Map<String,?>, ?> expression2,
             boolean isMatchingCase, MatchAction matchAction)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -113,8 +113,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinaryComparisonOperator<Map<String,?>> notEqual(
-            Expression<? super Map<String,?>, ?> expression1,
-            Expression<? super Map<String,?>, ?> expression2,
+            Expression<Map<String,?>, ?> expression1,
+            Expression<Map<String,?>, ?> expression2,
             boolean isMatchingCase, MatchAction matchAction)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -125,8 +125,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinaryComparisonOperator<Map<String,?>> less(
-            Expression<? super Map<String,?>, ?> expression1,
-            Expression<? super Map<String,?>, ?> expression2,
+            Expression<Map<String,?>, ?> expression1,
+            Expression<Map<String,?>, ?> expression2,
             boolean isMatchingCase, MatchAction matchAction)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -137,8 +137,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinaryComparisonOperator<Map<String,?>> greater(
-            Expression<? super Map<String,?>, ?> expression1,
-            Expression<? super Map<String,?>, ?> expression2,
+            Expression<Map<String,?>, ?> expression1,
+            Expression<Map<String,?>, ?> expression2,
             boolean isMatchingCase, MatchAction matchAction)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -149,8 +149,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinaryComparisonOperator<Map<String,?>> lessOrEqual(
-            Expression<? super Map<String,?>, ?> expression1,
-            Expression<? super Map<String,?>, ?> expression2,
+            Expression<Map<String,?>, ?> expression1,
+            Expression<Map<String,?>, ?> expression2,
             boolean isMatchingCase, MatchAction matchAction)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -161,8 +161,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinaryComparisonOperator<Map<String,?>> greaterOrEqual(
-            Expression<? super Map<String,?>, ?> expression1,
-            Expression<? super Map<String,?>, ?> expression2,
+            Expression<Map<String,?>, ?> expression1,
+            Expression<Map<String,?>, ?> expression2,
             boolean isMatchingCase, MatchAction matchAction)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -173,9 +173,9 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BetweenComparisonOperator<Map<String,?>> between(
-            Expression<? super Map<String,?>, ?> expression,
-            Expression<? super Map<String,?>, ?> lowerBoundary,
-            Expression<? super Map<String,?>, ?> upperBoundary)
+            Expression<Map<String,?>, ?> expression,
+            Expression<Map<String,?>, ?> lowerBoundary,
+            Expression<Map<String,?>, ?> upperBoundary)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -185,7 +185,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public LikeOperator<Map<String,?>> like(
-            Expression<? super Map<String,?>, ?> expression,
+            Expression<Map<String,?>, ?> expression,
             String pattern, char wildcard, char singleChar, char escape, boolean isMatchingCase)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -195,7 +195,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Unsupported operation.
      */
     @Override
-    public NullOperator<Map<String,?>> isNull(Expression<? super Map<String,?>, ?> expression) {
+    public NullOperator<Map<String,?>> isNull(Expression<Map<String,?>, ?> expression) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -203,7 +203,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Unsupported operation.
      */
     @Override
-    public NilOperator<Map<String,?>> isNil(Expression<? super Map<String,?>, ?> expression, String nilReason) {
+    public NilOperator<Map<String,?>> isNil(Expression<Map<String,?>, ?> expression, String nilReason) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -211,7 +211,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Unsupported operation.
      */
     @Override
-    public LogicalOperator<Map<String,?>> and(Collection<? extends Filter<? super Map<String,?>>> operands) {
+    public LogicalOperator<Map<String,?>> and(Collection<? extends Filter<Map<String,?>>> operands) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -219,7 +219,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Unsupported operation.
      */
     @Override
-    public LogicalOperator<Map<String,?>> or(Collection<? extends Filter<? super Map<String,?>>> operands) {
+    public LogicalOperator<Map<String,?>> or(Collection<? extends Filter<Map<String,?>>> operands) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -227,7 +227,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Unsupported operation.
      */
     @Override
-    public LogicalOperator<Map<String,?>> not(Filter<? super Map<String,?>> operand) {
+    public LogicalOperator<Map<String,?>> not(Filter<Map<String,?>> operand) {
         throw new UnsupportedOperationException("Not supported.");
     }
 
@@ -236,7 +236,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> bbox(
-            Expression<? super Map<String,?>, ? extends Object> geometry,
+            Expression<Map<String,?>, ? extends Object> geometry,
             Envelope bounds)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -247,8 +247,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> equals(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -258,8 +258,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> disjoint(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -269,8 +269,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> intersects(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -280,8 +280,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> touches(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -291,8 +291,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> crosses(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -302,8 +302,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> within(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -313,8 +313,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> contains(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -324,8 +324,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public BinarySpatialOperator<Map<String,?>> overlaps(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2)
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -335,8 +335,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public DistanceOperator<Map<String,?>> beyond(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2,
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2,
             Quantity<Length> distance)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -347,8 +347,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public DistanceOperator<Map<String,?>> within(
-            Expression<? super Map<String,?>, ? extends Object> geometry1,
-            Expression<? super Map<String,?>, ? extends Object> geometry2,
+            Expression<Map<String,?>, ? extends Object> geometry1,
+            Expression<Map<String,?>, ? extends Object> geometry2,
             Quantity<Length> distance)
     {
         throw new UnsupportedOperationException("Not supported.");
@@ -359,8 +359,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> after(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -370,8 +370,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> before(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -381,8 +381,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> begins(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -392,8 +392,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> begunBy(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -403,8 +403,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> tcontains(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -414,8 +414,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> during(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -425,8 +425,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> tequals(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -436,8 +436,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> toverlaps(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -447,8 +447,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> meets(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -458,8 +458,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> ends(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -469,8 +469,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> overlappedBy(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -480,8 +480,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> metBy(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -491,8 +491,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> endedBy(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -502,8 +502,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public TemporalOperator<Map<String,?>> anyInteracts(
-            Expression<? super Map<String,?>, ? extends Object> time1,
-            Expression<? super Map<String,?>, ? extends Object> time2)
+            Expression<Map<String,?>, ? extends Object> time1,
+            Expression<Map<String,?>, ? extends Object> time2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -513,8 +513,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public Expression<Map<String,?>, Number> add(
-            Expression<? super Map<String,?>, ? extends Number> operand1,
-            Expression<? super Map<String,?>, ? extends Number> operand2)
+            Expression<Map<String,?>, ? extends Number> operand1,
+            Expression<Map<String,?>, ? extends Number> operand2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -524,8 +524,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public Expression<Map<String,?>, Number> subtract(
-            Expression<? super Map<String,?>, ? extends Number> operand1,
-            Expression<? super Map<String,?>, ? extends Number> operand2)
+            Expression<Map<String,?>, ? extends Number> operand1,
+            Expression<Map<String,?>, ? extends Number> operand2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -535,8 +535,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public Expression<Map<String,?>, Number> multiply(
-            Expression<? super Map<String,?>, ? extends Number> operand1,
-            Expression<? super Map<String,?>, ? extends Number> operand2)
+            Expression<Map<String,?>, ? extends Number> operand1,
+            Expression<Map<String,?>, ? extends Number> operand2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -546,8 +546,8 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      */
     @Override
     public Expression<Map<String,?>, Number> divide(
-            Expression<? super Map<String,?>, ? extends Number> operand1,
-            Expression<? super Map<String,?>, ? extends Number> operand2)
+            Expression<Map<String,?>, ? extends Number> operand1,
+            Expression<Map<String,?>, ? extends Number> operand2)
     {
         throw new UnsupportedOperationException("Not supported.");
     }
@@ -556,7 +556,7 @@ final class FilterFactoryMock implements FilterFactory<Map<String,?>, Object, Ob
      * Unsupported operation.
      */
     @Override
-    public SortProperty<Map<String,?>> sort(ValueReference<? super Map<String,?>, ?> property, SortOrder order) {
+    public SortProperty<Map<String,?>> sort(ValueReference<Map<String,?>, ?> property, SortOrder order) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }

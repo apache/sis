@@ -36,7 +36,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
  *
@@ -89,7 +89,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
             case 0: return null;
             case 1: return new SortByComparator<>(properties[0]);
         }
-        final Map<ValueReference<? super R, ?>, SortProperty<R>> merged = new LinkedHashMap<>();
+        final Map<ValueReference<R,?>, SortProperty<R>> merged = new LinkedHashMap<>();
         addAll(Arrays.asList(properties), merged);
         return new SortByComparator<>(merged);
     }
@@ -137,7 +137,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      * @return concatenation of the two comparators.
      */
     public static <R> SortBy<R> concatenate(final SortBy<R> s1, final SortBy<R> s2) {
-        final Map<ValueReference<? super R, ?>, SortProperty<R>> merged = new LinkedHashMap<>();
+        final Map<ValueReference<R,?>, SortProperty<R>> merged = new LinkedHashMap<>();
         addAll(s1.getSortProperties(), merged);
         addAll(s2.getSortProperties(), merged);
         return new SortByComparator<>(merged);
@@ -149,7 +149,7 @@ public final class SortByComparator<R> implements SortBy<R>, Serializable {
      * then only the first occurrence is retained.
      */
     private static <R> void addAll(final List<SortProperty<R>> properties,
-            final Map<ValueReference<? super R, ?>, SortProperty<R>> merged)
+            final Map<ValueReference<R,?>, SortProperty<R>> merged)
     {
         final int size = properties.size();
         for (int i=0; i<size; i++) {

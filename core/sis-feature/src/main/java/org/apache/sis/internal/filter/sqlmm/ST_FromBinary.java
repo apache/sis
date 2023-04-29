@@ -29,7 +29,7 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -45,7 +45,7 @@ final class ST_FromBinary<R,G> extends GeometryParser<R,G> {
     /**
      * Creates a new function for the given parameters.
      */
-    ST_FromBinary(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    ST_FromBinary(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(operation, parameters, library);
     }
 
@@ -54,7 +54,7 @@ final class ST_FromBinary<R,G> extends GeometryParser<R,G> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new ST_FromBinary<>(operation, effective, getGeometryLibrary());
     }
 

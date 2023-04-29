@@ -43,7 +43,7 @@ final class FunctionMock implements Expression<Map<String,?>, Object> {
     /**
      * The function parameters.
      */
-    private final List<Expression<? super Map<String,?>, ?>> parameters;
+    private final List<Expression<Map<String,?>, ?>> parameters;
 
     /**
      * Creates a new dummy function.
@@ -51,7 +51,7 @@ final class FunctionMock implements Expression<Map<String,?>, Object> {
      * @param  name        the local part of the function name.
      * @param  parameters  the function parameters.
      */
-    FunctionMock(final String name, final List<Expression<? super Map<String,?>, ?>> parameters) {
+    FunctionMock(final String name, final List<Expression<Map<String,?>, ?>> parameters) {
         this.name = name;
         this.parameters = parameters;
     }
@@ -69,7 +69,7 @@ final class FunctionMock implements Expression<Map<String,?>, Object> {
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
-    public List<Expression<? super Map<String,?>, ?>> getParameters() {
+    public List<Expression<Map<String,?>, ?>> getParameters() {
         return parameters;
     }
 

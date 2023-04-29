@@ -67,7 +67,7 @@ import org.opengis.filter.BetweenComparisonOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -100,8 +100,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * @param  isMatchingCase  specifies whether comparisons are case sensitive.
      * @param  matchAction     specifies how the comparisons shall be evaluated for a collection of values.
      */
-    ComparisonFilter(final Expression<? super R, ?> expression1,
-                     final Expression<? super R, ?> expression2,
+    ComparisonFilter(final Expression<R,?> expression1,
+                     final Expression<R,?> expression2,
                      final boolean isMatchingCase, final MatchAction matchAction)
     {
         super(expression1, expression2);
@@ -115,7 +115,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * This is the element at index 0 in the {@linkplain #getExpressions() list of expressions}.
      */
     @Override
-    public final Expression<? super R, ?> getOperand1() {
+    public final Expression<R,?> getOperand1() {
         return expression1;
     }
 
@@ -124,7 +124,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      * This is the element at index 1 in the {@linkplain #getExpressions() list of expressions}.
      */
     @Override
-    public final Expression<? super R, ?> getOperand2() {
+    public final Expression<R,?> getOperand2() {
         return expression2;
     }
 
@@ -545,15 +545,15 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         private static final long serialVersionUID = 6126039112844823196L;
 
         /** Creates a new filter. */
-        LessThan(final Expression<? super R, ?> expression1,
-                 final Expression<? super R, ?> expression2,
+        LessThan(final Expression<R,?> expression1,
+                 final Expression<R,?> expression2,
                  boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new LessThan<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -587,15 +587,15 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         private static final long serialVersionUID = 6357459227911760871L;
 
         /** Creates a new filter. */
-        LessThanOrEqualTo(final Expression<? super R, ?> expression1,
-                          final Expression<? super R, ?> expression2,
+        LessThanOrEqualTo(final Expression<R,?> expression1,
+                          final Expression<R,?> expression2,
                           boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new LessThanOrEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -629,15 +629,15 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         private static final long serialVersionUID = 8605517892232632586L;
 
         /** Creates a new filter. */
-        GreaterThan(final Expression<? super R, ?> expression1,
-                    final Expression<? super R, ?> expression2,
+        GreaterThan(final Expression<R,?> expression1,
+                    final Expression<R,?> expression2,
                     boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new GreaterThan<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -671,15 +671,15 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         private static final long serialVersionUID = 1514185657159141882L;
 
         /** Creates a new filter. */
-        GreaterThanOrEqualTo(final Expression<? super R, ?> expression1,
-                             final Expression<? super R, ?> expression2,
+        GreaterThanOrEqualTo(final Expression<R,?> expression1,
+                             final Expression<R,?> expression2,
                              boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new GreaterThanOrEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -713,15 +713,15 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         private static final long serialVersionUID = 8502612221498749667L;
 
         /** Creates a new filter. */
-        EqualTo(final Expression<? super R, ?> expression1,
-                final Expression<? super R, ?> expression2,
+        EqualTo(final Expression<R,?> expression1,
+                final Expression<R,?> expression2,
                 boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new EqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -755,15 +755,15 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         private static final long serialVersionUID = -3295957142249035362L;
 
         /** Creates a new filter. */
-        NotEqualTo(final Expression<? super R, ?> expression1,
-                   final Expression<? super R, ?> expression2,
+        NotEqualTo(final Expression<R,?> expression1,
+                   final Expression<R,?> expression2,
                    boolean isMatchingCase, MatchAction matchAction)
         {
             super(expression1, expression2, isMatchingCase, matchAction);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
             return new NotEqualTo<>(effective[0], effective[1], isMatchingCase, matchAction);
         }
 
@@ -800,13 +800,13 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -2434954008425799595L;
 
-        /** The first  operation to apply. */ private final GreaterThanOrEqualTo<? super R> lower;
-        /** The second operation to apply. */ private final LessThanOrEqualTo<? super R> upper;
+        /** The first  operation to apply. */ private final GreaterThanOrEqualTo<R> lower;
+        /** The second operation to apply. */ private final LessThanOrEqualTo<R> upper;
 
         /** Creates a new filter. */
-        Between(final Expression<? super R, ?> expression,
-                final Expression<? super R, ?> lower,
-                final Expression<? super R, ?> upper)
+        Between(final Expression<R,?> expression,
+                final Expression<R,?> lower,
+                final Expression<R,?> upper)
         {
             this.lower = new GreaterThanOrEqualTo<>(expression, lower, true, MatchAction.ANY);
             this.upper = new    LessThanOrEqualTo<>(expression, upper, true, MatchAction.ANY);
@@ -821,14 +821,14 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         }
 
         /** Returns the expression to be compared by this operator, together with boundaries. */
-        @Override public List<Expression<? super R, ?>> getExpressions() {
+        @Override public List<Expression<R,?>> getExpressions() {
             return List.of(lower.expression1, lower.expression2, upper.expression2);
         }
 
         /** Returns the expression to be compared. */
-        @Override public Expression<? super R, ?> getExpression()    {return lower.expression1;}
-        @Override public Expression<? super R, ?> getLowerBoundary() {return lower.expression2;}
-        @Override public Expression<? super R, ?> getUpperBoundary() {return upper.expression2;}
+        @Override public Expression<R,?> getExpression()    {return lower.expression1;}
+        @Override public Expression<R,?> getLowerBoundary() {return lower.expression2;}
+        @Override public Expression<R,?> getUpperBoundary() {return upper.expression2;}
 
         /** Executes the filter operation. */
         @Override public boolean test(final R object) {

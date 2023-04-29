@@ -35,7 +35,7 @@ import org.opengis.filter.LogicalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -51,7 +51,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
      * The filter on which to apply the logical operator.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Filter<? super R>[] operands;
+    protected final Filter<R>[] operands;
 
     /**
      * Creates a new logical operator applied on the given operands.
@@ -59,7 +59,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
      * @param  op  operands of the new operator.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    LogicalFilter(final Collection<? extends Filter<? super R>> op) {
+    LogicalFilter(final Collection<? extends Filter<R>> op) {
         ArgumentChecks.ensureNonEmpty("operands", op);
         operands = op.toArray(Filter[]::new);
         ArgumentChecks.ensureCountBetween("operands", true, 2, Integer.MAX_VALUE, operands.length);
@@ -74,7 +74,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
      * this check should be already done by the caller.
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
-    LogicalFilter(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+    LogicalFilter(final Filter<R> operand1, final Filter<R> operand2) {
         operands = new Filter[] {operand1, operand2};
     }
 
@@ -84,13 +84,13 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
      * @param  op  operands of the new operator.
      * @return the new operator.
      */
-    protected abstract LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op);
+    protected abstract LogicalFilter<R> createSameType(Collection<? extends Filter<R>> op);
 
     /**
      * Returns a list containing all of the child filters of this object.
      */
     @Override
-    public final List<Filter<? super R>> getOperands() {
+    public final List<Filter<R>> getOperands() {
         return UnmodifiableArrayList.wrap(operands);
     }
 
@@ -114,17 +114,17 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         private static final long serialVersionUID = 152892064260384713L;
 
         /** Creates a new operator for the given operands. */
-        And(final Collection<? extends Filter<? super R>> op) {
+        And(final Collection<? extends Filter<R>> op) {
             super(op);
         }
 
         /** Creates a new operator for the two given operands. */
-        And(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+        And(final Filter<R> operand1, final Filter<R> operand2) {
             super(operand1, operand2);
         }
 
         /** Creates a new logical operator of the same kind than this operator. */
-        @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op) {
+        @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<R>> op) {
             return new And<>(op);
         }
 
@@ -140,7 +140,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
         /** Executes the logical operation. */
         @Override public boolean test(final R object) {
-            for (final Filter<? super R> filter : operands) {
+            for (final Filter<R> filter : operands) {
                 if (!filter.test(object)) {
                     return false;
                 }
@@ -149,7 +149,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         }
 
         /** Tries to optimize this filter. */
-        @Override public Filter<? super R> optimize(final Optimization optimization) {
+        @Override public Filter<R> optimize(final Optimization optimization) {
             return optimize(optimization, Filter.include(), Filter.exclude());
         }
     }
@@ -165,17 +165,17 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         private static final long serialVersionUID = 3805785720811330282L;
 
         /** Creates a new operator for the given operands. */
-        Or(final Collection<? extends Filter<? super R>> op) {
+        Or(final Collection<? extends Filter<R>> op) {
             super(op);
         }
 
         /** Creates a new operator for the two given operands. */
-        Or(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+        Or(final Filter<R> operand1, final Filter<R> operand2) {
             super(operand1, operand2);
         }
 
         /** Creates a new logical operator of the same kind than this operator. */
-        @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<? super R>> op) {
+        @Override protected LogicalFilter<R> createSameType(Collection<? extends Filter<R>> op) {
             return new Or<>(op);
         }
 
@@ -191,7 +191,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
         /** Executes the logical operation. */
         @Override public boolean test(final R object) {
-            for (Filter<? super R> filter : operands) {
+            for (Filter<R> filter : operands) {
                 if (filter.test(object)) {
                     return true;
                 }
@@ -200,7 +200,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         }
 
         /** Tries to optimize this filter. */
-        @Override public Filter<? super R> optimize(final Optimization optimization) {
+        @Override public Filter<R> optimize(final Optimization optimization) {
             return optimize(optimization, Filter.exclude(), Filter.include());
         }
     }
@@ -217,10 +217,10 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
 
         /** The filter to negate. */
         @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-        private final Filter<? super R> operand;
+        private final Filter<R> operand;
 
         /** Creates a new operator. */
-        Not(final Filter<? super R> operand) {
+        Not(final Filter<R> operand) {
             ArgumentChecks.ensureNonNull("operand", operand);
             this.operand = operand;
         }
@@ -241,7 +241,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         }
 
         /** Returns the singleton filter used by this operation. */
-        @Override public List<Filter<? super R>> getOperands() {
+        @Override public List<Filter<R>> getOperands() {
             return List.of(operand);
         }
 
@@ -251,12 +251,12 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         }
 
         /** Tries to optimize this filter. */
-        @Override public Filter<? super R> optimize(final Optimization optimization) {
-            final Filter<? super R> effective = optimization.apply(operand);
+        @Override public Filter<R> optimize(final Optimization optimization) {
+            final Filter<R> effective = optimization.apply(operand);
             if (effective == Filter.include()) return Filter.exclude();
             if (effective == Filter.exclude()) return Filter.include();
             if (effective instanceof Not<?>) {
-                return ((Not<? super R>) effective).operand;            // NOT(NOT(C)) == C
+                return ((Not<R>) effective).operand;            // NOT(NOT(C)) == C
             } else {
                 /*
                  * TODO:
@@ -277,13 +277,13 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
      * @param  ignore        the filter to ignore (literal "true" or "false").
      * @param  shortCircuit  the filter to use if found (literal "true" or "false").
      */
-    final Filter<? super R> optimize(final Optimization optimization,
+    final Filter<R> optimize(final Optimization optimization,
             final Filter<R> ignore, final Filter<R> shortCircuit)
     {
         boolean unchanged = true;               // Will be `false` if at least one simplification has been applied.
         final Class<?> inline = getClass();     // Filter class for which to expand operands in the optimized filter.
-        final Collection<Filter<? super R>> effective = new LinkedHashSet<>();
-        for (Filter<? super R> f : operands) {
+        final Collection<Filter<R>> effective = new LinkedHashSet<>();
+        for (Filter<R> f : operands) {
             unchanged &= (f == (f = optimization.apply(f)));
             if (f == ignore) {
                 unchanged = false;
@@ -293,7 +293,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
                 unchanged &= effective.add(f);
             } else {
                 unchanged = false;
-                for (Filter<? super R> s : ((LogicalFilter<? super R>) f).operands) {
+                for (Filter<R> s : ((LogicalFilter<R>) f).operands) {
                     if (f != ignore) {
                         if (f == shortCircuit) {
                             return shortCircuit;
@@ -312,7 +312,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
          *     A AND NOT(A) = FALSE
          *     A OR  NOT(A) = TRUE
          */
-        for (Filter<? super R> f : effective) {
+        for (Filter<R> f : effective) {
             if (LogicalOperatorName.NOT.equals(f.getOperatorType())) {
                 if (effective.containsAll(((LogicalOperator<?>) f).getOperands())) {
                     return shortCircuit;
@@ -329,7 +329,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         if (unchanged) {
             return this;
         }
-        final Filter<? super R> c = CollectionsExt.singletonOrNull(effective);
+        final Filter<R> c = CollectionsExt.singletonOrNull(effective);
         return (c != null) ? c : createSameType(effective);
     }
 }

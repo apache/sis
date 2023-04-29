@@ -57,7 +57,7 @@ import org.opengis.filter.BinarySpatialOperator;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <G> root class of geometry implementation.
  *
@@ -135,10 +135,10 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     @Test
     public void bbox_preserve_expression_type() {
         final BinarySpatialOperator<Feature> bbox = factory.bbox(literal(Polygon.RIGHT), new Envelope2D(null, 0, 0, 1, 1));
-        final Expression<? super Feature, ?> arg2 = bbox.getOperand2();
+        final Expression<Feature,?> arg2 = bbox.getOperand2();
         assertSame("The two ways to acquire the second argument return different values.", arg2, bbox.getExpressions().get(1));
         assertInstanceOf("Second argument value should be an envelope.", Envelope.class,
-                         ((Literal<? super Feature, ?>) arg2).getValue());
+                         ((Literal<Feature,?>) arg2).getValue());
     }
 
     /**

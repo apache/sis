@@ -60,7 +60,7 @@ import org.opengis.filter.BetweenComparisonOperator;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
@@ -89,7 +89,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
             sql.append(" AND ");         write(sql, filter.getUpperBoundary());
         });
         setNullAndNilHandlers((filter, sql) -> {
-            final List<Expression<? super Feature, ?>> expressions = filter.getExpressions();
+            final List<Expression<Feature, ?>> expressions = filter.getExpressions();
             if (expressions.size() == 1) {
                 write(sql, expressions.get(0));
                 sql.append(" IS NULL");
@@ -239,17 +239,12 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
     /**
      * Executes the registered action for the given expression.
      *
-     * <h4>Note on type safety</h4>
-     * This method applies a theoretically unsafe cast, which is okay in the context of this class.
-     * See <cite>Note on parameterized type</cite> section in {@link Visitor#visit(Filter, Object)}.
-     *
      * @param  sql         where to write the result of all actions.
      * @param  expression  the expression for which to execute an action based on its type.
      * @return value of {@link SelectionClause#isInvalid} flag, for allowing caller to short-circuit.
      */
-    @SuppressWarnings("unchecked")
-    private boolean write(final SelectionClause sql, final Expression<? super Feature, ?> expression) {
-        visit((Expression<Feature, ?>) expression, sql);
+    private boolean write(final SelectionClause sql, final Expression<Feature, ?> expression) {
+        visit(expression, sql);
         return sql.isInvalid;
     }
 
@@ -273,7 +268,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
      * @param separator    the separator to insert between expression.
      * @param binary       whether the list of expressions shall contain exactly 2 elements.
      */
-    private void writeParameters(final SelectionClause sql, final List<Expression<? super Feature, ?>> expressions,
+    private void writeParameters(final SelectionClause sql, final List<Expression<Feature,?>> expressions,
                                  final String separator, final boolean binary)
     {
         final int n = expressions.size();
@@ -320,7 +315,7 @@ public class SelectionClauseWriter extends Visitor<Feature, SelectionClause> {
         /** Invoked when a logical filter needs to be converted to SQL clause. */
         @Override public void accept(final Filter<Feature> f, final SelectionClause sql) {
             final LogicalOperator<Feature> filter = (LogicalOperator<Feature>) f;
-            final List<Filter<? super Feature>> operands = filter.getOperands();
+            final List<Filter<Feature>> operands = filter.getOperands();
             final int n = operands.size();
             if (unary ? (n != 1) : (n == 0)) {
                 sql.invalidate();
