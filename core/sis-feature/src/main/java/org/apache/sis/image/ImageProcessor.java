@@ -1203,11 +1203,15 @@ public class ImageProcessor implements Cloneable {
                 fillValues              = this.fillValues;
                 positionalAccuracyHints = this.positionalAccuracyHints;
             }
+            final WritableRenderedImage destination = layout.getDestination();
             final SampleModel rsm = layout.createCompatibleSampleModel(source, bounds);
             final var image = new ResampledImage(source, rsm, layout.getMinTile(), bounds, toSource,
                                                  interpolation, fillValues, positionalAccuracyHints);
-            image.setDestination(layout.getDestination());
+            image.setDestination(destination);
             resampled = unique(image);
+            if (destination != null) {
+                return resampled;           // Preserve the color model of the destination.
+            }
             break;
         }
         /*
