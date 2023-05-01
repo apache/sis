@@ -64,7 +64,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * The expression on which to delegate the execution of this operation.
      */
     @SuppressWarnings("serial")                         // Not statically typed as serializable.
-    private final Function<Feature, ? extends V> expression;
+    private final Function<? super Feature, ? extends V> expression;
 
     /**
      * The type of result of evaluating the expression.
@@ -88,7 +88,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * @param result          type of values computed by the expression.
      */
     ExpressionOperation(final Map<String,?> identification,
-                        final Function<Feature, ? extends V> expression,
+                        final Function<? super Feature, ? extends V> expression,
                         final AttributeType<? super V> result)
     {
         super(identification);
