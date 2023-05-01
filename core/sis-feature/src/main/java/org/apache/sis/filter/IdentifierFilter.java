@@ -19,12 +19,14 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.feature.AttributeConvention;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ResourceId;
+import org.opengis.filter.Filter;
 
 
 /**
@@ -36,7 +38,7 @@ import org.opengis.filter.ResourceId;
  * @version 1.4
  * @since   1.1
  */
-final class IdentifierFilter extends FilterNode<Feature> implements ResourceId<Feature> {
+final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimization.OnFilter<Feature> {
     /**
      * For cross-version compatibility.
      */
@@ -53,6 +55,15 @@ final class IdentifierFilter extends FilterNode<Feature> implements ResourceId<F
     IdentifierFilter(final String identifier) {
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         this.identifier = identifier;
+    }
+
+    /**
+     * Nothing to optimize here. The {@code Optimization.OnFilter} interface
+     * is implemented for inheriting the AND, OR and NOT methods overriding.
+     */
+    @Override
+    public Filter<Feature> optimize(Optimization optimization) {
+        return this;
     }
 
     /**

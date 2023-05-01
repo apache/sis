@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -41,7 +42,7 @@ import org.opengis.filter.LogicalOperatorName;
  *
  * @since 1.1
  */
-abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
+abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -223,7 +224,7 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
      *
      * @param  <R>  the type of resources used as inputs.
      */
-    static final class Not<R> extends FilterNode<R> implements LogicalOperator<R>, Optimization.OnFilter<R> {
+    static final class Not<R> extends Node implements LogicalOperator<R>, Optimization.OnFilter<R> {
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -1296823195138427781L;
 

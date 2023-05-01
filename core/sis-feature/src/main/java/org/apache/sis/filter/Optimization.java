@@ -232,9 +232,30 @@ public class Optimization {
         }
 
         /**
+         * If the given predicate can be casted to a filter of the same parameterized type as this,
+         * returns {@code other} casted to that type. Otherwise returns {@code null}.
+         *
+         * @param  other  the predicate to cast to a filter compatible with this.
+         * @return the casted predicate, or {@code null} if it cannot be casted.
+         */
+        @SuppressWarnings("unchecked")
+        private Filter<R> castOrNull(final Predicate<? super R> other) {
+            if (other instanceof Filter<?>) {
+                final Class<?> type = getResourceClass();
+                if (type != null) {
+                    final Class<?> to = ((Filter<?>) other).getResourceClass();
+                    if (to != null && type.isAssignableFrom(to)) {
+                        return (Filter<R>) other;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
          * Returns the {@code AND} logical operation between this filter and the given predicate.
          * If the given predicate is an instance of {@code Filter<R>}, then the returned predicate
-         * is an instance of {@code Optimization.OnFilter<R>}.
+         * is also an instance of {@code Filter<R>}.
          *
          * @param  other  the other predicate.
          * @return the {@code AND} logical operation between this filter and the given predicate.
@@ -243,7 +264,7 @@ public class Optimization {
          */
         @Override
         default Predicate<R> and(final Predicate<? super R> other) {
-            final Filter<R> filter = FilterNode.castOrNull(this, other);
+            final Filter<R> filter = castOrNull(other);
             if (filter != null) {
                 return new LogicalFilter.And<>(this, filter);
             } else {
@@ -254,7 +275,7 @@ public class Optimization {
         /**
          * Returns the {@code OR} logical operation between this filter and the given predicate.
          * If the given predicate is an instance of {@code Filter<R>}, then the returned predicate
-         * is an instance of {@code Optimization.OnFilter<R>}.
+         * is also an instance of {@code Filter<R>}.
          *
          * @param  other  the other predicate.
          * @return the {@code OR} logical operation between this filter and the given predicate.
@@ -263,7 +284,7 @@ public class Optimization {
          */
         @Override
         default Predicate<R> or(final Predicate<? super R> other) {
-            final Filter<R> filter = FilterNode.castOrNull(this, other);
+            final Filter<R> filter = castOrNull(other);
             if (filter != null) {
                 return new LogicalFilter.Or<>(this, filter);
             } else {

@@ -36,6 +36,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;
@@ -796,7 +797,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      *
      * @see org.apache.sis.filter.LogicalFilter.And
      */
-    static final class Between<R> extends FilterNode<R> implements BetweenComparisonOperator<R> {
+    static final class Between<R> extends Node implements BetweenComparisonOperator<R>, Optimization.OnFilter<R> {
         /** For cross-version compatibility during (de)serialization. */
         private static final long serialVersionUID = -2434954008425799595L;
 
@@ -810,6 +811,14 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
         {
             this.lower = new GreaterThanOrEqualTo<>(expression, lower, true, MatchAction.ANY);
             this.upper = new    LessThanOrEqualTo<>(expression, upper, true, MatchAction.ANY);
+        }
+
+        /**
+         * Creates a new filter of the same type but different parameters.
+         */
+        @Override
+        public Filter<R> recreate(final Expression<R,?>[] effective) {
+            return new Between<>(effective[0], effective[1], effective[2]);
         }
 
         /** Returns the class of resources expected by this filter. */
@@ -828,7 +837,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
 
         /** Returns the expression to be compared by this operator, together with boundaries. */
         @Override public List<Expression<R,?>> getExpressions() {
-            return List.of(lower.expression1, lower.expression2, upper.expression2);
+            return List.of(getExpression(), getLowerBoundary(), getUpperBoundary());
         }
 
         /** Returns the expression to be compared. */

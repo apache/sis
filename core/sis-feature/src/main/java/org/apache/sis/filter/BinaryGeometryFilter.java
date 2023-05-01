@@ -26,6 +26,7 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.SpatialOperationContext;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
@@ -55,7 +56,7 @@ import org.opengis.feature.PropertyNotFoundException;
  *
  * @since 1.1
  */
-abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements SpatialOperator<R>, Optimization.OnFilter<R> {
+abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */

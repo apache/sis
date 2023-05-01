@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.regex.Pattern;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;
@@ -38,7 +39,7 @@ import org.opengis.filter.LikeOperator;
  *
  * @since 1.1
  */
-final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Optimization.OnFilter<R> {
+final class LikeFilter<R> extends Node implements LikeOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
