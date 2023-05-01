@@ -53,7 +53,7 @@ import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <G> root class of geometry implementation.
  *
@@ -132,9 +132,10 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     @Test
     public void bbox_preserve_expression_type() {
         final Filter<AbstractFeature> bbox = factory.bbox(literal(Polygon.RIGHT), new Envelope2D(null, 0, 0, 1, 1));
-        final Expression<? super AbstractFeature, ?> arg2 = bbox.getExpressions().get(1);
+        final Expression<AbstractFeature,?> arg2 = bbox.getExpressions().get(1);
+        assertSame("The two ways to acquire the second argument return different values.", arg2, bbox.getExpressions().get(1));
         assertInstanceOf("Second argument value should be an envelope.", Envelope.class,
-                         ((Literal<? super AbstractFeature, ?>) arg2).getValue());
+                         ((Literal<AbstractFeature,?>) arg2).getValue());
     }
 
     /**

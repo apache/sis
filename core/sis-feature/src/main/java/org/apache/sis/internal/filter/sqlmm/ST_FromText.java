@@ -28,7 +28,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -44,7 +44,7 @@ final class ST_FromText<R,G> extends GeometryParser<R,G> {
     /**
      * Creates a new function for the given parameters.
      */
-    ST_FromText(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    ST_FromText(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(operation, parameters, library);
     }
 
@@ -53,7 +53,7 @@ final class ST_FromText<R,G> extends GeometryParser<R,G> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new ST_FromText<>(operation, effective, getGeometryLibrary());
     }
 

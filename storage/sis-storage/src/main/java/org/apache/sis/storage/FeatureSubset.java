@@ -110,7 +110,7 @@ final class FeatureSubset extends AbstractFeatureSet {
         /*
          * Apply filter.
          */
-        final Filter<? super AbstractFeature> selection = query.getSelection();
+        final Filter<AbstractFeature> selection = query.getSelection();
         if (selection != null && !selection.equals(Filter.include())) {
             stream = stream.filter(selection);
         }
@@ -142,7 +142,7 @@ final class FeatureSubset extends AbstractFeatureSet {
         final FeatureQuery.NamedExpression[] projection = query.getProjection();
         if (projection != null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
-            final Expression<? super AbstractFeature, ?>[] expressions = new Expression[projection.length];
+            final Expression<AbstractFeature,?>[] expressions = new Expression[projection.length];
             for (int i=0; i<expressions.length; i++) {
                 expressions[i] = projection[i].expression;
             }

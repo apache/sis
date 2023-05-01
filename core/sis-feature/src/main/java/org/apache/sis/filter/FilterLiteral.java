@@ -45,6 +45,11 @@ final class FilterLiteral implements Filter<Object>, Serializable {
     }
 
     @Override
+    public Class<Object> getResourceClass() {
+        return Object.class;
+    }
+
+    @Override
     public List<Expression<? super Object, ?>> getExpressions() {
         return Collections.emptyList();
     }

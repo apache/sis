@@ -33,7 +33,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class IdentifierFilterTest extends TestCase {
@@ -79,6 +79,7 @@ public final class IdentifierFilterTest extends TestCase {
         final AbstractFeature f3 = ftb.clear().setName("Test 3").build().newInstance();
 
         final Filter<AbstractFeature> id = factory.resourceId("123");
+        assertEquals(AbstractFeature.class, id.getResourceClass());
         assertTrue (id.test(f1));
         assertTrue (id.test(f2));
         assertFalse(id.test(f3));
@@ -101,6 +102,7 @@ public final class IdentifierFilterTest extends TestCase {
                 factory.resourceId("abc"),
                 factory.resourceId("123"));
 
+        assertEquals(AbstractFeature.class, id.getResourceClass());
         assertTrue (id.test(f1));
         assertTrue (id.test(f2));
         assertFalse(id.test(f3));

@@ -174,7 +174,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
      * This condition specifies also if the comparison is {@linkplain BinaryComparisonOperator#isMatchingCase() case
      * sensitive} and {@linkplain BinaryComparisonOperator#getMatchAction() how to compare multi-values}.
      */
-    public final BinaryComparisonOperator<? super AbstractFeature> condition;
+    public final BinaryComparisonOperator<AbstractFeature> condition;
 
     /**
      * The factory to use for creating {@code Query} expressions for retrieving subsets of feature sets.
@@ -206,7 +206,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
     public JoinFeatureSet(final Resource parent,
                           final FeatureSet left,  String leftAlias,
                           final FeatureSet right, String rightAlias,
-                          final Type joinType, final BinaryComparisonOperator<? super AbstractFeature> condition,
+                          final Type joinType, final BinaryComparisonOperator<AbstractFeature> condition,
                           Map<String,?> featureInfo)
             throws DataStoreException
     {
@@ -462,7 +462,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
          * The filtering condition is determined by the current {@link #mainFeature}.
          */
         private void createFilteredIterator() {
-            final Expression<? super AbstractFeature, ?> expression1, expression2;
+            final Expression<AbstractFeature,?> expression1, expression2;
             final FeatureSet filteredSet;
             if (swapSides) {
                 expression1 = condition.getOperand2();
@@ -474,7 +474,7 @@ public class JoinFeatureSet extends AggregatedFeatureSet {
                 filteredSet = right;
             }
             final Object mainValue = expression1.apply(mainFeature);
-            final Filter<? super AbstractFeature> filter;
+            final Filter<AbstractFeature> filter;
             if (mainValue != null) {
                 filter = factory.equal(expression2, factory.literal(mainValue));
             } else {

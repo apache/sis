@@ -112,7 +112,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @see #setSelection(Filter)
      */
     @SuppressWarnings("serial")                 // Most SIS implementations are serializable.
-    private Filter<? super AbstractFeature> selection;
+    private Filter<AbstractFeature> selection;
 
     /**
      * The number of feature instances to skip from the beginning.
@@ -193,12 +193,12 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @throws IllegalArgumentException if a property is duplicated.
      */
     @SafeVarargs
-    public final void setProjection(final Expression<? super AbstractFeature, ?>... properties) {
+    public final void setProjection(final Expression<AbstractFeature, ?>... properties) {
         NamedExpression[] wrappers = null;
         if (properties != null) {
             wrappers = new NamedExpression[properties.length];
             for (int i=0; i<wrappers.length; i++) {
-                final Expression<? super AbstractFeature, ?> e = properties[i];
+                final Expression<AbstractFeature, ?> e = properties[i];
                 ArgumentChecks.ensureNonNullElement("properties", i, e);
                 wrappers[i] = new NamedExpression(e);
             }
@@ -259,7 +259,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      */
     @Override
     public void setSelection(final Envelope domain) {
-        Filter<? super AbstractFeature> filter = null;
+        Filter<AbstractFeature> filter = null;
         if (domain != null) {
             final DefaultFilterFactory<AbstractFeature,Object,?> ff = DefaultFilterFactory.forFeatures();
             filter = ff.bbox(ff.property(AttributeConvention.GEOMETRY), domain);
@@ -274,7 +274,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * @param  selection  the filter, or {@code null} if none.
      */
-    public void setSelection(final Filter<? super AbstractFeature> selection) {
+    public void setSelection(final Filter<AbstractFeature> selection) {
         this.selection = selection;
     }
 
@@ -285,7 +285,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * @return the filter, or {@code null} if none.
      */
-    public Filter<? super AbstractFeature> getSelection() {
+    public Filter<AbstractFeature> getSelection() {
         return selection;
     }
 
@@ -485,7 +485,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * Never {@code null}.
          */
         @SuppressWarnings("serial")
-        public final Expression<? super AbstractFeature, ?> expression;
+        public final Expression<AbstractFeature,?> expression;
 
         /**
          * The name to assign to the expression result, or {@code null} if unspecified.
@@ -508,7 +508,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          *
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          */
-        public NamedExpression(final Expression<? super AbstractFeature, ?> expression) {
+        public NamedExpression(final Expression<AbstractFeature,?> expression) {
             this(expression, (GenericName) null);
         }
 
@@ -518,7 +518,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
-        public NamedExpression(final Expression<? super AbstractFeature, ?> expression, final GenericName alias) {
+        public NamedExpression(final Expression<AbstractFeature,?> expression, final GenericName alias) {
             this(expression, alias, ProjectionType.STORED);
         }
 
@@ -529,7 +529,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * @param expression  the literal, value reference or expression to be retrieved by a {@code Query}.
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
-        public NamedExpression(final Expression<? super AbstractFeature, ?> expression, final String alias) {
+        public NamedExpression(final Expression<AbstractFeature,?> expression, final String alias) {
             ArgumentChecks.ensureNonNull("expression", expression);
             this.expression = expression;
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
@@ -545,7 +545,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          *
          * @since 1.4
          */
-        public NamedExpression(final Expression<? super AbstractFeature, ?> expression, final GenericName alias, ProjectionType type) {
+        public NamedExpression(final Expression<AbstractFeature,?> expression, final GenericName alias, ProjectionType type) {
             ArgumentChecks.ensureNonNull("expression", expression);
             ArgumentChecks.ensureNonNull("type", type);
             this.expression = expression;
@@ -689,7 +689,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
              * For each property, get the expected type (mandatory) and its name (optional).
              * A default name will be computed if no alias were explicitly given by user.
              */
-            final Expression<? super AbstractFeature,?> expression = item.expression;
+            final Expression<AbstractFeature,?> expression = item.expression;
             final FeatureExpression<?,?> fex = FeatureExpression.castOrCopy(expression);
             final PropertyTypeBuilder resultType;
             if (fex == null || (resultType = fex.expectedType(valueType, ftb)) == null) {

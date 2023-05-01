@@ -42,7 +42,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <G>  the geometry implementation type.
@@ -73,7 +73,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      * @see #getParameters()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<? super R, ?> expression;
+    final Expression<R,?> expression;
 
     /**
      * Creates a new converter expression.
@@ -81,7 +81,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      * @param  library     the geometry library to use.
      * @param  expression  the expression providing source values.
      */
-    public GeometryConverter(final Geometries<G> library, final Expression<? super R, ?> expression) {
+    public GeometryConverter(final Geometries<G> library, final Expression<R,?> expression) {
         ArgumentChecks.ensureNonNull("expression", expression);
         ArgumentChecks.ensureNonNull("library",    library);
         this.expression = expression;
@@ -93,7 +93,7 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R, GeometryWrapper<G>> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R, GeometryWrapper<G>> recreate(final Expression<R,?>[] effective) {
         return new GeometryConverter<>(library, effective[0]);
     }
 
@@ -106,11 +106,19 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return expression.getResourceClass();
+    }
+
+    /**
      * Returns the expression used as parameters for this function.
      * This is the value specified at construction time.
      */
     @Override
-    public List<Expression<? super R, ?>> getParameters() {
+    public List<Expression<R,?>> getParameters() {
         return List.of(expression);
     }
 

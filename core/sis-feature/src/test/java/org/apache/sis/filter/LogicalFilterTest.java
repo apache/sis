@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,7 +39,7 @@ import org.apache.sis.internal.geoapi.filter.LogicalOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public final class LogicalFilterTest extends TestCase {
@@ -103,8 +104,8 @@ public final class LogicalFilterTest extends TestCase {
      * @param  anyArity  the function creating a logical operator from an arbitrary number of operands.
      * @param  expected  expected evaluation result.
      */
-    private void create(final BiFunction<Filter<? super AbstractFeature>, Filter<? super AbstractFeature>, Filter<AbstractFeature>> binary,
-                        final Function<Collection<Filter<? super AbstractFeature>>, Filter<AbstractFeature>> anyArity,
+    private void create(final BiFunction<Filter<AbstractFeature>, Filter<AbstractFeature>, Filter<AbstractFeature>> binary,
+                        final Function<Collection<Filter<AbstractFeature>>, Filter<AbstractFeature>> anyArity,
                         final boolean expected)
     {
         final Filter<AbstractFeature> f1 = factory.isNull(factory.literal("text"));
@@ -137,11 +138,19 @@ public final class LogicalFilterTest extends TestCase {
         assertArrayEquals(new Filter<?>[] {f1, f2}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
-
+        /*
+         * Same test, using the constructor accepting any number of operands.
+         */
         filter = (LogicalOperator<AbstractFeature>) anyArity.apply(List.of(f1, f2, f1));
         assertArrayEquals(new Filter<?>[] {f1, f2, f1}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
+        /*
+         * Test the `Predicate` methods, which should be overridden by `Optimization.OnFilter`.
+         */
+        assertInstanceOf("Predicate.and(…)",   Optimization.OnFilter.class, f1.and(f2));
+        assertInstanceOf("Predicate.or(…)",    Optimization.OnFilter.class, f1.or(f2));
+        assertInstanceOf("Predicate.negate()", Optimization.OnFilter.class, f1.negate());
     }
 
     /**
@@ -170,6 +179,16 @@ public final class LogicalFilterTest extends TestCase {
 
         assertFalse(factory.not(filterTrue ).test(feature));
         assertTrue (factory.not(filterFalse).test(feature));
+        /*
+         * Test the `Predicate` methods, which should be overridden by `Optimization.OnFilter`.
+         */
+        Predicate<AbstractFeature> predicate = filterTrue.and(filterFalse);
+        assertInstanceOf("Predicate.and(…)", Optimization.OnFilter.class, predicate);
+        assertFalse(predicate.test(feature));
+
+        predicate = filterTrue.or(filterFalse);
+        assertInstanceOf("Predicate.or(…)", Optimization.OnFilter.class, predicate);
+        assertTrue(predicate.test(feature));
     }
 
     /**

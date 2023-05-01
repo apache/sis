@@ -44,7 +44,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -61,7 +61,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
      * The expression giving the coordinate values. May include the SRID as last parameter.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private final Expression<? super R, ?>[] parameters;
+    private final Expression<R,?>[] parameters;
 
     /**
      * The library to use for creating geometry objects.
@@ -74,7 +74,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
      *
      * @throws IllegalArgumentException if the number of arguments is less then two.
      */
-    ST_Point(final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    ST_Point(final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(SQLMM.ST_Point, parameters, MAYBE);
         this.parameters = parameters;
         this.library = library;
@@ -85,7 +85,7 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new ST_Point<>(effective, getGeometryLibrary());
     }
 
@@ -98,10 +98,22 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        Class<? super R> type = super.getResourceClass();
+        for (final Expression<R,?> p : parameters) {
+            type = specializedClass(type, p.getResourceClass());
+        }
+        return type;
+    }
+
+    /**
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override
-    public List<Expression<? super R, ?>> getParameters() {
+    public List<Expression<R,?>> getParameters() {
         return UnmodifiableArrayList.wrap(parameters);
     }
 

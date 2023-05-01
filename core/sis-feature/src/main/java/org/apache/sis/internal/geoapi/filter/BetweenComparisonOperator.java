@@ -25,7 +25,7 @@ import org.apache.sis.filter.Filter;
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
 public interface BetweenComparisonOperator<R> extends Filter<R> {
-    Expression<? super R, ?> getExpression();
-    Expression<? super R, ?> getLowerBoundary();
-    Expression<? super R, ?> getUpperBoundary();
+    Expression<R,?> getExpression();
+    Expression<R,?> getLowerBoundary();
+    Expression<R,?> getUpperBoundary();
 }

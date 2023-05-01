@@ -42,7 +42,7 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <V>  the type of value computed by the expression.
  *
@@ -97,6 +97,14 @@ final class AssociationValue<V> extends LeafExpression<AbstractFeature, V>
     @Override
     public final ScopedName getFunctionName() {
         return Name.VALUE_REFERENCE;
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public final Class<AbstractFeature> getResourceClass() {
+        return AbstractFeature.class;
     }
 
     /**

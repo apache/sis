@@ -32,7 +32,7 @@ import org.apache.sis.filter.Expression;
  * Information technology — Database languages — SQL multimedia and application packages — Part 3: Spatial</a>.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class Registry implements FunctionRegister {
@@ -78,7 +78,7 @@ public final class Registry implements FunctionRegister {
      * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.
      */
     @Override
-    public <R> Expression<R,?> create(final String name, Expression<? super R, ?>[] parameters) {
+    public <R> Expression<R,?> create(final String name, Expression<R,?>[] parameters) {
         final SQLMM operation = SQLMM.valueOf(name);
         switch (operation) {
             case ST_PointFromWKB:       // Fallthrough

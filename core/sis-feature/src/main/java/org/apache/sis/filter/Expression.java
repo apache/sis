@@ -43,11 +43,20 @@ public interface Expression<R,V> extends Function<R,V> {
     ScopedName getFunctionName();
 
     /**
+     * Returns the class of resources expected by this expression.
+     *
+     * @return type of resources accepted by this expression.
+     *
+     * @since 1.4
+     */
+    Class<? super R> getResourceClass();
+
+    /**
      * Returns the list sub-expressions that will be evaluated to provide the parameters to the function.
      *
      * @return the sub-expressions to be evaluated, or an empty list if none.
      */
-    List<Expression<? super R, ?>> getParameters();
+    List<Expression<R,?>> getParameters();
 
     /**
      * Evaluates the expression value based on the content of the given object.

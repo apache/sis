@@ -72,7 +72,7 @@ import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
  * those effects will disappear in the optimized filter.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public class Optimization {
@@ -139,7 +139,7 @@ public class Optimization {
      * @throws IllegalArgumentException if the given filter is already in process of being optimized
      *         (i.e. there is a recursive call to {@code apply(…)} for the same filter).
      */
-    public <R> Filter<? super R> apply(final Filter<R> filter) {
+    public <R> Filter<R> apply(final Filter<R> filter) {
         if (!(filter instanceof OnFilter<?>)) {
             return filter;
         }
@@ -153,7 +153,7 @@ public class Optimization {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, filter.getOperatorType()));
             }
             @SuppressWarnings("unchecked")
-            Filter<? super R> result = (Filter<? super R>) previous;
+            Filter<R> result = (Filter<R>) previous;
             if (result == null) {
                 result = ((OnFilter<R>) filter).optimize(this);
                 if (done.put(filter, result) != COMPUTING) {
@@ -192,14 +192,14 @@ public class Optimization {
          * @param  optimization  the simplifications or optimizations to apply on this filter.
          * @return the simplified or optimized filter, or {@code this} if no optimization has been applied.
          */
-        default Filter<? super R> optimize(final Optimization optimization) {
-            final List<Expression<? super R, ?>> expressions = getExpressions();
+        default Filter<R> optimize(final Optimization optimization) {
+            final List<Expression<R,?>> expressions = getExpressions();
             @SuppressWarnings({"unchecked", "rawtypes"})
-            final Expression<? super R, ?>[] effective = new Expression[expressions.size()];
+            final Expression<R,?>[] effective = new Expression[expressions.size()];
             boolean unchanged = true;       // Will be `false` if at least one optimization has been applied.
             boolean immediate = true;
             for (int i=0; i<effective.length; i++) {
-                Expression<? super R, ?> e = expressions.get(i);
+                Expression<R,?> e = expressions.get(i);
                 unchanged &= (e == (e = optimization.apply(e)));
                 immediate &= (e instanceof Literal<?,?>);
                 effective[i] = e;
@@ -224,14 +224,35 @@ public class Optimization {
          * @param  effective  the expressions to use as a replacement of this filter expressions.
          * @return the new filter, or {@code this} if unsupported.
          */
-        default Filter<R> recreate(Expression<? super R, ?>[] effective) {
+        default Filter<R> recreate(Expression<R,?>[] effective) {
             return this;
         }
 
         /**
+         * If the given predicate can be casted to a filter of the same parameterized type as this,
+         * returns {@code other} casted to that type. Otherwise returns {@code null}.
+         *
+         * @param  other  the predicate to cast to a filter compatible with this.
+         * @return the casted predicate, or {@code null} if it cannot be casted.
+         */
+        @SuppressWarnings("unchecked")
+        private Filter<R> castOrNull(final Predicate<? super R> other) {
+            if (other instanceof Filter<?>) {
+                final Class<?> type = getResourceClass();
+                if (type != null) {
+                    final Class<?> to = ((Filter<?>) other).getResourceClass();
+                    if (to != null && type.isAssignableFrom(to)) {
+                        return (Filter<R>) other;
+                    }
+                }
+            }
+            return null;
+        }
+
+        /**
          * Returns the {@code AND} logical operation between this filter and the given predicate.
-         * If the given predicate is an instance of {@link Filter}, then the returned predicate
-         * is an instance of {@code Optimization.OnFilter}.
+         * If the given predicate is an instance of {@code Filter<R>}, then the returned predicate
+         * is also an instance of {@code Filter<R>}.
          *
          * @param  other  the other predicate.
          * @return the {@code AND} logical operation between this filter and the given predicate.
@@ -240,8 +261,9 @@ public class Optimization {
          */
         @Override
         default Predicate<R> and(final Predicate<? super R> other) {
-            if (other instanceof Filter<?>) {
-                return new LogicalFilter.And<>(this, (Filter<? super R>) other);
+            final Filter<R> filter = castOrNull(other);
+            if (filter != null) {
+                return new LogicalFilter.And<>(this, filter);
             } else {
                 return Filter.super.and(other);
             }
@@ -249,8 +271,8 @@ public class Optimization {
 
         /**
          * Returns the {@code OR} logical operation between this filter and the given predicate.
-         * If the given predicate is an instance of {@link Filter}, then the returned predicate
-         * is an instance of {@code Optimization.OnFilter}.
+         * If the given predicate is an instance of {@code Filter<R>}, then the returned predicate
+         * is also an instance of {@code Filter<R>}.
          *
          * @param  other  the other predicate.
          * @return the {@code OR} logical operation between this filter and the given predicate.
@@ -259,8 +281,9 @@ public class Optimization {
          */
         @Override
         default Predicate<R> or(final Predicate<? super R> other) {
-            if (other instanceof Filter<?>) {
-                return new LogicalFilter.Or<>(this, (Filter<? super R>) other);
+            final Filter<R> filter = castOrNull(other);
+            if (filter != null) {
+                return new LogicalFilter.Or<>(this, filter);
             } else {
                 return Filter.super.and(other);
             }
@@ -291,7 +314,7 @@ public class Optimization {
      * @throws IllegalArgumentException if the given expression is already in process of being optimized
      *         (i.e. there is a recursive call to {@code apply(…)} for the same expression).
      */
-    public <R,V> Expression<? super R, ? extends V> apply(final Expression<R,V> expression) {
+    public <R,V> Expression<R, ? extends V> apply(final Expression<R,V> expression) {
         if (!(expression instanceof OnExpression<?,?>)) {
             return expression;
         }
@@ -305,7 +328,7 @@ public class Optimization {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.RecursiveCreateCallForKey_1, expression.getFunctionName()));
             }
             @SuppressWarnings("unchecked")
-            Expression<? super R, ? extends V> result = (Expression<? super R, ? extends V>) previous;
+            Expression<R, ? extends V> result = (Expression<R, ? extends V>) previous;
             if (result == null) {
                 result = ((OnExpression<R,V>) expression).optimize(this);
                 if (done.put(expression, result) != COMPUTING) {
@@ -345,14 +368,14 @@ public class Optimization {
          * @param  optimization  the simplifications or optimizations to apply on this expression.
          * @return the simplified or optimized expression, or {@code this} if no optimization has been applied.
          */
-        default Expression<? super R, ? extends V> optimize(final Optimization optimization) {
-            final List<Expression<? super R, ?>> parameters = getParameters();
+        default Expression<R, ? extends V> optimize(final Optimization optimization) {
+            final List<Expression<R,?>> parameters = getParameters();
             @SuppressWarnings({"unchecked", "rawtypes"})
-            final Expression<? super R, ?>[] effective = new Expression[parameters.size()];
+            final Expression<R,?>[] effective = new Expression[parameters.size()];
             boolean unchanged = true;       // Will be `false` if at least one optimization has been applied.
             boolean immediate = true;
             for (int i=0; i<effective.length; i++) {
-                Expression<? super R, ?> e = parameters.get(i);
+                Expression<R,?> e = parameters.get(i);
                 unchanged &= (e == (e = optimization.apply(e)));
                 immediate &= (e instanceof Literal<?,?>);
                 effective[i] = e;
@@ -377,7 +400,7 @@ public class Optimization {
          * @param  effective  the expressions to use as a replacement of this expression parameters.
          * @return the new expression, or {@code this} if unsupported.
          */
-        default Expression<R,V> recreate(Expression<? super R, ?>[] effective) {
+        default Expression<R,V> recreate(Expression<R,?>[] effective) {
             return this;
         }
     }
@@ -400,14 +423,8 @@ public class Optimization {
      * @throws ClassCastException if a filter declares the {@code AND}, {@code OR} or {@code NOT} type
      *         without implementing the {@link LogicalOperator} interface.
      */
-    @SuppressWarnings("unchecked")
-    public <R> List<Filter<? super R>> applyAndDecompose(final Filter<R> filter) {
-        /*
-         * This unsafe cast is okay if `toAndOperands(…)` do not invoke any `filter` method having a
-         * return value (directly or indirectly as list elements) restricted to the exact `<R>` type.
-         * Such methods do not exist in the GeoAPI interfaces, so we should be safe.
-         */
-        return toAndOperands((Filter<R>) apply(filter));
+    public <R> List<Filter<R>> applyAndDecompose(final Filter<R> filter) {
+        return toAndOperands(apply(filter));
     }
 
     /**
@@ -420,7 +437,7 @@ public class Optimization {
      * @throws ClassCastException if a filter declares the {@code AND}, {@code OR} or {@code NOT} type
      *         without implementing the {@link LogicalOperator} interface.
      */
-    private static <R> List<Filter<? super R>> toAndOperands(final Filter<R> filter) {
+    private static <R> List<Filter<R>> toAndOperands(final Filter<R> filter) {
         if (filter == null) {
             return List.of();
         }
@@ -429,17 +446,11 @@ public class Optimization {
             return ((LogicalOperator<R>) filter).getOperands();
         }
         if (type == LogicalOperatorName.NOT) {
-            final Filter<? super R> nop = getNotOperand(filter);
+            final Filter<R> nop = getNotOperand(filter);
             if (nop.getOperatorType() == LogicalOperatorName.OR) {
-                /*
-                 * The cast to `<R>` instead of `<? super R>` should be okay because we do not invoke
-                 * any method with a `<R>` return value. All invoked methods return `<? super R>`.
-                 * So what we actually have is a kind of `<? super ? super R>`.
-                 */
-                @SuppressWarnings("unchecked")
-                final List<Filter<? super R>> operands = ((LogicalOperator<R>) nop).getOperands();
-                final List<Filter<? super R>> result = new ArrayList<>(operands.size());
-                for (Filter<? super R> operand : operands) {
+                final List<Filter<R>> operands = ((LogicalOperator<R>) nop).getOperands();
+                final List<Filter<R>> result = new ArrayList<>(operands.size());
+                for (Filter<R> operand : operands) {
                     if (operand.getOperatorType() == LogicalOperatorName.NOT) {
                         operand = getNotOperand(operand);
                     } else {
@@ -461,8 +472,8 @@ public class Optimization {
      * @throws ClassCastException if the filter does not implement the {@link LogicalOperator} interface.
      * @throws IllegalArgumentException if the filter does not have a single operand.
      */
-    private static <R> Filter<? super R> getNotOperand(final Filter<R> filter) {
-        final Filter<? super R> operand = CollectionsExt.singletonOrNull(((LogicalOperator<R>) filter).getOperands());
+    private static <R> Filter<R> getNotOperand(final Filter<R> filter) {
+        final Filter<R> operand = CollectionsExt.singletonOrNull(((LogicalOperator<R>) filter).getOperands());
         if (operand != null) {
             return operand;
         }

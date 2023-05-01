@@ -43,7 +43,7 @@ import org.apache.sis.internal.geoapi.filter.Literal;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  *
@@ -59,7 +59,7 @@ abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
      * The expression giving the spatial reference system identifier, or {@code null} if none.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<? super R, ?> srid;
+    final Expression<R,?> srid;
 
     /**
      * Identifier of the coordinate reference system in which to represent the geometry.
@@ -97,7 +97,7 @@ abstract class FunctionWithSRID<R> extends SpatialFunction<R> {
      * @todo The {@code MAYBE} flag could be removed if we know the type of value evaluated by the expression.
      *       For now it exists mostly because the last parameter given to {@code ST_Point} can be of various types.
      */
-    FunctionWithSRID(final SQLMM operation, final Expression<? super R, ?>[] parameters, int hasSRID) {
+    FunctionWithSRID(final SQLMM operation, final Expression<R,?>[] parameters, int hasSRID) {
         super(operation, parameters);
         if (hasSRID == MAYBE && parameters.length < operation.maxParamCount) {
             hasSRID = ABSENT;
@@ -203,6 +203,15 @@ search: if (crs instanceof CoordinateReferenceSystem) {
                 return targetCRS;               // Must be inside synchronized block.
             }
         }
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     * Subclasses should override this method.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return (srid != null) ? srid.getResourceClass() : Object.class;
     }
 
     /**

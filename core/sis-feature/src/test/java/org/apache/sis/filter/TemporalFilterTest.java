@@ -34,7 +34,7 @@ import org.apache.sis.internal.geoapi.filter.TemporalOperatorName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class TemporalFilterTest extends TestCase {
@@ -75,7 +75,7 @@ public final class TemporalFilterTest extends TestCase {
     private void validate(final TemporalOperatorName name) {
         assertInstanceOf("Expected SIS implementation.", TemporalFilter.class, filter);
         assertEquals("name", name, filter.getOperatorType());
-        final List<Expression<? super AbstractFeature, ?>> operands = filter.getExpressions();
+        final List<Expression<AbstractFeature,?>> operands = filter.getExpressions();
         assertEquals(2, operands.size());
         assertSame("expression1", expression1, operands.get(0));
         assertSame("expression2", expression2, operands.get(1));

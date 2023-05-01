@@ -30,10 +30,10 @@ import org.apache.sis.util.iso.Names;
  * Placeholder for GeoAPI 3.1 interfaces (not yet released).
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
-final class FilterExpressions<R> extends AbstractList<Expression<? super R, ?>> {
-    private final List<Filter<? super R>> filters;
+final class FilterExpressions<R> extends AbstractList<Expression<R,?>> {
+    private final List<Filter<R>> filters;
 
-    FilterExpressions(final List<Filter<? super R>> filters) {
+    FilterExpressions(final List<Filter<R>> filters) {
         this.filters = Objects.requireNonNull(filters);
     }
 
@@ -48,7 +48,7 @@ final class FilterExpressions<R> extends AbstractList<Expression<? super R, ?>> 
     }
 
     @Override
-    public Expression<? super R, ?> get(final int index) {
+    public Expression<R,?> get(final int index) {
         return new Element<>(filters.get(index));
     }
 
@@ -71,7 +71,12 @@ final class FilterExpressions<R> extends AbstractList<Expression<? super R, ?>> 
         }
 
         @Override
-        public List<Expression<? super R, ?>> getParameters() {
+        public Class<? super R> getResourceClass() {
+            return filter.getResourceClass();
+        }
+
+        @Override
+        public List<Expression<R,?>> getParameters() {
             return filter.getExpressions();
         }
 

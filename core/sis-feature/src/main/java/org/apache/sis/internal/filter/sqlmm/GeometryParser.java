@@ -32,7 +32,7 @@ import org.apache.sis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -48,7 +48,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
     /**
      * Creates a new function for the given parameters.
      */
-    GeometryParser(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    GeometryParser(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(operation, parameters, library);
     }
 
@@ -57,7 +57,7 @@ abstract class GeometryParser<R,G> extends GeometryConstructor<R,G> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public abstract Expression<R,Object> recreate(final Expression<? super R, ?>[] effective);
+    public abstract Expression<R,Object> recreate(final Expression<R,?>[] effective);
 
     /**
      * Returns a Backus-Naur Form (BNF) of this function.

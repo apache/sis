@@ -61,6 +61,7 @@ final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Se
 
     /** Not needed for the tests. */
     @Override public <N> Expression<AbstractFeature,N> toValueType(Class<N> target) {throw new UnsupportedOperationException();}
+    @Override public Class<AbstractFeature> getResourceClass() {return AbstractFeature.class;}
 
     /**
      * Hash code value. Used by the tests for checking the results of deserialization.

@@ -19,6 +19,7 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.feature.AttributeConvention;
 
 // Branch-dependent imports
@@ -31,13 +32,10 @@ import org.apache.sis.feature.AbstractFeature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- *
- * @param  <R>  the type of resources used as inputs.
- *
- * @since 1.1
+ * @version 1.4
+ * @since   1.1
  */
-final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
+final class IdentifierFilter extends Node implements Optimization.OnFilter<AbstractFeature> {
     /**
      * For cross-version compatibility.
      */
@@ -62,6 +60,23 @@ final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
     }
 
     /**
+     * Nothing to optimize here. The {@code Optimization.OnFilter} interface
+     * is implemented for inheriting the AND, OR and NOT methods overriding.
+     */
+    @Override
+    public Filter<AbstractFeature> optimize(Optimization optimization) {
+        return this;
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<AbstractFeature> getResourceClass() {
+        return AbstractFeature.class;
+    }
+
+    /**
      * Returns the identifiers of feature instances to accept.
      */
     public String getIdentifier() {
@@ -72,7 +87,7 @@ final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
      * Returns the parameters of this filter.
      */
     @Override
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<AbstractFeature,?>> getExpressions() {
         return List.of(new LeafExpression.Literal<>(identifier));
     }
 
@@ -90,7 +105,7 @@ final class IdentifierFilter<R extends AbstractFeature> extends FilterNode<R> {
      * is one of the identifier specified at {@code IdentifierFilter} construction time.
      */
     @Override
-    public boolean test(R object) {
+    public boolean test(final AbstractFeature object) {
         if (object == null) {
             return false;
         }

@@ -278,10 +278,10 @@ public final class FeatureQueryTest extends TestCase {
         assertEquals(2, resultType.getProperties(true).size());
         final AbstractIdentifiedType pt1 = resultType.getProperty("value1");
         final AbstractIdentifiedType pt2 = resultType.getProperty("unexpected");
-        assertTrue(pt1 instanceof DefaultAttributeType);
-        assertTrue(pt2 instanceof DefaultAttributeType);
-        assertEquals(Integer.class, ((DefaultAttributeType) pt1).getValueClass());
-        assertEquals(Object.class,  ((DefaultAttributeType) pt2).getValueClass());
+        assertTrue(pt1 instanceof DefaultAttributeType<?>);
+        assertTrue(pt2 instanceof DefaultAttributeType<?>);
+        assertEquals(Integer.class, ((DefaultAttributeType<?>) pt1).getValueClass());
+        assertEquals(Object.class,  ((DefaultAttributeType<?>) pt2).getValueClass());
 
         // Check feature property values.
         assertEquals(3,    instance.getPropertyValue("value1"));
@@ -308,7 +308,7 @@ public final class FeatureQueryTest extends TestCase {
     /**
      * Shortcut for creating expression for a projection computed on-the-fly.
      */
-    private static FeatureQuery.NamedExpression virtualProjection(final Expression<? super AbstractFeature, ?> expression, final String alias) {
+    private static FeatureQuery.NamedExpression virtualProjection(final Expression<AbstractFeature, ?> expression, final String alias) {
         return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.VIRTUAL);
     }
 
@@ -333,14 +333,16 @@ public final class FeatureQueryTest extends TestCase {
         final AbstractIdentifiedType pt1 = resultType.getProperty("value1");
         final AbstractIdentifiedType pt2 = resultType.getProperty("renamed1");
         final AbstractIdentifiedType pt3 = resultType.getProperty("computed");
-        assertTrue(pt1 instanceof DefaultAttributeType);
+        assertTrue(pt1 instanceof DefaultAttributeType<?>);
         assertTrue(pt2 instanceof AbstractOperation);
         assertTrue(pt3 instanceof AbstractOperation);
-        assertEquals(Integer.class, ((DefaultAttributeType) pt1).getValueClass());
-        assertTrue(((AbstractOperation) pt2).getResult() instanceof DefaultAttributeType);
-        assertTrue(((AbstractOperation) pt3).getResult() instanceof DefaultAttributeType);
-        assertEquals(Integer.class, ((DefaultAttributeType)((AbstractOperation) pt2).getResult()).getValueClass());
-        assertEquals(String.class,  ((DefaultAttributeType)((AbstractOperation) pt3).getResult()).getValueClass());
+        final AbstractIdentifiedType result2 = ((AbstractOperation) pt2).getResult();
+        final AbstractIdentifiedType result3 = ((AbstractOperation) pt3).getResult();
+        assertEquals(Integer.class, ((DefaultAttributeType<?>) pt1).getValueClass());
+        assertTrue(result2 instanceof DefaultAttributeType<?>);
+        assertTrue(result3 instanceof DefaultAttributeType<?>);
+        assertEquals(Integer.class, ((DefaultAttributeType<?>) result2).getValueClass());
+        assertEquals(String.class,  ((DefaultAttributeType<?>) result3).getValueClass());
 
         // Check feature instance.
         assertEquals(3, instance.getPropertyValue("value1"));

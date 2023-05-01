@@ -25,8 +25,8 @@ import org.apache.sis.filter.Filter;
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
 public interface BinaryComparisonOperator<R> extends Filter<R> {
-    Expression<? super R, ?> getOperand1();
-    Expression<? super R, ?> getOperand2();
+    Expression<R,?> getOperand1();
+    Expression<R,?> getOperand2();
     boolean isMatchingCase();
     MatchAction getMatchAction();
 }

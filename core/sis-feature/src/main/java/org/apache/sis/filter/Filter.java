@@ -62,11 +62,20 @@ public interface Filter<R> extends Predicate<R> {
     Enum<?> getOperatorType();
 
     /**
+     * Returns the class of resources expected by this filter.
+     *
+     * @return type of resources accepted by this filter.
+     *
+     * @since 1.4
+     */
+    Class<? super R> getResourceClass();
+
+    /**
      * Returns the expressions used as arguments for this filter.
      *
      * @return the expressions used as inputs, or an empty list if none.
      */
-    List<Expression<? super R, ?>> getExpressions();
+    List<Expression<R,?>> getExpressions();
 
     /**
      * Given an object, determines if the test(s) represented by this filter are passed.

@@ -26,7 +26,6 @@ import org.apache.sis.internal.feature.Resources;
 // Branch-dependent imports
 import org.apache.sis.filter.Filter;
 import org.apache.sis.filter.Expression;
-import org.apache.sis.internal.geoapi.filter.LogicalOperator;
 import org.apache.sis.internal.geoapi.filter.LogicalOperatorName;
 import org.apache.sis.internal.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.internal.geoapi.filter.DistanceOperatorName;
@@ -49,7 +48,7 @@ import org.apache.sis.internal.geoapi.filter.ComparisonOperatorName;
  * {@code Visitor} instances are thread-safe if protected methods are invoked at construction time only.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <A>  type of the accumulator object where actions will write their results.
@@ -259,8 +258,8 @@ public abstract class Visitor<R,A> {
      * Actions are registered by calls to {@code setFooHandler(…)} before the call to this {@code visit(…)} method.
      *
      * <h4>Note on parameterized type</h4>
-     * This method often needs to be invoked with instances of {@code Filter<? super R>},
-     * because this is the type of filters returned by GeoAPI methods such as {@link LogicalOperator#getOperands()}.
+     * This method sometimes needs to be invoked with instances of {@code Filter<? super R>},
+     * because this is the type of predicate expected by {@link java.util.function} and {@link java.util.stream}.
      * But the parameterized type expected by this method matches the parameterized type of handlers registered by
      * {@link #setFilterHandler(Enum, BiConsumer)} and similar methods, which use the exact {@code <R>} type.
      * This restriction exists because when doing otherwise, parameterized types become hard to express in Java
@@ -289,20 +288,6 @@ public abstract class Visitor<R,A> {
     /**
      * Executes the registered action for the given expression.
      * Actions are registered by calls to {@code setFooHandler(…)} before the call to this {@code visit(…)} method.
-     *
-     * <h4>Note on parameterized type</h4>
-     * This method often needs to be invoked with instances of {@code Expression<? super R, ?>},
-     * because this is the type of filters returned by GeoAPI methods such as {@link Expression#getParameters()}.
-     * But the parameterized type expected by this method matches the parameterized type of handlers registered by
-     * {@link #setExpressionHandler(String, BiConsumer)} and similar methods, which use the exact {@code <R>} type.
-     * This restriction exists because when doing otherwise, parameterized types become hard to express in Java
-     * (we get a cascade of {@code super} keywords, something like {@code <? super ? super R>}).
-     * However, doing the {@code (Expression<R>,?) expression} cast is actually safe if the handlers do not invoke
-     * any {@code expression} method having a return value (directly or indirectly as list elements) restricted to
-     * the exact {@code <R>} type. Such methods do not exist in the GeoAPI interfaces, so the cast is safe
-     * if the {@link BiConsumer} handlers do not invoke implementation-specific methods.
-     * Since only subclasses known the details of registered handlers,
-     * the decision to cast or not is left to those subclasses.
      *
      * @param  expression   the expression for which to execute an action based on its type.
      * @param  accumulator  where to write the result of all actions.

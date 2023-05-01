@@ -468,7 +468,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
         /*
          * Optimization should evaluate the point immediately.
          */
-        final Expression<? super AbstractFeature, ?> optimized = new Optimization().apply(function);
+        final Expression<AbstractFeature,?> optimized = new Optimization().apply(function);
         assertNotSame("Optimization should produce a new expression.", function, optimized);
         assertInstanceOf("Expected immediate expression evaluation.", Literal.class, optimized);
         assertPointEquals(((Literal) optimized).getValue(), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
@@ -487,7 +487,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.addAttribute(library.pointClass).setName(P_NAME).setCRS(HardCodedCRS.WGS84);
         optimization.setFeatureType(ftb.setName("Test").build());
-        final Expression<? super AbstractFeature, ?> optimized = optimization.apply(function);
+        final Expression<AbstractFeature,?> optimized = optimization.apply(function);
         assertNotSame("Optimization should produce a new expression.", function, optimized);
         /*
          * Get the second parameter, which should be a literal, and get the point coordinates.

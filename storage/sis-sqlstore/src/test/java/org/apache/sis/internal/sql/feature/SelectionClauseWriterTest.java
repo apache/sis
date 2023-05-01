@@ -42,7 +42,7 @@ import org.apache.sis.filter.Filter;
  *
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class SelectionClauseWriterTest extends TestCase implements SchemaModifier {
@@ -140,7 +140,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      * Formats the given filter as a SQL {@code WHERE} statement body
      * and verifies that the result is equal to the expected string.
      */
-    private void verifySQL(final Filter<? super AbstractFeature> filter, final String expected) {
+    private void verifySQL(final Filter<AbstractFeature> filter, final String expected) {
         final SelectionClause sql = new SelectionClause(table);
         assertTrue(sql.tryAppend(SelectionClauseWriter.DEFAULT, filter));
         assertEquals(expected, sql.toString());

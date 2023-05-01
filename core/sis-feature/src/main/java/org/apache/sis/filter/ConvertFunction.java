@@ -36,7 +36,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  * Expression whose results are converted to a different type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <S>  the type of value computed by the wrapped exception. This is the type to convert.
@@ -73,7 +73,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      * @param  target      the desired type for the expression result.
      * @throws UnconvertibleObjectException if no converter is found.
      */
-    ConvertFunction(final Expression<? super R, ? extends S> expression, final Class<S> source, final Class<V> target) {
+    ConvertFunction(final Expression<R, ? extends S> expression, final Class<S> source, final Class<V> target) {
         super(expression);
         converter = ObjectConverters.find(source, target);
     }
@@ -84,7 +84,7 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      * @param  expression  the expression providing source values.
      * @throws UnconvertibleObjectException if no converter is found.
      */
-    private ConvertFunction(final ConvertFunction<R,S,V> original, final Expression<? super R, ? extends S> expression) {
+    private ConvertFunction(final ConvertFunction<R,S,V> original, final Expression<R, ? extends S> expression) {
         super(expression);
         converter = original.converter;
     }
@@ -94,8 +94,8 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
      */
     @Override
     @SuppressWarnings({"unchecked", "rawtypes"})
-    public Expression<R,V> recreate(Expression<? super R, ?>[] effective) {
-        final Expression<? super R, ?> e = effective[0];
+    public Expression<R,V> recreate(Expression<R,?>[] effective) {
+        final Expression<R,?> e = effective[0];
         if (e instanceof FeatureExpression<?,?>) {
             final Class<? extends V> target = getValueClass();                          // This is <V>.
             final Class<?> source = ((FeatureExpression<?,?>) e).getValueClass();       // May become <S>.

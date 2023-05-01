@@ -81,7 +81,7 @@ abstract class SpatialFunction<R> extends Node implements FeatureExpression<R,Ob
      * @param  parameters  sub-expressions that will be evaluated to provide the parameters to the function.
      * @throws IllegalArgumentException if the number of parameters is not in the expected range.
      */
-    SpatialFunction(final SQLMM operation, final Expression<? super R, ?>[] parameters) {
+    SpatialFunction(final SQLMM operation, final Expression<R,?>[] parameters) {
         this.operation = operation;
         ArgumentChecks.ensureCountBetween("parameters", true,
                 operation.minParamCount, operation.maxParamCount, parameters.length);

@@ -30,9 +30,9 @@ public interface LogicalOperator<R> extends Filter<R> {
     LogicalOperatorName getOperatorType();
 
     @Override
-    default List<Expression<? super R, ?>> getExpressions() {
+    default List<Expression<R,?>> getExpressions() {
         return new FilterExpressions<>(getOperands());
     }
 
-    List<Filter<? super R>> getOperands();
+    List<Filter<R>> getOperands();
 }

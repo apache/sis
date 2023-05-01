@@ -33,7 +33,7 @@ public interface Literal<R,V> extends Expression<R,V> {
     }
 
     @Override
-    default List<Expression<? super R, ?>> getParameters() {
+    default List<Expression<R,?>> getParameters() {
         return Collections.emptyList();
     }
 

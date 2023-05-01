@@ -24,7 +24,7 @@ import java.util.Comparator;
  * Shall not be visible in public API, as it will be deleted after next GeoAPI release.
  */
 public interface SortProperty<R> extends Comparator<R> {
-    ValueReference<? super R, ?> getValueReference();
+    ValueReference<R,?> getValueReference();
 
     SortOrder getSortOrder();
 }
