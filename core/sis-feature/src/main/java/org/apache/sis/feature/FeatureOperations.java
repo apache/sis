@@ -290,7 +290,7 @@ public final class FeatureOperations extends Static {
     /**
      * Creates an operation which delegates the computation to a given expression producing values of unknown type.
      * This method can be used as an alternative to {@link #expression expression(…)} when the constraint on the
-     * parameterized type {@code <V>} between {@code expression} and {@code result} can not be enforced at compile time.
+     * parameterized type {@code <V>} between {@code expression} and {@code result} cannot be enforced at compile time.
      * This method casts or converts the expression to the expected type by a call to
      * {@link Expression#toValueType(Class)}.
      *

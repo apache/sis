@@ -186,7 +186,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          */
         @Override
         public ResourceId<Feature> resourceId(final String identifier) {
-            return new IdentifierFilter<>(identifier);
+            return new IdentifierFilter(identifier);
         }
 
         /**
@@ -207,7 +207,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         public ResourceId<Feature> resourceId(final String identifier, final Version version,
                                               final Instant startTime, final Instant endTime)
         {
-            return new IdentifierFilter<>(identifier);
+            return new IdentifierFilter(identifier);
         }
 
         /**

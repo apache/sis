@@ -36,7 +36,7 @@ import org.apache.sis.util.ArraysExt;
  * <p>This class should be used in preference to {@link BufferedImage} when the image may be the
  * source of {@link org.apache.sis.image.ImageProcessor} operations. It is the case In particular
  * when this image is given to {@link org.apache.sis.coverage.grid.GridCoverage2D} constructor.
- * We can not prevent {@link BufferedImage} to implement {@link WritableRenderedImage}, but we
+ * We cannot prevent {@link BufferedImage} to implement {@link WritableRenderedImage}, but we
  * can give a change to Apache SIS to be notified about modifications to pixel data.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)

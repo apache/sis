@@ -85,6 +85,17 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
     }
 
     /**
+     * Returns the class of resources expected by this filter.
+     * Defined for {@link Filter#getResourceClass()} and {@link Expression#getResourceClass()} implementations.
+     *
+     * @return type of resources accepted by this filter, or {@code null} if inconsistent.
+     */
+    public final Class<? super R> getResourceClass() {
+        return specializedClass(expression1.getResourceClass(),
+                                expression2.getResourceClass());
+    }
+
+    /**
      * Returns the expressions used as parameters by this function.
      * Defined for {@link Expression#getParameters()} implementations.
      */

@@ -812,6 +812,12 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
             this.upper = new    LessThanOrEqualTo<>(expression, upper, true, MatchAction.ANY);
         }
 
+        /** Returns the class of resources expected by this filter. */
+        @Override public final Class<? super R> getResourceClass() {
+            return specializedClass(lower.getResourceClass(),
+                                    upper.getResourceClass());
+        }
+
         /**
          * Returns the 3 children of this node. Since {@code lower.expression2}
          * is the same as {@code upper.expression1}, that repetition is omitted.

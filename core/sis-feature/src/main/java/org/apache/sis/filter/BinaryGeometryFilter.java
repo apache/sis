@@ -165,6 +165,17 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
     }
 
     /**
+     * Returns the class of resources expected by this filter.
+     *
+     * @return type of resources accepted by this filter, or {@code null} if inconsistent.
+     */
+    @Override
+    public final Class<? super R> getResourceClass() {
+        return specializedClass(expression1.getResourceClass(),
+                                expression2.getResourceClass());
+    }
+
+    /**
      * Returns the two expressions used as parameters by this filter.
      */
     @Override

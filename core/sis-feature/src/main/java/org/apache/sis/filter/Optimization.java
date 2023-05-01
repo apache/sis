@@ -233,8 +233,8 @@ public class Optimization {
 
         /**
          * Returns the {@code AND} logical operation between this filter and the given predicate.
-         * If the given predicate is an instance of {@link Filter}, then the returned predicate
-         * is an instance of {@code Optimization.OnFilter}.
+         * If the given predicate is an instance of {@code Filter<R>}, then the returned predicate
+         * is an instance of {@code Optimization.OnFilter<R>}.
          *
          * @param  other  the other predicate.
          * @return the {@code AND} logical operation between this filter and the given predicate.
@@ -253,8 +253,8 @@ public class Optimization {
 
         /**
          * Returns the {@code OR} logical operation between this filter and the given predicate.
-         * If the given predicate is an instance of {@link Filter}, then the returned predicate
-         * is an instance of {@code Optimization.OnFilter}.
+         * If the given predicate is an instance of {@code Filter<R>}, then the returned predicate
+         * is an instance of {@code Optimization.OnFilter<R>}.
          *
          * @param  other  the other predicate.
          * @return the {@code OR} logical operation between this filter and the given predicate.

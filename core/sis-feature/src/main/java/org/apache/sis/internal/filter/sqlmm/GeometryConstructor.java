@@ -78,6 +78,14 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return specializedClass(geometry.getResourceClass(), super.getResourceClass());
+    }
+
+    /**
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override

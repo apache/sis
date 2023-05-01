@@ -66,6 +66,16 @@ class UnaryFunction<R,V> extends Node {
     }
 
     /**
+     * Returns the class of resources expected by this filter.
+     * Defined for {@link Filter#getResourceClass()} implementations.
+     *
+     * @return type of resources accepted by this filter, or {@code null} if inconsistent.
+     */
+    public final Class<? super R> getResourceClass() {
+        return expression.getResourceClass();
+    }
+
+    /**
      * Returns the expression used as parameter by this function.
      * Defined for {@link Expression#getParameters()} implementations.
      */

@@ -26,7 +26,7 @@ import org.opengis.filter.Expression;
 
 /**
  * SQLMM spatial functions taking a single geometry operand.
- * This base class assume that the geometry is the only parameter.
+ * This base class assumes that the geometry is the only parameter.
  * Subclasses may add other kind of parameters.
  *
  * @author  Johann Sorel (Geomatys)
@@ -73,6 +73,14 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
     @Override
     final Geometries<?> getGeometryLibrary() {
         return getGeometryLibrary(geometry);
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return geometry.getResourceClass();
     }
 
     /**
@@ -125,6 +133,14 @@ class OneGeometry<R,G> extends SpatialFunction<R> {
         @Override
         public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
             return new WithArgument<>(operation, effective, getGeometryLibrary());
+        }
+
+        /**
+         * Returns the class of resources expected by this expression.
+         */
+        @Override
+        public Class<? super R> getResourceClass() {
+            return specializedClass(super.getResourceClass(), argument.getResourceClass());
         }
 
         /**

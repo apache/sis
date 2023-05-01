@@ -99,6 +99,18 @@ final class ST_Point<R,G> extends FunctionWithSRID<R> {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        Class<? super R> type = super.getResourceClass();
+        for (final Expression<R,?> p : parameters) {
+            type = specializedClass(type, p.getResourceClass());
+        }
+        return type;
+    }
+
+    /**
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override

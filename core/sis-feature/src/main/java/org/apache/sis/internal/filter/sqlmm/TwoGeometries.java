@@ -116,6 +116,14 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return specializedClass(geometry1.getResourceClass(), geometry2.getResourceClass());
+    }
+
+    /**
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override
@@ -170,6 +178,14 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
         @Override
         public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
             return new WithArgument<>(operation, effective, getGeometryLibrary());
+        }
+
+        /**
+         * Returns the class of resources expected by this expression.
+         */
+        @Override
+        public Class<? super R> getResourceClass() {
+            return specializedClass(super.getResourceClass(), argument.getResourceClass());
         }
 
         /**

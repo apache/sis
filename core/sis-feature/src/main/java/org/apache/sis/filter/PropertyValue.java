@@ -46,7 +46,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <V>  the type of value computed by the expression.
  *
@@ -76,7 +76,7 @@ abstract class PropertyValue<V> extends LeafExpression<Feature,V>
     protected final boolean isVirtual;
 
     /**
-     * The prefix in a x-path for considering a property as virual.
+     * The prefix in a x-path for considering a property as virtual.
      */
     static final String VIRTUAL_PREFIX = "/*/";
 
@@ -131,6 +131,14 @@ split:  if (path != null) {
             tip = (PropertyValue<V>) new AsObject(xpath, isVirtual);
         }
         return (path == null || path.isEmpty()) ? tip : new AssociationValue<>(path, tip);
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public final Class<Feature> getResourceClass() {
+        return Feature.class;
     }
 
     /**

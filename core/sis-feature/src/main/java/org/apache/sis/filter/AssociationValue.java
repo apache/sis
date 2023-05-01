@@ -42,7 +42,7 @@ import org.opengis.filter.ValueReference;
  * (the tip) is evaluated by a {@link PropertyValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <V>  the type of value computed by the expression.
  *
@@ -92,6 +92,14 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
     private AssociationValue(final String[] path, final PropertyValue<V> accessor) {
         this.path = path;
         this.accessor = accessor;
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public final Class<Feature> getResourceClass() {
+        return Feature.class;
     }
 
     /**

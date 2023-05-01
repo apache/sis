@@ -162,6 +162,14 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
     }
 
     /**
+     * Returns the class of resources expected by this filter.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return expression.getResourceClass();
+    }
+
+    /**
      * Returns the children of this node for displaying purposes.
      * This is used by {@link #toString()}, {@link #hashCode()} and {@link #equals(Object)} implementations.
      */

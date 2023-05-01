@@ -19,10 +19,10 @@ package org.apache.sis.internal.filter;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Collection;
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.io.Serializable;
 import org.opengis.util.CodeList;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -94,6 +94,26 @@ public abstract class Node implements Serializable {
         // We do not use `Map.of(…)` for letting the attribute type constructor do the null check.
         return new DefaultAttributeType<>(Collections.singletonMap(DefaultAttributeType.NAME_KEY, name),
                                           type, 1, 1, null, (AttributeType<?>[]) null);
+    }
+
+    /**
+     * Returns the most specialized class of the given pair of class. A specialized class is guaranteed to exist
+     * if parametrized type safety has not been bypassed with unchecked casts, because {@code <R>} is always valid.
+     * However this method is not guaranteed to be able to find that specialized type, because it could be none of
+     * the given arguments if {@code t1}, {@code t2} and {@code <R>} are interfaces with {@code <R>} extending both
+     * {@code t1} and {@code t2}.
+     *
+     * @param  <R>  the compile-time type of resources expected by filters or expressions.
+     * @param  t1   the runtime type of resources expected by the first filter or expression. May be null.
+     * @param  t2   the runtime type of resources expected by the second filter or expression. May be null.
+     * @return the most specialized type of resources, or {@code null} if it cannot be determined.
+     */
+    protected static <R> Class<? super R> specializedClass(final Class<? super R> t1, final Class<? super R> t2) {
+        if (t1 != null && t2 != null) {
+            if (t1.isAssignableFrom(t2)) return t2;
+            if (t2.isAssignableFrom(t1)) return t1;
+        }
+        return null;
     }
 
     /**

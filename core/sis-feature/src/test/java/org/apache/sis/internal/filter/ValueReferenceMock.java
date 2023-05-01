@@ -57,6 +57,14 @@ final class ValueReferenceMock<V> implements ValueReference<Map<String,?>, V> {
     }
 
     /**
+     * Returns the type of resources accepted by this mock.
+     */
+    @Override
+    public Class<Map> getResourceClass() {
+        return Map.class;
+    }
+
+    /**
      * Returns the name of the property for which to get values.
      */
     @Override

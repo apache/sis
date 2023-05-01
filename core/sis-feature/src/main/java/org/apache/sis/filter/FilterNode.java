@@ -58,10 +58,19 @@ abstract class FilterNode<R> extends Node implements Filter<R> {
      * @param  <R>       desired parameterized type.
      * @param  template  the filter from which to get the runtime value of {@code <R>}.
      * @param  other     the predicate to cast to a filter compatible with the target.
-     * @return the casted predicate, or {@code null} if it can not be casted.
+     * @return the casted predicate, or {@code null} if it cannot be casted.
      */
+    @SuppressWarnings("unchecked")
     static <R> Filter<R> castOrNull(final Filter<R> template, final Predicate<? super R> other) {
-        // TODO
+        if (other instanceof Filter<?>) {
+            final Class<?> type = template.getResourceClass();
+            if (type != null) {
+                final Class<?> to = ((Filter<?>) other).getResourceClass();
+                if (to != null && type.isAssignableFrom(to)) {
+                    return (Filter<R>) other;
+                }
+            }
+        }
         return null;
     }
 

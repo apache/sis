@@ -87,6 +87,18 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
     protected abstract LogicalFilter<R> createSameType(Collection<? extends Filter<R>> op);
 
     /**
+     * Returns the class of resources expected by this filter.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        Class<? super R> type = Object.class;
+        for (final Filter<R> operand : operands) {
+            type = specializedClass(type, operand.getResourceClass());
+        }
+        return type;
+    }
+
+    /**
      * Returns a list containing all of the child filters of this object.
      */
     @Override
@@ -228,6 +240,11 @@ abstract class LogicalFilter<R> extends FilterNode<R> implements LogicalOperator
         /** Identification of the operation. */
         @Override public LogicalOperatorName getOperatorType() {
             return LogicalOperatorName.NOT;
+        }
+
+        /** Returns the class of resources expected by this filter. */
+        @Override public Class<? super R> getResourceClass() {
+            return operand.getResourceClass();
         }
 
         /** Symbol of the operation. */

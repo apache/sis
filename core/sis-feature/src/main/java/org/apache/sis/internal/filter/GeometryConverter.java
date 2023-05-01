@@ -107,6 +107,14 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return expression.getResourceClass();
+    }
+
+    /**
      * Returns the expression used as parameters for this function.
      * This is the value specified at construction time.
      */

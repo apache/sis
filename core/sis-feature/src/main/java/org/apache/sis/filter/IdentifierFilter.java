@@ -34,12 +34,9 @@ import org.opengis.filter.ResourceId;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
- *
- * @param  <R>  the type of resources used as inputs.
- *
- * @since 1.1
+ * @since   1.1
  */
-final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements ResourceId<R> {
+final class IdentifierFilter extends FilterNode<Feature> implements ResourceId<Feature> {
     /**
      * For cross-version compatibility.
      */
@@ -59,6 +56,14 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<Feature> getResourceClass() {
+        return Feature.class;
+    }
+
+    /**
      * Returns the identifiers of feature instances to accept.
      */
     @Override
@@ -70,7 +75,7 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
      * Returns the parameters of this filter.
      */
     @Override
-    public List<Expression<R,?>> getExpressions() {
+    public List<Expression<Feature,?>> getExpressions() {
         return List.of(new LeafExpression.Literal<>(identifier));
     }
 
@@ -88,7 +93,7 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
      * is one of the identifier specified at {@code IdentifierFilter} construction time.
      */
     @Override
-    public boolean test(R object) {
+    public boolean test(final Feature object) {
         if (object == null) {
             return false;
         }

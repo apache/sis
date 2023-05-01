@@ -207,6 +207,15 @@ search: if (crs instanceof CoordinateReferenceSystem) {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     * Subclasses should override this method.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return (srid != null) ? srid.getResourceClass() : Object.class;
+    }
+
+    /**
      * Provides the type of values produced by this expression when a feature of the given type is evaluated.
      *
      * @param  valueType  the type of features on which to apply this expression.

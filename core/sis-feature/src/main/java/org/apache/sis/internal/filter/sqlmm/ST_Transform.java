@@ -94,6 +94,14 @@ final class ST_Transform<R,G> extends FunctionWithSRID<R> {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return specializedClass(geometry.getResourceClass(), super.getResourceClass());
+    }
+
+    /**
      * Returns a handler for the library of geometric objects used by this expression.
      */
     @Override

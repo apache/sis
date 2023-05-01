@@ -65,6 +65,14 @@ final class FunctionMock implements Expression<Map<String,?>, Object> {
     }
 
     /**
+     * Returns the type of resources accepted by this mock.
+     */
+    @Override
+    public Class<Map> getResourceClass() {
+        return Map.class;
+    }
+
+    /**
      * Returns the function parameters.
      */
     @Override
