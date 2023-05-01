@@ -37,7 +37,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -54,12 +54,12 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      * The expression giving the geometries.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<? super R, GeometryWrapper<G>> geometry1, geometry2;
+    final Expression<R, GeometryWrapper<G>> geometry1, geometry2;
 
     /**
      * Creates a new function for geometries represented by the given parameter.
      */
-    TwoGeometries(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    TwoGeometries(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(operation, parameters);
         geometry1 = toGeometryWrapper(library, parameters[0]);
         geometry2 = toGeometryWrapper(library, parameters[1]);
@@ -70,7 +70,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new TwoGeometries<>(operation, effective, getGeometryLibrary());
     }
 
@@ -81,10 +81,10 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
      * executed in the CRS of the first argument.
      */
     @Override
-    public Expression<? super R, ?> optimize(final Optimization optimization) {
+    public Expression<R,?> optimize(final Optimization optimization) {
         final FeatureType featureType = optimization.getFeatureType();
         if (featureType != null) {
-            final Expression<? super R, ?> p1 = unwrap(geometry1);
+            final Expression<R,?> p1 = unwrap(geometry1);
             if (p1 instanceof ValueReference<?,?> && unwrap(geometry2) instanceof Literal<?,?>) try {
                 final CoordinateReferenceSystem targetCRS = AttributeConvention.getCRSCharacteristic(
                         featureType, featureType.getProperty(((ValueReference<?,?>) p1).getXPath()));
@@ -94,7 +94,7 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
                         final GeometryWrapper<G> tr = literal.transform(targetCRS);
                         if (tr != literal) {
                             @SuppressWarnings({"unchecked","rawtypes"})
-                            final Expression<? super R, ?>[] effective = getParameters().toArray(Expression[]::new);
+                            final Expression<R,?>[] effective = getParameters().toArray(Expression[]::new);
                             effective[1] = Optimization.literal(tr);
                             return recreate(effective);
                         }
@@ -116,10 +116,18 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
     }
 
     /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return specializedClass(geometry1.getResourceClass(), geometry2.getResourceClass());
+    }
+
+    /**
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override
-    public List<Expression<? super R, ?>> getParameters() {
+    public List<Expression<R,?>> getParameters() {
         return List.of(unwrap(geometry1), unwrap(geometry2));
     }
 
@@ -153,12 +161,12 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
          * The first argument after the geometries.
          */
         @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-        final Expression<? super R, ?> argument;
+        final Expression<R,?> argument;
 
         /**
          * Creates a new function for geometries represented by the given parameter.
          */
-        WithArgument(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+        WithArgument(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
             super(operation, parameters, library);
             argument = parameters[2];
         }
@@ -168,15 +176,23 @@ class TwoGeometries<R,G> extends SpatialFunction<R> {
          * The optimization may be a geometry computed immediately if all operator parameters are literals.
          */
         @Override
-        public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+        public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
             return new WithArgument<>(operation, effective, getGeometryLibrary());
+        }
+
+        /**
+         * Returns the class of resources expected by this expression.
+         */
+        @Override
+        public Class<? super R> getResourceClass() {
+            return specializedClass(super.getResourceClass(), argument.getResourceClass());
         }
 
         /**
          * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
          */
         @Override
-        public List<Expression<? super R, ?>> getParameters() {
+        public List<Expression<R,?>> getParameters() {
             return List.of(unwrap(geometry1), unwrap(geometry2), argument);
         }
 

@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.coverage.j2d.TileOpExecutor;
-import org.apache.sis.internal.util.Numerics;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.Units;
 
@@ -236,13 +235,13 @@ public class ImageCombiner implements Consumer<RenderedImage> {
          * of destination tiles. We have to do that because the resample operation below is not free to
          * choose a tile size suiting the given bounds.
          */
-        long maxX = (bounds.x + (long) bounds.width)  - 1;                             // Inclusive.
+        long maxX = (bounds.x + (long) bounds.width)  - 1;                                  // Inclusive.
         long maxY = (bounds.y + (long) bounds.height) - 1;
-        maxX = Numerics.ceilDiv((maxX - tileGridXOffset), tileWidth) * tileWidth  + tileGridXOffset;
-        maxY = Numerics.ceilDiv((maxY - tileGridYOffset), tileWidth) * tileHeight + tileGridYOffset;
+        maxX = ((maxX - tileGridXOffset) / tileWidth  + 1) * tileWidth  + tileGridXOffset;  // Exclusive.
+        maxY = ((maxY - tileGridYOffset) / tileHeight + 1) * tileHeight + tileGridYOffset;
         bounds = new Rectangle(minX, minY,
-                Math.toIntExact(maxX - minX + 1),
-                Math.toIntExact(maxY - minY + 1));
+                Math.toIntExact(maxX - minX),
+                Math.toIntExact(maxY - minY));
         /*
          * Values of (minTileX, minTileY) computed above will cause `ResampledImage.getTileGridOffset()`
          * to return the exact same value than `destination.getTileGridOffset()`. This is a requirement

@@ -33,7 +33,7 @@ import org.opengis.filter.ValueReference;
  * Tests {@link LeafExpression}.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class LeafExpressionTest extends TestCase {
@@ -93,6 +93,7 @@ public final class LeafExpressionTest extends TestCase {
         final Feature f = ftb.setName("Test").build().newInstance();
 
         ValueReference<Feature,?> ref = factory.property("some_property");
+        assertEquals(Feature.class, ref.getResourceClass());
         assertNull(ref.apply(f));
         assertNull(ref.apply(null));
 

@@ -42,7 +42,7 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V>  the type of value computed by the expression.
@@ -66,7 +66,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
      * which is an empty list.
      */
     @Override
-    public final List<Expression<? super R, ?>> getParameters() {
+    public final List<Expression<R,?>> getParameters() {
         return List.of();
     }
 
@@ -200,7 +200,7 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
          * the transformed value will become visible to users.
          */
         @Override
-        public Expression<? super R, ? extends V> optimize(final Optimization optimization) {
+        public Expression<R, ? extends V> optimize(final Optimization optimization) {
             return Optimization.literal(getValue());
         }
 

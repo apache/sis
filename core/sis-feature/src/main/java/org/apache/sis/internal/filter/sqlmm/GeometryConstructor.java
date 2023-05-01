@@ -35,7 +35,7 @@ import org.opengis.filter.InvalidFilterValueException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
@@ -52,7 +52,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
      * The expression giving the geometry.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    final Expression<? super R, ?> geometry;
+    final Expression<R,?> geometry;
 
     /**
      * The library to use for creating geometry objects.
@@ -62,7 +62,7 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
     /**
      * Creates a new function for the given parameters.
      */
-    GeometryConstructor(final SQLMM operation, final Expression<? super R, ?>[] parameters, final Geometries<G> library) {
+    GeometryConstructor(final SQLMM operation, final Expression<R,?>[] parameters, final Geometries<G> library) {
         super(operation, parameters, parameters.length >= operation.maxParamCount ? PRESENT : ABSENT);
         this.geometry = parameters[0];
         this.library  = library;
@@ -73,15 +73,23 @@ class GeometryConstructor<R,G> extends FunctionWithSRID<R> {
      * The optimization may be a geometry computed immediately if all operator parameters are literals.
      */
     @Override
-    public Expression<R,Object> recreate(final Expression<? super R, ?>[] effective) {
+    public Expression<R,Object> recreate(final Expression<R,?>[] effective) {
         return new GeometryConstructor<>(operation, effective, getGeometryLibrary());
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return specializedClass(geometry.getResourceClass(), super.getResourceClass());
     }
 
     /**
      * Returns the sub-expressions that will be evaluated to provide the parameters to the function.
      */
     @Override
-    public final List<Expression<? super R, ?>> getParameters() {
+    public final List<Expression<R,?>> getParameters() {
         return (srid != null) ? List.of(geometry, srid) : List.of(geometry);
     }
 

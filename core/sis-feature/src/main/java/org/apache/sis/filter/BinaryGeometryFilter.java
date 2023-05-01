@@ -26,6 +26,7 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.SpatialOperationContext;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.util.ArgumentChecks;
 
 // Branch-dependent imports
@@ -48,14 +49,14 @@ import org.opengis.feature.PropertyNotFoundException;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <G>  the implementation type of geometry objects.
  *
  * @since 1.1
  */
-abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements SpatialOperator<R>, Optimization.OnFilter<R> {
+abstract class BinaryGeometryFilter<R,G> extends Node implements SpatialOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -67,7 +68,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * @see BinarySpatialOperator#getOperand1()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<? super R, GeometryWrapper<G>> expression1;
+    protected final Expression<R, GeometryWrapper<G>> expression1;
 
     /**
      * The second of the two expressions to be used by this function.
@@ -75,7 +76,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * @see BinarySpatialOperator#getOperand2()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    protected final Expression<? super R, GeometryWrapper<G>> expression2;
+    protected final Expression<R, GeometryWrapper<G>> expression2;
 
     /**
      * The preferred CRS and other context to use if geometry transformations are needed.
@@ -90,13 +91,13 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * @param  systemUnit  if the CRS needs to be in some units of measurement, the {@link Unit#getSystemUnit()} value.
      */
     protected BinaryGeometryFilter(final Geometries<G> library,
-                                   final Expression<? super R, ?> geometry1,
-                                   final Expression<? super R, ?> geometry2,
+                                   final Expression<R,?> geometry1,
+                                   final Expression<R,?> geometry2,
                                    final Unit<?> systemUnit)
     {
         ArgumentChecks.ensureNonNull("expression1", geometry1);
         ArgumentChecks.ensureNonNull("expression2", geometry2);
-        Expression<? super R, GeometryWrapper<G>> expression1, expression2;
+        Expression<R, GeometryWrapper<G>> expression1, expression2;
         expression1 = toGeometryWrapper(library, geometry1);
         expression2 = toGeometryWrapper(library, geometry2);
         /*
@@ -105,14 +106,14 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
          * Otherwise the CRS will be selected on a case-by-case basis at evaluation time.
          */
         final int index;
-        final Literal<? super R, ?> literal;
+        final Literal<R,?> literal;
         final GeometryWrapper<G> value;
         if (geometry2 instanceof Literal<?,?>) {
-            literal = (Literal<? super R, ?>) geometry2;
+            literal = (Literal<R,?>) geometry2;
             value   = expression2.apply(null);
             index   = 1;
         } else if (geometry1 instanceof Literal<?,?>) {
-            literal = (Literal<? super R, ?>) geometry1;
+            literal = (Literal<R,?>) geometry1;
             value   = expression1.apply(null);
             index   = 0;
         } else {
@@ -125,7 +126,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
             if (value != null) {
                 final GeometryWrapper<G> gt = context.transform(value);
                 if (gt != value) {
-                    final Expression<? super R, GeometryWrapper<G>> tr = new LeafExpression.Transformed<>(gt, literal);
+                    final Expression<R, GeometryWrapper<G>> tr = new LeafExpression.Transformed<>(gt, literal);
                     switch (index) {
                         case 0:  expression1 = tr; break;
                         case 1:  expression2 = tr; break;
@@ -145,8 +146,8 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * This method is invoked when it is possible to simplify or optimize at least one of the expressions that
      * were given in the original call to the constructor.
      */
-    protected abstract BinaryGeometryFilter<R,G> recreate(final Expression<? super R, ?> geometry1,
-                                                          final Expression<? super R, ?> geometry2);
+    protected abstract BinaryGeometryFilter<R,G> recreate(final Expression<R,?> geometry1,
+                                                          final Expression<R,?> geometry2);
 
     /**
      * Returns the original expression specified by the user.
@@ -156,20 +157,30 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * @param  expression  the expression to unwrap.
      * @return the unwrapped expression.
      */
-    @SuppressWarnings("unchecked")      // We replace <? super ? super R> by <? super R>.
-    protected static <R,G> Expression<? super R, ?> original(final Expression<R, GeometryWrapper<G>> expression) {
-        Expression<? super R, ?> unwrapped = unwrap(expression);
-        if (unwrapped instanceof LeafExpression.Transformed<?, ?>) {
-            unwrapped = ((LeafExpression.Transformed<R, ?>) unwrapped).original;
+    protected static <R,G> Expression<R,?> original(final Expression<R, GeometryWrapper<G>> expression) {
+        Expression<R,?> unwrapped = unwrap(expression);
+        if (unwrapped instanceof LeafExpression.Transformed<?,?>) {
+            unwrapped = ((LeafExpression.Transformed<R,?>) unwrapped).original;
         }
         return unwrapped;
+    }
+
+    /**
+     * Returns the class of resources expected by this filter.
+     *
+     * @return type of resources accepted by this filter, or {@code null} if inconsistent.
+     */
+    @Override
+    public final Class<? super R> getResourceClass() {
+        return specializedClass(expression1.getResourceClass(),
+                                expression2.getResourceClass());
     }
 
     /**
      * Returns the two expressions used as parameters by this filter.
      */
     @Override
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<R,?>> getExpressions() {
         return List.of(original(expression1), original(expression2));
     }
 
@@ -179,25 +190,25 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
      * is a literal and returns {@code null}, then the result is known in advance too.
      */
     @Override
-    public final Filter<? super R> optimize(final Optimization optimization) {
-        Expression<? super R, ?> geometry1  = unwrap(expression1);
-        Expression<? super R, ?> geometry2  = unwrap(expression2);
-        Expression<? super R, ?> effective1 = optimization.apply(geometry1);
-        Expression<? super R, ?> effective2 = optimization.apply(geometry2);
-        Expression<? super R, ?> other;     // The expression which is not literal.
-        Expression<? super R, GeometryWrapper<G>> wrapper;
-        Literal<? super R, ?> literal;
+    public final Filter<R> optimize(final Optimization optimization) {
+        Expression<R,?> geometry1  = unwrap(expression1);
+        Expression<R,?> geometry2  = unwrap(expression2);
+        Expression<R,?> effective1 = optimization.apply(geometry1);
+        Expression<R,?> effective2 = optimization.apply(geometry2);
+        Expression<R,?> other;     // The expression which is not literal.
+        Expression<R, GeometryWrapper<G>> wrapper;
+        Literal<R,?> literal;
         boolean immediate;                  // true if the filter should be evaluated immediately.
         boolean literalIsNull;              // true if one of the literal value is null.
         if (effective2 instanceof Literal<?,?>) {
             other     = effective1;
             wrapper   = expression2;
-            literal   = (Literal<? super R, ?>) effective2;
+            literal   = (Literal<R,?>) effective2;
             immediate = (effective1 instanceof Literal<?,?>);
         } else if (effective1 instanceof Literal<?,?>) {
             other     = effective2;
             wrapper   = expression1;
-            literal   = (Literal<? super R, ?>) effective1;
+            literal   = (Literal<R,?>) effective1;
             immediate = false;
         } else {
             return this;
@@ -233,7 +244,7 @@ abstract class BinaryGeometryFilter<R,G> extends FilterNode<R> implements Spatia
              * If one of the "effective" parameter has been modified, recreate a new filter.
              * If all operands are literal, we can evaluate that filter immediately.
              */
-            Filter<? super R> filter = this;
+            Filter<R> filter = this;
             if ((effective1 != geometry1) || (effective2 != geometry2)) {
                 filter = recreate(effective1, effective2);
             }

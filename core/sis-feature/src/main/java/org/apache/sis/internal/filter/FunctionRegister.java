@@ -32,7 +32,7 @@ import org.opengis.filter.Expression;
  * in any future Apache SIS version.</p>
  *
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.0
  *
  * @see org.opengis.filter.FilterFactory#function(String, Expression...)
@@ -65,5 +65,5 @@ public interface FunctionRegister {
      * @return function for the given name and parameters.
      * @throws IllegalArgumentException if function name is unknown or some parameters are illegal.
      */
-    <R> Expression<R,?> create(String name, Expression<? super R, ?>[] parameters) throws IllegalArgumentException;
+    <R> Expression<R,?> create(String name, Expression<R,?>[] parameters) throws IllegalArgumentException;
 }

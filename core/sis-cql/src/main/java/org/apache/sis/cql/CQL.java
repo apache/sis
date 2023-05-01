@@ -96,11 +96,11 @@ public final class CQL {
         return result;
     }
 
-    public static Filter<? super Feature> parseFilter(String cql) throws CQLException {
+    public static Filter<Feature> parseFilter(String cql) throws CQLException {
         return parseFilter(cql, null);
     }
 
-    public static Filter<? super Feature> parseFilter(String cql, FilterFactory<Feature,Object,Object> factory) throws CQLException {
+    public static Filter<Feature> parseFilter(String cql, FilterFactory<Feature,Object,Object> factory) throws CQLException {
         cql = cql.trim();
 
         // Bypass parsing for inclusive filter.
@@ -108,7 +108,7 @@ public final class CQL {
             return Filter.include();
         }
         final Object obj = AntlrCQL.compileFilter(cql);
-        Filter<? super Feature> result = null;
+        Filter<Feature> result = null;
         if (obj instanceof FilterContext) {
             ParseTree tree = (ParseTree) obj;
             if (factory == null) {
@@ -206,8 +206,8 @@ public final class CQL {
             if (tree.getChildCount() == 3) {
                 final String operand = tree.getChild(1).getText();
                 // TODO: unsafe cast.
-                final Expression<? super Feature, ? extends Number> left  = (Expression<? super Feature, ? extends Number>) convertExpression(tree.getChild(0), ff);
-                final Expression<? super Feature, ? extends Number> right = (Expression<? super Feature, ? extends Number>) convertExpression(tree.getChild(2), ff);
+                final Expression<Feature, ? extends Number> left  = (Expression<Feature, ? extends Number>) convertExpression(tree.getChild(0), ff);
+                final Expression<Feature, ? extends Number> right = (Expression<Feature, ? extends Number>) convertExpression(tree.getChild(2), ff);
                 if ("*".equals(operand)) {
                     return ff.multiply(left, right);
                 } else if ("/".equals(operand)) {
@@ -497,7 +497,7 @@ public final class CQL {
     /**
      * Convert the given tree in a Filter.
      */
-    private static Filter<? super Feature> convertFilter(ParseTree tree, FilterFactory<Feature,Object,Object> ff) throws CQLException {
+    private static Filter<Feature> convertFilter(ParseTree tree, FilterFactory<Feature,Object,Object> ff) throws CQLException {
         if (tree instanceof FilterContext) {
             //: filter (AND filter)+
             //| filter (OR filter)+
@@ -520,11 +520,11 @@ public final class CQL {
 
             } else if (!exp.AND().isEmpty()) {
                 //: filter (AND filter)+
-                final List<Filter<? super Feature>> subs = new ArrayList<>();
+                final List<Filter<Feature>> subs = new ArrayList<>();
                 for (FilterContext f : exp.filter()) {
-                    final Filter<? super Feature> sub = convertFilter(f, ff);
+                    final Filter<Feature> sub = convertFilter(f, ff);
                     if (sub.getOperatorType() == LogicalOperatorName.AND) {
-                        subs.addAll(((LogicalOperator<? super Feature>) sub).getOperands());
+                        subs.addAll(((LogicalOperator<Feature>) sub).getOperands());
                     } else {
                         subs.add(sub);
                     }
@@ -532,11 +532,11 @@ public final class CQL {
                 return ff.and(subs);
             } else if (!exp.OR().isEmpty()) {
                 //| filter (OR filter)+
-                final List<Filter<? super Feature>> subs = new ArrayList<>();
+                final List<Filter<Feature>> subs = new ArrayList<>();
                 for (FilterContext f : exp.filter()) {
-                    final Filter<? super Feature> sub = convertFilter(f, ff);
+                    final Filter<Feature> sub = convertFilter(f, ff);
                     if (sub.getOperatorType() == LogicalOperatorName.OR) {
-                        subs.addAll(((LogicalOperator<? super Feature>) sub).getOperands());
+                        subs.addAll(((LogicalOperator<Feature>) sub).getOperands());
                     } else {
                         subs.add(sub);
                     }
@@ -613,7 +613,7 @@ public final class CQL {
                         break;
                     }
                     default: {
-                        final List<Filter<? super Feature>> filters = new ArrayList<>();
+                        final List<Filter<Feature>> filters = new ArrayList<>();
                         for (Expression<Feature,?> e : subexps) {
                             filters.add(ff.equal(val, e));
                         }   selection = ff.or(filters);
@@ -828,9 +828,9 @@ public final class CQL {
             final Query query = new Query();
             if (context.MULT() == null) {
                 for (ProjectionContext pc : projections) {
-                    final Expression<Feature, ?> exp = convertExpression(pc.expression(), ff);
+                    final Expression<Feature,?> exp = convertExpression(pc.expression(), ff);
                     if (pc.AS() != null) {
-                        final Expression<Feature, ?> alias = convertExpression(pc.TEXT(), ff);
+                        final Expression<Feature,?> alias = convertExpression(pc.TEXT(), ff);
                         query.projections.add(new Query.Projection(exp, String.valueOf(( (Literal) alias).getValue())));
                     } else {
                         query.projections.add(new Query.Projection(exp, null));
@@ -848,9 +848,9 @@ public final class CQL {
             }
             if (orderby != null) {
                 for (SortpropContext spc : orderby.sortprop()) {
-                    final Expression<Feature, ?> exp = convertExpression(spc.expression(), ff);
+                    final Expression<Feature,?> exp = convertExpression(spc.expression(), ff);
                     if (exp instanceof ValueReference) {
-                        query.sortby.add(ff.sort((ValueReference<? super Feature, ?>) exp,
+                        query.sortby.add(ff.sort((ValueReference<Feature,?>) exp,
                                 spc.DESC() != null ? SortOrder.DESCENDING : SortOrder.ASCENDING));
                     } else {
                         throw new CQLException("Sort by may be used with property names only");

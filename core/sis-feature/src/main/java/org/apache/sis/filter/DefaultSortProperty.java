@@ -34,7 +34,7 @@ import org.opengis.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (typically {@code Feature}) to sort.
  *
@@ -50,7 +50,7 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
      * The property on which to apply sorting.
      */
     @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private final ValueReference<? super R, ?> property;
+    private final ValueReference<R,?> property;
 
     /**
      * Whether the sorting order is {@code ASCENDING} or {@code DESCENDING}.
@@ -64,7 +64,7 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
      * @param property  property on which to apply sorting.
      * @param order     the desired order: {@code ASCENDING} or {@code DESCENDING}.
      */
-    DefaultSortProperty(final ValueReference<? super R, ?> property, final SortOrder order) {
+    DefaultSortProperty(final ValueReference<R,?> property, final SortOrder order) {
         ArgumentChecks.ensureNonNull("property", property);
         ArgumentChecks.ensureNonNull("order",    order);
         this.property = property;
@@ -75,7 +75,7 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
      * Returns the property to sort by.
      */
     @Override
-    public ValueReference<? super R, ?> getValueReference() {
+    public ValueReference<R,?> getValueReference() {
         return property;
     }
 

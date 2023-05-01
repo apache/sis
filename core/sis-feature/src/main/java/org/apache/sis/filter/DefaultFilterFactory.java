@@ -48,7 +48,7 @@ import org.opengis.filter.capability.FilterCapabilities;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) to use as inputs.
  * @param  <G>  base class of geometry objects. The implementation-neutral type is GeoAPI {@link Geometry},
@@ -186,7 +186,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          */
         @Override
         public ResourceId<Feature> resourceId(final String identifier) {
-            return new IdentifierFilter<>(identifier);
+            return new IdentifierFilter(identifier);
         }
 
         /**
@@ -207,7 +207,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
         public ResourceId<Feature> resourceId(final String identifier, final Version version,
                                               final Instant startTime, final Instant endTime)
         {
-            return new IdentifierFilter<>(identifier);
+            return new IdentifierFilter(identifier);
         }
 
         /**
@@ -258,8 +258,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public BinaryComparisonOperator<R> equal(final Expression<? super R, ?> expression1,
-                                             final Expression<? super R, ?> expression2,
+    public BinaryComparisonOperator<R> equal(final Expression<R,?> expression1,
+                                             final Expression<R,?> expression2,
                                              boolean isMatchingCase, MatchAction matchAction)
     {
         return new ComparisonFilter.EqualTo<>(expression1, expression2, isMatchingCase, matchAction);
@@ -278,8 +278,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public BinaryComparisonOperator<R> notEqual(final Expression<? super R, ?> expression1,
-                                                final Expression<? super R, ?> expression2,
+    public BinaryComparisonOperator<R> notEqual(final Expression<R,?> expression1,
+                                                final Expression<R,?> expression2,
                                                 boolean isMatchingCase, MatchAction matchAction)
     {
         return new ComparisonFilter.NotEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
@@ -298,8 +298,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public BinaryComparisonOperator<R> less(final Expression<? super R, ?> expression1,
-                                            final Expression<? super R, ?> expression2,
+    public BinaryComparisonOperator<R> less(final Expression<R,?> expression1,
+                                            final Expression<R,?> expression2,
                                             boolean isMatchingCase, MatchAction matchAction)
     {
         return new ComparisonFilter.LessThan<>(expression1, expression2, isMatchingCase, matchAction);
@@ -318,8 +318,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public BinaryComparisonOperator<R> greater(final Expression<? super R, ?> expression1,
-                                               final Expression<? super R, ?> expression2,
+    public BinaryComparisonOperator<R> greater(final Expression<R,?> expression1,
+                                               final Expression<R,?> expression2,
                                                boolean isMatchingCase, MatchAction matchAction)
     {
         return new ComparisonFilter.GreaterThan<>(expression1, expression2, isMatchingCase, matchAction);
@@ -338,8 +338,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public BinaryComparisonOperator<R> lessOrEqual(final Expression<? super R, ?> expression1,
-                                                   final Expression<? super R, ?> expression2,
+    public BinaryComparisonOperator<R> lessOrEqual(final Expression<R,?> expression1,
+                                                   final Expression<R,?> expression2,
                                                    boolean isMatchingCase, MatchAction matchAction)
     {
         return new ComparisonFilter.LessThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
@@ -358,8 +358,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Revisit if we can be more specific on the second parameterized type in expressions.
      */
     @Override
-    public BinaryComparisonOperator<R> greaterOrEqual(final Expression<? super R, ?> expression1,
-                                                      final Expression<? super R, ?> expression2,
+    public BinaryComparisonOperator<R> greaterOrEqual(final Expression<R,?> expression1,
+                                                      final Expression<R,?> expression2,
                                                       boolean isMatchingCase, MatchAction matchAction)
     {
         return new ComparisonFilter.GreaterThanOrEqualTo<>(expression1, expression2, isMatchingCase, matchAction);
@@ -376,9 +376,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *                       &amp; ({@code expression} ≤ {@code upperBoundary}).
      */
     @Override
-    public BetweenComparisonOperator<R> between(final Expression<? super R, ?> expression,
-                                                final Expression<? super R, ?> lowerBoundary,
-                                                final Expression<? super R, ?> upperBoundary)
+    public BetweenComparisonOperator<R> between(final Expression<R,?> expression,
+                                                final Expression<R,?> lowerBoundary,
+                                                final Expression<R,?> upperBoundary)
     {
         return new ComparisonFilter.Between<>(expression, lowerBoundary, upperBoundary);
     }
@@ -395,7 +395,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @return a character string comparison operator with pattern matching.
      */
     @Override
-    public LikeOperator<R> like(final Expression<? super R, ?> expression, final String pattern,
+    public LikeOperator<R> like(final Expression<R,?> expression, final String pattern,
             final char wildcard, final char singleChar, final char escape, final boolean isMatchingCase)
     {
         return new LikeFilter<>(expression, pattern, wildcard, singleChar, escape, isMatchingCase);
@@ -409,7 +409,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @return a filter that checks if an expression's value is {@code null}.
      */
     @Override
-    public NullOperator<R> isNull(final Expression<? super R, ?> expression) {
+    public NullOperator<R> isNull(final Expression<R,?> expression) {
         return new UnaryFunction.IsNull<>(expression);
     }
 
@@ -438,7 +438,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see org.apache.sis.xml.NilReason
      */
     @Override
-    public NilOperator<R> isNil(final Expression<? super R, ?> expression, final String nilReason) {
+    public NilOperator<R> isNil(final Expression<R,?> expression, final String nilReason) {
         return new UnaryFunction.IsNil<>(expression, nilReason);
     }
 
@@ -452,7 +452,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see LogicalOperatorName#AND
      */
     @Override
-    public LogicalOperator<R> and(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+    public LogicalOperator<R> and(final Filter<R> operand1, final Filter<R> operand2) {
         ArgumentChecks.ensureNonNull("operand1", operand1);
         ArgumentChecks.ensureNonNull("operand2", operand2);
         return new LogicalFilter.And<>(operand1, operand2);
@@ -468,7 +468,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see LogicalOperatorName#AND
      */
     @Override
-    public LogicalOperator<R> and(final Collection<? extends Filter<? super R>> operands) {
+    public LogicalOperator<R> and(final Collection<? extends Filter<R>> operands) {
         return new LogicalFilter.And<>(operands);
     }
 
@@ -482,7 +482,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see LogicalOperatorName#OR
      */
     @Override
-    public LogicalOperator<R> or(final Filter<? super R> operand1, final Filter<? super R> operand2) {
+    public LogicalOperator<R> or(final Filter<R> operand1, final Filter<R> operand2) {
         ArgumentChecks.ensureNonNull("operand1", operand1);
         ArgumentChecks.ensureNonNull("operand2", operand2);
         return new LogicalFilter.Or<>(operand1, operand2);
@@ -498,7 +498,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see LogicalOperatorName#OR
      */
     @Override
-    public LogicalOperator<R> or(final Collection<? extends Filter<? super R>> operands) {
+    public LogicalOperator<R> or(final Collection<? extends Filter<R>> operands) {
         return new LogicalFilter.Or<>(operands);
     }
 
@@ -511,7 +511,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see LogicalOperatorName#NOT
      */
     @Override
-    public LogicalOperator<R> not(final Filter<? super R> operand) {
+    public LogicalOperator<R> not(final Filter<R> operand) {
         return new LogicalFilter.Not<>(operand);
     }
 
@@ -528,7 +528,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Maybe the expression parameterized type should extend {@link Geometry}.
      */
     @Override
-    public BinarySpatialOperator<R> bbox(final Expression<? super R, ? extends G> geometry, final Envelope bounds) {
+    public BinarySpatialOperator<R> bbox(final Expression<R, ? extends G> geometry, final Envelope bounds) {
         return new BinarySpatialFilter<>(library, geometry, bounds, wraparound);
     }
 
@@ -542,8 +542,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#EQUALS
      */
     @Override
-    public BinarySpatialOperator<R> equals(final Expression<? super R, ? extends G> geometry1,
-                                           final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> equals(final Expression<R, ? extends G> geometry1,
+                                           final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.EQUALS, library, geometry1, geometry2);
     }
@@ -558,8 +558,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#DISJOINT
      */
     @Override
-    public BinarySpatialOperator<R> disjoint(final Expression<? super R, ? extends G> geometry1,
-                                             final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> disjoint(final Expression<R, ? extends G> geometry1,
+                                             final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.DISJOINT, library, geometry1, geometry2);
     }
@@ -574,8 +574,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#INTERSECTS
      */
     @Override
-    public BinarySpatialOperator<R> intersects(final Expression<? super R, ? extends G> geometry1,
-                                               final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> intersects(final Expression<R, ? extends G> geometry1,
+                                               final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.INTERSECTS, library, geometry1, geometry2);
     }
@@ -590,8 +590,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#TOUCHES
      */
     @Override
-    public BinarySpatialOperator<R> touches(final Expression<? super R, ? extends G> geometry1,
-                                            final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> touches(final Expression<R, ? extends G> geometry1,
+                                            final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.TOUCHES, library, geometry1, geometry2);
     }
@@ -606,8 +606,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#CROSSES
      */
     @Override
-    public BinarySpatialOperator<R> crosses(final Expression<? super R, ? extends G> geometry1,
-                                            final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> crosses(final Expression<R, ? extends G> geometry1,
+                                            final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.CROSSES, library, geometry1, geometry2);
     }
@@ -623,8 +623,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#WITHIN
      */
     @Override
-    public BinarySpatialOperator<R> within(final Expression<? super R, ? extends G> geometry1,
-                                           final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> within(final Expression<R, ? extends G> geometry1,
+                                           final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.WITHIN, library, geometry1, geometry2);
     }
@@ -639,8 +639,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#CONTAINS
      */
     @Override
-    public BinarySpatialOperator<R> contains(final Expression<? super R, ? extends G> geometry1,
-                                             final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> contains(final Expression<R, ? extends G> geometry1,
+                                             final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.CONTAINS, library, geometry1, geometry2);
     }
@@ -656,8 +656,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see SpatialOperatorName#OVERLAPS
      */
     @Override
-    public BinarySpatialOperator<R> overlaps(final Expression<? super R, ? extends G> geometry1,
-                                             final Expression<? super R, ? extends G> geometry2)
+    public BinarySpatialOperator<R> overlaps(final Expression<R, ? extends G> geometry1,
+                                             final Expression<R, ? extends G> geometry2)
     {
         return new BinarySpatialFilter<>(SpatialOperatorName.OVERLAPS, library, geometry1, geometry2);
     }
@@ -675,8 +675,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see DistanceOperatorName#BEYOND
      */
     @Override
-    public DistanceOperator<R> beyond(final Expression<? super R, ? extends G> geometry1,
-                                      final Expression<? super R, ? extends G> geometry2,
+    public DistanceOperator<R> beyond(final Expression<R, ? extends G> geometry1,
+                                      final Expression<R, ? extends G> geometry2,
                                       final Quantity<Length> distance)
     {
         return new DistanceFilter<>(DistanceOperatorName.BEYOND, library, geometry1, geometry2, distance);
@@ -695,8 +695,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see DistanceOperatorName#WITHIN
      */
     @Override
-    public DistanceOperator<R> within(final Expression<? super R, ? extends G> geometry1,
-                                      final Expression<? super R, ? extends G> geometry2,
+    public DistanceOperator<R> within(final Expression<R, ? extends G> geometry1,
+                                      final Expression<R, ? extends G> geometry2,
                                       final Quantity<Length> distance)
     {
         return new DistanceFilter<>(DistanceOperatorName.WITHIN, library, geometry1, geometry2, distance);
@@ -712,8 +712,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#AFTER
      */
     @Override
-    public TemporalOperator<R> after(final Expression<? super R, ? extends T> time1,
-                                     final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> after(final Expression<R, ? extends T> time1,
+                                     final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.After<>(time1, time2);
     }
@@ -728,8 +728,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#BEFORE
      */
     @Override
-    public TemporalOperator<R> before(final Expression<? super R, ? extends T> time1,
-                                      final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> before(final Expression<R, ? extends T> time1,
+                                      final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Before<>(time1, time2);
     }
@@ -744,8 +744,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#BEGINS
      */
     @Override
-    public TemporalOperator<R> begins(final Expression<? super R, ? extends T> time1,
-                                      final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> begins(final Expression<R, ? extends T> time1,
+                                      final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Begins<>(time1, time2);
     }
@@ -760,8 +760,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#BEGUN_BY
      */
     @Override
-    public TemporalOperator<R> begunBy(final Expression<? super R, ? extends T> time1,
-                                       final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> begunBy(final Expression<R, ? extends T> time1,
+                                       final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.BegunBy<>(time1, time2);
     }
@@ -776,8 +776,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#CONTAINS
      */
     @Override
-    public TemporalOperator<R> tcontains(final Expression<? super R, ? extends T> time1,
-                                         final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> tcontains(final Expression<R, ? extends T> time1,
+                                         final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Contains<>(time1, time2);
     }
@@ -792,8 +792,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#DURING
      */
     @Override
-    public TemporalOperator<R> during(final Expression<? super R, ? extends T> time1,
-                                      final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> during(final Expression<R, ? extends T> time1,
+                                      final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.During<>(time1, time2);
     }
@@ -808,8 +808,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#EQUALS
      */
     @Override
-    public TemporalOperator<R> tequals(final Expression<? super R, ? extends T> time1,
-                                       final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> tequals(final Expression<R, ? extends T> time1,
+                                       final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Equals<>(time1, time2);
     }
@@ -824,8 +824,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#OVERLAPS
      */
     @Override
-    public TemporalOperator<R> toverlaps(final Expression<? super R, ? extends T> time1,
-                                         final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> toverlaps(final Expression<R, ? extends T> time1,
+                                         final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Overlaps<>(time1, time2);
     }
@@ -840,8 +840,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#MEETS
      */
     @Override
-    public TemporalOperator<R> meets(final Expression<? super R, ? extends T> time1,
-                                     final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> meets(final Expression<R, ? extends T> time1,
+                                     final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Meets<>(time1, time2);
     }
@@ -856,8 +856,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#ENDS
      */
     @Override
-    public TemporalOperator<R> ends(final Expression<? super R, ? extends T> time1,
-                                    final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> ends(final Expression<R, ? extends T> time1,
+                                    final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.Ends<>(time1, time2);
     }
@@ -872,8 +872,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#OVERLAPPED_BY
      */
     @Override
-    public TemporalOperator<R> overlappedBy(final Expression<? super R, ? extends T> time1,
-                                            final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> overlappedBy(final Expression<R, ? extends T> time1,
+                                            final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.OverlappedBy<>(time1, time2);
     }
@@ -888,8 +888,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#MET_BY
      */
     @Override
-    public TemporalOperator<R> metBy(final Expression<? super R, ? extends T> time1,
-                                     final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> metBy(final Expression<R, ? extends T> time1,
+                                     final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.MetBy<>(time1, time2);
     }
@@ -904,8 +904,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#ENDED_BY
      */
     @Override
-    public TemporalOperator<R> endedBy(final Expression<? super R, ? extends T> time1,
-                                       final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> endedBy(final Expression<R, ? extends T> time1,
+                                       final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.EndedBy<>(time1, time2);
     }
@@ -921,8 +921,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @see TemporalOperatorName#ANY_INTERACTS
      */
     @Override
-    public TemporalOperator<R> anyInteracts(final Expression<? super R, ? extends T> time1,
-                                            final Expression<? super R, ? extends T> time2)
+    public TemporalOperator<R> anyInteracts(final Expression<R, ? extends T> time1,
+                                            final Expression<R, ? extends T> time2)
     {
         return new TemporalFilter.AnyInteracts<>(time1, time2);
     }
@@ -937,8 +937,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Should we really restrict the type to {@link Number}?
      */
     @Override
-    public Expression<R,Number> add(final Expression<? super R, ? extends Number> operand1,
-                                    final Expression<? super R, ? extends Number> operand2)
+    public Expression<R,Number> add(final Expression<R, ? extends Number> operand1,
+                                    final Expression<R, ? extends Number> operand2)
     {
         return new ArithmeticFunction.Add<>(operand1, operand2);
     }
@@ -953,8 +953,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Should we really restrict the type to {@link Number}?
      */
     @Override
-    public Expression<R,Number> subtract(final Expression<? super R, ? extends Number> operand1,
-                                         final Expression<? super R, ? extends Number> operand2)
+    public Expression<R,Number> subtract(final Expression<R, ? extends Number> operand1,
+                                         final Expression<R, ? extends Number> operand2)
     {
         return new ArithmeticFunction.Subtract<>(operand1, operand2);
     }
@@ -969,8 +969,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Should we really restrict the type to {@link Number}?
      */
     @Override
-    public Expression<R,Number> multiply(final Expression<? super R, ? extends Number> operand1,
-                                         final Expression<? super R, ? extends Number> operand2)
+    public Expression<R,Number> multiply(final Expression<R, ? extends Number> operand1,
+                                         final Expression<R, ? extends Number> operand2)
     {
         return new ArithmeticFunction.Multiply<>(operand1, operand2);
     }
@@ -985,8 +985,8 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @todo Should we really restrict the type to {@link Number}?
      */
     @Override
-    public Expression<R,Number> divide(final Expression<? super R, ? extends Number> operand1,
-                                       final Expression<? super R, ? extends Number> operand2)
+    public Expression<R,Number> divide(final Expression<R, ? extends Number> operand1,
+                                       final Expression<R, ? extends Number> operand2)
     {
         return new ArithmeticFunction.Divide<>(operand1, operand2);
     }
@@ -1002,7 +1002,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *         or if the arguments are illegal for the specified function.
      */
     @Override
-    public Expression<R,?> function(final String name, Expression<? super R, ?>[] parameters) {
+    public Expression<R,?> function(final String name, Expression<R,?>[] parameters) {
         ArgumentChecks.ensureNonNull("name", name);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         parameters = parameters.clone();
@@ -1046,7 +1046,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      * @return definition of sort order of a property.
      */
     @Override
-    public SortProperty<R> sort(final ValueReference<? super R, ?> property, final SortOrder order) {
+    public SortProperty<R> sort(final ValueReference<R,?> property, final SortOrder order) {
         return new DefaultSortProperty<>(property, order);
     }
 }

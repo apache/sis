@@ -19,12 +19,14 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.feature.AttributeConvention;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ResourceId;
+import org.opengis.filter.Filter;
 
 
 /**
@@ -33,13 +35,10 @@ import org.opengis.filter.ResourceId;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
- *
- * @param  <R>  the type of resources used as inputs.
- *
- * @since 1.1
+ * @version 1.4
+ * @since   1.1
  */
-final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements ResourceId<R> {
+final class IdentifierFilter extends Node implements ResourceId<Feature>, Optimization.OnFilter<Feature> {
     /**
      * For cross-version compatibility.
      */
@@ -59,6 +58,23 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
     }
 
     /**
+     * Nothing to optimize here. The {@code Optimization.OnFilter} interface
+     * is implemented for inheriting the AND, OR and NOT methods overriding.
+     */
+    @Override
+    public Filter<Feature> optimize(Optimization optimization) {
+        return this;
+    }
+
+    /**
+     * Returns the class of resources expected by this expression.
+     */
+    @Override
+    public Class<Feature> getResourceClass() {
+        return Feature.class;
+    }
+
+    /**
      * Returns the identifiers of feature instances to accept.
      */
     @Override
@@ -70,7 +86,7 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
      * Returns the parameters of this filter.
      */
     @Override
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<Feature,?>> getExpressions() {
         return List.of(new LeafExpression.Literal<>(identifier));
     }
 
@@ -88,7 +104,7 @@ final class IdentifierFilter<R extends Feature> extends FilterNode<R> implements
      * is one of the identifier specified at {@code IdentifierFilter} construction time.
      */
     @Override
-    public boolean test(R object) {
+    public boolean test(final Feature object) {
         if (object == null) {
             return false;
         }

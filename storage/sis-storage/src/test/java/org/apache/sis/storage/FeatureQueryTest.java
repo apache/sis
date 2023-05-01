@@ -35,6 +35,7 @@ import org.opengis.feature.Feature;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
+import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
@@ -296,10 +297,10 @@ public final class FeatureQueryTest extends TestCase {
         assertEquals(2, resultType.getProperties(true).size());
         final PropertyType pt1 = resultType.getProperty("value1");
         final PropertyType pt2 = resultType.getProperty("unexpected");
-        assertTrue(pt1 instanceof AttributeType);
-        assertTrue(pt2 instanceof AttributeType);
-        assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
-        assertEquals(Object.class,  ((AttributeType) pt2).getValueClass());
+        assertTrue(pt1 instanceof AttributeType<?>);
+        assertTrue(pt2 instanceof AttributeType<?>);
+        assertEquals(Integer.class, ((AttributeType<?>) pt1).getValueClass());
+        assertEquals(Object.class,  ((AttributeType<?>) pt2).getValueClass());
 
         // Check feature property values.
         assertEquals(3,    instance.getPropertyValue("value1"));
@@ -326,7 +327,7 @@ public final class FeatureQueryTest extends TestCase {
     /**
      * Shortcut for creating expression for a projection computed on-the-fly.
      */
-    private static FeatureQuery.NamedExpression virtualProjection(final Expression<? super Feature, ?> expression, final String alias) {
+    private static FeatureQuery.NamedExpression virtualProjection(final Expression<Feature, ?> expression, final String alias) {
         return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.VIRTUAL);
     }
 
@@ -351,14 +352,16 @@ public final class FeatureQueryTest extends TestCase {
         final PropertyType pt1 = resultType.getProperty("value1");
         final PropertyType pt2 = resultType.getProperty("renamed1");
         final PropertyType pt3 = resultType.getProperty("computed");
-        assertTrue(pt1 instanceof AttributeType);
+        assertTrue(pt1 instanceof AttributeType<?>);
         assertTrue(pt2 instanceof Operation);
         assertTrue(pt3 instanceof Operation);
-        assertEquals(Integer.class, ((AttributeType) pt1).getValueClass());
-        assertTrue(((Operation) pt2).getResult() instanceof AttributeType);
-        assertTrue(((Operation) pt3).getResult() instanceof AttributeType);
-        assertEquals(Integer.class, ((AttributeType)((Operation) pt2).getResult()).getValueClass());
-        assertEquals(String.class,  ((AttributeType)((Operation) pt3).getResult()).getValueClass());
+        final IdentifiedType result2 = ((Operation) pt2).getResult();
+        final IdentifiedType result3 = ((Operation) pt3).getResult();
+        assertEquals(Integer.class, ((AttributeType<?>) pt1).getValueClass());
+        assertTrue(result2 instanceof AttributeType<?>);
+        assertTrue(result3 instanceof AttributeType<?>);
+        assertEquals(Integer.class, ((AttributeType<?>) result2).getValueClass());
+        assertEquals(String.class,  ((AttributeType<?>) result3).getValueClass());
 
         // Check feature instance.
         assertEquals(3, instance.getPropertyValue("value1"));

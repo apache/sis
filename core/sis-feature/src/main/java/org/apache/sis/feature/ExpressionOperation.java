@@ -64,7 +64,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * The expression on which to delegate the execution of this operation.
      */
     @SuppressWarnings("serial")                         // Not statically typed as serializable.
-    private final Function<? super Feature, ? extends V> expression;
+    private final Function<Feature, ? extends V> expression;
 
     /**
      * The type of result of evaluating the expression.
@@ -88,14 +88,14 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * @param result          type of values computed by the expression.
      */
     ExpressionOperation(final Map<String,?> identification,
-                        final Function<? super Feature, ? extends V> expression,
+                        final Function<Feature, ? extends V> expression,
                         final AttributeType<? super V> result)
     {
         super(identification);
         this.expression = expression;
         this.result     = result;
         if (expression instanceof Expression<?,?>) {
-            dependencies = DependencyFinder.search((Expression<Object,?>) expression);
+            dependencies = DependencyFinder.search((Expression<Feature,?>) expression);
         } else {
             dependencies = Set.of();
         }
@@ -164,10 +164,8 @@ final class ExpressionOperation<V> extends AbstractOperation {
     /**
      * An expression visitor for finding all dependencies of a given expression.
      * The dependencies are feature properties read by {@link ValueReference} nodes.
-     *
-     * @todo The first parameterized type should be {@code Feature} instead of {@code Object}.
      */
-    private static final class DependencyFinder extends Visitor<Object, Collection<String>> {
+    private static final class DependencyFinder extends Visitor<Feature, Collection<String>> {
         /**
          * The unique instance.
          */
@@ -179,7 +177,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
          * @param  expression  the expression for which to get dependencies.
          * @return all dependencies recognized by this method.
          */
-        static Set<String> search(final Expression<Object,?> expression) {
+        static Set<String> search(final Expression<Feature,?> expression) {
             final Set<String> dependencies = new HashSet<>();
             VISITOR.visit(expression, dependencies);
             return Set.copyOf(dependencies);
@@ -190,13 +188,13 @@ final class ExpressionOperation<V> extends AbstractOperation {
          */
         private DependencyFinder() {
             setLogicalHandlers((f, dependencies) -> {
-                final var filter = (LogicalOperator<Object>) f;
-                for (Filter<Object> child : filter.getOperands()) {
+                final var filter = (LogicalOperator<Feature>) f;
+                for (Filter<Feature> child : filter.getOperands()) {
                     visit(child, dependencies);
                 }
             });
             setExpressionHandler(FunctionNames.ValueReference, (e, dependencies) -> {
-                final var expression = (ValueReference<Object,?>) e;
+                final var expression = (ValueReference<Feature,?>) e;
                 final String propName = expression.getXPath();
                 if (!propName.trim().isEmpty()) {
                     dependencies.add(propName);
@@ -208,8 +206,8 @@ final class ExpressionOperation<V> extends AbstractOperation {
          * Fallback for all filters not explicitly handled by the setting applied in the constructor.
          */
         @Override
-        protected void typeNotFound(final CodeList<?> type, final Filter<Object> filter, final Collection<String> dependencies) {
-            for (final Expression<Object,?> f : filter.getExpressions()) {
+        protected void typeNotFound(final CodeList<?> type, final Filter<Feature> filter, final Collection<String> dependencies) {
+            for (final Expression<Feature,?> f : filter.getExpressions()) {
                 visit(f, dependencies);
             }
         }
@@ -218,8 +216,8 @@ final class ExpressionOperation<V> extends AbstractOperation {
          * Fallback for all expressions not explicitly handled by the setting applied in the constructor.
          */
         @Override
-        protected void typeNotFound(final String type, final Expression<Object,?> expression, final Collection<String> dependencies) {
-            for (final Expression<Object,?> p : expression.getParameters()) {
+        protected void typeNotFound(final String type, final Expression<Feature,?> expression, final Collection<String> dependencies) {
+            for (final Expression<Feature,?> p : expression.getParameters()) {
                 visit(p, dependencies);
             }
         }

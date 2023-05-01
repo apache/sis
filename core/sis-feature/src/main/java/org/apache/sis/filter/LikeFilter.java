@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.regex.Pattern;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.internal.filter.Node;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;
@@ -32,13 +33,13 @@ import org.opengis.filter.LikeOperator;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
  * @since 1.1
  */
-final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Optimization.OnFilter<R> {
+final class LikeFilter<R> extends Node implements LikeOperator<R>, Optimization.OnFilter<R> {
     /**
      * For cross-version compatibility.
      */
@@ -48,7 +49,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
      * The source of values to compare against the pattern.
      */
     @SuppressWarnings("serial")                         // Most SIS implementations are serializable.
-    private final Expression<? super R, ?> expression;
+    private final Expression<R,?> expression;
 
     /**
      * The pattern to match against expression values. The {@link #wildcard}, {@link #singleChar}
@@ -99,7 +100,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
      * @param escape          pattern character for indicating that the next character should be matched literally.
      * @param isMatchingCase  specifies how a filter expression processor should perform string comparisons.
      */
-    LikeFilter(final Expression<? super R, ?> expression, final String pattern,
+    LikeFilter(final Expression<R,?> expression, final String pattern,
             final char wildcard, final char singleChar, final char escape, final boolean isMatchingCase)
     {
         ArgumentChecks.ensureNonNull("pattern", pattern);
@@ -143,7 +144,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
     /**
      * Creates a new filter of the same type but different parameters.
      */
-    private LikeFilter(final LikeFilter<R> original, final Expression<? super R, ?> expression) {
+    private LikeFilter(final LikeFilter<R> original, final Expression<R,?> expression) {
         this.expression     = expression;
         this.pattern        = original.pattern;
         this.wildcard       = original.wildcard;
@@ -157,8 +158,16 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
      * Creates a new filter of the same type but different parameters.
      */
     @Override
-    public Filter<R> recreate(final Expression<? super R, ?>[] effective) {
+    public Filter<R> recreate(final Expression<R,?>[] effective) {
         return new LikeFilter<>(this, effective[0]);
+    }
+
+    /**
+     * Returns the class of resources expected by this filter.
+     */
+    @Override
+    public Class<? super R> getResourceClass() {
+        return expression.getResourceClass();
     }
 
     /**
@@ -174,7 +183,7 @@ final class LikeFilter<R> extends FilterNode<R> implements LikeOperator<R>, Opti
      * Returns the expression whose values will be compared by this operator, together with the pattern.
      */
     @Override
-    public List<Expression<? super R, ?>> getExpressions() {
+    public List<Expression<R,?>> getExpressions() {
         return List.of(expression, new LeafExpression.Literal<>(pattern));
     }
 

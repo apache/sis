@@ -39,7 +39,7 @@ import org.opengis.filter.Expression;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  *
@@ -56,8 +56,8 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
     /**
      * Creates a new arithmetic function.
      */
-    ArithmeticFunction(final Expression<? super R, ? extends Number> expression1,
-                       final Expression<? super R, ? extends Number> expression2)
+    ArithmeticFunction(final Expression<R, ? extends Number> expression1,
+                       final Expression<R, ? extends Number> expression2)
     {
         super(expression1, expression2);
     }
@@ -146,14 +146,14 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@code "Add"} operation. */
-        Add(final Expression<? super R, ? extends Number> expression1,
-            final Expression<? super R, ? extends Number> expression2)
+        Add(final Expression<R, ? extends Number> expression1,
+            final Expression<R, ? extends Number> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new expression of the same type but different parameters. */
-        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Expression<R,Number> recreate(final Expression<R,?>[] effective) {
             return new Add<>(effective[0].toValueType(Number.class),
                              effective[1].toValueType(Number.class));
         }
@@ -186,14 +186,14 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@code "Subtract"} operation. */
-        Subtract(final Expression<? super R, ? extends Number> expression1,
-                 final Expression<? super R, ? extends Number> expression2)
+        Subtract(final Expression<R, ? extends Number> expression1,
+                 final Expression<R, ? extends Number> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new expression of the same type but different parameters. */
-        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Expression<R,Number> recreate(final Expression<R,?>[] effective) {
             return new Subtract<>(effective[0].toValueType(Number.class),
                                   effective[1].toValueType(Number.class));
         }
@@ -226,14 +226,14 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@code "Multiply"} operation. */
-        Multiply(final Expression<? super R, ? extends Number> expression1,
-                 final Expression<? super R, ? extends Number> expression2)
+        Multiply(final Expression<R, ? extends Number> expression1,
+                 final Expression<R, ? extends Number> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new expression of the same type but different parameters. */
-        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Expression<R,Number> recreate(final Expression<R,?>[] effective) {
             return new Multiply<>(effective[0].toValueType(Number.class),
                                   effective[1].toValueType(Number.class));
         }
@@ -266,14 +266,14 @@ abstract class ArithmeticFunction<R> extends BinaryFunction<R,Number,Number>
         @Override protected AttributeType<Number> expectedType() {return TYPE;}
 
         /** Creates a new expression for the {@code "Divide"} operation. */
-        Divide(final Expression<? super R, ? extends Number> expression1,
-               final Expression<? super R, ? extends Number> expression2)
+        Divide(final Expression<R, ? extends Number> expression1,
+               final Expression<R, ? extends Number> expression2)
         {
             super(expression1, expression2);
         }
 
         /** Creates a new expression of the same type but different parameters. */
-        @Override public Expression<R,Number> recreate(final Expression<? super R, ?>[] effective) {
+        @Override public Expression<R,Number> recreate(final Expression<R,?>[] effective) {
             return new Divide<>(effective[0].toValueType(Number.class),
                                 effective[1].toValueType(Number.class));
         }

@@ -60,6 +60,7 @@ public final class FunctionNamesTest extends TestCase {
      */
     private static abstract class FilterBase implements ComparisonOperator<Object> {
         @Override public List<Expression<Object,?>> getExpressions() {return List.of();}
+        @Override public Class<Object> getResourceClass() {return Object.class;}
         @Override public boolean test(Object resource) {return false;}
     }
 
@@ -121,6 +122,7 @@ public final class FunctionNamesTest extends TestCase {
         final var expression = new ValueReference<Object,Object>() {
             @Override public String getXPath()      {return null;}
             @Override public Object apply(Object o) {return null;}
+            @Override public Class<Object> getResourceClass() {return Object.class;}
             @Override public <N> Expression<Object,N> toValueType(Class<N> target) {
                 throw new UnsupportedOperationException();
             }
