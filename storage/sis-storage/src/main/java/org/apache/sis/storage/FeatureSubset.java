@@ -139,7 +139,7 @@ final class FeatureSubset extends AbstractFeatureSet {
          * Transform feature instances.
          * Note: "projection" here is in relational database sense, not map projection.
          */
-        final FeatureQuery.NamedExpression[] projection = query.getProjection();
+        final FeatureQuery.NamedExpression[] projection = query.getStoredProjection();
         if (projection != null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
             final Expression<? super Feature,?>[] expressions = new Expression[projection.length];

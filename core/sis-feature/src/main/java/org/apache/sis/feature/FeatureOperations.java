@@ -130,7 +130,7 @@ public final class FeatureOperations extends Static {
      * Creates an operation which is only an alias for another property.
      *
      * <h4>Example</h4>
-     * features often have a property that can be used as identifier or primary key.
+     * Features often have a property that can be used as identifier or primary key.
      * But the name of that property may vary between features of different types.
      * For example, features of type <b>Country</b> may have identifiers named “ISO country code”
      * while features of type <b>Car</b> may have identifiers named “license plate number”.
@@ -274,22 +274,23 @@ public final class FeatureOperations extends Static {
      * @param  <V>             the type of values computed by the expression and assigned to the feature property.
      * @param  identification  the name of the operation, together with optional information.
      * @param  expression      the expression to evaluate on feature instances.
-     * @param  result          type of values computed by the expression and assigned to the feature property.
+     * @param  resultType      type of values computed by the expression and assigned to the feature property.
      * @return a feature operation which computes its values using the given expression.
      *
      * @since 1.4
      */
-    public static <V> Operation expression(final Map<String,?> identification,
-                                           final Function<? super Feature, ? extends V> expression,
-                                           final AttributeType<? super V> result)
+    public static <V> Operation function(final Map<String,?> identification,
+                                         final Function<? super Feature, ? extends V> expression,
+                                         final AttributeType<? super V> resultType)
     {
         ArgumentChecks.ensureNonNull("expression", expression);
-        return POOL.unique(new ExpressionOperation<>(identification, expression, result));
+        ArgumentChecks.ensureNonNull("result", resultType);
+        return POOL.unique(ExpressionOperation.create(identification, expression, resultType));
     }
 
     /**
      * Creates an operation which delegates the computation to a given expression producing values of unknown type.
-     * This method can be used as an alternative to {@link #expression expression(…)} when the constraint on the
+     * This method can be used as an alternative to {@link #function function(…)} when the constraint on the
      * parameterized type {@code <V>} between {@code expression} and {@code result} cannot be enforced at compile time.
      * This method casts or converts the expression to the expected type by a call to
      * {@link Expression#toValueType(Class)}.
@@ -297,16 +298,16 @@ public final class FeatureOperations extends Static {
      * @param  <V>             the type of values computed by the expression and assigned to the feature property.
      * @param  identification  the name of the operation, together with optional information.
      * @param  expression      the expression to evaluate on feature instances.
-     * @param  result          type of values computed by the expression and assigned to the feature property.
+     * @param  resultType      type of values computed by the expression and assigned to the feature property.
      * @return a feature operation which computes its values using the given expression.
      * @throws ClassCastException if the result type is not a target type supported by the expression.
      *
      * @since 1.4
      */
-    public static <V> Operation expressionToResult(final Map<String,?> identification,
-                                                   final Expression<? super Feature, ?> expression,
-                                                   final AttributeType<V> result)
+    public static <V> Operation expression(final Map<String,?> identification,
+                                           final Expression<? super Feature, ?> expression,
+                                           final AttributeType<V> resultType)
     {
-        return expression(identification, expression.toValueType(result.getValueClass()), result);
+        return function(identification, expression.toValueType(resultType.getValueClass()), resultType);
     }
 }

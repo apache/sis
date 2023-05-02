@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.internal.filter;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -32,9 +32,11 @@ import static org.apache.sis.util.CharSequences.*;
  * @version 1.3
  * @since   0.4
  */
-final class XPath extends Static {
+public final class XPath extends Static {
     /**
      * The separator between path components.
+     * Should not be used for URL or Unix name separator, even if the character is the same.
+     * We use this constant for identifying locations in the code where there is some X-Path parsing.
      */
     public static final char SEPARATOR = '/';
 
@@ -57,7 +59,7 @@ final class XPath extends Static {
      *         if there is no separator. If non-null, the list always contains at least one element.
      * @throws IllegalArgumentException if the XPath contains at least one empty component.
      */
-    static List<String> split(final String xpath) {
+    public static List<String> split(final String xpath) {
         int next = xpath.indexOf(SEPARATOR);
         if (next < 0) {
             return null;

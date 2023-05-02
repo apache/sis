@@ -37,10 +37,12 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.internal.feature.AttributeConvention;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.SortByComparator;
+import org.apache.sis.internal.filter.XPath;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
@@ -255,6 +257,25 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
+     * Returns the properties to be stored in the target feature.
+     */
+    final NamedExpression[] getStoredProjection() {
+        final NamedExpression[] stored = getProjection();
+        if (stored != null) {
+            int count = 0;
+            for (final NamedExpression p : stored) {
+                if (p.type == ProjectionType.STORED) {
+                    stored[count++] = p;
+                }
+            }
+            if (count != 0) {
+                return ArraysExt.resize(stored, count);
+            }
+        }
+        return null;
+    }
+
+    /**
      * Sets the approximate area of feature instances to include in the subset.
      * This convenience method creates a filter that checks if the bounding box
      * of the feature's {@code "sis:geometry"} property interacts with the given envelope.
@@ -430,8 +451,32 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * and the result is stored as a feature attribute.
          * The feature property type will be {@link Attribute} and its value will be modifiable.
          * This is the default projection type.
+         *
+         * <h4>Feature instances in expression evaluation</h4>
+         * The features given in calls to {@link Expression#apply(Object)} are instances from the
+         * <em>source</em> {@link FeatureSet}, before filtering.
          */
         STORED,
+
+        /*
+         * The expression is evaluated every times that the property value is requested.
+         * This projection type is similar to {@link #COMPLETING}, except that the features
+         * given in calls to {@link Expression#apply(Object)} are the same instances than
+         * the ones used by {@link #STORED}.
+         *
+         * <div class="note"><b>Note on naming:</b>
+         * the {@code STORED} and {@code VIRTUAL} enumeration values are named according usage in SQL
+         * {@code GENERATE ALWAYS} statement. Those two keywords work on columns in the source tables.
+         * </div>
+         *
+         * <h4>Feature instances in expression evaluation</h4>
+         * The combination of deferred calculation (like {@link #COMPLETING}) and usage of feature instances
+         * from the <em>source</em> {@link FeatureSet} (like {@link #STORED}) may cause this projection type
+         * to retain the source feature instances for a longer time than other types.
+         *
+         * @todo Waiting to see if there is a need for this type before to implement it.
+         */
+      // VIRTUAL,
 
         /**
          * The expression is evaluated every times that the property value is requested.
@@ -445,14 +490,19 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          *   <li>Computation result should not be stored in order to reduce memory usage.</li>
          * </ul>
          *
+         * <h4>Feature instances in expression evaluation</h4>
+         * The features given in calls to {@link Expression#apply(Object)} are instances from the <em>target</em>
+         * {@link FeatureSet}, after filtering. The instances from the source {@code FeatureSet} are no longer
+         * available when the expression is executed. Consequently, all fields that are necessary for computing
+         * a {@code COMPLETING} field shall have been first copied in {@link #STORED} fields.
+         *
+         * <div class="note"><b>Note on naming:</b>
+         * verb tense <i>-ing</i> instead of <i>-ed</i> is for emphasizing that the data used for computation
+         * are current (filtered) data instead of past (original) data.</div>
+         *
          * @see FeatureOperations#expression(Map, Function, AttributeType)
          */
-        VIRTUAL
-
-        /*
-         * Examples of other enumeration values that we may add in the future:
-         * GENERATED for meaning "STORED but read-only", CACHED for lazy computation.
-         */
+        COMPLETING
     }
 
     /**
@@ -586,10 +636,9 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          */
         @Override
         public String toString() {
-            final StringBuilder buffer = new StringBuilder();
-            buffer.append(getClass().getSimpleName()).append('[');      // Class name without enclosing class.
+            final StringBuilder buffer = new StringBuilder("SELECT ");
             appendTo(buffer);
-            return buffer.append(']').toString();
+            return buffer.toString();
         }
 
         /**
@@ -597,11 +646,14 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          */
         final void appendTo(final StringBuilder buffer) {
             if (expression instanceof Literal<?,?>) {
-                buffer.append('“').append(((Literal<?,?>) expression).getValue()).append('”');
+                buffer.append('‘').append(((Literal<?,?>) expression).getValue()).append('’');
             } else if (expression instanceof ValueReference<?,?>) {
-                buffer.append(((ValueReference<?,?>) expression).getXPath());
+                buffer.append('“').append(((ValueReference<?,?>) expression).getXPath()).append('”');
             } else {
-                buffer.append(expression.getFunctionName());
+                buffer.append("=“").append(expression.getFunctionName()).append("”()");
+            }
+            if (type != ProjectionType.STORED) {
+                buffer.append(' ').append(type);
             }
             if (alias != null) {
                 buffer.append(" AS “").append(alias).append('”');
@@ -721,7 +773,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                         continue;
                     }
                     String xpath = ((ValueReference<?,?>) expression).getXPath().trim();
-                    xpath = xpath.substring(xpath.lastIndexOf('/') + 1);    // Works also if '/' is not found.
+                    xpath = xpath.substring(xpath.lastIndexOf(XPath.SEPARATOR) + 1);  // Works also if '/' is not found.
                     if (!(xpath.isEmpty() || names.contains(xpath))) {
                         text = xpath;
                     }
@@ -737,18 +789,20 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                 } while (!names.add(text.toString()));
                 name = Names.createLocalName(null, null, text);
             }
-            resultType.setName(name);
             /*
-             * If the attribute that we just added should be virtual,
-             * replace the attribute by an operation.
+             * If the attribute that we just added should be virtual, replace the attribute by an operation.
+             * We need to keep the property name computed by `fex.expectedType(…)` for the operation result,
+             * because that name is the name of the link to create if the operation is `ValueReference`.
              */
-            if (item.type == ProjectionType.VIRTUAL && resultType instanceof AttributeTypeBuilder<?>) {
+            if (item.type == ProjectionType.COMPLETING && resultType instanceof AttributeTypeBuilder<?>) {
                 final var ab = (AttributeTypeBuilder<?>) resultType;
                 final AttributeType<?> storedType = ab.build();
                 if (ftb.properties().remove(resultType)) {
                     final var properties = Map.of(AbstractOperation.NAME_KEY, name);
-                    ftb.addProperty(FeatureOperations.expressionToResult(properties, expression, storedType));
+                    ftb.addProperty(FeatureOperations.expression(properties, expression, storedType));
                 }
+            } else {
+                resultType.setName(name);
             }
         }
         return ftb.build();

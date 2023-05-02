@@ -82,6 +82,7 @@ final class SparseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * The properties (attributes or feature associations) in this feature.
+     * This map does not include operation results, which are always computed on the fly.
      *
      * Conceptually, values in this map are {@link Property} instances. However, at first we will store
      * only the property <em>values</em>, and build the full {@code Property} objects only if they are

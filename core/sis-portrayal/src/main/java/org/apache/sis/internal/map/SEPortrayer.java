@@ -42,6 +42,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.internal.feature.AttributeConvention;
+import org.apache.sis.internal.filter.XPath;
 import org.apache.sis.storage.FeatureQuery;
 import org.apache.sis.portrayal.MapItem;
 import org.apache.sis.portrayal.MapLayer;
@@ -710,7 +711,7 @@ public final class SEPortrayer {
      * Removes any xpath elements, keep only the root property name.
      */
     private static String stripXpath(String attName) {
-        int index = attName.indexOf('/');
+        int index = attName.indexOf(XPath.SEPARATOR);
         if (index == 0) {
             attName = attName.substring(1);             // Remove first slash
             final Pattern pattern = Pattern.compile("(\\{[^\\{\\}]*\\})|(\\[[^\\[\\]]*\\])|/{1}");
@@ -722,7 +723,7 @@ matches:    while (matcher.find()) {
                 sb.append(attName.substring(position, matcher.start()));
                 position = matcher.end();
                 switch (match.charAt(0)) {
-                    case '/': {
+                    case XPath.SEPARATOR: {
                         // We do not query precisely sub elements.
                         position = attName.length();
                         break matches;
