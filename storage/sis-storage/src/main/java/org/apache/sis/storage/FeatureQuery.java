@@ -460,7 +460,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
 
         /*
          * The expression is evaluated every times that the property value is requested.
-         * This projection type is similar to {@link #COMPLETING}, except that the features
+         * This projection type is similar to {@link #COMPUTING}, except that the features
          * given in calls to {@link Expression#apply(Object)} are the same instances than
          * the ones used by {@link #STORED}.
          *
@@ -470,7 +470,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * </div>
          *
          * <h4>Feature instances in expression evaluation</h4>
-         * The combination of deferred calculation (like {@link #COMPLETING}) and usage of feature instances
+         * The combination of deferred calculation (like {@link #COMPUTING}) and usage of feature instances
          * from the <em>source</em> {@link FeatureSet} (like {@link #STORED}) may cause this projection type
          * to retain the source feature instances for a longer time than other types.
          *
@@ -494,7 +494,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * The features given in calls to {@link Expression#apply(Object)} are instances from the <em>target</em>
          * {@link FeatureSet}, after filtering. The instances from the source {@code FeatureSet} are no longer
          * available when the expression is executed. Consequently, all fields that are necessary for computing
-         * a {@code COMPLETING} field shall have been first copied in {@link #STORED} fields.
+         * a {@code COMPUTING} field shall have been first copied in {@link #STORED} fields.
          *
          * <div class="note"><b>Note on naming:</b>
          * verb tense <i>-ing</i> instead of <i>-ed</i> is for emphasizing that the data used for computation
@@ -502,7 +502,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          *
          * @see FeatureOperations#expression(Map, Function, AttributeType)
          */
-        COMPLETING
+        COMPUTING
     }
 
     /**
@@ -794,7 +794,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
              * We need to keep the property name computed by `fex.expectedType(…)` for the operation result,
              * because that name is the name of the link to create if the operation is `ValueReference`.
              */
-            if (item.type == ProjectionType.COMPLETING && resultType instanceof AttributeTypeBuilder<?>) {
+            if (item.type == ProjectionType.COMPUTING && resultType instanceof AttributeTypeBuilder<?>) {
                 final var ab = (AttributeTypeBuilder<?>) resultType;
                 final AttributeType<?> storedType = ab.build();
                 if (ftb.properties().remove(resultType)) {

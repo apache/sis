@@ -329,7 +329,7 @@ public final class FeatureQueryTest extends TestCase {
      * Shortcut for creating expression for a projection computed on-the-fly.
      */
     private static FeatureQuery.NamedExpression virtualProjection(final Expression<Feature, ?> expression, final String alias) {
-        return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.COMPLETING);
+        return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.COMPUTING);
     }
 
     /**
