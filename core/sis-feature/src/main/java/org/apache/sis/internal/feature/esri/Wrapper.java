@@ -158,7 +158,7 @@ final class Wrapper extends GeometryWithCRS<Geometry> {
      * @throws ClassCastException if an element in the iterator is not an ESRI geometry.
      */
     @Override
-    protected Geometry mergePolylines(final Iterator<?> polylines) {
+    public Geometry mergePolylines(final Iterator<?> polylines) {
         final Polyline path = new Polyline();
         boolean lineTo = false;
 add:    for (Geometry next = geometry;;) {
@@ -181,7 +181,7 @@ add:    for (Geometry next = geometry;;) {
                 lineTo = false;
             }
             /*
-             * 'polylines.hasNext()' check is conceptually part of 'for' instruction,
+             * `polylines.hasNext()` check is conceptually part of `for` instruction,
              * except that we need to skip this condition during the first iteration.
              */
             do if (!polylines.hasNext()) break add;

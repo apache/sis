@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.temporal.Temporal;
-import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.util.FactoryException;
@@ -35,6 +34,7 @@ import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.feature.DefaultAssociationRole;
 import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
@@ -47,8 +47,8 @@ import org.apache.sis.util.ResourceInternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Branch-dependent imports
-import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
+import org.opengis.feature.Operation;
 
 
 /**
@@ -57,7 +57,8 @@ import org.opengis.feature.FeatureType;
  * nevertheless allows definition of alternative {@code Types} with names created by different factories.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.4
  * @since   0.8
  */
 final class Types {
@@ -132,8 +133,7 @@ final class Types {
     {
         geometries = Geometries.implementation(library);
         final Map<String,InternationalString[]> resources = new HashMap<>();
-        final ScopedName    geomName = AttributeConvention.GEOMETRY_PROPERTY;
-        final Map<String,?> geomInfo = Map.of(AbstractIdentifiedType.NAME_KEY, geomName);
+        final Map<String,?> geomInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.GEOMETRY_PROPERTY);
         final Map<String,?> envpInfo = Map.of(AbstractIdentifiedType.NAME_KEY, AttributeConvention.ENVELOPE_PROPERTY);
         /*
          * The parent of all FeatureTypes to be created in this constructor.
@@ -180,7 +180,7 @@ final class Types {
          * └──────────────────┴────────────────┴───────────────────────┴──────────────┘
          */
         builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("WayPoint");
-        builder.addAttribute(GeometryType.POINT).setName(geomName)
+        builder.addAttribute(GeometryType.POINT).setName(AttributeConvention.GEOMETRY_PROPERTY)
                 .setCRS(CommonCRS.WGS84.normalizedGeographic())
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.setDefaultMultiplicity(0, 1);
@@ -221,8 +221,7 @@ final class Types {
          * │ rtept          │ WayPoint       │ gpx:wptType           │   [0 … ∞]    │
          * └────────────────┴────────────────┴───────────────────────┴──────────────┘
          */
-        final AttributeType<?> groupResult = GroupAsPolylineOperation.getResult(geometries);
-        GroupAsPolylineOperation groupOp = new GroupAsPolylineOperation(geomInfo, Tags.ROUTE_POINTS, groupResult);
+        Operation groupOp = groupAsPolyline(geomInfo, Tags.ROUTE_POINTS, wayPoint);
         builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("Route");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
@@ -247,7 +246,7 @@ final class Types {
          * │ trkpt          │ WayPoint │ gpx:wptType │   [0 … ∞]    │
          * └────────────────┴──────────┴─────────────┴──────────────┘
          */
-        groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_POINTS, groupResult);
+        groupOp = groupAsPolyline(geomInfo, Tags.TRACK_POINTS, wayPoint);
         builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("TrackSegment");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
@@ -272,7 +271,7 @@ final class Types {
          * │ trkseg         │ TrackSegment   │ gpx:trksegType        │   [0 … ∞]    │
          * └────────────────┴────────────────┴───────────────────────┴──────────────┘
          */
-        groupOp = new GroupAsPolylineOperation(geomInfo, Tags.TRACK_SEGMENTS, groupResult);
+        groupOp = groupAsPolyline(geomInfo, Tags.TRACK_SEGMENTS, trackSegment);
         builder.clear().setSuperTypes(parent).setNameSpace(Tags.PREFIX).setName("Track");
         builder.addProperty(groupOp);
         builder.addProperty(FeatureOperations.envelope(envpInfo, null, groupOp));
@@ -316,5 +315,17 @@ final class Types {
             }
         }
         return builder.build();
+    }
+
+    /**
+     * Creates a new operation which will group the geometries in the given property into a single polyline.
+     *
+     * @param geomInfo    the name of the operation, together with optional information.
+     * @param components  name of the property providing the geometries to group as a polyline.
+     * @param type        type of the property identified by {@code components}.
+     */
+    private Operation groupAsPolyline(final Map<String,?> geomInfo, final String components, final FeatureType type) {
+        var c = new DefaultAssociationRole(Map.of(DefaultAssociationRole.NAME_KEY, components), type, 1, 1);
+        return FeatureOperations.groupAsPolyline(geomInfo, geometries.library, c);
     }
 }

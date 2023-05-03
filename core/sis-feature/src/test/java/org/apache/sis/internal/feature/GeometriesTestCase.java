@@ -120,7 +120,7 @@ public abstract class GeometriesTestCase extends TestCase {
     }
 
     /**
-     * Tests {@link Geometries#mergePolylines(Iterator)} (or actually tests its strategy).
+     * Tests {@link GeometryWrapper#mergePolylines(Iterator)} (or actually tests its strategy).
      * This method verifies the polylines by a call to {@link GeometryWrapper#getEnvelope()}.
      * Subclasses should perform more extensive tests by verifying the {@link #geometry} field.
      */
