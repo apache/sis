@@ -54,7 +54,7 @@ import java.util.EnumSet;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @see org.apache.sis.util.ObjectConverter#properties()
  *
@@ -136,7 +136,15 @@ public enum FunctionProperty {
      * @see #ORDER_PRESERVING
      * @see #isMonotonic(Set)
      */
-    ORDER_REVERSING;
+    ORDER_REVERSING,
+
+    /**
+     * A function is volatile if the computed value changes each time that the function is evaluated.
+     * It may be for example a random number generator, or a function returning the current date and time.
+     *
+     * @since 1.4
+     */
+    VOLATILE;
 
     /**
      * Bijective functions shall contain all the value in this set.

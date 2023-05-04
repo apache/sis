@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import org.opengis.util.ScopedName;
@@ -26,6 +27,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.internal.feature.FeatureExpression;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
@@ -117,6 +119,14 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
     @Override
     public ScopedName getFunctionName() {
         return NAME;
+    }
+
+    /**
+     * Returns the manner in which values are computed from given resources.
+     */
+    @Override
+    public Set<FunctionProperty> properties() {
+        return properties(expression, converter);
     }
 
     /**

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.filter;
 
+import java.util.Set;
 import java.util.Map;
 import java.util.IdentityHashMap;
 import java.util.Collection;
@@ -26,11 +27,14 @@ import java.io.Serializable;
 import org.opengis.util.CodeList;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
+import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.util.iso.Names;
+import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -220,6 +224,90 @@ public abstract class Node implements Serializable {
             return ((GeometryConverter<?,G>) expression).library;
         }
         throw new InvalidFilterValueException(Resources.format(Resources.Keys.NotAGeometryAtFirstExpression));
+    }
+
+    /**
+     * The set of all properties that make sense for {@link FeatureExpression#properties()}.
+     * In current version, only one property makes sense and that property is combined with
+     * all other property sets using a logical {@code OR} operation. More properties may be
+     * added in the future, and the logical operation will not necessarily be always "OR".
+     */
+    private static final Set<FunctionProperty> SUPPORTED_PROPERTIES = Set.of(FunctionProperty.VOLATILE);
+
+    /**
+     * Whether the given set of properties contains the {@link #SUPPORTED_PROPERTIES} singleton value.
+     * If a future version recognizes more properties, the return type will no longer be a boolean.
+     */
+    private static boolean isVolatile(final Set<FunctionProperty> properties) {
+        return properties.contains(FunctionProperty.VOLATILE);
+    }
+
+    /**
+     * Whether the combination of the function properties of all given expression is {@link #SUPPORTED_PROPERTIES}.
+     * This method assumes that {@code SUPPORTED_PROPERTIES} is a singleton and that the property can be combined
+     * by a logical {@code OR} operation.
+     */
+    private static <R> boolean isVolatile(final Iterable<Expression<R,?>> operands) {
+        for (final Expression<R,?> operand : operands) {
+            if (operand instanceof FeatureExpression<?,?>) {
+                if (isVolatile(((FeatureExpression<?,?>) operand).properties())) {
+                    return true;    // Short-circuit for `OR` logical operation.
+                }
+            } else {
+                if (isVolatile(operand.getParameters())) {
+                    return true;    // Short-circuit for `OR` logical operation.
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the manner in which values are computed from resources.
+     *
+     * @param  operand  the expression for which to query function properties, or {@code null}.
+     * @return the manners in which values are computed from resources.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because immutable.
+    public static Set<FunctionProperty> properties(final Expression<?,?> operand) {
+        if (operand instanceof FeatureExpression<?,?>) {
+            return ((FeatureExpression<?,?>) operand).properties();
+        } else if (operand != null && isVolatile(operand.getParameters())) {
+            return SUPPORTED_PROPERTIES;
+        }
+        return Set.of();
+    }
+
+    /**
+     * Returns the manner in which values are computed from resources in an expression followed by a conversion.
+     *
+     * @param  operand    the expression for which to query function properties, or {@code null}.
+     * @param  converter  conversion applied on the expression results.
+     * @return combined properties.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")             // Because immutable.
+    protected static Set<FunctionProperty> properties(final Expression<?,?> operand, final ObjectConverter<?,?> converter) {
+        if (isVolatile(properties(operand)) || isVolatile(converter.properties())) {
+            return SUPPORTED_PROPERTIES;
+        }
+        return Set.of();
+    }
+
+    /**
+     * Returns the manner in which values are computed from resources in an expression having the given operands.
+     *
+     * @param  <R>       the type of resources.
+     * @param  operands  the expressions for which to query function properties.
+     * @return the manners in which values are computed from resources.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")             // Because immutable.
+    public static <R> Set<FunctionProperty> properties(final Iterable<Expression<R,?>> operands) {
+        for (final Expression<?,?> operand : operands) {
+            if (isVolatile(properties(operand))) {
+                return SUPPORTED_PROPERTIES;
+            }
+        }
+        return Set.of();
     }
 
     /**

@@ -16,12 +16,15 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.Optional;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.internal.filter.Node;
+import org.apache.sis.internal.feature.FeatureExpression;
 
 // Branch-dependent imports
 import org.opengis.filter.Filter;
@@ -100,6 +103,14 @@ class UnaryFunction<R,V> extends Node {
     @Override
     protected Collection<?> getChildren() {
         return getExpressions();
+    }
+
+    /**
+     * Returns the manner in which values are computed from given resources.
+     * Defined for {@link FeatureExpression#properties()} implementations.
+     */
+    public Set<FunctionProperty> properties() {
+        return properties(expression);
     }
 
 

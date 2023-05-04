@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.Node;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.math.FunctionProperty;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -68,6 +70,14 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
     @Override
     public final List<Expression<R,?>> getParameters() {
         return List.of();
+    }
+
+    /**
+     * Returns the manner in which values are computed from given resources.
+     */
+    @Override
+    public Set<FunctionProperty> properties() {
+        return Set.of();
     }
 
 
@@ -192,6 +202,14 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         Transformed(final V value, final Expression<R,?> original) {
             super(value);
             this.original = original;
+        }
+
+        /**
+         * Returns the manner in which values are computed from given resources.
+         */
+        @Override
+        public Set<FunctionProperty> properties() {
+            return properties(original);
         }
 
         /**
