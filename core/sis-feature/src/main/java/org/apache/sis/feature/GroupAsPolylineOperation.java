@@ -89,22 +89,24 @@ final class GroupAsPolylineOperation extends AbstractOperation {
      * @param  components      attribute, association or operation providing the geometries to group as a polyline.
      */
     static Operation create(final Map<String,?> identification, final GeometryLibrary library, PropertyType components) {
-        FeatureAssociationRole association = Features.toAssociation(components).orElse(null);
-        if (association != null && association.getMaximumOccurs() == 1) {
-            components = association;
+        if (components instanceof LinkOperation) {
+            components = ((LinkOperation) components).result;
+        }
+        final boolean isFeatureAssociation;
+        if (components instanceof AttributeType<?>) {
+            if (((AttributeType<?>) components).getMaximumOccurs() <= 1) {
+                return new LinkOperation(identification, components);
+            }
+            isFeatureAssociation = false;
         } else {
-            association = null;
-            AttributeType<?> attribute = Features.toAttribute(components).orElse(null);
-            if (attribute == null) {
+            isFeatureAssociation = (components instanceof FeatureAssociationRole)
+                    && ((FeatureAssociationRole) components).getMaximumOccurs() == 1;
+            if (!isFeatureAssociation) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.IllegalPropertyType_2,
                                                    components.getName(), components.getClass()));
             }
-            if (attribute.getMaximumOccurs() <= 1) {
-                return new LinkOperation(identification, components);
-            }
-            components = attribute;
         }
-        return new GroupAsPolylineOperation(identification, Geometries.implementation(library), components, association != null);
+        return new GroupAsPolylineOperation(identification, Geometries.implementation(library), components, isFeatureAssociation);
     }
 
     /**
