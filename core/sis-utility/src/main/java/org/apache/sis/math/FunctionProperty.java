@@ -41,6 +41,8 @@ import java.util.EnumSet;
  *       <td><code>EnumSet.of({@linkplain #ORDER_PRESERVING}, {@linkplain #INJECTIVE})</code></td>
  *   <tr><td>Strictly decreasing</td>
  *       <td><code>EnumSet.of({@linkplain #ORDER_REVERSING}, {@linkplain #INJECTIVE})</code></td>
+ *   <tr><td>{@linkplain #isConstant(Set) Constant}</td>
+ *       <td><code>EnumSet.of({@linkplain #ORDER_PRESERVING}, {@linkplain #ORDER_REVERSING})</code></td>
  * </table>
  *
  * The Javadoc in this class uses the following terms:
@@ -54,7 +56,7 @@ import java.util.EnumSet;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @see org.apache.sis.util.ObjectConverter#properties()
  *
@@ -136,7 +138,15 @@ public enum FunctionProperty {
      * @see #ORDER_PRESERVING
      * @see #isMonotonic(Set)
      */
-    ORDER_REVERSING;
+    ORDER_REVERSING,
+
+    /**
+     * A function is volatile if the computed value changes each time that the function is evaluated.
+     * It may be for example a random number generator, or a function returning the current date and time.
+     *
+     * @since 1.4
+     */
+    VOLATILE;
 
     /**
      * Bijective functions shall contain all the value in this set.
@@ -144,6 +154,13 @@ public enum FunctionProperty {
      * @see #isBijective(Set)
      */
     private static final EnumSet<FunctionProperty> BIJECTIVE = EnumSet.of(INJECTIVE, SURJECTIVE);
+
+    /**
+     * A function which is both order preserving and order reversing can only return a constant value.
+     *
+     * @see #isConstant(Set)
+     */
+    private static final EnumSet<FunctionProperty> CONSTANT = EnumSet.of(ORDER_PRESERVING, ORDER_REVERSING);
 
     /**
      * Returns {@code true} if a function having the given set of properties is <cite>bijective</cite>.
@@ -177,5 +194,69 @@ public enum FunctionProperty {
      */
     public static boolean isMonotonic(final Set<FunctionProperty> properties) {
         return properties.contains(ORDER_PRESERVING) || properties.contains(ORDER_REVERSING);
+    }
+
+    /**
+     * Returns {@code true} if a function can only return a constant value.
+     * This convenience method tests if the given set contains <em>all</em>
+     * of the following properties:
+     *
+     * <ul>
+     *   <li>{@link #ORDER_PRESERVING}</li>
+     *   <li>{@link #ORDER_REVERSING}</li>
+     * </ul>
+     *
+     * @param  properties  the properties of the function to test.
+     * @return {@code true} if the function can only return a constant value.
+     *
+     * @since 1.4
+     */
+    public static boolean isConstant(final Set<FunctionProperty> properties) {
+        return properties.containsAll(CONSTANT);
+    }
+
+    /**
+     * Returns the properties of a function defined as the concatenation of two other functions.
+     * The presence of a property in the returned set is determined by combining the presence of
+     * the same property in the two steps using the following logical operations:
+     *
+     * <ul>
+     *   <li>{@link #INVERTIBLE}, {@link #INJECTIVE}, {@link #SURJECTIVE}, {@link #ORDER_PRESERVING}:
+     *       logical {@code AND} operation.</li>
+     *   <li>{@link #ORDER_REVERSING}:
+     *       Logical {@code XOR} operation if the other step is also ordered.</li>
+     *   <li>{@link #VOLATILE}:
+     *       logical {@code OR} operation.</li>
+     * </ul>
+     *
+     * The returned set is always a new instance and is modifiable,
+     * thus allowing the caller to customize the property set.
+     *
+     * @param  step1  properties of the first function.
+     * @param  step2  properties of the second function.
+     * @return properties of the concatenated function as a new and modifiable set.
+     *
+     * @since 1.4
+     */
+    public static EnumSet<FunctionProperty> concatenate(final Set<FunctionProperty> step1, final Set<FunctionProperty> step2) {
+        final var properties = EnumSet.noneOf(FunctionProperty.class);
+        properties.addAll   (step1);
+        properties.retainAll(step2);
+        if (step1.contains(FunctionProperty.VOLATILE) ||
+            step2.contains(FunctionProperty.VOLATILE)) {
+            properties.add(FunctionProperty.VOLATILE);
+        }
+        if (!properties.contains(ORDER_PRESERVING)) {
+            final boolean r1 = step1.contains(ORDER_REVERSING);
+            final boolean r2 = step2.contains(ORDER_REVERSING);
+            if (r1 & r2) {
+                properties.add(ORDER_PRESERVING);
+            } else if ((r1 && step2.contains(ORDER_PRESERVING)) ||
+                       (r2 && step1.contains(ORDER_PRESERVING)))
+            {
+                properties.add(ORDER_REVERSING);
+            }
+        }
+        return properties;
     }
 }

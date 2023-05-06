@@ -155,7 +155,7 @@ final class Wrapper extends GeometryWithCRS<Shape> {
      * @throws ClassCastException if an element in the iterator is not a {@link Shape} or a {@link Point2D}.
      */
     @Override
-    protected Shape mergePolylines(final Iterator<?> polylines) {
+    public Shape mergePolylines(final Iterator<?> polylines) {
         return mergePolylines(geometry, polylines);
     }
 

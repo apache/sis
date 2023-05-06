@@ -25,7 +25,7 @@ import org.junit.BeforeClass;
  * All tests from the {@code sis-utility} module, in rough dependency order.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @Suite.SuiteClasses({
@@ -62,6 +62,7 @@ import org.junit.BeforeClass;
     org.apache.sis.math.StatisticsFormatTest.class,
     org.apache.sis.internal.util.StringsTest.class,
     org.apache.sis.internal.util.DoubleDoubleTest.class,
+    org.apache.sis.math.FunctionPropertyTest.class,
     org.apache.sis.math.LineTest.class,
     org.apache.sis.math.PlaneTest.class,
 

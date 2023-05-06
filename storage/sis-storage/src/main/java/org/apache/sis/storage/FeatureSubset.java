@@ -110,7 +110,7 @@ final class FeatureSubset extends AbstractFeatureSet {
         /*
          * Apply filter.
          */
-        final Filter<AbstractFeature> selection = query.getSelection();
+        final Filter<? super AbstractFeature> selection = query.getSelection();
         if (selection != null && !selection.equals(Filter.include())) {
             stream = stream.filter(selection);
         }
@@ -139,10 +139,10 @@ final class FeatureSubset extends AbstractFeatureSet {
          * Transform feature instances.
          * Note: "projection" here is in relational database sense, not map projection.
          */
-        final FeatureQuery.NamedExpression[] projection = query.getProjection();
+        final FeatureQuery.NamedExpression[] projection = query.getStoredProjection();
         if (projection != null) {
             @SuppressWarnings({"unchecked", "rawtypes"})
-            final Expression<AbstractFeature,?>[] expressions = new Expression[projection.length];
+            final Expression<? super AbstractFeature,?>[] expressions = new Expression[projection.length];
             for (int i=0; i<expressions.length; i++) {
                 expressions[i] = projection[i].expression;
             }

@@ -263,23 +263,17 @@ final class EnvelopeOperation extends AbstractOperation {
      * The attributes that contains the result of union of all envelope extracted from other attributes.
      * Value is calculated each time it is accessed.
      */
-    private final class Result extends AbstractAttribute<Envelope> {
+    private final class Result extends OperationResult<Envelope> {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = 926172863066901618L;
-
-        /**
-         * The feature specified to the {@code StringJoinOperation.apply(Feature, ParameterValueGroup)} method.
-         */
-        private final AbstractFeature feature;
+        private static final long serialVersionUID = 4900962888075807964L;
 
         /**
          * Creates a new attribute for the given feature.
          */
         Result(final AbstractFeature feature) {
-            super(resultType);
-            this.feature = feature;
+            super(resultType, feature);
         }
 
         /**
@@ -395,14 +389,6 @@ final class EnvelopeOperation extends AbstractOperation {
             } catch (TransformException e) {
                 throw new FeatureOperationException(Errors.formatInternational(Errors.Keys.CanNotTransformEnvelope), e);
             }
-        }
-
-        /**
-         * Unconditionally throws an {@link UnsupportedOperationException}.
-         */
-        @Override
-        public void setValue(Envelope value) {
-            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, AbstractAttribute.class));
         }
     }
 

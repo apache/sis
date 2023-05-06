@@ -37,7 +37,7 @@ import org.apache.sis.internal.feature.Resources;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.5
  */
 public final class Features extends Static {
@@ -126,13 +126,42 @@ public final class Features extends Static {
      *
      * @since 1.1
      */
+    @SuppressWarnings("unchecked")
     public static Optional<DefaultAttributeType<?>> toAttribute(AbstractIdentifiedType type) {
-        if (!(type instanceof DefaultAttributeType<?>)) {
+        return toIdentifiedType(type, (Class) DefaultAttributeType.class);
+    }
+
+    /**
+     * Returns the given type as a {@code FeatureAssociationRole} by casting if possible, or by getting the result type
+     * of an operation. More specifically this method returns the first of the following types which apply:
+     *
+     * <ul>
+     *   <li>If the given type is an instance of {@code FeatureAssociationRole}, then it is returned as-is.</li>
+     *   <li>If the given type is an instance of {@code Operation} and the {@code Operation.getResult()
+     *       result type} is an {@code FeatureAssociationRole}, then that result type is returned.</li>
+     *   <li>If the given type is an instance of {@code Operation} and the {@code Operation.getResult()
+     *       result type} is another operation, then the above check is performed recursively.</li>
+     * </ul>
+     *
+     * @param  type  the data type to express as an attribute type.
+     * @return the association role, or empty if this method cannot find any.
+     *
+     * @since 1.4
+     */
+    public static Optional<DefaultAssociationRole> toAssociation(AbstractIdentifiedType type) {
+        return toIdentifiedType(type, DefaultAssociationRole.class);
+    }
+
+    /**
+     * Implementation of {@code toAttribute(IdentifiedType)} and {@code toAssociation(IdentifiedType)}.
+     */
+    private static <T> Optional<T> toIdentifiedType(AbstractIdentifiedType type, final Class<T> target) {
+        if (!target.isInstance(type)) {
             if (!(type instanceof AbstractOperation)) {
                 return Optional.empty();
             }
             type = ((AbstractOperation) type).getResult();
-            if (!(type instanceof DefaultAttributeType<?>)) {
+            if (!target.isInstance(type)) {
                 if (!(type instanceof AbstractOperation)) {
                     return Optional.empty();
                 }
@@ -142,14 +171,14 @@ public final class Features extends Static {
                  * would be thread freeze, we check as a safety.
                  */
                 final Map<AbstractIdentifiedType,Boolean> done = new IdentityHashMap<>(4);
-                while (!((type = ((AbstractOperation) type).getResult()) instanceof DefaultAttributeType<?>)) {
+                while (!target.isInstance(type = ((AbstractOperation) type).getResult())) {
                     if (!(type instanceof AbstractOperation) || done.put(type, Boolean.TRUE) != null) {
                         return Optional.empty();
                     }
                 }
             }
         }
-        return Optional.of((DefaultAttributeType<?>) type);
+        return Optional.of(target.cast(type));
     }
 
     /**

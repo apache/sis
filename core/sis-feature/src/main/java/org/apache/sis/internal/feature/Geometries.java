@@ -19,7 +19,6 @@ package org.apache.sis.internal.feature;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Optional;
-import java.util.Iterator;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -37,7 +36,6 @@ import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.Classes;
 
 
 /**
@@ -564,37 +562,6 @@ public abstract class Geometries<G> implements Serializable {
         }
         result.setCoordinateReferenceSystem(crs);
         return result;
-    }
-
-    /**
-     * Merges a sequence of points or polylines into a single polyline instances.
-     * Each previous polyline will be a separated path in the new polyline instances.
-     * The implementation returned by this method is an instance of {@link #rootClass}.
-     *
-     * <p>Contrarily to other methods in this class, this method does <strong>not</strong> unwrap
-     * the geometries contained in {@link GeometryWrapper}. It is caller responsibility to do so
-     * if needed.</p>
-     *
-     * @param  paths  the points or polylines to merge in a single polyline object.
-     * @return the merged polyline, or {@code null} if the given iterator has no element.
-     * @throws ClassCastException if collection elements are not instances of a supported library,
-     *         or not all elements are instances of the same library.
-     */
-    public static Object mergePolylines(final Iterator<?> paths) {
-        while (paths.hasNext()) {
-            final Object first = paths.next();
-            if (first != null) {
-                final Optional<GeometryWrapper<?>> w = wrap(first);
-                if (w.isPresent()) return w.get().mergePolylines(paths);
-                /*
-                 * Use the same exception type than `mergePolylines(…)` implementations.
-                 * Also the same type than exception occurring elsewhere in the code of
-                 * the caller (GroupAsPolylineOperation).
-                 */
-                throw new ClassCastException(Errors.format(Errors.Keys.UnsupportedType_1, Classes.getClass(first)));
-            }
-        }
-        return null;
     }
 
     /**

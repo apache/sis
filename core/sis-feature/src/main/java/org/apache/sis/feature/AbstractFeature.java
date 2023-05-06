@@ -53,6 +53,13 @@ import org.apache.sis.internal.feature.Resources;
  *   <li>the cardinality of all attributes is constrained to [1 … 1].</li>
  * </ul>
  *
+ * <h2>Operations</h2>
+ * Properties that are instances of {@link Operation} are usually not stored in {@code Feature} instances.
+ * Instead, the {@link Operation#apply Operation.apply(…)} method is invoked every times that the property
+ * value is requested. {@code AbstractFeature} does not cache operation results.
+ * Those results are usually read-only, but may be writable under the conditions documented in
+ * {@link #setOperationValue(String, Object)}.
+ *
  * <h2>Limitations</h2>
  * <ul>
  *   <li><b>Multi-threading:</b> {@code AbstractFeature} instances are <strong>not</strong> thread-safe.
@@ -427,7 +434,10 @@ public abstract class AbstractFeature implements Serializable {
      * Executes the parameterless operation of the given name and sets the value of its result.
      * This method is the complement of {@link #getOperationValue(String)} for subclasses where
      * some properties may be operations. Not all operations accept assignments,
-     * but the {@linkplain FeatureOperations#link link} operation for instance does.
+     * but the {@linkplain FeatureOperations#link link} and
+     * {@linkplain FeatureOperations#compound compound} operations (for instances) do.
+     * Whether an operation is writable or not depends on whether the computed {@link Property}
+     * supports {@link Attribute#setValue(Object)} or {@link FeatureAssociation#setValue(Feature)}.
      *
      * @param  name   the name of the operation to execute. The caller is responsible to ensure that the
      *                property type for that name is an instance of {@link AbstractOperation}.

@@ -14,31 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.math;
 
-import org.apache.sis.internal.filter.XPath;
+import java.util.Set;
+import java.util.EnumSet;
 import org.apache.sis.test.TestCase;
-import org.junit.Test;
+import org.junit.*;
 
 import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link XPath}.
+ * Tests the {@link FunctionProperty} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
- * @since   0.4
+ * @version 1.4
+ * @since   1.4
  */
-public final class XPathTest extends TestCase {
+public final class FunctionPropertyTest extends TestCase {
     /**
-     * Tests {@link XPath#split(String)}.
+     * Tests {@link FunctionProperty#concatenate(Set, Set)}.
      */
     @Test
-    public void testSplit() {
-        assertNull(XPath.split("property"));
-        assertArrayEquals(new String[] {"/property"},                    XPath.split("/property").toArray());
-        assertArrayEquals(new String[] {"Feature", "property", "child"}, XPath.split("Feature/property/child").toArray());
-        assertArrayEquals(new String[] {"/Feature", "property"},         XPath.split("/Feature/property").toArray());
+    public void testConcatenate() {
+        var step1  = EnumSet.of(FunctionProperty.INJECTIVE, FunctionProperty.ORDER_PRESERVING);
+        var step2  = EnumSet.of(FunctionProperty.VOLATILE,  FunctionProperty.ORDER_REVERSING, FunctionProperty.INVERTIBLE);
+        var concat = EnumSet.of(FunctionProperty.VOLATILE,  FunctionProperty.ORDER_REVERSING);
+        assertEquals(concat, FunctionProperty.concatenate(step1, step2));
+
+        step1  = EnumSet.of(FunctionProperty.INJECTIVE);
+        concat = EnumSet.of(FunctionProperty.VOLATILE);
+        assertEquals(concat, FunctionProperty.concatenate(step1, step2));
     }
 }

@@ -16,7 +16,8 @@
  */
 package org.apache.sis.internal.feature;
 
-import org.apache.sis.filter.Expression;
+import java.util.Set;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
@@ -25,6 +26,10 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
 import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.internal.geoapi.filter.Literal;
 import org.apache.sis.internal.geoapi.filter.ValueReference;
+import org.apache.sis.internal.filter.Node;
+
+// Branch-dependent imports
+import org.apache.sis.filter.Expression;
 
 
 /**
@@ -36,7 +41,7 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
  * @param  <V>  the type of values computed by the expression.
@@ -44,6 +49,16 @@ import org.apache.sis.internal.geoapi.filter.ValueReference;
  * @since 1.0
  */
 public interface FeatureExpression<R,V> extends Expression<R,V> {
+    /**
+     * Returns the manner in which values are computed from given resources.
+     * The default implementation combines the properties of all parameters.
+     *
+     * @return the manners in which values are computed from resources.
+     */
+    default Set<FunctionProperty> properties() {
+        return Node.transitiveProperties(getParameters());
+    }
+
     /**
      * Returns the type of values computed by this expression, or {@code Object.class} if unknown.
      *

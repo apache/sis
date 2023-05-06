@@ -304,23 +304,17 @@ final class StringJoinOperation extends AbstractOperation {
      * The attributes that contains the result of concatenating the string representation of other attributes.
      * Value is calculated each time it is accessed.
      */
-    private final class Result extends AbstractAttribute<String> {
+    private final class Result extends OperationResult<String> {
         /**
          * For cross-version compatibility.
          */
-        private static final long serialVersionUID = -8435975199763452547L;
-
-        /**
-         * The feature specified to the {@link StringJoinOperation#apply(AbstractFeature, ParameterValueGroup)} method.
-         */
-        private final AbstractFeature feature;
+        private static final long serialVersionUID = -555025854115540108L;
 
         /**
          * Creates a new attribute for the given feature.
          */
         Result(final AbstractFeature feature) {
-            super(resultType);
-            this.feature = feature;
+            super(resultType, feature);
         }
 
         /**

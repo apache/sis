@@ -281,7 +281,7 @@ final class Wrapper extends GeometryWrapper<Geometry> {
      * @throws ClassCastException if an element in the iterator is not a JTS geometry.
      */
     @Override
-    protected Geometry mergePolylines(final Iterator<?> polylines) {
+    public Geometry mergePolylines(final Iterator<?> polylines) {
         final List<Coordinate> coordinates = new ArrayList<>();
         final List<Geometry> lines = new ArrayList<>();
         boolean isFloat = true;

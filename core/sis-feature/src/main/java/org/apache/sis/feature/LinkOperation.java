@@ -48,7 +48,7 @@ final class LinkOperation extends AbstractOperation {
     /**
      * The type of the result.
      */
-    private final AbstractIdentifiedType result;
+    final AbstractIdentifiedType result;
 
     /**
      * The name of the referenced attribute or feature association.

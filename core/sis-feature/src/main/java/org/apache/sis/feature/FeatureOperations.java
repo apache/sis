@@ -27,6 +27,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.setup.GeometryLibrary;
 
 // Branch-dependent imports
 import org.apache.sis.filter.Expression;
@@ -125,7 +126,7 @@ public final class FeatureOperations extends Static {
      * Creates an operation which is only an alias for another property.
      *
      * <h4>Example</h4>
-     * features often have a property that can be used as identifier or primary key.
+     * Features often have a property that can be used as identifier or primary key.
      * But the name of that property may vary between features of different types.
      * For example, features of type <b>Country</b> may have identifiers named “ISO country code”
      * while features of type <b>Car</b> may have identifiers named “license plate number”.
@@ -252,7 +253,7 @@ public final class FeatureOperations extends Static {
      *
      * <h4>Read/write behavior</h4>
      * This operation is read-only. Calls to {@code Attribute.setValue(Envelope)} will result in an
-     * {@link IllegalStateException} to be thrown.
+     * {@link UnsupportedOperationException} to be thrown.
      *
      * <div class="warning"><b>Warning:</b>
      * The type of {@code geometryAttributes} elements will be changed to {@code PropertyType}
@@ -273,47 +274,94 @@ public final class FeatureOperations extends Static {
     }
 
     /**
+     * Creates a single geometry from a sequence of points or polylines stored in another property.
+     * When evaluated, this operation reads a feature property containing a sequence of {@code Point}s or {@code Polyline}s.
+     * Those geometries shall be instances of the specified geometry library (e.g. JTS or ESRI).
+     * The merged geometry is usually a {@code Polyline},
+     * unless the sequence of source geometries is empty or contains a single element.
+     * The merged geometry is re-computed every time that the operation is evaluated.
+     *
+     * <h4>Examples</h4>
+     * <p><i>Polylines created from points:</i>
+     * a boat that record it's position every hour.
+     * The input is a list of all positions stored in an attribute with [0 … ∞] multiplicity.
+     * This operation will extract each position and create a line as a new attribute.</p>
+     *
+     * <p><i>Polylines created from other polylines:</i>
+     * a boat that record track every hour.
+     * The input is a list of all tracks stored in an attribute with [0 … ∞] multiplicity.
+     * This operation will extract each track and create a polyline as a new attribute.</p>
+     *
+     * <h4>Read/write behavior</h4>
+     * This operation is read-only. Calls to {@code Attribute.setValue(…)}
+     * will result in an {@link UnsupportedOperationException} to be thrown.
+     *
+     * @param  identification  the name of the operation, together with optional information.
+     * @param  library         the library providing the implementations of geometry objects to read and write.
+     * @param  components      attribute, association or operation providing the geometries to group as a polyline.
+     * @return a feature operation which computes its values by merging points or polylines.
+     *
+     * @since 1.4
+     */
+    public static AbstractOperation groupAsPolyline(final Map<String,?> identification, final GeometryLibrary library,
+                                            final AbstractIdentifiedType components)
+    {
+        ArgumentChecks.ensureNonNull("library", library);
+        ArgumentChecks.ensureNonNull("components", components);
+        return POOL.unique(GroupAsPolylineOperation.create(identification, library, components));
+    }
+
+    /**
      * Creates an operation which delegates the computation to a given expression.
      * The {@code expression} argument should generally be an instance of
      * {@link org.opengis.filter.Expression},
      * but more generic functions are accepted as well.
      *
+     * <h4>Read/write behavior</h4>
+     * This operation is read-only. Calls to {@code Attribute.setValue(…)}
+     * will result in an {@link UnsupportedOperationException} to be thrown.
+     *
      * @param  <V>             the type of values computed by the expression and assigned to the feature property.
      * @param  identification  the name of the operation, together with optional information.
      * @param  expression      the expression to evaluate on feature instances.
-     * @param  result          type of values computed by the expression and assigned to the feature property.
+     * @param  resultType      type of values computed by the expression and assigned to the feature property.
      * @return a feature operation which computes its values using the given expression.
      *
      * @since 1.4
      */
-    public static <V> AbstractOperation expression(final Map<String,?> identification,
-                                           final Function<AbstractFeature, ? extends V> expression,
-                                           final DefaultAttributeType<? super V> result)
+    public static <V> AbstractOperation function(final Map<String,?> identification,
+                                         final Function<? super AbstractFeature, ? extends V> expression,
+                                         final DefaultAttributeType<? super V> resultType)
     {
         ArgumentChecks.ensureNonNull("expression", expression);
-        return POOL.unique(new ExpressionOperation<>(identification, expression, result));
+        ArgumentChecks.ensureNonNull("resultType", resultType);
+        return POOL.unique(ExpressionOperation.create(identification, expression, resultType));
     }
 
     /**
      * Creates an operation which delegates the computation to a given expression producing values of unknown type.
-     * This method can be used as an alternative to {@link #expression expression(…)} when the constraint on the
+     * This method can be used as an alternative to {@link #function function(…)} when the constraint on the
      * parameterized type {@code <V>} between {@code expression} and {@code result} cannot be enforced at compile time.
      * This method casts or converts the expression to the expected type by a call to
      * {@link Expression#toValueType(Class)}.
      *
+     * <h4>Read/write behavior</h4>
+     * This operation is read-only. Calls to {@code Attribute.setValue(…)}
+     * will result in an {@link UnsupportedOperationException} to be thrown.
+     *
      * @param  <V>             the type of values computed by the expression and assigned to the feature property.
      * @param  identification  the name of the operation, together with optional information.
      * @param  expression      the expression to evaluate on feature instances.
-     * @param  result          type of values computed by the expression and assigned to the feature property.
+     * @param  resultType      type of values computed by the expression and assigned to the feature property.
      * @return a feature operation which computes its values using the given expression.
      * @throws ClassCastException if the result type is not a target type supported by the expression.
      *
      * @since 1.4
      */
-    public static <V> AbstractOperation expressionToResult(final Map<String,?> identification,
-                                                   final Expression<AbstractFeature, ?> expression,
-                                                   final DefaultAttributeType<V> result)
+    public static <V> AbstractOperation expression(final Map<String,?> identification,
+                                           final Expression<? super AbstractFeature, ?> expression,
+                                           final DefaultAttributeType<V> resultType)
     {
-        return expression(identification, expression.toValueType(result.getValueClass()), result);
+        return function(identification, expression.toValueType(resultType.getValueClass()), resultType);
     }
 }
