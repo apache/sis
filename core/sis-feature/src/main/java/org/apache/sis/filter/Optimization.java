@@ -17,13 +17,16 @@
 package org.apache.sis.filter;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
 import org.opengis.util.CodeList;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.internal.filter.Node;
 import org.apache.sis.internal.util.CollectionsExt;
 
 // Branch-dependent imports
@@ -362,7 +365,8 @@ public class Optimization {
          * Tries to optimize this expression. The default implementation performs the following steps:
          *
          * <ul>
-         *   <li>If all expressions are literals, evaluate this expression immediately.</li>
+         *   <li>If all expressions are {@linkplain Literal literals} and this expression is not a
+         *       {@linkplain FunctionProperty#VOLATILE volatile function}, evaluate this expression immediately.</li>
          *   <li>Otherwise if at least one parameter can be optimized,
          *       {@linkplain #recreate(Expression[]) recreate} the expression.</li>
          *   <li>Otherwise returns {@code this}.</li>
@@ -383,7 +387,7 @@ public class Optimization {
                 immediate &= (e instanceof Literal<?,?>);
                 effective[i] = e;
             }
-            if (immediate) {
+            if (immediate && !properties(this).contains(FunctionProperty.VOLATILE)) {
                 return literal(apply(null));
             } else if (unchanged) {
                 return this;
@@ -481,6 +485,46 @@ public class Optimization {
             return operand;
         }
         throw new IllegalArgumentException();
+    }
+
+    /**
+     * Returns the manner in which values are computed from resources given to the specified filter.
+     * This set of properties may determine which optimizations are allowed.
+     * The values of particular interest are:
+     *
+     * <ul>
+     *   <li>{@link FunctionProperty#VOLATILE} if the computed value changes each time that the filter is evaluated,
+     *       even if the resource to evaluate stay the same immutable instance.</li>
+     * </ul>
+     *
+     * @param  filter  the filter for which to query function properties.
+     * @return the manners in which values are computed from resources.
+     *
+     * @since 1.4
+     */
+    public static Set<FunctionProperty> properties(final Filter<?> filter) {
+        return Node.transitiveProperties(filter.getExpressions());
+    }
+
+    /**
+     * Returns the manner in which values are computed from resources given to the specified expression.
+     * This set of properties may determine which optimizations are allowed.
+     * The values of particular interest are:
+     *
+     * <ul>
+     *   <li>{@link FunctionProperty#INJECTIVE} if the computed value is unique for each resource instance (e.g. identifiers).</li>
+     *   <li>{@link FunctionProperty#VOLATILE} if the computed value changes each time that the expression is evaluated,
+     *       even if the resource to evaluate stay the same immutable instance.</li>
+     *   <li>{@link FunctionProperty#isConstant(Set)} if the expression returns a constant value.</li>
+     * </ul>
+     *
+     * @param  expression  the expression for which to query function properties.
+     * @return the manners in which values are computed from resources.
+     *
+     * @since 1.4
+     */
+    public static Set<FunctionProperty> properties(final Expression<?,?> expression) {
+        return Node.properties(expression);
     }
 
     /**

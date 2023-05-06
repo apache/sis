@@ -153,12 +153,12 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
      *     String    namespace = "My model";
      *     GenericName nameOfA = Names.createTypeName(namespace, ":", "Feature type A");
      *     GenericName nameOfB = Names.createTypeName(namespace, ":", "Feature type B");
-     *     FeatureType typeA = new DefaultFeatureType(nameOfA, false, null,
-     *         new DefaultAssociationRole(Names.createLocalName("Association to B"), nameOfB),
+     *     FeatureType typeA = new DefaultFeatureType(Map.of(NAME_KEY, nameOfA), false, null,
+     *         new DefaultAssociationRole(Map.of(NAME_KEY, "Association to B"), nameOfB, 1, 1),
      *         // More properties if desired.
      *     );
-     *     FeatureType typeB = new DefaultFeatureType(nameOfB, false, null,
-     *         new DefaultAssociationRole(Names.createLocalName("Association to A"), featureA),
+     *     FeatureType typeB = new DefaultFeatureType(Map.of(NAME_KEY, nameOfB), false, null,
+     *         new DefaultAssociationRole(Map.of(NAME_KEY, "Association to A"), featureA, 1, 1),
      *         // More properties if desired.
      *     );
      *     }

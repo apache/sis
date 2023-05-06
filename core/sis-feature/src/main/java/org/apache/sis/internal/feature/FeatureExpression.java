@@ -16,16 +16,19 @@
  */
 package org.apache.sis.internal.feature;
 
+import java.util.Set;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.AttributeType;
 import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.ValueReference;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.internal.filter.Node;
 
 
 /**
@@ -37,7 +40,7 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @param  <R>  the type of resources (e.g. {@link org.opengis.feature.Feature}) used as inputs.
  * @param  <V>  the type of values computed by the expression.
@@ -45,6 +48,16 @@ import org.apache.sis.feature.builder.AttributeTypeBuilder;
  * @since 1.0
  */
 public interface FeatureExpression<R,V> extends Expression<R,V> {
+    /**
+     * Returns the manner in which values are computed from given resources.
+     * The default implementation combines the properties of all parameters.
+     *
+     * @return the manners in which values are computed from resources.
+     */
+    default Set<FunctionProperty> properties() {
+        return Node.transitiveProperties(getParameters());
+    }
+
     /**
      * Returns the type of values computed by this expression, or {@code Object.class} if unknown.
      *

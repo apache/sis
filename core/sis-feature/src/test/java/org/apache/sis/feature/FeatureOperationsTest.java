@@ -42,7 +42,7 @@ import org.opengis.feature.PropertyType;
 /**
  * Tests a feature combining various {@link FeatureOperations} applied of either sparse or dense features.
  * This is an integration test. For tests specific to a particular operation, see for example
- * {@link LinkOperation} or {@link EnvelopeOperation}.
+ * {@link LinkOperationTest} or {@link EnvelopeOperationTest}.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

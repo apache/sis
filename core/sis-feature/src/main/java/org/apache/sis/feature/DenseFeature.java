@@ -60,6 +60,7 @@ final class DenseFeature extends AbstractFeature implements Cloneable {
 
     /**
      * The properties (attributes or feature associations) in this feature.
+     * This array does not include operation results, which are always computed on the fly.
      *
      * Conceptually, values in this array are {@link Property} instances. However, at first we will store only
      * the property <em>values</em>, and convert to an array of type {@code Property[]} only when at least one

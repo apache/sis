@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -89,6 +90,7 @@ public final class LogicalFilterTest extends TestCase {
         assertArrayEquals(new Filter<?>[] {operand}, filter.getOperands().toArray());
         assertTrue(filter.test(null));
         assertSerializedEquals(filter);
+        assertFalse(isVolatile(filter));
     }
 
     /**
@@ -99,6 +101,21 @@ public final class LogicalFilterTest extends TestCase {
         final Literal<Feature,String>  literal = factory.literal("text");
         final Filter<Feature>          operand = factory.isNull(literal);
         assertInstanceOf("Predicate.negate()", LogicalFilter.Not.class, operand.negate());
+    }
+
+    /**
+     * Tests a filter having a volatile expression.
+     */
+    @Test
+    public void testVolatile() {
+        final var literal = new LeafExpression.Literal<Feature,Object>("test") {
+            @Override public Set<FunctionProperty> properties() {
+                return Set.of(FunctionProperty.VOLATILE);
+            }
+        };
+        final Filter<Feature>          operand = factory.isNull(literal);
+        final LogicalOperator<Feature> filter  = factory.not(operand);
+        assertTrue(isVolatile(filter));
     }
 
     /**
@@ -142,6 +159,7 @@ public final class LogicalFilterTest extends TestCase {
         assertArrayEquals(new Filter<?>[] {f1, f2}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
+        assertFalse(isVolatile(filter));
         /*
          * Same test, using the constructor accepting any number of operands.
          */
@@ -149,6 +167,7 @@ public final class LogicalFilterTest extends TestCase {
         assertArrayEquals(new Filter<?>[] {f1, f2, f1}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
+        assertFalse(isVolatile(filter));
         /*
          * Test the `Predicate` methods, which should be overridden by `Optimization.OnFilter`.
          */
@@ -249,5 +268,12 @@ public final class LogicalFilterTest extends TestCase {
         final PropertyValue<?> p = (PropertyValue<?>) opt.getParameters().get(0);
         assertEquals(String.class, p.getSourceClass());
         assertEquals(Number.class, p.getValueClass());
+    }
+
+    /**
+     * Returns {@code true} if the given filter is declared volatile.
+     */
+    private static boolean isVolatile(final Filter<?> filter) {
+        return Optimization.properties(filter).equals(Set.of(FunctionProperty.VOLATILE));
     }
 }

@@ -57,7 +57,7 @@ import org.opengis.filter.InvalidFilterValueException;
  * change without warning in future Apache SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param  <G>  root class of geometry instances of the underlying library (i.e. {@link Geometries#rootClass}).
  *              This is not necessarily the class of the wrapped geometry returned by {@link #implementation()}.
@@ -185,10 +185,10 @@ public abstract class GeometryWrapper<G> extends AbstractGeometry implements Geo
      * (it is caller responsibility to unwrap if needed).</p>
      *
      * @param  paths  the points or polylines to merge in a single polyline instance.
-     * @return the merged polyline (may be the wrapper geometry but never {@code null}).
+     * @return the merged polyline (may be the underlying geometry of {@code this} but never {@code null}).
      * @throws ClassCastException if collection elements are not instances of the point or geometry class.
      */
-    protected abstract G mergePolylines(final Iterator<?> paths);
+    public abstract G mergePolylines(final Iterator<?> paths);
 
     /**
      * Applies a filter predicate between this geometry and another geometry.

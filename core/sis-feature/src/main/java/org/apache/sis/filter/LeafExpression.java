@@ -16,6 +16,7 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Set;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.internal.filter.Node;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
+import org.apache.sis.math.FunctionProperty;
 
 // Branch-dependent imports
 import org.opengis.feature.FeatureType;
@@ -70,6 +72,16 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         return List.of();
     }
 
+    /**
+     * Returns the manner in which values are computed from given resources.
+     * Since leaf expressions have no parameters, the only properties to return are the intrinsic properties
+     * of this function. The default implementation assumes that there is none, but subclasses may override.
+     */
+    @Override
+    public Set<FunctionProperty> properties() {
+        return Set.of();
+    }
+
 
 
 
@@ -81,6 +93,10 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
      * @param  <V>  the type of value computed by the expression.
      */
     static class Literal<R,V> extends LeafExpression<R,V> implements org.opengis.filter.Literal<R,V> {
+        /** The properties of this function, which returns constants. */
+        private static final Set<FunctionProperty> CONSTANT =
+                Set.of(FunctionProperty.ORDER_PRESERVING, FunctionProperty.ORDER_REVERSING);
+
         /** For cross-version compatibility. */
         private static final long serialVersionUID = -8383113218490957822L;
 
@@ -112,6 +128,12 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
         /** Expression evaluation, which just returns the constant value. */
         @Override public V apply(Object ignored) {
             return value;
+        }
+
+        /** Notifies that results are constant. */
+        @SuppressWarnings("ReturnOfCollectionOrArrayField")             // Because immutable.
+        @Override public Set<FunctionProperty> properties() {
+            return CONSTANT;
         }
 
         /**
@@ -176,9 +198,13 @@ abstract class LeafExpression<R,V> extends Node implements FeatureExpression<R,V
 
     /**
      * A literal value which is the result of transforming another literal.
+     * This is used for example when a geometry is transformed to a different CRS for computational purposes.
+     * This transformation should be invisible to users, so we need to provide the original expressions when needed.
      *
      * @param  <R>  the type of resources used as inputs.
      * @param  <V>  the type of value computed by the expression.
+     *
+     * @see BinaryGeometryFilter#original(Expression)
      */
     static final class Transformed<R,V> extends Literal<R,V> implements Optimization.OnExpression<R,V> {
         /** For cross-version compatibility. */

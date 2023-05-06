@@ -31,7 +31,6 @@ import org.apache.sis.internal.filter.Visitor;
 // Branch-dependent imports
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.filter.Filter;
@@ -64,13 +63,13 @@ final class ExpressionOperation<V> extends AbstractOperation {
      * The expression on which to delegate the execution of this operation.
      */
     @SuppressWarnings("serial")                         // Not statically typed as serializable.
-    private final Function<Feature, ? extends V> expression;
+    private final Function<? super Feature, ? extends V> expression;
 
     /**
      * The type of result of evaluating the expression.
      */
     @SuppressWarnings("serial")                         // Apache SIS implementations are serializable.
-    private final AttributeType<? super V> result;
+    private final AttributeType<V> resultType;
 
     /**
      * The name of all feature properties that are known to be read by the expression.
@@ -85,17 +84,35 @@ final class ExpressionOperation<V> extends AbstractOperation {
      *
      * @param identification  the name of the operation, together with optional information.
      * @param expression      the expression to evaluate on feature instances.
-     * @param result          type of values computed by the expression.
+     * @param resultType      type of values computed by the expression.
      */
-    ExpressionOperation(final Map<String,?> identification,
-                        final Function<Feature, ? extends V> expression,
-                        final AttributeType<? super V> result)
+    static <V> AbstractOperation create(final Map<String,?> identification,
+                                        final Function<? super Feature, ? extends V> expression,
+                                        final AttributeType<? super V> resultType)
+    {
+        if (expression instanceof ValueReference<?,?>) {
+            final String xpath = ((ValueReference<?,?>) expression).getXPath();
+            if (xpath.equals(resultType.getName().toString())) {
+                return new LinkOperation(identification, resultType);
+            }
+        }
+        return new ExpressionOperation<>(identification, expression, resultType);
+    }
+
+    /**
+     * Creates a generic operation when no optimized case has been identifier.
+     */
+    private ExpressionOperation(final Map<String,?> identification,
+                                final Function<? super Feature, ? extends V> expression,
+                                final AttributeType<V> resultType)
     {
         super(identification);
         this.expression = expression;
-        this.result     = result;
+        this.resultType = resultType;
         if (expression instanceof Expression<?,?>) {
-            dependencies = DependencyFinder.search((Expression<Feature,?>) expression);
+            @SuppressWarnings("unchecked")
+            var c = (Expression<Feature,?>) expression;     // Cast is okay because we will not pass or request any `Feature` instance.
+            dependencies = DependencyFinder.search(c);
         } else {
             dependencies = Set.of();
         }
@@ -114,7 +131,7 @@ final class ExpressionOperation<V> extends AbstractOperation {
      */
     @Override
     public IdentifiedType getResult() {
-        return result;
+        return resultType;
     }
 
     /**
@@ -136,9 +153,33 @@ final class ExpressionOperation<V> extends AbstractOperation {
      */
     @Override
     public Property apply(final Feature feature, ParameterValueGroup parameters) {
-        final Attribute<? super V> instance = result.newInstance();
-        instance.setValue(expression.apply(feature));
-        return instance;
+        return new Result(feature);
+    }
+
+    /**
+     * The attributes that delegates computation to the expression.
+     * Value is calculated each time it is accessed.
+     */
+    private final class Result extends OperationResult<V> {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -19004252522001532L;
+
+        /**
+         * Creates a new attribute for the given feature.
+         */
+        Result(final Feature feature) {
+            super(resultType, feature);
+        }
+
+        /**
+         * Delegates the computation to the user-supplied expression.
+         */
+        @Override
+        public V getValue() {
+            return expression.apply(feature);
+        }
     }
 
     /**

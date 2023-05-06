@@ -278,7 +278,7 @@ public class ObservableImage extends BufferedImage {
         fireTileUpdate(count, true);
         try {
             // Do not use super.setData(…) because it does not handle correctly the float and double types.
-            getRaster().setRect(0, 0, data);
+            getRaster().setRect(data);
         } finally {
             synchronized (this) {
                 // Similar to `releaseWritableTile(…)` but without throwing exception.

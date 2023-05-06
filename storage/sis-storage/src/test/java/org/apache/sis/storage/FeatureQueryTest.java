@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import org.apache.sis.feature.Features;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.internal.storage.MemoryFeatureSet;
 import org.apache.sis.filter.DefaultFilterFactory;
@@ -328,7 +329,7 @@ public final class FeatureQueryTest extends TestCase {
      * Shortcut for creating expression for a projection computed on-the-fly.
      */
     private static FeatureQuery.NamedExpression virtualProjection(final Expression<Feature, ?> expression, final String alias) {
-        return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.VIRTUAL);
+        return new FeatureQuery.NamedExpression(expression, Names.createLocalName(null, null, alias), FeatureQuery.ProjectionType.COMPUTING);
     }
 
     /**
@@ -367,6 +368,11 @@ public final class FeatureQueryTest extends TestCase {
         assertEquals(3, instance.getPropertyValue("value1"));
         assertEquals(3, instance.getPropertyValue("renamed1"));
         assertEquals("a literal", instance.getPropertyValue("computed"));
+
+        // The `ValueReference` operation should have been optimized as a link.
+        assertEquals("value1", Features.getLinkTarget(pt2).get());
+        assertTrue(Features.getLinkTarget(pt1).isEmpty());
+        assertTrue(Features.getLinkTarget(pt3).isEmpty());
     }
 
     /**

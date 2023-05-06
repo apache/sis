@@ -26,6 +26,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
+import org.apache.sis.internal.filter.XPath;
 import org.apache.sis.util.resources.Errors;
 
 // Branch-dependent imports
