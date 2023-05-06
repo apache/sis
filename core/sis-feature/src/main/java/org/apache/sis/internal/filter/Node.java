@@ -34,7 +34,6 @@ import org.apache.sis.internal.feature.Geometries;
 import org.apache.sis.internal.feature.GeometryWrapper;
 import org.apache.sis.internal.feature.FeatureExpression;
 import org.apache.sis.util.iso.Names;
-import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
@@ -227,15 +226,19 @@ public abstract class Node implements Serializable {
     }
 
     /**
-     * The set of all properties that make sense for {@link FeatureExpression#properties()}.
-     * In current version, only one property makes sense and that property is combined with
-     * all other property sets using a logical {@code OR} operation. More properties may be
-     * added in the future, and the logical operation will not necessarily be always "OR".
+     * The set of all properties that may be present in {@link FeatureExpression#properties()}
+     * when the only available information is the list of parameters. When we do not know how
+     * an expression is using the parameters, the function properties should be the empty set.
+     * When combining a function properties with the properties inherited from the parameters,
+     * the only properties that can be added to an initially empty set are the properties that
+     * are {@linkplain FunctionProperty#concatenate(Set, Set) concatenated} with the logical
+     * {@code OR} operation. In the current {@link FunctionProperty} enumeration, the only
+     * property handled that way is {@code VOLATILE}.
      */
-    private static final Set<FunctionProperty> SUPPORTED_PROPERTIES = Set.of(FunctionProperty.VOLATILE);
+    private static final Set<FunctionProperty> TRANSITIVE_PROPERTIES = Set.of(FunctionProperty.VOLATILE);
 
     /**
-     * Whether the given set of properties contains the {@link #SUPPORTED_PROPERTIES} singleton value.
+     * Whether the given set of properties contains the {@link #TRANSITIVE_PROPERTIES} singleton value.
      * If a future version recognizes more properties, the return type will no longer be a boolean.
      */
     private static boolean isVolatile(final Set<FunctionProperty> properties) {
@@ -243,9 +246,12 @@ public abstract class Node implements Serializable {
     }
 
     /**
-     * Whether the combination of the function properties of all given expression is {@link #SUPPORTED_PROPERTIES}.
-     * This method assumes that {@code SUPPORTED_PROPERTIES} is a singleton and that the property can be combined
+     * Whether the combination of the function properties of all given expression is {@link #TRANSITIVE_PROPERTIES}.
+     * This method assumes that {@code TRANSITIVE_PROPERTIES} is a singleton and that the property can be combined
      * by a logical {@code OR} operation.
+     *
+     * @param  operands  the expressions from which to get the function properties.
+     * @return whether is present the single function property that may appear.
      */
     private static <R> boolean isVolatile(final Iterable<Expression<R,?>> operands) {
         for (final Expression<R,?> operand : operands) {
@@ -264,50 +270,43 @@ public abstract class Node implements Serializable {
 
     /**
      * Returns the manner in which values are computed from resources.
+     * This method delegates to {@link FeatureExpression#properties()} if possible.
+     * Otherwise this method assumes that the intrinsic properties of the given expression are unknown,
+     * and inherits from the parameters only the properties that can be added to an initially empty set.
      *
-     * @param  operand  the expression for which to query function properties, or {@code null}.
+     * @param  function  the expression for which to query function properties, or {@code null}.
      * @return the manners in which values are computed from resources.
      */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")         // Because immutable.
-    public static Set<FunctionProperty> properties(final Expression<?,?> operand) {
-        if (operand instanceof FeatureExpression<?,?>) {
-            return ((FeatureExpression<?,?>) operand).properties();
-        } else if (operand != null && isVolatile(operand.getParameters())) {
-            return SUPPORTED_PROPERTIES;
+    public static Set<FunctionProperty> properties(final Expression<?,?> function) {
+        if (function instanceof FeatureExpression<?,?>) {
+            return ((FeatureExpression<?,?>) function).properties();
+        } else if (function != null) {
+            return transitiveProperties(function.getParameters());
+        } else {
+            return Set.of();
         }
-        return Set.of();
-    }
-
-    /**
-     * Returns the manner in which values are computed from resources in an expression followed by a conversion.
-     *
-     * @param  operand    the expression for which to query function properties, or {@code null}.
-     * @param  converter  conversion applied on the expression results.
-     * @return combined properties.
-     */
-    @SuppressWarnings("ReturnOfCollectionOrArrayField")             // Because immutable.
-    protected static Set<FunctionProperty> properties(final Expression<?,?> operand, final ObjectConverter<?,?> converter) {
-        if (isVolatile(properties(operand)) || isVolatile(converter.properties())) {
-            return SUPPORTED_PROPERTIES;
-        }
-        return Set.of();
     }
 
     /**
      * Returns the manner in which values are computed from resources in an expression having the given operands.
+     * This method assumes that the intrinsic properties of the parent expression or parent filter are unknown,
+     * and inherits from the operands only the properties that can be added to an initially empty set.
+     *
+     * <p>Note that {@code transitiveProperties(function.getParameters())} is <strong>not</strong> equivalent to
+     * {@code properties(function)}. It is rather equivalent to the following code, where the parent expression
+     * is not the final step of a chain of operations, and the next step has no known properties:</p>
+     *
+     * {@snippet lang="java" :
+     *     FunctionProperty.concatenate(transitiveProperties(operands), Set.of());
+     *     }
      *
      * @param  <R>       the type of resources.
-     * @param  operands  the expressions for which to query function properties.
+     * @param  operands  the operands from which to inherit function properties.
      * @return the manners in which values are computed from resources.
      */
     @SuppressWarnings("ReturnOfCollectionOrArrayField")             // Because immutable.
-    public static <R> Set<FunctionProperty> properties(final Iterable<Expression<R,?>> operands) {
-        for (final Expression<?,?> operand : operands) {
-            if (isVolatile(properties(operand))) {
-                return SUPPORTED_PROPERTIES;
-            }
-        }
-        return Set.of();
+    public static <R> Set<FunctionProperty> transitiveProperties(final Iterable<Expression<R,?>> operands) {
+        return isVolatile(operands) ? TRANSITIVE_PROPERTIES : Set.of();
     }
 
     /**

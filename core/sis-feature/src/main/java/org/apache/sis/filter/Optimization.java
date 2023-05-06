@@ -502,7 +502,7 @@ public class Optimization {
      * @since 1.4
      */
     public static Set<FunctionProperty> properties(final Filter<?> filter) {
-        return Node.properties(filter.getExpressions());
+        return Node.transitiveProperties(filter.getExpressions());
     }
 
     /**
@@ -511,8 +511,10 @@ public class Optimization {
      * The values of particular interest are:
      *
      * <ul>
+     *   <li>{@link FunctionProperty#INJECTIVE} if the computed value is unique for each resource instance (e.g. identifiers).</li>
      *   <li>{@link FunctionProperty#VOLATILE} if the computed value changes each time that the expression is evaluated,
      *       even if the resource to evaluate stay the same immutable instance.</li>
+     *   <li>{@link FunctionProperty#isConstant(Set)} if the expression returns a constant value.</li>
      * </ul>
      *
      * @param  expression  the expression for which to query function properties.

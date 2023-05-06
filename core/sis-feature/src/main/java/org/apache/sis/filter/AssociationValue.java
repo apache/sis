@@ -105,10 +105,13 @@ final class AssociationValue<V> extends LeafExpression<Feature, V>
 
     /**
      * Returns the manner in which values are computed from given resources.
+     * This method assumes an initially empty set of properties, then adds the transitive properties.
+     * This method does not inherit directly the properties of the {@linkplain #accessor} because it
+     * does not operate on the same resource, so the non-transitive function properties may not hold.
      */
     @Override
     public Set<FunctionProperty> properties() {
-        return properties(accessor);
+        return transitiveProperties(accessor.getParameters());
     }
 
     /**

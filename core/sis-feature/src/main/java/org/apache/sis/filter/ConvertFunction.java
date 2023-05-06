@@ -123,10 +123,12 @@ final class ConvertFunction<R,S,V> extends UnaryFunction<R,S>
 
     /**
      * Returns the manner in which values are computed from given resources.
+     * This expression can be represented as the concatenation of the user-supplied expression with the converter.
+     * Because this {@code ConvertFunction} does nothing on its own, it does not have its own set of properties.
      */
     @Override
     public Set<FunctionProperty> properties() {
-        return properties(expression, converter);
+        return FunctionProperty.concatenate(properties(expression), converter.properties());
     }
 
     /**

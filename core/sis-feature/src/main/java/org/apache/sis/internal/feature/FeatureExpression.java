@@ -55,7 +55,7 @@ public interface FeatureExpression<R,V> extends Expression<R,V> {
      * @return the manners in which values are computed from resources.
      */
     default Set<FunctionProperty> properties() {
-        return Node.properties(getParameters());
+        return Node.transitiveProperties(getParameters());
     }
 
     /**
