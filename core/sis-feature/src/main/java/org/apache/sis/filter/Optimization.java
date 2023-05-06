@@ -365,7 +365,8 @@ public class Optimization {
          * Tries to optimize this expression. The default implementation performs the following steps:
          *
          * <ul>
-         *   <li>If all expressions are literals, evaluate this expression immediately.</li>
+         *   <li>If all expressions are {@linkplain Literal literals} and this expression is not a
+         *       {@linkplain FunctionProperty#VOLATILE volatile function}, evaluate this expression immediately.</li>
          *   <li>Otherwise if at least one parameter can be optimized,
          *       {@linkplain #recreate(Expression[]) recreate} the expression.</li>
          *   <li>Otherwise returns {@code this}.</li>
@@ -386,7 +387,7 @@ public class Optimization {
                 immediate &= (e instanceof Literal<?,?>);
                 effective[i] = e;
             }
-            if (immediate) {
+            if (immediate && !properties(this).contains(FunctionProperty.VOLATILE)) {
                 return literal(apply(null));
             } else if (unchanged) {
                 return this;
