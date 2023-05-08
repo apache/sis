@@ -49,7 +49,7 @@ import org.junit.runner.RunWith;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.3
  */
 @RunWith(TestRunner.class)
@@ -139,6 +139,16 @@ public abstract class TestCase {
      * Needs to be retained by strong reference.
      */
     static final Logger LOGGER = Logger.getLogger(Loggers.ROOT);
+
+    /**
+     * Installs Apache SIS monoline formatter for easier identification of Apache SIS log messages among Maven outputs.
+     */
+    static {
+        MonolineFormatter f = MonolineFormatter.install();
+        f.setHeader(null);
+        f.setTimeFormat(null);
+        f.setSourceFormat("class.method");
+    }
 
     /**
      * Initializes {@link MonolineFormatter} if it has been specified in the {@code logging.properties}

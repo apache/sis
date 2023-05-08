@@ -64,12 +64,14 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.Assert;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**
@@ -704,7 +706,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
         assertEquals("targetDimensions", 2, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
             1, 0, 0, 0, 0,
             0, 1, 0, 0, 0,
             0, 0, 0, 0, 1
@@ -747,7 +749,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
         assertEquals("targetDimensions", 2, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 0, 1
@@ -790,7 +792,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 2, transform.getSourceDimensions());
         assertEquals("targetDimensions", 3, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(4, 3, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(4, 3, new double[] {
             1, 0, 0,
             0, 1, 0,
             0, 0, 0,
@@ -830,7 +832,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
         assertEquals("targetDimensions", 1, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 4, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(2, 4, new double[] {
             0, 0, 100, 0,
             0, 0,   0, 1
         }), ((LinearTransform) transform).getMatrix(), STRICT);
@@ -870,7 +872,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
         assertEquals("targetDimensions", 1, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 5, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(2, 5, new double[] {
             0, 0, 1, 0, 0,
             0, 0, 0, 0, 1
         }), ((LinearTransform) transform).getMatrix(), STRICT);
@@ -943,7 +945,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
 
         assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
         assertEquals("targetDimensions", 2, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
             1, 0, 0, 0, 0,
             0, 1, 0, 0, 0,
             0, 0, 0, 0, 1
@@ -983,7 +985,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
         assertEquals("targetDimensions", 4, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(5, 4, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(5, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
             0, 0, 0, 0,
@@ -1031,7 +1033,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
         assertEquals("targetDimensions", 2, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
             12,  0,  0, 480,
             0, -12,  0, 790,
             0,   0,  0,   1
@@ -1064,7 +1066,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertInstanceOf("transform", LinearTransform.class, transform);
         assertEquals("sourceDimensions", 2, transform.getSourceDimensions());
         assertEquals("targetDimensions", 2, transform.getTargetDimensions());
-        Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 3, new double[] {
+        assertMatrixEquals("transform.matrix", Matrices.create(3, 3, new double[] {
             1,  0,  0,
             0, -1,  0,
             0,  0,  1

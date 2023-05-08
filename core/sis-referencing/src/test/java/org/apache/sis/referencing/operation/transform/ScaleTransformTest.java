@@ -24,7 +24,7 @@ import org.apache.sis.internal.util.DoubleDouble;
 
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.Assert;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
@@ -51,7 +51,7 @@ public final class ScaleTransformTest extends MathTransformTestCase {
         final ScaleTransform tr = new ScaleTransform(matrix.getNumRow(), matrix.getNumCol(), elements);
         assertEquals("sourceDimensions", sourceDimensions, tr.getSourceDimensions());
         assertEquals("targetDimensions", targetDimensions, tr.getTargetDimensions());
-        Assert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
+        assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
         assertArrayEquals("elements", elements, TranslationTransformTest.getElementAsNumbers(tr));
         transform = tr;
         validate();
@@ -134,7 +134,7 @@ public final class ScaleTransformTest extends MathTransformTestCase {
         final ScaleTransform tr = new ScaleTransform(4, 4, elements);
         assertEquals("sourceDimensions", 3, tr.getSourceDimensions());
         assertEquals("targetDimensions", 3, tr.getTargetDimensions());
-        Assert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
+        assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
 
         TranslationTransformTest.replaceZeroByNull(elements, O);
         assertArrayEquals("elements", elements, tr.getElementAsNumbers(false));

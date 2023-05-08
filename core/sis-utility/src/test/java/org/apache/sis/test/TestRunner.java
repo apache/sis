@@ -55,7 +55,7 @@ import static org.apache.sis.util.collection.Containers.hashMapCapacity;
  *
  * @author  Stephen Connolly
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.3 (derived from <a href="http://github.com/junit-team/junit.contrib/tree/master/assumes">junit-team</a>)
  */
 public final class TestRunner extends BlockJUnit4ClassRunner {
@@ -75,26 +75,11 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      * Values are method names.
      *
      * <p>There is no need to prefix the method names by classnames because a new instance of {@code TestRunner}
-     * will be created for each test class, even if the the test classes are aggregated in a {@link TestSuite}.</p>
+     * will be created for each test class, even if the the test classes are aggregated in a test suite.</p>
      *
      * @see #addDependencyFailure(String)
      */
     private Set<String> methodDependencyFailures;
-
-    /**
-     * The dependency classes that failed. This set will be created only when first needed.
-     *
-     * @see #addDependencyFailure(String)
-     */
-    private static Set<Class<?>> classDependencyFailures;
-
-    /**
-     * {@code true} if every tests shall be skipped. This happen if at least one test failure
-     * occurred in at least one class listed in the {@link DependsOn} annotation.
-     *
-     * @see #checkClassDependencies()
-     */
-    private boolean skipAll;
 
     /**
      * The listener to use for keeping trace of methods that failed.
@@ -330,7 +315,6 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                checkClassDependencies();
                 notifier.addListener(listener);
                 try {
                     stmt.evaluate();
@@ -350,10 +334,6 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
      */
     @Override
     protected void runChild(final FrameworkMethod method, final RunNotifier notifier) {
-        if (skipAll) {
-            notifier.fireTestIgnored(describeChild(method));
-            return;
-        }
         if (methodDependencyFailures != null) {
             final DependsOnMethod assumptions = method.getAnnotation(DependsOnMethod.class);
             if (assumptions != null) {
@@ -380,33 +360,5 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
             methodDependencyFailures = new HashSet<>();
         }
         methodDependencyFailures.add(methodName);
-        synchronized (TestRunner.class) {
-            if (classDependencyFailures == null) {
-                classDependencyFailures = new HashSet<>();
-            }
-            classDependencyFailures.add(getTestClass().getJavaClass());
-        }
-    }
-
-    /**
-     * If at least one test failure occurred in at least one class listed in the {@link DependsOn}
-     * annotation, set the {@link #skipAll} field to {@code true}. This method shall be invoked
-     * before the tests are run.
-     */
-    final void checkClassDependencies() {
-        final Class<?> testClass = getTestClass().getJavaClass();
-        final DependsOn dependsOn = testClass.getAnnotation(DependsOn.class);
-        if (dependsOn != null) {
-            synchronized (TestRunner.class) {
-                if (classDependencyFailures != null) {
-                    for (final Class<?> dependency : dependsOn.value()) {
-                        if (classDependencyFailures.contains(dependency)) {
-                            classDependencyFailures.add(testClass);
-                            skipAll = true;
-                        }
-                    }
-                }
-            }
-        }
     }
 }

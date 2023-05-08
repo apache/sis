@@ -37,7 +37,11 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

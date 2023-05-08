@@ -31,7 +31,10 @@ import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.test.Assertions.assertParallelStreamEquals;
+import static org.apache.sis.test.Assertions.assertSequentialStreamEquals;
 
 
 /**

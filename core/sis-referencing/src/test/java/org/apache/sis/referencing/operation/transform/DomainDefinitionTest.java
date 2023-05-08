@@ -23,7 +23,7 @@ import org.apache.sis.internal.referencing.j2d.AffineTransform2D;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 
 /**

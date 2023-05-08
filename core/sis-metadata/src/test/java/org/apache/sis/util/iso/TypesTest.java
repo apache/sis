@@ -37,7 +37,9 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.test.Assert.*;
-import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
+
+// Branch-dependent imports
+import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**

@@ -23,7 +23,8 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

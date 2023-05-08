@@ -24,7 +24,8 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPACE;
 

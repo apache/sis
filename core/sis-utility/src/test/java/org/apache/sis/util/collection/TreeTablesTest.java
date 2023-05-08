@@ -26,7 +26,9 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.util.SimpleInternationalString;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.util.collection.TreeTables.*;
 import static org.apache.sis.util.collection.TableColumn.*;
 

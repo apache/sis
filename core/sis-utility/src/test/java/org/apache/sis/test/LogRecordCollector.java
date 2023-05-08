@@ -33,10 +33,15 @@ import org.junit.runner.Description;
  * Those emitters will be reported after the test suite completion.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 final class LogRecordCollector extends Handler {
+    /**
+     * Expected suffix in name of test classes.
+     */
+    private static final String CLASSNAME_SUFFIX = "Test";
+
     /**
      * The unique instance.
      */
@@ -76,8 +81,8 @@ final class LogRecordCollector extends Handler {
     }
 
     /**
-     * Invoked when an Apache SIS method emitted a warning. This method stores information about records
-     * having {@link Level#INFO} or higher.
+     * Invoked when an Apache SIS method emitted a warning.
+     * This method stores information about records having {@link Level#INFO} or higher.
      */
     @Override
     public void publish(final LogRecord record) {
@@ -96,7 +101,7 @@ final class LogRecordCollector extends Handler {
                 method = "<unknown>";
                 for (final StackTraceElement t : Thread.currentThread().getStackTrace()) {
                     final String c = t.getClassName();
-                    if (c.startsWith(Modules.CLASSNAME_PREFIX) && c.endsWith(TestSuite.CLASSNAME_SUFFIX)) {
+                    if (c.startsWith(Modules.CLASSNAME_PREFIX) && c.endsWith(CLASSNAME_SUFFIX)) {
                         cname  = c;
                         method = t.getMethodName();
                         break;

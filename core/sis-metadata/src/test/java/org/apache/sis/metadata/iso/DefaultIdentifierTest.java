@@ -23,7 +23,9 @@ import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.junit.*;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**

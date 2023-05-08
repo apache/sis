@@ -30,7 +30,10 @@ import org.junit.Test;
 
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
+import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 
 
 /**

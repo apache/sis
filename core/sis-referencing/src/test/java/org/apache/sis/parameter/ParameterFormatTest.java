@@ -32,7 +32,8 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.metadata.iso.citation.Citations.OGC;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 

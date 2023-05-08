@@ -35,7 +35,8 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.util.Debug;
 import org.junit.Test;
 
-import static org.apache.sis.test.FeatureAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 
 /**

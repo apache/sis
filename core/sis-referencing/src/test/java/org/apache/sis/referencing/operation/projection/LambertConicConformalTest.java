@@ -35,11 +35,12 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.*;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-specific imports
 import static org.junit.Assume.assumeTrue;
-import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
+import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**

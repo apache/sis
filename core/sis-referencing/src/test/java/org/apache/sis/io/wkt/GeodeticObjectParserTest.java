@@ -48,7 +48,11 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 

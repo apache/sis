@@ -41,10 +41,12 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.feature.Assertions.assertPixelsEqual;
+
 // Branch-dependent imports
 import org.apache.sis.coverage.PointOutsideCoverageException;
-
-import static org.apache.sis.test.FeatureAssert.*;
 
 
 /**

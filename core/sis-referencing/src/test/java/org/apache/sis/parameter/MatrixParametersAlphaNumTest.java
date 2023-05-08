@@ -19,7 +19,7 @@ package org.apache.sis.parameter;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**

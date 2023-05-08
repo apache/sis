@@ -39,7 +39,7 @@ import org.apache.sis.test.DependsOn;
 import org.junit.runner.RunWith;
 import org.junit.After;
 import org.junit.Test;
-import org.apache.sis.test.Assert;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.opengis.test.Assert.*;
 
 // Branch-dependent imports
@@ -239,7 +239,7 @@ public class ProjectiveTransformTest extends TransformTestCase {
     public void testOptimizeConstant() throws FactoryException, TransformException {
         matrix = new Matrix2(0, 10, 0, 1);
         transform = mtFactory.createAffineTransform(matrix);
-        Assert.assertMatrixEquals("Transform shall use the given matrix unmodified.",
+        assertMatrixEquals("Transform shall use the given matrix unmodified.",
                 matrix, ((LinearTransform) transform).getMatrix(), STRICT);
     }
 

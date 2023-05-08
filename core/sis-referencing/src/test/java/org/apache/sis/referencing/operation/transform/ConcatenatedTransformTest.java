@@ -27,9 +27,10 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
-import org.apache.sis.test.Assert;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**
@@ -178,7 +179,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * Dropping a dimension is not a problem.
          */
         final MathTransform c = MathTransforms.concatenate(tr1, tr2.inverse());
-        Assert.assertMatrixEquals("Forward", Matrices.create(3, 4, new double[] {
+        assertMatrixEquals("Forward", Matrices.create(3, 4, new double[] {
             4, 0, 0, 0,     // scale = 8/2
             0, 2, 0, 0,     // scale = 6/3
             0, 0, 0, 1}), MathTransforms.getMatrix(c), STRICT);
@@ -189,7 +190,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * this concatenation was built from a transform which was putting value 5 in third dimension,
          * we can complete the matrix as below with value 10 in third dimension.
          */
-        Assert.assertMatrixEquals("Inverse", Matrices.create(4, 3, new double[] {
+        assertMatrixEquals("Inverse", Matrices.create(4, 3, new double[] {
             0.25, 0,    0,
             0,    0.5,  0,
             0,    0,   10,   // Having value 10 instead of NaN is the main purpose of this test.
@@ -211,6 +212,6 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         final MathTransform tr2 = MathTransforms.linear(new Matrix2(-1, 0, 0, 1));
         final MathTransform c   = MathTransforms.concatenate(tr1, tr2);
         final Matrix m          = ((LinearTransform) c).getMatrix();
-        Assert.assertMatrixEquals("Concatenate", new Matrix2(-4.9E-324, 5387, 0, 1), m, STRICT);
+        assertMatrixEquals("Concatenate", new Matrix2(-4.9E-324, 5387, 0, 1), m, STRICT);
     }
 }

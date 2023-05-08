@@ -21,7 +21,8 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.*;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

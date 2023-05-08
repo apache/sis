@@ -24,7 +24,7 @@ import org.apache.sis.internal.coverage.j2d.ImageLayout;
 import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
-import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
+import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
 /**

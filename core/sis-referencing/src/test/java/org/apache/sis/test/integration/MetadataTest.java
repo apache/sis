@@ -76,7 +76,7 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 import org.apache.sis.internal.geoapi.evolution.UnsupportedCodeList;
 

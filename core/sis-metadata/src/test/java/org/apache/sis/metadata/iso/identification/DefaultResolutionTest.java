@@ -28,7 +28,8 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.internal.jaxb.gml.MeasureTest.UOM_URL;
 
 

@@ -29,7 +29,9 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertContentInfoEquals;
+import static org.apache.sis.metadata.Assertions.assertFeatureSourceEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-dependent imports

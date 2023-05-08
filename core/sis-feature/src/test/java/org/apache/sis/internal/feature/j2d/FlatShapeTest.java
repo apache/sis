@@ -21,7 +21,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.FeatureAssert.*;
+import static org.apache.sis.feature.Assertions.assertPathEquals;
 
 
 /**

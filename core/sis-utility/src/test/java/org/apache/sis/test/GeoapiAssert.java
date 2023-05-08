@@ -22,6 +22,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.InternationalString;
+import org.apache.sis.util.Static;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -36,10 +37,10 @@ import static org.junit.Assert.fail;
  * But this class can be removed on Apache SIS branches which are linked to a GeoAPI development branch.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
+ * @since   1.4
  * @version 0.3
  */
-class GeoapiAssert extends org.opengis.test.Assert {
+public final class GeoapiAssert extends Static {
     /**
      * A flag for code that are pending next GeoAPI release before to be enabled.
      * This flag is always set to {@code false}, except occasionally just before
@@ -62,9 +63,9 @@ class GeoapiAssert extends org.opengis.test.Assert {
     private static final String UNRESTRICTED = "##unrestricted";
 
     /**
-     * For subclass constructor only.
+     * Do not allow instantiation of this class.
      */
-    GeoapiAssert() {
+    private GeoapiAssert() {
     }
 
     /**

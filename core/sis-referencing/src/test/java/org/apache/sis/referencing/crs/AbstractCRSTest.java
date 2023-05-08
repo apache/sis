@@ -25,7 +25,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**

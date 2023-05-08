@@ -19,7 +19,9 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 
 import static org.junit.Assume.*;
-import static org.apache.sis.test.Assert.*;
+
+// Branch-dependent imports
+import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**

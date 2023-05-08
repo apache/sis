@@ -19,7 +19,8 @@ package org.apache.sis.math;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

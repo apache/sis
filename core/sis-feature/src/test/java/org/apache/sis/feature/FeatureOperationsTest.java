@@ -33,7 +33,10 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 
 /**

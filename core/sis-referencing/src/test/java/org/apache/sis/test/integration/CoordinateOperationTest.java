@@ -41,7 +41,8 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static org.junit.Assume.assumeTrue;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
 /**

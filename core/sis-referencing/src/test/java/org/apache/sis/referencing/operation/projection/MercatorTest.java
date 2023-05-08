@@ -40,7 +40,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 
 // Branch-specific imports
 import static org.junit.Assume.assumeTrue;
-import static org.apache.sis.test.Assert.PENDING_NEXT_GEOAPI_RELEASE;
+import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 
 /**

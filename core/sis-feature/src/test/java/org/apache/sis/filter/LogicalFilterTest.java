@@ -27,7 +27,9 @@ import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;

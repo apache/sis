@@ -24,7 +24,7 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.test.DependsOn;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.referencing.Assertions.assertRectangleEquals;
 
 
 /**

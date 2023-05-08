@@ -31,7 +31,9 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.FeatureAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.feature.Assertions.assertValuesEqual;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 

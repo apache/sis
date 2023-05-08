@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**

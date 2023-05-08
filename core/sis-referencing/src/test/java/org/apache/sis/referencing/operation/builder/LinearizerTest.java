@@ -28,6 +28,7 @@ import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**
@@ -62,7 +63,7 @@ public final class LinearizerTest extends TestCase {
 
         // Linear approximation by Least Square Root method.
         final LinearTransform linear = LinearTransformBuilder.approximate(transform, new Envelope2D(null, 0, 0, 3, 5));
-        org.apache.sis.test.Assert.assertMatrixEquals("linear",
+        assertMatrixEquals("linear",
                 new Matrix3(111319, 0,   0,
                             0, 110662, -62,
                             0, 0, 1), linear.getMatrix(), 0.5);

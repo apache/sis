@@ -21,7 +21,9 @@ import org.junit.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Branch-dependent imports

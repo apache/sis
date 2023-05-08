@@ -39,7 +39,8 @@ import org.junit.Test;
 import org.junit.Rule;
 import org.junit.After;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 // Branch-dependent imports
 import org.apache.sis.feature.AbstractFeature;

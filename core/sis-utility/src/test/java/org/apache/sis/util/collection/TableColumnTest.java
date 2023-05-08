@@ -20,9 +20,10 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
-
-import static org.apache.sis.test.Assert.*;
 import org.apache.sis.test.foreigner.SerializableTableColumn;
+
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.util.collection.TableColumn.*;
 
 
