@@ -30,11 +30,12 @@ import static org.opengis.test.Assert.*;
  * Tests the {@link NonSquareMatrix} implementation.
  * This class inherits all tests defined in {@link MatrixTestCase}.
  *
- * <p>This class is expected to be the last {@code MatrixTestCase} subclass to be executed,
- * because it sends the {@link #statistics} to {@link #out}. This condition is ensured if
- * the tests are executed by {@link org.apache.sis.test.suite.ReferencingTestSuite}.
- * However, it is not a big deal if this condition is broken, as the only consequence
- * is that reported statistics will be incomplete.</p>
+ * <h2>Test order</h2>
+ * This class is expected to be the last {@code MatrixTestCase} subclass to be executed,
+ * because it sends the {@link #statistics} to {@link #out}. However, it is okay if this
+ * condition is broken, as the only consequence is that reported statistics will be incomplete.
+ *
+ * @todo Use JUnit 5 ordering mechanism for running other matrix tests first.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
