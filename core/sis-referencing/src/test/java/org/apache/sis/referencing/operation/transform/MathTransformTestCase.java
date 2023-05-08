@@ -44,7 +44,8 @@ import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 // Branch-dependent imports
 import org.opengis.test.CalculationType;

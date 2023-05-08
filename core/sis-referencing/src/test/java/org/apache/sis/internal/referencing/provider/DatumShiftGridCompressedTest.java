@@ -19,7 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import javax.measure.quantity.Dimensionless;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 
-import static org.opengis.test.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

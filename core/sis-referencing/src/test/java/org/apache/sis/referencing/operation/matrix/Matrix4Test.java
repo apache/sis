@@ -20,7 +20,8 @@ import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 
 

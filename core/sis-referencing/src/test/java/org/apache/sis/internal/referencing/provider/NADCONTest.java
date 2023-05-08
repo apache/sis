@@ -31,7 +31,9 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

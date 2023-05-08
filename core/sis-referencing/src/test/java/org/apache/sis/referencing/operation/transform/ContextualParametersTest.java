@@ -31,7 +31,8 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.PI;
 import static java.lang.StrictMath.toRadians;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

@@ -28,7 +28,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 // Branch-dependent imports
 import org.opengis.filter.Literal;

@@ -30,7 +30,8 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

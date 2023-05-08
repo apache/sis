@@ -23,7 +23,8 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

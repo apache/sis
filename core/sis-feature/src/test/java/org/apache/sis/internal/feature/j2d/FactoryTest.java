@@ -20,7 +20,7 @@ import org.apache.sis.internal.feature.GeometriesTestCase;
 import java.awt.geom.Path2D;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

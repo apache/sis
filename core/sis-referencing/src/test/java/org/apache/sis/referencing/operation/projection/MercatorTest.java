@@ -37,7 +37,8 @@ import org.junit.Test;
 
 import static java.lang.Double.*;
 import static java.lang.StrictMath.*;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertBetween;
 import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 

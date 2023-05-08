@@ -27,7 +27,7 @@ import org.junit.runners.JUnit4;
 import org.junit.After;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

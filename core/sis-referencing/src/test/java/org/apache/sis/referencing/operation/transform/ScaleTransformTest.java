@@ -27,7 +27,8 @@ import org.apache.sis.test.DependsOn;
 import org.opengis.test.Assert;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**
