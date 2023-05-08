@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.metadata;
 
 import java.util.Locale;
 import java.io.IOException;
@@ -27,10 +27,12 @@ import org.opengis.metadata.maintenance.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.content.FeatureTypeInfo;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
+import org.apache.sis.util.Static;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.DocumentComparator;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
+import static org.junit.Assert.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Branch-specific imports
@@ -38,18 +40,17 @@ import org.opengis.metadata.citation.Responsibility;
 
 
 /**
- * Assertion methods used by the {@code sis-metadata} module in addition of the ones inherited
- * from other modules and libraries.
+ * Assertion methods used by the {@code sis-metadata} module.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
-public class MetadataAssert extends Assert {
+public final class Assertions extends Static {
     /**
-     * For subclass constructor only.
+     * Do not allow instantiation of this class.
      */
-    protected MetadataAssert() {
+    private Assertions() {
     }
 
     /**
@@ -175,7 +176,7 @@ public class MetadataAssert extends Assert {
      * @see DocumentComparator
      */
     public static void assertXmlEquals(final Object expected, final Object actual, final String... ignoredAttributes) {
-        assertXmlEquals(expected, actual, TestCase.STRICT, null, ignoredAttributes);
+        assertXmlEquals(expected, actual, 0, null, ignoredAttributes);
     }
 
     /**

@@ -32,7 +32,10 @@ import org.apache.sis.test.xml.TestCase;
 import org.opengis.test.Validators;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertTitleEquals;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.opengis.metadata.Identifier.*;
 
 

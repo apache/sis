@@ -28,7 +28,9 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

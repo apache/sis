@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.iso.Names;
 import org.junit.Test;
 
-import static org.apache.sis.test.FeatureAssert.*;
+import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
 /**

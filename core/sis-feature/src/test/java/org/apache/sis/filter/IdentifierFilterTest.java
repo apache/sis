@@ -21,7 +21,8 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

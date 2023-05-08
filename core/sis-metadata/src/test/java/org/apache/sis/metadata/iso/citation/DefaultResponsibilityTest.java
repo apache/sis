@@ -23,7 +23,7 @@ import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**

@@ -30,7 +30,8 @@ import org.apache.sis.test.TestCase;
 import org.opengis.test.Validators;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import org.apache.sis.test.DependsOn;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;

@@ -45,7 +45,10 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.Rule;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

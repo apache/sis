@@ -34,7 +34,9 @@ import org.apache.sis.internal.sql.feature.TableReference;
 import org.apache.sis.test.sql.TestDatabase;
 import org.apache.sis.test.TestUtilities;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.test.Assertions.assertSetEquals;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

@@ -19,11 +19,13 @@ package org.apache.sis.internal.test;
 import org.junit.Test;
 import org.apache.sis.test.TestCase;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**
- * Tests the {@link org.apache.sis.test.Assert} class.
+ * Tests the {@link org.apache.sis.test.Assertions} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 0.6
@@ -31,7 +33,7 @@ import static org.apache.sis.test.Assert.*;
  */
 public final class AssertTest extends TestCase {
     /**
-     * Tests the {@link org.apache.sis.test.Assert#assertMultilinesEquals(CharSequence, CharSequence)} method.
+     * Tests the {@link org.apache.sis.test.Assertions#assertMultilinesEquals(CharSequence, CharSequence)} method.
      */
     @Test
     public void testAssertEqualsMultilines() {
@@ -54,7 +56,7 @@ public final class AssertTest extends TestCase {
     }
 
     /**
-     * Tests the {@link org.apache.sis.test.Assert#assertSerializedEquals(Object)} method.
+     * Tests the {@link org.apache.sis.test.Assertions#assertSerializedEquals(Object)} method.
      */
     @Test
     public void testAssertSerializedEquals() {

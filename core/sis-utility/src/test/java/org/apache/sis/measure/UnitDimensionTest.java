@@ -26,7 +26,9 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertMapEquals;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

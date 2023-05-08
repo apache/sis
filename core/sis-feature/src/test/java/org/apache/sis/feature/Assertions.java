@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.feature;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -23,6 +23,7 @@ import java.awt.image.RenderedImage;
 import java.awt.geom.PathIterator;
 import org.opengis.coverage.grid.SequenceType;
 import org.apache.sis.image.PixelIterator;
+import org.apache.sis.util.Static;
 
 import static org.junit.Assert.*;
 
@@ -35,11 +36,11 @@ import static org.junit.Assert.*;
  * @version 1.1
  * @since   1.1
  */
-public class FeatureAssert extends ReferencingAssert {
+public final class Assertions extends Static {
     /**
-     * For subclass constructor only.
+     * Do not allow instantiation of this class.
      */
-    protected FeatureAssert() {
+    private Assertions() {
     }
 
     /**

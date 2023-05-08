@@ -40,7 +40,9 @@ import static java.lang.Double.NaN;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 import static org.apache.sis.referencing.cs.CoordinateSystems.*;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
 /**

@@ -36,7 +36,12 @@ import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
 import static org.opengis.referencing.crs.CompoundCRS.NAME_KEY;
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 
 /**

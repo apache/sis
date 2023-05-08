@@ -24,7 +24,8 @@ import org.apache.sis.test.TestCase;
 import static java.lang.StrictMath.*;
 import static java.lang.Double.NaN;
 import static java.lang.Double.isNaN;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

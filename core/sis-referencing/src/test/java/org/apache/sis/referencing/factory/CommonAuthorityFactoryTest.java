@@ -49,7 +49,12 @@ import org.apache.sis.test.TestCase;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertNotDeepEquals;
+import static org.apache.sis.referencing.Assertions.assertWktEqualsRegex;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

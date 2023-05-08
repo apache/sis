@@ -37,6 +37,9 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.Static;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -44,14 +47,14 @@ import org.apache.sis.util.Classes;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
-public class Assert extends org.opengis.test.Assert {
+public final class Assertions extends Static {
     /**
-     * For subclass constructor only.
+     * Do not allow instantiation of this class.
      */
-    protected Assert() {
+    private Assertions() {
     }
 
     /**

@@ -39,7 +39,11 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
+import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 
 /**

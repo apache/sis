@@ -24,7 +24,7 @@ import org.apache.sis.internal.referencing.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
-import org.apache.sis.test.ReferencingAssert;
+import org.apache.sis.referencing.Assertions;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
@@ -76,17 +76,17 @@ public final class EquirectangularTest extends MapProjectionTestCase {
          * below show whatever identifier come first for each parameter (currently GeoTIFF identifiers,
          * but the authority may change in any future SIS version).
          */
-        ReferencingAssert.assertWktEquals(Convention.WKT2,
+        Assertions.assertWktEquals(Convention.WKT2,
                 "PARAM_MT[“Equidistant Cylindrical (Spherical)”,\n" +
                 "  PARAMETER[“semi_major”, 6371007.0, LENGTHUNIT[“metre”, 1], ID[“GeoTIFF”, 2057]],\n" +
                 "  PARAMETER[“semi_minor”, 6371007.0, LENGTHUNIT[“metre”, 1], ID[“GeoTIFF”, 2058]]]", transform);
 
-        ReferencingAssert.assertWktEquals(Convention.WKT2_SIMPLIFIED,
+        Assertions.assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "Param_MT[“Equidistant Cylindrical (Spherical)”,\n" +
                 "  Parameter[“semi_major”, 6371007.0, Unit[“metre”, 1]],\n" +
                 "  Parameter[“semi_minor”, 6371007.0, Unit[“metre”, 1]]]", transform);
 
-        ReferencingAssert.assertWktEquals(Convention.INTERNAL,
+        Assertions.assertWktEquals(Convention.INTERNAL,
                 "Param_MT[“Affine parametric transformation”,\n" +
                 "  Parameter[“A0”, 111195.04881760638, Id[“EPSG”, 8623]],\n" +
                 "  Parameter[“B1”, 111195.04881760638, Id[“EPSG”, 8640]]]", transform);

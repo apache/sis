@@ -35,9 +35,11 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.iso.citation.Citations.*;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.test.MetadataAssert.*;
 
 
 /**

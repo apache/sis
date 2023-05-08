@@ -32,7 +32,7 @@ import org.apache.sis.test.TestUtilities;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.apache.sis.test.Assert.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertSetEquals;
 
 
 /**
