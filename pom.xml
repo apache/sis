@@ -675,9 +675,6 @@
         <version>3.0.0</version>
         <configuration>
           <trimStackTrace>false</trimStackTrace>
-          <includes>
-            <include>**/*TestSuite.java</include>
-          </includes>
           <systemProperties>
             <property>
               <name>derby.stream.error.file</name>

@@ -43,7 +43,9 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 
 /**

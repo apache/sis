@@ -24,8 +24,9 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Validators.*;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Validators.validate;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**
@@ -34,7 +35,7 @@ import static org.apache.sis.test.Assert.*;
  * For tests using the name factory, see {@link DefaultNameFactoryTest}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(DefaultLocalNameTest.class)
@@ -52,11 +53,11 @@ public final class DefaultScopedNameTest extends TestCase {
         assertSame(name, name.toFullyQualifiedName());
         assertEquals("urn:ogc:def:crs:epsg:4326", name.toString());
         assertNotSame(name, assertSerializedEquals(name));
-        validate(name); // GeoAPI tests.
+        validate(name);                     // GeoAPI tests.
         for (int i=parsed.length; --i>=0;) {
             name = name.tip();
             validate(name);
-            assertSame(parsed[i], name.toString());
+            assertEquals(parsed[i], name.toString());
             name = name.scope().name();
         }
     }

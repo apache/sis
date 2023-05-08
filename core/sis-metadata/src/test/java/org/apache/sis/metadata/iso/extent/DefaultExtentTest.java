@@ -28,7 +28,8 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
 
 

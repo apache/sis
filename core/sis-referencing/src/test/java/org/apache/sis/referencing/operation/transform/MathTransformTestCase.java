@@ -42,7 +42,7 @@ import static java.lang.StrictMath.*;
 import org.opengis.test.Validators;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.ReferencingAssert;
+import org.apache.sis.referencing.Assertions;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 import static org.opengis.test.Assert.*;
 
@@ -348,7 +348,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
         }
         if (values != null) {
             assertSame(descriptor, values.getDescriptor());
-            ReferencingAssert.assertParameterEquals(values,
+            Assertions.assertParameterEquals(values,
                     ((Parameterized) transform).getParameterValues(), tolerance);
         }
     }
@@ -363,7 +363,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      */
     protected final void assertWktEquals(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
-        ReferencingAssert.assertWktEquals(Convention.WKT1, expected, transform);
+        Assertions.assertWktEquals(Convention.WKT1, expected, transform);
     }
 
     /**
@@ -378,7 +378,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      */
     protected final void assertWktEqualsRegex(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
-        ReferencingAssert.assertWktEqualsRegex(Convention.WKT1, expected, transform);
+        Assertions.assertWktEqualsRegex(Convention.WKT1, expected, transform);
     }
 
     /**
@@ -390,7 +390,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      */
     protected final void assertInternalWktEquals(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
-        ReferencingAssert.assertWktEquals(Convention.INTERNAL, expected, transform);
+        Assertions.assertWktEquals(Convention.INTERNAL, expected, transform);
     }
 
     /**
@@ -403,7 +403,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      */
     protected final void assertInternalWktEqualsRegex(final String expected) {
         assertNotNull("The 'transform' field shall be assigned a value.", transform);
-        ReferencingAssert.assertWktEqualsRegex(Convention.INTERNAL, expected, transform);
+        Assertions.assertWktEqualsRegex(Convention.INTERNAL, expected, transform);
     }
 
     /**

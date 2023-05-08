@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.test;
+package org.apache.sis.referencing;
 
 import java.util.Collection;
 import java.awt.geom.Rectangle2D;
@@ -35,6 +35,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.Static;
 import org.apache.sis.io.wkt.Symbols;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
@@ -42,11 +43,13 @@ import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.internal.util.Constants;
+import org.apache.sis.test.TestUtilities;
 
 import static java.lang.StrictMath.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
 /**
@@ -57,7 +60,7 @@ import static java.lang.StrictMath.*;
  * @version 1.0
  * @since   0.3
  */
-public class ReferencingAssert extends MetadataAssert {
+public final class Assertions extends Static {
     /**
      * The formatter to be used by {@link #assertWktEquals(String, Object)}.
      * This formatter uses the {@code “…”} quotation marks instead of {@code "…"}
@@ -71,9 +74,9 @@ public class ReferencingAssert extends MetadataAssert {
     }
 
     /**
-     * For subclass constructor only.
+     * Do not allow instantiation of this class.
      */
-    protected ReferencingAssert() {
+    private Assertions() {
     }
 
     /**
@@ -165,8 +168,8 @@ public class ReferencingAssert extends MetadataAssert {
         assertEquals("name",         name,         axis.getName().getCode());
         assertEquals("abbreviation", abbreviation, axis.getAbbreviation());
         assertEquals("direction",    direction,    axis.getDirection());
-        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), TestCase.STRICT);
-        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), TestCase.STRICT);
+        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), 0);      // STRICT
+        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), 0);      // STRICT
         assertEquals("unit",         unit,         axis.getUnit());
         assertEquals("rangeMeaning", rangeMeaning, axis.getRangeMeaning());
     }

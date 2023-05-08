@@ -26,7 +26,9 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertIdentifierEquals;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_DAY;
 

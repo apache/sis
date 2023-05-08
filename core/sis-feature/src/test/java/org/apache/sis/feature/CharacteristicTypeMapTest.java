@@ -22,8 +22,9 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
-import static org.apache.sis.test.Assert.*;
 
 // Branch-dependent imports
 import org.opengis.feature.AttributeType;

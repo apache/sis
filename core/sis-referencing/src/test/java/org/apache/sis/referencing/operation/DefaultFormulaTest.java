@@ -20,7 +20,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

@@ -28,7 +28,9 @@ import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

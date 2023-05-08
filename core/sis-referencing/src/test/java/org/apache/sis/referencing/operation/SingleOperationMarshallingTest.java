@@ -47,7 +47,11 @@ import org.junit.Test;
 
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertIdentifierEquals;
+import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**

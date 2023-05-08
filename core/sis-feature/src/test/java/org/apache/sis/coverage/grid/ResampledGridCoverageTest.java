@@ -54,8 +54,13 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
+import static org.apache.sis.feature.Assertions.assertValuesEqual;
+import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 import static org.opengis.referencing.datum.PixelInCell.CELL_CENTER;
-import static org.apache.sis.test.FeatureAssert.*;
 
 
 /**

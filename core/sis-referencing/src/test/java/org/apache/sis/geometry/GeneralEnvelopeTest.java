@@ -29,8 +29,10 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.junit.Test;
 
 import static java.lang.Double.NaN;
-import static org.opengis.test.Validators.*;
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Validators.validate;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 

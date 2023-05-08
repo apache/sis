@@ -34,7 +34,7 @@ import org.junit.Test;
 import static java.lang.Double.NaN;
 import static java.lang.StrictMath.abs;
 import static java.lang.StrictMath.toRadians;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.internal.referencing.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
 import org.opengis.test.CalculationType;
 

@@ -25,7 +25,8 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**

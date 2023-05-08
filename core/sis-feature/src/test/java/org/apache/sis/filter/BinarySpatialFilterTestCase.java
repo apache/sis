@@ -38,7 +38,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.Assert.assertSerializedEquals;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

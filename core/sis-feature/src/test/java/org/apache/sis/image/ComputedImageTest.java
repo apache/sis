@@ -30,7 +30,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 import static org.opengis.test.Assert.assertInstanceOf;
-import static org.apache.sis.test.FeatureAssert.assertValuesEqual;
+import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
 /**

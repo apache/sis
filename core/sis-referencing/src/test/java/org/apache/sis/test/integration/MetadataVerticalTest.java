@@ -50,7 +50,9 @@ import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 

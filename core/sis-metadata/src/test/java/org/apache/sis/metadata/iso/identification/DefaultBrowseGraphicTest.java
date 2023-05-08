@@ -34,7 +34,8 @@ import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
 import static java.util.logging.Logger.getLogger;
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.junit.Assert.*;
 
 
 /**

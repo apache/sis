@@ -25,17 +25,26 @@ import java.lang.annotation.Target;
 
 
 /**
- * Declares that a test class depends on another test class. If any test method in any
- * dependency failed, then all tests in the annotated class will be skipped.
+ * Declares that a test class depends on another test class.
+ * This annotation was used by a customized test runner but is no longer used in SIS 1.4.
+ * See <a href="https://issues.apache.org/jira/browse/SIS-580">SIS-580</a>.
+ *
+ * @todo Replace by JUnit 5 annotations for class ordering. We could use the ordering based on an integer values,
+ *       with constants defined in {@code TestCase} for some broad categories of tests to run in priority.
+ *       Note that the following classes need particular attention:
+ *       <ul>
+ *         <li>{@link org.apache.sis.referencing.operation.matrix.NonSquareMatrixTest}</li>
+ *         <li>{@link org.apache.sis.referencing.IdentifiedObjectsTest}</li>
+ *       </ul>
  *
  * @author  Martin Desruisseaux
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 @Inherited
 @Documented
 @Target(ElementType.TYPE)
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(RetentionPolicy.SOURCE)
 public @interface DependsOn {
     /**
      * The other test classes on which this test depends.

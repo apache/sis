@@ -36,7 +36,8 @@ import org.junit.Test;
 
 import static java.lang.StrictMath.*;
 import static java.lang.Double.*;
-import static org.apache.sis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

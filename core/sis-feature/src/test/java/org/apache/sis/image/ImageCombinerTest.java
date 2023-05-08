@@ -26,7 +26,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.apache.sis.test.FeatureAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
 /**

@@ -29,8 +29,8 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
 
-import static org.apache.sis.test.Assert.*;
 import static org.junit.Assume.assumeNotNull;
+import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
 /**

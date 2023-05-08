@@ -53,7 +53,8 @@ import org.junit.runner.RunWith;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static org.apache.sis.test.ReferencingAssert.*;
+import static org.junit.Assert.*;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

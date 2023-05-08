@@ -40,7 +40,9 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.XML;
 import org.junit.After;
 
-import static org.apache.sis.test.MetadataAssert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 
 /**

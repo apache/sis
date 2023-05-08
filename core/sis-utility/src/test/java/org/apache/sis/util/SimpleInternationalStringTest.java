@@ -20,8 +20,9 @@ import java.util.Locale;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
 import static org.opengis.test.Validators.validate;
-import static org.apache.sis.test.Assert.*;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.util.DefaultInternationalStringTest.MESSAGE;
 
 
