@@ -1,8 +1,3 @@
-ide-project/NetBeans/nbproject/private/
-ide-project/NetBeans/build/
-ide-project/NetBeans/dist/
-ide-project/local-src/
-ide-project/workspace/
 target/
 *.tmp
 *.log
