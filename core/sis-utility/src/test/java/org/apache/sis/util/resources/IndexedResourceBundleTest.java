@@ -25,7 +25,6 @@ import java.util.logging.SimpleFormatter;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.util.InternationalString;
 import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 import org.junit.After;
@@ -49,7 +48,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * @version 0.4
  * @since   0.3
  */
-@DependsOn(LoaderTest.class)
 public final class IndexedResourceBundleTest extends TestCase {
     /**
      * The resource bundle in process of being tested. Shall be reset to {@code null} after every
@@ -67,11 +65,11 @@ public final class IndexedResourceBundleTest extends TestCase {
         final Errors french  = Errors.getResources(Locale.FRENCH);
         final Errors canada  = Errors.getResources(Locale.CANADA);
         final Errors quebec  = Errors.getResources(Locale.CANADA_FRENCH);
-        assertNotSame(english, Errors.getResources(Locale.US));
-        assertNotSame(english, Errors.getResources(Locale.UK));
+        assertSame   (english, Errors.getResources(Locale.US));
+        assertSame   (english, Errors.getResources(Locale.UK));
         assertNotSame(english, french);
-        assertNotSame(english, canada);
-        assertNotSame(french,  quebec);
+        assertSame   (english, canada);
+        assertSame   (french,  quebec);
 
         assertSame(english, Errors.getResources(Locale.ENGLISH));
         assertSame(canada,  Errors.getResources(Locale.CANADA));
