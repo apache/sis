@@ -1,8 +1,6 @@
-# Licensed to the Apache Software Foundation (ASF) under one or more contributor license agreements;
-# and to You under the Apache License, Version 2.0.
-
-# Loaded by org.apache.sis.internal.converter.ConverterRegistry.
-
+# Workaround for Maven bug https://issues.apache.org/jira/browse/MNG-7855
+# The content of this file is automatically derived from module-info.class file.
+# Should be used only if the JAR file was on class-path rather than module-path.
 org.apache.sis.internal.converter.StringConverter$Number
 org.apache.sis.internal.converter.StringConverter$Byte
 org.apache.sis.internal.converter.StringConverter$Short

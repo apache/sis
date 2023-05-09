@@ -75,11 +75,6 @@
             <manifest>
               <mainClass>org.apache.sis.console.Command</mainClass>
             </manifest>
-            <manifestEntries>
-              <Automatic-Module-Name>
-                org.apache.sis.console
-              </Automatic-Module-Name>
-            </manifestEntries>
           </archive>
         </configuration>
       </plugin>

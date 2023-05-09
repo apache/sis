@@ -779,7 +779,7 @@
             </goals>
             <configuration>
               <skip>${skipTests}</skip>                 <!-- When skipping tests, skip also checkstyle verification.  -->
-              <excludes>**/generated/**/*</excludes>    <!-- Skip generated source code, e.g. classes created by JMH. -->
+              <excludes>**/module-info.java</excludes>  <!-- Avoid "no viable alternative at input 'module'" error. -->
               <encoding>${project.build.sourceEncoding}</encoding>
               <consoleOutput>true</consoleOutput>
               <checkstyleRules>
