@@ -90,6 +90,7 @@ public class ImagePane extends ZoomPane {
      * @param  title     window title.
      * @return the image pane which has been shown.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static ImagePane show(final GridCoverage coverage, final String title) {
         final RenderedImage image = coverage.render(null);
         final GridGeometry gg = (GridGeometry) image.getProperty(PlanarImage.GRID_GEOMETRY_KEY);

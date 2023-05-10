@@ -265,9 +265,10 @@ final class SwingUtilities extends Static {
      * Setups the given table for usage as row-header.
      * This method setups the background color to the same one than the column headers.
      *
-     * <div class="note"><b>Note:</b> in a previous version, we were assigning to the row headers
+     * <h4>Historical note</h4>
+     * In a previous version, we were assigning to the row headers
      * the same cell renderer than the one created by <cite>Swing</cite> for the column headers.
-     * But it produced strange effects when the L&amp;F uses a vertical gradient instead of a uniform color.</div>
+     * But it produced strange effects when the L&amp;F uses a vertical gradient instead of a uniform color.
      *
      * @param  table  the table to setup as row headers.
      * @return the renderer which has been assigned to the table.

@@ -721,10 +721,10 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * Default implementation makes the <var>y</var> axis orientation upwards and makes the entire content to be
      * visible in the {@link #getPreferredArea()} logical coordinates.
      *
-     * <div class="note"><b>Note:</b>
+     * <h4>Implementation note</h4>
      * {@code reset()} is <u>the only</u> {@code ZoomPane} method which does not delegate
      * to {@link #transform(AffineTransform)} method for modifying the zoom.
-     * This exception is necessary for avoiding an infinite loop.</div>
+     * This exception is necessary for avoiding an infinite loop.
      */
     public void reset() {
         reset(getZoomableBounds(), true);
@@ -2323,6 +2323,7 @@ public abstract class ZoomPane extends JComponent implements DeformableViewer {
      * Prints a message saying "Area:" with coordinates of given rectangle.
      * This is used for debugging purposes only.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private static void debug(final String methodName, final Rectangle2D area) {
         if (DEBUG) {
             System.out.println(methodName + " area: "

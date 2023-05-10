@@ -135,6 +135,7 @@ final class DesktopPane extends JDesktopPane {
     /**
      * Shows the widget created by the given test case.
      */
+    @SuppressWarnings("CallToPrintStackTrace")
     private void show(final Visualization testCase) {
         if (autoClose.isSelected()) {
             closeAllWindows();
