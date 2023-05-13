@@ -19,12 +19,12 @@ package org.apache.sis.internal.util;
 import java.text.Format;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import java.util.function.Supplier;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import org.opengis.annotation.UML;
+import org.opengis.annotation.ResourceBundles;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.OptionalDependency;
@@ -40,7 +40,7 @@ import org.opengis.util.ControlledVocabulary;
  * implementation using Java reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
  */
 public class MetadataServices extends OptionalDependency {
@@ -131,8 +131,7 @@ public class MetadataServices extends OptionalDependency {
          */
         final UML uml = code.getClass().getAnnotation(UML.class);
         if (uml != null) try {
-            return ResourceBundle.getBundle(CodeLists.RESOURCES, locale, UML.class.getClassLoader())
-                                 .getString(uml.identifier() + '.' + code.identifier());
+            return ResourceBundles.codeLists(locale).getString(uml.identifier() + '.' + code.identifier());
         } catch (MissingResourceException e) {
             /*
              * Ignore. The reason for not finding the resource may because of above code not covering enough cases.

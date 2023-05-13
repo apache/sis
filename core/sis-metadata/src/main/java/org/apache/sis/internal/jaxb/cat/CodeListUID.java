@@ -17,13 +17,13 @@
 package org.apache.sis.internal.jaxb.cat;
 
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.MissingResourceException;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
+import org.opengis.annotation.ResourceBundles;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
 
@@ -243,8 +243,7 @@ public final class CodeListUID {
         if (locale != null) {
             final String key = classID + '.' + fieldID;
             try {
-                value = ResourceBundle.getBundle("org.opengis.metadata.CodeLists",
-                        locale, CodeList.class.getClassLoader()).getString(key);
+                value = ResourceBundles.codeLists(locale).getString(key);
             } catch (MissingResourceException e) {
                 Context.warningOccured(context, CodeListAdapter.class, "marshal", e, false);
             }
