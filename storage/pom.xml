@@ -154,13 +154,6 @@
       <artifactId>derbytools</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
 

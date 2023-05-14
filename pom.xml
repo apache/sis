@@ -747,13 +747,6 @@
           </archive>
           <skipIfEmpty>true</skipIfEmpty>
         </configuration>
-        <executions>
-          <execution>
-            <goals>
-              <goal>test-jar</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
 
       <!-- Set "*-source-release.zip" filename prefix to "sis-*" instead of "parent-*" -->

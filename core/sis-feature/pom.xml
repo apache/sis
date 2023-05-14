@@ -162,29 +162,6 @@
       <artifactId>jts-core</artifactId>
       <optional>true</optional>
     </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-metadata</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-referencing</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
 </project>

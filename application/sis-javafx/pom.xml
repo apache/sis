@@ -178,15 +178,6 @@
       <artifactId>derbytools</artifactId>
       <scope>runtime</scope>
     </dependency>
-
-    <!-- Test dependencies -->
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-feature</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
   <profiles>
@@ -237,48 +228,6 @@
           <scope>provided</scope>
         </dependency>
       </dependencies>
-    </profile>
-
-    <!-- Alternative way to compile sis-javafx without above Maven depencencies. -->
-    <profile>
-      <activation>
-        <property>
-          <name>env.PATH_TO_FX</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <!-- To be removed after SIS has been fully modularized. -->
-          <plugin>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <configuration>
-              <compilerArgs>
-                <arg>--module-path</arg> <arg>${env.PATH_TO_FX}</arg>
-                <arg>--add-modules</arg> <arg>javafx.graphics,javafx.controls,javafx.web</arg>
-              </compilerArgs>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-surefire-plugin</artifactId>
-            <configuration>
-              <argLine>
-                --module-path ${env.PATH_TO_FX} --add-modules javafx.graphics,javafx.controls,javafx.web
-              </argLine>
-            </configuration>
-          </plugin>
-          <plugin>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <additionalJOptions>
-                <additionalJOption>--module-path</additionalJOption>
-                <additionalJOption>${env.PATH_TO_FX}</additionalJOption>
-                <additionalJOption>--add-modules</additionalJOption>
-                <additionalJOption>javafx.graphics,javafx.controls,javafx.web</additionalJOption>
-              </additionalJOptions>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
     </profile>
 
     <!-- Because the EPSG database is not free, require the user to ask it explicitly. -->

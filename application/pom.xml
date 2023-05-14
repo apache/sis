@@ -101,13 +101,6 @@
       <groupId>org.opengis</groupId>
       <artifactId>geoapi-conformance</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.sis.core</groupId>
-      <artifactId>sis-utility</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
   </dependencies>
 
 
@@ -124,11 +117,6 @@
   <profiles>
     <profile>
       <id>javafx</id>
-      <activation>
-        <property>
-          <name>env.PATH_TO_FX</name>
-        </property>
-      </activation>
       <modules>
         <module>sis-javafx</module>
       </modules>
