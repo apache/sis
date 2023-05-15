@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Set;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterDescriptor;
@@ -44,7 +44,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn({

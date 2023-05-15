@@ -18,10 +18,10 @@ package org.apache.sis.metadata.iso.distribution;
 
 import java.net.URI;
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.distribution.Format;
 import org.opengis.metadata.distribution.DataFile;
@@ -54,7 +54,7 @@ import org.opengis.util.InternationalString;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MX_DataFile_Type", namespace = Namespaces.MDT, propOrder = {

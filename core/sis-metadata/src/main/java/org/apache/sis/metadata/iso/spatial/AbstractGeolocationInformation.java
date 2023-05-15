@@ -17,10 +17,10 @@
 package org.apache.sis.metadata.iso.spatial;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.metadata.spatial.GeolocationInformation;
@@ -42,7 +42,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "AbstractMI_GeolocationInformation_Type")

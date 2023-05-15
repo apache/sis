@@ -24,7 +24,7 @@ import java.util.Locale;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Method;
 import java.lang.reflect.InvocationHandler;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.NameFactory;
 import org.opengis.metadata.identification.*;
 import org.opengis.metadata.citation.Citation;
@@ -47,7 +47,7 @@ import static org.junit.Assert.*;
  *
  * @author  Damiano Albani (for code snippet on the mailing list)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.3
  */
 public final class CustomMetadataTest extends TestCase {

@@ -18,9 +18,9 @@ package org.apache.sis.metadata.iso.quality;
 
 import java.util.List;
 import javax.measure.Unit;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.QuantitativeResult;
 import org.opengis.util.InternationalString;
 import org.opengis.util.Record;
@@ -51,7 +51,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * @author  Touraïvane (IRD)
  * @author  Cullen Rombach (Image Matters)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "DQ_QuantitativeResult_Type", propOrder = {

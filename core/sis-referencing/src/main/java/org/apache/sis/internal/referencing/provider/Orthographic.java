@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.PlanarProjection;
@@ -33,7 +33,7 @@ import static org.apache.sis.internal.referencing.provider.AbstractProvider.buil
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/orthographic.html">GeoTIFF parameters for Orthographic</a>
  *

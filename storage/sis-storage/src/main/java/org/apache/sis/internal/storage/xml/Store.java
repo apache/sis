@@ -23,7 +23,7 @@ import java.io.Closeable;
 import java.io.Reader;
 import java.io.InputStream;
 import java.io.IOException;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.Metadata;
 import org.opengis.util.FactoryException;

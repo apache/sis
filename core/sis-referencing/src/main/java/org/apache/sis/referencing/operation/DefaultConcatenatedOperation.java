@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -53,7 +53,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * reference system associated with the concatenated operation.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.6
  */
 @XmlType(name = "ConcatenatedOperationType")

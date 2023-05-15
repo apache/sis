@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.quality.EvaluationMethod;
 import org.apache.sis.metadata.iso.quality.DefaultEvaluationMethod;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class DQ_EvaluationMethod extends PropertyType<DQ_EvaluationMethod, EvaluationMethod> {

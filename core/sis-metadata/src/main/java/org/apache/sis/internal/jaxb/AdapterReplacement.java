@@ -16,17 +16,17 @@
  */
 package org.apache.sis.internal.jaxb;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
  * An interface for {@link XmlAdapter} to be used in replacement of the instance created by JAXB.
  * This interface provides a way to replace <cite>default</cite> adapters by <cite>configured</cite>
  * ones. It does not allow the addition of new adapters (i.e. it cannot be used in replacement of
- * the {@link javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter} annotation).
+ * the {@link jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter} annotation).
  *
  * <p>This interface is mostly for handling extensions to metadata profile provided as extension,
  * like the {@code FRA} extension for France provided in the {@code sis-metadata-fra} module.</p>
@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * only in SIS. However, we will need to revisit this issue if we move this interface to public API.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @see Marshaller#setAdapter(XmlAdapter)
  * @see Unmarshaller#setAdapter(XmlAdapter)

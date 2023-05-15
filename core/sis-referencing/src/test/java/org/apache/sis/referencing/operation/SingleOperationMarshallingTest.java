@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -58,7 +58,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests XML (un)marshalling of single operations (conversions and transformations).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * <cite>false westing</cite> (FW) and <cite>false southing</cite> (FS) respectively.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator_south_oriented.html">GeoTIFF parameters for Transverse Mercator (South Oriented)</a>
  *

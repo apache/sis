@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.metadata.replace;
 
 import org.apache.sis.metadata.iso.*;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -44,7 +44,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *   }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 @TitleProperty(name = "code")

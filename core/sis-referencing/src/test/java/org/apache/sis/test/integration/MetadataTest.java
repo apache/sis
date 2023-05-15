@@ -25,9 +25,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
 
 import org.opengis.metadata.*;
 import org.opengis.metadata.citation.*;
@@ -85,7 +85,7 @@ import static org.junit.Assert.*;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  *

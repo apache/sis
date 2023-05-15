@@ -19,9 +19,9 @@ package org.apache.sis.internal.jaxb.gcx;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.XLink;
 
@@ -38,7 +38,7 @@ import org.apache.sis.xml.XLink;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 0.8
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "Anchor_Type")

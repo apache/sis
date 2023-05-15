@@ -22,10 +22,10 @@ import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.UnitConverter;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -87,7 +87,7 @@ import static org.apache.sis.internal.referencing.NilReferencingObject.UNNAMED;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @see AbstractCS
  * @see Unit

@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.AbstractList;
 import java.lang.reflect.Array;
 import java.net.URISyntaxException;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import javax.measure.Unit;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.util.ObjectConverter;
@@ -34,7 +34,7 @@ import org.apache.sis.util.ObjectConverters;
  * This is used only at XML marshalling time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see Measure
  *

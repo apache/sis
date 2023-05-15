@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.lineage;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.lineage.Algorithm;
 import org.opengis.util.InternationalString;
@@ -47,7 +47,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "LE_Algorithm_Type", propOrder = {

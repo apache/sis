@@ -16,9 +16,9 @@
  */
 package org.apache.sis.test.mock;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.gco.Multiplicity;
 import org.opengis.util.LocalName;
@@ -28,7 +28,7 @@ import org.opengis.util.LocalName;
  * Partial implementation of {@code FC_FeatureAttribute} with only a few properties for testing purposes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 @XmlType(name = "FC_FeatureAttribute_Type", namespace = LegacyNamespaces.GFC)

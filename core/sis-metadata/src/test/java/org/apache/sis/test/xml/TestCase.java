@@ -27,9 +27,9 @@ import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
@@ -59,7 +59,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  *
  * @see DocumentComparator
  *

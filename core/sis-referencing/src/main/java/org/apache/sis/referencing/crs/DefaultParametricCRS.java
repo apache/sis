@@ -17,9 +17,9 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.internal.metadata.ImplementationHelper;
 import org.apache.sis.internal.referencing.WKTKeywords;
@@ -52,7 +52,7 @@ import org.opengis.referencing.datum.ParametricDatum;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum
  * @see org.apache.sis.referencing.cs.DefaultParametricCS

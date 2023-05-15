@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.Map;
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
@@ -46,7 +46,7 @@ import org.apache.sis.util.ArraysExt;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 public final class CC_OperationMethod extends PropertyType<CC_OperationMethod, OperationMethod> {

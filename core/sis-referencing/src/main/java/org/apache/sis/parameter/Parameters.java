@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.util.MemberName;
@@ -104,7 +104,7 @@ import org.apache.sis.util.Debug;
  * overriding one method has no impact on other methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.4
  */
 @XmlTransient

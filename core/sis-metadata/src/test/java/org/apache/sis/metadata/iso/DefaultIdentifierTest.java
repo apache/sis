@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.test.xml.TestCase;
@@ -33,7 +33,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)

@@ -31,8 +31,8 @@ import java.net.URISyntaxException;
 import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.annotation.Obligation;
 import org.opengis.util.RecordType;
 import org.opengis.metadata.Datatype;
@@ -75,7 +75,7 @@ import static org.junit.Assert.*;
  *
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-400">SIS-400</a>
  *

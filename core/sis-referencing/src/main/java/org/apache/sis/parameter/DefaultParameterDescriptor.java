@@ -20,8 +20,8 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Map;
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.TypeName;
@@ -67,7 +67,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param <T>  the type of elements to be returned by {@link DefaultParameterValue#getValue()}.
  *

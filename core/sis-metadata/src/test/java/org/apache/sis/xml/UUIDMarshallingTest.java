@@ -17,7 +17,7 @@
 package org.apache.sis.xml;
 
 import java.lang.reflect.Proxy;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.test.DependsOnMethod;
@@ -35,7 +35,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests the XML marshalling of object having {@code uuid} or {@code uuidref} attributes.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(NilReasonMarshallingTest.class)

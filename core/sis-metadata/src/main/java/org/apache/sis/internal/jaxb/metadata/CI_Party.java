@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.citation.Party;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
 public final class CI_Party extends PropertyType<CI_Party, Party> {

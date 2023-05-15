@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
@@ -36,7 +36,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * Tests the XML marshalling of object having {@code nilReason} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class NilReasonMarshallingTest extends TestCase {

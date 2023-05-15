@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.io.Serializable;
 import java.lang.reflect.Array;
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
@@ -56,7 +56,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  *
  * @see DefaultRecordType
  * @see DefaultRecordSchema

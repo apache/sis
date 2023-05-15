@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
 
 
 /**
@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlType;
  * The role of this class is to add the {@code <gco:…>} wrapper element required by ISO 19115-3.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see GO_Integer
  * @see GO_Integer64

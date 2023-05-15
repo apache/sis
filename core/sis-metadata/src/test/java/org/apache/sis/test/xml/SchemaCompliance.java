@@ -24,8 +24,8 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.util.Map;
 import java.util.HashMap;
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlElement;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.opengis.geoapi.Departures;
@@ -53,7 +53,7 @@ import org.apache.sis.util.StringBuilders;
  * implementation easier, by reducing the amount of {@link Map}s that we need to manage.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 public final class SchemaCompliance extends SchemaInformation {

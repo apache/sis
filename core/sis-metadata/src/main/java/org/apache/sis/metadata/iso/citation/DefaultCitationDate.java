@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Date;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -48,7 +48,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @TitleProperty(name = "date")

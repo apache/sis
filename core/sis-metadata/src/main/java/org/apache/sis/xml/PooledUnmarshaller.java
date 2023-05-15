@@ -23,14 +23,14 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.UnmarshallerHandler;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.attachment.AttachmentUnmarshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.PropertyException;
+import jakarta.xml.bind.UnmarshallerHandler;
+import jakarta.xml.bind.ValidationEventHandler;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.attachment.AttachmentUnmarshaller;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamException;
@@ -55,7 +55,7 @@ import org.apache.sis.internal.jaxb.Context;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 final class PooledUnmarshaller extends Pooled implements Unmarshaller {
@@ -99,8 +99,6 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
             unmarshaller.setListener((Listener) value);
         } else if (key == ValidationEventHandler.class) {
             unmarshaller.setEventHandler((ValidationEventHandler) value);
-        } else if (key == Boolean.class) {
-            unmarshaller.setValidating((Boolean) value);
         } else {
             unmarshaller.setAdapter((Class) key, (XmlAdapter) value);
         }
@@ -438,8 +436,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
-    @SuppressWarnings("rawtypes")
-    public <A extends XmlAdapter> void setAdapter(final Class<A> type, final A adapter) {
+    public <A extends XmlAdapter<?,?>> void setAdapter(final Class<A> type, final A adapter) {
         super.setAdapter(type, adapter);
         unmarshaller.setAdapter(type, adapter);
     }
@@ -448,35 +445,8 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * Delegates to the wrapped unmarshaller.
      */
     @Override
-    @SuppressWarnings("rawtypes")
-    public <A extends XmlAdapter> A getAdapter(final Class<A> type) {
+    public <A extends XmlAdapter<?,?>> A getAdapter(final Class<A> type) {
         return unmarshaller.getAdapter(type);
-    }
-
-    /**
-     * Delegates to the wrapped unmarshaller. The initial state will be saved
-     * if it was not already done, for future restoration by {@link #reset(Pooled)}.
-     *
-     * @deprecated Replaced by {@link #setSchema(javax.xml.validation.Schema)} in JAXB 2.0.
-     */
-    @Override
-    @Deprecated
-    public void setValidating(final boolean validating) throws JAXBException {
-        if (!isPropertySaved(Boolean.class)) {
-            saveProperty(Boolean.class, unmarshaller.isValidating());
-        }
-        unmarshaller.setValidating(validating);
-    }
-
-    /**
-     * Delegates to the wrapped unmarshaller.
-     *
-     * @deprecated Replaced by {@link #getSchema()} in JAXB 2.0.
-     */
-    @Override
-    @Deprecated
-    public boolean isValidating() throws JAXBException {
-        return unmarshaller.isValidating();
     }
 
     /**

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.datum.ParametricDatum;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
@@ -28,7 +28,7 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public final class CD_ParametricDatum extends PropertyType<CD_ParametricDatum, ParametricDatum> {

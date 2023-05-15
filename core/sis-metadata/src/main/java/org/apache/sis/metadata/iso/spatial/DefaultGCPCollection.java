@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.spatial;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.spatial.GCP;
 import org.opengis.metadata.spatial.GCPCollection;
 import org.opengis.referencing.ReferenceSystem;
@@ -49,7 +49,7 @@ import org.apache.sis.metadata.TitleProperty;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see DefaultGCP
  *

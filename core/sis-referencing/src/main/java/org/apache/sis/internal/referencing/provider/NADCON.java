@@ -23,7 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.file.NoSuchFileException;
 import java.nio.channels.ReadableByteChannel;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -218,7 +218,7 @@ public final class NADCON extends AbstractProvider {
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @author  Rueben Schulz (UBC)
-     * @version 0.7
+     * @version 1.4
      * @since   0.7
      */
     private static final class Loader extends DatumShiftGridLoader {

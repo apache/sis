@@ -16,8 +16,8 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
@@ -26,7 +26,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  * Accuracy of non-quantitative attributes.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  *
  * @deprecated Renamed {@link DefaultNonQuantitativeAttributeCorrectness} for following a renaming in ISO 19157:2013.

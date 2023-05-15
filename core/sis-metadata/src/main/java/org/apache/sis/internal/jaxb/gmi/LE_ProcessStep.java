@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gmi;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.ProcessStep;
 import org.apache.sis.metadata.iso.lineage.DefaultProcessStep;
 import org.apache.sis.xml.Namespaces;
@@ -30,7 +30,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "LE_ProcessStep_Type", namespace = Namespaces.MRL)

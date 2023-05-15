@@ -18,7 +18,7 @@ package org.apache.sis.internal.profile.fra;
 
 import java.util.Set;
 import java.util.Collection;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Responsibility;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -38,7 +38,7 @@ import static org.junit.Assert.*;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 public final class DirectReferenceSystemTest extends TestCase {

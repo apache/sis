@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.simple.SimpleIdentifiedObject;
@@ -50,7 +50,7 @@ import org.apache.sis.xml.Namespaces;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.AbstractReferenceSystem
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
@@ -96,7 +96,7 @@ public class ReferenceSystemMetadata extends SimpleIdentifiedObject implements R
     }
 
     /**
-     * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
+     * Invoked by JAXB {@link jakarta.xml.bind.Marshaller} before this object is marshalled to XML.
      */
     private void beforeMarshal(final Marshaller marshaller) {
         isLegacyMetadata = !FilterByVersion.CURRENT_METADATA.accept();

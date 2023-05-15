@@ -19,7 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.datum.Ellipsoid;
 
 
@@ -32,7 +32,7 @@ import org.opengis.referencing.datum.Ellipsoid;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 @XmlTransient

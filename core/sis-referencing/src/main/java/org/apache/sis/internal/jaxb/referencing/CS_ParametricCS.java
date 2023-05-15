@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.cs.ParametricCS;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public final class CS_ParametricCS extends PropertyType<CS_ParametricCS, ParametricCS> {

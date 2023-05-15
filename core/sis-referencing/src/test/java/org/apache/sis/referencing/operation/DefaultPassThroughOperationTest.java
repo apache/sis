@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.List;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultPassThroughOperation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({

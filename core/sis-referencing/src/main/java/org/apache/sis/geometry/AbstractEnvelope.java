@@ -27,7 +27,7 @@ import java.time.Instant;
 import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -1306,7 +1306,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * <p>Instance of this class are serializable if the enclosing envelope is serializable.</p>
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.3
+     * @version 1.4
      * @since   0.3
      */
     private abstract class Point extends AbstractDirectPosition implements Serializable {

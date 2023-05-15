@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlValue;
 
 
 /**
@@ -27,7 +27,7 @@ import javax.xml.bind.annotation.XmlValue;
  * so we reconstruct in this adapter what would be marshalled if we had that code list.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public final class SC_DerivedCRSType {

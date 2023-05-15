@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.Contact;
@@ -59,7 +59,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class DefaultCitationTest extends TestUsingFile {

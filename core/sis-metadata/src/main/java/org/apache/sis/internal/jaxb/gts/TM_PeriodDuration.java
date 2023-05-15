@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.temporal.TemporalFactory;
@@ -41,7 +41,7 @@ import org.apache.sis.util.SimpleInternationalString;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {

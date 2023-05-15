@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -48,7 +48,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class GO_GenericName extends XmlAdapter<GO_GenericName, GenericName> {

@@ -18,11 +18,11 @@ package org.apache.sis.metadata.iso.content;
 
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.content.Band;
 import org.opengis.metadata.content.BandDefinition;
 import org.opengis.metadata.content.PolarisationOrientation;
@@ -56,7 +56,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_Band_Type", propOrder = {

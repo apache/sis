@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;
@@ -64,7 +64,7 @@ import org.apache.sis.xml.IdentifierSpace;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralOperationParameter, GeneralParameterDescriptor> {

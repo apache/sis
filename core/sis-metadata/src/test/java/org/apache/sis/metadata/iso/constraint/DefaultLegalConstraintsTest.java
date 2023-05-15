@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.constraint;
 
 import java.util.Set;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -35,7 +35,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class DefaultLegalConstraintsTest extends TestCase {

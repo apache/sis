@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.constraint;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.constraint.Restriction;
 import org.opengis.metadata.constraint.LegalConstraints;
@@ -51,7 +51,7 @@ import org.opengis.metadata.constraint.LegalConstraints;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_LegalConstraints_Type", propOrder = {

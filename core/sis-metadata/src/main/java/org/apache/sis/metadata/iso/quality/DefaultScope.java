@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
@@ -40,7 +40,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  *
  * @deprecated As of ISO 19115:2014, {@code DQ_Scope} has been replaced by {@code MD_Scope}.

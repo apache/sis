@@ -19,7 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -51,7 +51,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultGeodeticDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn({

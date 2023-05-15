@@ -19,7 +19,7 @@ package org.apache.sis.internal.referencing.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
@@ -61,7 +61,7 @@ import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
  * {@linkplain ParameterDescriptorGroup descriptor group} named {@code PARAMETERS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @XmlTransient

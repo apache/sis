@@ -17,7 +17,7 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -46,7 +46,7 @@ import org.apache.sis.util.Workaround;
  * The main purpose of this class is to support transparently the netCDF ways to express some parameter values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 @XmlTransient

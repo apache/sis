@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.internal.jaxb.cat.EnumAdapter;
 import org.apache.sis.xml.Namespaces;
@@ -29,7 +29,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class MD_PixelOrientationCode extends EnumAdapter<MD_PixelOrientationCode, PixelOrientation> {

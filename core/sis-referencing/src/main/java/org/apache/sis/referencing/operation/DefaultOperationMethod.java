@@ -20,11 +20,11 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSchemaType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -118,7 +118,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultConversion
  * @see DefaultTransformation

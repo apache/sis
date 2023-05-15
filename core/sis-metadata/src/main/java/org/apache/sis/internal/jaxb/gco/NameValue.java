@@ -16,11 +16,11 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.apache.sis.util.iso.Names;
@@ -53,7 +53,7 @@ import org.apache.sis.xml.Namespaces;
  * The two later use a quite different XML structure, with an {@code aName} element instead of a XML value.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.5
  */
 @XmlSeeAlso({

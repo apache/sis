@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.reflect.Array;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
@@ -53,7 +53,7 @@ import org.apache.sis.util.resources.Errors;
  * mutable {@code ParameterDescriptorGroup}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @param <E>  the type of tensor element values.
  *

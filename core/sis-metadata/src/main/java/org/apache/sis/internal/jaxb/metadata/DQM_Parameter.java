@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.metadata.replace.QualityParameter;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class DQM_Parameter extends PropertyType<DQM_Parameter, ParameterDescriptor<?>> {

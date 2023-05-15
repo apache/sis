@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * at unmarshalling time.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 final class Email extends XmlAdapter<Email, String> {

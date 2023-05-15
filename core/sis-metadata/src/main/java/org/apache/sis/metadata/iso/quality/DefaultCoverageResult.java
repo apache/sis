@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.RangeDimension;
@@ -57,7 +57,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "QE_CoverageResult_Type", propOrder = {

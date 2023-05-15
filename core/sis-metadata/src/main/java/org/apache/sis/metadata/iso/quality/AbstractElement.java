@@ -22,11 +22,11 @@ import java.util.Collections;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
 import java.time.temporal.Temporal;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.Result;
@@ -73,7 +73,7 @@ import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
  * @author  Touraïvane (IRD)
  * @author  Guilhem Legal (Geomatys)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "AbstractDQ_Element_Type", propOrder = {

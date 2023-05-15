@@ -21,8 +21,8 @@ import java.util.EnumSet;
 import java.io.Console;
 import java.io.IOException;
 import java.util.function.Predicate;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.FactoryException;
@@ -55,7 +55,7 @@ import org.apache.sis.xml.XML;
  * The output format is controlled by {@link OutputFormat} enumeration.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 abstract class FormattedOutputCommand extends CommandRunner {

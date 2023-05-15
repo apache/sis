@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.PlanarProjection;
 import org.apache.sis.parameter.Parameters;
@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * This projection method has no EPSG code.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/azimuthal_equidistant.html">GeoTIFF parameters for Azimuthal Equidistant</a>
  *

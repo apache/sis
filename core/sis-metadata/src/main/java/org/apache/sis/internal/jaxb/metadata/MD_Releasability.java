@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.metadata.iso.constraint.DefaultReleasability;
 import org.opengis.metadata.constraint.Releasability;
@@ -29,7 +29,7 @@ import org.opengis.metadata.constraint.Releasability;
  * @author  Cullen Rombach (Image Matters)
  * @author  Martin Desruisseaux (Geomatys)
  * @since   1.0
- * @version 1.0
+ * @version 1.4
  */
 public class MD_Releasability extends PropertyType<MD_Releasability, Releasability> {
     /**

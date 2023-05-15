@@ -22,11 +22,11 @@ import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.Locale;
 import java.nio.charset.Charset;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.PropertyException;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.Context;
@@ -60,7 +60,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see LanguageCode
  * @see Country
@@ -182,7 +182,7 @@ public final class PT_Locale {
         }
 
         /**
-         * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
+         * Invoked by JAXB {@link jakarta.xml.bind.Marshaller} before this object is marshalled to XML.
          * If the {@link #characterEncoding} is not set, then this method set a default value.
          * That default is the encoding of the XML document being written.
          *

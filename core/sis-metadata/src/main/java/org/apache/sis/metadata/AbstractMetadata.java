@@ -17,7 +17,7 @@
 package org.apache.sis.metadata;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -69,7 +69,7 @@ import org.apache.sis.util.collection.TreeTable;
  * use a single lock for the whole metadata tree (including children).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see MetadataStandard
  *

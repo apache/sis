@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 
 
@@ -24,7 +24,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * The provider for <cite>"Position Vector transformation (geocentric domain)"</cite> (EPSG:1033).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient

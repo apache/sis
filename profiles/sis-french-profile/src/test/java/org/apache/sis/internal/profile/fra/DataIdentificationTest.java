@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.profile.fra;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests (un)marshalling of French profile of data identification.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class DataIdentificationTest extends TestCase {

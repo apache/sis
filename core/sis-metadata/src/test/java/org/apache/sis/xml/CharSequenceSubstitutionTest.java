@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.acquisition.Instrument;
@@ -41,7 +41,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class CharSequenceSubstitutionTest extends TestCase {

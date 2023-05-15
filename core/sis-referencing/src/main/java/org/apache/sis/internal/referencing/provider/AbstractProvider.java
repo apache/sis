@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.logging.Logger;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterDescriptor;

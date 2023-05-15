@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.gmi;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.content.Band;
 import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.xml.Namespaces;
@@ -28,7 +28,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MI_Band_Type", namespace = Namespaces.MRC)

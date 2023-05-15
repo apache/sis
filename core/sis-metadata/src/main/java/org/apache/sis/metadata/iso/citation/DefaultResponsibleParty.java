@@ -20,9 +20,9 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Party;
 import org.opengis.metadata.citation.Individual;
@@ -56,7 +56,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 @Deprecated(since="1.0")

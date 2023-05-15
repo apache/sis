@@ -30,7 +30,7 @@ import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.StandardCharsets;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.util.FactoryException;
@@ -200,7 +200,7 @@ public final class NTv2 extends AbstractProvider {
      *
      * @author  Simon Reynard (Geomatys)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.1
+     * @version 1.4
      * @since   0.7
      */
     private static final class Loader extends DatumShiftGridLoader {

@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.io.ObjectStreamException;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.TypeName;
@@ -55,7 +55,7 @@ import org.apache.sis.xml.Namespaces;
  * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see DefaultNameSpace
  * @see DefaultScopedName

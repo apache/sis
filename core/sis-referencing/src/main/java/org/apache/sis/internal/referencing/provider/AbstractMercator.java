@@ -17,7 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.List;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * Base class of providers for all Mercator projections, and for Mercator-like projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @XmlTransient

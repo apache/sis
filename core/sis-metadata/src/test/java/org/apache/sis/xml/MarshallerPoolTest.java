@@ -16,9 +16,9 @@
  */
 package org.apache.sis.xml;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -29,7 +29,7 @@ import static org.junit.Assert.*;
  * Tests the {@link MarshallerPool}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 public final class MarshallerPoolTest extends TestCase {
@@ -45,9 +45,9 @@ public final class MarshallerPoolTest extends TestCase {
         final MarshallerPool pool = new MarshallerPool(JAXBContext.newInstance(new Class<?>[0]), null);
         final Marshaller marshaller = pool.acquireMarshaller();
         assertNotNull(marshaller);
-        assertNull(marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));
-        marshaller.setProperty("com.sun.xml.bind.xmlHeaders", "<DTD ...>");
-        assertEquals("<DTD ...>", marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));
+        assertNull(marshaller.getProperty("org.glassfish.jaxb.xmlHeaders"));
+        marshaller.setProperty("org.glassfish.jaxb.xmlHeaders", "<DTD ...>");
+        assertEquals("<DTD ...>", marshaller.getProperty("org.glassfish.jaxb.xmlHeaders"));
         /*
          * MarshallerPool should reset the properties to their initial state.
          */
@@ -57,7 +57,7 @@ public final class MarshallerPoolTest extends TestCase {
          * Following should be null, but has been replaced by "" under the hood
          * for avoiding a NullPointerException in current JAXB implementation.
          */
-        assertEquals("", marshaller.getProperty("com.sun.xml.bind.xmlHeaders"));
+        assertEquals("", marshaller.getProperty("org.glassfish.jaxb.xmlHeaders"));
         pool.recycle(marshaller);
     }
 }

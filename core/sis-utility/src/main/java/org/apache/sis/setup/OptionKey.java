@@ -63,7 +63,7 @@ import static java.util.logging.Logger.getLogger;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @param <T>  the type of option values.
  *
@@ -115,7 +115,7 @@ public class OptionKey<T> implements Serializable {
      * <p>If this option is not provided, then the default value is format specific.
      * That default is often, but not necessarily, the {@linkplain Charset#defaultCharset() platform default}.</p>
      *
-     * @see javax.xml.bind.Marshaller#JAXB_ENCODING
+     * @see jakarta.xml.bind.Marshaller#JAXB_ENCODING
      *
      * @since 0.4
      */
@@ -202,7 +202,7 @@ public class OptionKey<T> implements Serializable {
      * verbose.</p>
      *
      * @see org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE
-     * @see javax.xml.bind.Marshaller#JAXB_FORMATTED_OUTPUT
+     * @see jakarta.xml.bind.Marshaller#JAXB_FORMATTED_OUTPUT
      *
      * @since 0.8
      */
