@@ -1,0 +1,92 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+rootProject.name  = "Apache SIS on GeoAPI 4.0"
+val geoapiVersion = "4.0-SNAPSHOT"
+
+/*
+ * The sub-projects to include in the build.
+ * They are directory names relative to this file.
+ */
+include("endorsed")
+include("incubator")
+if (System.getenv("PATH_TO_FX") != null) {
+    include("optional")
+}
+
+/*
+ * Central place where to declare the repositories inherited by all sub-projects.
+ * Sub-projects can override by declaring their own `repositories` block.
+ */
+dependencyResolutionManagement {
+    /*
+     * The repositories from where to download the JAR files declared in the `dependencies` section.
+     * The Maven local repository should be avoided for security reasons (Gradle has its own cache).
+     */
+    repositories {
+        mavenCentral()
+        mavenLocal()        // For GeoAPI SNAPSHOT only, which are built locally.
+        maven {
+            url = uri("https://artifacts.unidata.ucar.edu/repository/unidata-releases")
+            content {
+                includeGroup("edu.ucar")        // Restrict usage to those dependencies.
+            }
+            mavenContent {
+                releasesOnly()
+            }
+        }
+    }
+    /*
+     * All dependencies used by sub-projects, together with their versions.
+     * For most dependencies (except tests), we assume semantic versioning.
+     * The preferred versions are the ones that we tested.
+     */
+    versionCatalogs {
+        create("libs") {
+            library("geoapi",        "org.opengis",            "geoapi-pending")      .version {strictly(geoapiVersion)}
+            library("units",         "javax.measure",          "unit-api")            .version {strictly("[2.1, 3.0[");  prefer("2.1.3")}
+            library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.0")}
+            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.2")}
+            library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.19.0")}
+            library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
+            library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.3.6")}
+            library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
+            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.18.40")}
+        }
+        create("tests") {
+            library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
+            library("junit4",        "junit",                  "junit")                  .version {strictly("4.13.2")}
+            library("junit",         "org.junit.vintage",      "junit-vintage-engine")   .version {strictly("5.9.3")}
+            library("junitLauncher", "org.junit.platform",     "junit-platform-launcher").version {strictly("1.9.3")}
+            library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}
+            library("geographiclib", "net.sf.geographiclib",   "GeographicLib-Java")     .version {strictly("2.0")}
+            library("slf4j",         "org.slf4j",              "slf4j-jdk14").version {
+                prefer("1.7.28")            // Should match the version used by UCAR.
+            }
+        }
+        create("drivers") {
+            version("derby") {
+                strictly("[10.0, 11.0[")
+                prefer("10.15.2.0")         // 10.15 is the last series compatible with JDK 11.
+            }
+            library("derby.core",    "org.apache.derby",       "derby")      .versionRef("derby")
+            library("derby.tools",   "org.apache.derby",       "derbytools") .versionRef("derby")
+            library("postgres",      "org.postgresql",         "postgresql") .version {prefer("42.6.0")}
+            library("hsql",          "org.hsqldb",             "hsqldb")     .version {strictly("[2.0, 3.0["); prefer("2.7.2")}
+            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.2.220")}
+        }
+    }
+}

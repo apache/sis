@@ -15,17 +15,16 @@
  * limitations under the License.
  */
 
+
 /**
- * Apache SIS services made available to Apache <a href="http://www.openoffice.org">OpenOffice</a> or LibreOffice.
- * Functions to make available in OpenOffice are defined in {@code X*.idl} files,
- * which are converted to {@code X*.java} files for convenience.
+ * Generates Maven POM from a template file. We do not use Gradle's API for this task
+ * (e.g. the setter methods in {@link org.gradle.api.publish.maven.MavenPom}) because
+ * as of Gradle 8.2.1, they do not provide sufficient control over the file content.
+ * In particular we didn't found the way to specify the parent POM,
+ * neither how to control the list of dependencies.
  *
- * <p>Note that the {@code X*.class} files to be included in the final JAR file
- * shall be compiled from the {@code X*.idl} files, not from the {@code X*.java} files.
- * See {@code endorsed/src/org.apache.sis.openoffice/bundle/build-instruction.html} for more information.</p>
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.4
+ * @since   1.4
  */
-package org.apache.sis.openoffice;
+package org.apache.sis.buildtools.maven;

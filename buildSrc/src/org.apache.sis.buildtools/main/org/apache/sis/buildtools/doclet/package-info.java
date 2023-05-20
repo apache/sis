@@ -15,17 +15,13 @@
  * limitations under the License.
  */
 
+
 /**
- * Apache SIS services made available to Apache <a href="http://www.openoffice.org">OpenOffice</a> or LibreOffice.
- * Functions to make available in OpenOffice are defined in {@code X*.idl} files,
- * which are converted to {@code X*.java} files for convenience.
+ * Javadoc taglets for processing custom tags in SIS source code comments,
+ * together with doclet performing post-processing after Javadoc generation.
  *
- * <p>Note that the {@code X*.class} files to be included in the final JAR file
- * shall be compiled from the {@code X*.idl} files, not from the {@code X*.java} files.
- * See {@code endorsed/src/org.apache.sis.openoffice/bundle/build-instruction.html} for more information.</p>
- *
- * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
- * @since   0.8
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.4
+ * @since   0.5
  */
-package org.apache.sis.openoffice;
+package org.apache.sis.buildtools.doclet;

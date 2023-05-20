@@ -77,9 +77,9 @@ idlc -C -cid -w -I $OO_SDK_HOME/idl org/apache/sis/openoffice/*.idl</pre></block
   most users will not have the necessary installation for producing those files themselves
   (including the <code>*.class</code> files, which is not the usual <code>javac</code> output).
 </p>
-<blockquote><pre>regmerge ../unopkg/sis.rdb /UCR org/apache/sis/openoffice/*.urd
+<blockquote><pre>regmerge ../bundle/sis.rdb /UCR org/apache/sis/openoffice/*.urd
 rm org/apache/sis/openoffice/*.urd
-cd ../unopkg
+cd ../bundle
 javamaker -BUCR sis.rdb $OFFICE_BASE_HOME/program/types.rdb -Torg.apache.sis.openoffice.XReferencing</pre></blockquote>
 
 

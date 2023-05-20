@@ -19,6 +19,9 @@ grammar CQL;
 options {
     language = Java;
 }
+@header {
+    package org.apache.sis.internal.cql;
+}
 
 //-----------------------------------------------------------------//
 // LEXER
