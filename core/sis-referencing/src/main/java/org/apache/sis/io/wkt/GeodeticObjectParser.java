@@ -99,7 +99,7 @@ import static java.util.Collections.singletonMap;
  * @author  Rémi Eve (IRD)
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
@@ -927,6 +927,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 dimension = (axes.length < 2) ? 2 : 3;                      // For error message.
                 break;
             }
+            case WKTKeywords.spherical: {
+                switch (axes.length) {
+                    case 2: return csFactory.createSphericalCS(csProperties, axes[0], axes[1]);
+                    case 3: return csFactory.createSphericalCS(csProperties, axes[0], axes[1], axes[2]);
+                }
+                dimension = (axes.length < 2) ? 2 : 3;                      // For error message.
+                break;
+            }
             case WKTKeywords.Cartesian: {
                 switch (axes.length) {
                     case 2: return csFactory.createCartesianCS(csProperties, axes[0], axes[1]);
@@ -962,10 +970,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             case WKTKeywords.cylindrical: {
                 if (axes.length != (dimension = 3)) break;
                 return csFactory.createCylindricalCS(csProperties, axes[0], axes[1], axes[2]);
-            }
-            case WKTKeywords.spherical: {
-                if (axes.length != (dimension = 3)) break;
-                return csFactory.createSphericalCS(csProperties, axes[0], axes[1], axes[2]);
             }
             case WKTKeywords.parametric: {
                 if (axes.length != (dimension = 1)) break;

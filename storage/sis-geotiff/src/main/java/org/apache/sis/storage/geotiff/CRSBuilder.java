@@ -1067,7 +1067,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private void verify(final GeographicCRS crs, final Unit<Angle> angularUnit) throws FactoryException {
         /*
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
-         * were specified in the GeoTIFF file or if we got the default values. We do not compare units of that reason.
+         * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.
          */
         final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
         final GeodeticDatum datum = crs.getDatum();
@@ -1134,7 +1134,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
     private void verify(final GeocentricCRS crs) throws FactoryException {
         /*
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
-         * were specified in the GeoTIFF file or if we got the default values. We do not compare units of that reason.
+         * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.
          */
         final Unit<Length> linearUnit = createUnit(GeoKeys.GeogLinearUnits, GeoKeys.GeogLinearUnitSize, Length.class, Units.METRE);
         final Unit<Angle> angularUnit = createUnit(GeoKeys.AngularUnits, GeoKeys.AngularUnitSize, Angle.class, Units.DEGREE);
