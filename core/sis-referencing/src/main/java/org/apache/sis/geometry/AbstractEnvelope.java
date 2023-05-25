@@ -118,7 +118,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 @XmlTransient
@@ -673,6 +673,25 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             }
         }
         return envelopes;
+    }
+
+    /**
+     * Determines whether or not this envelope contains only finite values.
+     * More specifically this method returns {@code false} if at least one
+     * coordinate value is NaN or infinity, and {@code true} otherwise.
+     * Note that a finite envelope may be {@linkplain #isEmpty() empty}.
+     *
+     * @return {@code true} if this envelope contains only finite coordinate values.
+     *
+     * @since 1.4
+     */
+    public boolean isFinite() {
+        for (int i = getDimension(); --i >= 0;) {
+            if (!Double.isFinite(getLower(i)) || !Double.isFinite(getUpper(i))) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

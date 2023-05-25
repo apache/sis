@@ -28,14 +28,25 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 /**
  * Unit tests for class {@link ArrayEnvelope}.
- * This is the base class of {@link GeneralEnvelope} and {@link ImmutableEnvelope}.
+ * The latter is the base class of {@link GeneralEnvelope} and {@link ImmutableEnvelope}.
  *
  * @author  Michael Hausegger
- * @version 1.0
+ * @version 1.4
  * @since   0.8
  */
 @DependsOn(AbstractEnvelopeTest.class)
 public final class ArrayEnvelopeTest extends TestCase {
+    /**
+     * Tests {@link ArrayEnvelope#isFinite()}.
+     */
+    @Test
+    public void testIsFinite() {
+        ArrayEnvelope envelope = new ArrayEnvelope(new double[] {10, 356.683168});
+        assertTrue(envelope.isFinite());
+        envelope.coordinates[0] = Double.NaN;
+        assertFalse(envelope.isFinite());
+    }
+
     /**
      * Tests {@link ArrayEnvelope#isEmpty()}.
      */
