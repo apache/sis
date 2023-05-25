@@ -166,8 +166,8 @@ final class Initializer {
             } else {
                 eccentricitySquared = DoubleDouble.ONE.subtract(DoubleDouble.of(b, true).divide(k).square());
             }
-            final ParameterDescriptor<? extends Number> radius = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
-            if (radius != null) {
+            final ParameterDescriptor<? extends Number> φr = roles.get(ParameterRole.LATITUDE_OF_CONFORMAL_SPHERE_RADIUS);
+            if (φr != null) {
                 /*
                  * EPSG said: R is the radius of the sphere and will normally be one of the CRS parameters.
                  * If the figure of the earth used is an ellipsoid rather than a sphere then R should be calculated
@@ -184,7 +184,7 @@ final class Initializer {
                  *     final double sinφ = sin(toRadians(parameters.doubleValue(radius)));
                  *     k = b / (1 - eccentricitySquared * (sinφ*sinφ));
                  */
-                k = rν2(sin(toRadians(parameters.doubleValue(radius))));
+                k = rν2(sin(toRadians(parameters.doubleValue(φr))));
                 k = DoubleDouble.of(b, true).divide(k);
             }
         }

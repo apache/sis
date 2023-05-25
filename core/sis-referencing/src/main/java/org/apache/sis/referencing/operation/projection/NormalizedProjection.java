@@ -284,10 +284,13 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
          *
          * <div style="text-align:center">{@include ../transform/formulas.html#DenormalizeCartesian}</div>
          *
-         * <p>This enumeration shall be used <strong>only</strong> when the user requested explicitly spherical
-         * formulas, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026), but the figure
-         * of the Earth may be an ellipsoid rather than a sphere. In the majority of cases, this enumeration should
-         * not be used.</p>
+         * <h4>When to use</h4>
+         * This enumeration value should be used only when the user requested explicitly the spherical formulas
+         * of a conformal projection, for example the <cite>"Mercator (Spherical)"</cite> projection (EPSG:1026),
+         * but the figure of the Earth may be an ellipsoid rather than a sphere.
+         * This enumeration value can also be used for other kinds of projection except Equal Area, in which case
+         * the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid#getAuthalicRadius() authalic radius}
+         * is preferred. In the majority of cases, this enumeration value can be ignored.
          */
         LATITUDE_OF_CONFORMAL_SPHERE_RADIUS,
 

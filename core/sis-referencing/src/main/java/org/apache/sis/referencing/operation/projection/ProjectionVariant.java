@@ -49,7 +49,13 @@ interface ProjectionVariant {
      * This method can be overridden for handling authalic radius, but not conformance sphere radius.
      * The latter is handled by {@link NormalizedProjection.ParameterRole#LATITUDE_OF_CONFORMAL_SPHERE_RADIUS}.
      *
+     * <h4>When to use</h4>
+     * Authalic radius are used with Equal Area projections.
+     * For other kinds of projection, the radius of conformal sphere is preferred.
+     *
      * @return whether this variant is a spherical variant using authalic radius.
+     *
+     * @see NormalizedProjection.ParameterRole#LATITUDE_OF_CONFORMAL_SPHERE_RADIUS
      */
     default boolean useAuthalicRadius() {
         return false;
