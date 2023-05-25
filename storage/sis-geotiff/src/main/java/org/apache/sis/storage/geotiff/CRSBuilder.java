@@ -75,6 +75,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.resources.Vocabulary;
@@ -1008,7 +1009,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      *   <li>A unit scale factor given by {@link GeoKeys#AngularUnitSize} (optional).</li>
      * </ul>
      *
-     * @param  rightHanded  whether to force longitude before latitude axis.
+     * @param  isImageCRS   whether to force longitude before latitude axis.
      * @param  angularUnit  the angular unit of the latitude and longitude values.
      * @throws NoSuchElementException if a mandatory value is missing.
      * @throws NumberFormatException if a numeric value was stored as a string and cannot be parsed.
@@ -1017,7 +1018,7 @@ final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @see #createGeodeticDatum(String[], Unit, Unit)
      */
-    private GeographicCRS createGeographicCRS(final boolean rightHanded, final Unit<Angle> angularUnit) throws FactoryException {
+    private GeographicCRS createGeographicCRS(final boolean isImageCRS, final Unit<Angle> angularUnit) throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.GeographicType);
         switch (epsg) {
             case GeoCodes.undefined: {
@@ -1047,8 +1048,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * with what we would expect for a CRS of the given EPSG code.
                  */
                 GeographicCRS crs = getCRSAuthorityFactory().createGeographicCRS(String.valueOf(epsg));
-                if (rightHanded) {
-                    crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
+                if (isImageCRS) {
+                    crs = DefaultGeographicCRS.castOrCopy(crs).forConvention(AxesConvention.DISPLAY_ORIENTED);
                 }
                 verify(crs, angularUnit);
                 return crs;
@@ -1256,7 +1257,8 @@ final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                final ProjectedCRS crs = getCRSAuthorityFactory().createProjectedCRS(String.valueOf(epsg));
+                ProjectedCRS crs = getCRSAuthorityFactory().createProjectedCRS(String.valueOf(epsg));
+                crs = DefaultProjectedCRS.castOrCopy(crs).forConvention(AxesConvention.DISPLAY_ORIENTED);
                 verify(crs);
                 return crs;
             }
