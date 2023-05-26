@@ -729,8 +729,8 @@ public class NumberRange<E extends Number & Comparable<? super E>> extends Range
      * This method converts {@code this} or the given argument to the widest numeric type,
      * then performs the same work than {@link #contains(Comparable)}.
      *
-     * @param  value  the value to check for inclusion in this range.
-     * @return {@code true} if the given value is included in this range.
+     * @param  value  the value to check for inclusion in this range, or {@code null}.
+     * @return {@code true} if the given value is non-null and included in this range.
      * @throws IllegalArgumentException if the given range cannot be converted to a valid type
      *         through widening conversion.
      */

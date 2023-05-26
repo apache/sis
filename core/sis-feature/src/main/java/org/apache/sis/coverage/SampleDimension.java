@@ -1209,6 +1209,13 @@ public class SampleDimension implements Serializable {
                     toNaN.remove(c);
                     return c;
                 }
+
+                /** Removes all categories in the given range. */
+                @Override protected void removeRange(final int fromIndex, final int toIndex) {
+                    System.arraycopy(categories, toIndex, categories, fromIndex, count - toIndex);
+                    Arrays.fill(categories, toIndex, count, null);
+                    count -= (toIndex - fromIndex);
+                }
             };
         }
 
