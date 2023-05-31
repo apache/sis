@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.internal.test;
+package org.apache.sis.internal.xml;
 
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.xml.DocumentComparator;
