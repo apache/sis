@@ -17,9 +17,9 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -50,7 +50,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS

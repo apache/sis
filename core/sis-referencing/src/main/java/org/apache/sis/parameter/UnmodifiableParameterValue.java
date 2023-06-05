@@ -17,7 +17,7 @@
 package org.apache.sis.parameter;
 
 import javax.measure.Unit;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValue;
 import org.apache.sis.internal.util.Cloner;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -46,7 +46,7 @@ import org.apache.sis.util.resources.Errors;
  * and the same false easting (500000 metres).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @param <T>  the type of the value stored in this parameter.
  *

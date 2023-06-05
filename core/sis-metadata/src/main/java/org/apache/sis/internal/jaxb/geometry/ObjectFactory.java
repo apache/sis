@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.jaxb.geometry;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElementDecl;
-import javax.xml.bind.annotation.XmlRegistry;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlElementDecl;
+import jakarta.xml.bind.annotation.XmlRegistry;
 import javax.xml.namespace.QName;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.Workaround;
@@ -30,7 +30,7 @@ import org.apache.sis.util.Workaround;
  * in the GML module.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.3
  */
 @XmlRegistry

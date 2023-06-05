@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.ThematicAccuracy;
 import org.opengis.metadata.quality.ThematicClassificationCorrectness;
 import org.opengis.metadata.quality.QuantitativeAttributeAccuracy;
@@ -43,7 +43,7 @@ import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "AbstractDQ_ThematicAccuracy_Type")

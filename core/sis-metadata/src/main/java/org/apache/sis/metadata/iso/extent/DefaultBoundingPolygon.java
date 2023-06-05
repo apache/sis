@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.geometry.Geometry;
 import org.opengis.metadata.extent.BoundingPolygon;
 
@@ -47,7 +47,7 @@ import org.opengis.metadata.extent.BoundingPolygon;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "EX_BoundingPolygon_Type")

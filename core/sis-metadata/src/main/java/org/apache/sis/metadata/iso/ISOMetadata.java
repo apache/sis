@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import jakarta.xml.bind.annotation.XmlID;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
@@ -59,7 +59,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlTransient

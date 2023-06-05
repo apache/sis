@@ -25,8 +25,8 @@ import java.util.Locale;
 import java.util.Objects;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import javax.xml.bind.annotation.XmlList;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlList;
+import jakarta.xml.bind.annotation.XmlElement;
 
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -82,7 +82,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.8
  */
 public final class Metadata extends SimpleMetadata {

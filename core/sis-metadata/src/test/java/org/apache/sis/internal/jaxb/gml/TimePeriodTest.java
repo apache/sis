@@ -19,10 +19,10 @@ package org.apache.sis.internal.jaxb.gml;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
@@ -47,7 +47,7 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  * <a href="http://toyoda-eizi.blogspot.fr/2011/02/examples-of-gml-fragment-in-iso.html">here</a>.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
 public final class TimePeriodTest extends TestCase {

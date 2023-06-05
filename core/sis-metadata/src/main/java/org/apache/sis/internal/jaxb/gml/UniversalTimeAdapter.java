@@ -23,7 +23,7 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.XmlUtilities;
 
@@ -34,7 +34,7 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * The milliseconds are omitted if not different than zero.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see DateAdapter
  * @see org.apache.sis.internal.jaxb.gco.GO_DateTime

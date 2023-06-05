@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Collection;
 import javax.xml.stream.XMLStreamException;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.storage.gps.Fix;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalFeatureTypeException;
@@ -40,7 +40,7 @@ import org.apache.sis.feature.DefaultFeatureType;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 final class Writer extends StaxStreamWriter {

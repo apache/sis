@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.crs.SingleCRS;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -29,7 +29,7 @@ import org.apache.sis.util.resources.Errors;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public final class SC_SingleCRS extends PropertyType<SC_SingleCRS, SingleCRS> {

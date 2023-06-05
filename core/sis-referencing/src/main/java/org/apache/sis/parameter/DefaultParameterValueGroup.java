@@ -24,9 +24,9 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Objects;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -100,7 +100,7 @@ import org.apache.sis.util.Utilities;
  * <p>Calls to {@code values().clear()} restore this {@code DefaultParameterValueGroup} to its initial state.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see DefaultParameterDescriptorGroup
  * @see DefaultParameterValue

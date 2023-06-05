@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.gcx;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
 
 
 /**
@@ -34,7 +34,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-119">SIS-119</a>
  *

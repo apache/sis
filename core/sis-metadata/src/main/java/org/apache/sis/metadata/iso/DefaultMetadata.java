@@ -29,12 +29,12 @@ import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.ApplicationSchemaInformation;
@@ -145,7 +145,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.storage.Resource#getMetadata()
  *
@@ -1710,7 +1710,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     //////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Invoked by JAXB {@link javax.xml.bind.Marshaller} before this object is marshalled to XML.
+     * Invoked by JAXB {@link jakarta.xml.bind.Marshaller} before this object is marshalled to XML.
      * This method sets the locale to be used for XML marshalling to the metadata language.
      */
     @SuppressWarnings("unused")
@@ -1719,7 +1719,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     }
 
     /**
-     * Invoked by JAXB {@link javax.xml.bind.Marshaller} after this object has been marshalled to XML.
+     * Invoked by JAXB {@link jakarta.xml.bind.Marshaller} after this object has been marshalled to XML.
      * This method restores the locale to be used for XML marshalling to its previous value.
      */
     @SuppressWarnings("unused")

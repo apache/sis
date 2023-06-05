@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.distribution.DataFile;
 import org.apache.sis.metadata.iso.distribution.DefaultDataFile;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 public final class MX_DataFile extends PropertyType<MX_DataFile, DataFile> {

@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Locale;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Result;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.lan.FreeTextMarshallingTest;
@@ -37,7 +37,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(FreeTextMarshallingTest.class)

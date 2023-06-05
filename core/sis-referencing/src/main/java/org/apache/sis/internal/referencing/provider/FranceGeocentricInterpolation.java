@@ -29,7 +29,7 @@ import java.io.BufferedReader;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.parameter.ParameterValueGroup;

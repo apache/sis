@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -30,7 +30,7 @@ import org.apache.sis.parameter.Parameters;
  * The provider for <cite>"Geographic2D offsets"</cite> (EPSG:9619).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient

@@ -17,10 +17,10 @@
 package org.apache.sis.parameter;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlSchemaType;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -89,7 +89,7 @@ import static org.apache.sis.internal.jaxb.referencing.CC_GeneralOperationParame
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.5
  */
 @XmlType(name = "AbstractGeneralOperationParameterType", propOrder = {

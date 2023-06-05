@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -48,7 +48,7 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  * Tests the {@link DefaultCompoundCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn({

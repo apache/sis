@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -78,7 +78,7 @@ import org.apache.sis.util.Utilities;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultTransformation
  *

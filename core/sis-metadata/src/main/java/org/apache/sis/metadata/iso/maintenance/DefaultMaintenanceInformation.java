@@ -20,9 +20,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -70,7 +70,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  * @author  Guilhem Legal (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {

@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedHashMap;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -35,7 +35,7 @@ import org.apache.sis.util.collection.Containers;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 public final class CC_OperationParameterGroup extends PropertyType<CC_OperationParameterGroup,ParameterDescriptorGroup> {

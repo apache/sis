@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.Georeferenceable;
 import org.opengis.metadata.spatial.SpatialRepresentation;
@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.spatial.AbstractSpatialRepresentation;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 public final class MD_SpatialRepresentation extends

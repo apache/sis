@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -26,7 +26,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.6
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/lambert_conic_conformal_2sp_belgium.html">GeoTIFF parameters for Lambert Conic Conformal 2SP (Belgium)</a>
  *

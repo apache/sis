@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.List;
 import java.util.Iterator;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class DefaultQuantitativeResultTest extends TestCase {

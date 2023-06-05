@@ -31,7 +31,7 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -368,7 +368,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.4
      * @since   0.8
      */
     public class Coder extends ReferencingByIdentifiers.Coder {
@@ -1435,7 +1435,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.4
      *
      * @see <a href="https://en.wikipedia.org/wiki/Military_Grid_Reference_System">Military Grid Reference System on Wikipedia</a>
      *
@@ -1779,7 +1779,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
      * The {@linkplain #getPosition() position} represents the centroid of the decoded MGRS reference.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.4
      * @since   0.8
      */
     static final class Decoder extends SimpleLocation.Projected {

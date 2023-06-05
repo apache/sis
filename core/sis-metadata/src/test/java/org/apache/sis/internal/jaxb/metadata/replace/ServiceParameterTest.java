@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.MemberName;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.xml.Namespaces;
@@ -33,7 +33,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 public final class ServiceParameterTest extends TestCase {

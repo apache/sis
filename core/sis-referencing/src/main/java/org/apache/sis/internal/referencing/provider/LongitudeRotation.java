@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -43,7 +43,7 @@ import org.apache.sis.parameter.Parameters;
  * The longitude axis of source and target CRS shall be converted to degrees before this operation is applied.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.6
  */
 @XmlTransient

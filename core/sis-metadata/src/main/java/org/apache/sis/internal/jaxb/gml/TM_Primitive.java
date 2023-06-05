@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.gml;
 
 import java.util.Date;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.internal.xml.XmlUtilities;
 import org.apache.sis.internal.jaxb.Context;
@@ -36,7 +36,7 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> {

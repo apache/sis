@@ -19,7 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.SimpleInternationalString;
@@ -43,7 +43,7 @@ import static org.opengis.referencing.ReferenceIdentifier.*;
  * Tests {@link ImmutableIdentifier}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class ImmutableIdentifierTest extends TestCase {

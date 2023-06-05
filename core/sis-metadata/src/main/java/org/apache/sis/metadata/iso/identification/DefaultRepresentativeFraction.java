@@ -17,14 +17,14 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlID;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import jakarta.xml.bind.annotation.XmlID;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -71,7 +71,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see DefaultResolution#getEquivalentScale()
  *

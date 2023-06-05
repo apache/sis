@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.gco;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.FilterByVersion;
 import org.apache.sis.internal.jaxb.Context;
 
@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class URIAdapter extends XmlAdapter<GO_CharacterString, URI> {

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.NonQuantitativeAttributeAccuracy;
 
 // Branch-dependent imports
@@ -45,7 +45,7 @@ import static org.opengis.annotation.Specification.UNSPECIFIED;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 @XmlType(name = "DQ_NonQuantitativeAttributeCorrectness_Type")

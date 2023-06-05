@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -69,7 +69,7 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
  *

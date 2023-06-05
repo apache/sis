@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * This is often equivalent to {@link PseudoMercator}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 @XmlTransient

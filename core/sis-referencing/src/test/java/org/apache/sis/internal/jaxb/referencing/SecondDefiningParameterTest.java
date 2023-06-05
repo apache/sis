@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.referencing;
 
 import java.util.Map;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import org.apache.sis.test.xml.TestCase;
@@ -31,7 +31,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests {@link SecondDefiningParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.4
  */
 public final class SecondDefiningParameterTest extends TestCase {

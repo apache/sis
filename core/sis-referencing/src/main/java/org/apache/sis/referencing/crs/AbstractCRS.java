@@ -22,9 +22,9 @@ import java.util.HashMap;
 import java.util.Objects;
 import java.util.ConcurrentModificationException;
 import javax.measure.Unit;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AffineCS;
@@ -81,7 +81,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see AbstractCS
  * @see org.apache.sis.referencing.datum.AbstractDatum

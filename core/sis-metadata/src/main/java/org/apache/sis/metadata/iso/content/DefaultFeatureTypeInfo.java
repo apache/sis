@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.util.GenericName;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.TitleProperty;
@@ -55,7 +55,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.storage.FeatureNaming
  * @see org.apache.sis.feature.DefaultFeatureType

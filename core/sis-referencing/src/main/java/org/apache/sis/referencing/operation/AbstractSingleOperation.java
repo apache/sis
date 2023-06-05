@@ -21,11 +21,11 @@ import java.util.List;
 import java.util.IdentityHashMap;
 import java.util.Objects;
 import java.util.function.Predicate;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -68,7 +68,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * {@link DefaultPassThroughOperation}.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @XmlType(name = "AbstractSingleOperationType", propOrder = {    // See note in class javadoc.

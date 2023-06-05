@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.List;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.SimpleInternationalString;
@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(DefaultGeographicBoundingBoxTest.class)

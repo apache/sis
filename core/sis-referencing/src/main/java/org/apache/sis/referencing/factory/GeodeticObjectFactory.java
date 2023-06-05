@@ -27,7 +27,7 @@ import java.lang.reflect.Constructor;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;

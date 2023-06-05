@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.Locale;
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.CharacterSet;
@@ -76,7 +76,7 @@ import org.apache.sis.internal.jaxb.code.MD_CharacterSetCode;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_DataIdentification_Type", propOrder = {

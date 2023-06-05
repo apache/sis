@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.quality.Scope;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.test.xml.TestCase;
@@ -31,7 +31,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * When formatting legacy XML, {@code MD_Scope} should be renamed {@code DQ_Scope}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-508">SIS-508 on issue tracker</a>
  *

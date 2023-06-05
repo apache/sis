@@ -17,10 +17,10 @@
 package org.apache.sis.util.iso;
 
 import java.util.Map;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.GenericName;
@@ -47,7 +47,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(DefaultNameFactoryTest.class)

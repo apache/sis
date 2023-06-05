@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.geoapi.temporal.Period;
 import org.apache.sis.internal.util.Strings;
@@ -35,7 +35,7 @@ import static org.apache.sis.internal.xml.LegacyNamespaces.VERSION_3_0;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlRootElement(name="TimePeriod")

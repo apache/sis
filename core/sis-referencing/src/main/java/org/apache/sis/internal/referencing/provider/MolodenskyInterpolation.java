@@ -18,7 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
@@ -40,7 +40,7 @@ import org.apache.sis.referencing.operation.transform.InterpolatedMolodenskyTran
  * However, this class hierarchy may be revisited in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-500">Deprecate (for removal) InterpolatedMolodenskyTransform</a>

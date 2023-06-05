@@ -26,8 +26,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.InvalidObjectException;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.Type;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
@@ -86,7 +86,7 @@ import org.apache.sis.internal.metadata.RecordSchemaSIS;
  * so users wanting serialization may need to provide their own schema.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultRecord
  * @see DefaultRecordSchema

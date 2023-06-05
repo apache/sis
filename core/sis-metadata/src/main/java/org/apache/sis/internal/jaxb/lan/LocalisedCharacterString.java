@@ -18,8 +18,8 @@ package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
 
 
@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @see TextGroup
  *

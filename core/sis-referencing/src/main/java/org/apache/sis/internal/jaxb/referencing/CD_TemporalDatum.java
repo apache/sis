@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultTemporalDatum;
@@ -28,7 +28,7 @@ import org.apache.sis.referencing.datum.DefaultTemporalDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.4
  */
 public final class CD_TemporalDatum extends PropertyType<CD_TemporalDatum, TemporalDatum> {

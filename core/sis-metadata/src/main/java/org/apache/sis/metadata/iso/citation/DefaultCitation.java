@@ -18,9 +18,9 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Date;
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -75,7 +75,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.toMillisecon
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @TitleProperty(name = "title")

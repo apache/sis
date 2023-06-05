@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.cs;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -38,7 +38,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the {@link DefaultEllipsoidalCS} class.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(AbstractCSTest.class)

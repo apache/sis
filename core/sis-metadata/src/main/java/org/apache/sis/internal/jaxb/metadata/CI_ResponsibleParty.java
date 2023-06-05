@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -35,7 +35,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @SuppressWarnings("deprecation")

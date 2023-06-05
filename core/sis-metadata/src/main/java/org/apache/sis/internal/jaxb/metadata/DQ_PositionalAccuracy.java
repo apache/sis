@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.apache.sis.metadata.iso.quality.AbstractPositionalAccuracy;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 public final class DQ_PositionalAccuracy extends PropertyType<DQ_PositionalAccuracy, PositionalAccuracy> {

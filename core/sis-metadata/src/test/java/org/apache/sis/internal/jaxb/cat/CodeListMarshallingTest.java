@@ -19,8 +19,8 @@ package org.apache.sis.internal.jaxb.cat;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
@@ -44,7 +44,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 public final class CodeListMarshallingTest extends TestCase {

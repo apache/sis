@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.content.DefaultFeatureTypeInfo;
  *
  * @author  Cullen Rombach (Image Matters)
  * @since   1.0
- * @version 1.0
+ * @version 1.4
  */
 public final class MD_FeatureTypeInfo extends PropertyType<MD_FeatureTypeInfo, DefaultFeatureTypeInfo> {
     /**

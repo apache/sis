@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.apache.sis.test.xml.TestCase;
@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn({

@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -40,7 +40,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultEngineeringCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 public final class DefaultEngineeringCRSTest extends TestCase {

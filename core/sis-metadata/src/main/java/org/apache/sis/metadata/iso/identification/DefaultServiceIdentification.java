@@ -17,11 +17,11 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.citation.Citation;
@@ -75,7 +75,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @XmlType(name = "SV_ServiceIdentification_Type", namespace = Namespaces.SRV, propOrder = {

@@ -17,9 +17,9 @@
 package org.apache.sis.internal.jaxb.gml;
 
 import java.util.Date;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import org.apache.sis.internal.jaxb.Context;
@@ -36,7 +36,7 @@ import org.apache.sis.internal.geoapi.temporal.Instant;
  * Note that GML3 does not anymore include {@code TimeInstant} inside {@code TimePeriod}.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "TimeInstantType")

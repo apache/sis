@@ -19,7 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
 import org.opengis.util.ScopedName;
@@ -49,7 +49,7 @@ import org.apache.sis.internal.util.UnmodifiableArrayList;
  * state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @see DefaultNameSpace
  * @see DefaultLocalName

@@ -20,7 +20,7 @@ import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import javax.measure.IncommensurableException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
  *
@@ -232,7 +232,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
      *
      * @author  Chris Mattmann (JPL)
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.4
      * @since   0.8
      */
     public class Coder extends ReferencingByIdentifiers.Coder {

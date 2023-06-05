@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.lineage;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.internal.jaxb.gmi.LE_ProcessStep;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
@@ -33,7 +33,7 @@ import static org.opengis.test.Assert.assertInstanceOf;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class DefaultProcessStepTest extends TestUsingFile {

@@ -20,11 +20,11 @@ import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlEnum;
-import javax.xml.bind.annotation.XmlEnumValue;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
-import javax.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnumValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlSchemaType;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
@@ -208,7 +208,7 @@ public class XLink implements Serializable {
      * attribute values in a {@link XLink} instance.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
+     * @version 1.4
      * @since   0.3
      *
      * @see XLink#getType()
@@ -530,7 +530,7 @@ public class XLink implements Serializable {
      * from the starting resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
+     * @version 1.4
      * @since   0.3
      *
      * @see XLink#getShow()
@@ -604,7 +604,7 @@ public class XLink implements Serializable {
      * resource.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.3
+     * @version 1.4
      * @since   0.3
      *
      * @see XLink#getActuate()

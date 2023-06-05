@@ -16,9 +16,9 @@
  */
 package org.apache.sis.internal.jaxb.geometry;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.xml.Namespaces;
 
@@ -32,7 +32,7 @@ import org.apache.sis.xml.Namespaces;
  * specialized subclasses in GML modules.</p>
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 public class GM_Object extends XmlAdapter<GM_Object, Geometry> {

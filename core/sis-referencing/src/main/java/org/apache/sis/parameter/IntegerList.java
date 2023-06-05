@@ -18,7 +18,7 @@ package org.apache.sis.parameter;
 
 import java.util.StringJoiner;
 import java.lang.reflect.Array;
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlValue;
 import org.apache.sis.util.CharSequences;
 
 
@@ -26,7 +26,7 @@ import org.apache.sis.util.CharSequences;
  * XML representation of a sequence of integer values.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
  *

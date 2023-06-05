@@ -23,12 +23,12 @@ import java.io.FileOutputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.util.function.UnaryOperator;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
-import javax.xml.bind.attachment.AttachmentMarshaller;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.PropertyException;
+import jakarta.xml.bind.ValidationEventHandler;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.attachment.AttachmentMarshaller;
 import javax.xml.stream.XMLEventWriter;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
@@ -54,7 +54,7 @@ import org.apache.sis.internal.jaxb.UseLegacyMetadata;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 final class PooledMarshaller extends Pooled implements Marshaller {
@@ -353,7 +353,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
         object = toImplementation(object);                          // Must be call before getTransformVersion()
         final TransformVersion version = getTransformVersion();
         if (version != null) {
-            // This exception is thrown by javax.xml.bind.helpers.AbstractMarshallerImpl anyway.
+            // This exception is thrown by jakarta.xml.bind.helpers.AbstractMarshallerImpl anyway.
             throw new UnsupportedOperationException();
         } else {
             final Context context = begin();
@@ -388,8 +388,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * if it was not already done, for future restoration by {@link #reset(Pooled)}.
      */
     @Override
-    @SuppressWarnings("rawtypes")
-    public <A extends XmlAdapter> void setAdapter(final Class<A> type, final A adapter) {
+    public <A extends XmlAdapter<?,?>> void setAdapter(final Class<A> type, final A adapter) {
         super.setAdapter(type, adapter);
         marshaller.setAdapter(type, adapter);
     }
@@ -398,8 +397,7 @@ final class PooledMarshaller extends Pooled implements Marshaller {
      * Delegates to the wrapped marshaller.
      */
     @Override
-    @SuppressWarnings("rawtypes")
-    public <A extends XmlAdapter> A getAdapter(final Class<A> type) {
+    public <A extends XmlAdapter<?,?>> A getAdapter(final Class<A> type) {
         return marshaller.getAdapter(type);
     }
 

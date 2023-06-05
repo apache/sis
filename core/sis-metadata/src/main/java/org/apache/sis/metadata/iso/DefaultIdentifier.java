@@ -16,10 +16,10 @@
  */
 package org.apache.sis.metadata.iso;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -91,7 +91,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.ImmutableIdentifier
  * @see org.apache.sis.referencing.IdentifiedObjects#toURN(Class, Identifier)

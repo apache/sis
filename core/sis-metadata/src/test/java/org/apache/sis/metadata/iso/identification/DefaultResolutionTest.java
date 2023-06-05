@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -38,7 +38,7 @@ import static org.apache.sis.internal.jaxb.gml.MeasureTest.UOM_URL;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(DefaultRepresentativeFractionTest.class)

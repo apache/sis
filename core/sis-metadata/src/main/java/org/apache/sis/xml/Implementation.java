@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml;
 
-import javax.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBContext;
 
 
 /**

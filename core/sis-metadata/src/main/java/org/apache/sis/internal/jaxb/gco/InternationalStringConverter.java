@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 
@@ -26,7 +26,7 @@ import org.apache.sis.util.SimpleInternationalString;
  * {@link InternationalStringAdapter}, this converter doesn't wrap the string in a new object.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 public final class InternationalStringConverter extends XmlAdapter<String,InternationalString> {

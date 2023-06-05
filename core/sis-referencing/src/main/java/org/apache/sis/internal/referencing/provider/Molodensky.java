@@ -17,7 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -58,7 +58,7 @@ import org.apache.sis.util.Debug;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient

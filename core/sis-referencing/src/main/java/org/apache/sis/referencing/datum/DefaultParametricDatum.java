@@ -18,8 +18,8 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Date;
 import java.util.Map;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.apache.sis.internal.referencing.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -46,7 +46,7 @@ import org.apache.sis.io.wkt.Formatter;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.cs.DefaultParametricCS
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.7
  */
 public final class CS_CoordinateSystem extends PropertyType<CS_CoordinateSystem, CoordinateSystem> {

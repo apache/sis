@@ -17,8 +17,8 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.Map;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.measure.NumberRange;
@@ -36,7 +36,7 @@ import static org.junit.Assert.*;
  * Tests {@link MultiplicityRange}
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 public final class MultiplicityTest extends TestUsingFile {

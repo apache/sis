@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.geoapi.evolution;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;

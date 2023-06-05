@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -40,7 +40,7 @@ import org.apache.sis.measure.Units;
  * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the rotated North pole.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see SouthPoleRotation
  * @see <a href="https://cfconventions.org/cf-conventions/cf-conventions.html#_rotated_pole">Rotated pole in CF-conventions</a>

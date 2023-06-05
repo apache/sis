@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.lineage;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.lineage.Source;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -36,7 +36,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * {@code "gmi"} namespace that GeoAPI merged with the object of same name in the {@code "gmd"} namespace.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class DefaultLineageTest extends TestCase {

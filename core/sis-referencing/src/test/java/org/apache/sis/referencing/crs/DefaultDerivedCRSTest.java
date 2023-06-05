@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -48,7 +48,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DefaultDerivedCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({

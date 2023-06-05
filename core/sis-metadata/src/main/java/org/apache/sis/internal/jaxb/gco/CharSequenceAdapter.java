@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.xml.XLink;
@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.lan.PT_FreeText;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see StringAdapter
  * @see InternationalStringAdapter

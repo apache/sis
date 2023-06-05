@@ -18,8 +18,8 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import javax.measure.Unit;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -58,7 +58,7 @@ import org.apache.sis.measure.Units;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultVerticalCRS
  * @see org.apache.sis.referencing.datum.DefaultVerticalDatum

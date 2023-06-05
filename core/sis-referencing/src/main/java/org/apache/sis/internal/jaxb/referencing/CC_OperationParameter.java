@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.annotation.XmlElement;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -37,7 +37,7 @@ import org.apache.sis.parameter.DefaultParameterDescriptor;
  * infer it from the actual value.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.6
  */
 public final class CC_OperationParameter extends PropertyType<CC_OperationParameter, ParameterDescriptor<?>> {

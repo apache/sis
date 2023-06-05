@@ -16,10 +16,10 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.content.ImageDescription;
 import org.opengis.metadata.content.ImagingCondition;
@@ -50,7 +50,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_ImageDescription_Type", propOrder = {

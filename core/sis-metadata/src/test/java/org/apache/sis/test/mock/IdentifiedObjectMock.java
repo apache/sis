@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.Collection;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -39,7 +39,7 @@ import org.apache.sis.internal.jaxb.gco.GO_GenericName;
  * {@code "test"} {@linkplain #getCodeSpace() codespace}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.3
  */
 @SuppressWarnings("serial")

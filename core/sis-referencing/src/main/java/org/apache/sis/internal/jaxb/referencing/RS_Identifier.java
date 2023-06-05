@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.Identifier;
 
@@ -58,7 +58,7 @@ import org.opengis.metadata.Identifier;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.5
+ * @version 1.4
  * @since   0.4
  */
 public final class RS_Identifier extends XmlAdapter<Code, ReferenceIdentifier> {

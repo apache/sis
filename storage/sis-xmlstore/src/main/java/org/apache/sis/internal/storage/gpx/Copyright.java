@@ -23,8 +23,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.CitationDate;
@@ -63,7 +63,7 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 public final class Copyright implements LegalConstraints, ResponsibleParty, Citation, CitationDate {

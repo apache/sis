@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 
 /**
@@ -30,7 +30,7 @@ import javax.xml.bind.annotation.adapters.XmlAdapter;
  * }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @param <ValueType>  the subclass implementing this adapter.
  * @param <BoundType>  the enum being adapted.

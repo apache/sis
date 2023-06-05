@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.spatial;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.spatial.GeometricObjects;
 import org.opengis.metadata.spatial.GeometricObjectType;
 import org.apache.sis.measure.ValueRange;
@@ -46,7 +46,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ensurePositi
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_GeometricObjects_Type", propOrder = {

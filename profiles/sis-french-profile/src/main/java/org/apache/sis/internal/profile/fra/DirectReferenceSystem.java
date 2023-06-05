@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.profile.fra;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
@@ -39,7 +39,7 @@ import org.apache.sis.util.ComparisonMode;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 @XmlType(name = "FRA_DirectReferenceSystem_Type")

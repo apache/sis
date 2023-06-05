@@ -16,8 +16,8 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.TemporalAccuracy;
 import org.opengis.metadata.quality.TemporalValidity;
 import org.opengis.metadata.quality.TemporalConsistency;
@@ -30,7 +30,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  *
  * @deprecated Renamed {@link AbstractTemporalQuality} for following a renaming in ISO 19157:2013.

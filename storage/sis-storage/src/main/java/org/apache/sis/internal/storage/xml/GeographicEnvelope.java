@@ -18,7 +18,7 @@ package org.apache.sis.internal.storage.xml;
 
 import java.util.Collection;
 import java.util.Collections;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -46,7 +46,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * (<var>latitude</var>, <var>longitude</var>) axis order, as defined by EPSG:4326.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 @XmlTransient

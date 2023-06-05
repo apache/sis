@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -48,7 +48,7 @@ import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
  * Tests the {@link DefaultConcatenatedOperation} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.7
  */
 @DependsOn({

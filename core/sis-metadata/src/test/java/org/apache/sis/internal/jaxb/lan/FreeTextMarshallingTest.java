@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.DefaultInternationalString;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -33,7 +33,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests the XML marshalling of {@code FreeText}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class FreeTextMarshallingTest extends TestCase {

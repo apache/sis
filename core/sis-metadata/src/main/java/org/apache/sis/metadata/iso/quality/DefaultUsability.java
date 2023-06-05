@@ -16,8 +16,8 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.quality.Usability;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
@@ -27,7 +27,7 @@ import org.apache.sis.internal.xml.LegacyNamespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  *
  * @deprecated Removed from latest ISO 19157 standard.

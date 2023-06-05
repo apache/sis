@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.PlanarProjection;
@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * The provider for <cite>"Lambert Azimuthal Equal Area"</cite> projection (EPSG:9820).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/lambert_azimuthal_equal_area.html">GeoTIFF parameters for Lambert Azimuthal Equal Area</a>
  *

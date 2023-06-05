@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
@@ -39,7 +39,7 @@ import org.apache.sis.io.wkt.Formatter;
  * components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultEngineeringCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringDatum(String)

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.metadata.iso.quality;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.metadata.quality.Completeness;
 import org.opengis.metadata.quality.CompletenessOmission;
 import org.opengis.metadata.quality.CompletenessCommission;
@@ -42,7 +42,7 @@ import org.opengis.metadata.quality.CompletenessCommission;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "AbstractDQ_Completeness_Type")

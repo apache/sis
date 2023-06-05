@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -27,7 +27,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * package documentation for more information about JAXB and interface.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 public final class MD_Metadata extends PropertyType<MD_Metadata, Metadata> {

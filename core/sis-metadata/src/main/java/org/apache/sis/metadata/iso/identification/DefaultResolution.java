@@ -16,10 +16,10 @@
  */
 package org.apache.sis.metadata.iso.identification;
 
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.identification.RepresentativeFraction;
 import org.opengis.metadata.identification.Resolution;
@@ -71,7 +71,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see AbstractIdentification#getSpatialResolutions()
  *

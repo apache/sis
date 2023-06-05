@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -37,7 +37,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
- * @version 0.8
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator.html">GeoTIFF parameters for Transverse Mercator</a>
  *
@@ -168,7 +168,7 @@ public final class TransverseMercator extends AbstractMercator {
      * Computes zone numbers and central meridian.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 0.8
+     * @version 1.4
      * @since   0.8
      */
     public enum Zoner {

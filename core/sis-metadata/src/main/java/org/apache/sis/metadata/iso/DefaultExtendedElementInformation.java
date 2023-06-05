@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.Datatype;
 import org.opengis.metadata.Obligation;
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -79,7 +79,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @TitleProperty(name = "name")

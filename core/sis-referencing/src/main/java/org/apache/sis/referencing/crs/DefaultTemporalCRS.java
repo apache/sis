@@ -22,9 +22,9 @@ import java.time.Instant;
 import java.time.Duration;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.quantity.Time;
 import javax.measure.UnitConverter;
 import javax.measure.Unit;
@@ -66,7 +66,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLIS_PER_SECOND;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.datum.DefaultTemporalDatum
  * @see org.apache.sis.referencing.cs.DefaultTimeCS

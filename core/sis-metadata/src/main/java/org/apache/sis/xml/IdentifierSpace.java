@@ -43,7 +43,7 @@ import org.apache.sis.internal.jaxb.NonMarshalledAuthority;
  * {@link IdentifiedObject#getIdentifierMap()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  *
  * @param <T>  the type of object used as identifier values.
  *
@@ -68,7 +68,7 @@ public interface IdentifierSpace<T> extends Citation {
      * marshalling and unmarshalling time. If many of {@code gml:id}, {@code gco:uuid} and {@code xlink:href}
      * attributes are used, then {@code gml:id} has precedence.</p>
      *
-     * @see javax.xml.bind.annotation.XmlID
+     * @see jakarta.xml.bind.annotation.XmlID
      */
     IdentifierSpace<String> ID = new NonMarshalledAuthority<>("gml:id", NonMarshalledAuthority.ID);
 

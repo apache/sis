@@ -19,9 +19,9 @@ package org.apache.sis.internal.jaxb.cat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlValue;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
@@ -74,7 +74,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  *
  * @see CodeListAdapter
  *

@@ -17,7 +17,7 @@
 package org.apache.sis.internal.referencing.provider;
 
 import java.awt.geom.AffineTransform;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;

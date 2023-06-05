@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
@@ -61,7 +61,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.datum.DefaultEngineeringDatum
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createEngineeringCRS(String)

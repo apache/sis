@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CylindricalProjection;
@@ -33,7 +33,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
  * Cylindrical map projections.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  * @see <a href="https://mathworld.wolfram.com/CylindricalProjection.html">Cylindrical projection on MathWorld</a>

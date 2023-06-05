@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.ConcurrentModificationException;
 import java.io.Serializable;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.LocalName;
@@ -60,7 +60,7 @@ import org.apache.sis.internal.system.DefaultFactories;
  * and do not change any public {@code GenericName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.5
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.NamedIdentifier
  * @see org.apache.sis.storage.FeatureNaming
@@ -341,7 +341,7 @@ public abstract class AbstractName implements GenericName, Serializable {
      * This class is immutable if the list given to the constructor is immutable.
      *
      * @author  Martin Desruisseaux (IRD, Geomatys)
-     * @version 0.3
+     * @version 1.4
      * @since   0.3
      */
     private static final class International extends SimpleInternationalString {

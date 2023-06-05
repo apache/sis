@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.metadata;
 
 import java.net.URISyntaxException;
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.metadata.quality.Scope;
 import org.apache.sis.metadata.iso.maintenance.DefaultScope;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -29,7 +29,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class MD_Scope extends PropertyType<MD_Scope, Scope> {

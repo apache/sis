@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -43,7 +43,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests {@link DefaultImageCRS}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 public final class DefaultImageCRSTest extends TestCase {

@@ -23,13 +23,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import javax.xml.XMLConstants;
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSchema;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementRef;
-import javax.xml.bind.annotation.XmlElementRefs;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRefs;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
@@ -68,7 +68,7 @@ import junit.framework.AssertionFailedError;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public abstract class AnnotationConsistencyCheck extends TestCase {
@@ -154,7 +154,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      * such situation, since the caller will automatically searches for a parent class if
      * {@code ClassNotFoundException} has been thrown.</p>
      *
-     * <p>In SIS implementation, most wrappers are also {@link javax.xml.bind.annotation.adapters.XmlAdapter}.
+     * <p>In SIS implementation, most wrappers are also {@link jakarta.xml.bind.annotation.adapters.XmlAdapter}.
      * But this is not a requirement.</p>
      *
      * @param  type  the GeoAPI interface, {@link CodeList} or {@link Enum} type.
