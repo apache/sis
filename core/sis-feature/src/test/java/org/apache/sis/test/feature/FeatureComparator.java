@@ -31,7 +31,8 @@ import org.apache.sis.internal.util.CollectionsExt;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Deprecable;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 // Branch-dependent imports
 import org.opengis.feature.Feature;

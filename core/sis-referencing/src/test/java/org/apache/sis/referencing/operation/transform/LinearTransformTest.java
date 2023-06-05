@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestRunner;
-import static org.opengis.test.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

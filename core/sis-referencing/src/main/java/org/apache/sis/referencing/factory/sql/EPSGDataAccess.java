@@ -2197,6 +2197,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     }
                     case WKTKeywords.spherical: {
                         switch (dimension) {
+                            case 2: cs = csFactory.createSphericalCS(properties, axes[0], axes[1]); break;
                             case 3: cs = csFactory.createSphericalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;

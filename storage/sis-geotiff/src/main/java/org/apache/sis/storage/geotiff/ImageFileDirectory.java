@@ -1692,17 +1692,26 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Returns the fill value to be replaced by NaN at reading time.
+     * This is possible only for images of floating point type.
+     */
+    @Override
+    Number getReplaceableFillValue() {
+        return (sampleFormat == FLOAT) ? noData : null;
+    }
+
+    /**
      * Returns the value to use for filling empty spaces in the raster, or {@code null} if none,
      * not different than zero or not valid for the target data type.
      * The zero value is excluded because tiles are already initialized to zero by default.
      */
     @Override
     protected Number getFillValue() {
-        return getFillValue(false);
+        return (sampleFormat != FLOAT) ? getFillValue(false) : Double.NaN;
     }
 
     /**
-     * Returns the value to use for filling empty spaces in the raster, or {@code null} if none,
+     * Returns the value to use for filling empty spaces in the raster, or {@code null} if none.
      * The exclusion of zero value is optional, controlled by the {@code acceptZero} argument.
      *
      * @param  acceptZero  whether to return a number for the zero value.

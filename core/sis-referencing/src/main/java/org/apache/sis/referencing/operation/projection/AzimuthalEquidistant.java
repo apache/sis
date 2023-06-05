@@ -62,7 +62,7 @@ import static org.apache.sis.internal.referencing.provider.ModifiedAzimuthalEqui
  *
  * This base class is aimed to provide the general case valid for all distances;
  * the fact that current version uses spherical formulas should be considered as an implementation limitation
- * that may change in future version. Subclasses are specialization for more restricted areas.
+ * that may change in future version. Subclasses are specializations for more restricted areas.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Maxime Gavens (Geomatys)

@@ -28,7 +28,8 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * A 3-dimensional coordinate system with one distance measured from the origin and two angular coordinates.
+ * A 2- or 3-dimensional coordinate system with one distance measured from the origin and two angular coordinates.
+ * In the two-dimensional case, the radius is omitted and may be implicitly an ellipsoid surface.
  * Not to be confused with an {@linkplain DefaultEllipsoidalCS ellipsoidal coordinate system}
  * based on an ellipsoid "degenerated" into a sphere.
  *
@@ -126,6 +127,27 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
     }
 
     /**
+     * Constructs a two-dimensional coordinate system from a set of properties.
+     * The given axes shall be angular measurements, without radius.
+     * The properties map is given unchanged to the
+     * {@linkplain AbstractCS#AbstractCS(Map,CoordinateSystemAxis[]) super-class constructor}.
+     *
+     * @param  properties  the properties to be given to the identified object.
+     * @param  axis0       the first  axis (e.g. “Spherical latitude”).
+     * @param  axis1       the second axis (e.g. “Spherical longitude”).
+     *
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     *
+     * @since 1.4
+     */
+    public DefaultSphericalCS(final Map<String,?>   properties,
+                              final CoordinateSystemAxis axis0,
+                              final CoordinateSystemAxis axis1)
+    {
+        super(properties, axis0, axis1);
+    }
+
+    /**
      * Creates a new coordinate system with the same values than the specified one.
      * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
      * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
@@ -202,9 +224,15 @@ public class DefaultSphericalCS extends AbstractCS implements SphericalCS {
      * Returns a coordinate system with different axes.
      */
     @Override
+    @SuppressWarnings("fallthrough")
     final AbstractCS createForAxes(final Map<String,?> properties, final CoordinateSystemAxis[] axes) {
         switch (axes.length) {
-            case 2: return new DefaultPolarCS(properties, axes);
+            case 2: {
+                if (Units.isLinear(axes[0].getUnit()) || Units.isLinear(axes[1].getUnit())) {
+                    return new DefaultPolarCS(properties, axes);
+                }
+                // Fall through
+            }
             case 3: return new DefaultSphericalCS(properties, axes);
             default: throw unexpectedDimension(properties, axes, 2);
         }

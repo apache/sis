@@ -27,8 +27,10 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.xml.TestCase;
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
+import static org.opengis.test.Assert.assertIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
-import static org.opengis.test.Assert.*;
 
 
 /**

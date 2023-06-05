@@ -32,7 +32,8 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

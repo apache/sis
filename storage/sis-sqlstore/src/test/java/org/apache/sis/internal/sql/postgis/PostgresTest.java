@@ -56,7 +56,8 @@ import org.opengis.feature.Feature;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Geometry;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

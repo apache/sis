@@ -35,7 +35,7 @@ import static java.lang.Math.multiplyFull;
  * Raster data obtained from a compressed GeoTIFF file in the domain requested by user.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 final class CompressedSubset extends DataSubset {
@@ -249,7 +249,7 @@ final class CompressedSubset extends DataSubset {
             fillRemainingRows(bank.flip());
             banks[b] = bank;
         }
-        return Raster.createWritableRaster(model, RasterFactory.wrap(dataType, banks), location);
+        return createWritableRaster(RasterFactory.wrap(dataType, banks), location);
     }
 
     /**

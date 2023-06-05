@@ -24,6 +24,8 @@ import java.io.IOException;
 import java.awt.Point;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferFloat;
+import java.awt.image.DataBufferDouble;
 import java.awt.image.Raster;
 import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
@@ -41,6 +43,7 @@ import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.geotiff.Resources;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.Localized;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Math.addExact;
@@ -523,7 +526,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             banks[b] = bank;
         }
         final DataBuffer buffer = RasterFactory.wrap(type, banks);
-        return Raster.createWritableRaster(model, buffer, location);
+        return createWritableRaster(buffer, location);
     }
 
     /**
@@ -543,5 +546,33 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 bank.limit(capacity);
             }
         }
+    }
+
+    /**
+     * Creates the raster with the given data buffer, which contains the pixels that have been read.
+     *
+     * @param  buffer    the sample values which have been read from the GeoTIFF tile.
+     * @param  location  pixel coordinates in the upper-left corner of the tile to return.
+     * @return raster with the given sample values.
+     */
+    final Raster createWritableRaster(final DataBuffer buffer, final Point location) {
+        final Number fill = source.getReplaceableFillValue();
+        if (fill != null) {
+            switch (buffer.getDataType()) {
+                case DataBuffer.TYPE_FLOAT: {
+                    for (float[] bank : ((DataBufferFloat) buffer).getBankData()) {
+                        ArraysExt.replace(bank, fill.floatValue(), Float.NaN);
+                    }
+                    break;
+                }
+                case DataBuffer.TYPE_DOUBLE: {
+                    for (double[] bank : ((DataBufferDouble) buffer).getBankData()) {
+                        ArraysExt.replace(bank, fill.doubleValue(), Double.NaN);
+                    }
+                    break;
+                }
+            }
+        }
+        return Raster.createWritableRaster(model, buffer, location);
     }
 }

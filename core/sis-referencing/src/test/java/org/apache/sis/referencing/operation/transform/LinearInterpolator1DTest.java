@@ -24,7 +24,8 @@ import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

@@ -480,6 +480,41 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
+     * Creates a spherical coordinate system without radius.
+     * This coordinate system can be used with geocentric, engineering and derived CRS.
+     *
+     * <h4>Dependencies</h4>
+     * The components needed by this method can be created by the following methods:
+     * <ol>
+     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
+     * </ol>
+     *
+     * The default implementation creates a {@link DefaultSphericalCS} instance.
+     *
+     * @param  properties  name and other properties to give to the new object.
+     * @param  axis0       the first  axis (e.g. “Spherical latitude”).
+     * @param  axis1       the second axis (e.g. “Spherical longitude”).
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultSphericalCS#DefaultSphericalCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     *
+     * @since 1.4
+     */
+    @Override
+    public SphericalCS createSphericalCS(final Map<String,?> properties,
+            final CoordinateSystemAxis axis0,
+            final CoordinateSystemAxis axis1) throws FactoryException
+    {
+        final DefaultSphericalCS cs;
+        try {
+            cs = new DefaultSphericalCS(complete(properties), axis0, axis1);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createSphericalCS", cs);
+    }
+
+    /**
      * Creates a geographic coordinate reference system. It can be (<var>latitude</var>, <var>longitude</var>)
      * or (<var>longitude</var>, <var>latitude</var>), optionally with an ellipsoidal height.
      *

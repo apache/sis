@@ -161,6 +161,24 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
     abstract Predictor getPredictor();
 
     /**
+     * Returns the fill value used in image of floating point type before replacement by NaN.
+     * If no value is declared or if the image type is an integer type, returns {@code null}.
+     * If non-null, this value will be replaced by {@link Float#NaN} at reading time.
+     *
+     * <div class="note"><b>Rational:</b>
+     * the intend is to handle the image as if it was already converted to the units of measurement.
+     * Our netCDF reader does the same thing, and we want a consistent behavior of coverage readers.
+     * </div>
+     *
+     * If this method returns a non-null value, then {@link #getFillValue()} should return NaN.
+     *
+     * @return value to be replaced by NaN at reading time, or {@code null} if none.
+     *
+     * @see #getFillValue()
+     */
+    abstract Number getReplaceableFillValue();
+
+    /**
      * Returns {@code true} if the image can be read with the {@link DataSubset} base class,
      * or {@code false} if the more sophisticated {@link CompressedSubset} sub-class is needed.
      * The {@link DataSubset#readSlice readSlice(…)} implementation in {@link DataSubset} base

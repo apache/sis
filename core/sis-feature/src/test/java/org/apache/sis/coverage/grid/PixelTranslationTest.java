@@ -26,7 +26,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertMatrixEquals;
 
 
 /**

@@ -520,7 +520,7 @@ next:   for (final CoordinateSystem cs : targets) {
      */
     public static CoordinateSystem replaceLinearUnit(final CoordinateSystem cs, final Unit<Length> newUnit) {
         ArgumentChecks.ensureNonNull("newUnit", newUnit);
-        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+        return replaceAxes(cs, new AxisFilter() {
             @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 return Units.isLinear(unit) ? newUnit : unit;
             }
@@ -551,7 +551,7 @@ next:   for (final CoordinateSystem cs : targets) {
      */
     public static CoordinateSystem replaceAngularUnit(final CoordinateSystem cs, final Unit<javax.measure.quantity.Angle> newUnit) {
         ArgumentChecks.ensureNonNull("newUnit", newUnit);
-        return CoordinateSystems.replaceAxes(cs, new AxisFilter() {
+        return replaceAxes(cs, new AxisFilter() {
             @Override public Unit<?> getUnitReplacement(CoordinateSystemAxis axis, Unit<?> unit) {
                 return Units.isAngular(unit) ? newUnit : unit;
             }
