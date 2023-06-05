@@ -207,9 +207,10 @@ public class Mercator extends ConformalProjection {
             case SPHERICAL: {
                 /*
                  * According to EPSG guide, the latitude of conformal sphere radius should be the latitude of origin.
-                 * However, that origin is fixed to 0° by EPSG guide, which makes radius calculation ineffective when
-                 * using the official parameters. We could fallback on the standard parallel (φ1) if φ0 is not set,
-                 * but for now we wait to see for real cases. Some arguments that may be worth consideration:
+                 * However, that origin is fixed to 0° by EPSG guidance notes, which makes this radius equals to the
+                 * semi-minor axis length. We could allow more flexibility by using the standard parallel (φ1) if φ0
+                 * is not set, but for now we wait to see for real cases.
+                 * Some arguments that may be worth consideration:
                  *
                  *   - The standard parallel is not an EPSG parameter for Spherical case.
                  *   - Users who set the standard parallel anyway may expect that latitude to be used for radius

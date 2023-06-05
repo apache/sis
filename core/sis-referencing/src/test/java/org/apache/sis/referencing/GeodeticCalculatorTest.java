@@ -46,7 +46,9 @@ import net.sf.geographiclib.GeodesicData;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertBetween;
+import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.internal.metadata.ReferencingServices.AUTHALIC_RADIUS;
 
 

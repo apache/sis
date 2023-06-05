@@ -126,6 +126,7 @@ import static org.apache.sis.internal.referencing.ServicesForMetadata.CONNECTION
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.internal.referencing.ServicesForMetadata;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 
 /**
@@ -2201,6 +2202,10 @@ codes:  for (int i=0; i<codes.length; i++) {
                     }
                     case WKTKeywords.spherical: {
                         switch (dimension) {
+                            case 2: if (csFactory instanceof GeodeticObjectFactory) {
+                                        cs = ((GeodeticObjectFactory) csFactory).createSphericalCS(properties, axes[0], axes[1]);
+                                    }
+                                    break;
                             case 3: cs = csFactory.createSphericalCS(properties, axes[0], axes[1], axes[2]); break;
                         }
                         break;

@@ -28,7 +28,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.test.DependsOn;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**

@@ -21,7 +21,7 @@ import java.awt.geom.Line2D;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**

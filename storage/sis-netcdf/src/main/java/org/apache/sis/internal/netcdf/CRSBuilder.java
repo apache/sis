@@ -61,6 +61,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 // Branch-dependent imports
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 
 
@@ -87,7 +88,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  * while {@link DataStoreException} is handled as a fatal error. Warnings are stored in {@link #warnings} field.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
@@ -680,12 +681,18 @@ previous:   for (int i=components.size(); --i >= 0;) {
         }
 
         /**
-         * Creates the three-dimensional {@link SphericalCS} from given axes. This method is invoked only
+         * Creates the two- or three-dimensional {@link SphericalCS} from given axes. This method is invoked only
          * if {@link #setPredefinedComponents(Decoder)} failed to assign a CS or if {@link #build(Decoder, boolean)}
          * found that the {@link #coordinateSystem} does not have compatible axes.
          */
         @Override void createCS(CSFactory factory, Map<String,?> properties, CoordinateSystemAxis[] axes) throws FactoryException {
-            coordinateSystem = factory.createSphericalCS(properties, axes[0], axes[1], axes[2]);
+            if (axes.length > 2) {
+                coordinateSystem = factory.createSphericalCS(properties, axes[0], axes[1], axes[2]);
+            } else if (factory instanceof GeodeticObjectFactory) {
+                coordinateSystem = ((GeodeticObjectFactory) factory).createSphericalCS(properties, axes[0], axes[1]);
+            } else {
+                throw new FactoryException("Unsupported factory implementation.");
+            }
         }
 
         /**

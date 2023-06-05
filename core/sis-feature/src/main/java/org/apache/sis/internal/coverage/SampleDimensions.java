@@ -155,8 +155,9 @@ public final class SampleDimensions extends Static {
             final SampleDimension band = bands[i];
             if (band != null) {
                 final List<Category> categories = band.getCategories();
-                final Number[] nodataValues = new Number[categories.size()];
-                for (int j = 0; j < nodataValues.length; j++) {
+                final int count = categories.size();
+                final Number[] nodataValues = new Number[count + 1];
+                for (int j = 0; j < count; j++) {
                     final Category category = categories.get(j);
                     if (!category.isQuantitative()) {
                         final NumberRange<?> range = category.getSampleRange();
@@ -171,6 +172,7 @@ public final class SampleDimensions extends Static {
                         nodataValues[j] = value;
                     }
                 }
+                nodataValues[count] = band.getBackground().orElse(null);
                 sampleFilters[i] = ImageProcessor.filterNodataValues(nodataValues);
             }
         }

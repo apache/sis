@@ -41,7 +41,6 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.internal.storage.PRJDataStore;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -69,7 +68,7 @@ import org.apache.sis.math.Statistics;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 abstract class RasterStore extends PRJDataStore implements GridCoverageResource {
@@ -180,7 +179,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
         try {
             builder.addExtent(gridGeometry.getEnvelope());
         } catch (TransformException e) {
-            throw new DataStoreReferencingException(getLocale(), formatName, getDisplayName(), null).initCause(e);
+            listeners.warning(e);
         }
         /*
          * Do not invoke `getSampleDimensions()` because computing sample dimensions without statistics

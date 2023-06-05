@@ -24,7 +24,8 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.util.Version;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 
 
 /**

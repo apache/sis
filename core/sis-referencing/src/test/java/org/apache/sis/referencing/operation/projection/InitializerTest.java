@@ -27,7 +27,7 @@ import org.opengis.test.TestCase;
 import org.junit.Test;
 
 import static java.lang.StrictMath.*;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
 
 
 /**

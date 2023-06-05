@@ -32,7 +32,8 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import static java.util.AbstractMap.SimpleEntry;
 import static org.opengis.metadata.citation.PresentationForm.DOCUMENT_HARDCOPY;
 import static org.apache.sis.test.TestUtilities.getSingleton;

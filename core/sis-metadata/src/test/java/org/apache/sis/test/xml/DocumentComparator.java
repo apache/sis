@@ -48,7 +48,8 @@ import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 
 import static java.lang.StrictMath.*;
-import static org.opengis.test.Assert.*;
+import static org.junit.Assert.*;
+import static org.opengis.test.Assert.assertInstanceOf;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 
