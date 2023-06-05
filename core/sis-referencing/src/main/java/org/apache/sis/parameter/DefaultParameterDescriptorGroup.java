@@ -21,9 +21,9 @@ import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Collections;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -84,7 +84,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see DefaultParameterValueGroup
  * @see DefaultParameterDescriptor

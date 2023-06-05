@@ -18,7 +18,7 @@ package org.apache.sis.internal.referencing.provider;
 
 import java.util.Map;
 import java.util.Arrays;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -56,7 +56,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * </table>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.5
  */
 @XmlTransient

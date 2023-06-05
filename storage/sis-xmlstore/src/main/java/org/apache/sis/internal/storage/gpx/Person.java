@@ -22,8 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.OnlineResource;
@@ -59,7 +59,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 public final class Person implements ResponsibleParty, Party, Contact, Address {

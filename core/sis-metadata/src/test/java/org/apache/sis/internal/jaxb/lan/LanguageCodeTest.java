@@ -19,10 +19,10 @@ package org.apache.sis.internal.jaxb.lan;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
@@ -50,7 +50,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.UTC;
  * {@code "http://www.isotc211.org/2005/gmd"} namespace to {@code "http://standards.iso.org/…"}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 public final class LanguageCodeTest extends TestCase {

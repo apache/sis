@@ -16,8 +16,8 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.internal.jaxb.AdapterReplacement;
 import org.apache.sis.referencing.crs.DefaultVerticalCRS;
@@ -30,7 +30,7 @@ import org.apache.sis.referencing.crs.DefaultVerticalCRS;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 public final class SC_VerticalCRS extends org.apache.sis.internal.jaxb.gml.SC_VerticalCRS implements AdapterReplacement {

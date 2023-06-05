@@ -20,7 +20,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
@@ -43,7 +43,7 @@ import org.opengis.annotation.Obligation;
  * </ol>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 final class PropertyComparator implements Comparator<Method> {

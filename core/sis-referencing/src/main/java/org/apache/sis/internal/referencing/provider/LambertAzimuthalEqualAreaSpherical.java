@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
  * The provider for <cite>"Lambert Azimuthal Equal Area (Spherical)"</cite> projection (EPSG:1027).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 @XmlTransient

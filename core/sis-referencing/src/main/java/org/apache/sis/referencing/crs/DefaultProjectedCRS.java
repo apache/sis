@@ -19,9 +19,9 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -59,7 +59,7 @@ import static org.apache.sis.internal.referencing.WKTUtilities.toFormattable;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createProjectedCRS(String)
  *

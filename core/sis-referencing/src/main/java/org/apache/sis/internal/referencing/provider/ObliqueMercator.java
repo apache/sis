@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
@@ -33,7 +33,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/hotine_oblique_mercator.html">GeoTIFF parameters for Hotine Oblique Mercator</a>
  *

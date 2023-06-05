@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
@@ -46,7 +46,7 @@ import org.apache.sis.util.Deprecable;
  * for the inverse, or when the inverse operation cannot be represented by inverting the sign of parameters.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient

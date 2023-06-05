@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 import javax.measure.Quantity;
 import javax.measure.IncommensurableException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.TransformException;
@@ -282,7 +282,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * or synchronization must be applied by the caller.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.4
      * @since   1.3
      */
     public abstract static class Coder {

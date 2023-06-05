@@ -26,13 +26,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.ParameterizedType;
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSchema;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapters;
 import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 import org.opengis.util.CodeList;
@@ -54,7 +54,7 @@ import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;
  * {@link SchemaCompliance#verify(java.nio.file.Path)} for each Java package to be verified.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 final class PackageVerifier {

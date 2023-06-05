@@ -19,7 +19,7 @@ package org.apache.sis.test.integration;
 import java.net.URI;
 import java.util.Locale;
 import java.nio.charset.StandardCharsets;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 
 import org.opengis.metadata.*;
 import org.opengis.metadata.citation.*;
@@ -62,7 +62,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  *

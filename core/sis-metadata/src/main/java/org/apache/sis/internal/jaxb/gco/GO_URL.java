@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlValue;
 
 
 /**
@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlValue;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 final class GO_URL {

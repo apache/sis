@@ -23,7 +23,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.net.URISyntaxException;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.MetadataScope;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
@@ -51,7 +51,7 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @DependsOn(org.apache.sis.internal.jaxb.lan.OtherLocalesTest.class)

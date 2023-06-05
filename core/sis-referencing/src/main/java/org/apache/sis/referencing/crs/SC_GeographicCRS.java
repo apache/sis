@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 
@@ -30,7 +30,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  * class.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCRS> {

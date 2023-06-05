@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.content;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.metadata.content.CoverageContentType;
 import org.opengis.metadata.content.RangeDimension;
@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @XmlType(name = "MD_AttributeGroup_Type", propOrder = {

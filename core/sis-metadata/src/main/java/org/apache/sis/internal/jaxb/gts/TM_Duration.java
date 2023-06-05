@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gts;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.Duration;
 import org.opengis.temporal.PeriodDuration;
 import org.apache.sis.internal.jaxb.Context;
@@ -33,7 +33,7 @@ import org.apache.sis.util.Classes;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 public final class TM_Duration extends PropertyType<TM_Duration, Duration> {

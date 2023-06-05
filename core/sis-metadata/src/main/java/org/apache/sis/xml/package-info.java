@@ -43,7 +43,7 @@
  *
  * <h2>Customizing the XML</h2>
  * In order to parse and format ISO 19115-3 compliant documents, SIS needs its own
- * {@link javax.xml.bind.Marshaller} and {@link javax.xml.bind.Unmarshaller} instances
+ * {@link jakarta.xml.bind.Marshaller} and {@link jakarta.xml.bind.Unmarshaller} instances
  * (which are actually wrappers around standard instances). Those instances are created
  * and cached by {@link org.apache.sis.xml.MarshallerPool}, which is used internally by
  * the above-cited {@code XML} class. However, developers can instantiate their own

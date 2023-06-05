@@ -31,10 +31,10 @@ import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Result;
 import javax.xml.transform.stax.StAXSource;
@@ -85,7 +85,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 public final class XML extends Static {
@@ -647,7 +647,7 @@ public final class XML extends Static {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller(properties);
         final Object object;
         /*
-         * STAX sources are not handled by javax.xml.bind.helpers.AbstractUnmarshallerImpl implementation.
+         * STAX sources are not handled by jakarta.xml.bind.helpers.AbstractUnmarshallerImpl implementation.
          * We have to handle those cases ourselves. This workaround should be removed if a future JDK version handles
          * those cases.
          */

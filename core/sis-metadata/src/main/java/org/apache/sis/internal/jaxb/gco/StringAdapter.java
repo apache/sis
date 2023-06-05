@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.Locale;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.InternationalString;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.FilterByVersion;
@@ -31,7 +31,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class StringAdapter extends XmlAdapter<GO_CharacterString, String> {

@@ -19,7 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -37,7 +37,7 @@ import static org.apache.sis.internal.util.StandardDateFormat.MILLISECONDS_PER_D
  * Tests the {@link DefaultTemporalDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.4
  */
 public final class DefaultTemporalDatumTest extends TestCase {

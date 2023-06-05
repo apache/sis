@@ -17,9 +17,9 @@
 package org.apache.sis.internal.profile.fra;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 
@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 @XmlType(name = "FRA_LegalConstraints_Type")

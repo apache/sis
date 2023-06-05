@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
-import javax.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlAnyElement;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.Context;
@@ -61,7 +61,7 @@ import org.apache.sis.util.Classes;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see org.apache.sis.internal.jaxb.AdapterReplacement
  *

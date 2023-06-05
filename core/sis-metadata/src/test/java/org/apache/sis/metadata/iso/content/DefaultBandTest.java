@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.iso.content;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.apache.sis.util.Version;
 import org.apache.sis.test.xml.TestCase;
@@ -31,7 +31,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.ISO_NAMESPAC
  * Tests {@link DefaultBand}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   1.1
  */
 public final class DefaultBandTest extends TestCase {

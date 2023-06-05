@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlElementRef;
+import jakarta.xml.bind.annotation.XmlElementRef;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
@@ -42,7 +42,7 @@ import org.apache.sis.internal.jaxb.metadata.replace.ReferenceSystemMetadata;
  * where such tuple is expected.
  *
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-431">SIS-431</a>
  *

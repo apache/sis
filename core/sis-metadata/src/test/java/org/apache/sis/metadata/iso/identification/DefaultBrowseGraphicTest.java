@@ -21,8 +21,8 @@ import java.net.URI;
 import java.io.StringReader;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.transform.stream.StreamSource;
 import org.opengis.metadata.identification.BrowseGraphic;
 import org.apache.sis.util.Version;
@@ -43,7 +43,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class DefaultBrowseGraphicTest extends TestCase {

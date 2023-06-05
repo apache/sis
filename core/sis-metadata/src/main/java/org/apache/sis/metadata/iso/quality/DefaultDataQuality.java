@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.lineage.Lineage;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.quality.Element;
@@ -53,7 +53,7 @@ import org.opengis.metadata.quality.Scope;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "DQ_DataQuality_Type", propOrder = {

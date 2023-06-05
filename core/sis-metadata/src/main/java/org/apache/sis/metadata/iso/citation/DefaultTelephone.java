@@ -19,10 +19,10 @@ package org.apache.sis.metadata.iso.citation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.citation.Telephone;
 import org.opengis.metadata.citation.TelephoneType;
 import org.apache.sis.metadata.iso.ISOMetadata;
@@ -67,7 +67,7 @@ import org.apache.sis.internal.metadata.Dependencies;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see DefaultContact#getPhones()
  *

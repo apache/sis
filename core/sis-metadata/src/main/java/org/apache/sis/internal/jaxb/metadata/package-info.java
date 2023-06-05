@@ -53,7 +53,7 @@
  * @author  Alexis Gaillard (Geomatys)
  * @since   1.3
  *
- * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ * @see jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
  */
@@ -64,9 +64,9 @@
 @XmlAccessorType(XmlAccessType.NONE)
 package org.apache.sis.internal.jaxb.metadata;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
 import org.apache.sis.xml.Namespaces;

@@ -29,7 +29,7 @@ import java.util.Currency;
 import java.util.NoSuchElementException;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.CodeList;
 import org.opengis.metadata.Metadata;               // For javadoc
 import org.apache.sis.util.resources.Errors;
@@ -87,7 +87,7 @@ import static org.apache.sis.internal.metadata.ImplementationHelper.valueIfDefin
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.3
  */
 @XmlTransient
@@ -149,7 +149,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * See <a href="https://issues.apache.org/jira/browse/SIS-81">SIS-81</a>.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.4
      *
      * @see ModifiableMetadata#state()
      *

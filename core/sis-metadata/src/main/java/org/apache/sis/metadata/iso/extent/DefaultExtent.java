@@ -20,9 +20,9 @@ import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.function.BinaryOperator;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.geometry.Envelope;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.VerticalExtent;
@@ -82,7 +82,7 @@ import org.apache.sis.xml.NilReason;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see Extents#getGeographicBoundingBox(Extent)
  * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()

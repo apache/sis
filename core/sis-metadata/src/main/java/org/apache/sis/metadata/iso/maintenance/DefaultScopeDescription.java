@@ -18,9 +18,9 @@ package org.apache.sis.metadata.iso.maintenance;
 
 import java.util.Set;
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
@@ -69,7 +69,7 @@ import org.opengis.feature.type.FeatureType;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MD_ScopeDescription_Type", namespace = Namespaces.MCC) // No need for propOrder since this structure is a union (see javadoc).

@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.storage.gpx;
 
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.internal.storage.xml.GeographicEnvelope;
 
@@ -26,7 +26,7 @@ import org.apache.sis.internal.storage.xml.GeographicEnvelope;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 public final class Bounds extends GeographicEnvelope {

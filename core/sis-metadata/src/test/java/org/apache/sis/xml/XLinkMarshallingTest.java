@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import java.util.Set;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.Identification;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
@@ -39,7 +39,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * Tests the XML marshalling of object having {@code xlink} attribute.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})

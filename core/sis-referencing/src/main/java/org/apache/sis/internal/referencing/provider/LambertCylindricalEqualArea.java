@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.CylindricalProjection;
@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  * The provider for <cite>"Lambert Cylindrical Equal Area"</cite> projection (EPSG:9835).
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
  *

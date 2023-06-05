@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @see <a href="http://geotiff.maptools.org/proj_list/oblique_stereographic.html">GeoTIFF parameters for Oblique Stereographic</a>
  *

@@ -18,7 +18,7 @@ package org.apache.sis.metadata.iso;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.metadata.citation.OnlineResource;
 import org.apache.sis.internal.jaxb.metadata.CI_OnlineResource;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;

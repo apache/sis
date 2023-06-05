@@ -16,10 +16,10 @@
  */
 package org.apache.sis.internal.jaxb.gml;
 
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.xml.datatype.XMLGregorianCalendar;
 import org.opengis.temporal.Instant;
 
@@ -31,7 +31,7 @@ import org.opengis.temporal.Instant;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlTransient

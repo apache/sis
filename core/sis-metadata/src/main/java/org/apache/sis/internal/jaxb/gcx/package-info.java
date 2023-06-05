@@ -22,9 +22,9 @@
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
- * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ * @see jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  *
  * @since 0.3
  */
@@ -35,11 +35,11 @@
 @XmlJavaTypeAdapter(InternationalStringConverter.class)
 package org.apache.sis.internal.jaxb.gcx;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.internal.jaxb.gco.InternationalStringConverter;
 import org.apache.sis.xml.Namespaces;

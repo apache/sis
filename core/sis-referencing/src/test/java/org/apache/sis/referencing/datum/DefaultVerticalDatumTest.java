@@ -18,9 +18,9 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.lang.reflect.Field;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.internal.referencing.VerticalDatumTypes;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -41,7 +41,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultVerticalDatum} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  * @since   0.4
  */
 public final class DefaultVerticalDatumTest extends TestCase {

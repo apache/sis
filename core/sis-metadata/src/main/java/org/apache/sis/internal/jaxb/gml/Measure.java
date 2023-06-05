@@ -22,9 +22,9 @@ import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import javax.measure.Unit;
 import javax.measure.Quantity;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlValue;
-import javax.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlValue;
+import jakarta.xml.bind.annotation.XmlAttribute;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
 import org.apache.sis.internal.util.Constants;
@@ -64,7 +64,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.apache.sis.internal.jaxb.gml.MeasureList
  * @see org.apache.sis.internal.jaxb.gco.UnitAdapter

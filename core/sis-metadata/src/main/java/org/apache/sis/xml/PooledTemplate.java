@@ -18,9 +18,9 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import javax.xml.validation.Schema;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.PropertyException;
+import jakarta.xml.bind.ValidationEventHandler;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -110,8 +110,7 @@ final class PooledTemplate extends Pooled {
      * Should never be invoked on {@code PooledTemplate} instances.
      */
     @Override
-    @SuppressWarnings("rawtypes")
-    public <A extends XmlAdapter> A getAdapter(final Class<A> type) {
+    public <A extends XmlAdapter<?,?>> A getAdapter(final Class<A> type) {
         throw new AssertionError();
     }
 

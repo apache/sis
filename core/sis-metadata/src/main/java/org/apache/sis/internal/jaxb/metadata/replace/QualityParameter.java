@@ -17,10 +17,10 @@
 package org.apache.sis.internal.jaxb.metadata.replace;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -59,7 +59,7 @@ import org.opengis.metadata.quality.ValueStructure;
  * declare {@code ParameterDescriptor<?>} as their return type.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 @SuppressWarnings("rawtypes")   // For the omission of <T> in Parameter<T> - see javadoc.

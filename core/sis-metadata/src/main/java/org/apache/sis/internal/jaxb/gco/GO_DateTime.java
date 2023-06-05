@@ -17,10 +17,10 @@
 package org.apache.sis.internal.jaxb.gco;
 
 import java.util.Date;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConstants;
@@ -49,7 +49,7 @@ import org.apache.sis.internal.xml.XmlUtilities;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see org.apache.sis.internal.jaxb.gml.DateAdapter
  * @see org.apache.sis.internal.jaxb.gml.UniversalTimeAdapter

@@ -19,9 +19,9 @@ package org.apache.sis.internal.jaxb.gco;
 import java.util.UUID;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlSchemaType;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.xml.XLink;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
@@ -107,7 +107,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @param <ValueType>  the adapter subclass.
  * @param <BoundType>  the interface being adapted.

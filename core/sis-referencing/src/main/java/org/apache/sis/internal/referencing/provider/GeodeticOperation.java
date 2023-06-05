@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.OperationMethod;
@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.SingleOperation;
  * variants are specific to Apache SIS and can be fetched only by a call to {@link #redimension(int, int)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.7
  */
 @XmlTransient

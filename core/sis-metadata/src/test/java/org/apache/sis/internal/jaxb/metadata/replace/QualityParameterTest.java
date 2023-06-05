@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.metadata.replace;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.metadata.quality.ValueStructure;
@@ -35,7 +35,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * Tests {@link QualityParameter}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.3
  */
 public final class QualityParameterTest extends TestCase {

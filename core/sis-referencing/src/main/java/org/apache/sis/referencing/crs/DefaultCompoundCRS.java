@@ -22,10 +22,10 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -110,7 +110,7 @@ import org.apache.sis.io.wkt.Convention;
  * SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createCompoundCRS(String)
  *

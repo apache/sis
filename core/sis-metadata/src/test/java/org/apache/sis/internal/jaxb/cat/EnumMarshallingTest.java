@@ -18,7 +18,7 @@ package org.apache.sis.internal.jaxb.cat;
 
 import java.util.List;
 import java.util.Collection;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.identification.TopicCategory;
 import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.xml.Namespaces;
@@ -35,7 +35,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 public final class EnumMarshallingTest extends TestCase {

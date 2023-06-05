@@ -18,7 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.internal.referencing.AxisDirections;
@@ -51,7 +51,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.4
  */
 @XmlTransient

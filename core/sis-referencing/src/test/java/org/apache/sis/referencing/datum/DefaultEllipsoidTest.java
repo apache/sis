@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.datum;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.test.DependsOn;

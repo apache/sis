@@ -22,9 +22,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.nio.charset.Charset;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 import org.apache.sis.internal.jaxb.lan.LocaleAdapter;
 import org.apache.sis.internal.simple.SimpleMetadata;
@@ -39,7 +39,7 @@ import org.apache.sis.xml.Namespaces;
  * So this mock makes easier to test localization aspects without the interference of automatic mechanism.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 @XmlRootElement(name = "MD_Metadata", namespace = Namespaces.MDB)

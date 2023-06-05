@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.gml;
 import java.util.Date;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.xml.XmlUtilities;
 
@@ -41,7 +41,7 @@ import org.apache.sis.internal.xml.XmlUtilities;
  * {@link org.apache.sis.xml.XML#TIMEZONE} property.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see UniversalTimeAdapter
  * @see org.apache.sis.internal.jaxb.gco.GO_DateTime

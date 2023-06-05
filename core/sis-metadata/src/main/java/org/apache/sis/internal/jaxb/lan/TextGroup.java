@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 
 
 /**
@@ -68,7 +68,7 @@ import javax.xml.bind.annotation.XmlElement;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see LocalisedCharacterString
  *

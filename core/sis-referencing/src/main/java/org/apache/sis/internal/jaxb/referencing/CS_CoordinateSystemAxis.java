@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
@@ -28,7 +28,7 @@ import org.apache.sis.internal.jaxb.gco.PropertyType;
  *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.4
  */
 public final class CS_CoordinateSystemAxis extends PropertyType<CS_CoordinateSystemAxis, CoordinateSystemAxis> {

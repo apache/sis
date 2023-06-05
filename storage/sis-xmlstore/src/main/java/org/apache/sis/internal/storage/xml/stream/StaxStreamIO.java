@@ -17,7 +17,7 @@
 package org.apache.sis.internal.storage.xml.stream;
 
 import java.io.IOException;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.util.ArgumentChecks;
@@ -37,7 +37,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 abstract class StaxStreamIO implements AutoCloseable {

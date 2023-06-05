@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.content.PolarizationOrientation;
 import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
@@ -30,7 +30,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-398">SIS-398</a>
  *

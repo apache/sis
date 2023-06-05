@@ -18,9 +18,9 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import javax.measure.quantity.Angle;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
@@ -43,7 +43,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
  * Tests the {@link DefaultPrimeMeridian} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.4
  */
 @DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)

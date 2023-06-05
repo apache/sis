@@ -32,9 +32,9 @@
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.3
+ * @version 1.4
  *
- * @see javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter
+ * @see jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter
  * @see org.opengis.util.CodeList
  *
  * @since 0.3
@@ -58,8 +58,8 @@
 })
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlNs;
-import javax.xml.bind.annotation.XmlNsForm;
-import javax.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlNs;
+import jakarta.xml.bind.annotation.XmlNsForm;
+import jakarta.xml.bind.annotation.XmlSchema;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.internal.xml.LegacyNamespaces;

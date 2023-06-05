@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.gco;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.util.RecordType;
 import org.apache.sis.util.iso.DefaultRecordType;
 
@@ -27,7 +27,7 @@ import org.apache.sis.util.iso.DefaultRecordType;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public class GO_RecordType extends PropertyType<GO_RecordType, RecordType> {

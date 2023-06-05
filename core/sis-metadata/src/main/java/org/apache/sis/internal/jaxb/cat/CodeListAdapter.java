@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.cat;
 
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.internal.jaxb.Context;
@@ -41,7 +41,7 @@ import org.apache.sis.internal.jaxb.FilterByVersion;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @param <ValueType> The subclass implementing this adapter.
  * @param <BoundType> The code list being adapted.

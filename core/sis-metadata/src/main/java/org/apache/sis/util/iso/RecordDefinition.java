@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.Array;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.Type;
 import org.opengis.util.RecordType;
 import org.opengis.util.MemberName;
@@ -47,7 +47,7 @@ import org.apache.sis.internal.util.CollectionsExt;
  * {@link #computeTransientFields(Map)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @XmlTransient

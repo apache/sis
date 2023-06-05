@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.cs;
 
 import java.util.Map;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 
 // Branch-dependent imports
@@ -45,7 +45,7 @@ import org.opengis.referencing.cs.ParametricCS;
  * constants.
  *
  * @author  Johann Sorel (Geomatys)
- * @version 0.7
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.crs.DefaultParametricCRS
  * @see org.apache.sis.referencing.datum.DefaultParametricDatum

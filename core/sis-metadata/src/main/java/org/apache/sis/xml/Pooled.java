@@ -26,11 +26,11 @@ import java.util.TimeZone;
 import java.util.function.UnaryOperator;
 import java.util.logging.Filter;
 import javax.xml.validation.Schema;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.PropertyException;
-import javax.xml.bind.ValidationEventHandler;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.PropertyException;
+import jakarta.xml.bind.ValidationEventHandler;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.ArraysExt;
@@ -434,9 +434,9 @@ abstract class Pooled {
      * Delegates to {@code setAdapter(adapter.getClass(), adapter)} as specified
      * in {@code [Un]Marshaller} javadoc.
      */
-    @SuppressWarnings({"unchecked","rawtypes"})
-    public final void setAdapter(final XmlAdapter adapter) {
-        setAdapter((Class) adapter.getClass(), adapter);
+    @SuppressWarnings("unchecked")
+    public <A extends XmlAdapter<?,?>> void setAdapter(final A adapter) {
+        setAdapter((Class<A>) adapter.getClass(), adapter);
     }
 
     /**
@@ -444,8 +444,7 @@ abstract class Pooled {
      * It saves the initial state if it was not already done, but subclasses will
      * need to complete the work.
      */
-    @SuppressWarnings("rawtypes")
-    public <A extends XmlAdapter> void setAdapter(final Class<A> type, final A adapter) {
+    public <A extends XmlAdapter<?,?>> void setAdapter(final Class<A> type, final A adapter) {
         if (!isPropertySaved(type)) {
             saveProperty(type, getAdapter(type));
         }
@@ -454,8 +453,7 @@ abstract class Pooled {
     /**
      * A method which is common to both {@code Marshaller} and {@code Unmarshaller}.
      */
-    @SuppressWarnings("rawtypes")
-    public abstract <A extends XmlAdapter> A getAdapter(final Class<A> type);
+    public abstract <A extends XmlAdapter<?,?>> A getAdapter(final Class<A> type);
 
     /**
      * Returns the adapters to apply on the root object to marshal, or {@code null} or an empty array if none.

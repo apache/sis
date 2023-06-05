@@ -26,9 +26,9 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.DirectoryIteratorException;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import javax.xml.bind.annotation.XmlSchema;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSchema;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.geoapi.SchemaException;
 import org.apache.sis.internal.xml.LegacyNamespaces;
 

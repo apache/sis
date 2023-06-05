@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -55,7 +55,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Tests the {@link DefaultProjectedCRS} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({

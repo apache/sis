@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.referencing;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.internal.jaxb.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -28,7 +28,7 @@ import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.4
  */
 public final class CD_GeodeticDatum extends PropertyType<CD_GeodeticDatum, GeodeticDatum> {

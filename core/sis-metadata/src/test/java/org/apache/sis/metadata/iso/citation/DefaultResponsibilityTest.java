@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Set;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.citation.Role;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.internal.xml.LegacyNamespaces;
@@ -31,7 +31,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.1
+ * @version 1.4
  * @since   0.5
  */
 public final class DefaultResponsibilityTest extends TestCase {

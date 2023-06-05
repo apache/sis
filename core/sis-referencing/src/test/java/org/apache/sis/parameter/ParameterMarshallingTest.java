@@ -21,7 +21,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.net.URI;
 import java.net.URISyntaxException;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.measure.Unit;
 import org.opengis.test.Validators;
 import org.opengis.parameter.ParameterValue;
@@ -50,7 +50,7 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  * Tests XML (un)marshalling of {@link DefaultParameterValue}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({

@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Individual;
 import org.opengis.metadata.citation.Organisation;
@@ -40,7 +40,7 @@ import org.opengis.metadata.identification.BrowseGraphic;
  *
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @XmlType(name = "CI_Organisation_Type", propOrder = {

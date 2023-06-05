@@ -19,7 +19,7 @@ package org.apache.sis.internal.referencing;
 import java.util.Set;
 import java.util.Collection;
 import java.io.ObjectStreamException;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Length;
 import javax.measure.Unit;
 import org.opengis.util.Record;
@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * Predefined positional accuracy resulting from some coordinate operations.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @see org.opengis.referencing.operation.Transformation#getCoordinateOperationAccuracy()
  *

@@ -17,9 +17,9 @@
 package org.apache.sis.metadata.iso.acquisition;
 
 import java.util.Collection;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.acquisition.AcquisitionInformation;
 import org.opengis.metadata.acquisition.EnvironmentalRecord;
 import org.opengis.metadata.acquisition.Instrument;
@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "MI_AcquisitionInformation_Type", propOrder = {

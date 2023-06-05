@@ -24,9 +24,9 @@ import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import javax.xml.namespace.QName;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Marshaller;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import org.apache.sis.storage.DataStoreException;
@@ -86,7 +86,7 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.8
  */
 public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<Feature> {
@@ -265,7 +265,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * <h4>Hiding namespace</h4>
      * The {@code hideNS} argument, if non-null, gives a namespace to remove in the marshalling result.
      * There is two reasons why we may want to hide a namespace. The most straightforward reason is to
-     * simplify the XML document when the {@linkplain javax.xml.bind.annotation.XmlElement#namespace()
+     * simplify the XML document when the {@linkplain jakarta.xml.bind.annotation.XmlElement#namespace()
      * namespace of elements} to marshal is the {@linkplain XMLStreamWriter#setDefaultNamespace(String)
      * default namespace}. Since some JAXB implementation systematically inserts a prefix no matter if
      * the namespace is the default one or not, we have to manually erase the namespace when it is the
@@ -287,7 +287,7 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * @throws XMLStreamException if the XML stream is closed.
      * @throws JAXBException if an error occurred during marshalling.
      *
-     * @see javax.xml.bind.Marshaller#marshal(Object, XMLStreamWriter)
+     * @see jakarta.xml.bind.Marshaller#marshal(Object, XMLStreamWriter)
      */
     protected final <T> void marshal(final String hideNS, final String name, final Class<T> type, final T object)
             throws XMLStreamException, JAXBException

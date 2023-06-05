@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.DefaultFactories;
@@ -45,7 +45,7 @@ import org.apache.sis.internal.system.DelayedRunnable;
  * <pre class="text">META-INF/services/org.org.apache.sis.internal.jaxb.TypeRegistration</pre>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.xml.MarshallerPool
  *

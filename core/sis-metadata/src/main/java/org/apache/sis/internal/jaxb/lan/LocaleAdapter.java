@@ -17,7 +17,7 @@
 package org.apache.sis.internal.jaxb.lan;
 
 import java.util.Locale;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.internal.jaxb.Context;
 
 
@@ -36,7 +36,7 @@ import org.apache.sis.internal.jaxb.Context;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.4
  *
  * @see LanguageCode
  * @see PT_Locale
@@ -96,7 +96,7 @@ public final class LocaleAdapter extends XmlAdapter<LanguageCode, Locale> {
      * For locales in the newer {@code lan} namespace, see {@link PT_Locale}.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.0
+     * @version 1.4
      * @since   1.0
      */
     public static final class Wrapped extends XmlAdapter<PT_Locale, Locale> {

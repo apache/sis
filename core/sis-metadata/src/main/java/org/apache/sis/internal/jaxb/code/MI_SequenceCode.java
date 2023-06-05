@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.jaxb.code;
 
-import javax.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.acquisition.Sequence;
 import org.apache.sis.internal.jaxb.cat.CodeListAdapter;
 import org.apache.sis.internal.jaxb.cat.CodeListUID;
@@ -29,7 +29,7 @@ import org.apache.sis.xml.Namespaces;
  * See package documentation for more information about the handling of {@code CodeList} in ISO 19115-3.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class MI_SequenceCode extends CodeListAdapter<MI_SequenceCode, Sequence> {

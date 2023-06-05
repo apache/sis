@@ -19,7 +19,7 @@ package org.apache.sis.referencing.crs;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeodeticCRS;
@@ -84,7 +84,7 @@ import static org.apache.sis.internal.util.Constants.CRS84;
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeographicCRS(String)
  *

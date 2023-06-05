@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
@@ -42,7 +42,7 @@ import static org.junit.Assert.*;
  * Tests {@link CC_GeneralOperationParameter} static methods.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  *

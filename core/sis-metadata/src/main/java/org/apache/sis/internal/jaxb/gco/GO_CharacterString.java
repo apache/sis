@@ -18,13 +18,13 @@ package org.apache.sis.internal.jaxb.gco;
 
 import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElements;
-import javax.xml.bind.annotation.XmlAnyElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElements;
+import jakarta.xml.bind.annotation.XmlAnyElement;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.w3c.dom.Element;
 import org.opengis.util.CodeList;
 import org.opengis.util.ControlledVocabulary;
@@ -59,7 +59,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see org.apache.sis.internal.jaxb.lan.PT_FreeText
  *

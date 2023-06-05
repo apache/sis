@@ -35,9 +35,9 @@ import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.util.StreamReaderDelegate;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.internal.jaxb.Context;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Numerics;
@@ -103,7 +103,7 @@ import org.opengis.feature.Feature;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 public abstract class StaxStreamReader extends StaxStreamIO implements XMLStreamConstants, Spliterator<Feature>, Runnable {
@@ -416,7 +416,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * </ul>
      *
      * <h4>Implementation note</h4>
-     * This method duplicates {@link javax.xml.bind.DatatypeConverter#parseDouble(String)} work,
+     * This method duplicates {@link jakarta.xml.bind.DatatypeConverter#parseDouble(String)} work,
      * but avoid synchronization or volatile field cost of {@code DatatypeConverter}.
      *
      * @param  value  the text to parse.
@@ -424,7 +424,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws NumberFormatException if parsing failed.
      *
      * @see #getElementAsDouble()
-     * @see javax.xml.bind.DatatypeConverter#parseDouble(String)
+     * @see jakarta.xml.bind.DatatypeConverter#parseDouble(String)
      */
     @SuppressWarnings("fallthrough")
     protected static double parseDouble(final String value) throws NumberFormatException {
@@ -448,14 +448,14 @@ parse:  switch (value.length()) {
      * as {@code false} and the "1" value as {@code true}.
      *
      * <h4>Implementation note</h4>
-     * This method duplicates {@link javax.xml.bind.DatatypeConverter#parseBoolean(String)} work
+     * This method duplicates {@link jakarta.xml.bind.DatatypeConverter#parseBoolean(String)} work
      * (except for its behavior in case of invalid value), but avoid synchronization or volatile
      * field cost of {@code DatatypeConverter}.
      *
      * @param value  the string value to parse as a boolean.
      * @return true if the boolean is equal to "true" or "1".
      *
-     * @see javax.xml.bind.DatatypeConverter#parseBoolean(String)
+     * @see jakarta.xml.bind.DatatypeConverter#parseBoolean(String)
      */
     protected static boolean parseBoolean(final String value) {
         if (value.length() == 1) {
@@ -480,7 +480,7 @@ parse:  switch (value.length()) {
      * @throws JAXBException if an error occurred during unmarshalling.
      * @throws ClassCastException if the unmarshalling result is not of the expected type.
      *
-     * @see javax.xml.bind.Unmarshaller#unmarshal(XMLStreamReader, Class)
+     * @see jakarta.xml.bind.Unmarshaller#unmarshal(XMLStreamReader, Class)
      */
     protected final <T> T unmarshal(final Class<T> type) throws XMLStreamException, JAXBException {
         Unmarshaller m = unmarshaller;

@@ -36,7 +36,7 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.transform.stax.StAXSource;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.storage.MetadataBuilder;
@@ -64,7 +64,7 @@ import static org.apache.sis.internal.util.TemporalUtilities.toDate;
  * in the <cite>GeoTIFF Profile for Georeferenced Imagery</cite> standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  *
  * @see <a href="https://www.dgiwg.org/dgiwg-standards">DGIWG Standards</a>
  *

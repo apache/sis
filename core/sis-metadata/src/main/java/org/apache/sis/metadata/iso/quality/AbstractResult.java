@@ -17,11 +17,11 @@
 package org.apache.sis.metadata.iso.quality;
 
 import java.time.temporal.Temporal;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.XmlSeeAlso;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlSeeAlso;
+import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.metadata.quality.Result;
 import org.opengis.metadata.quality.CoverageResult;
 import org.opengis.metadata.quality.ConformanceResult;
@@ -49,7 +49,7 @@ import org.opengis.metadata.maintenance.Scope;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Alexis Gaillard (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 @XmlType(name = "AbstractDQ_Result_Type", propOrder = {

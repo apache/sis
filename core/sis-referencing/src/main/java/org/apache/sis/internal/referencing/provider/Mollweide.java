@@ -16,7 +16,7 @@
  */
 package org.apache.sis.internal.referencing.provider;
 
-import javax.xml.bind.annotation.XmlTransient;
+import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Projection;
@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see <a href="https://mathworld.wolfram.com/MollweideProjection.html">Mathworld formulas</a>
  * @see <a href="http://geotiff.maptools.org/proj_list/mollweide.html">GeoTIFF parameters for Mollweide</a>

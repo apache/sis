@@ -19,8 +19,8 @@ package org.apache.sis.internal.jaxb.code;
 import java.util.Locale;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.adapters.XmlAdapter;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.internal.jaxb.Context;
@@ -35,7 +35,7 @@ import org.apache.sis.internal.jaxb.cat.CodeListUID;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.3
  */
 public final class MD_CharacterSetCode extends XmlAdapter<MD_CharacterSetCode, Charset> {

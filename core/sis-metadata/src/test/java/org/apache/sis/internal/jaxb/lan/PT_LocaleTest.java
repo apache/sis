@@ -19,7 +19,7 @@ package org.apache.sis.internal.jaxb.lan;
 import java.util.Map;
 import java.util.Locale;
 import java.nio.charset.Charset;
-import javax.xml.bind.JAXBException;
+import jakarta.xml.bind.JAXBException;
 import org.apache.sis.util.Version;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.xml.TestUsingFile;
@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class PT_LocaleTest extends TestUsingFile {
