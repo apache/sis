@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.internal.referencing.Resources;
 import org.apache.sis.internal.referencing.WKTUtilities;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
@@ -46,7 +46,7 @@ import org.apache.sis.referencing.operation.DefaultOperationMethod;
  * Each subclass should have a singleton instance.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.7
  */
 abstract class CoordinateSystemTransform extends AbstractMathTransform {
@@ -123,7 +123,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         MathTransform tr = complete;
         if (tr == null) {
             tr = context.completeTransform(factory, this);
-            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, factory)) {
+            if (CoordinateOperations.isDefaultInstance(factory)) {
                 // No need to synchronize since DefaultMathTransformFactory returns unique instances.
                 complete = tr;
             }
@@ -139,7 +139,7 @@ abstract class CoordinateSystemTransform extends AbstractMathTransform {
         MathTransform tr = passthrough;
         if (tr == null) {
             tr = factory.createPassThroughTransform(0, completeTransform(factory), 1);
-            if (DefaultFactories.isDefaultInstance(MathTransformFactory.class, factory)) {
+            if (CoordinateOperations.isDefaultInstance(factory)) {
                 // No need to synchronize since DefaultMathTransformFactory returns unique instances.
                 passthrough = tr;
             }

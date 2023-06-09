@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
@@ -79,7 +79,7 @@ import org.apache.sis.util.Utilities;
  * This class is not thread-safe.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   1.0
  */
 @SuppressWarnings({"serial", "CloneableImplementsClone"})         // Not intended to be serialized and nothing to clone.
@@ -131,7 +131,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
         super(targetCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         this.defaultCRS = (defaultCRS != null) ? defaultCRS : targetCRS;
-        this.factory    = (factory != null) ? factory : DefaultFactories.forBuildin(CoordinateOperationFactory.class);
+        this.factory    = (factory != null) ? factory : DefaultCoordinateOperationFactory.provider();
     }
 
     /**

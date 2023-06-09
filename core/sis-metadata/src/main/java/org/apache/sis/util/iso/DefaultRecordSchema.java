@@ -35,7 +35,6 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.simple.SimpleAttributeType;
 import org.apache.sis.internal.converter.SurjectiveConverter;
 import org.apache.sis.internal.util.Strings;
@@ -71,7 +70,7 @@ import org.apache.sis.internal.util.Strings;
  * {@link java.io.Serializable} interface) returning a system-wide static constant for their schema.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  *
  * @see DefaultRecordType
  * @see DefaultRecord
@@ -128,7 +127,7 @@ public class DefaultRecordSchema implements RecordSchema {
     public DefaultRecordSchema(NameFactory nameFactory, final NameSpace parent, final CharSequence schemaName) {
         ArgumentChecks.ensureNonNull("schemaName", schemaName);
         if (nameFactory == null) {
-            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+            nameFactory = DefaultNameFactory.provider();
         }
         this.nameFactory    = nameFactory;
         this.typeFactory    = (nameFactory instanceof DefaultNameFactory) ? null : new TypeNames(nameFactory);

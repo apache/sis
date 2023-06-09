@@ -36,6 +36,7 @@ import org.apache.sis.util.logging.Logging;
  * @version 1.4
  *
  * @see <a href="https://jcp.org/en/jsr/detail?id=330">JSR-330</a>
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
  *
  * @since 0.3
  */
@@ -63,19 +64,6 @@ public final class DefaultFactories extends SystemListener {
         synchronized (DefaultFactories.class) {
             FACTORIES.clear();
         }
-    }
-
-    /**
-     * Returns {@code true} if the default factory of the given type is the given instance.
-     * A {@code null} factory is interpreted as the default one.
-     *
-     * @param  <T>      the interface type.
-     * @param  type     the interface type.
-     * @param  factory  the factory implementation to test, or {@code null}.
-     * @return {@code true} if the given factory implementation is the default instance.
-     */
-    public static synchronized <T> boolean isDefaultInstance(final Class<T> type, final T factory) {
-        return (factory == null) || FACTORIES.get(type) == factory;
     }
 
     /**
@@ -120,46 +108,6 @@ public final class DefaultFactories extends SystemListener {
             FACTORIES.put(type, factory);
         }
         return factory;
-    }
-
-    /**
-     * Returns a factory which is guaranteed to be present. If the factory is not found,
-     * this will be considered a configuration error (corrupted JAR files of incorrect classpath).
-     *
-     * @param  <T>   the interface type.
-     * @param  type  the interface type.
-     * @return a factory implementing the given interface.
-     *
-     * @since 0.6
-     */
-    public static <T> T forBuildin(final Class<T> type) {
-        final T factory = forClass(type);
-        if (factory == null) {
-            throw new ServiceConfigurationError("Missing “META-INF/services/" + type.getName() + "” file. "
-                    + "The JAR file may be corrupted or the classpath incorrect.");
-        }
-        return factory;
-    }
-
-    /**
-     * Returns a factory of the given type, making sure that it is an implementation of the given class.
-     * Use this method only when we know that Apache SIS registers only one implementation of a given service.
-     *
-     * @param  <T>   the interface type.
-     * @param  <I>   the requested implementation class.
-     * @param  type  the interface type.
-     * @param  impl  the requested implementation class.
-     * @return a factory implementing the given interface.
-     *
-     * @since 0.6
-     */
-    public static <T, I extends T> I forBuildin(final Class<T> type, final Class<I> impl) {
-        final T factory = forBuildin(type);
-        if (!impl.isInstance(factory)) {
-            throw new ServiceConfigurationError("The “META-INF/services/" + type.getName() + "” file should contain only “"
-                + impl.getName() + "” in the Apache SIS namespace, but we found “" + factory.getClass().getName() + "”.");
-        }
-        return impl.cast(factory);
     }
 
     /**

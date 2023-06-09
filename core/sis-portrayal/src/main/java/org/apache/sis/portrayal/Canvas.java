@@ -51,7 +51,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
 import org.apache.sis.internal.referencing.DirectPositionView;
 import org.apache.sis.internal.referencing.WraparoundApplicator;
@@ -405,7 +404,7 @@ public class Canvas extends Observable implements Localized {
         ArgumentChecks.ensureNonNull("displayCRS", displayCRS);
         displayBounds = new GeneralEnvelope(displayCRS);
         displayBounds.setToNaN();
-        coordinateOperationFactory = CoordinateOperations.factory();
+        coordinateOperationFactory = DefaultCoordinateOperationFactory.provider();
         operationContext = new CanvasContext();
     }
 

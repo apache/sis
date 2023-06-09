@@ -24,10 +24,10 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.io.wkt.Convention;
 
 import org.opengis.test.Validators;
@@ -65,7 +65,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
      * @see DefaultTransformationTest#createGeocentricTranslation()
      */
     private static DefaultConcatenatedOperation createGeocentricTranslation() throws FactoryException, NoninvertibleTransformException {
-        final MathTransformFactory mtFactory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory mtFactory = DefaultMathTransformFactory.provider();
         final DefaultTransformation op = DefaultTransformationTest.createGeocentricTranslation();
 
         final var before = new DefaultConversion(

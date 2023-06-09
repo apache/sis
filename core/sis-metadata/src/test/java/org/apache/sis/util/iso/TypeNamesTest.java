@@ -24,7 +24,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
@@ -38,7 +37,7 @@ import static org.apache.sis.internal.util.Constants.OGC;
  * Tests are performed through the {@link DefaultNameFactory#toTypeName(Class)} method.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn({
@@ -53,7 +52,7 @@ public final class TypeNamesTest extends TestCase {
     private static void verifyLookup(final String namespace, final String name, final Class<?> valueClass)
             throws ClassNotFoundException
     {
-        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final DefaultNameFactory factory = DefaultNameFactory.provider();
         final TypeName type = factory.toTypeName(valueClass);
         assertNotNull(name, type);
         assertSame   (name, valueClass, type.toJavaType().get());
@@ -91,7 +90,7 @@ public final class TypeNamesTest extends TestCase {
      */
     @Test
     public void testNumbers() {
-        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final DefaultNameFactory factory = DefaultNameFactory.provider();
         assertEquals("Short",  OGC+":Integer", toTypeName(factory, Short .class));
         assertEquals("Long",   OGC+":Integer", toTypeName(factory, Long  .class));
         assertEquals("Float",  OGC+":Real",    toTypeName(factory, Float .class));

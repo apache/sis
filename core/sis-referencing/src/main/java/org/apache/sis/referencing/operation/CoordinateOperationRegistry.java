@@ -257,7 +257,8 @@ class CoordinateOperationRegistry {
         this.registry = registry;
         this.factory  = factory;
         factorySIS    = (factory instanceof DefaultCoordinateOperationFactory)
-                        ? (DefaultCoordinateOperationFactory) factory : CoordinateOperations.factory();
+                        ? (DefaultCoordinateOperationFactory) factory
+                        : DefaultCoordinateOperationFactory.provider();
         Map<CoordinateReferenceSystem, List<String>> authorityCodes = Collections.emptyMap();
         IdentifiedObjectFinder codeFinder = null;
         if (registry != null) {
@@ -1170,7 +1171,7 @@ class CoordinateOperationRegistry {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }
         }
-        final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        final EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.crsFactory, factorySIS.csFactory, factory);
         return toAuthorityDefinition(CoordinateReferenceSystem.class, c.createCompoundCRS(derivedFrom(crs), crs, CommonCRS.Vertical.ELLIPSOIDAL.crs()));
     }
 

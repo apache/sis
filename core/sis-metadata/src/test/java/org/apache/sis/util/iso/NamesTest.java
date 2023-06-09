@@ -22,11 +22,9 @@ import org.opengis.util.GenericName;
 import org.opengis.util.TypeName;
 import org.opengis.util.LocalName;
 import org.opengis.util.InternationalString;
-import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.UnknownNameException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -39,7 +37,7 @@ import static org.junit.Assert.*;
  * Tests the {@link Names} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn(DefaultNameFactoryTest.class)
@@ -77,7 +75,7 @@ public final class NamesTest extends TestCase {
      */
     @Test
     public void testClassFromClassname() {
-        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final DefaultNameFactory factory = DefaultNameFactory.provider();
         final TypeName type = factory.toTypeName(Random.class);
         assertEquals("class:java.util.Random", type.toFullyQualifiedName().toString());
         assertValueClassEquals(Random.class, type);
@@ -97,7 +95,7 @@ public final class NamesTest extends TestCase {
      */
     @Test
     public void testClassFromOGC() {
-        final DefaultNameFactory factory = DefaultFactories.forBuildin(NameFactory.class, DefaultNameFactory.class);
+        final DefaultNameFactory factory = DefaultNameFactory.provider();
         final TypeName type = factory.toTypeName(String.class);
         assertEquals("OGC:CharacterString", type.toFullyQualifiedName().toString());
         assertValueClassEquals(String.class,               type);

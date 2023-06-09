@@ -32,7 +32,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.test.xml.TestCase;
 import org.apache.sis.xml.XML;
 import org.junit.Test;
@@ -90,7 +90,7 @@ public final class CustomMetadataTest extends TestCase {
      */
     @Test
     public void testSubtypeAttributes() throws JAXBException {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final DataIdentification identification = new DataIdentification() {
             @Override public InternationalString getAbstract() {
                 Map<Locale, String> names = new HashMap<>();

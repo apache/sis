@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
+import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.operation.Conversion;
@@ -35,7 +36,6 @@ import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.internal.referencing.provider.Affine;
 import org.apache.sis.internal.referencing.provider.Mercator1SP;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.measure.Units;
 
@@ -59,7 +59,7 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * files found on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.6
  */
 @DependsOn({
@@ -73,11 +73,20 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
      * @return the factory to use for the tests.
      */
     static DefaultMathTransformFactory factory() {
-        final MathTransformFactory factory = DefaultFactories.forClass(MathTransformFactory.class);
+        return DefaultMathTransformFactory.provider();
+    }
+
+    /**
+     * Tests the registration as a service provider.
+     */
+    @Test
+    @org.junit.Ignore("Pending the completion of migration to JDK 9")
+    public void testServiceProvider() {
+        final MathTransformFactory factory = ServiceLoader.load(MathTransformFactory.class).findFirst().orElse(null);
         assertNotNull("No Apache SIS implementation of MathTransformFactory found in “META-INF/services”.", factory);
         assertEquals("Expected the default implementation of MathTransformFactory to be first in “META-INF/services”.",
                 DefaultMathTransformFactory.class, factory.getClass());
-        return (DefaultMathTransformFactory) factory;
+        assertSame(factory(), factory);
     }
 
     /**

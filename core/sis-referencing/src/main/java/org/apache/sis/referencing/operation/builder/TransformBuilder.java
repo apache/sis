@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.builder;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 
 
@@ -32,7 +31,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
  * points cannot be added or modified after {@link #create(MathTransformFactory)} has been invoked.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 public abstract class TransformBuilder {
@@ -60,7 +59,7 @@ public abstract class TransformBuilder {
      */
     static MathTransformFactory nonNull(MathTransformFactory factory) {
         if (factory == null) {
-            factory = DefaultFactories.forBuildin(MathTransformFactory.class, DefaultMathTransformFactory.class);
+            factory = DefaultMathTransformFactory.provider();
         }
         return factory;
     }

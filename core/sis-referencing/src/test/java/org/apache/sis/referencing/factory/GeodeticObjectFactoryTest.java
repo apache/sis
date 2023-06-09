@@ -22,25 +22,21 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.referencing.operation.DefaultConversion;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
@@ -62,7 +58,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * Note that this does not include authority factories tests or GIGS tests.
  *
  * @author  Cédric Briançon (Geomatys)
- * @version 0.7
+ * @version 1.4
  * @since   0.6
  */
 @RunWith(TestRunner.class)
@@ -76,10 +72,10 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      * Creates a new test suite using the singleton factory instance.
      */
     public GeodeticObjectFactoryTest() {
-        super(DefaultFactories.forBuildin(DatumFactory.class),
-              DefaultFactories.forBuildin(CSFactory   .class),
-              DefaultFactories.forBuildin(CRSFactory  .class),
-              DefaultFactories.forBuildin(CoordinateOperationFactory.class));
+        super(GeodeticObjectFactory.provider(),
+              GeodeticObjectFactory.provider(),
+              GeodeticObjectFactory.provider(),
+              DefaultCoordinateOperationFactory.provider());
     }
 
     @Override

@@ -52,7 +52,7 @@ import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.internal.referencing.AxisDirections;
 import org.apache.sis.internal.feature.Resources;
 import org.apache.sis.util.resources.Vocabulary;
@@ -74,7 +74,7 @@ import org.apache.sis.measure.Units;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   1.0
  */
 final class GridExtentCRS {
@@ -251,7 +251,7 @@ final class GridExtentCRS {
             srcDim = Math.min(gridToCRS.getNumCol() - 1, srcDim);
         }
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[tgtDim];
-        final CSFactory csFactory = DefaultFactories.forBuildin(CSFactory.class);
+        final CSFactory csFactory = GeodeticObjectFactory.provider();
         boolean hasVertical = false;
         boolean hasTime     = false;
         boolean hasOther    = false;
@@ -407,7 +407,7 @@ final class GridExtentCRS {
         if (cs == null) {
             return null;
         }
-        return DefaultFactories.forBuildin(CRSFactory.class).createEngineeringCRS(
+        return GeodeticObjectFactory.provider().createEngineeringCRS(
                 properties(cs.getName()), CommonCRS.Engineering.GRID.datum(), cs);
     }
 }

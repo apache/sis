@@ -249,6 +249,27 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private DefaultMathTransformFactory oppositeCachingPolicy;
 
     /**
+     * The default factory instance.
+     */
+    private static final DefaultMathTransformFactory INSTANCE = new DefaultMathTransformFactory();
+
+    /**
+     * Returns the default provider of {@code MathTransform} instances.
+     * This is the factory used by the Apache SIS library when no non-null
+     * {@link MathTransformFactory} has been explicitly specified.
+     * This method can be invoked directly, or indirectly through
+     * {@code ServiceLoader.load(MathTransformFactory.class)}.
+     *
+     * @return the default provider of math transforms.
+     *
+     * @see java.util.ServiceLoader
+     * @since 1.4
+     */
+    public static DefaultMathTransformFactory provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new factory which will discover operation methods with a {@link ServiceLoader}.
      * The {@link OperationMethod} implementations shall be listed in the following file:
      *
@@ -258,6 +279,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * operation methods. By default, only operation methods that implement the {@link MathTransformProvider} interface
      * can be used by the {@code create(…)} methods in this class.
      *
+     * @see #provider()
      * @see #reload()
      */
     public DefaultMathTransformFactory() {

@@ -130,7 +130,7 @@ public final class TestFactorySource {
         if (!isUnavailable) {
             EPSGFactory af = factory;
             if (af == null) {
-                final GeodeticObjectFactory f = new GeodeticObjectFactory();
+                final GeodeticObjectFactory f = GeodeticObjectFactory.provider();
                 final Map<String,Object> properties = new HashMap<>(6);
                 assertNull(properties.put("datumFactory", f));
                 assertNull(properties.put("csFactory", f));

@@ -30,10 +30,10 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.internal.referencing.DeprecatedCode;
 import org.apache.sis.internal.referencing.DeprecatedName;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
@@ -167,7 +167,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  *
  * @param <B>  the builder subclass.
  *
@@ -285,7 +285,7 @@ public abstract class Builder<B extends Builder<B>> {
      */
     private NameFactory factory() {
         if (nameFactory == null) {
-            nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+            nameFactory = DefaultNameFactory.provider();
         }
         return nameFactory;
     }

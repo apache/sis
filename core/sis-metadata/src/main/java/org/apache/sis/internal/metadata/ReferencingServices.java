@@ -278,6 +278,10 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * Returns the default coordinate operation factory.
+     * The default implementation is used when the referencing module is not on the classpath,
+     * in which case this method uses whatever implementation is found by the service loader.
+     * Otherwise (if the referencing module is present), this method will be overridden with
+     * the SIS specific implementation.
      *
      * @return the coordinate operation factory to use.
      */

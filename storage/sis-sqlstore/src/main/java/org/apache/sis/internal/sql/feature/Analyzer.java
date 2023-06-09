@@ -30,10 +30,10 @@ import java.sql.ResultSet;
 import org.opengis.util.NameFactory;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.InternalDataStoreException;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.ResourceInternationalString;
 
 
@@ -45,7 +45,7 @@ import org.apache.sis.util.resources.ResourceInternationalString;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.0
  */
 final class Analyzer {
@@ -135,7 +135,7 @@ final class Analyzer {
         this.customizer    = customizer;
         this.metadata      = metadata;
         this.escape        = metadata.getSearchStringEscape();
-        this.nameFactory   = DefaultFactories.forBuildin(NameFactory.class);
+        this.nameFactory   = DefaultNameFactory.provider();
         spatialInformation = database.isSpatial() ? database.createInfoStatements(connection) : null;
     }
 

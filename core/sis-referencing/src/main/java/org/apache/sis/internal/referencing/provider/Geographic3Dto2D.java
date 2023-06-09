@@ -95,8 +95,7 @@ public final class Geographic3Dto2D extends GeographicRedimension {
      */
     static AbstractProvider getMethod(final ParameterDescriptorGroup desc) {
         try {
-            return (AbstractProvider) org.apache.sis.internal.system.DefaultFactories.forBuildin(MathTransformFactory.class,
-                    org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.class)
+            return (AbstractProvider) org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.provider()
                     .getOperationMethod(desc.getName().getCode());
         } catch (FactoryException e) {
             throw new org.apache.sis.util.collection.BackingStoreException(e);

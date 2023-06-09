@@ -19,10 +19,9 @@ package org.apache.sis.storage.geotiff;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.test.TestCase;
 import org.junit.Test;
 
@@ -59,8 +58,7 @@ public final class GeoCodesTest extends TestCase {
      * Returns the parameters for the operation method of the given name.
      */
     private static ParameterDescriptorGroup parameters(final String method) throws FactoryException {
-        final CoordinateOperationFactory factory = DefaultFactories.forBuildin(CoordinateOperationFactory.class);
-        return factory.getOperationMethod(method).getParameters();
+        return DefaultCoordinateOperationFactory.provider().getOperationMethod(method).getParameters();
     }
 
     /**

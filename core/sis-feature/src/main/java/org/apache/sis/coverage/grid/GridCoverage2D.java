@@ -43,7 +43,7 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.internal.coverage.j2d.ImageUtilities;
 import org.apache.sis.internal.feature.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
@@ -92,7 +92,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.1
  */
 public class GridCoverage2D extends GridCoverage {
@@ -400,7 +400,7 @@ public class GridCoverage2D extends GridCoverage {
                 names = ArraysExt.EMPTY_SHORT;
             }
             final SampleDimension[] sd = new SampleDimension[numBands];
-            final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+            final NameFactory factory = DefaultNameFactory.provider();
             for (int i=0; i<numBands; i++) {
                 final InternationalString name;
                 final short k;

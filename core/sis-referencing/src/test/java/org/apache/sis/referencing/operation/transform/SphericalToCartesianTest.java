@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.internal.system.DefaultFactories;
 
 import static java.lang.StrictMath.*;
 
@@ -78,7 +77,7 @@ public final class SphericalToCartesianTest extends TransformTestCase {
      * Returns the factory to use for testing purpose.
      */
     static MathTransformFactory factory() {
-        return DefaultFactories.forBuildin(MathTransformFactory.class);
+        return DefaultMathTransformFactory.provider();
     }
 
     /**

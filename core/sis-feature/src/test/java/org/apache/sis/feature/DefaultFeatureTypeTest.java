@@ -22,7 +22,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -41,7 +41,7 @@ import org.opengis.feature.AttributeType;
  * Tests {@link DefaultFeatureType}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn(DefaultAttributeTypeTest.class)
@@ -323,7 +323,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testNameCollision")
     public void testQualifiedNames() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final DefaultAttributeType<String> city = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "ns1", "name")),
                 String.class, 1, 1, null);
@@ -373,7 +373,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testQualifiedNames")
     public void testQualifiedAndUnqualifiedNames() {
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final DefaultAttributeType<String> a1 = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "sis", "identifier")),
                 String.class, 1, 1, null);

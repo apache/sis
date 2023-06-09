@@ -30,7 +30,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.internal.storage.io.ChannelDataInput;
 import org.apache.sis.internal.geotiff.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.8
  */
 final class Reader extends GeoTIFF {
@@ -143,7 +143,7 @@ final class Reader extends GeoTIFF {
         this.input       = input;
         this.origin      = input.getStreamPosition();
         this.doneIFD     = new HashSet<>();
-        this.nameFactory = DefaultFactories.forBuildin(NameFactory.class);
+        this.nameFactory = DefaultNameFactory.provider();
         /*
          * A TIFF file begins with either "II" (0x4949) or "MM" (0x4D4D) characters.
          * Those characters identify the byte order. Note that we do not need to care

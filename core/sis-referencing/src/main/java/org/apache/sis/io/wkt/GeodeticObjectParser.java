@@ -2355,7 +2355,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (opFactory instanceof DefaultCoordinateOperationFactory) {
             return (DefaultCoordinateOperationFactory) opFactory;
         } else {
-            return CoordinateOperations.factory();
+            return DefaultCoordinateOperationFactory.provider();
         }
     }
 }

@@ -47,8 +47,8 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.internal.storage.URIDataStore;
 import org.apache.sis.internal.storage.folder.ConcurrentCloser;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
+import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.setup.OptionKey;
 
 
@@ -211,7 +211,7 @@ public class LandsatStore extends DataStore implements Aggregate {
             throw new DataStoreClosedException(getLocale(), LandsatStoreProvider.NAME, StandardOpenOption.READ);
         }
         final String      name    = getDisplayName();
-        final NameFactory factory = DefaultFactories.forBuildin(NameFactory.class);
+        final NameFactory factory = DefaultNameFactory.provider();
         final NameSpace   scope   = (name != null) ? factory.createNameSpace(factory.createLocalName(null, name), null) : null;
         final Band[] resources;
         int count = 0;

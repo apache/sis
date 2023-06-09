@@ -19,10 +19,8 @@ package org.apache.sis.referencing.operation.transform;
 import org.opengis.test.CalculationType;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.datum.HardCodedDatum;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -41,7 +39,7 @@ import static java.lang.StrictMath.toRadians;
  * not overridden.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  * @since   0.8
  */
 @DependsOn(MolodenskyTransformTest.class)
@@ -88,7 +86,7 @@ public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase
      */
     private static MathTransform create() throws FactoryException {
         final MathTransform tr = MolodenskyTransform.createGeodeticTransformation(
-                        DefaultFactories.forBuildin(MathTransformFactory.class),
+                        DefaultMathTransformFactory.provider(),
                         HardCodedDatum.WGS84 .getEllipsoid(), false,
                         HardCodedDatum.SPHERE.getEllipsoid(), false, 0, 0, 0, true);
         int n = 0;

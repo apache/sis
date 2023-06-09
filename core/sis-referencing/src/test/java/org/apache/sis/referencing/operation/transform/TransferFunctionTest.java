@@ -22,7 +22,6 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -37,7 +36,7 @@ import static org.opengis.test.Assert.assertMatrixEquals;
  * Tests {@link TransferFunction}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.5
  */
 @DependsOn(ExponentialTransform1DTest.class)
@@ -156,7 +155,7 @@ public final class TransferFunctionTest extends TestCase {
      */
     @Test
     public void testCreateTransform() throws FactoryException {
-        final MathTransformFactory factory = DefaultFactories.forBuildin(MathTransformFactory.class);
+        final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         final TransferFunction f = new TransferFunction();
         f.setScale(0.15);
         f.setOffset(-2);

@@ -39,8 +39,8 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.internal.metadata.sql.Initializer;
 import org.apache.sis.internal.referencing.DeferredCoordinateOperation;
+import org.apache.sis.internal.referencing.ReferencingFactoryContainer;
 import org.apache.sis.internal.referencing.Resources;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.Constants;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
@@ -75,7 +75,7 @@ import org.apache.sis.util.Localized;
  * subclass.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.8
+ * @version 1.4
  *
  * @see EPSGDataAccess
  * @see SQLTranslator
@@ -270,22 +270,15 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
         } catch (Exception e) {
             throw new UnavailableFactoryException(canNotUse(e), e);
         }
+        final var c = new ReferencingFactoryContainer(properties);
         dataSource   = ds;
-        nameFactory  = factory(NameFactory.class,                "nameFactory",  properties);
-        datumFactory = factory(DatumFactory.class,               "datumFactory", properties);
-        csFactory    = factory(CSFactory.class,                  "csFactory",    properties);
-        crsFactory   = factory(CRSFactory.class,                 "crsFactory",   properties);
-        copFactory   = factory(CoordinateOperationFactory.class, "copFactory",   properties);
-        mtFactory    = factory(MathTransformFactory.class,       "mtFactory",    properties);
+        nameFactory  = c.getNameFactory();
+        datumFactory = c.getDatumFactory();
+        csFactory    = c.getCSFactory();
+        crsFactory   = c.getCRSFactory();
+        copFactory   = c.getCoordinateOperationFactory();
+        mtFactory    = c.getMathTransformFactory();
         super.setTimeout(10, TimeUnit.SECONDS);
-    }
-
-    /**
-     * Returns the factory for the given key if it exists, or the default factory instance otherwise.
-     */
-    private static <F> F factory(final Class<F> type, final String key, final Map<String,?> properties) {
-        final F factory = type.cast(properties.get(key));
-        return (factory != null) ? factory : DefaultFactories.forBuildin(type);
     }
 
     /**
@@ -312,6 +305,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * @return the {@code "EPSG"} string in a singleton map.
      */
     @Override
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Set<String> getCodeSpaces() {
         return CODESPACES;
     }

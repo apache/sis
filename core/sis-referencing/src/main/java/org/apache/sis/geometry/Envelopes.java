@@ -46,6 +46,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.metadata.ReferencingServices;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.DirectPositionView;
@@ -354,7 +355,7 @@ public final class Envelopes extends Static {
                     //       See https://issues.apache.org/jira/browse/SIS-442
                     final CoordinateOperation operation;
                     try {
-                        operation = CoordinateOperations.factory().createOperation(sourceCRS, targetCRS);
+                        operation = DefaultCoordinateOperationFactory.provider().createOperation(sourceCRS, targetCRS);
                     } catch (FactoryException exception) {
                         throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), exception);
                     }
@@ -632,7 +633,7 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                  */
                 final MathTransform mt;
                 try {
-                    mt = CoordinateOperations.factory().createOperation(crs, sourceCRS).getMathTransform();
+                    mt = DefaultCoordinateOperationFactory.provider().createOperation(crs, sourceCRS).getMathTransform();
                 } catch (FactoryException e) {
                     throw new TransformException(Errors.format(Errors.Keys.CanNotTransformEnvelope), e);
                 }

@@ -744,7 +744,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         if (!(interpolationCS instanceof EllipsoidalCS)) {
             final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
             if (!equalsIgnoreMetadata(interpolationCS, cs)) {
-                final GeographicCRS stepCRS = factorySIS.getCRSFactory()
+                final GeographicCRS stepCRS = factorySIS.crsFactory
                         .createGeographicCRS(derivedFrom(sourceCRS), sourceCRS.getDatum(), cs);
                 step1 = createOperation(sourceCRS, toAuthorityDefinition(GeographicCRS.class, stepCRS));
                 interpolationCRS = step1.getTargetCRS();
@@ -775,13 +775,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             heightCS  = heightCRS.getCoordinateSystem();
             isEllipsoidalHeight = equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis);
             if (!isEllipsoidalHeight) {
-                heightCS = toAuthorityDefinition(VerticalCS.class, factorySIS.getCSFactory()
+                heightCS = toAuthorityDefinition(VerticalCS.class, factorySIS.csFactory
                         .createVerticalCS(derivedFrom(heightCS), expectedAxis));
             }
         }
         if (!isEllipsoidalHeight) {                     // `false` if we need to change datum, unit or axis direction.
-            heightCRS = toAuthorityDefinition(VerticalCRS.class, factorySIS.getCRSFactory()
-                    .createVerticalCRS(derivedFrom(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS));
+            heightCRS = toAuthorityDefinition(VerticalCRS.class,
+                    factorySIS.crsFactory.createVerticalCRS(derivedFrom(heightCRS), CommonCRS.Vertical.ELLIPSOIDAL.datum(), heightCS));
         }
         if (heightCRS != targetCRS) {
             step3     = createOperation(heightCRS, targetCRS);  // May need interpolationCRS for performing datum change.
@@ -956,7 +956,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             if (stepComponents.length == 1) {
                 stepSourceCRS = stepComponents[0];    // Slight optimization of the next block (in the `else` case).
             } else {
-                CompoundCRS crs = factorySIS.getCRSFactory().createCompoundCRS(derivedFrom(sourceCRS), stepComponents);
+                CompoundCRS crs = factorySIS.crsFactory.createCompoundCRS(derivedFrom(sourceCRS), stepComponents);
                 stepSourceCRS = toAuthorityDefinition(CoordinateReferenceSystem.class, crs);
             }
             operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, select);
@@ -1074,8 +1074,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     private CoordinateReferenceSystem createCompoundCRS(final CoordinateReferenceSystem template,
             final CoordinateReferenceSystem[] components) throws FactoryException
     {
-        EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(
-                factorySIS.getCRSFactory(), factorySIS.getCSFactory(), factory);
+        EllipsoidalHeightCombiner c = new EllipsoidalHeightCombiner(factorySIS.crsFactory, factorySIS.csFactory, factory);
         CoordinateReferenceSystem crs = c.createCompoundCRS(derivedFrom(template), components);
         return toAuthorityDefinition(CoordinateReferenceSystem.class, crs);
     }
