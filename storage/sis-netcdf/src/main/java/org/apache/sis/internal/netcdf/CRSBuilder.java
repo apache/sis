@@ -52,7 +52,7 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.internal.referencing.provider.Equirectangular;
-import org.apache.sis.internal.util.TemporalUtilities;
+import org.apache.sis.internal.metadata.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.resources.Errors;
