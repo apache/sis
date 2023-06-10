@@ -29,8 +29,8 @@ import java.lang.ref.WeakReference;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.system.SystemListener;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DelayedExecutor;
 import org.apache.sis.internal.system.DelayedRunnable;
 
@@ -163,7 +163,7 @@ public abstract class TypeRegistration {
     private static ServiceLoader<TypeRegistration> services() {
         ServiceLoader<TypeRegistration> s = services;
         if (s == null) {
-            services = s = DefaultFactories.createServiceLoader(TypeRegistration.class);
+            services = s = ServiceLoader.load(TypeRegistration.class, Reflect.getContextClassLoader());
             DelayedExecutor.schedule(new DelayedRunnable(1, TimeUnit.MINUTES) {
                 @Override public void run() {services = null;}
             });

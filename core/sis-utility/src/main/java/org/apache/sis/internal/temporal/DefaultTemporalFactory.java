@@ -32,12 +32,17 @@ import org.apache.sis.util.resources.Errors;
  * GeoAPI temporal interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 public final class DefaultTemporalFactory implements TemporalFactory {
     /** The unique instance of this factory. */
-    public static final TemporalFactory INSTANCE = new DefaultTemporalFactory();
+    private static final TemporalFactory INSTANCE = new DefaultTemporalFactory();
+
+    /** {@return the unique instance of this factory}. */
+    public static TemporalFactory provider() {
+        return INSTANCE;
+    }
 
     /** Creates the singleton instance. */
     private DefaultTemporalFactory() {

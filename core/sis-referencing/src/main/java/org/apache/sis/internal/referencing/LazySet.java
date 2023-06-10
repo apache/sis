@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 import java.util.NoSuchElementException;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.util.SetOfUnknownSize;
 import org.apache.sis.internal.util.UnmodifiableArrayList;
 
@@ -151,7 +151,7 @@ public class LazySet<E> extends SetOfUnknownSize<E> {
      */
     private boolean canPullMore() {
         if (sourceIterator == null && cachedElements == null) {
-            sourceIterator = DefaultFactories.createServiceLoader(service).iterator();
+            sourceIterator = ServiceLoader.load(service, Reflect.getContextClassLoader()).iterator();
             if (createCache()) {
                 return true;
             }

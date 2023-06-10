@@ -29,7 +29,6 @@ import java.io.BufferedReader;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.internal.metadata.sql.ScriptRunner;
 import org.apache.sis.internal.metadata.sql.SQLUtilities;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.util.StandardDateFormat;
 import org.apache.sis.internal.system.Fallback;
 import org.apache.sis.util.Exceptions;
@@ -47,7 +46,7 @@ import static org.apache.sis.internal.util.Constants.EPSG;
  * in the test directory for more information about how the scripts are formatted.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.7
  */
 final class EPSGInstaller extends ScriptRunner {
@@ -274,7 +273,7 @@ final class EPSGInstaller extends ScriptRunner {
      */
     private static InstallationResources lookupProvider(final Locale locale) throws IOException {
         InstallationResources fallback = null;
-        for (final InstallationResources provider : DefaultFactories.createServiceLoader(InstallationResources.class)) {
+        for (final InstallationResources provider : InstallationResources.load()) {
             if (provider.getAuthorities().contains(EPSG)) {
                 if (!provider.getClass().isAnnotationPresent(Fallback.class)) {
                     return provider;

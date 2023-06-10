@@ -19,13 +19,14 @@ package org.apache.sis.internal.metadata.sql;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.concurrent.Callable;
-import java.io.IOException;
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.io.IOException;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -38,10 +39,10 @@ import javax.naming.event.NamingExceptionEvent;
 import javax.naming.event.ObjectChangeListener;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.internal.system.Configuration;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.DataDirectory;
 import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.system.Shutdown;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.Logging;
 
@@ -109,6 +110,15 @@ public abstract class Initializer {
      * For subclasses only.
      */
     protected Initializer() {
+    }
+
+    /**
+     * Returns initializers found on the class path.
+     *
+     * @return initializers found on the class path.
+     */
+    public static ServiceLoader<Initializer> load() {
+        return ServiceLoader.load(Initializer.class, Reflect.getContextClassLoader());
     }
 
     /**
@@ -191,7 +201,7 @@ public abstract class Initializer {
                  */
                 Logging.recoverableException(SystemListener.LOGGER, Listener.class, "objectChanged", e);
             }
-            for (Initializer init : DefaultFactories.createServiceLoader(Initializer.class)) {
+            for (Initializer init : load()) {
                 init.dataSourceChanged();
             }
         }
@@ -374,7 +384,7 @@ public abstract class Initializer {
      * @since 0.8
      */
     private static DataSource embedded() {
-        for (InstallationResources res : DefaultFactories.createServiceLoader(InstallationResources.class)) {
+        for (InstallationResources res : InstallationResources.load()) {
             if (res.getAuthorities().contains(EMBEDDED)) try {
                 final String[] names = res.getResourceNames(EMBEDDED);
                 for (int i=0; i<names.length; i++) {

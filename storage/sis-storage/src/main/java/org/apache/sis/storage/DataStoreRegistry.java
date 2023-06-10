@@ -21,9 +21,9 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.Iterator;
 import java.util.ServiceLoader;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.storage.Resources;
 import org.apache.sis.internal.storage.StoreMetadata;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -43,7 +43,7 @@ import org.apache.sis.util.ArraysExt;
  * on the part of the caller.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.4
  * @since   0.4
  */
 final class DataStoreRegistry {
@@ -60,7 +60,7 @@ final class DataStoreRegistry {
      * provided that it can access at least the Apache SIS stores.
      */
     public DataStoreRegistry() {
-        loader = DefaultFactories.createServiceLoader(DataStoreProvider.class);
+        this(Reflect.getContextClassLoader());
     }
 
     /**

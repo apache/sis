@@ -20,7 +20,7 @@
  * the temporal GeoAPI interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   1.2
  */
 package org.apache.sis.internal.temporal;

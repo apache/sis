@@ -31,7 +31,6 @@ import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.DefaultSpatialTemporalExtent;
-import org.apache.sis.internal.system.DefaultFactories;
 import org.apache.sis.internal.system.OptionalDependency;
 import org.apache.sis.internal.system.Modules;
 
@@ -45,7 +44,7 @@ import org.apache.sis.internal.system.Modules;
  * <cite>"referencing by coordinates"</cite> but needed by metadata.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.4
  * @since   0.3
  */
 public class ReferencingServices extends OptionalDependency {
@@ -278,20 +277,11 @@ public class ReferencingServices extends OptionalDependency {
 
     /**
      * Returns the default coordinate operation factory.
-     * The default implementation is used when the referencing module is not on the classpath,
-     * in which case this method uses whatever implementation is found by the service loader.
-     * Otherwise (if the referencing module is present), this method will be overridden with
-     * the SIS specific implementation.
      *
      * @return the coordinate operation factory to use.
      */
     public CoordinateOperationFactory getCoordinateOperationFactory() {
-        final CoordinateOperationFactory factory = DefaultFactories.forClass(CoordinateOperationFactory.class);
-        if (factory != null) {
-            return factory;
-        } else {
-            throw moduleNotFound();
-        }
+        throw moduleNotFound();
     }
 
     /**

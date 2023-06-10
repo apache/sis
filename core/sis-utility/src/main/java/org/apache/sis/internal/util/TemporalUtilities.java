@@ -17,12 +17,14 @@
 package org.apache.sis.internal.util;
 
 import java.util.Date;
+import java.util.ServiceLoader;
 import org.opengis.temporal.Instant;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.TemporalFactory;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.util.Static;
-import org.apache.sis.internal.system.DefaultFactories;
+import org.apache.sis.internal.system.Modules;
+import org.apache.sis.internal.system.Reflect;
+import org.apache.sis.internal.system.SystemListener;
 import org.apache.sis.internal.temporal.DefaultTemporalFactory;
 
 
@@ -32,28 +34,47 @@ import org.apache.sis.internal.temporal.DefaultTemporalFactory;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.2
+ * @version 1.4
  * @since   0.3
  */
-public final class TemporalUtilities extends Static {
+public final class TemporalUtilities extends SystemListener {
     /**
-     * Do not allow instantiation of this class.
+     * The default factory to use for implementations.
      */
-    private TemporalUtilities() {
+    private static volatile TemporalFactory implementation;
+
+    static {
+        SystemListener.add(new TemporalUtilities());
     }
 
     /**
-     * Returns a temporal factory if available.
+     * For the singleton system listener only.
+     */
+    private TemporalUtilities() {
+        super(Modules.METADATA);
+    }
+
+    /**
+     * Discards the cached factory when the classpath has changed.
+     */
+    @Override
+    protected void classpathChanged() {
+        implementation = null;
+    }
+
+    /**
+     * Returns a temporal factory, or a default implementation if none.
      *
      * @return the temporal factory.
-     * @throws UnsupportedOperationException if the temporal factory is not available on the classpath.
      */
-    public static TemporalFactory getTemporalFactory() throws UnsupportedOperationException {
-        final TemporalFactory factory = DefaultFactories.forClass(TemporalFactory.class);
-        if (factory != null) {
-            return factory;
+    public static TemporalFactory getTemporalFactory() {
+        TemporalFactory factory = implementation;
+        if (factory == null) {
+            factory = ServiceLoader.load(TemporalFactory.class, Reflect.getContextClassLoader())
+                    .findFirst().orElseGet(DefaultTemporalFactory::provider);
+            implementation = factory;
         }
-        return DefaultTemporalFactory.INSTANCE;
+        return factory;
     }
 
     /**
