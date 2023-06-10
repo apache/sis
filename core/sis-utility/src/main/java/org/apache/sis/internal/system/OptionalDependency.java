@@ -16,6 +16,7 @@
  */
 package org.apache.sis.internal.system;
 
+import java.util.ServiceLoader;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.apache.sis.util.logging.Logging;
@@ -29,7 +30,7 @@ import org.apache.sis.util.resources.Messages;
  * services of the {@code "sis-referencing"} module if the latter is present on the classpath.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.4
  * @since   0.6
  */
 public abstract class OptionalDependency extends SystemListener {
@@ -53,50 +54,27 @@ public abstract class OptionalDependency extends SystemListener {
     }
 
     /**
-     * Invoked when the classpath is likely to have changed.
-     * Subclasses must override like below:
-     *
-     * {@snippet lang="java" :
-     *     @Override
-     *     protected final void classpathChanged() {
-     *         synchronized (MyServices.class) {
-     *             super.classpathChanged();
-     *             instance = null;
-     *         }
-     *     }
-     * }
-     */
-    @Override
-    protected void classpathChanged() {
-        SystemListener.remove(this);
-    }
-
-    /**
      * Returns the optional dependency, or {@code null} if not found.
      * This is a helper method for implementation of {@code getInstance()} static method in subclasses.
+     * The service loader needs to be created by the caller because of Java module encapsulation rules.
      *
-     * @param  <T>             compile-time type of the {@code type} argument.
-     * @param  type            the subclass type.
-     * @param  module          same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
-     * @param  dependency      same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
-     * @param  implementation  the fully-qualified name of the class to instantiate by reflection.
+     * @param  <T>         compile-time type of the {@code type} argument.
+     * @param  type        the service type, used only if a warning needs to be logged.
+     * @param  loader      the service loader created in the module that needs the service.
+     * @param  dependency  same argument value than the one given to the {@linkplain #OptionalDependency constructor}.
      * @return an instance of the {@code implementation} class, or {@code null} if not found.
      */
     protected static <T extends OptionalDependency> T getInstance(final Class<T> type,
-            final String module, final String dependency, final String implementation)
+                                final ServiceLoader<T> loader, final String dependency)
     {
-        try {
-            return type.cast(Class.forName(implementation).newInstance());
-        } catch (ClassNotFoundException exception) {
-            final LogRecord record = Messages.getResources(null).getLogRecord(Level.CONFIG,
-                    Messages.Keys.OptionalModuleNotFound_1, dependency);
-            record.setLoggerName(module);
+        final T first = loader.findFirst().orElse(null);
+        if (first == null) {
+            LogRecord record = Messages.getResources(null).getLogRecord(Level.CONFIG,
+                                Messages.Keys.OptionalModuleNotFound_1, dependency);
+            record.setLoggerName(type.getModule().getName());
             Logging.completeAndLog(null, type, "getInstance", record);
-            return null;
-        } catch (ReflectiveOperationException exception) {
-            // Should never happen if we didn't broke our helper class.
-            throw new AssertionError(exception);
         }
+        return first;
     }
 
     /**
