@@ -18,8 +18,6 @@ package org.apache.sis.storage;
 
 import java.util.Collection;
 import org.apache.sis.util.Static;
-import org.apache.sis.internal.system.Modules;
-import org.apache.sis.internal.system.SystemListener;
 
 
 /**
@@ -29,33 +27,10 @@ import org.apache.sis.internal.system.SystemListener;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class DataStores extends Static {
-    /**
-     * The registry to use for searching for {@link DataStoreProvider} implementations.
-     *
-     * <h4>Class loader</h4>
-     * In current implementation, this registry is instantiated when first needed using the
-     * {@linkplain Thread#getContextClassLoader() context class loader}. This means that the set of
-     * available formats may depend on the first thread that invoked a {@code DataStores} method.
-     */
-    private static volatile DataStoreRegistry registry;
-
-    /*
-     * Forces a reload of all providers when the classpath changes. Note that invoking
-     * ServiceLoader.reload() is not sufficient because the ClassLoader may also change
-     * in OSGi context.
-     */
-    static {
-        SystemListener.add(new SystemListener(Modules.STORAGE) {
-            @Override protected void classpathChanged() {
-                registry = null;
-            }
-        });
-    }
-
     /**
      * Do not allow instantiation of this class.
      */
@@ -63,31 +38,16 @@ public final class DataStores extends Static {
     }
 
     /**
-     * Returns the registry, created when first needed.
-     */
-    private static DataStoreRegistry registry() {
-        DataStoreRegistry r = registry;
-        if (r == null) {
-            synchronized (DataStores.class) {
-                r = registry;
-                if (r == null) {
-                    registry = r = new DataStoreRegistry();
-                }
-            }
-        }
-        return r;
-    }
-
-    /**
-     * Returns the set of data store providers available at this method invocation time.
-     * More providers may be added later in a running JVM if new modules are added on the classpath.
+     * Returns the set of available data store providers.
+     * The returned collection is live: its content may change
+     * if new modules are added on the classpath at run-time.
      *
      * @return descriptions of available data stores.
      *
      * @since 0.8
      */
     public static Collection<DataStoreProvider> providers() {
-        return registry().providers();
+        return DataStoreRegistry.INSTANCE;
     }
 
     /**
@@ -98,7 +58,7 @@ public final class DataStores extends Static {
      * @throws DataStoreException if an error occurred while opening the storage.
      */
     public static String probeContentType(final Object storage) throws DataStoreException {
-        return registry().probeContentType(storage);
+        return DataStoreRegistry.INSTANCE.probeContentType(storage);
     }
 
     /**
@@ -121,6 +81,6 @@ public final class DataStores extends Static {
      * @throws DataStoreException if an error occurred while opening the storage.
      */
     public static DataStore open(final Object storage) throws UnsupportedStorageException, DataStoreException {
-        return registry().open(storage);
+        return DataStoreRegistry.INSTANCE.open(storage);
     }
 }

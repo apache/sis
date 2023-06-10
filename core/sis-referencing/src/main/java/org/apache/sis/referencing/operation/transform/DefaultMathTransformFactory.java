@@ -57,7 +57,6 @@ import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.internal.util.URLs;
 import org.apache.sis.internal.util.Strings;
 import org.apache.sis.internal.util.Constants;
-import org.apache.sis.internal.referencing.LazySet;
 import org.apache.sis.internal.referencing.Formulas;
 import org.apache.sis.internal.referencing.CoordinateOperations;
 import org.apache.sis.internal.referencing.ReferencingUtilities;
@@ -67,6 +66,7 @@ import org.apache.sis.internal.referencing.provider.VerticalOffset;
 import org.apache.sis.internal.referencing.provider.GeographicToGeocentric;
 import org.apache.sis.internal.referencing.provider.GeocentricToGeographic;
 import org.apache.sis.internal.referencing.Resources;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
@@ -282,25 +282,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #reload()
      */
     public DefaultMathTransformFactory() {
-        /*
-         * WORKAROUND for a JDK bug: ServiceLoader does not support usage of two Iterator instances
-         * before the first iteration is finished. Steps to reproduce:
-         *
-         *     ServiceLoader<?> loader = ServiceLoader.load(OperationMethod.class);
-         *
-         *     Iterator<?> it1 = loader.iterator();
-         *     assertTrue   ( it1.hasNext() );
-         *     assertNotNull( it1.next())   );
-         *
-         *     Iterator<?> it2 = loader.iterator();
-         *     assertTrue   ( it1.hasNext()) );
-         *     assertTrue   ( it2.hasNext()) );
-         *     assertNotNull( it1.next())    );
-         *     assertNotNull( it2.next())    );     // ConcurrentModificationException here !!!
-         *
-         * Wrapping the ServiceLoader in a LazySet avoid this issue.
-         */
-        this(new LazySet<OperationMethod>(OperationMethod.class));
+        this(ServiceLoader.load(OperationMethod.class, Reflect.getContextClassLoader()));
     }
 
     /**
@@ -1771,9 +1753,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         synchronized (methods) {
             methodsByName.clear();
             final Iterable<? extends OperationMethod> m = methods;
-            if (m instanceof LazySet<?>) { // Workaround for JDK bug. See DefaultMathTransformFactory() constructor.
-                ((LazySet<? extends OperationMethod>) m).reload();
-            }
             if (m instanceof ServiceLoader<?>) {
                 ((ServiceLoader<?>) m).reload();
             }

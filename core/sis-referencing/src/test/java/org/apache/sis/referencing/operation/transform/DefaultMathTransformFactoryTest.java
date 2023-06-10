@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
@@ -87,6 +88,26 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         assertEquals("Expected the default implementation of MathTransformFactory to be first in “META-INF/services”.",
                 DefaultMathTransformFactory.class, factory.getClass());
         assertSame(factory(), factory);
+    }
+
+    /**
+     * Tests the correction for a Java 8 bug. In Java 8, {@link ServiceLoader} didn't supported
+     * the usage of two {@link Iterator} instances before the first iteration is finished.
+     * This problem has been fixed with Java Platform Module System (JPMS) implementation.
+     */
+    @Test
+    public void testServiceLoaderIterator() {
+        ServiceLoader<?> loader = ServiceLoader.load(OperationMethod.class);
+
+        Iterator<?> it1 = loader.iterator();
+        assertTrue   (it1.hasNext());
+        assertNotNull(it1.next());
+
+        Iterator<?> it2 = loader.iterator();
+        assertTrue   (it1.hasNext());
+        assertTrue   (it2.hasNext());
+        assertNotNull(it1.next());
+        assertNotNull(it2.next());      // ConcurrentModificationException was used to be thownn here.
     }
 
     /**

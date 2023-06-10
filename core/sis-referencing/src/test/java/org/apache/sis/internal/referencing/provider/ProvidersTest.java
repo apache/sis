@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 
 
 /**
- * Tests {@link Providers} and some consistency rules of all providers defined in this package.
+ * Tests some consistency rules of all providers defined in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4

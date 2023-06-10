@@ -29,6 +29,7 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.internal.referencing.LazySet;
+import org.apache.sis.internal.system.Reflect;
 import org.apache.sis.internal.system.Loggers;
 import org.apache.sis.internal.system.Modules;
 import org.apache.sis.internal.system.SystemListener;
@@ -96,10 +97,23 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     }
 
     /**
+     * The type of service to request with {@link ServiceLoader}, or {@code null} if unknown.
+     */
+    private final Class<T> service;
+
+    /**
      * Creates a new provider for factories of the given type.
      */
     private AuthorityFactories(final Class<T> type) {
-        super(type);
+        service = type;
+    }
+
+    /**
+     * Creates the iterator which will provide the elements of this set before filtering.
+     */
+    @Override
+    protected Iterator<? extends T> createSourceIterator() {
+        return ServiceLoader.load(service, Reflect.getContextClassLoader()).iterator();
     }
 
     /**
