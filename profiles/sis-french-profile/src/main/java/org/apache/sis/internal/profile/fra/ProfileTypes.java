@@ -16,7 +16,9 @@
  */
 package org.apache.sis.internal.profile.fra;
 
+import java.io.InputStream;
 import java.util.Collection;
+import java.util.Optional;
 import org.apache.sis.internal.jaxb.TypeRegistration;
 
 
@@ -25,7 +27,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  * This class is declared in the {@code META-INF/services/org.apache.sis.internal.jaxb.TypeRegistration} file.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.0
+ * @version 1.4
  * @since   0.4
  */
 public final class ProfileTypes extends TypeRegistration {
@@ -43,14 +45,18 @@ public final class ProfileTypes extends TypeRegistration {
     }
 
     /**
-     * Returns {@code true} for {@code export = false} in order to notify that we provide
-     * a {@code "RenameOnImport.lst"} file that need to be read.
+     * Opens a stream on the {@code "RenameOnImport.lst"} if {@code export} is false.
      *
-     * @param  export  {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
-     * @return {@code true} for {@code "RenameOnImport.lst"}, {@code false} otherwise.
+     * @param  export    {@code false} for {@code "RenameOnImport.lst"}.
+     * @param  filename  a filename consistent with the {@code export} argument, for convenience.
+     * @return stream opened on the {@code "RenameOnImport.lst"} file if {@code export} is false.
      */
     @Override
-    protected boolean hasRenameFile(boolean export) {
-        return !export;
+    protected Optional<InputStream> getRenameDefinitionsFile(final boolean export, final String filename) {
+        if (export) {
+            return super.getRenameDefinitionsFile(export, filename);
+        } else {
+            return Optional.of(ProfileTypes.class.getResourceAsStream(filename));
+        }
     }
 }

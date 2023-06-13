@@ -16,7 +16,6 @@
  */
 package org.apache.sis.internal.jaxb;
 
-import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -24,6 +23,10 @@ import java.util.Collection;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 import java.util.function.UnaryOperator;
+import java.util.function.Supplier;
+import java.util.Optional;
+import java.util.Iterator;
+import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import jakarta.xml.bind.JAXBContext;
@@ -39,10 +42,8 @@ import org.apache.sis.internal.system.DelayedRunnable;
  * Declares the classes of objects to be marshalled using a default {@code MarshallerPool}.
  * This class is not strictly necessary for marshalling a SIS object using JAXB, but makes
  * the job easier by allowing {@code MarshallerPool} to configure the JAXB context automatically.
- * To allow such automatic configuration, modules must declare instances of this interface in the
- * following file:
- *
- * <pre class="text">META-INF/services/org.org.apache.sis.internal.jaxb.TypeRegistration</pre>
+ * To allow such automatic configuration, modules must declare instances of this interface
+ * as a service in their {@code module-info}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.4
@@ -130,30 +131,42 @@ public abstract class TypeRegistration {
     }
 
     /**
-     * Returns {@code true} if {@code "RenameOnImport.lst"} and/or {@code "RenameOnExport.lst"} files are provided.
-     * If {@code true}, then those files shall be located in the same directory than this {@code TypeRegistration}
-     * subclass.
+     * Opens a stream on the {@code "RenameOnImport.lst"} or {@code "RenameOnExport.lst"} file if present.
+     * Those files are typically located in the same directory than this {@code TypeRegistration} subclass.
      *
-     * @param  export  {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
-     * @return whether {@code "RenameOnImport.lst"} and/or {@code "RenameOnExport.lst"} files are provided.
+     * <h4>Design note</h4>
+     * If a modularized project, the call to {@link Class#getResourceAsStream(String)} must be done in the
+     * module which contains the resource. It is not possible to only request the filename and open the
+     * resources in this metadata module.
+     *
+     * @param  export    {@code true} for {@code "RenameOnExport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
+     * @param  filename  the filename as documented in the {@code export} argument, for convenience.
+     * @return stream opened on the {@code "RenameOnImport.lst"} or the {@code "RenameOnExport.lst"} file.
      */
-    protected boolean hasRenameFile(boolean export) {
-        return false;
+    protected Optional<InputStream> getRenameDefinitionsFile(boolean export, String filename) {
+        return Optional.empty();
     }
 
     /**
-     * Adds in the given set the classes to use for loading  {@code "RenameOnImport.lst"} and/or {@code "RenameOnExport.lst"} files.
-     * The given set should preserve insertion order, since the order in which files are loaded may matter.
+     * Returns all input streams for loading the {@code "RenameOnImport.lst"} or {@code "RenameOnExport.lst"} file.
+     * Each stream will be opened only when requested. The supplier returns {@code null} after the last stream has
+     * been returned.
      *
-     * @param  export  {@code true} for {@code "RenameOnImport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
-     * @param  addTo   where to add the classes to use for loading the resource files.
+     * @param  export    {@code true} for {@code "RenameOnExport.lst"}, {@code false} for {@code "RenameOnImport.lst"}.
+     * @param  filename  the filename as documented in the {@code export} argument, for convenience.
+     * @return all input streams.
      */
-    public static synchronized void getRenameFileLoader(final boolean export, final Set<Class<?>> addTo) {
-        for (final TypeRegistration t : services()) {
-            if (t.hasRenameFile(export)) {
-                addTo.add(t.getClass());
+    public static synchronized Supplier<InputStream> getRenameDefinitionsFiles(final boolean export, final String filename) {
+        final Iterator<TypeRegistration> services = services().iterator();
+        return () -> {
+            synchronized (TypeRegistration.class) {
+                while (services.hasNext()) {
+                    final Optional<InputStream> next = services.next().getRenameDefinitionsFile(export, filename);
+                    if (next.isPresent()) return next.get();
+                }
+                return null;
             }
-        }
+        };
     }
 
     /**

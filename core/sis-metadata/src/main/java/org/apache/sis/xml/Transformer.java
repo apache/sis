@@ -19,12 +19,13 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.InvalidPropertiesFormatException;
+import java.util.function.Supplier;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
 import javax.xml.XMLConstants;
@@ -83,7 +84,7 @@ import org.apache.sis.internal.jaxb.TypeRegistration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.0
+ * @version 1.4
  *
  * @see javax.xml.transform.Transformer
  *
@@ -242,11 +243,10 @@ abstract class Transformer {
      */
     static Map<String, Map<String,String>> load(final boolean export, final String filename, final Set<String> targets, final int capacity) {
         final Map<String, Map<String,String>> m = new HashMap<>(capacity);
-        final Set<Class<?>> renameLoaders = new LinkedHashSet<>(8);
-        renameLoaders.add(Transformer.class);
-        TypeRegistration.getRenameFileLoader(export, renameLoaders);
-        for (final Class<?> loader : renameLoaders) {
-            try (LineNumberReader in = new LineNumberReader(new InputStreamReader(loader.getResourceAsStream(filename), "UTF-8"))) {
+        final Supplier<InputStream> plugins = TypeRegistration.getRenameDefinitionsFiles(export, filename);
+        InputStream resourceStream = Transformer.class.getResourceAsStream(filename);
+        do {
+            try (LineNumberReader in = new LineNumberReader(new InputStreamReader(resourceStream, "UTF-8"))) {
                 Map<String,String> attributes = null;               // All attributes for a given type.
                 String namespace = null;                            // Value to store in `attributes` map.
                 String line;
@@ -358,7 +358,7 @@ abstract class Transformer {
             } catch (IOException e) {
                 throw new ExceptionInInitializerError(e);
             }
-        }
+        } while ((resourceStream = plugins.get()) != null);
         /*
          * At this point we finished computing the map values. Many values are maps with only 1 entry.
          */
